@@ -33,21 +33,20 @@ Architecture:
 """
 
 import asyncio
-from typing import Dict, List, Optional, Set, Any, Callable
+import heapq
+import time
+import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from collections import defaultdict
-import time
-import heapq
-import uuid
+from typing import Any
 
-from hololoom.agents.orchestrator_mcts import create_mcts_agent
-from hololoom.agents.mcts_breakthrough import BreakthroughDetector, FeedForwardBroadcaster
-from hololoom.agents.background_learner import LearningQueue, Experience
-from hololoom.protocols.types import Query
-from hololoom.memory.graph import KG
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.memory.graph import KG
 
+from hololoom.agents.background_learner import LearningQueue
+from hololoom.agents.mcts_breakthrough import BreakthroughDetector, FeedForwardBroadcaster
+from hololoom.agents.orchestrator_mcts import create_mcts_agent
 
 # ============================================================================
 # Task Types and Priorities
@@ -84,22 +83,22 @@ class AgentTask:
 
     # Task execution
     task_fn: Callable  # Async function to execute
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
 
     # Scheduling
     created_at: float = field(default_factory=time.time)
-    scheduled_for: Optional[float] = None  # Delay execution
+    scheduled_for: float | None = None  # Delay execution
     timeout_seconds: float = 60.0
 
     # Dependencies
-    depends_on: List[str] = field(default_factory=list)  # Task IDs
+    depends_on: list[str] = field(default_factory=list)  # Task IDs
 
     # Results
     status: str = "pending"  # pending, running, completed, failed
-    result: Optional[Any] = None
-    error: Optional[str] = None
-    started_at: Optional[float] = None
-    completed_at: Optional[float] = None
+    result: Any | None = None
+    error: str | None = None
+    started_at: float | None = None
+    completed_at: float | None = None
 
     def __lt__(self, other):
         """Priority queue comparison"""
@@ -110,7 +109,7 @@ class AgentTask:
         # Tie-break with creation time (FIFO within priority)
         return self.created_at < other.created_at
 
-    def is_ready(self, completed_tasks: Set[str]) -> bool:
+    def is_ready(self, completed_tasks: set[str]) -> bool:
         """Check if task dependencies are satisfied"""
         return all(dep_id in completed_tasks for dep_id in self.depends_on)
 
@@ -131,8 +130,8 @@ class PersistentAgent:
     agent_instance: Any  # MCTSAgentOrchestrator
 
     # Activity tracking
-    active_conversations: Set[str] = field(default_factory=set)
-    active_background_tasks: Set[str] = field(default_factory=set)
+    active_conversations: set[str] = field(default_factory=set)
+    active_background_tasks: set[str] = field(default_factory=set)
     total_queries_processed: int = 0
     total_breakthroughs: int = 0
 
@@ -160,7 +159,7 @@ class PersistentAgent:
         self.error_count += 1
         self.success_rate = (self.success_rate * 0.95)  # Penalty
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get agent statistics"""
         return {
             'agent_id': self.agent_id,
@@ -204,12 +203,12 @@ class AgentOrchestrationSystem:
         self.enable_breakthrough_sharing = enable_breakthrough_sharing
 
         # Agent pool (persistent)
-        self.agents: Dict[str, PersistentAgent] = {}
+        self.agents: dict[str, PersistentAgent] = {}
 
         # Task queue (priority queue)
-        self.task_queue: List[AgentTask] = []
-        self.completed_tasks: Set[str] = set()
-        self.running_tasks: Dict[str, AgentTask] = {}
+        self.task_queue: list[AgentTask] = []
+        self.completed_tasks: set[str] = set()
+        self.running_tasks: dict[str, AgentTask] = {}
 
         # Breakthrough system (shared)
         self.breakthrough_detector = BreakthroughDetector(
@@ -224,7 +223,7 @@ class AgentOrchestrationSystem:
         self.learning_queue = LearningQueue(maxsize=5000)
 
         # Task processor
-        self.processor_task: Optional[asyncio.Task] = None
+        self.processor_task: asyncio.Task | None = None
         self.running = False
 
         # Statistics
@@ -299,9 +298,9 @@ class AgentOrchestrationSystem:
         task_fn: Callable,
         priority: TaskPriority = TaskPriority.NORMAL,
         task_type: TaskType = TaskType.USER_QUERY,
-        context: Optional[Dict[str, Any]] = None,
-        depends_on: Optional[List[str]] = None,
-        scheduled_for: Optional[float] = None
+        context: dict[str, Any] | None = None,
+        depends_on: list[str] | None = None,
+        scheduled_for: float | None = None
     ) -> str:
         """
         Queue task for agent execution.
@@ -414,14 +413,14 @@ class AgentOrchestrationSystem:
             if task.task_id in self.running_tasks:
                 del self.running_tasks[task.task_id]
 
-    def get_agent_stats(self, agent_name: str) -> Optional[Dict[str, Any]]:
+    def get_agent_stats(self, agent_name: str) -> dict[str, Any] | None:
         """Get statistics for specific agent"""
         if agent_name not in self.agents:
             return None
 
         return self.agents[agent_name].get_stats()
 
-    def get_global_stats(self) -> Dict[str, Any]:
+    def get_global_stats(self) -> dict[str, Any]:
         """Get global orchestration statistics"""
         return {
             'active_agents': len(self.agents),

@@ -6,23 +6,23 @@ Runs 5 critical tests before integration into WeavingOrchestrator.
 """
 
 import sys
+
 sys.path.insert(0, '.')
 
 import asyncio
-import numpy as np
-from typing import List
+
+import networkx as nx
+
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 # HoloLoom imports
 from hololoom.memory.awareness_graph import AwarenessGraph
 from hololoom.memory.awareness_types import (
-    SemanticPerception,
-    ActivationStrategy,
     ActivationBudget,
-    EdgeType
+    ActivationStrategy,
+    EdgeType,
 )
 from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
-import networkx as nx
 
 
 async def test_perceive_remember_activate():
@@ -101,7 +101,7 @@ async def test_topic_shift_detection():
     # Topic shift detection logic
     shift_detected = len(activated_shifted) < len(activated_same)
     assert shift_detected, "Should detect topic shift (fewer activations)"
-    print(f"  ✓ Topic shift correctly detected")
+    print("  ✓ Topic shift correctly detected")
 
     return True
 
@@ -149,7 +149,7 @@ async def test_context_window_budgeting():
 
     assert len(activated_small) <= budget_small.max_memories, "Should respect small budget"
     assert len(activated_large) >= len(activated_small), "Large budget should retrieve more"
-    print(f"  ✓ Budget correctly adapts to context window")
+    print("  ✓ Budget correctly adapts to context window")
 
     return True
 
@@ -193,7 +193,7 @@ async def test_graph_topology():
     ]
 
     print(f"  → Found {len(semantic_edges)} semantic resonance edges")
-    print(f"  ✓ Graph topology correctly constructed")
+    print("  ✓ Graph topology correctly constructed")
 
     return True
 
@@ -235,7 +235,7 @@ async def test_awareness_metrics():
     print(f"  → Active: {metrics.n_active}")
     print(f"  → Density: {metrics.activation_density:.2f}")
     print(f"  → Shift magnitude: {metrics.shift_magnitude:.3f}")
-    print(f"  ✓ Metrics accurately reflect system state")
+    print("  ✓ Metrics accurately reflect system state")
 
     return True
 

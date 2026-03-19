@@ -17,36 +17,26 @@ Universal 7-component framework with model-specific adapters:
 - GPTAdapter adds structured outputs, function calling (+20% quality)
 """
 
-from .strategy import (
-    PromptingStrategy,
-    StrategyContext,
-    StrategyResult
-)
-from .registry import (
-    StrategyRegistry,
-    get_strategy,
-    suggest_strategies,
-    list_strategies
-)
-from .composite import CompositeStrategy
-from .auto_detect import AutoDetector
-
 # Metaprompting System (November 2025)
 from .adapters import (
-    ModelAdapter,
     ClaudeAdapter,
     GeminiAdapter,
     GPTAdapter,
+    ModelAdapter,
     create_adapter,
-    create_adapter_from_config
+    create_adapter_from_config,
 )
+from .auto_detect import AutoDetector
+from .composite import CompositeStrategy
 from .metaprompt import (
-    create_metaprompt,
-    create_metaprompt_with_strategy,
-    create_metaprompt_auto,
     auto_detect_strategy,
-    enhance_request
+    create_metaprompt,
+    create_metaprompt_auto,
+    create_metaprompt_with_strategy,
+    enhance_request,
 )
+from .registry import StrategyRegistry, get_strategy, list_strategies, suggest_strategies
+from .strategy import PromptingStrategy, StrategyContext, StrategyResult
 
 __all__ = [
     # Strategy framework

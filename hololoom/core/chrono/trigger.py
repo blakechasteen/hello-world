@@ -18,12 +18,12 @@ and the Yarn Graph evolves through temporal decay and learning.
 """
 
 import asyncio
-import math
-import time
 import logging
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Optional, Callable, Dict, Any
+from typing import Any
 
 # Prometheus metrics
 try:
@@ -51,7 +51,7 @@ class TemporalWindow:
     end: datetime
     max_age: timedelta  # Maximum thread age to consider
     recency_bias: float = 0.5  # Weight boost for recent threads (0-1)
-    episode_filter: Optional[str] = None  # Optional episode/session filter
+    episode_filter: str | None = None  # Optional episode/session filter
 
     def contains(self, timestamp: datetime) -> bool:
         """Check if timestamp falls within window."""
@@ -88,7 +88,7 @@ class ExecutionLimits:
     Defines when and why to stop ongoing computations.
     """
     max_duration: float = 5.0  # Max total pipeline duration (seconds)
-    stage_timeouts: Dict[str, float] = field(default_factory=lambda: {
+    stage_timeouts: dict[str, float] = field(default_factory=lambda: {
         'features': 2.0,
         'retrieval': 2.0,
         'decision': 2.0,
@@ -245,9 +245,9 @@ class ChronoTrigger:
     async def monitor(
         self,
         operation: Callable,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         stage: str = "operation",
-        halt_callback: Optional[Callable[[Any], bool]] = None
+        halt_callback: Callable[[Any], bool] | None = None
     ) -> Any:
         """
         Monitor operation with timeout and halt conditions.
@@ -288,7 +288,7 @@ class ChronoTrigger:
             logger.error(f"Error in {stage}: {e}")
             return {"status": "error", "error": str(e), "stage": stage}
 
-    def check_halt_on_confidence(self, decision: Dict) -> bool:
+    def check_halt_on_confidence(self, decision: dict) -> bool:
         """
         Check if decision confidence is too low to continue.
 
@@ -348,7 +348,7 @@ class ChronoTrigger:
         # For now, just log the decay event
         pass
 
-    async def breathe(self) -> Dict[str, Any]:
+    async def breathe(self) -> dict[str, Any]:
         """
         Execute complete breathing cycle: inhale → exhale → rest.
 
@@ -397,7 +397,7 @@ class ChronoTrigger:
 
         return metrics
 
-    async def _inhale(self) -> Dict[str, Any]:
+    async def _inhale(self) -> dict[str, Any]:
         """
         INHALE phase: Gather context, expand features.
 
@@ -438,7 +438,7 @@ class ChronoTrigger:
 
         return metrics
 
-    async def _exhale(self) -> Dict[str, Any]:
+    async def _exhale(self) -> dict[str, Any]:
         """
         EXHALE phase: Make decision, execute action.
 
@@ -479,7 +479,7 @@ class ChronoTrigger:
 
         return metrics
 
-    async def _rest(self) -> Dict[str, Any]:
+    async def _rest(self) -> dict[str, Any]:
         """
         REST phase: Consolidate, decay, integrate.
 
@@ -526,7 +526,7 @@ class ChronoTrigger:
 
         return metrics
 
-    def get_current_phase(self) -> Optional[str]:
+    def get_current_phase(self) -> str | None:
         """
         Get current breathing phase.
 
@@ -545,7 +545,7 @@ class ChronoTrigger:
         self.breathing.breathing_rate = rate
         logger.info(f"Breathing rate adjusted to {rate}x")
 
-    def record_completion(self) -> Dict[str, Any]:
+    def record_completion(self) -> dict[str, Any]:
         """
         Record metrics on completion.
 
@@ -583,7 +583,7 @@ class ChronoTrigger:
             self.heartbeat_task.cancel()
             logger.info("Chrono Trigger stopped")
 
-    def get_evolution_stats(self) -> Dict[str, Any]:
+    def get_evolution_stats(self) -> dict[str, Any]:
         """
         Get statistics for system evolution.
 
@@ -626,7 +626,7 @@ if __name__ == "__main__":
         query_time = datetime.now()
         window = await chrono.fire(query_time, pattern_card_mode="fused")
 
-        print(f"Temporal window:")
+        print("Temporal window:")
         print(f"  Start: {window.start}")
         print(f"  End: {window.end}")
         print(f"  Max age: {window.max_age}")
@@ -646,7 +646,7 @@ if __name__ == "__main__":
 
         # Record completion
         metrics = chrono.record_completion()
-        print(f"Execution metrics:")
+        print("Execution metrics:")
         for key, value in metrics.items():
             print(f"  {key}: {value}")
 

@@ -5,10 +5,10 @@ Writing Modes
 Mode-specific content generation.
 """
 
-from .narrative import NarrativeWriter
-from .technical import TechnicalWriter
 from .analysis import AnalysisWriter
 from .creative import CreativeWriter
+from .narrative import NarrativeWriter
+from .technical import TechnicalWriter
 
 __all__ = [
     'NarrativeWriter',

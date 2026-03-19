@@ -12,14 +12,18 @@ Author: Claude Code with HoloLoom architecture
 Date: October 28, 2025
 """
 
-from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
 import re
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 from .dashboard import (
-    PanelSpec, PanelType, PanelSize, LayoutType,
-    ComplexityLevel, DashboardStrategy
+    ComplexityLevel,
+    DashboardStrategy,
+    LayoutType,
+    PanelSize,
+    PanelSpec,
+    PanelType,
 )
 
 
@@ -136,15 +140,15 @@ class UserPreferences:
         auto_expand_errors: Auto-expand error panels
         panel_sizes: Custom size overrides per panel type
     """
-    preferred_panels: List[PanelType] = None
-    hidden_panels: List[PanelType] = None
-    layout_preference: Optional[LayoutType] = None
+    preferred_panels: list[PanelType] = None
+    hidden_panels: list[PanelType] = None
+    layout_preference: LayoutType | None = None
     color_scheme: str = 'light'
     detail_level: str = 'standard'  # 'minimal', 'standard', 'detailed'
-    max_panels: Optional[int] = None  # Override complexity-based limits
+    max_panels: int | None = None  # Override complexity-based limits
     enable_animations: bool = True
     auto_expand_errors: bool = True
-    panel_sizes: Dict[PanelType, PanelSize] = None  # Custom panel sizes
+    panel_sizes: dict[PanelType, PanelSize] = None  # Custom panel sizes
 
     def __post_init__(self):
         if self.preferred_panels is None:
@@ -154,7 +158,7 @@ class UserPreferences:
         if self.panel_sizes is None:
             self.panel_sizes = {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization (localStorage)."""
         return {
             'preferred_panels': [p.value for p in self.preferred_panels],
@@ -169,7 +173,7 @@ class UserPreferences:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'UserPreferences':
+    def from_dict(cls, data: dict[str, Any]) -> 'UserPreferences':
         """Create from dictionary (loaded from localStorage)."""
         return cls(
             preferred_panels=[PanelType(p) for p in data.get('preferred_panels', [])],
@@ -200,7 +204,7 @@ class StrategySelector:
         # strategy.panels contains optimal panel specifications
     """
 
-    def __init__(self, user_prefs: Optional[UserPreferences] = None):
+    def __init__(self, user_prefs: UserPreferences | None = None):
         """
         Initialize strategy selector.
 
@@ -311,7 +315,7 @@ class StrategySelector:
         self,
         characteristics: QueryCharacteristics,
         spacetime
-    ) -> List[PanelSpec]:
+    ) -> list[PanelSpec]:
         """
         Generate candidate panels based on query intent.
 
@@ -456,7 +460,7 @@ class StrategySelector:
 
         return candidates
 
-    def apply_user_prefs(self, candidates: List[PanelSpec]) -> List[PanelSpec]:
+    def apply_user_prefs(self, candidates: list[PanelSpec]) -> list[PanelSpec]:
         """
         Apply user preferences to filter/prioritize/customize panels.
 
@@ -511,7 +515,7 @@ class StrategySelector:
 
         return candidates
 
-    def optimize_layout(self, panels: List[PanelSpec]) -> LayoutType:
+    def optimize_layout(self, panels: list[PanelSpec]) -> LayoutType:
         """
         Choose layout based on panel count.
 
@@ -534,9 +538,9 @@ class StrategySelector:
 
     def arrange_narrative(
         self,
-        panels: List[PanelSpec],
+        panels: list[PanelSpec],
         intent: QueryIntent
-    ) -> List[PanelSpec]:
+    ) -> list[PanelSpec]:
         """
         Arrange panels for narrative flow.
 
@@ -602,7 +606,7 @@ class StrategySelector:
 
 
 # Convenience function
-def create_strategy_selector(user_prefs: Optional[UserPreferences] = None) -> StrategySelector:
+def create_strategy_selector(user_prefs: UserPreferences | None = None) -> StrategySelector:
     """
     Create a StrategySelector instance.
 

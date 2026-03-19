@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Transformer Adapter: Interpretability Interface for External Transformers
 
@@ -36,9 +37,9 @@ Usage:
         adapter.register_hook(lambda a, l: captured.update({l: a}), layer)
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 
@@ -52,13 +53,11 @@ except ImportError:
     nn = None
 
 from hololoom.dark_trace.models.adapter import (
-    ModelAdapter,
     LayerInfo,
     LayerType,
+    ModelAdapter,
     ModelCapabilities,
     SteeringConfig,
-    HookHandle,
-    ActivationHook,
 )
 
 
@@ -82,12 +81,12 @@ class TransformerLayerInfo:
 
     name: str
     layer_type: TransformerLayerType
-    layer_index: Optional[int] = None
-    hidden_size: Optional[int] = None
-    num_heads: Optional[int] = None
-    head_dim: Optional[int] = None
-    intermediate_size: Optional[int] = None
-    module_path: Optional[str] = None  # Full module path for hook registration
+    layer_index: int | None = None
+    hidden_size: int | None = None
+    num_heads: int | None = None
+    head_dim: int | None = None
+    intermediate_size: int | None = None
+    module_path: str | None = None  # Full module path for hook registration
 
     def to_layer_info(self) -> LayerInfo:
         """Convert to generic LayerInfo."""
@@ -144,7 +143,7 @@ class TransformerAdapter(ModelAdapter):
         self,
         model: Any,
         tokenizer: Any = None,
-        device: Optional[str] = None,
+        device: str | None = None,
     ):
         if not TORCH_AVAILABLE:
             raise RuntimeError("PyTorch required for TransformerAdapter")
@@ -166,12 +165,12 @@ class TransformerAdapter(ModelAdapter):
         self._config = self._get_model_config()
 
         # Build layer cache
-        self._layer_info_cache: Dict[str, TransformerLayerInfo] = {}
-        self._module_map: Dict[str, nn.Module] = {}
+        self._layer_info_cache: dict[str, TransformerLayerInfo] = {}
+        self._module_map: dict[str, nn.Module] = {}
         self._build_layer_cache()
 
         # Active hooks
-        self._torch_hooks: Dict[str, Any] = {}
+        self._torch_hooks: dict[str, Any] = {}
 
     def _detect_architecture(self) -> str:
         """Detect transformer architecture type."""
@@ -192,7 +191,7 @@ class TransformerAdapter(ModelAdapter):
         else:
             return "generic"
 
-    def _get_model_config(self) -> Dict[str, Any]:
+    def _get_model_config(self) -> dict[str, Any]:
         """Extract model configuration."""
         config = {}
 
@@ -268,7 +267,7 @@ class TransformerAdapter(ModelAdapter):
             )
             self._module_map["lm_head"] = lm_head
 
-    def _get_transformer_blocks(self) -> Optional[nn.ModuleList]:
+    def _get_transformer_blocks(self) -> nn.ModuleList | None:
         """Get the list of transformer blocks."""
         # Try common paths
         paths = [
@@ -293,7 +292,7 @@ class TransformerAdapter(ModelAdapter):
 
         return None
 
-    def _get_embedding_module(self) -> Optional[nn.Module]:
+    def _get_embedding_module(self) -> nn.Module | None:
         """Get token embedding module."""
         paths = [
             'transformer.wte',  # GPT-2
@@ -309,7 +308,7 @@ class TransformerAdapter(ModelAdapter):
 
         return None
 
-    def _get_position_embedding(self) -> Optional[nn.Module]:
+    def _get_position_embedding(self) -> nn.Module | None:
         """Get position embedding module."""
         paths = [
             'transformer.wpe',  # GPT-2
@@ -323,7 +322,7 @@ class TransformerAdapter(ModelAdapter):
 
         return None
 
-    def _get_lm_head(self) -> Optional[nn.Module]:
+    def _get_lm_head(self) -> nn.Module | None:
         """Get language model head."""
         paths = [
             'lm_head',
@@ -337,7 +336,7 @@ class TransformerAdapter(ModelAdapter):
 
         return None
 
-    def _get_module_by_path(self, path: str) -> Optional[nn.Module]:
+    def _get_module_by_path(self, path: str) -> nn.Module | None:
         """Get module by dot-separated path."""
         parts = path.split('.')
         module = self._model
@@ -348,7 +347,7 @@ class TransformerAdapter(ModelAdapter):
                 return None
         return module
 
-    def _get_module_path(self, module: nn.Module) -> Optional[str]:
+    def _get_module_path(self, module: nn.Module) -> str | None:
         """Get the full path to a module."""
         for name, mod in self._model.named_modules():
             if mod is module:
@@ -414,7 +413,7 @@ class TransformerAdapter(ModelAdapter):
             )
             self._module_map[name] = ln2
 
-    def _get_attention_module(self, block: nn.Module) -> Optional[nn.Module]:
+    def _get_attention_module(self, block: nn.Module) -> nn.Module | None:
         """Get attention module from a block."""
         paths = ['attn', 'attention', 'self_attn', 'self_attention']
         for path in paths:
@@ -422,7 +421,7 @@ class TransformerAdapter(ModelAdapter):
                 return getattr(block, path)
         return None
 
-    def _get_mlp_module(self, block: nn.Module) -> Optional[nn.Module]:
+    def _get_mlp_module(self, block: nn.Module) -> nn.Module | None:
         """Get MLP module from a block."""
         paths = ['mlp', 'ffn', 'feed_forward', 'fc', 'intermediate']
         for path in paths:
@@ -430,7 +429,7 @@ class TransformerAdapter(ModelAdapter):
                 return getattr(block, path)
         return None
 
-    def _get_first_norm(self, block: nn.Module) -> Optional[nn.Module]:
+    def _get_first_norm(self, block: nn.Module) -> nn.Module | None:
         """Get first layer norm from a block."""
         paths = ['ln_1', 'ln1', 'input_layernorm', 'norm1', 'attention_norm']
         for path in paths:
@@ -438,7 +437,7 @@ class TransformerAdapter(ModelAdapter):
                 return getattr(block, path)
         return None
 
-    def _get_second_norm(self, block: nn.Module) -> Optional[nn.Module]:
+    def _get_second_norm(self, block: nn.Module) -> nn.Module | None:
         """Get second layer norm from a block."""
         paths = ['ln_2', 'ln2', 'post_attention_layernorm', 'norm2', 'ffn_norm']
         for path in paths:
@@ -485,7 +484,7 @@ class TransformerAdapter(ModelAdapter):
             )
             self._module_map[name] = module
 
-    def get_layer_names(self) -> List[str]:
+    def get_layer_names(self) -> list[str]:
         """Get names of all hookable layers."""
         return list(self._layer_info_cache.keys())
 
@@ -704,12 +703,12 @@ class TransformerAdapter(ModelAdapter):
         return self._architecture
 
     @property
-    def config(self) -> Dict[str, Any]:
+    def config(self) -> dict[str, Any]:
         """Get model configuration."""
         return self._config.copy()
 
 
-def get_layer_names(model: Any) -> List[str]:
+def get_layer_names(model: Any) -> list[str]:
     """
     Convenience function to get layer names from any transformer.
 
@@ -726,7 +725,7 @@ def get_layer_names(model: Any) -> List[str]:
 def create_transformer_adapter(
     model: Any,
     tokenizer: Any = None,
-    device: Optional[str] = None,
+    device: str | None = None,
 ) -> TransformerAdapter:
     """
     Create a TransformerAdapter for a model.

@@ -14,13 +14,11 @@ Provides:
 """
 
 import time
-import hashlib
-from typing import List, Dict, Optional, Any
 from collections import OrderedDict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Any
 
 from .protocol import WebSearchResult
-
 
 # ============================================================================
 # Cache Entry
@@ -30,7 +28,7 @@ from .protocol import WebSearchResult
 class CacheEntry:
     """Single cache entry with metadata."""
     query: str
-    results: List[WebSearchResult]
+    results: list[WebSearchResult]
     timestamp: float
     ttl_seconds: int
     hit_count: int = 0
@@ -93,7 +91,7 @@ class SearchCache:
         self._evictions = 0
         self._expirations = 0
 
-    def get(self, query: str) -> Optional[List[WebSearchResult]]:
+    def get(self, query: str) -> list[WebSearchResult] | None:
         """
         Get cached results for query.
 
@@ -129,8 +127,8 @@ class SearchCache:
     def put(
         self,
         query: str,
-        results: List[WebSearchResult],
-        ttl: Optional[int] = None
+        results: list[WebSearchResult],
+        ttl: int | None = None
     ) -> None:
         """
         Store results in cache.
@@ -207,7 +205,7 @@ class SearchCache:
 
         return len(expired_keys)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get cache statistics.
 
@@ -228,7 +226,7 @@ class SearchCache:
             "total_requests": total_requests,
         }
 
-    def get_entry_stats(self) -> List[Dict[str, Any]]:
+    def get_entry_stats(self) -> list[dict[str, Any]]:
         """
         Get stats for individual cache entries.
 
@@ -279,7 +277,7 @@ class SearchCache:
 # Global Cache Instance (Optional)
 # ============================================================================
 
-_global_cache: Optional[SearchCache] = None
+_global_cache: SearchCache | None = None
 
 
 def get_global_cache() -> SearchCache:

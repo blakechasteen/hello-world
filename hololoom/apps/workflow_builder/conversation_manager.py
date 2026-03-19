@@ -9,13 +9,12 @@ Database Schema:
 - messages: Individual messages (id, conversation_id, role, content, metadata, timestamp)
 """
 
-import sqlite3
 import json
+import logging
+import sqlite3
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass, asdict
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +22,14 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Message:
     """A single chat message"""
-    id: Optional[int]
+    id: int | None
     conversation_id: int
     role: str  # 'user' or 'assistant'
     content: str
-    metadata: Dict  # reasoning_steps, confidence, duration, etc.
+    metadata: dict  # reasoning_steps, confidence, duration, etc.
     timestamp: str
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization"""
         return {
             'id': self.id,
@@ -45,16 +44,16 @@ class Message:
 @dataclass
 class Conversation:
     """A conversation thread"""
-    id: Optional[int]
+    id: int | None
     title: str
     created_at: str
     updated_at: str
     message_count: int = 0
-    project_id: Optional[int] = None
+    project_id: int | None = None
     is_favorite: bool = False
     tags: str = ""  # Comma-separated tags
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization"""
         return {
             'id': self.id,
@@ -71,14 +70,14 @@ class Conversation:
 @dataclass
 class Project:
     """A project/folder for organizing conversations"""
-    id: Optional[int]
+    id: int | None
     name: str
     color: str  # Hex color code
     icon: str  # Emoji or icon name
     created_at: str
     conversation_count: int = 0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization"""
         return {
             'id': self.id,
@@ -93,14 +92,14 @@ class Project:
 @dataclass
 class ConversationTemplate:
     """A conversation template"""
-    id: Optional[int]
+    id: int | None
     name: str
     description: str
     icon: str
     messages: str  # JSON string of message list
     created_at: str
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization"""
         return {
             'id': self.id,
@@ -214,7 +213,7 @@ class ConversationManager:
             conn.commit()
             logger.info(f"Database initialized at {self.db_path}")
 
-    def create_conversation(self, title: Optional[str] = None) -> Conversation:
+    def create_conversation(self, title: str | None = None) -> Conversation:
         """
         Create a new conversation thread.
 
@@ -246,7 +245,7 @@ class ConversationManager:
             message_count=0
         )
 
-    def get_conversation(self, conversation_id: int) -> Optional[Conversation]:
+    def get_conversation(self, conversation_id: int) -> Conversation | None:
         """Get conversation by ID"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -274,7 +273,7 @@ class ConversationManager:
             message_count=message_count
         )
 
-    def list_conversations(self, limit: int = 50, offset: int = 0) -> Tuple[List[Conversation], bool]:
+    def list_conversations(self, limit: int = 50, offset: int = 0) -> tuple[list[Conversation], bool]:
         """
         List conversations with pagination, most recent first.
 
@@ -324,7 +323,7 @@ class ConversationManager:
         conversation_id: int,
         role: str,
         content: str,
-        metadata: Optional[Dict] = None
+        metadata: dict | None = None
     ) -> Message:
         """
         Add a message to a conversation.
@@ -371,7 +370,7 @@ class ConversationManager:
             timestamp=now
         )
 
-    def get_messages(self, conversation_id: int) -> List[Message]:
+    def get_messages(self, conversation_id: int) -> list[Message]:
         """
         Get all messages for a conversation, chronologically ordered.
 
@@ -425,7 +424,7 @@ class ConversationManager:
 
         logger.info(f"Deleted conversation {conversation_id}")
 
-    def search_messages(self, query: str, limit: int = 20) -> List[Tuple[Conversation, Message]]:
+    def search_messages(self, query: str, limit: int = 20) -> list[tuple[Conversation, Message]]:
         """
         Search for messages containing query text.
 
@@ -469,7 +468,7 @@ class ConversationManager:
 
         return results
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Get database statistics"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -518,7 +517,7 @@ class ConversationManager:
             conversation_count=0
         )
 
-    def list_projects(self) -> List[Project]:
+    def list_projects(self) -> list[Project]:
         """List all projects with conversation counts"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -543,7 +542,7 @@ class ConversationManager:
 
         return projects
 
-    def get_project(self, project_id: int) -> Optional[Project]:
+    def get_project(self, project_id: int) -> Project | None:
         """Get a single project by ID"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -568,8 +567,8 @@ class ConversationManager:
                 conversation_count=row[5]
             )
 
-    def update_project(self, project_id: int, name: Optional[str] = None,
-                      color: Optional[str] = None, icon: Optional[str] = None):
+    def update_project(self, project_id: int, name: str | None = None,
+                      color: str | None = None, icon: str | None = None):
         """Update project details"""
         updates = []
         params = []
@@ -619,7 +618,7 @@ class ConversationManager:
 
         logger.info(f"Deleted project {project_id} (delete_conversations={delete_conversations})")
 
-    def move_to_project(self, conversation_id: int, project_id: Optional[int]):
+    def move_to_project(self, conversation_id: int, project_id: int | None):
         """Move conversation to project (None = uncategorized)"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -633,7 +632,7 @@ class ConversationManager:
 
     # ===== SEARCH & FILTERING =====
 
-    def search_conversations(self, query: str, limit: int = 20) -> List[Conversation]:
+    def search_conversations(self, query: str, limit: int = 20) -> list[Conversation]:
         """Search conversations by title or content"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -676,7 +675,7 @@ class ConversationManager:
 
         logger.info(f"Toggled favorite for conversation {conversation_id}")
 
-    def update_tags(self, conversation_id: int, tags: List[str]):
+    def update_tags(self, conversation_id: int, tags: list[str]):
         """Update conversation tags"""
         tags_str = ','.join(tags)
         with sqlite3.connect(self.db_path) as conn:
@@ -705,7 +704,7 @@ class ConversationManager:
 
     # ===== TEMPLATE METHODS =====
 
-    def create_template(self, name: str, description: str, messages: List[Dict], icon: str = '📄') -> ConversationTemplate:
+    def create_template(self, name: str, description: str, messages: list[dict], icon: str = '📄') -> ConversationTemplate:
         """Save conversation as template"""
         now = datetime.now().isoformat()
         messages_json = json.dumps(messages)
@@ -729,7 +728,7 @@ class ConversationManager:
             created_at=now
         )
 
-    def list_templates(self) -> List[ConversationTemplate]:
+    def list_templates(self) -> list[ConversationTemplate]:
         """List all templates"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -748,7 +747,7 @@ class ConversationManager:
 
         return templates
 
-    def load_template(self, template_id: int) -> Optional[ConversationTemplate]:
+    def load_template(self, template_id: int) -> ConversationTemplate | None:
         """Load a template"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -802,7 +801,7 @@ class ConversationManager:
             conversation_count=0
         )
 
-    def get_analytics(self) -> Dict:
+    def get_analytics(self) -> dict:
         """Get analytics data for dashboard"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()

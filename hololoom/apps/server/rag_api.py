@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 HoloLoom RAG API Server
 =======================
@@ -27,10 +28,10 @@ Created: 2025-11-20
 
 import asyncio
 import logging
-from typing import Optional, List, Dict, Any
-from datetime import datetime
 from collections import defaultdict, deque
+from datetime import datetime
 from time import time
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,7 +39,7 @@ from pydantic import BaseModel, Field, validator
 
 # Import RAG system
 try:
-    from hololoom.rag import SimpleRAG, RAGResult
+    from hololoom.rag import RAGResult, SimpleRAG
     RAG_AVAILABLE = True
 except ImportError:
     RAG_AVAILABLE = False
@@ -46,7 +47,6 @@ except ImportError:
     SimpleRAG = None
 
 from hololoom.config import Config
-
 
 # ============================================================================
 # Logging Setup
@@ -74,7 +74,7 @@ class RateLimiter:
     def __init__(self, max_requests: int = 100, window_seconds: int = 60):
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self.requests: Dict[str, deque] = defaultdict(deque)
+        self.requests: dict[str, deque] = defaultdict(deque)
         self._lock = asyncio.Lock()  # SECURITY: Async-safe access
 
     async def check_rate_limit(self, client_id: str) -> bool:
@@ -109,7 +109,7 @@ class RateLimiter:
 class IngestRequest(BaseModel):
     """Request to ingest content."""
     content: str = Field(..., description="Content to ingest (text, file path, etc.)")
-    metadata: Optional[Dict[str, Any]] = Field(
+    metadata: dict[str, Any] | None = Field(
         None,
         description="Optional metadata about the content"
     )
@@ -167,24 +167,24 @@ class QueryRequest(BaseModel):
 class Source(BaseModel):
     """A source document."""
     text: str = Field(..., description="Source text snippet")
-    score: Optional[float] = Field(None, description="Relevance score (0-1)")
-    metadata: Optional[Dict[str, Any]] = Field(None, description="Source metadata")
+    score: float | None = Field(None, description="Relevance score (0-1)")
+    metadata: dict[str, Any] | None = Field(None, description="Source metadata")
 
 
 class QueryResponse(BaseModel):
     """Response from query."""
     response: str = Field(..., description="LLM-generated answer")
     confidence: float = Field(..., description="Confidence score (0.0-1.0)", ge=0.0, le=1.0)
-    sources: List[Source] = Field(..., description="Retrieved sources")
+    sources: list[Source] = Field(..., description="Retrieved sources")
     reasoning_mode: str = Field(..., description="Reasoning mode used")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
 
 class HealthResponse(BaseModel):
     """Health check response."""
     status: str = Field(..., description="'healthy' or 'degraded'")
     rag_available: bool = Field(..., description="RAG system available")
-    features: List[str] = Field(..., description="Enabled features")
+    features: list[str] = Field(..., description="Enabled features")
     timestamp: str = Field(..., description="Timestamp of check")
 
 
@@ -227,8 +227,8 @@ app.add_middleware(
 # ============================================================================
 
 # RAG instance (initialized on startup)
-rag: Optional[SimpleRAG] = None
-config: Optional[Config] = None
+rag: SimpleRAG | None = None
+config: Config | None = None
 
 # Rate limiting
 rate_limiter = RateLimiter(max_requests=100, window_seconds=60)
@@ -262,7 +262,7 @@ async def startup_event():
 
         # Create config
         config = Config.fast()
-        logger.info(f"✓ Config created (mode: fast)")
+        logger.info("✓ Config created (mode: fast)")
 
         # Initialize RAG
         rag = SimpleRAG(
@@ -427,7 +427,7 @@ async def ingest_content(request: IngestRequest, req: Request) -> IngestResponse
     if not await rate_limiter.check_rate_limit(client_id):
         raise HTTPException(
             status_code=429,
-            detail=f"Rate limit exceeded. Max 100 requests per 60 seconds."
+            detail="Rate limit exceeded. Max 100 requests per 60 seconds."
         )
 
     # Check RAG ready
@@ -543,9 +543,9 @@ async def query_rag(request: QueryRequest, req: Request) -> QueryResponse:
 
 @app.post("/api/rag/batch-query")
 async def batch_query(
-    requests_list: List[QueryRequest],
+    requests_list: list[QueryRequest],
     req: Request
-) -> List[QueryResponse]:
+) -> list[QueryResponse]:
     """
     Query multiple questions in a single request.
 

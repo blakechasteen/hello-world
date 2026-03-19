@@ -39,10 +39,11 @@ Usage:
 Created: 2025-12-28
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Callable, Union, TYPE_CHECKING
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import time
+from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
 
@@ -77,7 +78,7 @@ class ProbeConfig:
 
     # Perturbation bounds
     epsilon: float = 0.1           # Max L-inf perturbation
-    epsilon_l2: Optional[float] = None  # Optional L2 bound
+    epsilon_l2: float | None = None  # Optional L2 bound
 
     # Gradient-based parameters
     gradient_steps: int = 50       # Steps for PGD
@@ -172,7 +173,7 @@ class VulnerabilityReport:
     feature_idx: int
 
     # Probe results
-    probes: List[ProbeResult] = field(default_factory=list)
+    probes: list[ProbeResult] = field(default_factory=list)
 
     # Summary statistics
     vulnerability_score: float = 0.0  # 0.0 (robust) to 1.0 (critical)
@@ -186,16 +187,16 @@ class VulnerabilityReport:
     min_effective_perturbation: float = float('inf')
 
     # Most effective attacks
-    most_effective_probe: Optional[ProbeResult] = None  # Smallest perturbation
-    strongest_probe: Optional[ProbeResult] = None       # Largest effect
+    most_effective_probe: ProbeResult | None = None  # Smallest perturbation
+    strongest_probe: ProbeResult | None = None       # Largest effect
 
     # Timing
     probe_duration_seconds: float = 0.0
 
     # Metadata
-    config_used: Optional[ProbeConfig] = None
+    config_used: ProbeConfig | None = None
     safety_blocked: bool = False
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     @property
     def is_vulnerable(self) -> bool:
@@ -206,7 +207,7 @@ class VulnerabilityReport:
             VulnerabilityLevel.CRITICAL,
         ]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export as dictionary."""
         return {
             "feature_idx": self.feature_idx,
@@ -239,7 +240,7 @@ class GradientProber:
         input_data: np.ndarray,
         feature_idx: int,
         activation_fn: Callable[[np.ndarray], np.ndarray],
-        gradient_fn: Optional[Callable[[np.ndarray, int], np.ndarray]] = None,
+        gradient_fn: Callable[[np.ndarray, int], np.ndarray] | None = None,
         target_type: str = "maximize",  # "maximize", "minimize", "flip"
     ) -> ProbeResult:
         """
@@ -343,9 +344,9 @@ class GradientProber:
         x: np.ndarray,
         feature_idx: int,
         activation_fn: Callable,
-        gradient_fn: Optional[Callable],
+        gradient_fn: Callable | None,
         target_type: str,
-    ) -> Tuple[np.ndarray, int]:
+    ) -> tuple[np.ndarray, int]:
         """Fast Gradient Sign Method probe."""
         if gradient_fn is not None:
             grad = gradient_fn(x, feature_idx)
@@ -367,9 +368,9 @@ class GradientProber:
         x: np.ndarray,
         feature_idx: int,
         activation_fn: Callable,
-        gradient_fn: Optional[Callable],
+        gradient_fn: Callable | None,
         target_type: str,
-    ) -> Tuple[np.ndarray, int]:
+    ) -> tuple[np.ndarray, int]:
         """Projected Gradient Descent probe."""
         perturbed = x + np.random.uniform(
             -self.config.epsilon * 0.1,
@@ -441,7 +442,7 @@ class AdversarialProber:
 
     def __init__(
         self,
-        config: Optional[ProbeConfig] = None,
+        config: ProbeConfig | None = None,
         model_adapter: Optional["ModelAdapter"] = None,
         safety_guardrails: Optional["SafetyGuardrails"] = None,
     ):
@@ -460,7 +461,7 @@ class AdversarialProber:
         self.gradient_prober = GradientProber(self.config)
         self._genetic_prober = None  # Lazy init
 
-        self._reports: Dict[int, VulnerabilityReport] = {}
+        self._reports: dict[int, VulnerabilityReport] = {}
 
     @property
     def genetic_prober(self):
@@ -474,8 +475,8 @@ class AdversarialProber:
         self,
         feature_idx: int,
         test_inputs: np.ndarray,
-        activation_fn: Optional[Callable[[np.ndarray], np.ndarray]] = None,
-        gradient_fn: Optional[Callable[[np.ndarray, int], np.ndarray]] = None,
+        activation_fn: Callable[[np.ndarray], np.ndarray] | None = None,
+        gradient_fn: Callable[[np.ndarray, int], np.ndarray] | None = None,
     ) -> VulnerabilityReport:
         """
         Probe a specific feature for vulnerabilities.
@@ -507,7 +508,7 @@ class AdversarialProber:
                 )
             activation_fn = lambda x: self.model_adapter.get_activations(x, layer="sae")
 
-        probes: List[ProbeResult] = []
+        probes: list[ProbeResult] = []
         n_inputs = min(len(test_inputs), self.config.max_probes_per_feature)
 
         for i in range(n_inputs):
@@ -547,10 +548,10 @@ class AdversarialProber:
     def probe_all_features(
         self,
         test_inputs: np.ndarray,
-        feature_indices: Optional[List[int]] = None,
-        activation_fn: Optional[Callable] = None,
-        top_k: Optional[int] = None,
-    ) -> List[VulnerabilityReport]:
+        feature_indices: list[int] | None = None,
+        activation_fn: Callable | None = None,
+        top_k: int | None = None,
+    ) -> list[VulnerabilityReport]:
         """
         Probe multiple features for vulnerabilities.
 
@@ -584,7 +585,7 @@ class AdversarialProber:
         reports.sort(key=lambda r: r.vulnerability_score, reverse=True)
         return reports
 
-    def get_vulnerability_summary(self) -> Dict[str, Any]:
+    def get_vulnerability_summary(self) -> dict[str, Any]:
         """
         Summarize vulnerabilities across all probed features.
 
@@ -687,7 +688,7 @@ class AdversarialProber:
     def _compile_report(
         self,
         feature_idx: int,
-        probes: List[ProbeResult],
+        probes: list[ProbeResult],
         start_time: float,
     ) -> VulnerabilityReport:
         """Compile probe results into vulnerability report."""
@@ -779,7 +780,7 @@ class AdversarialProber:
         else:
             return VulnerabilityLevel.CRITICAL
 
-    def export_reports(self) -> Dict[str, Any]:
+    def export_reports(self) -> dict[str, Any]:
         """Export all vulnerability reports."""
         return {
             str(idx): report.to_dict()
@@ -788,7 +789,7 @@ class AdversarialProber:
 
 
 def create_prober(
-    config: Optional[ProbeConfig] = None,
+    config: ProbeConfig | None = None,
     safety_guardrails: Optional["SafetyGuardrails"] = None,
 ) -> AdversarialProber:
     """

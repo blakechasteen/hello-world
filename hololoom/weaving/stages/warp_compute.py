@@ -10,7 +10,7 @@ Performs after warp tensioning:
 """
 
 import logging
-from typing import Any, ClassVar, Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
 
@@ -33,15 +33,15 @@ class WarpComputeStage:
     def __init__(
         self,
         warp_space: Any,
-        semantic_state_class: Optional[Any] = None,
-        semantic_tool_selector: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
+        semantic_state_class: Any | None = None,
+        semantic_tool_selector: Any | None = None,
+        logger: logging.Logger | None = None,
     ):
         self.warp_space = warp_space
         self.semantic_state_class = semantic_state_class
         self.semantic_tool_selector = semantic_tool_selector
         self.logger = logger or logging.getLogger(__name__)
-        self._previous_semantic_state: Optional[Any] = None
+        self._previous_semantic_state: Any | None = None
         self._query_index: int = 0
 
     async def execute(self, ctx: 'WeavingContext') -> None:
@@ -84,7 +84,7 @@ class WarpComputeStage:
             self.logger.warning(f"  [5.5] Warp Space compute failed: {e}. Continuing without warp features.")
             ctx.warp_compute_results = None
 
-    def _extract_query_embedding(self, dot_plasma: Dict[str, Any]) -> np.ndarray:
+    def _extract_query_embedding(self, dot_plasma: dict[str, Any]) -> np.ndarray:
         """Extract query embedding from DotPlasma psi field."""
         psi_raw = dot_plasma.get('psi', [])
         if isinstance(psi_raw, dict):
@@ -97,7 +97,7 @@ class WarpComputeStage:
 
         return query_embedding
 
-    def _compute_semantic_state(self, query_embedding: np.ndarray) -> Optional[Dict[str, Any]]:
+    def _compute_semantic_state(self, query_embedding: np.ndarray) -> dict[str, Any] | None:
         """Compute semantic state for topic shift detection."""
         if self.semantic_state_class is None:
             return None

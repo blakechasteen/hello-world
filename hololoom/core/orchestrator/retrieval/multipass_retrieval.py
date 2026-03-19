@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Multipass Memory Retrieval
 ===========================
@@ -21,25 +20,24 @@ Date: 2025-11-22
 
 from __future__ import annotations
 
-import time
 import logging
-from typing import List, Optional, Any, Dict, TYPE_CHECKING
+import time
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from hololoom.protocols.types import Query, MemoryShard, ComplexityLevel, ProvenanceTrace
-
+from hololoom.protocols.types import ComplexityLevel, MemoryShard, ProvenanceTrace, Query
 
 logger = logging.getLogger(__name__)
 
 
 async def multipass_memory_crawl(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     query: Query,
     complexity: ComplexityLevel,
-    trace: Optional[ProvenanceTrace] = None
-) -> List[Any]:
+    trace: ProvenanceTrace | None = None
+) -> list[Any]:
     """
     Recursive gated multipass memory crawling with Matryoshka importance gating.
 
@@ -170,7 +168,7 @@ async def multipass_memory_crawl(
                                     'sources': [f'graph_expansion_from_{item_id}']
                                 }
                                 seen_ids.add(rel_item.id)
-                    except (AttributeError, Exception) as e:
+                    except (AttributeError, Exception):
                         # Backend doesn't support graph traversal or error occurred
                         pass
 
@@ -200,10 +198,10 @@ async def multipass_memory_crawl(
 
 
 async def query_memory_backend(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     query_text: str,
     limit: int = 5
-) -> List[MemoryShard]:
+) -> list[MemoryShard]:
     """
     Query the unified memory backend and convert results to MemoryShards.
 

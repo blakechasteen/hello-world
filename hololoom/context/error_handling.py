@@ -12,12 +12,12 @@ Provides comprehensive error handling for the Context Department:
 """
 
 import asyncio
-import time
 import functools
-from typing import Callable, Optional, TypeVar, Any, Type, Tuple
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-
+from typing import Any, TypeVar
 
 # ============================================================================
 # Exception Hierarchy
@@ -79,7 +79,7 @@ class RetryConfig:
     initial_delay: float = 0.1  # seconds
     max_delay: float = 10.0     # seconds
     jitter: float = 0.1         # Random jitter (0.0 - 1.0)
-    retry_on: Tuple[Type[Exception], ...] = (BackendError, RoutingError)
+    retry_on: tuple[type[Exception], ...] = (BackendError, RoutingError)
 
 
 # ============================================================================
@@ -95,7 +95,7 @@ def retry(
     initial_delay: float = 0.1,
     max_delay: float = 10.0,
     jitter: float = 0.1,
-    retry_on: Tuple[Type[Exception], ...] = (BackendError,)
+    retry_on: tuple[type[Exception], ...] = (BackendError,)
 ) -> Callable:
     """
     Decorator for automatic retry with exponential backoff
@@ -211,8 +211,8 @@ class FallbackStrategy:
     async def get_confidence(
         self,
         primary: Callable,
-        fallback_1: Optional[Callable] = None,
-        fallback_2: Optional[Callable] = None
+        fallback_1: Callable | None = None,
+        fallback_2: Callable | None = None
     ) -> float:
         """
         Get confidence with fallback cascade
@@ -300,7 +300,7 @@ class ErrorHandler:
     - Error logging and metrics
     """
 
-    def __init__(self, retry_config: Optional[RetryConfig] = None):
+    def __init__(self, retry_config: RetryConfig | None = None):
         """
         Initialize error handler
 
@@ -316,7 +316,7 @@ class ErrorHandler:
         self,
         error: Exception,
         context: str,
-        fallback: Optional[Callable] = None
+        fallback: Callable | None = None
     ) -> Any:
         """
         Handle error with appropriate strategy
@@ -437,7 +437,7 @@ def should_fallback(error: Exception) -> bool:
 # Factory Function
 # ============================================================================
 
-def create_error_handler(retry_config: Optional[RetryConfig] = None) -> ErrorHandler:
+def create_error_handler(retry_config: RetryConfig | None = None) -> ErrorHandler:
     """
     Create error handler with configuration
 

@@ -11,22 +11,19 @@ Status: Phase 3 TUI (2025-12-05)
 from __future__ import annotations
 
 import asyncio
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Container, Horizontal
 from textual.reactive import reactive
-from textual.widgets import Static, Input, Footer, Header
 from textual.timer import Timer
+from textual.widgets import Footer, Input, Static
 
 from .wave_animation import (
     WaveGenerator,
-    WaveConfig,
     WaveTheme,
-    WaveState,
-    SemanticWaveController,
     create_wave_system,
 )
 
@@ -51,7 +48,7 @@ class WaveHeader(Static):
     def __init__(self, generator: WaveGenerator, title: str = "P R O T O"):
         self.generator = generator
         self.title = title
-        self._timer: Optional[Timer] = None
+        self._timer: Timer | None = None
         # Generate initial content before super().__init__
         initial_rows = self.generator.generate_top_waves(80, self.title)
         initial_color = self.generator.get_top_color()
@@ -99,7 +96,7 @@ class WaveFooter(Static):
 
     def __init__(self, generator: WaveGenerator):
         self.generator = generator
-        self._timer: Optional[Timer] = None
+        self._timer: Timer | None = None
         # Generate initial content before super().__init__
         initial_rows = self.generator.generate_bottom_waves(80)
         initial_color = self.generator.get_bottom_color()
@@ -322,7 +319,7 @@ class ProtoTUI(App):
 
     def __init__(
         self,
-        engine: Optional["ProtoEngine"] = None,
+        engine: ProtoEngine | None = None,
         theme: WaveTheme = WaveTheme.OCEAN
     ):
         super().__init__()
@@ -333,9 +330,9 @@ class ProtoTUI(App):
         self.generator = self.wave_controller.generator
 
         # Panels (created in compose)
-        self._response_panel: Optional[ResponsePanel] = None
-        self._context_panel: Optional[ContextPanel] = None
-        self._query_input: Optional[QueryInput] = None
+        self._response_panel: ResponsePanel | None = None
+        self._context_panel: ContextPanel | None = None
+        self._query_input: QueryInput | None = None
 
     def compose(self) -> ComposeResult:
         """Compose the TUI layout."""

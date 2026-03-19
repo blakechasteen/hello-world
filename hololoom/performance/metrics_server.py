@@ -30,10 +30,9 @@ Monitored Metrics:
 """
 
 import logging
-import time
 import signal
 import sys
-from typing import Optional
+import time
 
 # Setup logging
 logging.basicConfig(
@@ -44,7 +43,11 @@ logger = logging.getLogger(__name__)
 
 # Import metrics module
 try:
-    from hololoom.performance.prometheus_metrics import metrics, start_metrics_server, PROMETHEUS_AVAILABLE
+    from hololoom.performance.prometheus_metrics import (
+        PROMETHEUS_AVAILABLE,
+        metrics,
+        start_metrics_server,
+    )
     if not PROMETHEUS_AVAILABLE:
         logger.error("prometheus_client not installed")
         logger.error("Install with: pip install prometheus-client")
@@ -92,7 +95,7 @@ def run_metrics_server(port: int = 8001, host: str = '0.0.0.0'):
         start_metrics_server(port=port)
         _server_running = True
 
-        logger.info(f"✓ Metrics server started successfully!")
+        logger.info("✓ Metrics server started successfully!")
         logger.info(f"✓ Metrics endpoint: http://localhost:{port}/metrics")
         logger.info("")
         logger.info("Available Metrics:")
@@ -115,8 +118,8 @@ def run_metrics_server(port: int = 8001, host: str = '0.0.0.0'):
     except OSError as e:
         if "Address already in use" in str(e):
             logger.error(f"✗ Port {port} is already in use")
-            logger.error(f"  Either stop the other process or use a different port")
-            logger.error(f"  Example: python -m HoloLoom.performance.metrics_server --port 8002")
+            logger.error("  Either stop the other process or use a different port")
+            logger.error("  Example: python -m HoloLoom.performance.metrics_server --port 8002")
         else:
             logger.error(f"✗ Failed to start server: {e}")
         sys.exit(1)

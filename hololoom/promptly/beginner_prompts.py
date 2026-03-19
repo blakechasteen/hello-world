@@ -12,7 +12,6 @@ Part of Promptly - The Universal AI Reliability Layer
 Open source (MIT License): https://github.com/yourusername/promptly
 """
 
-from typing import Dict, List
 
 # ============================================================================
 # BEGINNER PROMPT TEMPLATES
@@ -229,7 +228,7 @@ Show your work for transparency.
 
 def generate_basic_optimization_prompt(
     task_description: str,
-    examples: List[Dict[str, str]]
+    examples: list[dict[str, str]]
 ) -> str:
     """
     Generate a basic optimization prompt for any task.
@@ -269,8 +268,8 @@ def generate_hololoom_qa_prompt() -> str:
 
 def generate_workflow_optimization_prompt(
     workflow_description: str,
-    workflow_steps: List[str],
-    examples: List[Dict[str, any]]
+    workflow_steps: list[str],
+    examples: list[dict[str, any]]
 ) -> str:
     """
     Generate a workflow optimization prompt.

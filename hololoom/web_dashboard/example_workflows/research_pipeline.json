@@ -1,0 +1,97 @@
+{
+  "version": "1.0",
+  "name": "Research Pipeline - Multi-Query + Synthesis",
+  "nodes": [
+    {
+      "id": "node-1",
+      "agentType": "multiquery",
+      "x": 100,
+      "y": 200,
+      "config": {
+        "max_subqueries": 5,
+        "mode": "research"
+      }
+    },
+    {
+      "id": "node-2",
+      "agentType": "hololoom",
+      "x": 350,
+      "y": 150,
+      "config": {
+        "pattern": "fused",
+        "return_trace": true
+      }
+    },
+    {
+      "id": "node-3",
+      "agentType": "hololoom",
+      "x": 350,
+      "y": 250,
+      "config": {
+        "pattern": "fused",
+        "return_trace": true
+      }
+    },
+    {
+      "id": "node-4",
+      "agentType": "synthesizer",
+      "x": 600,
+      "y": 200,
+      "config": {
+        "extract_entities": true,
+        "extract_motifs": true
+      }
+    },
+    {
+      "id": "node-5",
+      "agentType": "refiner",
+      "x": 850,
+      "y": 200,
+      "config": {
+        "strategy": "elegance",
+        "max_iterations": 3
+      }
+    },
+    {
+      "id": "node-6",
+      "agentType": "response",
+      "x": 1100,
+      "y": 200,
+      "config": {
+        "format": "markdown"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn-1",
+      "from": "node-1",
+      "to": "node-2"
+    },
+    {
+      "id": "conn-2",
+      "from": "node-1",
+      "to": "node-3"
+    },
+    {
+      "id": "conn-3",
+      "from": "node-2",
+      "to": "node-4"
+    },
+    {
+      "id": "conn-4",
+      "from": "node-3",
+      "to": "node-4"
+    },
+    {
+      "id": "conn-5",
+      "from": "node-4",
+      "to": "node-5"
+    },
+    {
+      "id": "conn-6",
+      "from": "node-5",
+      "to": "node-6"
+    }
+  ]
+}

@@ -32,15 +32,15 @@ Applications:
 """
 
 import asyncio
-import numpy as np
-from typing import Dict, List, Optional, AsyncIterator, Callable, Any, Tuple
-from dataclasses import dataclass, field
-from collections import deque
-from enum import Enum
 import time
+from collections import deque
+from collections.abc import AsyncIterator, Callable
+from dataclasses import dataclass, field
+from enum import Enum
 
-from .dimensions import SemanticSpectrum, EXTENDED_244_DIMENSIONS
-from .integrator import GeometricIntegrator, SemanticState
+import numpy as np
+
+from .dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
 
 
 class TemporalScale(Enum):
@@ -73,7 +73,7 @@ class ScaleWindow:
 @dataclass
 class ScaleResonance:
     """Measures coupling between temporal scales."""
-    scale_pair: Tuple[TemporalScale, TemporalScale]
+    scale_pair: tuple[TemporalScale, TemporalScale]
     position_correlation: float
     velocity_correlation: float
     phase_coherence: float  # 0-1, measures alignment
@@ -93,11 +93,11 @@ class MultiScaleSnapshot:
     word_count: int
 
     # Per-scale states
-    states_by_scale: Dict[TemporalScale, Dict[str, np.ndarray]]
+    states_by_scale: dict[TemporalScale, dict[str, np.ndarray]]
 
     # Cross-scale metrics
-    resonances: List[ScaleResonance]
-    dominant_dimensions: List[str]  # Top changing dimensions
+    resonances: list[ScaleResonance]
+    dominant_dimensions: list[str]  # Top changing dimensions
     narrative_momentum: float  # How aligned are all scales?
     complexity_index: float  # How divergent are scales?
 
@@ -116,7 +116,7 @@ class StreamingSemanticCalculus:
     def __init__(
         self,
         embed_fn: Callable[[str], np.ndarray],
-        scales: List[TemporalScale] = None,
+        scales: list[TemporalScale] = None,
         enable_visualization: bool = True,
         snapshot_interval: float = 2.0
     ):
@@ -150,8 +150,8 @@ class StreamingSemanticCalculus:
         }
 
         # Snapshot history
-        self.snapshots: List[MultiScaleSnapshot] = []
-        self.event_callbacks: List[Callable] = []
+        self.snapshots: list[MultiScaleSnapshot] = []
+        self.event_callbacks: list[Callable] = []
 
         # Global tracking
         self.total_words_processed = 0
@@ -287,8 +287,8 @@ class StreamingSemanticCalculus:
 
     def _compute_resonances(
         self,
-        states_by_scale: Dict[TemporalScale, Dict[str, np.ndarray]]
-    ) -> List[ScaleResonance]:
+        states_by_scale: dict[TemporalScale, dict[str, np.ndarray]]
+    ) -> list[ScaleResonance]:
         """Compute coupling between all scale pairs."""
         resonances = []
         scales = list(states_by_scale.keys())
@@ -335,9 +335,9 @@ class StreamingSemanticCalculus:
 
     def _find_dominant_dimensions(
         self,
-        states_by_scale: Dict[TemporalScale, Dict[str, np.ndarray]],
+        states_by_scale: dict[TemporalScale, dict[str, np.ndarray]],
         top_k: int = 8
-    ) -> List[str]:
+    ) -> list[str]:
         """Find dimensions with highest velocity magnitude across all scales."""
         # Aggregate velocities across scales
         all_velocities = []
@@ -357,7 +357,7 @@ class StreamingSemanticCalculus:
         dimension_names = [dim.name for dim in EXTENDED_244_DIMENSIONS]
         return [dimension_names[i] for i in top_indices]
 
-    def _compute_narrative_momentum(self, resonances: List[ScaleResonance]) -> float:
+    def _compute_narrative_momentum(self, resonances: list[ScaleResonance]) -> float:
         """Compute how aligned all scales are (0-1)."""
         if not resonances:
             return 0.0
@@ -368,7 +368,7 @@ class StreamingSemanticCalculus:
 
     def _compute_complexity_index(
         self,
-        states_by_scale: Dict[TemporalScale, Dict[str, np.ndarray]]
+        states_by_scale: dict[TemporalScale, dict[str, np.ndarray]]
     ) -> float:
         """Compute how divergent scales are (0-1)."""
         positions = [s['position'] for s in states_by_scale.values()
@@ -390,7 +390,7 @@ class StreamingSemanticCalculus:
 
     def _generate_summary(
         self,
-        dominant_dims: List[str],
+        dominant_dims: list[str],
         momentum: float,
         complexity: float
     ) -> str:

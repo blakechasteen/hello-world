@@ -1,0 +1,124 @@
+{
+  "version": "1.0",
+  "name": "Customer Support Ticket Triage",
+  "description": "Intelligent ticket routing: classify → extract info → sentiment → auto-respond or escalate",
+  "nodes": [
+    {
+      "id": "node_1",
+      "type": "structured_llm",
+      "label": "Extract Ticket Info",
+      "position": {"x": 100, "y": 100},
+      "config": {
+        "provider": "openai",
+        "model": "gpt-4",
+        "temperature": 0.2,
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "customer_name": {"type": "string"},
+            "customer_email": {"type": "string", "format": "email"},
+            "issue_type": {
+              "type": "string",
+              "enum": ["bug", "feature_request", "how_to", "billing", "account", "other"]
+            },
+            "sentiment": {
+              "type": "string",
+              "enum": ["positive", "neutral", "frustrated", "angry"]
+            },
+            "urgency": {
+              "type": "string",
+              "enum": ["low", "medium", "high", "critical"]
+            },
+            "product_mentioned": {"type": "string"},
+            "summary": {"type": "string"}
+          },
+          "required": ["customer_name", "customer_email", "issue_type", "sentiment", "urgency", "summary"]
+        },
+        "enforce_schema": true
+      }
+    },
+    {
+      "id": "node_2",
+      "type": "conditional",
+      "label": "Urgency Check",
+      "position": {"x": 100, "y": 250},
+      "config": {
+        "condition_type": "custom",
+        "threshold": 0.75
+      }
+    },
+    {
+      "id": "node_3",
+      "type": "llm_consensus",
+      "label": "Verify Critical (3 models)",
+      "position": {"x": 50, "y": 400},
+      "config": {
+        "models": [
+          {"provider": "openai", "model": "gpt-4", "weight": 1.0},
+          {"provider": "anthropic", "model": "claude-3-opus", "weight": 1.0},
+          {"provider": "anthropic", "model": "claude-3-sonnet", "weight": 0.9}
+        ],
+        "consensus_strategy": "all_agree",
+        "temperature": 0.3,
+        "require_unanimous": true
+      }
+    },
+    {
+      "id": "node_4",
+      "type": "rag_prompt",
+      "label": "Search KB + Generate Response",
+      "position": {"x": 200, "y": 400},
+      "config": {
+        "provider": "openai",
+        "model": "gpt-4",
+        "temperature": 0.5,
+        "retrieval_k": 5,
+        "cite_sources": true,
+        "source_format": "inline",
+        "system_prompt": "You are a helpful customer support agent. Answer based on knowledge base. If you can't solve the issue, escalate to human agent.",
+        "require_citations": true,
+        "hallucination_check": true
+      }
+    },
+    {
+      "id": "node_5",
+      "type": "few_shot",
+      "label": "Tag Ticket Category",
+      "position": {"x": 100, "y": 550},
+      "config": {
+        "provider": "openai",
+        "model": "gpt-4",
+        "temperature": 0.3,
+        "task_description": "Classify support tickets into categories based on the examples.",
+        "examples": [
+          {"input": "My payment failed but I was charged twice!", "output": "billing_error"},
+          {"input": "How do I export data to CSV?", "output": "how_to_export"},
+          {"input": "Login page gives 404 error", "output": "bug_auth"},
+          {"input": "Can we get SSO integration?", "output": "feature_request_auth"},
+          {"input": "Need to upgrade to enterprise plan", "output": "sales_inquiry"}
+        ],
+        "num_examples": 5
+      }
+    },
+    {
+      "id": "node_6",
+      "type": "response",
+      "label": "Final Response",
+      "position": {"x": 100, "y": 700},
+      "config": {
+        "format": "json"
+      }
+    }
+  ],
+  "connections": [
+    {"from": "node_1", "to": "node_2"},
+    {"from": "node_2", "to": "node_3", "condition": "${node_1.structured_data.urgency} == 'critical'"},
+    {"from": "node_2", "to": "node_4", "condition": "${node_1.structured_data.urgency} != 'critical'"},
+    {"from": "node_3", "to": "node_5"},
+    {"from": "node_4", "to": "node_5"},
+    {"from": "node_5", "to": "node_6"}
+  ],
+  "input_schema": {
+    "ticket_text": "The full text of the support ticket email or message"
+  }
+}

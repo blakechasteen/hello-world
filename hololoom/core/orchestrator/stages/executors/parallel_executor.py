@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Parallel Feature Executor - Steps 4-6: Resonance + Warp + Retrieval
 ====================================================================
@@ -23,15 +22,16 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import logging
-from typing import Callable, Optional, Any, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
     from hololoom.config import Config
     from hololoom.embedding.spectral import MatryoshkaEmbeddings
-    from hololoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.orchestrator.context import WeavingContext
 
 
 class ParallelFeatureExecutor(BaseStageExecutor):
@@ -67,17 +67,17 @@ class ParallelFeatureExecutor(BaseStageExecutor):
 
     def __init__(
         self,
-        cfg: 'Config',
-        embedder: 'MatryoshkaEmbeddings',
-        memory: Optional[Any] = None,
-        retriever: Optional[Any] = None,
-        complexity: Optional[Any] = None,
-        provenance: Optional[Any] = None,
-        linguistic_gate: Optional[Any] = None,
-        guardrails: Optional['SafetyGuardrails'] = None,
-        multipass_memory_crawl: Optional[Callable] = None,
-        logger: Optional[logging.Logger] = None,
-        emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+        cfg: Config,
+        embedder: MatryoshkaEmbeddings,
+        memory: Any | None = None,
+        retriever: Any | None = None,
+        complexity: Any | None = None,
+        provenance: Any | None = None,
+        linguistic_gate: Any | None = None,
+        guardrails: SafetyGuardrails | None = None,
+        multipass_memory_crawl: Callable | None = None,
+        logger: logging.Logger | None = None,
+        emit_stage_event: Callable[[int, str, float], None] | None = None,
     ):
         """
         Initialize Parallel Feature Executor.
@@ -106,7 +106,7 @@ class ParallelFeatureExecutor(BaseStageExecutor):
         self.guardrails = guardrails
         self.multipass_memory_crawl = multipass_memory_crawl
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute parallel feature pipeline.
 
@@ -126,9 +126,9 @@ class ParallelFeatureExecutor(BaseStageExecutor):
 
         # Import pure functions
         from hololoom.orchestrator.stages.steps_4_6 import (
-            execute_steps_4_6_parallel,
             execute_step5_5_warp_compute,
             execute_step6_5_beta_wave_packing,
+            execute_steps_4_6_parallel,
         )
 
         # Step 4-6: Main parallel execution
@@ -168,10 +168,10 @@ class ParallelFeatureExecutor(BaseStageExecutor):
 
     def update_dependencies(
         self,
-        memory: Optional[Any] = None,
-        retriever: Optional[Any] = None,
-        complexity: Optional[Any] = None,
-        provenance: Optional[Any] = None,
+        memory: Any | None = None,
+        retriever: Any | None = None,
+        complexity: Any | None = None,
+        provenance: Any | None = None,
     ) -> None:
         """
         Update dynamic dependencies after initialization.

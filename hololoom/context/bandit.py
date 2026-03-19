@@ -14,11 +14,10 @@ Algorithm:
 - Update based on query outcome
 """
 
-import math
-import numpy as np
-from dataclasses import dataclass, field
-from typing import Dict, List, Tuple, Optional
 import logging
+from dataclasses import dataclass, field
+
+import numpy as np
 
 from hololoom.bandits.beta_arm import BetaArm
 
@@ -78,7 +77,7 @@ class BanditArm:
         else:
             self.total_failures += 1
 
-    def confidence_interval(self, confidence: float = 0.95) -> Tuple[float, float]:
+    def confidence_interval(self, confidence: float = 0.95) -> tuple[float, float]:
         """Calculate confidence interval via Monte Carlo sampling."""
         samples = np.random.beta(self.alpha, self.beta, 10000)
         lower = float(np.percentile(samples, (1 - confidence) * 100 / 2))
@@ -108,18 +107,18 @@ class ThompsonBandit:
     - Correctly identified best backend (SQL: 0.892 vs 0.900 true)
     """
 
-    def __init__(self, backends: List[str]):
+    def __init__(self, backends: list[str]):
         """
         Initialize Thompson Sampling bandit
 
         Args:
             backends: Backend names (e.g., ["sql", "neo4j", "qdrant"])
         """
-        self.arms: Dict[str, BanditArm] = {
+        self.arms: dict[str, BanditArm] = {
             name: BanditArm(name=name)
             for name in backends
         }
-        self.history: List[Dict] = []
+        self.history: list[dict] = []
         self.iteration = 0
 
     def select(self) -> str:
@@ -145,7 +144,7 @@ class ThompsonBandit:
 
         return selected_backend
 
-    def update(self, backend: str, success: bool, confidence: Optional[float] = None):
+    def update(self, backend: str, success: bool, confidence: float | None = None):
         """
         Update bandit statistics based on outcome
 
@@ -189,7 +188,7 @@ class ThompsonBandit:
             f"E[r]={arm.expected_reward():.3f}"
         )
 
-    def get_best_backend(self) -> Tuple[str, float]:
+    def get_best_backend(self) -> tuple[str, float]:
         """
         Get backend with highest expected reward
 
@@ -213,7 +212,7 @@ class ThompsonBandit:
         best_arm = self.arms[best_backend]
         return best_arm.ci_width() < threshold
 
-    def get_convergence_iteration(self, threshold: float = 0.10) -> Optional[int]:
+    def get_convergence_iteration(self, threshold: float = 0.10) -> int | None:
         """
         Get iteration at which bandit converged
 
@@ -238,7 +237,7 @@ class ThompsonBandit:
 
         return None
 
-    def get_stats(self) -> List[Dict]:
+    def get_stats(self) -> list[dict]:
         """
         Get statistics for all arms
 
@@ -274,15 +273,15 @@ class ThompsonBandit:
         converged = self.has_converged()
         convergence_iter = self.get_convergence_iteration()
 
-        summary = f"Thompson Sampling Summary:\n"
+        summary = "Thompson Sampling Summary:\n"
         summary += f"  Iterations: {self.iteration}\n"
         summary += f"  Best backend: {best_backend} (E[r]={best_reward:.3f})\n"
         summary += f"  Converged: {'Yes' if converged else 'No'}"
         if convergence_iter:
             summary += f" (at iteration {convergence_iter})"
-        summary += f"\n\n"
+        summary += "\n\n"
 
-        summary += f"Backend Statistics:\n"
+        summary += "Backend Statistics:\n"
         for s in stats:
             summary += (
                 f"  {s['backend']:<10}: alpha={s['alpha']:>6.1f}, beta={s['beta']:>6.1f}, "
@@ -296,7 +295,7 @@ class ThompsonBandit:
 # Helper Functions
 # ============================================================================
 
-def create_thompson_bandit(backends: List[str]) -> ThompsonBandit:
+def create_thompson_bandit(backends: list[str]) -> ThompsonBandit:
     """
     Create Thompson Sampling bandit
 

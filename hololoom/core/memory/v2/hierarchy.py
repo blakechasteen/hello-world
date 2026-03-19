@@ -27,8 +27,9 @@ import logging
 import math
 import uuid
 from collections import defaultdict
-from dataclasses import dataclass, field
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, Tuple
+from collections.abc import Callable, Coroutine
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +49,10 @@ class HierarchyConfig:
 class ClusterInfo:
     """Information about a detected cluster."""
     cluster_id: str
-    node_ids: List[str]
+    node_ids: list[str]
     level: int  # 0=raw nodes, 1=L1 cluster, 2=L2 topic
-    summary_node_id: Optional[str] = None
-    summary_text: Optional[str] = None
+    summary_node_id: str | None = None
+    summary_text: str | None = None
 
 
 class HierarchyManager:
@@ -71,7 +72,7 @@ class HierarchyManager:
     def __init__(
         self,
         graph,  # GraphBackend
-        config: Optional[HierarchyConfig] = None,
+        config: HierarchyConfig | None = None,
     ):
         self.graph = graph
         self.config = config or HierarchyConfig()
@@ -80,7 +81,7 @@ class HierarchyManager:
     # Community Detection (pure graph, no external deps)
     # =========================================================================
 
-    def detect_communities(self) -> List[ClusterInfo]:
+    def detect_communities(self) -> list[ClusterInfo]:
         """Detect communities using connected components + co-occurrence clustering.
 
         Algorithm:
@@ -89,8 +90,8 @@ class HierarchyManager:
           3. Return clusters of appropriate size
         """
         all_nodes = set(self.graph.nodes())
-        visited: Set[str] = set()
-        components: List[Set[str]] = []
+        visited: set[str] = set()
+        components: list[set[str]] = []
 
         # Step 1: Connected components via BFS
         for start in all_nodes:
@@ -107,7 +108,7 @@ class HierarchyManager:
         )
 
         # Step 2: Split large components by co-occurrence
-        clusters: List[ClusterInfo] = []
+        clusters: list[ClusterInfo] = []
         for component in components:
             if len(component) <= self.config.max_cluster_size:
                 clusters.append(ClusterInfo(
@@ -125,7 +126,7 @@ class HierarchyManager:
         logger.info("HierarchyManager: %d L1 clusters detected", len(clusters))
         return clusters
 
-    def _bfs_component(self, start: str, all_nodes: Set[str]) -> Set[str]:
+    def _bfs_component(self, start: str, all_nodes: set[str]) -> set[str]:
         """BFS from start node to find connected component."""
         visited = {start}
         queue = [start]
@@ -139,7 +140,7 @@ class HierarchyManager:
 
         return visited
 
-    def _split_by_cooccurrence(self, component: Set[str]) -> List[ClusterInfo]:
+    def _split_by_cooccurrence(self, component: set[str]) -> list[ClusterInfo]:
         """Split a large component into sub-clusters by shared neighbors.
 
         Nodes that share many neighbors are likely related. We group them
@@ -149,15 +150,15 @@ class HierarchyManager:
         max_size = self.config.max_cluster_size
 
         # Build neighbor sets for each node
-        neighbor_sets: Dict[str, Set[str]] = {}
+        neighbor_sets: dict[str, set[str]] = {}
         for nid in nodes:
             neighbors = {n for n, _, _ in self.graph.neighbors(nid)}
             neighbor_sets[nid] = neighbors & component  # Only within-component
 
         # Greedy clustering: assign each node to best-matching cluster
-        clusters: List[List[str]] = []
-        cluster_neighbors: List[Set[str]] = []
-        assigned: Set[str] = set()
+        clusters: list[list[str]] = []
+        cluster_neighbors: list[set[str]] = []
+        assigned: set[str] = set()
 
         for nid in nodes:
             if nid in assigned:
@@ -201,8 +202,8 @@ class HierarchyManager:
     async def build_hierarchy(
         self,
         bus: Any,
-        llm_fn: Optional[Callable[[str, int], Coroutine[Any, Any, str]]] = None,
-    ) -> List[ClusterInfo]:
+        llm_fn: Callable[[str, int], Coroutine[Any, Any, str]] | None = None,
+    ) -> list[ClusterInfo]:
         """Build full summary hierarchy over current graph state.
 
         Steps:
@@ -281,7 +282,7 @@ class HierarchyManager:
 
         return l1_clusters
 
-    def _group_l1_into_l2(self, l1_clusters: List[ClusterInfo]) -> List[ClusterInfo]:
+    def _group_l1_into_l2(self, l1_clusters: list[ClusterInfo]) -> list[ClusterInfo]:
         """Group L1 clusters into L2 topic clusters by node overlap.
 
         Two L1 clusters are related if they share entity connections.
@@ -291,8 +292,8 @@ class HierarchyManager:
         cluster_nodes = {c.cluster_id: set(c.node_ids) for c in l1_clusters}
 
         # Group clusters that share nodes
-        l2_groups: List[List[str]] = []  # Each group is a list of cluster_ids
-        assigned: Set[str] = set()
+        l2_groups: list[list[str]] = []  # Each group is a list of cluster_ids
+        assigned: set[str] = set()
 
         for cluster in l1_clusters:
             cid = cluster.cluster_id
@@ -332,17 +333,17 @@ class HierarchyManager:
     # Summarization
     # =========================================================================
 
-    def _extractive_summary(self, contents: List[str]) -> str:
+    def _extractive_summary(self, contents: list[str]) -> str:
         """No-LLM summary: key sentence extraction by TF-IDF-like scoring.
 
         Selects the most informative sentences across all content pieces.
         No hallucination — every word comes from the source material.
         """
         # Split all content into sentences
-        sentences: List[Tuple[str, float]] = []
+        sentences: list[tuple[str, float]] = []
 
         # Word frequency for TF-IDF-like scoring
-        word_freq: Dict[str, int] = defaultdict(int)
+        word_freq: dict[str, int] = defaultdict(int)
         for content in contents:
             for word in content.lower().split():
                 word = word.strip(".,;:!?()[]\"'")
@@ -377,7 +378,7 @@ class HierarchyManager:
         return " ".join(selected) if selected else ""
 
     @staticmethod
-    def _split_sentences(text: str) -> List[str]:
+    def _split_sentences(text: str) -> list[str]:
         """Simple sentence splitting (no nltk dependency)."""
         sentences = []
         current = []
@@ -394,7 +395,7 @@ class HierarchyManager:
 
     async def _llm_summary(
         self,
-        contents: List[str],
+        contents: list[str],
         llm_fn: Callable[[str, int], Coroutine[Any, Any, str]],
     ) -> str:
         """LLM-generated summary of a cluster's contents."""
@@ -416,7 +417,7 @@ class HierarchyManager:
     # Storage
     # =========================================================================
 
-    def _get_cluster_contents(self, node_ids: List[str]) -> List[str]:
+    def _get_cluster_contents(self, node_ids: list[str]) -> list[str]:
         """Extract text content from cluster nodes."""
         contents = []
         for nid in node_ids:
@@ -430,7 +431,7 @@ class HierarchyManager:
         self,
         bus: Any,
         summary: str,
-        source_ids: List[str],
+        source_ids: list[str],
         level: int,
     ) -> str:
         """Store a summary node in the bus with SUMMARIZES edges.

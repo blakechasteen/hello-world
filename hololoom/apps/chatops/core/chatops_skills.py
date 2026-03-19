@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 ChatOps Skills for HoloLoom
 ============================
@@ -20,9 +19,9 @@ Usage:
 """
 
 import logging
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +35,8 @@ class SkillResult:
     """Result from skill execution."""
     success: bool
     output: str
-    metadata: Dict[str, Any]
-    error: Optional[str] = None
+    metadata: dict[str, Any]
+    error: str | None = None
 
 
 class ChatOpsSkill:
@@ -96,7 +95,7 @@ class ChatOpsSkills:
         self,
         query: str,
         limit: int = 5,
-        conversation_id: Optional[str] = None
+        conversation_id: str | None = None
     ) -> SkillResult:
         """
         Search conversation history or knowledge base.
@@ -143,8 +142,8 @@ class ChatOpsSkills:
         self,
         query: str,
         limit: int,
-        conversation_id: Optional[str]
-    ) -> List[Dict]:
+        conversation_id: str | None
+    ) -> list[dict]:
         """Search using HoloLoom bridge."""
         # Would use HoloLoom's retrieval system
         return [
@@ -156,11 +155,11 @@ class ChatOpsSkills:
             }
         ]
 
-    def _simple_search(self, query: str, limit: int) -> List[Dict]:
+    def _simple_search(self, query: str, limit: int) -> list[dict]:
         """Fallback simple search."""
         return [{"text": f"Simple search result for: {query}", "score": 0.5}]
 
-    def _format_search_results(self, results: List[Dict]) -> str:
+    def _format_search_results(self, results: list[dict]) -> str:
         """Format search results as markdown."""
         if not results:
             return "No results found."
@@ -183,8 +182,8 @@ class ChatOpsSkills:
     async def remember(
         self,
         content: str,
-        tags: Optional[List[str]] = None,
-        conversation_id: Optional[str] = None
+        tags: list[str] | None = None,
+        conversation_id: str | None = None
     ) -> SkillResult:
         """
         Store important information in knowledge base.
@@ -233,8 +232,8 @@ class ChatOpsSkills:
     async def _store_in_hololoom(
         self,
         content: str,
-        tags: Optional[List[str]],
-        conversation_id: Optional[str]
+        tags: list[str] | None,
+        conversation_id: str | None
     ) -> str:
         """Store in HoloLoom knowledge graph."""
         # Would create KG node
@@ -289,7 +288,7 @@ class ChatOpsSkills:
 
     async def summarize(
         self,
-        messages: List[Dict],
+        messages: list[dict],
         format: str = "bullets"
     ) -> SkillResult:
         """
@@ -333,7 +332,7 @@ class ChatOpsSkills:
                 error=str(e)
             )
 
-    def _summarize_bullets(self, messages: List[Dict]) -> str:
+    def _summarize_bullets(self, messages: list[dict]) -> str:
         """Summarize as bullet points."""
         summary = "**Conversation Summary:**\n\n"
 
@@ -349,11 +348,11 @@ class ChatOpsSkills:
 
         return summary
 
-    def _summarize_paragraph(self, messages: List[Dict]) -> str:
+    def _summarize_paragraph(self, messages: list[dict]) -> str:
         """Summarize as paragraph."""
         return f"The conversation involved {len(messages)} messages discussing various topics..."
 
-    def _summarize_timeline(self, messages: List[Dict]) -> str:
+    def _summarize_timeline(self, messages: list[dict]) -> str:
         """Summarize as timeline."""
         summary = "**Conversation Timeline:**\n\n"
         for msg in messages[-10:]:
@@ -365,7 +364,7 @@ class ChatOpsSkills:
 
     async def analyze(
         self,
-        messages: List[Dict],
+        messages: list[dict],
         analysis_type: str = "sentiment"
     ) -> SkillResult:
         """
@@ -408,15 +407,15 @@ class ChatOpsSkills:
                 error=str(e)
             )
 
-    def _analyze_sentiment(self, messages: List[Dict]) -> str:
+    def _analyze_sentiment(self, messages: list[dict]) -> str:
         """Analyze sentiment."""
         return "**Sentiment Analysis:**\n\n• Overall: Positive\n• Trend: Stable"
 
-    def _analyze_topics(self, messages: List[Dict]) -> str:
+    def _analyze_topics(self, messages: list[dict]) -> str:
         """Analyze topics."""
         return "**Topic Analysis:**\n\n• Primary: Technical discussion\n• Secondary: Project planning"
 
-    def _analyze_activity(self, messages: List[Dict]) -> str:
+    def _analyze_activity(self, messages: list[dict]) -> str:
         """Analyze activity patterns."""
         return f"**Activity Analysis:**\n\n• Total messages: {len(messages)}\n• Active users: {len(set(m.get('sender') for m in messages))}"
 
@@ -470,7 +469,7 @@ class ChatOpsSkills:
 
     async def help(
         self,
-        command: Optional[str] = None
+        command: str | None = None
     ) -> SkillResult:
         """
         Get help information.

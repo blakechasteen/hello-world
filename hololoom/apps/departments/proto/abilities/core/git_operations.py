@@ -31,8 +31,7 @@ import shutil
 import subprocess
 import time
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..protocol import (
     AbilityContext,
@@ -44,7 +43,6 @@ from ..protocol import (
     PreflightResult,
     VerificationResult,
 )
-
 
 logger = logging.getLogger("proto.git_operations")
 
@@ -80,9 +78,9 @@ class GitOperationResult:
     """
     operation: str
     success: bool
-    output: Optional[Any] = None
-    error: Optional[str] = None
-    repo_path: Optional[str] = None
+    output: Any | None = None
+    error: str | None = None
+    repo_path: str | None = None
 
 
 class GitOperationsAbility(BaseAbility):
@@ -161,7 +159,7 @@ class GitOperationsAbility(BaseAbility):
 
     async def execute(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         context: AbilityContext,
     ) -> AbilityResult:
         """Execute git operation with given parameters.
@@ -379,7 +377,7 @@ class GitOperationsAbility(BaseAbility):
             )
 
     async def _git_diff(
-        self, repo_path: str, file_path: Optional[str], staged: bool
+        self, repo_path: str, file_path: str | None, staged: bool
     ) -> GitOperationResult:
         """Get git diff (staged or unstaged changes).
 
@@ -538,7 +536,7 @@ class GitOperationsAbility(BaseAbility):
             )
 
     async def _git_show(
-        self, repo_path: str, commit: Optional[str]
+        self, repo_path: str, commit: str | None
     ) -> GitOperationResult:
         """Show specific commit details.
 
@@ -586,7 +584,7 @@ class GitOperationsAbility(BaseAbility):
             )
 
     async def _git_blame(
-        self, repo_path: str, file_path: Optional[str]
+        self, repo_path: str, file_path: str | None
     ) -> GitOperationResult:
         """Show line-by-line commit attribution for a file.
 
@@ -671,7 +669,7 @@ class GitOperationsAbility(BaseAbility):
     # ========== Helper Methods ==========
 
     async def _run_git_command(
-        self, cmd: List[str], cwd: str, timeout: float = DEFAULT_COMMAND_TIMEOUT
+        self, cmd: list[str], cwd: str, timeout: float = DEFAULT_COMMAND_TIMEOUT
     ) -> str:
         """Run git command and return output.
 
@@ -734,7 +732,7 @@ class GitOperationsAbility(BaseAbility):
             )
 
     def _validate_repo_path(
-        self, repo_path: Optional[str], working_dir: str
+        self, repo_path: str | None, working_dir: str
     ) -> str:
         """Validate and resolve repository path.
 
@@ -811,7 +809,7 @@ class GitOperationsAbility(BaseAbility):
         # File doesn't need to exist (could be untracked)
         return file_path
 
-    def _format_result(self, git_result: GitOperationResult) -> Dict[str, Any]:
+    def _format_result(self, git_result: GitOperationResult) -> dict[str, Any]:
         """Format git operation result for output.
 
         Args:

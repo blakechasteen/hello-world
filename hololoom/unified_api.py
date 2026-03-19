@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-HoloLoom Unified API
-====================
+HoloLoom Unified API (DEPRECATED)
+===================================
+Use ``from hololoom import HoloLoom`` instead — the main class now includes
+query(), chat(), and ingest_*() methods alongside experience/recall/reflect.
+
+This module is kept for backward compatibility only.
 Single, clean entry point for all HoloLoom functionality.
 
 This is the main user-facing API that consolidates:
@@ -39,19 +42,19 @@ Usage:
 
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional, Union
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 try:
     from hololoom.config import Config
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
-    from hololoom.spinningWheel.modalities.website import WebsiteSpinnerConfig, WebsiteSpinner
-    from hololoom.spinningWheel.modalities.youtube import YouTubeSpinnerConfig, YouTubeSpinner
-    from hololoom.memory.protocol import create_unified_memory, shards_to_memories
-    from hololoom.fabric.spacetime import Spacetime
     from hololoom.convergence.engine import CollapseStrategy
+    from hololoom.fabric.spacetime import Spacetime
+    from hololoom.memory.protocol import create_unified_memory, shards_to_memories
     from hololoom.protocols.types import Query
+    from hololoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
+    from hololoom.spinningWheel.modalities.youtube import YouTubeSpinner, YouTubeSpinnerConfig
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run from repository root with PYTHONPATH set")
@@ -101,8 +104,8 @@ class HoloLoom:
     def __init__(
         self,
         weaver: WeavingOrchestrator,
-        memory: Optional[Any] = None,
-        config: Optional[Config] = None,
+        memory: Any | None = None,
+        config: Config | None = None,
         enable_synthesis: bool = True,
         enable_narrative_depth: bool = False
     ):
@@ -132,7 +135,7 @@ class HoloLoom:
             self.depth_analyzer = None
 
         # Conversation history (for chat mode)
-        self.conversation_history: List[Dict] = []
+        self.conversation_history: list[dict] = []
         self.conversation_mode = False
 
         # Statistics
@@ -220,9 +223,9 @@ class HoloLoom:
     async def query(
         self,
         text: str,
-        pattern: Optional[str] = None,
+        pattern: str | None = None,
         return_trace: bool = True
-    ) -> Union[Spacetime, str]:
+    ) -> Spacetime | str:
         """
         Process a single query (one-shot, no conversation context).
 
@@ -274,9 +277,9 @@ class HoloLoom:
     async def chat(
         self,
         message: str,
-        pattern: Optional[str] = None,
+        pattern: str | None = None,
         return_trace: bool = False
-    ) -> Union[Spacetime, str]:
+    ) -> Spacetime | str:
         """
         Conversational chat (maintains context across turns).
 
@@ -319,7 +322,7 @@ class HoloLoom:
     async def ingest_text(
         self,
         text: str,
-        metadata: Optional[Dict] = None
+        metadata: dict | None = None
     ) -> int:
         """
         Ingest plain text into memory.
@@ -343,7 +346,7 @@ class HoloLoom:
 
         try:
             # Use TextSpinner to create shards
-            from hololoom.spinningWheel import TextSpinnerConfig, TextSpinner
+            from hololoom.spinningWheel import TextSpinner, TextSpinnerConfig
 
             config = TextSpinnerConfig(chunk_size=500, chunk_by='paragraph')
             spinner = TextSpinner(config)
@@ -362,7 +365,50 @@ class HoloLoom:
             logger.error(f"Text ingestion failed: {e}")
             return 0
 
-    async def recall(self, query: str, **kwargs) -> List[Any]:
+    async def ingest_web(
+        self,
+        url: str,
+        metadata: dict | None = None
+    ) -> int:
+        """
+        Ingest a web page into memory.
+
+        Args:
+            url: URL to ingest
+            metadata: Optional metadata dict
+
+        Returns:
+            Number of memory shards created
+
+        Example:
+            count = await loom.ingest_web("https://example.com")
+        """
+        self.ingest_count += 1
+        logger.info(f"Ingesting web page: {url}")
+
+        if not self.memory:
+            logger.warning("No memory backend available")
+            return 0
+
+        try:
+            from hololoom.spinningWheel import WebsiteSpinner
+
+            spinner = WebsiteSpinner()
+            raw_data = {'url': url, **(metadata or {})}
+            shards = await spinner.spin(raw_data)
+            logger.info(f"Created {len(shards)} shards from web page")
+
+            memories = shards_to_memories(shards)
+            stored_ids = await self.memory.store_batch(memories)
+
+            logger.info(f"✓ Ingested {len(stored_ids)} memories from web")
+            return len(stored_ids)
+
+        except Exception as e:
+            logger.error(f"Web ingestion failed: {e}")
+            return 0
+
+    async def recall(self, query: str, **kwargs) -> list[Any]:
         """Alias for search() to match Workflow Builder terminology."""
         return await self.search(query, **kwargs)
 
@@ -371,7 +417,7 @@ class HoloLoom:
         query: str,
         limit: int = 10,
         min_relevance: float = 0.5
-    ) -> List[Any]:
+    ) -> list[Any]:
         """
         Search memories related to query.
 
@@ -392,8 +438,8 @@ class HoloLoom:
 
         try:
             return await self.memory.recall(
-                query=query, 
-                limit=limit, 
+                query=query,
+                limit=limit,
                 min_relevance=min_relevance
             )
         except Exception as e:
@@ -403,7 +449,7 @@ class HoloLoom:
     async def ingest_youtube(
         self,
         video_id: str,
-        languages: Optional[List[str]] = None,
+        languages: list[str] | None = None,
         chunk_duration: float = 60.0
     ) -> int:
         """
@@ -448,7 +494,7 @@ class HoloLoom:
             logger.error(f"YouTube ingestion failed: {e}")
             return 0
 
-    async def ingest_file(self, file_path: Union[str, Path]) -> int:
+    async def ingest_file(self, file_path: str | Path) -> int:
         """
         Ingest file into memory (auto-detects type).
 
@@ -468,7 +514,7 @@ class HoloLoom:
             return 0
 
         # Read file
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, encoding='utf-8') as f:
             text = f.read()
 
         return await self.ingest_text(text, metadata={'source_file': str(path)})
@@ -477,7 +523,7 @@ class HoloLoom:
         self,
         text: str,
         include_full_result: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze narrative depth of text using Matryoshka progressive gating.
         
@@ -507,13 +553,13 @@ class HoloLoom:
                 'error': 'Narrative depth not enabled',
                 'hint': 'Create HoloLoom with enable_narrative_depth=True'
             }
-        
+
         try:
             # Analyze depth (with caching)
             result = await self.depth_analyzer.analyze_depth(text)
-            
+
             self.narrative_depth_count += 1
-            
+
             # Build summary
             summary = {
                 'max_depth': result.max_depth_achieved.name,
@@ -522,11 +568,11 @@ class HoloLoom:
                 'gates_unlocked': len([g for g in result.gates_unlocked if g]),
                 'deepest_meaning': result.deepest_meaning
             }
-            
+
             # Add symbolic elements
             if result.symbolic_layer and result.symbolic_layer.symbolic_elements:
                 summary['symbolic_elements'] = result.symbolic_layer.symbolic_elements
-            
+
             # Add archetypal resonance
             if result.archetypal_layer and result.archetypal_layer.archetypal_resonance:
                 top_archetypes = sorted(
@@ -535,32 +581,32 @@ class HoloLoom:
                     reverse=True
                 )[:5]
                 summary['top_archetypes'] = dict(top_archetypes)
-            
+
             # Add mythic truths
             if result.mythic_layer and result.mythic_layer.universal_truths:
                 summary['mythic_truths'] = result.mythic_layer.universal_truths
-            
+
             # Add cosmic truth
             if result.cosmic_truth:
                 summary['cosmic_truth'] = result.cosmic_truth
-            
+
             # Add transformation journey
             summary['transformation_journey'] = result.transformation_journey
-            
+
             # Include full result if requested
             if include_full_result:
                 summary['full_result'] = result
-            
+
             logger.info(f"Narrative depth analyzed: {summary['max_depth']} "
                        f"(complexity: {summary['complexity']:.3f})")
-            
+
             return summary
-            
+
         except Exception as e:
             logger.error(f"Narrative depth analysis failed: {e}")
             return {'error': str(e)}
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get HoloLoom usage statistics.
 

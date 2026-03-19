@@ -9,8 +9,7 @@ Pre-configured agent profiles for common domains:
 - Planning Agent: Task decomposition and sequencing
 """
 
-from hololoom.agents.types import AgentProfile, AgentDomain
-
+from hololoom.agents.types import AgentDomain, AgentProfile
 
 # Budget Advisor - Financial planning expert
 BUDGET_ADVISOR = AgentProfile(

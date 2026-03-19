@@ -34,26 +34,23 @@ Date: 2025-11-03
 """
 
 import math
-import warnings
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# Import variational inference components
-from hololoom.warp.variational_inference import BayesianLinearLayer, GaussianVariational
-
-# Import existing policy components
-from hololoom.protocols.types import Features, Context, ActionPlan, BanditStrategy
+from hololoom.policy.thompson_sampling import TSBandit
 from hololoom.policy.unified import (
     NeuralCore,
     UnifiedPolicy,
 )
-from hololoom.policy.thompson_sampling import TSBandit
 
+# Import existing policy components
+from hololoom.protocols.types import ActionPlan, BanditStrategy, Context, Features
+
+# Import variational inference components
 
 # ============================================================================
 # Bayesian Linear Wrapper for PyTorch
@@ -77,7 +74,7 @@ class BayesianLinear(nn.Module):
         in_features: int,
         out_features: int,
         prior_std: float = 1.0,
-        device: Optional[torch.device] = None
+        device: torch.device | None = None
     ):
         super().__init__()
         self.in_features = in_features
@@ -216,7 +213,7 @@ class BayesianNeuralCore(nn.Module):
         adapter_idx: int,
         n_samples: int = 1,
         sample_weights: bool = True
-    ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, float]]:
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
         """
         Make a decision with uncertainty estimation.
 
@@ -322,11 +319,11 @@ class BayesianUnifiedPolicy:
     core: BayesianNeuralCore
     psi_proj: nn.Linear
     device: torch.device
-    adapter_for_dim: Dict[int, int]
-    adapter_bank: Dict[int, str]
+    adapter_for_dim: dict[int, int]
+    adapter_bank: dict[int, str]
     mem_dim: int
     emb: 'MatryoshkaEmbeddings'  # Type hint (forward reference)
-    bandit: Optional[TSBandit] = None
+    bandit: TSBandit | None = None
     bandit_strategy: BanditStrategy = BanditStrategy.EPSILON_GREEDY
     epsilon: float = 0.1
     n_samples: int = 10  # MC samples for uncertainty
@@ -458,7 +455,7 @@ class BayesianUnifiedPolicy:
 
         return action_plan
 
-    def _ctrl_from(self, motifs: List[str]) -> torch.Tensor:
+    def _ctrl_from(self, motifs: list[str]) -> torch.Tensor:
         """Convert motif list to control vector (same as UnifiedPolicy)."""
         motif_vocab = [
             "cause→effect",
@@ -483,7 +480,7 @@ class BayesianUnifiedPolicy:
         features: Features,
         context: Context,
         true_tool_idx: int
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Compute ELBO for training.
 

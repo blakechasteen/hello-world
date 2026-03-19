@@ -21,13 +21,11 @@ Environment Variables:
 - QDRANT_PREFER_GRPC: Use gRPC if available (default: true)
 """
 
-from typing import Optional, Any, Dict, List
-import warnings
 import logging
 import os
+import warnings
+from typing import Any
 
-from hololoom.config import Config, MemoryBackend
-from .protocol import MemoryStore, Memory, MemoryQuery, RetrievalResult
 from hololoom.alignment.safety_guardrails import (
     ActionCategory,
     ActionRequest,
@@ -35,7 +33,9 @@ from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     create_guardrails,
 )
+from hololoom.config import Config, MemoryBackend
 
+from .protocol import Memory, MemoryQuery, MemoryStore, RetrievalResult
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +131,7 @@ except ImportError:
     warnings.warn("NetworkX unavailable")
 
 try:
-    from hololoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
+    from hololoom.memory.neo4j_graph import Neo4jConfig, Neo4jKG
     NEO4J_AVAILABLE = True
 except ImportError:
     NEO4J_AVAILABLE = False
@@ -173,7 +173,7 @@ class HybridMemoryStore:
         neo4j: Any = None,
         qdrant: Any = None,
         fallback: Any = None,
-        guardrails: Optional[SafetyGuardrails] = None,
+        guardrails: SafetyGuardrails | None = None,
     ):
         """
         Initialize hybrid memory store.
@@ -203,12 +203,12 @@ class HybridMemoryStore:
         self,
         action: str,
         category: ActionCategory,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         *,
         text_input: str = "",
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-    ) -> Optional[SafetyDecision]:
+        user_id: str | None = None,
+        session_id: str | None = None,
+    ) -> SafetyDecision | None:
         if not self.guardrails_enabled:
             return None
 
@@ -287,7 +287,7 @@ class HybridMemoryStore:
 
         return memory.id
 
-    async def store_many(self, memories: List[Memory], user_id: str = "default") -> List[str]:
+    async def store_many(self, memories: list[Memory], user_id: str = "default") -> list[str]:
         """
         Batch store multiple memories.
 
@@ -401,7 +401,7 @@ class HybridMemoryStore:
             }
         )
 
-    def _fuse(self, results: Dict[str, RetrievalResult], limit: int) -> List[Memory]:
+    def _fuse(self, results: dict[str, RetrievalResult], limit: int) -> list[Memory]:
         """
         Fuse results from multiple backends using balanced weighting.
 
@@ -440,7 +440,7 @@ class HybridMemoryStore:
         ranked = sorted(scores.values(), key=lambda x: x['score'], reverse=True)
         return [x['memory'] for x in ranked[:limit]]
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """
         Check health of all backends.
 
@@ -506,7 +506,7 @@ class HybridMemoryStore:
 async def create_memory_backend(
     config: Config,
     user_id: str = "default",
-    guardrails: Optional[SafetyGuardrails] = None,
+    guardrails: SafetyGuardrails | None = None,
 ) -> MemoryStore:
     """
     Create memory backend with intelligent auto-fallback.
@@ -579,7 +579,7 @@ async def create_memory_backend(
     raise ValueError(f"[X] Unknown backend: {backend}")
 
 
-def _try_init_neo4j(config: Config) -> tuple[Any, Optional[str]]:
+def _try_init_neo4j(config: Config) -> tuple[Any, str | None]:
     """
     Attempt to initialize Neo4j graph backend.
 
@@ -632,7 +632,7 @@ def _try_init_neo4j(config: Config) -> tuple[Any, Optional[str]]:
         return None, error_msg
 
 
-def _try_init_qdrant(config: Config) -> tuple[Any, Optional[str]]:
+def _try_init_qdrant(config: Config) -> tuple[Any, str | None]:
     """
     Attempt to initialize Qdrant vector backend.
 
@@ -667,7 +667,7 @@ def _try_init_qdrant(config: Config) -> tuple[Any, Optional[str]]:
         # Verify connection with synchronous check (avoid async in sync context)
         # The client.get_collections() call in _initialize_client() already verified connectivity
         print(f"[OK] [Qdrant] Connected: {config.qdrant_host}:{config.qdrant_port}")
-        logger.info(f"Qdrant connection pool established")
+        logger.info("Qdrant connection pool established")
 
         return qdrant, None
     except Exception as e:
@@ -708,7 +708,7 @@ def _create_fallback_backend() -> Any:
 
 async def _create_hybrid(
     config: Config,
-    guardrails: Optional[SafetyGuardrails] = None,
+    guardrails: SafetyGuardrails | None = None,
 ) -> HybridMemoryStore:
     """
     Create hybrid backend with intelligent auto-fallback.
@@ -787,7 +787,7 @@ class GuardrailedMemoryStore:
     def __init__(
         self,
         backend: MemoryStore,
-        guardrails: Optional[SafetyGuardrails] = None,
+        guardrails: SafetyGuardrails | None = None,
     ):
         self._backend = backend
         self.guardrails = guardrails or create_guardrails()
@@ -805,12 +805,12 @@ class GuardrailedMemoryStore:
         self,
         action: str,
         category: ActionCategory,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         *,
         text_input: str = "",
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-    ) -> Optional[SafetyDecision]:
+        user_id: str | None = None,
+        session_id: str | None = None,
+    ) -> SafetyDecision | None:
         if not self.guardrails_enabled:
             return None
 
@@ -852,7 +852,7 @@ class GuardrailedMemoryStore:
         )
         return memory_id
 
-    async def store_many(self, memories: List[Memory], user_id: str = "default") -> List[str]:
+    async def store_many(self, memories: list[Memory], user_id: str = "default") -> list[str]:
         ids = []
         for memory in memories or []:
             ids.append(await self.store(memory, user_id))
@@ -912,7 +912,7 @@ class GuardrailedMemoryStore:
         )
         return result
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         if hasattr(self._backend, 'health_check'):
             return await self._backend.health_check()
         return {'status': 'unknown', 'backend': type(self._backend).__name__}
@@ -931,7 +931,7 @@ class GuardrailedMemoryStore:
 # Health Check
 # ============================================================================
 
-async def check_backend_health(backend: MemoryStore) -> Dict[str, Any]:
+async def check_backend_health(backend: MemoryStore) -> dict[str, Any]:
     """
     Check health of any memory backend.
 

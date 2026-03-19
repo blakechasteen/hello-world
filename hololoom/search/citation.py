@@ -16,13 +16,11 @@ To:
     [1] Thompson Sampling for Contextual Bandits - https://...
 """
 
-from typing import List, Dict, Any, Tuple
-from enum import Enum
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
+from enum import Enum
 
 from .protocol import WebSearchResult
-
 
 # ============================================================================
 # Citation Styles
@@ -109,9 +107,9 @@ class CitationFormatter:
     def add_citations(
         self,
         response: str,
-        results: List[WebSearchResult],
-        manual_citations: Dict[str, int] = None
-    ) -> Tuple[str, List[Citation]]:
+        results: list[WebSearchResult],
+        manual_citations: dict[str, int] = None
+    ) -> tuple[str, list[Citation]]:
         """
         Add citations to response text.
 
@@ -147,9 +145,9 @@ class CitationFormatter:
     def _auto_cite(
         self,
         response: str,
-        results: List[WebSearchResult],
-        citations: List[Citation],
-        manual_citations: Dict[str, int]
+        results: list[WebSearchResult],
+        citations: list[Citation],
+        manual_citations: dict[str, int]
     ) -> str:
         """
         Automatically insert citations based on content similarity.
@@ -190,7 +188,7 @@ class CitationFormatter:
 
         return " ".join(cited_sentences)
 
-    def _append_citations(self, response: str, citations: List[Citation]) -> str:
+    def _append_citations(self, response: str, citations: list[Citation]) -> str:
         """Append citation list to end of response."""
         cited_text = response + "\n\nSources:\n"
         for citation in citations:
@@ -206,7 +204,7 @@ class CitationFormatter:
         else:
             return f"[{index}]"
 
-    def _split_sentences(self, text: str) -> List[str]:
+    def _split_sentences(self, text: str) -> list[str]:
         """Split text into sentences."""
         # Simple sentence splitter (improve with NLTK/spaCy if needed)
         sentences = re.split(r'(?<=[.!?])\s+', text)
@@ -216,7 +214,7 @@ class CitationFormatter:
         """Check if sentence already has citation."""
         return bool(re.search(r'\[\d+\]|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+', sentence))
 
-    def _find_best_match(self, sentence: str, snippets: List[str]) -> int | None:
+    def _find_best_match(self, sentence: str, snippets: list[str]) -> int | None:
         """Find best matching snippet for sentence (simple keyword overlap)."""
         sentence_lower = sentence.lower()
         sentence_words = set(re.findall(r'\w+', sentence_lower))
@@ -260,7 +258,7 @@ class CitationFormatter:
 
     def format_bibliography(
         self,
-        citations: List[Citation],
+        citations: list[Citation],
         title: str = "Sources"
     ) -> str:
         """

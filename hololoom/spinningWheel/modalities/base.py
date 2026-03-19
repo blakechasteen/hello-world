@@ -7,8 +7,8 @@ New spinners should use the protocol from hololoom.spinningWheel.protocol instea
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
 from dataclasses import dataclass
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
 
@@ -42,7 +42,7 @@ class BaseSpinner(ABC):
         self.config = config or SpinnerConfig()
 
     @abstractmethod
-    async def spin(self, raw_data: Any) -> List[MemoryShard]:
+    async def spin(self, raw_data: Any) -> list[MemoryShard]:
         """
         Convert raw input to MemoryShards.
 

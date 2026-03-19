@@ -17,11 +17,11 @@ Date: 2025-12-05
 """
 
 from .behavioral_probes import (
-    AttackProbeType,
     AttackProbe,
+    AttackProber,
+    AttackProbeType,
     ProbeResult,
     VulnerabilityProbeReport,
-    AttackProber,
 )
 
 __all__ = [

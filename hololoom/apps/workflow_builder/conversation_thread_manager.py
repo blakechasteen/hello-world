@@ -17,24 +17,23 @@ Architecture:
 Key Innovation: Discoveries in one conversation accelerate ALL conversations.
 """
 
-import asyncio
-from typing import Dict, List, Optional, Set, Any
-from dataclasses import dataclass, field
-from collections import defaultdict
 import time
 import uuid
+from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Any
 
-from hololoom.agents.background_learner import AgentPool, LearningQueue, Experience
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.memory.graph import KG
+from hololoom.protocols.types import Query
+
+from hololoom.agents.background_learner import AgentPool
 from hololoom.agents.mcts_breakthrough import (
+    Breakthrough,
     BreakthroughDetector,
     FeedForwardBroadcaster,
-    Breakthrough
 )
 from hololoom.agents.orchestrator_mcts import create_mcts_agent
-from hololoom.protocols.types import Query
-from hololoom.memory.graph import KG
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
-
 
 # ============================================================================
 # Conversation Thread
@@ -62,7 +61,7 @@ class ConversationThread:
     breakthroughs_received: int = 0
 
     # WebSocket connection (if active)
-    websocket: Optional[Any] = None
+    websocket: Any | None = None
 
     def update_activity(self):
         """Update last activity timestamp"""
@@ -86,7 +85,7 @@ class BreakthroughNotification:
     # Timing
     timestamp: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for WebSocket JSON"""
         return {
             'type': 'breakthrough',
@@ -122,7 +121,7 @@ class ConversationThreadManager:
         self,
         kg: KG,
         emb: MatryoshkaEmbeddings,
-        agent_pool: Optional[AgentPool] = None,
+        agent_pool: AgentPool | None = None,
         enable_breakthrough_sharing: bool = True
     ):
         self.kg = kg
@@ -131,9 +130,9 @@ class ConversationThreadManager:
         self.enable_breakthrough_sharing = enable_breakthrough_sharing
 
         # Thread management
-        self.threads: Dict[str, ConversationThread] = {}
-        self.threads_by_user: Dict[str, Set[str]] = defaultdict(set)
-        self.threads_by_agent: Dict[str, Set[str]] = defaultdict(set)
+        self.threads: dict[str, ConversationThread] = {}
+        self.threads_by_user: dict[str, set[str]] = defaultdict(set)
+        self.threads_by_agent: dict[str, set[str]] = defaultdict(set)
 
         # Breakthrough system (shared across all threads)
         self.breakthrough_detector = BreakthroughDetector(
@@ -155,7 +154,7 @@ class ConversationThreadManager:
         self,
         user_id: str,
         agent_name: str = 'general',
-        websocket: Optional[Any] = None
+        websocket: Any | None = None
     ) -> ConversationThread:
         """
         Create new conversation thread.
@@ -313,12 +312,12 @@ class ConversationThreadManager:
         self.threads_by_agent[thread.agent_name].discard(thread_id)
         del self.threads[thread_id]
 
-    def get_user_threads(self, user_id: str) -> List[ConversationThread]:
+    def get_user_threads(self, user_id: str) -> list[ConversationThread]:
         """Get all threads for a user"""
         thread_ids = self.threads_by_user.get(user_id, set())
         return [self.threads[tid] for tid in thread_ids if tid in self.threads]
 
-    def get_thread_stats(self, thread_id: str) -> Dict[str, Any]:
+    def get_thread_stats(self, thread_id: str) -> dict[str, Any]:
         """Get statistics for specific thread"""
         if thread_id not in self.threads:
             return {}
@@ -339,7 +338,7 @@ class ConversationThreadManager:
             'net_contribution': thread.breakthroughs_contributed - thread.breakthroughs_received
         }
 
-    def get_global_stats(self) -> Dict[str, Any]:
+    def get_global_stats(self) -> dict[str, Any]:
         """Get global statistics across all threads"""
         return {
             'active_threads': len(self.threads),
@@ -377,7 +376,7 @@ class ConversationThreadManager:
 async def create_conversation_thread_manager(
     kg: KG,
     emb: MatryoshkaEmbeddings,
-    agent_pool: Optional[AgentPool] = None,
+    agent_pool: AgentPool | None = None,
     enable_breakthrough_sharing: bool = True
 ) -> ConversationThreadManager:
     """Create conversation thread manager"""

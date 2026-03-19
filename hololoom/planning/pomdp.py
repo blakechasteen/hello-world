@@ -16,16 +16,15 @@ Research:
 - Silver & Veness (2010): Monte-Carlo planning in POMDPs
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Callable, Any, Tuple, Set
-from enum import Enum
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
-from collections import defaultdict
-from copy import deepcopy
 
 # Import Layer 2 core
-from hololoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action, ActionType
+from hololoom.planning.planner import Action, ActionType, Goal, HierarchicalPlanner
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ class BeliefState:
 
     Represents agent's belief about true world state under partial observability.
     """
-    states: List[Dict[str, Any]]  # Possible states
+    states: list[dict[str, Any]]  # Possible states
     probabilities: np.ndarray     # P(state) for each state
 
     def __post_init__(self):
@@ -68,12 +67,12 @@ class BeliefState:
             return 0.0
         return -np.sum(probs * np.log2(probs))
 
-    def most_likely_state(self) -> Dict[str, Any]:
+    def most_likely_state(self) -> dict[str, Any]:
         """Return most probable state."""
         idx = np.argmax(self.probabilities)
         return self.states[idx]
 
-    def probability_of(self, state: Dict[str, Any]) -> float:
+    def probability_of(self, state: dict[str, Any]) -> float:
         """Get probability of specific state."""
         for i, s in enumerate(self.states):
             if s == state:
@@ -109,7 +108,7 @@ class ContingentPlan:
     - Recursive subplans
     """
     root_action: Action
-    branches: Dict[str, 'ContingentPlan']  # observation_value -> subplan
+    branches: dict[str, 'ContingentPlan']  # observation_value -> subplan
     depth: int = 0
     expected_cost: float = 0.0
     is_terminal: bool = False  # True if leaf node (goal reached)
@@ -142,7 +141,7 @@ class ObservationModel:
             default_accuracy: Default observation accuracy (0-1)
         """
         self.default_accuracy = default_accuracy
-        self.variable_accuracies: Dict[str, float] = {}
+        self.variable_accuracies: dict[str, float] = {}
 
     def set_accuracy(self, variable: str, accuracy: float):
         """Set observation accuracy for specific variable."""
@@ -158,9 +157,9 @@ class ObservationModel:
     # ------------------------------------------------------------------------
 
     def sample_observation(self,
-                          true_state: Dict,
+                          true_state: dict,
                           variable: str,
-                          rng: Optional[np.random.Generator] = None) -> Any:
+                          rng: np.random.Generator | None = None) -> Any:
         """
         Sample observation given true state.
 
@@ -205,7 +204,7 @@ class ObservationModel:
     def likelihood(self,
                   observation: Any,
                   variable: str,
-                  state: Dict) -> float:
+                  state: dict) -> float:
         """
         Calculate P(observation | state, variable).
 
@@ -300,7 +299,7 @@ class POMDPPlanner:
     def __init__(self,
                  base_planner: HierarchicalPlanner,
                  observation_model: ObservationModel,
-                 belief_updater: Optional[BeliefUpdater] = None):
+                 belief_updater: BeliefUpdater | None = None):
         """
         Initialize POMDP planner.
 
@@ -326,7 +325,7 @@ class POMDPPlanner:
             goal: Goal,
             initial_belief: BeliefState,
             max_depth: int = 5,
-            entropy_threshold: float = 1.0) -> Optional[ContingentPlan]:
+            entropy_threshold: float = 1.0) -> ContingentPlan | None:
         """
         Generate contingent plan under partial observability.
 
@@ -406,7 +405,7 @@ class POMDPPlanner:
                               goal: Goal,
                               belief: BeliefState,
                               max_depth: int,
-                              entropy_threshold: float) -> Optional[ContingentPlan]:
+                              entropy_threshold: float) -> ContingentPlan | None:
         """
         Create contingent plan with information gathering.
 
@@ -469,7 +468,7 @@ class POMDPPlanner:
                          goal: Goal,
                          belief: BeliefState,
                          max_depth: int,
-                         entropy_threshold: float) -> Optional[ContingentPlan]:
+                         entropy_threshold: float) -> ContingentPlan | None:
         """
         Create plan based on most likely state.
 
@@ -583,7 +582,7 @@ class POMDPPlanner:
 
     def _select_observation_variable(self,
                                      belief: BeliefState,
-                                     goal: Goal) -> Optional[str]:
+                                     goal: Goal) -> str | None:
         """
         Select best variable to observe.
 
@@ -623,7 +622,7 @@ class POMDPPlanner:
     # Helpers
     # ------------------------------------------------------------------------
 
-    def _get_possible_values(self, belief: BeliefState, variable: str) -> List[Any]:
+    def _get_possible_values(self, belief: BeliefState, variable: str) -> list[Any]:
         """Get possible values for variable from belief."""
         values = set()
         for state in belief.states:
@@ -632,7 +631,7 @@ class POMDPPlanner:
                 values.add(value)
         return list(values)
 
-    def _check_goal(self, goal: Goal, state: Dict) -> bool:
+    def _check_goal(self, goal: Goal, state: dict) -> bool:
         """Check if goal satisfied in state."""
         for var, desired_value in goal.desired_state.items():
             if state.get(var) != desired_value:
@@ -649,7 +648,7 @@ class POMDPPlanner:
         return True
 
     def _calculate_expected_cost(self,
-                                branches: Dict[str, ContingentPlan],
+                                branches: dict[str, ContingentPlan],
                                 belief: BeliefState) -> float:
         """Calculate expected cost of contingent plan."""
         # Simplified: average of branch costs
@@ -667,7 +666,7 @@ class POMDPPlanner:
                                plan: ContingentPlan,
                                belief: BeliefState,
                                executor: Callable,
-                               observer: Callable) -> Tuple[bool, BeliefState]:
+                               observer: Callable) -> tuple[bool, BeliefState]:
         """
         Execute contingent plan with observation and action.
 

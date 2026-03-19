@@ -19,16 +19,15 @@ Date: 2025-12-03
 import asyncio
 import logging
 import time
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List, Callable, Awaitable
 from collections import deque
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 from hololoom.protocols.conscience import (
-    ConscienceProtocol,
     ConscienceDecision,
+    ConscienceProtocol,
     RiskLevel,
-    StepType,
 )
 
 logger = logging.getLogger("hololoom.agentic.conscience_integration")
@@ -46,14 +45,14 @@ class DecisionOutcome:
     Used to correlate decisions with results for learning.
     """
     decision: ConscienceDecision
-    witness_id: Optional[str] = None
-    outcome_success: Optional[bool] = None
-    outcome_confidence: Optional[float] = None
-    outcome_reward: Optional[float] = None
+    witness_id: str | None = None
+    outcome_success: bool | None = None
+    outcome_confidence: float | None = None
+    outcome_reward: float | None = None
     timestamp: datetime = field(default_factory=datetime.now)
     feedback_sent: bool = False
 
-    def to_feedback(self) -> Dict[str, Any]:
+    def to_feedback(self) -> dict[str, Any]:
         """
         Convert to Conscience.learn() feedback format.
 
@@ -100,7 +99,7 @@ class BridgeStatistics:
     batch_learning_runs: int = 0
     correct_judgments: int = 0
     incorrect_judgments: int = 0
-    last_learning_time: Optional[datetime] = None
+    last_learning_time: datetime | None = None
 
     @property
     def accuracy(self) -> float:
@@ -110,7 +109,7 @@ class BridgeStatistics:
             return 0.0
         return self.correct_judgments / total
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "decisions_tracked": self.decisions_tracked,
@@ -173,8 +172,8 @@ class ConscienceReflectionBridge:
 
     def __init__(
         self,
-        conscience: Optional[ConscienceProtocol] = None,
-        buffer: Optional[Any] = None,  # ReflectionBuffer
+        conscience: ConscienceProtocol | None = None,
+        buffer: Any | None = None,  # ReflectionBuffer
         capacity: int = 500,
         learning_interval: float = 60.0,  # seconds
         min_batch_size: int = 10,
@@ -198,14 +197,14 @@ class ConscienceReflectionBridge:
         self._min_batch_size = min_batch_size
 
         # Decision tracking (keyed by witness_id)
-        self._decisions: Dict[str, DecisionOutcome] = {}
+        self._decisions: dict[str, DecisionOutcome] = {}
         self._decision_order: deque = deque(maxlen=capacity)
 
         # Statistics
         self._stats = BridgeStatistics()
 
         # Background learning
-        self._background_task: Optional[asyncio.Task] = None
+        self._background_task: asyncio.Task | None = None
         self._running = False
 
         if enable_background_learning:
@@ -254,8 +253,8 @@ class ConscienceReflectionBridge:
         self,
         witness_id: str,
         success: bool,
-        confidence: Optional[float] = None,
-        reward: Optional[float] = None,
+        confidence: float | None = None,
+        reward: float | None = None,
     ) -> bool:
         """
         Record the outcome for a tracked decision.
@@ -291,7 +290,7 @@ class ConscienceReflectionBridge:
         self,
         witness_id: str,
         spacetime: Any,  # Spacetime
-        feedback: Optional[Dict[str, Any]] = None,
+        feedback: dict[str, Any] | None = None,
     ) -> bool:
         """
         Record outcome from a Spacetime artifact.
@@ -403,7 +402,7 @@ class ConscienceReflectionBridge:
 
     async def learn_from_buffer_signals(
         self,
-        signals: Optional[List[Any]] = None,  # List[LearningSignal]
+        signals: list[Any] | None = None,  # List[LearningSignal]
     ) -> int:
         """
         Learn from ReflectionBuffer learning signals.
@@ -448,7 +447,7 @@ class ConscienceReflectionBridge:
 
         return updates
 
-    def _signal_to_feedback(self, signal: Any) -> Optional[Dict[str, Any]]:
+    def _signal_to_feedback(self, signal: Any) -> dict[str, Any] | None:
         """
         Convert a LearningSignal to conscience feedback format.
 
@@ -547,7 +546,7 @@ class ConscienceReflectionBridge:
     # Statistics & Introspection
     # =========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get bridge statistics."""
         return self._stats.to_dict()
 
@@ -607,8 +606,8 @@ class ConscienceReflectionBridge:
 # =============================================================================
 
 def create_conscience_bridge(
-    conscience: Optional[ConscienceProtocol] = None,
-    buffer: Optional[Any] = None,
+    conscience: ConscienceProtocol | None = None,
+    buffer: Any | None = None,
     enable_background_learning: bool = False,
 ) -> ConscienceReflectionBridge:
     """

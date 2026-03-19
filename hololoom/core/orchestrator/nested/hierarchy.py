@@ -20,13 +20,14 @@ fluid reasoning. Slow decisions enable deep learning."
 """
 
 import asyncio
-from enum import Enum
-from dataclasses import dataclass
-from typing import Optional, Dict, Any, List
 import time
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
+
 import torch
 
-from hololoom.orchestrator.nested.ultra_fast import UltraFastOptimizer, UltraFastDecision
+from hololoom.orchestrator.nested.ultra_fast import UltraFastDecision, UltraFastOptimizer
 
 
 class OptimizationLevel(Enum):
@@ -52,10 +53,10 @@ class LevelConfig:
 class HierarchyState:
     """Current state of nested learning hierarchy"""
     current_level: OptimizationLevel
-    levels_active: Dict[OptimizationLevel, bool]
-    last_update_times: Dict[OptimizationLevel, float]
-    total_updates: Dict[OptimizationLevel, int]
-    average_latencies: Dict[OptimizationLevel, float]
+    levels_active: dict[OptimizationLevel, bool]
+    last_update_times: dict[OptimizationLevel, float]
+    total_updates: dict[OptimizationLevel, int]
+    average_latencies: dict[OptimizationLevel, float]
 
 
 class NestedLearningHierarchy:
@@ -146,13 +147,13 @@ class NestedLearningHierarchy:
         self.state = HierarchyState(
             current_level=OptimizationLevel.ULTRA_FAST,
             levels_active={level: config.enabled for level, config in self.configs.items()},
-            last_update_times={level: 0.0 for level in OptimizationLevel},
-            total_updates={level: 0 for level in OptimizationLevel},
-            average_latencies={level: 0.0 for level in OptimizationLevel}
+            last_update_times=dict.fromkeys(OptimizationLevel, 0.0),
+            total_updates=dict.fromkeys(OptimizationLevel, 0),
+            average_latencies=dict.fromkeys(OptimizationLevel, 0.0)
         )
 
         # Background task
-        self._background_task: Optional[asyncio.Task] = None
+        self._background_task: asyncio.Task | None = None
         self._shutdown = False
 
     async def initialize(self):
@@ -183,7 +184,7 @@ class NestedLearningHierarchy:
         self,
         text: str,
         parent_query: str = "",
-        working_memory_state: Optional[torch.Tensor] = None,
+        working_memory_state: torch.Tensor | None = None,
         **kwargs
     ) -> UltraFastDecision:
         """
@@ -221,7 +222,7 @@ class NestedLearningHierarchy:
 
         return decision
 
-    async def fast_update(self, query_outcome: Dict[str, Any]):
+    async def fast_update(self, query_outcome: dict[str, Any]):
         """
         Fast level update (Thompson Sampling, tool selection).
 
@@ -243,7 +244,7 @@ class NestedLearningHierarchy:
         latency_ms = (time.perf_counter() - start_time) * 1000
         self._update_level_stats(OptimizationLevel.FAST, latency_ms)
 
-    async def medium_update(self, query_outcome: Dict[str, Any]):
+    async def medium_update(self, query_outcome: dict[str, Any]):
         """
         Medium level update (step selection, retrieval strategies).
 
@@ -305,7 +306,7 @@ class NestedLearningHierarchy:
         old_avg = self.state.average_latencies[level]
         self.state.average_latencies[level] = (old_avg * (n - 1) + latency_ms) / n
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get hierarchy statistics"""
         return {
             'state': {

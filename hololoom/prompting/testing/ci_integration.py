@@ -7,14 +7,11 @@ for automated prompt testing, regression detection, and artifact management.
 Status: ✅ Production Ready (December 2025)
 """
 
-import os
 import json
+import os
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
-from datetime import datetime
-from pathlib import Path
 
 from .protocol import PromptTestReport
 
@@ -187,7 +184,6 @@ test-prompts:
         """
         try:
             # Import and run test suite
-            from .protocol import PromptTestReport
 
             # Placeholder: actual test execution would go here
             # For now, return success code

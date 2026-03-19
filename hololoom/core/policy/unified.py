@@ -40,23 +40,18 @@ The policy is the "shuttle" - it decides how to weave the warp threads
 (features) into fabric (responses) by selecting appropriate tools and adapters.
 """
 
+import logging
 import math
+import time as _time
 import warnings
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Dict, List, Optional, Protocol, Tuple, Any
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
-import logging
-import time as _time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from hololoom.dark_trace.sae.activation_buffer import get_activation_buffer, ActivationSample
-
-# Import only from shared types and embedding (package-relative)
-from hololoom.protocols.types import Features, Context, ActionPlan, BanditStrategy
 from hololoom.alignment.safety_guardrails import (
     ActionCategory,
     ActionRequest,
@@ -64,6 +59,10 @@ from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     create_guardrails,
 )
+from hololoom.dark_trace.sae.activation_buffer import ActivationSample, get_activation_buffer
+
+# Import only from shared types and embedding (package-relative)
+from hololoom.protocols.types import ActionPlan, BanditStrategy, Context, Features
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -71,7 +70,6 @@ from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Import Thompson Sampling from dedicated module (Elegance Track - Day 3)
 from hololoom.policy.thompson_sampling import TSBandit
-
 
 # ============================================================================
 # Utility Functions
@@ -94,19 +92,19 @@ class CustomMHA(nn.Module):
     
     Allows dynamic attention modulation via gates (e.g., from motif control).
     """
-    
+
     def __init__(self, d_model: int, n_heads: int):
         super().__init__()
         self.d_model = d_model
         self.n_heads = n_heads
         self.d_head = d_model // n_heads
-        
+
         self.Wq = nn.Linear(d_model, d_model)
         self.Wk = nn.Linear(d_model, d_model)
         self.Wv = nn.Linear(d_model, d_model)
         self.Wo = nn.Linear(d_model, d_model)
-    
-    def forward(self, x: torch.Tensor, gates: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+
+    def forward(self, x: torch.Tensor, gates: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass with gate modulation.
         
@@ -120,23 +118,23 @@ class CustomMHA(nn.Module):
         B, T, D = x.shape
         H = self.n_heads
         Dh = self.d_head
-        
+
         # Project to Q, K, V
         q = self.Wq(x).view(B, T, H, Dh)
         k = self.Wk(x).view(B, T, H, Dh)
         v = self.Wv(x).view(B, T, H, Dh)
-        
+
         # Compute attention scores
         attn = torch.einsum('bthd,bshd->bhts', q, k) / math.sqrt(Dh)
         A = torch.softmax(attn, dim=-1)
-        
+
         # Apply gates
         g = gates.view(B, H, 1, 1)
         A = A * g
-        
+
         # Attend to values
         z = torch.einsum('bhts,bshd->bthd', A, v).contiguous().view(B, T, D)
-        
+
         return self.Wo(z), A
 
 
@@ -146,18 +144,18 @@ class CrossAttention(nn.Module):
     
     Allows the policy to attend to retrieved context shards.
     """
-    
+
     def __init__(self, d_model: int, n_heads: int = 4):
         super().__init__()
         self.d_model = d_model
         self.n_heads = n_heads
         self.d_head = d_model // n_heads
-        
+
         self.Wq = nn.Linear(d_model, d_model)
         self.Wk = nn.Linear(d_model, d_model)
         self.Wv = nn.Linear(d_model, d_model)
         self.Wo = nn.Linear(d_model, d_model)
-    
+
     def forward(self, x: torch.Tensor, mem: torch.Tensor) -> torch.Tensor:
         """
         Cross-attend query to memory.
@@ -173,19 +171,19 @@ class CrossAttention(nn.Module):
         M = mem.size(1)
         H = self.n_heads
         Dh = self.d_head
-        
+
         # Project
         q = self.Wq(x).view(B, T, H, Dh)
         k = self.Wk(mem).view(B, M, H, Dh)
         v = self.Wv(mem).view(B, M, H, Dh)
-        
+
         # Attention
         attn = torch.einsum('bthd,bmhd->bhtm', q, k) / math.sqrt(Dh)
         A = torch.softmax(attn, dim=-1)
-        
+
         # Attend
         z = torch.einsum('bhtm,bmhd->bthd', A, v).contiguous().view(B, T, D)
-        
+
         return self.Wo(z)
 
 
@@ -196,13 +194,13 @@ class MotifGatedMHA(nn.Module):
     Motifs (linguistic patterns) modulate attention heads,
     allowing different heads to activate based on query structure.
     """
-    
+
     def __init__(self, d_model: int, n_heads: int = 4, n_motifs: int = 8):
         super().__init__()
         self.mha = CustomMHA(d_model, n_heads)
         self.gate_proj = nn.Linear(n_motifs, n_heads)
-    
-    def forward(self, x: torch.Tensor, motif_ctrl: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+
+    def forward(self, x: torch.Tensor, motif_ctrl: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Forward with motif control.
         
@@ -225,13 +223,13 @@ class LoRALikeFFN(nn.Module):
     Different adapters can be selected for different execution modes
     (bare, fast, fused) without retraining the base network.
     """
-    
+
     def __init__(self, d_model: int, d_ff: int = 1024, r: int = 8, n_adapters: int = 4):
         super().__init__()
         # Base feed-forward
         self.fc1 = nn.Linear(d_model, d_ff)
         self.fc2 = nn.Linear(d_ff, d_model)
-        
+
         # LoRA adapters: low-rank adaptation
         self.adapters = nn.ModuleList([
             nn.Sequential(
@@ -240,7 +238,7 @@ class LoRALikeFFN(nn.Module):
             )
             for _ in range(n_adapters)
         ])
-    
+
     def forward(self, x: torch.Tensor, adapter_idx: int = 0) -> torch.Tensor:
         """
         Forward with adapter selection.
@@ -255,10 +253,10 @@ class LoRALikeFFN(nn.Module):
         # Base transformation
         h = F.gelu(self.fc1(x))
         h = self.fc2(h)
-        
+
         # Add adapter residual
         h = h + self.adapters[adapter_idx](x)
-        
+
         return h
 
 
@@ -268,17 +266,17 @@ class TinyTransformerBlock(nn.Module):
     
     This is the core computation unit of the policy network.
     """
-    
+
     def __init__(self, d_model: int = 384, n_heads: int = 4, n_motifs: int = 8, n_adapters: int = 4):
         super().__init__()
         self.cross = CrossAttention(d_model, n_heads)
         self.mha = MotifGatedMHA(d_model, n_heads, n_motifs)
         self.ffn = LoRALikeFFN(d_model, d_ff=4 * d_model, r=16, n_adapters=n_adapters)
-        
+
         self.ln1 = nn.LayerNorm(d_model)
         self.ln2 = nn.LayerNorm(d_model)
         self.ln3 = nn.LayerNorm(d_model)
-    
+
     def forward(
         self,
         x: torch.Tensor,
@@ -300,14 +298,14 @@ class TinyTransformerBlock(nn.Module):
         """
         # Cross-attention to memory
         x = x + self.cross(self.ln1(x), mem)
-        
+
         # Motif-gated self-attention
         mha_out, _ = self.mha(self.ln2(x), motif_ctrl)
         x = x + mha_out
-        
+
         # Feed-forward with adapter
         x = x + self.ffn(self.ln3(x), adapter_idx)
-        
+
         return x
 
 
@@ -331,7 +329,7 @@ class NeuralCore(nn.Module):
     2. Select appropriate tools based on query features
     3. Choose execution mode (adapter) based on complexity
     """
-    
+
     def __init__(
         self,
         d_model: int = 384,
@@ -364,14 +362,14 @@ class NeuralCore(nn.Module):
 
         # Tool names (fixed)
         self.tools = ["answer", "search", "notion_write", "calc"]
-    
+
     async def decide(
         self,
         mem: torch.Tensor,
         ctrl: torch.Tensor,
         adapter_idx: int,
-        semantic_features: Optional[torch.Tensor] = None
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        semantic_features: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Make a decision given context and control signals.
 
@@ -462,19 +460,19 @@ class UnifiedPolicy:
 
     This is the main policy used by the orchestrator.
     """
-    
+
     core: NeuralCore
     psi_proj: nn.Linear  # Projects Ψ features to control space
     device: torch.device
-    adapter_for_dim: Dict[int, int]  # Maps embedding dimension to adapter index
-    adapter_bank: Dict[int, str]  # Maps adapter index to name
+    adapter_for_dim: dict[int, int]  # Maps embedding dimension to adapter index
+    adapter_bank: dict[int, str]  # Maps adapter index to name
     mem_dim: int  # Memory/embedding dimension
     emb: MatryoshkaEmbeddings  # Embedder for context encoding
-    bandit: Optional[TSBandit] = None
+    bandit: TSBandit | None = None
     bandit_strategy: BanditStrategy = BanditStrategy.EPSILON_GREEDY
     epsilon: float = 0.1  # Exploration rate for epsilon-greedy
-    guardrails: Optional[SafetyGuardrails] = None
-    
+    guardrails: SafetyGuardrails | None = None
+
     def __post_init__(self):
         if self.bandit is None:
             self.bandit = TSBandit(
@@ -486,7 +484,7 @@ class UnifiedPolicy:
         import os
         if self.guardrails is None and not os.getenv("DISABLE_GUARDRAILS"):
             self.guardrails = create_guardrails()
-    
+
     async def decide(self, features: Features, context: Context) -> ActionPlan:
         """
         Make a decision given features and context.
@@ -522,14 +520,14 @@ class UnifiedPolicy:
                 f"expected=({len(context.shard_texts)}, {self.mem_dim})"
             )
             mem = torch.tensor(mem_np, dtype=torch.float32).unsqueeze(0).to(self.device)
-        
+
         # Step 2: Build control signal from Ψ and motifs
         psi_tensor = torch.tensor(features.psi, dtype=torch.float32).unsqueeze(0).to(self.device)
         motif_ctrl = self._ctrl_from(features.motifs).to(self.device)
-        
+
         # Combine Ψ and motif signals
         ctrl = torch.clamp(motif_ctrl + 0.25 * torch.sigmoid(self.psi_proj(psi_tensor)), 0, 1)
-        
+
         # Step 3: Compute reward for bandit update
         # Reward based on coherence + episode diversity
         episodes = len(set(s.episode for s, _ in context.hits)) if context.hits else 0
@@ -556,12 +554,12 @@ class UnifiedPolicy:
         adapter_idx = self.adapter_for_dim.get(self.mem_dim, 0)
         logits, _ = await self.core.decide(mem, ctrl, adapter_idx, semantic_features=semantic_tensor)
         probs = torch.softmax(logits, dim=-1).detach().cpu().numpy()[0]
-        
+
         # Step 5: FIXED! Use bandit strategy for tool selection
         tool_idx, bandit_debug = self.bandit.select_with_strategy(probs)
         tool = self.core.tools[tool_idx]
 
-        guardrail_decision: Optional[SafetyDecision] = None
+        guardrail_decision: SafetyDecision | None = None
         if self.guardrails:
             request_context = {
                 "tool": tool,
@@ -612,16 +610,16 @@ class UnifiedPolicy:
                     raise PermissionError(
                         f"Tool selection requires approval: {guardrail_decision.reason}"
                     )
-        
+
         # Step 6: Update bandit with CORRECT arm (the one we actually used!)
         self.bandit.update(tool_idx, reward)
-        
+
         # Get adapter name
         adapter = self.adapter_bank.get(adapter_idx, "general")
-        
+
         # Step 7: Build action plan
         tool_probs = {self.core.tools[i]: float(probs[i]) for i in range(len(probs))}
-        
+
         # Add bandit debug info to metadata
         action_plan = ActionPlan(
             tool=tool,
@@ -629,17 +627,17 @@ class UnifiedPolicy:
             adapter=adapter,
             tool_probs=tool_probs,
         )
-        
+
         # Store bandit info and guardrail decision in metadata
         if hasattr(action_plan, 'metadata'):
             action_plan.metadata = {
                 "bandit": bandit_debug,
                 "guardrails": guardrail_decision.to_dict() if guardrail_decision else None,
             }
-        
+
         return action_plan
-    
-    def _ctrl_from(self, motifs: List[str]) -> torch.Tensor:
+
+    def _ctrl_from(self, motifs: list[str]) -> torch.Tensor:
         """
         Convert motif list to control vector.
         
@@ -661,12 +659,12 @@ class UnifiedPolicy:
             "advcl→main",
             "setup→twist"
         ]
-        
+
         vec = np.zeros(len(motif_vocab), dtype=np.float32)
         for m in motifs:
             if m in motif_vocab:
                 vec[motif_vocab.index(m)] = 1.0
-        
+
         return torch.tensor(vec, dtype=torch.float32).unsqueeze(0)
 
 
@@ -677,14 +675,14 @@ class UnifiedPolicy:
 def create_policy(
     mem_dim: int,
     emb: MatryoshkaEmbeddings,
-    scales: List[int],
-    device: Optional[torch.device] = None,
+    scales: list[int],
+    device: torch.device | None = None,
     n_layers: int = 2,
     n_heads: int = 4,
     bandit_strategy: BanditStrategy = BanditStrategy.EPSILON_GREEDY,
     epsilon: float = 0.1,
-    guardrails: Optional[SafetyGuardrails] = None,
-    cfg: Optional[Any] = None,  # Config for environment-aware safety
+    guardrails: SafetyGuardrails | None = None,
+    cfg: Any | None = None,  # Config for environment-aware safety
     use_bayesian: bool = False,  # Enable Bayesian uncertainty quantification
     bayesian_samples: int = 10,  # MC samples for uncertainty estimation
     bayesian_kl_weight: float = 1.0,  # KL term weight in ELBO
@@ -720,7 +718,7 @@ def create_policy(
         )
     if device is None:
         device = maybe_device()
-    
+
     # Create neural core
     core = NeuralCore(
         d_model=mem_dim,
@@ -730,17 +728,17 @@ def create_policy(
         n_adapters=4,
         n_tools=4
     ).to(device)
-    
+
     # Create Ψ projection (mem_dim → 8D motif space)
     psi_proj = nn.Linear(mem_dim, 8).to(device)
-    
+
     # Map scales to adapter indices
     adapter_for_dim = {
         min(scales): 1,  # Smallest scale → farm adapter
         sorted(scales)[1] if len(scales) > 1 else min(scales): 2,  # Mid → brewing
         max(scales): 3   # Largest scale → mirrorcore
     }
-    
+
     # Adapter names
     adapter_bank = {
         0: "general",
@@ -748,7 +746,7 @@ def create_policy(
         2: "brewing",
         3: "mirrorcore"
     }
-    
+
     # Create base policy
     base_policy = UnifiedPolicy(
         core=core,
@@ -799,14 +797,15 @@ def create_policy(
 
 if __name__ == "__main__":
     import asyncio
+
     from embedding.spectral import MatryoshkaEmbeddings
-    
+
     async def demo():
         print("=== Unified Policy Demo - ALL BANDIT STRATEGIES ===\n")
-        
+
         # Create components
         emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
-        
+
         # Create mock features and context
         features = Features(
             psi=np.array([0.1, 0.5, 0.2, 0.3, 0.4, 0.6]),
@@ -814,26 +813,26 @@ if __name__ == "__main__":
             metrics={"coherence": 0.8, "fiedler": 0.3},
             confidence=0.85
         )
-        
+
         context = Context(
             hits=[],
             kg_sub=None,
             shard_texts=["Example context text"],
             relevance=0.7
         )
-        
+
         # Test all three strategies!
         strategies = [
             (BanditStrategy.EPSILON_GREEDY, "Epsilon-Greedy (10% explore)"),
             (BanditStrategy.BAYESIAN_BLEND, "Bayesian Blend (70% neural + 30% bandit)"),
             (BanditStrategy.PURE_THOMPSON, "Pure Thompson Sampling")
         ]
-        
+
         for strategy, name in strategies:
             print(f"\n{'=' * 70}")
             print(f"Testing: {name}")
             print('=' * 70)
-            
+
             # Create policy with this strategy
             policy = create_policy(
                 mem_dim=384,
@@ -843,21 +842,21 @@ if __name__ == "__main__":
                 bandit_strategy=strategy,
                 epsilon=0.1
             )
-            
+
             # Make 10 decisions to see exploration behavior
-            tool_counts = {tool: 0 for tool in policy.core.tools}
-            
+            tool_counts = dict.fromkeys(policy.core.tools, 0)
+
             for i in range(10):
                 action_plan = await policy.decide(features, context)
                 tool_counts[action_plan.chosen_tool] += 1
-            
-            print(f"\nTool distribution over 10 decisions:")
+
+            print("\nTool distribution over 10 decisions:")
             for tool, count in tool_counts.items():
                 bar = '█' * count
                 print(f"  {tool:15s} {bar} ({count})")
-            
+
             # Show bandit stats
-            print(f"\nBandit statistics:")
+            print("\nBandit statistics:")
             stats = policy.bandit.get_stats()
             for i, stat in stats.items():
                 tool = policy.core.tools[i]
@@ -865,16 +864,16 @@ if __name__ == "__main__":
                       f"success={stat['success']:.1f}, "
                       f"fail={stat['fail']:.1f}, "
                       f"pulls={stat['pulls']:.0f}")
-        
+
         print(f"\n{'=' * 70}")
         print("✓ All strategies tested!")
         print(f"{'=' * 70}")
-        
+
         print("\n📊 Strategy Summary:")
         print("  • Epsilon-Greedy: Best for stable exploitation with controlled exploration")
         print("  • Bayesian Blend: Best for combining learned preferences with neural predictions")
         print("  • Pure Thompson: Best for maximum exploration in uncertain environments")
-    
+
     asyncio.run(demo())
 
 
@@ -888,7 +887,7 @@ if __name__ == "__main__":
 
 class MLPBlock(nn.Module):
     """Simple MLP block used in tests."""
-    def __init__(self, in_dim: int, hidden_dims: List[int], activation: str = 'relu', residual: bool = False):
+    def __init__(self, in_dim: int, hidden_dims: list[int], activation: str = 'relu', residual: bool = False):
         super().__init__()
         layers = []
         prev = in_dim
@@ -930,7 +929,7 @@ class IntrinsicCuriosityModule(nn.Module):
         self.inverse_model = nn.Sequential(nn.Linear(feature_dim * 2, action_dim))
         self.mse = nn.MSELoss()
 
-    def forward(self, state: torch.Tensor, action: torch.Tensor, next_state: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, state: torch.Tensor, action: torch.Tensor, next_state: torch.Tensor) -> dict[str, torch.Tensor]:
         z = self.encoder(state)
         z_next = self.encoder(next_state)
 
@@ -964,7 +963,7 @@ class RandomNetworkDistillation(nn.Module):
         self.running_mean = torch.zeros(1)
         self.mse = nn.MSELoss()
 
-    def forward(self, state: torch.Tensor, update_stats: bool = False) -> Dict[str, torch.Tensor]:
+    def forward(self, state: torch.Tensor, update_stats: bool = False) -> dict[str, torch.Tensor]:
         tgt = self.target(state).detach()
         pred = self.predictor(state)
         loss = self.mse(pred, tgt)
@@ -991,7 +990,7 @@ class HierarchicalPolicy(nn.Module):
         self.action_head = nn.Linear(state_dim, action_dim)
         self.value_head = nn.Linear(state_dim, 1)
 
-    def select_skill(self, state: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, torch.Tensor]:
+    def select_skill(self, state: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, torch.Tensor]:
         logits = self.skill_head(state)
         probs = torch.softmax(logits, dim=-1)
         if deterministic:
@@ -1004,7 +1003,7 @@ class HierarchicalPolicy(nn.Module):
         one_hot.scatter_(1, idx.unsqueeze(-1), 1.0)
         return one_hot, idx
 
-    def forward(self, state: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, state: torch.Tensor) -> dict[str, torch.Tensor]:
         mean = self.action_head(state)
         std = torch.zeros_like(mean)
         value = self.value_head(state).squeeze(-1)
@@ -1036,7 +1035,7 @@ class PPOAgent:
         self.config = config or PPOConfig()
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=self.config.lr)
 
-    def compute_gae(self, rewards: torch.Tensor, values: torch.Tensor, dones: torch.Tensor, next_value: torch.Tensor, gamma: float = 0.99, lam: float = 0.95) -> Tuple[torch.Tensor, torch.Tensor]:
+    def compute_gae(self, rewards: torch.Tensor, values: torch.Tensor, dones: torch.Tensor, next_value: torch.Tensor, gamma: float = 0.99, lam: float = 0.95) -> tuple[torch.Tensor, torch.Tensor]:
         T = rewards.size(0)
         advantages = torch.zeros_like(rewards)
         gae = 0.0
@@ -1049,7 +1048,7 @@ class PPOAgent:
         returns = advantages + values
         return advantages, returns
 
-    def update(self, *args: Any, **kwargs: Any) -> Dict[str, float]:
+    def update(self, *args: Any, **kwargs: Any) -> dict[str, float]:
         # Minimal stub: return plausible metric names expected by tests
         return {'policy_loss': 0.0, 'value_loss': 0.0, 'entropy': 0.0, 'kl_divergence': 0.0, 'curiosity_loss': 0.0}
 
@@ -1067,7 +1066,7 @@ class SimpleUnifiedPolicy(nn.Module):
         input_dim: int,
         action_dim: int,
         policy_type: str = 'deterministic',
-        hidden_dims: List[int] = [256, 256],
+        hidden_dims: list[int] = [256, 256],
         state_dependent_std: bool = False,
         use_attention: bool = False,
         num_attention_layers: int = 0,
@@ -1133,7 +1132,7 @@ class SimpleUnifiedPolicy(nn.Module):
         else:
             return self.mlp(x)
 
-    def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         h = self._encode(x)
 
         if self.policy_type == 'deterministic':
@@ -1170,7 +1169,7 @@ class SimpleUnifiedPolicy(nn.Module):
 
         return out
 
-    def evaluate_actions(self, x: torch.Tensor, actions: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def evaluate_actions(self, x: torch.Tensor, actions: torch.Tensor) -> dict[str, torch.Tensor]:
         h = self._encode(x)
         if self.policy_type == 'categorical':
             logits = self.logit_head(h)
@@ -1196,7 +1195,7 @@ class SimpleUnifiedPolicy(nn.Module):
         else:
             raise NotImplementedError
 
-    def sample_action(self, x: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, Dict[str, Any]]:
+    def sample_action(self, x: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, dict[str, Any]]:
         """Sample an action from the policy. If deterministic=True, return the mode/mean."""
         out = self.forward(x)
         if self.policy_type == 'deterministic':

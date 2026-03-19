@@ -12,11 +12,12 @@ Provides physics simulation for XR object interaction including:
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any, Callable, Tuple
-from enum import Enum
-from datetime import datetime
 import math
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class PhysicsShape(Enum):
@@ -84,11 +85,11 @@ class Vector3:
             self.x*other.y - self.y*other.x
         )
 
-    def to_tuple(self) -> Tuple[float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float]:
         return (self.x, self.y, self.z)
 
     @classmethod
-    def from_tuple(cls, t: Tuple[float, float, float]) -> "Vector3":
+    def from_tuple(cls, t: tuple[float, float, float]) -> "Vector3":
         return cls(t[0], t[1], t[2])
 
 
@@ -132,7 +133,7 @@ class PhysicsMaterial:
     angular_damping: float = 0.1    # Rotational resistance
 
     # Advanced properties
-    static_friction: Optional[float] = None  # Override for static
+    static_friction: float | None = None  # Override for static
     combine_mode: str = "average"  # average, min, max, multiply
 
 
@@ -145,11 +146,11 @@ class CollisionShape:
     rotation: Quaternion = field(default_factory=Quaternion)
 
     # For mesh shapes
-    vertices: Optional[List[Vector3]] = None
-    indices: Optional[List[int]] = None
+    vertices: list[Vector3] | None = None
+    indices: list[int] | None = None
 
     # For compound shapes
-    children: Optional[List["CollisionShape"]] = None
+    children: list["CollisionShape"] | None = None
 
     def get_volume(self) -> float:
         """Estimate volume of shape."""
@@ -173,7 +174,7 @@ class CollisionShape:
 class PhysicsBody:
     """A physics-enabled object."""
     body_id: str
-    node_id: Optional[str] = None  # Associated XRNode
+    node_id: str | None = None  # Associated XRNode
 
     # Transform
     position: Vector3 = field(default_factory=Vector3)
@@ -184,7 +185,7 @@ class PhysicsBody:
     body_type: BodyType = BodyType.DYNAMIC
     mass: float = 1.0
     shape: CollisionShape = field(default_factory=lambda: CollisionShape(PhysicsShape.BOX, Vector3(0.5, 0.5, 0.5)))
-    material: Optional[PhysicsMaterial] = None
+    material: PhysicsMaterial | None = None
 
     # Velocity state
     linear_velocity: Vector3 = field(default_factory=Vector3)
@@ -197,16 +198,16 @@ class PhysicsBody:
     # Interaction state
     is_grabbable: bool = True
     is_grabbed: bool = False
-    grabbed_by: Optional[str] = None  # Hand/controller ID
+    grabbed_by: str | None = None  # Hand/controller ID
     grab_offset: Vector3 = field(default_factory=Vector3)
 
     # Constraints
     is_constrained: bool = False
-    freeze_position: Tuple[bool, bool, bool] = (False, False, False)
-    freeze_rotation: Tuple[bool, bool, bool] = (False, False, False)
+    freeze_position: tuple[bool, bool, bool] = (False, False, False)
+    freeze_rotation: tuple[bool, bool, bool] = (False, False, False)
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
 
     def get_inertia_tensor(self) -> Vector3:
@@ -224,7 +225,7 @@ class PhysicsBody:
             )
         return Vector3(self.mass, self.mass, self.mass)
 
-    def apply_force(self, force: Vector3, point: Optional[Vector3] = None):
+    def apply_force(self, force: Vector3, point: Vector3 | None = None):
         """Apply force at point (None = center of mass)."""
         if self.body_type != BodyType.DYNAMIC or self.mass <= 0:
             return
@@ -245,7 +246,7 @@ class PhysicsBody:
             if inertia.z > 0:
                 self.angular_velocity.z += torque.z / inertia.z
 
-    def apply_impulse(self, impulse: Vector3, point: Optional[Vector3] = None):
+    def apply_impulse(self, impulse: Vector3, point: Vector3 | None = None):
         """Apply instantaneous impulse."""
         if self.body_type != BodyType.DYNAMIC or self.mass <= 0:
             return
@@ -264,7 +265,7 @@ class PhysicsBody:
             if inertia.z > 0:
                 self.angular_velocity.z += angular_impulse.z / inertia.z
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.body_id,
             "nodeId": self.node_id,
@@ -296,7 +297,7 @@ class PhysicsConstraint:
     constraint_id: str
     constraint_type: ConstraintType
     body_a: str  # Body ID
-    body_b: Optional[str] = None  # None = world anchor
+    body_b: str | None = None  # None = world anchor
 
     # Anchor points (local to each body)
     anchor_a: Vector3 = field(default_factory=Vector3)
@@ -340,7 +341,7 @@ class GrabState:
     grab_point: Vector3  # World position
     local_offset: Vector3  # Offset in body local space
     start_time: float
-    velocity_samples: List[Vector3] = field(default_factory=list)  # For throw velocity
+    velocity_samples: list[Vector3] = field(default_factory=list)  # For throw velocity
     max_samples: int = 10
 
 
@@ -362,24 +363,24 @@ class PhysicsWorld:
         self.max_substeps = max_substeps
 
         # Bodies and constraints
-        self.bodies: Dict[str, PhysicsBody] = {}
-        self.constraints: Dict[str, PhysicsConstraint] = {}
+        self.bodies: dict[str, PhysicsBody] = {}
+        self.constraints: dict[str, PhysicsConstraint] = {}
 
         # Materials library
-        self.materials: Dict[str, PhysicsMaterial] = {}
+        self.materials: dict[str, PhysicsMaterial] = {}
         self._load_default_materials()
 
         # Collision tracking
-        self.collision_events: List[CollisionEvent] = []
+        self.collision_events: list[CollisionEvent] = []
         self.max_collision_events = 100
 
         # Grab states
-        self.grab_states: Dict[str, GrabState] = {}
+        self.grab_states: dict[str, GrabState] = {}
 
         # Callbacks
-        self.on_collision: List[Callable[[CollisionEvent], None]] = []
-        self.on_grab: List[Callable[[str, str], None]] = []
-        self.on_release: List[Callable[[str, str, Vector3], None]] = []
+        self.on_collision: list[Callable[[CollisionEvent], None]] = []
+        self.on_grab: list[Callable[[str, str], None]] = []
+        self.on_release: list[Callable[[str, str, Vector3], None]] = []
 
         # Simulation state
         self.is_paused: bool = False
@@ -405,13 +406,13 @@ class PhysicsWorld:
     def create_body(
         self,
         body_id: str,
-        position: Tuple[float, float, float] = (0, 0, 0),
+        position: tuple[float, float, float] = (0, 0, 0),
         body_type: BodyType = BodyType.DYNAMIC,
         shape: PhysicsShape = PhysicsShape.BOX,
-        size: Tuple[float, float, float] = (0.5, 0.5, 0.5),
+        size: tuple[float, float, float] = (0.5, 0.5, 0.5),
         mass: float = 1.0,
         material_id: str = "default",
-        node_id: Optional[str] = None,
+        node_id: str | None = None,
         is_grabbable: bool = True
     ) -> PhysicsBody:
         """Create a new physics body."""
@@ -456,11 +457,11 @@ class PhysicsWorld:
         constraint_id: str,
         constraint_type: ConstraintType,
         body_a: str,
-        body_b: Optional[str] = None,
-        anchor_a: Tuple[float, float, float] = (0, 0, 0),
-        anchor_b: Tuple[float, float, float] = (0, 0, 0),
-        axis: Tuple[float, float, float] = (0, 1, 0)
-    ) -> Optional[PhysicsConstraint]:
+        body_b: str | None = None,
+        anchor_a: tuple[float, float, float] = (0, 0, 0),
+        anchor_b: tuple[float, float, float] = (0, 0, 0),
+        axis: tuple[float, float, float] = (0, 1, 0)
+    ) -> PhysicsConstraint | None:
         """Create a constraint between bodies."""
         if body_a not in self.bodies:
             return None
@@ -500,7 +501,7 @@ class PhysicsWorld:
         self,
         body_id: str,
         grabber_id: str,
-        grab_point: Tuple[float, float, float]
+        grab_point: tuple[float, float, float]
     ) -> bool:
         """Grab a physics body."""
         if body_id not in self.bodies:
@@ -542,8 +543,8 @@ class PhysicsWorld:
     def update_grab(
         self,
         body_id: str,
-        hand_position: Tuple[float, float, float],
-        hand_rotation: Optional[Tuple[float, float, float, float]] = None
+        hand_position: tuple[float, float, float],
+        hand_rotation: tuple[float, float, float, float] | None = None
     ) -> bool:
         """Update grabbed object position."""
         if body_id not in self.grab_states:
@@ -576,7 +577,7 @@ class PhysicsWorld:
         self,
         body_id: str,
         throw_velocity_scale: float = 1.0
-    ) -> Optional[Vector3]:
+    ) -> Vector3 | None:
         """Release a grabbed object."""
         if body_id not in self.grab_states:
             return None
@@ -694,7 +695,7 @@ class PhysicsWorld:
         self,
         constraint: PhysicsConstraint,
         body_a: PhysicsBody,
-        body_b: Optional[PhysicsBody]
+        body_b: PhysicsBody | None
     ):
         """Solve spring constraint."""
         # Get world positions of anchors
@@ -740,7 +741,7 @@ class PhysicsWorld:
         self,
         constraint: PhysicsConstraint,
         body_a: PhysicsBody,
-        body_b: Optional[PhysicsBody]
+        body_b: PhysicsBody | None
     ):
         """Solve distance constraint (keep fixed distance)."""
         anchor_a_world = body_a.position + constraint.anchor_a
@@ -851,10 +852,10 @@ class PhysicsWorld:
 
     def raycast(
         self,
-        origin: Tuple[float, float, float],
-        direction: Tuple[float, float, float],
+        origin: tuple[float, float, float],
+        direction: tuple[float, float, float],
         max_distance: float = 100.0
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Cast ray and return first hit."""
         ray_origin = Vector3.from_tuple(origin)
         ray_dir = Vector3.from_tuple(direction).normalized()
@@ -896,9 +897,9 @@ class PhysicsWorld:
 
     def get_bodies_in_sphere(
         self,
-        center: Tuple[float, float, float],
+        center: tuple[float, float, float],
         radius: float
-    ) -> List[str]:
+    ) -> list[str]:
         """Get all bodies within sphere."""
         center_vec = Vector3.from_tuple(center)
         results = []
@@ -912,11 +913,11 @@ class PhysicsWorld:
 
         return results
 
-    def set_gravity(self, gravity: Tuple[float, float, float]):
+    def set_gravity(self, gravity: tuple[float, float, float]):
         """Set world gravity."""
         self.gravity = Vector3.from_tuple(gravity)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get physics world statistics."""
         dynamic_count = sum(1 for b in self.bodies.values() if b.body_type == BodyType.DYNAMIC)
         grabbed_count = sum(1 for b in self.bodies.values() if b.is_grabbed)
@@ -933,7 +934,7 @@ class PhysicsWorld:
             "time_step": self.time_step
         }
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export full state for WebXR client."""
         return {
             "type": "physics_state",

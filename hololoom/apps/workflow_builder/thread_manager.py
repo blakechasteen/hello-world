@@ -24,13 +24,14 @@ Architecture:
     Update Thread + Awareness
 """
 
+import asyncio
+import uuid
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any
 from datetime import datetime
 from enum import Enum
-import uuid
+from typing import Any
+
 import numpy as np
-import asyncio
 
 
 class ThreadStatus(Enum):
@@ -51,17 +52,17 @@ class Message:
     timestamp: datetime
 
     # Awareness context at this message
-    awareness_snapshot: Optional[Any] = None  # UnifiedAwarenessContext
-    meta_reflection: Optional[Any] = None     # SelfReflectionResult
+    awareness_snapshot: Any | None = None  # UnifiedAwarenessContext
+    meta_reflection: Any | None = None     # SelfReflectionResult
 
     # Thread position
     depth: int = 0  # How deep in thread (0 = root)
-    parent_message_id: Optional[str] = None
+    parent_message_id: str | None = None
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dict"""
         return {
             'id': self.id,
@@ -81,14 +82,14 @@ class ConversationThread:
     """A conversation thread with full awareness tracking"""
     id: str
     root_message: Message
-    messages: List[Message] = field(default_factory=list)
+    messages: list[Message] = field(default_factory=list)
 
     # Awareness tracking
-    awareness_trajectory: List[Any] = field(default_factory=list)  # List[UnifiedAwarenessContext]
-    confidence_trend: List[float] = field(default_factory=list)
+    awareness_trajectory: list[Any] = field(default_factory=list)  # List[UnifiedAwarenessContext]
+    confidence_trend: list[float] = field(default_factory=list)
 
     # Semantic positioning
-    semantic_cluster: Optional[np.ndarray] = None  # Position in 228D space
+    semantic_cluster: np.ndarray | None = None  # Position in 228D space
     dominant_topic: str = "General"
 
     # Thread metadata
@@ -97,11 +98,11 @@ class ConversationThread:
     last_activity: datetime = field(default_factory=datetime.now)
 
     # Thread relationships
-    parent_thread_id: Optional[str] = None  # For sub-threads
-    related_thread_ids: List[str] = field(default_factory=list)  # Semantic similarity
-    merged_into: Optional[str] = None  # If merged into another thread
+    parent_thread_id: str | None = None  # For sub-threads
+    related_thread_ids: list[str] = field(default_factory=list)  # Semantic similarity
+    merged_into: str | None = None  # If merged into another thread
 
-    def get_context_window(self, max_messages: int = 10) -> List[Message]:
+    def get_context_window(self, max_messages: int = 10) -> list[Message]:
         """Get recent messages for context"""
         return self.messages[-max_messages:]
 
@@ -119,7 +120,7 @@ class ConversationThread:
             confidence = 1.0 - awareness_ctx.confidence.uncertainty_level
             self.confidence_trend.append(confidence)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dict"""
         return {
             'id': self.id,
@@ -159,9 +160,9 @@ class ThreadManager:
             user_id: User identifier for memory storage (default: "chat_user")
         """
         # Session state (ephemeral)
-        self.threads: Dict[str, ConversationThread] = {}
-        self.active_thread_id: Optional[str] = None
-        self.semantic_index: Dict[str, np.ndarray] = {}  # thread_id → embedding
+        self.threads: dict[str, ConversationThread] = {}
+        self.active_thread_id: str | None = None
+        self.semantic_index: dict[str, np.ndarray] = {}  # thread_id → embedding
 
         # Integrations (optional dependencies)
         self.awareness = awareness_layer
@@ -184,8 +185,8 @@ class ThreadManager:
     async def process_message(
         self,
         user_input: str,
-        explicit_thread_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        explicit_thread_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Process user message and generate response.
 
@@ -357,7 +358,7 @@ class ThreadManager:
         self,
         user_input: str,
         awareness_ctx: Any,
-        context_messages: List[Message]
+        context_messages: list[Message]
     ) -> str:
         """Generate response with thread context"""
 
@@ -409,7 +410,7 @@ class ThreadManager:
 
         return "Awareness: " + ", ".join(lines) if lines else "Processing..."
 
-    def _serialize_awareness(self, awareness_ctx: Any) -> Dict[str, Any]:
+    def _serialize_awareness(self, awareness_ctx: Any) -> dict[str, Any]:
         """Convert awareness context to JSON-serializable dict"""
         if not awareness_ctx:
             return {}
@@ -457,11 +458,11 @@ class ThreadManager:
         except Exception:
             return 0.0
 
-    def get_all_threads(self) -> List[ConversationThread]:
+    def get_all_threads(self) -> list[ConversationThread]:
         """Get all threads"""
         return list(self.threads.values())
 
-    def get_active_threads(self) -> List[ConversationThread]:
+    def get_active_threads(self) -> list[ConversationThread]:
         """Get only active threads"""
         return [t for t in self.threads.values() if t.status == ThreadStatus.ACTIVE]
 
@@ -515,14 +516,15 @@ class ThreadManager:
             - Fault-tolerant: Partial failures allowed, logs all errors
             - Embedding optional: Falls back gracefully if unavailable
         """
-        from hololoom.memory.protocol import Memory
         import logging
+
+        from hololoom.memory.protocol import Memory
 
         # ============================================================
         # Validation
         # ============================================================
         if not message or not message.content:
-            logging.warning(f"⚠ Cannot archive: message has no content")
+            logging.warning("⚠ Cannot archive: message has no content")
             return False
 
         # ============================================================
@@ -588,7 +590,7 @@ class ThreadManager:
 
         return True  # Archiving succeeded
 
-    async def retrieve_past_threads(self, query: str = None, limit: int = 10) -> List[ConversationThread]:
+    async def retrieve_past_threads(self, query: str = None, limit: int = 10) -> list[ConversationThread]:
         """
         Retrieve past conversation threads from persistent memory.
 
@@ -641,7 +643,7 @@ class ThreadManager:
     # HELPER METHODS (Clarity & Simplicity)
     # ============================================================================
 
-    def _generate_message_embedding(self, message: Message, logging) -> Optional[Any]:
+    def _generate_message_embedding(self, message: Message, logging) -> Any | None:
         """
         Generate semantic embedding for message content.
 
@@ -664,7 +666,7 @@ class ThreadManager:
 
         # Validation: Ensure message has content
         if not message.content or not message.content.strip():
-            logging.warning(f"⚠ Cannot generate embedding: message content is empty")
+            logging.warning("⚠ Cannot generate embedding: message content is empty")
             return None
 
         try:
@@ -690,8 +692,8 @@ class ThreadManager:
         self,
         message: Message,
         thread: ConversationThread,
-        embedding: Optional[Any]
-    ) -> Dict[str, Any]:
+        embedding: Any | None
+    ) -> dict[str, Any]:
         """
         Build context dictionary for memory storage.
 
@@ -712,7 +714,7 @@ class ThreadManager:
             'has_embedding': embedding is not None,
         }
 
-    def _build_memory_metadata(self, message: Message, thread: ConversationThread) -> Dict[str, Any]:
+    def _build_memory_metadata(self, message: Message, thread: ConversationThread) -> dict[str, Any]:
         """
         Build metadata for memory storage (single source of truth).
 

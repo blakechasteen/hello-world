@@ -11,9 +11,8 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Optional, Dict, List
 from datetime import datetime
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,7 @@ class GovernanceLabel:
     """Labels from a governance evaluation."""
     checkpoint: str                   # e.g., "deception", "adversarial"
     primary_score: float
-    shadow_score: Optional[float] = None
+    shadow_score: float | None = None
     governance_outcome: str = "pass"  # "pass", "blocked", "escalated"
     metadata: dict = field(default_factory=dict)
 
@@ -33,9 +32,9 @@ class LabeledSample:
     """An activation sample enriched with governance labels."""
     text: str
     timestamp: str
-    labels: List[GovernanceLabel]
-    activation_source: Optional[str] = None  # which buffer source
-    correlation_id: Optional[str] = None
+    labels: list[GovernanceLabel]
+    activation_source: str | None = None  # which buffer source
+    correlation_id: str | None = None
 
 
 class GovernanceFeedbackCollector:
@@ -64,7 +63,7 @@ class GovernanceFeedbackCollector:
     ):
         self.output_dir = Path(output_dir)
         self.batch_size = batch_size
-        self._buffer: List[LabeledSample] = []
+        self._buffer: list[LabeledSample] = []
         self._total_written = 0
 
     def record_outcome(
@@ -72,11 +71,11 @@ class GovernanceFeedbackCollector:
         text: str,
         checkpoint: str,
         primary_score: float,
-        shadow_score: Optional[float] = None,
+        shadow_score: float | None = None,
         governance_outcome: str = "pass",
-        correlation_id: Optional[str] = None,
-        activation_source: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        correlation_id: str | None = None,
+        activation_source: str | None = None,
+        metadata: dict | None = None,
     ) -> None:
         """Record a single governance outcome."""
         label = GovernanceLabel(

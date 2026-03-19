@@ -8,13 +8,14 @@ The ServerState class holds references to shared resources like the
 orchestrator, memory backend, alignment framework, and monitoring.
 """
 
-from typing import Optional, List, Any
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
-from hololoom.alignment.audit_trail import AuditTrail
-from hololoom.alignment.safety_guardrails import SafetyGuardrails
-from hololoom.alignment.deception_detection import DeceptionDetector
+
 from hololoom.agentic.ml_logic_detector import MLLogicDetector
+from hololoom.alignment.audit_trail import AuditTrail
+from hololoom.alignment.deception_detection import DeceptionDetector
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
 from hololoom.config import Config
 
 from .middleware import RateLimiter, ServerStats
@@ -44,17 +45,17 @@ class ServerState:
         monitor: Agent monitoring (Nov 2025)
     """
 
-    orchestrator: Optional[Any] = None
-    audit_trail: Optional[AuditTrail] = None
-    safety_guardrails: Optional[SafetyGuardrails] = None
-    deception_detector: Optional[DeceptionDetector] = None
-    config: Optional[Config] = None
-    shards: List[MemoryShard] = []
-    memory_backend: Optional[Any] = None
-    ml_logic_detector: Optional[MLLogicDetector] = None
-    rate_limiter: Optional[RateLimiter] = None
-    stats: Optional[ServerStats] = None
-    monitor: Optional[Any] = None
+    orchestrator: Any | None = None
+    audit_trail: AuditTrail | None = None
+    safety_guardrails: SafetyGuardrails | None = None
+    deception_detector: DeceptionDetector | None = None
+    config: Config | None = None
+    shards: list[MemoryShard] = []
+    memory_backend: Any | None = None
+    ml_logic_detector: MLLogicDetector | None = None
+    rate_limiter: RateLimiter | None = None
+    stats: ServerStats | None = None
+    monitor: Any | None = None
 
 
 # Global state instance

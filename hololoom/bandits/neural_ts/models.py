@@ -6,10 +6,10 @@ and MC-Dropout backends. Models are kept small (<200k params/head) for fast
 inference and training.
 """
 
+from typing import Literal
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from typing import Literal
 
 
 class MLP(nn.Module):

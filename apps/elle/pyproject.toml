@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elle"
+version = "0.2.0"
+description = "Elle — calm operational intelligence for the Farm & Kitchen Cooperative"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "httpx>=0.25.0",
+]
+
+[project.optional-dependencies]
+voice = ["pyttsx3>=2.90"]
+analytics = ["pandas>=2.0.0"]
+anthropic = ["anthropic>=0.40.0"]
+openai = ["openai>=1.0.0"]
+hololoom = ["hololoom"]
+all = ["elle[voice,analytics,anthropic,openai,hololoom]"]
+
+[project.scripts]
+elle = "elle.chat:main"
+
+[tool.setuptools.packages.find]
+where = [".."]
+include = ["elle*"]
+
+[tool.setuptools.package-data]
+elle = [
+    "core/prompt/*.txt",
+    "symbols/*.txt",
+    "dashboard/static/**/*",
+    "sops/*.json",
+    "data/*.json",
+    "data/*.db",
+]

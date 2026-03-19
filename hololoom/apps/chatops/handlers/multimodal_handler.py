@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Multi-Modal Handler for ChatOps
 ================================
@@ -23,30 +22,30 @@ Architecture:
     Store in Knowledge Graph with context
 """
 
+import hashlib
 import logging
-import asyncio
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-import hashlib
+from typing import Any
 
 try:
     from nio import (
         MatrixRoom,
-        RoomMessageImage,
-        RoomMessageFile,
         RoomMessageAudio,
+        RoomMessageFile,
+        RoomMessageImage,
         RoomMessageVideo,
-        UploadResponse
+        UploadResponse,
     )
     NIO_AVAILABLE = True
 except ImportError:
     NIO_AVAILABLE = False
 
 try:
-    from holoLoom.spinningWheel.image_utils import ImageExtractor
     from holoLoom.spinningWheel.base import BaseSpinner
+    from holoLoom.spinningWheel.image_utils import ImageExtractor
+
     from holoLoom.documentation.types import MemoryShard
     IMAGE_UTILS_AVAILABLE = True
 except ImportError:
@@ -68,12 +67,12 @@ class MediaInfo:
     mimetype: str
     size_bytes: int
     timestamp: datetime
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
     # Processed content
-    description: Optional[str] = None
-    extracted_text: Optional[str] = None
-    analysis: Optional[Dict[str, Any]] = None
+    description: str | None = None
+    extracted_text: str | None = None
+    analysis: dict[str, Any] | None = None
 
 
 # ============================================================================
@@ -118,7 +117,7 @@ class ImageProcessor:
         self,
         event: Any,  # RoomMessageImage
         room: Any   # MatrixRoom
-    ) -> Optional[MediaInfo]:
+    ) -> MediaInfo | None:
         """
         Process image message.
 
@@ -179,7 +178,7 @@ class ImageProcessor:
             logger.error(f"Error processing image: {e}", exc_info=True)
             return None
 
-    async def _download_media(self, mxc_url: str) -> Optional[bytes]:
+    async def _download_media(self, mxc_url: str) -> bytes | None:
         """Download media from Matrix."""
         if not self.client:
             logger.warning("No Matrix client provided, cannot download")
@@ -233,7 +232,7 @@ class ImageProcessor:
         self,
         image_data: bytes,
         filename: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Analyze image and generate description.
 
@@ -264,7 +263,7 @@ class ImageProcessor:
     async def _extract_text_from_image(
         self,
         image_data: bytes
-    ) -> Optional[str]:
+    ) -> str | None:
         """Extract text from image using OCR."""
         # Would use Tesseract or similar
         # Placeholder for now
@@ -302,7 +301,7 @@ class FileProcessor:
         self,
         event: Any,  # RoomMessageFile
         room: Any    # MatrixRoom
-    ) -> Optional[MediaInfo]:
+    ) -> MediaInfo | None:
         """
         Process file upload.
 
@@ -362,7 +361,7 @@ class FileProcessor:
             logger.error(f"Error processing file: {e}", exc_info=True)
             return None
 
-    async def _download_file(self, mxc_url: str) -> Optional[bytes]:
+    async def _download_file(self, mxc_url: str) -> bytes | None:
         """Download file from Matrix."""
         # Same as _download_media in ImageProcessor
         if not self.client:
@@ -402,7 +401,7 @@ class FileProcessor:
         file_data: bytes,
         filename: str,
         mimetype: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Extract text content from file based on type.
 
@@ -472,7 +471,7 @@ class MultiModalHandler:
         self,
         room: Any,
         event: Any
-    ) -> Optional[MediaInfo]:
+    ) -> MediaInfo | None:
         """Handle image message."""
         media_info = await self.image_processor.process_image(event, room)
 
@@ -486,7 +485,7 @@ class MultiModalHandler:
         self,
         room: Any,
         event: Any
-    ) -> Optional[MediaInfo]:
+    ) -> MediaInfo | None:
         """Handle file upload."""
         media_info = await self.file_processor.process_file(event, room)
 

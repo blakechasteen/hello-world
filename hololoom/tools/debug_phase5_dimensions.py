@@ -6,14 +6,18 @@ Traces dimensions through the Phase 5 pipeline to find mismatch.
 """
 
 import sys
+
 sys.path.insert(0, '.')
 
 import numpy as np
-from hololoom.config import Config
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
+
 from hololoom.embedding.linguistic_matryoshka_gate import (
-    LinguisticMatryoshkaGate, LinguisticGateConfig, LinguisticFilterMode
+    LinguisticFilterMode,
+    LinguisticGateConfig,
+    LinguisticMatryoshkaGate,
 )
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+
 
 def debug_dimensions():
     """Debug dimension flow through Phase 5."""
@@ -41,18 +45,18 @@ def debug_dimensions():
     # Test encode()
     standard_embeds = standard_embedder.encode(texts)
     print(f"encode(texts) shape: {standard_embeds.shape}")
-    print(f"  Expected: (2, 384) - largest scale")
+    print("  Expected: (2, 384) - largest scale")
     print()
 
     # Test encode_scales() with size
     standard_embeds_96 = standard_embedder.encode_scales(texts, size=96)
     print(f"encode_scales(texts, size=96) shape: {standard_embeds_96.shape}")
-    print(f"  Expected: (2, 96)")
+    print("  Expected: (2, 96)")
     print()
 
     # Test encode_scales() without size
     standard_embeds_all = standard_embedder.encode_scales(texts, size=None)
-    print(f"encode_scales(texts, size=None):")
+    print("encode_scales(texts, size=None):")
     for scale, embeds in standard_embeds_all.items():
         print(f"  scale {scale}: {embeds.shape}")
     print()
@@ -88,7 +92,7 @@ def debug_dimensions():
     try:
         gate_embeds = linguistic_gate.encode(texts)
         print(f"encode(texts) shape: {gate_embeds.shape}")
-        print(f"  Expected: (2, 384) - largest scale")
+        print("  Expected: (2, 384) - largest scale")
         print()
     except Exception as e:
         print(f"❌ encode() FAILED: {e}")
@@ -100,7 +104,7 @@ def debug_dimensions():
         print(f"encode_scales(texts, size=96) type: {type(gate_embeds_96)}")
         if isinstance(gate_embeds_96, np.ndarray):
             print(f"  shape: {gate_embeds_96.shape}")
-            print(f"  Expected: (2, 96)")
+            print("  Expected: (2, 96)")
         else:
             print(f"  ❌ WRONG TYPE! Expected np.ndarray, got {type(gate_embeds_96)}")
         print()
@@ -115,7 +119,7 @@ def debug_dimensions():
         gate_embeds_all = linguistic_gate.encode_scales(texts, size=None)
         print(f"encode_scales(texts, size=None) type: {type(gate_embeds_all)}")
         if isinstance(gate_embeds_all, dict):
-            print(f"  scales returned:")
+            print("  scales returned:")
             for scale, embeds in gate_embeds_all.items():
                 print(f"    scale {scale}: {embeds.shape}")
         else:
@@ -143,7 +147,7 @@ def debug_dimensions():
 
         print(f"get_compositional_embedding('{text}'):")
         print(f"  embedding shape: {emb.shape}")
-        print(f"  Expected: (384,) - base embedder dimension")
+        print("  Expected: (384,) - base embedder dimension")
         print(f"  Trace: {trace}")
         print()
 
@@ -165,8 +169,8 @@ def debug_dimensions():
     print("-" * 80)
 
     print("Policy engine calls: embedder.encode_scales(texts, size=mem_dim)")
-    print(f"  For FAST mode: mem_dim = 192")
-    print(f"  Expected return: np.ndarray with shape (n_texts, 192)")
+    print("  For FAST mode: mem_dim = 192")
+    print("  Expected return: np.ndarray with shape (n_texts, 192)")
     print()
 
     print("Testing what policy gets:")
@@ -175,7 +179,7 @@ def debug_dimensions():
         print(f"  Type: {type(policy_embeds)}")
         if isinstance(policy_embeds, np.ndarray):
             print(f"  Shape: {policy_embeds.shape}")
-            print(f"  ✅ CORRECT! Returns array with shape (2, 192)")
+            print("  ✅ CORRECT! Returns array with shape (2, 192)")
         else:
             print(f"  ❌ WRONG! Returns {type(policy_embeds)} instead of np.ndarray")
     except Exception as e:

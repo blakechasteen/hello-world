@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 HoloLoom Alignment Framework - UnifiedMRF Integration
 ======================================================
@@ -31,21 +32,12 @@ Example:
 """
 
 import logging
-from typing import Optional, Dict, Any, List
-from enum import Enum
+from typing import Any
 
-from hololoom.prompting.unified_mrf import (
-    UnifiedMRF,
-    MetapromptConfig,
-    ModelProvider
-)
+from hololoom.prompting.unified_mrf import MetapromptConfig, ModelProvider, UnifiedMRF
 
 try:
-    from hololoom.alignment.safety_guardrails import (
-        ActionCategory,
-        RiskLevel,
-        ActionRequest
-    )
+    from hololoom.alignment.safety_guardrails import ActionCategory, ActionRequest, RiskLevel
 except ImportError:
     # Graceful degradation if alignment not available
     ActionCategory = None
@@ -62,9 +54,9 @@ logger = logging.getLogger(__name__)
 def create_risk_assessment_prompt(
     action: str,
     category: ActionCategory,
-    context: Dict[str, Any],
+    context: dict[str, Any],
     model_provider: str = "claude",
-    epistemic_confidence: Optional[float] = None
+    epistemic_confidence: float | None = None
 ) -> str:
     """
     Create UnifiedMRF-enhanced prompt for risk assessment.
@@ -112,7 +104,7 @@ def create_risk_assessment_prompt(
     baseline_risk = risk_baselines.get(category.name, "MEDIUM")
 
     config = MetapromptConfig(
-        role=f"Expert security analyst specializing in risk assessment for AI systems. Your expertise includes threat modeling, security boundaries, and safe operation practices.",
+        role="Expert security analyst specializing in risk assessment for AI systems. Your expertise includes threat modeling, security boundaries, and safe operation practices.",
         objective={
             "primary": f"Assess the security risk level for this action: '{action}' (category: {category.value})",
             "secondary": [
@@ -281,7 +273,7 @@ def create_approval_request_prompt(
     action: str,
     category: ActionCategory,
     risk_level: RiskLevel,
-    context: Dict[str, Any],
+    context: dict[str, Any],
     model_provider: str = "claude"
 ) -> str:
     """
@@ -376,7 +368,7 @@ def create_approval_request_prompt(
     context_section += f"**Action**: {action}\n"
     context_section += f"**Category**: {category.value}\n"
     context_section += f"**Risk Level**: {risk_level.value}\n"
-    context_section += f"\n**Context**:\n"
+    context_section += "\n**Context**:\n"
     for key, value in context.items():
         context_section += f"  - {key}: {value}\n"
 

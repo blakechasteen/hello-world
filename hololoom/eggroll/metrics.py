@@ -17,15 +17,13 @@ from __future__ import annotations
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 from hololoom.telemetry.metrics import (
-    get_registry,
     counter,
     gauge,
     histogram,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  EGGROLL METRICS
@@ -124,7 +122,7 @@ class EggrollMetricsCollector:
 
     # Internal tracking
     _epoch_count: int = field(default=0, init=False)
-    _fitness_history: List[float] = field(default_factory=list, init=False)
+    _fitness_history: list[float] = field(default_factory=list, init=False)
 
     @contextmanager
     def time_epoch(self, complexity: str = "FULL"):
@@ -199,7 +197,7 @@ class EggrollMetricsCollector:
             labels={"event_type": event_type, "population_id": self.population_id}
         )
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get summary of collected metrics."""
         return {
             "population_id": self.population_id,
@@ -224,7 +222,7 @@ def create_eggroll_collector(population_id: str = "default") -> EggrollMetricsCo
 
 
 # Global collector for convenience
-_default_collector: Optional[EggrollMetricsCollector] = None
+_default_collector: EggrollMetricsCollector | None = None
 
 
 def get_eggroll_collector() -> EggrollMetricsCollector:

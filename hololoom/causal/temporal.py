@@ -15,12 +15,10 @@ Instead of static:
     treatment → recovery  # When? Who knows!
 """
 
-import numpy as np
-from typing import Dict, List, Set, Optional, Tuple, Any
-from dataclasses import dataclass, field
 import logging
+from dataclasses import dataclass
 
-from .dag import CausalDAG, CausalNode, CausalEdge, NodeType
+from .dag import CausalDAG, CausalEdge, CausalNode, NodeType
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +47,7 @@ class TemporalEdge:
 class TemporalState:
     """State of all variables at a specific time."""
     time: int
-    values: Dict[str, float]
+    values: dict[str, float]
 
     def __getitem__(self, var: str) -> float:
         return self.values[var]
@@ -87,7 +85,7 @@ class TemporalCausalDAG:
         )
     """
 
-    def __init__(self, variables: List[str], max_lag: int = 10):
+    def __init__(self, variables: list[str], max_lag: int = 10):
         """
         Initialize temporal causal DAG.
 
@@ -97,10 +95,10 @@ class TemporalCausalDAG:
         """
         self.variables = variables
         self.max_lag = max_lag
-        self.temporal_edges: List[TemporalEdge] = []
+        self.temporal_edges: list[TemporalEdge] = []
 
         # For each variable, track its temporal dependencies
-        self.parents: Dict[str, List[Tuple[str, int]]] = {
+        self.parents: dict[str, list[tuple[str, int]]] = {
             var: [] for var in variables
         }
 
@@ -123,8 +121,8 @@ class TemporalCausalDAG:
     def predict_step(
         self,
         current_state: TemporalState,
-        history: List[TemporalState]
-    ) -> Dict[str, float]:
+        history: list[TemporalState]
+    ) -> dict[str, float]:
         """
         Predict next time step from current state and history.
 
@@ -180,10 +178,10 @@ class TemporalCausalDAG:
 
     def predict_trajectory(
         self,
-        initial_state: Dict[str, float],
+        initial_state: dict[str, float],
         steps: int,
-        interventions: Optional[Dict[int, Dict[str, float]]] = None
-    ) -> List[TemporalState]:
+        interventions: dict[int, dict[str, float]] | None = None
+    ) -> list[TemporalState]:
         """
         Predict temporal trajectory starting from initial state.
 
@@ -221,10 +219,10 @@ class TemporalCausalDAG:
     def intervene_trajectory(
         self,
         intervention_time: int,
-        intervention: Dict[str, float],
-        initial_state: Dict[str, float],
+        intervention: dict[str, float],
+        initial_state: dict[str, float],
         total_steps: int
-    ) -> Tuple[List[TemporalState], List[TemporalState]]:
+    ) -> tuple[list[TemporalState], list[TemporalState]]:
         """
         Compare factual and counterfactual trajectories.
 
@@ -255,7 +253,7 @@ class TemporalCausalDAG:
         outcome: str,
         treatment_value: float,
         control_value: float,
-        initial_state: Dict[str, float],
+        initial_state: dict[str, float],
         observation_time: int
     ) -> float:
         """
@@ -305,8 +303,8 @@ class TemporalCausalDAG:
         self,
         source: str,
         target: str,
-        max_lag_test: Optional[int] = None
-    ) -> Tuple[bool, float]:
+        max_lag_test: int | None = None
+    ) -> tuple[bool, float]:
         """
         Test Granger causality: Does source help predict target?
 
@@ -351,9 +349,9 @@ class TemporalCausalDAG:
         treatment: str,
         outcome: str,
         treatment_value: float,
-        initial_state: Dict[str, float],
+        initial_state: dict[str, float],
         max_time: int = None
-    ) -> Tuple[int, float]:
+    ) -> tuple[int, float]:
         """
         Find optimal time to intervene for maximum effect.
 

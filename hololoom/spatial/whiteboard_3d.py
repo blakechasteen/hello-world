@@ -14,12 +14,13 @@ Enables shared 3D drawing and annotation in XR space:
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any, Callable, Tuple
-from enum import Enum
-from datetime import datetime
 import math
 import uuid
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class DrawingTool(Enum):
@@ -58,13 +59,9 @@ class Color:
     a: float = 1.0
 
     def to_hex(self) -> str:
-        return "#{:02x}{:02x}{:02x}".format(
-            int(self.r * 255),
-            int(self.g * 255),
-            int(self.b * 255)
-        )
+        return f"#{int(self.r * 255):02x}{int(self.g * 255):02x}{int(self.b * 255):02x}"
 
-    def to_tuple(self) -> Tuple[float, float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float, float]:
         return (self.r, self.g, self.b, self.a)
 
     @classmethod
@@ -102,7 +99,7 @@ class Point3D:
     tilt_y: float = 0.0
     timestamp: float = field(default_factory=lambda: datetime.now().timestamp())
 
-    def to_tuple(self) -> Tuple[float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float]:
         return (self.x, self.y, self.z)
 
     def distance_to(self, other: "Point3D") -> float:
@@ -130,7 +127,7 @@ class BrushSettings:
 class Stroke:
     """A single drawing stroke."""
     stroke_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
-    points: List[Point3D] = field(default_factory=list)
+    points: list[Point3D] = field(default_factory=list)
     brush: BrushSettings = field(default_factory=BrushSettings)
     user_id: str = ""
     board_id: str = ""
@@ -138,13 +135,13 @@ class Stroke:
     visible: bool = True
     locked: bool = False
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def add_point(self, x: float, y: float, z: float, pressure: float = 1.0):
         """Add point to stroke."""
         self.points.append(Point3D(x, y, z, pressure))
 
-    def get_bounds(self) -> Tuple[Point3D, Point3D]:
+    def get_bounds(self) -> tuple[Point3D, Point3D]:
         """Get bounding box."""
         if not self.points:
             return Point3D(), Point3D()
@@ -170,7 +167,7 @@ class Stroke:
             for i in range(len(self.points) - 1)
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.stroke_id,
             "points": [
@@ -201,7 +198,7 @@ class Shape3D:
     color: Color = field(default_factory=lambda: Colors.WHITE)
     line_width: float = 0.005
     filled: bool = False
-    fill_color: Optional[Color] = None
+    fill_color: Color | None = None
     user_id: str = ""
     board_id: str = ""
     layer: int = 0
@@ -209,7 +206,7 @@ class Shape3D:
     locked: bool = False
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.shape_id,
             "type": self.shape_type,
@@ -229,10 +226,10 @@ class TextAnnotation:
     text_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     text: str = ""
     position: Point3D = field(default_factory=Point3D)
-    rotation: Tuple[float, float, float] = (0, 0, 0)
+    rotation: tuple[float, float, float] = (0, 0, 0)
     font_size: float = 0.05  # Meters
     color: Color = field(default_factory=lambda: Colors.WHITE)
-    background_color: Optional[Color] = None
+    background_color: Color | None = None
     font_family: str = "sans-serif"
     bold: bool = False
     italic: bool = False
@@ -244,7 +241,7 @@ class TextAnnotation:
     billboard: bool = True  # Face viewer
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.text_id,
             "text": self.text,
@@ -265,12 +262,12 @@ class StickyNote:
     note_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     text: str = ""
     position: Point3D = field(default_factory=Point3D)
-    rotation: Tuple[float, float, float] = (0, 0, 0)
-    size: Tuple[float, float] = (0.15, 0.15)  # Width, height in meters
+    rotation: tuple[float, float, float] = (0, 0, 0)
+    size: tuple[float, float] = (0.15, 0.15)  # Width, height in meters
     color: Color = field(default_factory=lambda: Colors.YELLOW)
     text_color: Color = field(default_factory=lambda: Colors.BLACK)
     pinned: bool = False
-    linked_node_id: Optional[str] = None  # Link to knowledge node
+    linked_node_id: str | None = None  # Link to knowledge node
     user_id: str = ""
     board_id: str = ""
     layer: int = 1
@@ -278,7 +275,7 @@ class StickyNote:
     locked: bool = False
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.note_id,
             "text": self.text,
@@ -310,8 +307,8 @@ class UndoAction:
     action_type: str  # add, remove, modify
     element_type: str  # stroke, shape, text, note
     element_id: str
-    before_state: Optional[Dict[str, Any]] = None
-    after_state: Optional[Dict[str, Any]] = None
+    before_state: dict[str, Any] | None = None
+    after_state: dict[str, Any] | None = None
     timestamp: float = field(default_factory=lambda: datetime.now().timestamp())
 
 
@@ -324,8 +321,8 @@ class Whiteboard3D:
         self,
         board_id: str,
         name: str = "Whiteboard",
-        position: Tuple[float, float, float] = (0, 1.5, -1),
-        size: Tuple[float, float] = (2.0, 1.5),  # Width, height
+        position: tuple[float, float, float] = (0, 1.5, -1),
+        size: tuple[float, float] = (2.0, 1.5),  # Width, height
         owner_id: str = ""
     ):
         self.board_id = board_id
@@ -335,13 +332,13 @@ class Whiteboard3D:
         self.owner_id = owner_id
 
         # Content
-        self.strokes: Dict[str, Stroke] = {}
-        self.shapes: Dict[str, Shape3D] = {}
-        self.texts: Dict[str, TextAnnotation] = {}
-        self.sticky_notes: Dict[str, StickyNote] = {}
+        self.strokes: dict[str, Stroke] = {}
+        self.shapes: dict[str, Shape3D] = {}
+        self.texts: dict[str, TextAnnotation] = {}
+        self.sticky_notes: dict[str, StickyNote] = {}
 
         # Layers
-        self.layers: List[WhiteboardLayer] = [
+        self.layers: list[WhiteboardLayer] = [
             WhiteboardLayer(0, "Background"),
             WhiteboardLayer(1, "Main"),
             WhiteboardLayer(2, "Annotations")
@@ -349,32 +346,32 @@ class Whiteboard3D:
         self.active_layer: int = 1
 
         # Undo/redo
-        self.undo_stack: List[UndoAction] = []
-        self.redo_stack: List[UndoAction] = []
+        self.undo_stack: list[UndoAction] = []
+        self.redo_stack: list[UndoAction] = []
         self.max_undo: int = 50
 
         # Collaboration
-        self.collaborators: Dict[str, Dict[str, Any]] = {}
+        self.collaborators: dict[str, dict[str, Any]] = {}
         self.is_public: bool = False
 
         # Active drawing (per user)
-        self.active_strokes: Dict[str, Stroke] = {}  # user_id -> current stroke
+        self.active_strokes: dict[str, Stroke] = {}  # user_id -> current stroke
 
         # Metadata
         self.created_at: float = datetime.now().timestamp()
         self.modified_at: float = self.created_at
-        self.metadata: Dict[str, Any] = {}
+        self.metadata: dict[str, Any] = {}
 
         # Callbacks
-        self.on_stroke_complete: List[Callable[[Stroke], None]] = []
-        self.on_element_added: List[Callable[[str, str], None]] = []
-        self.on_element_removed: List[Callable[[str, str], None]] = []
+        self.on_stroke_complete: list[Callable[[Stroke], None]] = []
+        self.on_element_added: list[Callable[[str, str], None]] = []
+        self.on_element_removed: list[Callable[[str, str], None]] = []
 
     def start_stroke(
         self,
         user_id: str,
         x: float, y: float, z: float,
-        brush: Optional[BrushSettings] = None,
+        brush: BrushSettings | None = None,
         pressure: float = 1.0
     ) -> str:
         """Start a new stroke."""
@@ -403,7 +400,7 @@ class Whiteboard3D:
         stroke.add_point(x, y, z, pressure)
         return True
 
-    def end_stroke(self, user_id: str) -> Optional[Stroke]:
+    def end_stroke(self, user_id: str) -> Stroke | None:
         """Complete and save stroke."""
         if user_id not in self.active_strokes:
             return None
@@ -433,7 +430,7 @@ class Whiteboard3D:
         """Cancel active stroke."""
         self.active_strokes.pop(user_id, None)
 
-    def _smooth_points(self, points: List[Point3D], factor: float) -> List[Point3D]:
+    def _smooth_points(self, points: list[Point3D], factor: float) -> list[Point3D]:
         """Apply smoothing to points."""
         if len(points) < 3:
             return points
@@ -459,10 +456,10 @@ class Whiteboard3D:
     def add_shape(
         self,
         shape_type: str,
-        start: Tuple[float, float, float],
-        end: Tuple[float, float, float],
+        start: tuple[float, float, float],
+        end: tuple[float, float, float],
         user_id: str,
-        color: Optional[Color] = None,
+        color: Color | None = None,
         line_width: float = 0.005,
         filled: bool = False
     ) -> Shape3D:
@@ -492,10 +489,10 @@ class Whiteboard3D:
     def add_text(
         self,
         text: str,
-        position: Tuple[float, float, float],
+        position: tuple[float, float, float],
         user_id: str,
         font_size: float = 0.05,
-        color: Optional[Color] = None,
+        color: Color | None = None,
         billboard: bool = True
     ) -> TextAnnotation:
         """Add text annotation."""
@@ -523,10 +520,10 @@ class Whiteboard3D:
     def add_sticky_note(
         self,
         text: str,
-        position: Tuple[float, float, float],
+        position: tuple[float, float, float],
         user_id: str,
-        color: Optional[Color] = None,
-        linked_node_id: Optional[str] = None
+        color: Color | None = None,
+        linked_node_id: str | None = None
     ) -> StickyNote:
         """Add sticky note."""
         note = StickyNote(
@@ -577,7 +574,7 @@ class Whiteboard3D:
         self,
         x: float, y: float, z: float,
         radius: float = 0.05
-    ) -> List[str]:
+    ) -> list[str]:
         """Erase strokes within radius of point."""
         erased = []
         point = Point3D(x, y, z)
@@ -608,7 +605,7 @@ class Whiteboard3D:
 
         self._add_undo_action("clear", "board", self.board_id, before_state=before_state)
 
-    def _get_collection(self, element_type: str) -> Optional[Dict]:
+    def _get_collection(self, element_type: str) -> dict | None:
         """Get collection by element type."""
         collections = {
             "stroke": self.strokes,
@@ -623,8 +620,8 @@ class Whiteboard3D:
         action_type: str,
         element_type: str,
         element_id: str,
-        before_state: Optional[Dict] = None,
-        after_state: Optional[Dict] = None
+        before_state: dict | None = None,
+        after_state: dict | None = None
     ):
         """Add action to undo stack."""
         action = UndoAction(
@@ -692,7 +689,7 @@ class Whiteboard3D:
         self.modified_at = datetime.now().timestamp()
         return True
 
-    def _restore_element(self, element_type: str, state: Dict[str, Any]):
+    def _restore_element(self, element_type: str, state: dict[str, Any]):
         """Restore element from state dict."""
         if not state:
             return
@@ -700,7 +697,7 @@ class Whiteboard3D:
         # Simplified restoration - would need full deserialization in production
         pass
 
-    def _restore_board_state(self, state: Dict[str, Any]):
+    def _restore_board_state(self, state: dict[str, Any]):
         """Restore full board state."""
         if not state:
             return
@@ -723,13 +720,13 @@ class Whiteboard3D:
         self.collaborators.pop(user_id, None)
         self.active_strokes.pop(user_id, None)
 
-    def update_cursor(self, user_id: str, position: Tuple[float, float, float]):
+    def update_cursor(self, user_id: str, position: tuple[float, float, float]):
         """Update user cursor position."""
         if user_id in self.collaborators:
             self.collaborators[user_id]["cursor_position"] = position
             self.collaborators[user_id]["is_drawing"] = user_id in self.active_strokes
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get board statistics."""
         total_points = sum(len(s.points) for s in self.strokes.values())
         total_length = sum(s.get_length() for s in self.strokes.values())
@@ -747,7 +744,7 @@ class Whiteboard3D:
             "redo_available": len(self.redo_stack)
         }
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export full board state."""
         return {
             "id": self.board_id,
@@ -775,22 +772,22 @@ class WhiteboardManager:
     """
 
     def __init__(self):
-        self.boards: Dict[str, Whiteboard3D] = {}
-        self.active_board: Optional[str] = None
+        self.boards: dict[str, Whiteboard3D] = {}
+        self.active_board: str | None = None
 
         # User states
-        self.user_brushes: Dict[str, BrushSettings] = {}
+        self.user_brushes: dict[str, BrushSettings] = {}
 
         # Callbacks
-        self.on_board_created: List[Callable[[Whiteboard3D], None]] = []
-        self.on_board_deleted: List[Callable[[str], None]] = []
+        self.on_board_created: list[Callable[[Whiteboard3D], None]] = []
+        self.on_board_deleted: list[Callable[[str], None]] = []
 
     def create_board(
         self,
         board_id: str,
         name: str = "Whiteboard",
-        position: Tuple[float, float, float] = (0, 1.5, -1),
-        size: Tuple[float, float] = (2.0, 1.5),
+        position: tuple[float, float, float] = (0, 1.5, -1),
+        size: tuple[float, float] = (2.0, 1.5),
         owner_id: str = ""
     ) -> Whiteboard3D:
         """Create new whiteboard."""
@@ -827,7 +824,7 @@ class WhiteboardManager:
 
         return True
 
-    def get_board(self, board_id: str) -> Optional[Whiteboard3D]:
+    def get_board(self, board_id: str) -> Whiteboard3D | None:
         """Get whiteboard by ID."""
         return self.boards.get(board_id)
 
@@ -838,7 +835,7 @@ class WhiteboardManager:
         self.active_board = board_id
         return True
 
-    def get_active_board(self) -> Optional[Whiteboard3D]:
+    def get_active_board(self) -> Whiteboard3D | None:
         """Get currently active board."""
         if self.active_board:
             return self.boards.get(self.active_board)
@@ -852,7 +849,7 @@ class WhiteboardManager:
         """Get brush settings for user."""
         return self.user_brushes.get(user_id, BrushSettings())
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get manager statistics."""
         total_strokes = sum(len(b.strokes) for b in self.boards.values())
         total_elements = sum(
@@ -868,7 +865,7 @@ class WhiteboardManager:
             "active_users": len(self.user_brushes)
         }
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export full state for WebXR client."""
         return {
             "type": "whiteboard_state",

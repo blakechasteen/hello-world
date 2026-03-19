@@ -30,18 +30,16 @@ Example:
 """
 
 import logging
-from typing import Dict, List, Tuple, Optional, Any, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-from hololoom.protocols.types import Features, Context, ActionPlan
-from hololoom.semantic_calculus.dimensions import (
-    EXTENDED_244_DIMENSIONS,
-    SemanticSpectrum
-)
+from hololoom.protocols.types import ActionPlan, Context, Features
+from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +141,7 @@ class SemanticStateEncoder(nn.Module):
             nn.LayerNorm(config.policy_dim)
         )
 
-    def forward(self, semantic_state: Dict[str, torch.Tensor]) -> torch.Tensor:
+    def forward(self, semantic_state: dict[str, torch.Tensor]) -> torch.Tensor:
         """
         Encode semantic state for policy.
 
@@ -202,7 +200,7 @@ class SemanticRewardShaper:
 
     def __init__(
         self,
-        target_dimensions: Dict[str, float],
+        target_dimensions: dict[str, float],
         gamma: float = 0.99,
         potential_weight: float = 0.3
     ):
@@ -223,7 +221,7 @@ class SemanticRewardShaper:
         for dim, target in target_dimensions.items():
             logger.debug(f"  Target: {dim} = {target:.2f}")
 
-    def compute_potential(self, semantic_state: Dict[str, float]) -> float:
+    def compute_potential(self, semantic_state: dict[str, float]) -> float:
         """
         Compute potential function value from semantic position.
 
@@ -262,8 +260,8 @@ class SemanticRewardShaper:
     def shape_reward(
         self,
         base_reward: float,
-        semantic_state_old: Dict[str, float],
-        semantic_state_new: Dict[str, float]
+        semantic_state_old: dict[str, float],
+        semantic_state_new: dict[str, float]
     ) -> float:
         """
         Apply potential-based semantic reward shaping.
@@ -299,7 +297,7 @@ class SemanticRewardShaper:
 
     def compute_goal_alignment(
         self,
-        semantic_state: Dict[str, float]
+        semantic_state: dict[str, float]
     ) -> float:
         """
         Compute alignment score with semantic goals.
@@ -346,8 +344,8 @@ class SemanticNudgePolicy:
         self,
         base_policy,  # Base PolicyEngine
         semantic_spectrum: SemanticSpectrum,
-        config: Optional[SemanticNudgeConfig] = None,
-        semantic_goals: Optional[Dict[str, float]] = None
+        config: SemanticNudgeConfig | None = None,
+        semantic_goals: dict[str, float] | None = None
     ):
         """
         Args:
@@ -376,7 +374,7 @@ class SemanticNudgePolicy:
         self,
         features: Features,
         context: Context,
-        semantic_state: Optional[Dict[str, float]] = None
+        semantic_state: dict[str, float] | None = None
     ) -> ActionPlan:
         """
         Make decision with optional semantic guidance.
@@ -401,7 +399,7 @@ class SemanticNudgePolicy:
     def _apply_semantic_nudge(
         self,
         action_plan: ActionPlan,
-        semantic_state: Dict[str, float]
+        semantic_state: dict[str, float]
     ) -> ActionPlan:
         """
         Apply subtle bias toward semantically aligned tools.
@@ -464,8 +462,8 @@ class SemanticNudgePolicy:
     def shape_reward(
         self,
         base_reward: float,
-        semantic_state_old: Dict[str, float],
-        semantic_state_new: Dict[str, float]
+        semantic_state_old: dict[str, float],
+        semantic_state_new: dict[str, float]
     ) -> float:
         """
         Shape reward based on semantic trajectory.
@@ -495,10 +493,10 @@ class SemanticNudgePolicy:
 def compute_semantic_state(
     text: str,
     semantic_spectrum: SemanticSpectrum,
-    previous_state: Optional[Dict[str, float]] = None,
+    previous_state: dict[str, float] | None = None,
     dt: float = 1.0,
-    embed_fn: Optional[Callable[[str], np.ndarray]] = None
-) -> Dict[str, Any]:
+    embed_fn: Callable[[str], np.ndarray] | None = None
+) -> dict[str, Any]:
     """
     Compute semantic state (position, velocity, categories) from text.
 
@@ -585,7 +583,7 @@ def compute_semantic_state(
             velocity[dim_name] = (position[dim_name] - prev_val) / dt
     else:
         # No previous state, velocity is zero
-        velocity = {dim_name: 0.0 for dim_name in position.keys()}
+        velocity = dict.fromkeys(position.keys(), 0.0)
 
     # Aggregate by category (244D -> 16D)
     categories = aggregate_by_category(position)
@@ -617,7 +615,7 @@ def compute_semantic_state(
     }
 
 
-def _empty_semantic_state() -> Dict[str, Any]:
+def _empty_semantic_state() -> dict[str, Any]:
     """Return empty semantic state (all zeros)."""
     n_dims = len(EXTENDED_244_DIMENSIONS)
     n_categories = len(SEMANTIC_CATEGORIES)
@@ -625,7 +623,7 @@ def _empty_semantic_state() -> Dict[str, Any]:
     return {
         'position': {dim.name: 0.0 for dim in EXTENDED_244_DIMENSIONS},
         'velocity': {dim.name: 0.0 for dim in EXTENDED_244_DIMENSIONS},
-        'categories': {cat: 0.0 for cat in SEMANTIC_CATEGORIES.keys()},
+        'categories': dict.fromkeys(SEMANTIC_CATEGORIES.keys(), 0.0),
         'position_tensor': torch.zeros(1, n_dims),
         'velocity_tensor': torch.zeros(1, n_dims),
         'categories_tensor': torch.zeros(1, n_categories)
@@ -633,8 +631,8 @@ def _empty_semantic_state() -> Dict[str, Any]:
 
 
 def aggregate_by_category(
-    semantic_projections: Dict[str, float]
-) -> Dict[str, float]:
+    semantic_projections: dict[str, float]
+) -> dict[str, float]:
     """
     Aggregate 244D projections into 16 semantic categories.
 
@@ -644,8 +642,8 @@ def aggregate_by_category(
     Returns:
         Dict mapping category name -> aggregated value
     """
-    category_sums = {cat: 0.0 for cat in SEMANTIC_CATEGORIES.keys()}
-    category_counts = {cat: 0 for cat in SEMANTIC_CATEGORIES.keys()}
+    category_sums = dict.fromkeys(SEMANTIC_CATEGORIES.keys(), 0.0)
+    category_counts = dict.fromkeys(SEMANTIC_CATEGORIES.keys(), 0)
 
     # Aggregate by category
     for i, dim in enumerate(EXTENDED_244_DIMENSIONS):
@@ -669,7 +667,7 @@ def aggregate_by_category(
 # Utility Functions
 # ============================================================================
 
-def define_semantic_goals(goal_type: str) -> Dict[str, float]:
+def define_semantic_goals(goal_type: str) -> dict[str, float]:
     """
     Define common semantic goal configurations.
 

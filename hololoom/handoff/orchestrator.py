@@ -19,30 +19,29 @@ import asyncio
 import logging
 import secrets
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .identity import UnifiedIdentity
 
-from .synced_memory import SyncedMemory, MergeResult
+from .synced_memory import MergeResult, SyncedMemory
 from .types import (
+    DeviceNotFoundError,
+    DeviceRevokedError,
     DeviceStatus,
+    DeviceUnhealthyError,
+    HandoffBlockedError,
     HandoffRequest,
     HandoffResult,
     HandoffStatus,
-    SignedOp,
-    HandoffError,
-    DeviceNotFoundError,
-    DeviceRevokedError,
-    DeviceUnhealthyError,
-    RateLimitExceededError,
     InvalidSignatureError,
-    ReplayAttackError,
     PayloadRejectedError,
-    HandoffBlockedError,
+    RateLimitExceededError,
+    ReplayAttackError,
+    SignedOp,
 )
 
 logger = logging.getLogger(__name__)
@@ -83,8 +82,8 @@ class WAFResult:
     """Result of WAF validation."""
 
     passed: bool
-    rule_id: Optional[str] = None
-    reason: Optional[str] = None
+    rule_id: str | None = None
+    reason: str | None = None
 
 
 @dataclass
@@ -116,7 +115,7 @@ class InMemoryRateLimiter:
     ):
         self.rpm = requests_per_minute
         self.burst = burst_size
-        self._buckets: Dict[str, Dict[str, Any]] = {}
+        self._buckets: dict[str, dict[str, Any]] = {}
         self._lock = asyncio.Lock()
 
     async def check(self, device_key: str) -> RateLimitResult:
@@ -194,7 +193,7 @@ class DeviceCircuitBreaker:
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.success_threshold = success_threshold
-        self._circuits: Dict[str, DeviceCircuit] = {}
+        self._circuits: dict[str, DeviceCircuit] = {}
         self._lock = asyncio.Lock()
 
     async def get_circuit(self, device_id: str) -> DeviceCircuit:
@@ -271,7 +270,7 @@ class SimpleWAF:
         ("command_injection", ["; rm -rf", "| cat /etc", "&& wget"]),
     ]
 
-    def validate(self, payload: Dict[str, Any]) -> WAFResult:
+    def validate(self, payload: dict[str, Any]) -> WAFResult:
         """Validate payload for malicious content."""
         payload_str = str(payload).lower()
 
@@ -304,8 +303,8 @@ class SimpleRiskAssessor:
 
     def assess(
         self,
-        context: Dict[str, Any],
-        device_history: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any],
+        device_history: dict[str, Any] | None = None,
     ) -> RiskAssessment:
         """Assess risk level of handoff operation."""
 
@@ -369,9 +368,9 @@ class SecurityEvent:
     timestamp: float
     device_id: str
     identity_did: str
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "event_type": self.event_type.value,
@@ -389,8 +388,8 @@ class SecurityMonitor:
     Logs security events and provides alerting hooks.
     """
 
-    def __init__(self, alert_callback: Optional[Callable[[SecurityEvent], None]] = None):
-        self.events: List[SecurityEvent] = []
+    def __init__(self, alert_callback: Callable[[SecurityEvent], None] | None = None):
+        self.events: list[SecurityEvent] = []
         self.alert_callback = alert_callback
         self._max_events = 10000
 
@@ -419,9 +418,9 @@ class SecurityMonitor:
 
     def get_recent_events(
         self,
-        event_type: Optional[SecurityEventType] = None,
+        event_type: SecurityEventType | None = None,
         limit: int = 100,
-    ) -> List[SecurityEvent]:
+    ) -> list[SecurityEvent]:
         """Get recent security events."""
         events = self.events
         if event_type:
@@ -447,9 +446,9 @@ class HandoffAuditEntry:
     ops_count: int
     duration_ms: float
     risk_level: str
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "entry_id": self.entry_id,
@@ -473,7 +472,7 @@ class HandoffAuditTrail:
     """
 
     def __init__(self):
-        self.entries: List[HandoffAuditEntry] = []
+        self.entries: list[HandoffAuditEntry] = []
         self._max_entries = 10000
 
     def log(
@@ -485,7 +484,7 @@ class HandoffAuditTrail:
         ops_count: int,
         duration_ms: float,
         risk_level: RiskLevel,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> HandoffAuditEntry:
         """Log a handoff operation."""
         entry = HandoffAuditEntry(
@@ -510,11 +509,11 @@ class HandoffAuditTrail:
 
     def query(
         self,
-        identity_did: Optional[str] = None,
-        device_id: Optional[str] = None,
-        since: Optional[float] = None,
+        identity_did: str | None = None,
+        device_id: str | None = None,
+        since: float | None = None,
         limit: int = 100,
-    ) -> List[HandoffAuditEntry]:
+    ) -> list[HandoffAuditEntry]:
         """Query audit trail."""
         results = self.entries
 
@@ -562,14 +561,14 @@ class HardenedHandoffOrchestrator:
 
     def __init__(
         self,
-        identity: "UnifiedIdentity",
-        memory: Optional[SyncedMemory] = None,
-        rate_limiter: Optional[InMemoryRateLimiter] = None,
-        circuit_breaker: Optional[DeviceCircuitBreaker] = None,
-        waf: Optional[SimpleWAF] = None,
-        risk_assessor: Optional[SimpleRiskAssessor] = None,
-        security_monitor: Optional[SecurityMonitor] = None,
-        audit_trail: Optional[HandoffAuditTrail] = None,
+        identity: UnifiedIdentity,
+        memory: SyncedMemory | None = None,
+        rate_limiter: InMemoryRateLimiter | None = None,
+        circuit_breaker: DeviceCircuitBreaker | None = None,
+        waf: SimpleWAF | None = None,
+        risk_assessor: SimpleRiskAssessor | None = None,
+        security_monitor: SecurityMonitor | None = None,
+        audit_trail: HandoffAuditTrail | None = None,
     ):
         self.identity = identity
         self.memory = memory or SyncedMemory(identity)
@@ -585,7 +584,7 @@ class HardenedHandoffOrchestrator:
     async def handoff_to(
         self,
         target_device: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> HandoffResult:
         """
         Execute handoff to another device with 7-layer security.
@@ -917,7 +916,7 @@ class HardenedHandoffOrchestrator:
 
         return result
 
-    def get_security_stats(self) -> Dict[str, Any]:
+    def get_security_stats(self) -> dict[str, Any]:
         """Get comprehensive security statistics."""
         return {
             "recent_events": [
@@ -942,8 +941,8 @@ class HardenedHandoffOrchestrator:
 
 
 def create_hardened_orchestrator(
-    identity: "UnifiedIdentity",
-    memory: Optional[SyncedMemory] = None,
+    identity: UnifiedIdentity,
+    memory: SyncedMemory | None = None,
 ) -> HardenedHandoffOrchestrator:
     """
     Create a hardened handoff orchestrator with all security layers.

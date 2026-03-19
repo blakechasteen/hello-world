@@ -18,27 +18,24 @@ Author: Claude Code
 Date: November 2025
 """
 
-import subprocess
 import re
-import hashlib
-from typing import List, Dict, Optional, AsyncIterator, Set, Any
-from pathlib import Path
+import subprocess
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from datetime import datetime
-import time
+from pathlib import Path
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinnerCapabilities,
-    SpinResult,
-    SpinnerCheckpoint,
+    ImportanceScore,
     ImportanceSignals,
-    ImportanceScore
+    SpinnerCapabilities,
+    SpinnerCheckpoint,
+    SpinResult,
 )
-from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.spinningWheel.utils import create_source_id
-
 
 # ============================================================================
 # Git Data Structures
@@ -59,15 +56,15 @@ class GitCommit:
     body: str
 
     # Extracted data
-    files_changed: List[str] = None
+    files_changed: list[str] = None
     insertions: int = 0
     deletions: int = 0
 
     # Parsed metadata
-    commit_type: Optional[str] = None  # feat, fix, docs, etc.
-    scope: Optional[str] = None
+    commit_type: str | None = None  # feat, fix, docs, etc.
+    scope: str | None = None
     is_breaking: bool = False
-    issue_refs: List[str] = None
+    issue_refs: list[str] = None
 
     def __post_init__(self):
         if self.files_changed is None:
@@ -99,9 +96,9 @@ class GitParser:
     @staticmethod
     def run_git_command(
         repo_path: Path,
-        args: List[str],
+        args: list[str],
         check: bool = True
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Run git command in repository.
 
@@ -123,7 +120,7 @@ class GitParser:
                 errors='replace'
             )
             return result.stdout.strip()
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             if check:
                 raise
             return None
@@ -147,11 +144,11 @@ class GitParser:
     @staticmethod
     def get_commits(
         repo_path: Path,
-        since: Optional[str] = None,
-        until: Optional[str] = None,
-        max_count: Optional[int] = None,
+        since: str | None = None,
+        until: str | None = None,
+        max_count: int | None = None,
         branch: str = "HEAD"
-    ) -> List[GitCommit]:
+    ) -> list[GitCommit]:
         """
         Get commits from repository.
 
@@ -245,7 +242,7 @@ class GitParser:
             commit.is_breaking = True
 
     @staticmethod
-    def extract_issue_refs(text: str) -> List[str]:
+    def extract_issue_refs(text: str) -> list[str]:
         """Extract issue/PR references from text."""
         refs = []
 
@@ -261,7 +258,7 @@ class GitParser:
         return list(set(refs))
 
     @staticmethod
-    def get_commit_stats(repo_path: Path, commit_hash: str) -> Dict[str, Any]:
+    def get_commit_stats(repo_path: Path, commit_hash: str) -> dict[str, Any]:
         """
         Get file change statistics for commit.
 
@@ -333,10 +330,10 @@ class GitSpinner(BaseSpinner):
     def __init__(
         self,
         importance_threshold: float = 0.3,
-        checkpoint_dir: Optional[Path] = None,
+        checkpoint_dir: Path | None = None,
         include_merge_commits: bool = False,
         fetch_stats: bool = True,
-        max_commits: Optional[int] = None
+        max_commits: int | None = None
     ):
         """
         Initialize GitSpinner.
@@ -371,8 +368,8 @@ class GitSpinner(BaseSpinner):
                 'implement', 'enhance', 'clean', 'rewrite',
 
                 # Technologies (customize for your domain)
-                'python', 'typescript', 'react', 'api', 'database',
-                'docker', 'kubernetes', 'ci', 'cd', 'test'
+                'python', 'typescript', 'react', 'database',
+                'docker', 'kubernetes', 'ci', 'cd'
             }
         )
 
@@ -412,7 +409,7 @@ class GitSpinner(BaseSpinner):
         source: Any,
         branch: str = "HEAD",
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Process Git repository.
 
@@ -494,7 +491,7 @@ class GitSpinner(BaseSpinner):
     async def spin_incremental(
         self,
         source: Any,
-        checkpoint: Optional[SpinnerCheckpoint] = None,
+        checkpoint: SpinnerCheckpoint | None = None,
         branch: str = "HEAD",
         **kwargs
     ) -> SpinResult:
@@ -782,7 +779,7 @@ class GitSpinner(BaseSpinner):
 
         return shard
 
-    def _extract_entities(self, commit: GitCommit) -> List[str]:
+    def _extract_entities(self, commit: GitCommit) -> list[str]:
         """Extract entities from commit."""
         entities = []
 
@@ -812,7 +809,7 @@ class GitSpinner(BaseSpinner):
         # Deduplicate and return
         return list(set(entities))[:20]
 
-    def _extract_motifs(self, commit: GitCommit) -> List[str]:
+    def _extract_motifs(self, commit: GitCommit) -> list[str]:
         """Extract motifs from commit."""
         motifs = []
 
@@ -855,7 +852,7 @@ async def spin_repository(
     repo_path: str,
     importance_threshold: float = 0.3,
     branch: str = "HEAD",
-    max_commits: Optional[int] = None
+    max_commits: int | None = None
 ) -> SpinResult:
     """
     Quick function to spin a Git repository.

@@ -11,8 +11,8 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -24,8 +24,8 @@ class PromptComponents:
     mood: str = ""
     lighting: str = ""
     composition: str = ""
-    details: List[str] = field(default_factory=list)
-    negative: List[str] = field(default_factory=list)
+    details: list[str] = field(default_factory=list)
+    negative: list[str] = field(default_factory=list)
 
     def to_positive_prompt(self) -> str:
         """Build the positive prompt string."""
@@ -145,7 +145,7 @@ class SceneToPrompt:
             'skybox': self._extract_environment,
         }
 
-    def convert(self, scene: Dict[str, Any]) -> PromptComponents:
+    def convert(self, scene: dict[str, Any]) -> PromptComponents:
         """
         Convert a ThirdEye scene to prompt components.
 
@@ -240,17 +240,17 @@ class SceneToPrompt:
 
         return components
 
-    def _extract_character(self, elem: Dict[str, Any]) -> Tuple[str, str]:
+    def _extract_character(self, elem: dict[str, Any]) -> tuple[str, str]:
         """Extract character description."""
         name = elem.get('label', elem.get('name', ''))
         return f"character: {name}", ""
 
-    def _extract_ui_element(self, elem: Dict[str, Any]) -> Tuple[str, str]:
+    def _extract_ui_element(self, elem: dict[str, Any]) -> tuple[str, str]:
         """Extract UI element description."""
         name = elem.get('label', elem.get('name', ''))
         return f"{name} interface", "digital screen"
 
-    def _extract_architecture(self, elem: Dict[str, Any]) -> Tuple[str, str]:
+    def _extract_architecture(self, elem: dict[str, Any]) -> tuple[str, str]:
         """Extract architecture component."""
         name = elem.get('label', elem.get('name', ''))
         elem_type = elem.get('type', '')
@@ -258,17 +258,17 @@ class SceneToPrompt:
             return f"database: {name}", "technical diagram"
         return f"service: {name}", "system architecture"
 
-    def _extract_location(self, elem: Dict[str, Any]) -> Tuple[str, str]:
+    def _extract_location(self, elem: dict[str, Any]) -> tuple[str, str]:
         """Extract location description."""
         name = elem.get('label', elem.get('name', ''))
         return "", f"location: {name}"
 
-    def _extract_concept(self, elem: Dict[str, Any]) -> Tuple[str, str]:
+    def _extract_concept(self, elem: dict[str, Any]) -> tuple[str, str]:
         """Extract concept sphere."""
         label = elem.get('label', '')
         return f"concept: {label}", ""
 
-    def _extract_environment(self, elem: Dict[str, Any]) -> Tuple[str, str]:
+    def _extract_environment(self, elem: dict[str, Any]) -> tuple[str, str]:
         """Extract environment element."""
         terrain = elem.get('terrain_type', elem.get('type', ''))
         return "", f"{terrain} environment"
@@ -296,10 +296,10 @@ class SceneToPrompt:
 
 
 def build_prompt_from_scene(
-    scene: Dict[str, Any],
-    additional_style: Optional[str] = None,
-    additional_negative: Optional[List[str]] = None,
-) -> Tuple[str, str]:
+    scene: dict[str, Any],
+    additional_style: str | None = None,
+    additional_negative: list[str] | None = None,
+) -> tuple[str, str]:
     """
     Convenience function to build prompts from scene.
 

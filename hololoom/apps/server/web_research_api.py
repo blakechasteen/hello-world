@@ -21,20 +21,18 @@ Usage:
 import asyncio
 import logging
 import os
-from typing import Optional, List, Dict, Any
-from datetime import datetime
 from contextlib import asynccontextmanager
+from datetime import datetime
+from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from hololoom.agentic import WebResearchOrchestrator, ReasoningMode
-from hololoom.config import Config
-from hololoom.protocols.types import MemoryShard
+from hololoom.agentic import WebResearchOrchestrator
 from hololoom.alignment.audit_trail import AuditTrail
-
+from hololoom.config import Config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -50,7 +48,7 @@ class WebResearchRequest(BaseModel):
     max_web_results: int = Field(10, description="Max web results to retrieve")
     max_steps: int = Field(5, description="Max reasoning steps")
     enable_citations: bool = Field(True, description="Add inline citations")
-    conversation_id: Optional[str] = Field(None, description="Conversation ID for threading")
+    conversation_id: str | None = Field(None, description="Conversation ID for threading")
 
 
 class WebResearchResponse(BaseModel):
@@ -62,8 +60,8 @@ class WebResearchResponse(BaseModel):
     memory_shards_count: int
     total_duration_ms: float
     web_search_time_ms: float
-    citations: List[Dict[str, Any]]
-    conversation_id: Optional[str] = None
+    citations: list[dict[str, Any]]
+    conversation_id: str | None = None
 
 
 class ConversationMessage(BaseModel):
@@ -71,13 +69,13 @@ class ConversationMessage(BaseModel):
     role: str  # "user" or "assistant"
     content: str
     timestamp: str
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class ConversationRequest(BaseModel):
     """Request with conversation context."""
     query: str
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
     include_history: bool = True
 
 
@@ -96,7 +94,7 @@ class ConversationManager:
     """
 
     def __init__(self, max_history: int = 10):
-        self.conversations: Dict[str, List[ConversationMessage]] = {}
+        self.conversations: dict[str, list[ConversationMessage]] = {}
         self.max_history = max_history
 
     def add_message(
@@ -104,7 +102,7 @@ class ConversationManager:
         conversation_id: str,
         role: str,
         content: str,
-        metadata: Dict[str, Any] = None
+        metadata: dict[str, Any] = None
     ):
         """Add message to conversation."""
         if conversation_id not in self.conversations:
@@ -123,7 +121,7 @@ class ConversationManager:
         if len(self.conversations[conversation_id]) > self.max_history * 2:
             self.conversations[conversation_id] = self.conversations[conversation_id][-(self.max_history * 2):]
 
-    def get_history(self, conversation_id: str) -> List[ConversationMessage]:
+    def get_history(self, conversation_id: str) -> list[ConversationMessage]:
         """Get conversation history."""
         return self.conversations.get(conversation_id, [])
 
@@ -146,10 +144,10 @@ class ConversationManager:
 
 class ServerState:
     """Global server state."""
-    orchestrator: Optional[WebResearchOrchestrator] = None
+    orchestrator: WebResearchOrchestrator | None = None
     conversation_manager: ConversationManager = None
-    audit_trail: Optional[AuditTrail] = None
-    config: Optional[Config] = None
+    audit_trail: AuditTrail | None = None
+    config: Config | None = None
 
 
 state = ServerState()
@@ -387,7 +385,7 @@ async def research_stream_endpoint(request: WebResearchRequest):
                 yield f"data: {json.dumps(citation_data)}\n\n"
 
             # Event 4: Synthesis start
-            yield f"data: {{'type': 'synthesis_start'}}\n\n"
+            yield "data: {'type': 'synthesis_start'}\n\n"
 
             # Event 5: Stream response (chunk by sentence)
             sentences = result.cited_response.split(". ")

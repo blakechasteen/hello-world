@@ -8,23 +8,22 @@ Usage:
     python validate_alignment.py
 """
 
-import sys
 import asyncio
+import sys
+
 from hololoom.alignment import (
-    # Phase 1
-    SafetyGuardrails,
-    ActionRequest,
     ActionCategory,
-    RiskLevel,
-    DeceptionDetector,
-    AuditTrail,
-    DecisionType,
-    OutcomeType,
-    InstrumentalConvergenceGuard,
-    ResourceBounds,
+    ActionRequest,
     # Phase 2
     AgenticExplainer,
-    ExplanationDepth,
+    AuditTrail,
+    DeceptionDetector,
+    DecisionType,
+    InstrumentalConvergenceGuard,
+    OutcomeType,
+    RiskLevel,
+    # Phase 1
+    SafetyGuardrails,
 )
 
 
@@ -68,7 +67,7 @@ def test_safety_guardrails():
     assert decision.risk_level in (RiskLevel.HIGH, RiskLevel.CRITICAL), "Deletion should be high/critical risk"
     print(f"✅ Test 1.3: Deletion marked as {decision.risk_level.value} risk")
 
-    print(f"\n✅ SafetyGuardrails: 3/3 tests passed")
+    print("\n✅ SafetyGuardrails: 3/3 tests passed")
     return True
 
 
@@ -119,7 +118,7 @@ def test_deception_detector():
     assert stats['total_probes'] == 2, f"Should have 2 probes, got {stats['total_probes']}"
     print(f"✅ Test 2.3: Probe statistics working ({stats['total_probes']} probes run)")
 
-    print(f"\n✅ DeceptionDetector: 3/3 tests passed")
+    print("\n✅ DeceptionDetector: 3/3 tests passed")
     return True
 
 
@@ -151,7 +150,7 @@ def test_instrumental_convergence():
     assert guard.autonomous_actions == 1, "Should track autonomous action"
     print(f"✅ Test 3.3: Autonomy tracking working ({guard.autonomous_actions} actions tracked)")
 
-    print(f"\n✅ InstrumentalConvergenceGuard: 3/3 tests passed")
+    print("\n✅ InstrumentalConvergenceGuard: 3/3 tests passed")
     return True
 
 
@@ -191,7 +190,7 @@ def test_audit_trail():
     assert len(audit.logs) == 2, "Should have 2 logged decisions"
     print(f"✅ Test 4.3: Multiple decisions logged ({len(audit.logs)} total)")
 
-    print(f"\n✅ AuditTrail: 3/3 tests passed")
+    print("\n✅ AuditTrail: 3/3 tests passed")
     return True
 
 
@@ -244,7 +243,7 @@ async def test_agentic_explainability():
     assert explanation.confidence_trajectory[0] == 0.65, "Should preserve step confidences"
     print("✅ Test 5.3: Confidence trajectory tracking working")
 
-    print(f"\n✅ AgenticExplainer: 3/3 tests passed")
+    print("\n✅ AgenticExplainer: 3/3 tests passed")
     return True
 
 

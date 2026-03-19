@@ -15,18 +15,14 @@ Visualization Panels:
 The visualization updates in real-time as text streams in.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from matplotlib.gridspec import GridSpec
-from typing import Dict, List, Optional
 from collections import deque
 
-from .streaming_multi_scale import (
-    MultiScaleSnapshot,
-    TemporalScale,
-    ScaleResonance
-)
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.animation import FuncAnimation
+from matplotlib.gridspec import GridSpec
+
+from .streaming_multi_scale import MultiScaleSnapshot, TemporalScale
 
 
 class RealtimeSemanticVisualizer:
@@ -378,6 +374,7 @@ class RealtimeSemanticVisualizer:
 async def demonstrate_live_visualization():
     """Demonstrate live visualization with streaming text."""
     import asyncio
+
     from .streaming_multi_scale import StreamingSemanticCalculus
 
     print("📊🌊 LIVE MULTI-SCALE VISUALIZATION DEMO")

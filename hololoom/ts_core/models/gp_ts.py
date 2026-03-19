@@ -33,11 +33,11 @@ Example:
     >>> best_params = sampler.get_best_params()
 """
 
+from typing import Literal
+
 import numpy as np
 import numpy.typing as npt
-from typing import Literal
-from scipy.linalg import cho_factor, cho_solve
-from scipy.optimize import minimize
+from scipy.linalg import cho_solve
 
 
 class GaussianProcessTS:

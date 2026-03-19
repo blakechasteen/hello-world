@@ -29,45 +29,44 @@ Created: 2025-12-05
 """
 
 # Core protocols and types
-from hololoom.verification.protocol import (
-    # Enums
-    ClaimType,
-    ContradictionType,
-    DegradationLevel,
-    VerificationStatus,
-    # Data classes
-    Contradiction,
-    VerifiableClaim,
-    VerificationAnswer,
-    VerificationConfig,
-    VerificationQuestion,
-    VerificationResult,
-    # Protocols
-    ClaimExtractorProtocol,
-    ContradictionDetectorProtocol,
-    IndependentVerifierProtocol,
-    ResultSynthesizerProtocol,
-    VerificationChainProtocol,
-    VerificationPlannerProtocol,
-)
-
 # Main chain
 from hololoom.verification.chain import (
-    VerificationChain,
-    VerificationCache,
-    VerificationMetrics,
     AgenticVerificationIntegration,
+    VerificationCache,
+    VerificationChain,
+    VerificationMetrics,
+    create_verification_chain,
     # Convenience functions
     verify_response,
-    create_verification_chain,
 )
 
 # Component factories
 from hololoom.verification.claim_extractor import create_claim_extractor
-from hololoom.verification.verification_planner import create_verification_planner
-from hololoom.verification.independent_verifier import create_independent_verifier
 from hololoom.verification.contradiction_detector import create_contradiction_detector
+from hololoom.verification.independent_verifier import create_independent_verifier
+from hololoom.verification.protocol import (
+    # Protocols
+    ClaimExtractorProtocol,
+    # Enums
+    ClaimType,
+    # Data classes
+    Contradiction,
+    ContradictionDetectorProtocol,
+    ContradictionType,
+    DegradationLevel,
+    IndependentVerifierProtocol,
+    ResultSynthesizerProtocol,
+    VerifiableClaim,
+    VerificationAnswer,
+    VerificationChainProtocol,
+    VerificationConfig,
+    VerificationPlannerProtocol,
+    VerificationQuestion,
+    VerificationResult,
+    VerificationStatus,
+)
 from hololoom.verification.result_synthesizer import create_result_synthesizer
+from hololoom.verification.verification_planner import create_verification_planner
 
 __all__ = [
     # Enums

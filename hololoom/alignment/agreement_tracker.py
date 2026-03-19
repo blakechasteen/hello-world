@@ -8,9 +8,8 @@ import json
 import logging
 import statistics
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +44,7 @@ class AgreementTracker:
         self,
         checkpoint: str,
         window_size: int = 1000,
-        persist_dir: Optional[str] = None,
+        persist_dir: str | None = None,
         agreement_threshold: float = 0.5,  # score threshold for agree/disagree
     ):
         self.checkpoint = checkpoint
@@ -53,7 +52,7 @@ class AgreementTracker:
         self.agreement_threshold = agreement_threshold
         self._samples: deque[ComparisonSample] = deque(maxlen=window_size)
 
-        self._persist_path: Optional[Path] = None
+        self._persist_path: Path | None = None
         if persist_dir:
             self._persist_path = Path(persist_dir) / f"{checkpoint}.json"
             self._load()
@@ -74,7 +73,7 @@ class AgreementTracker:
         self._samples.append(sample)
         return sample
 
-    def stats(self) -> Optional[AgreementStats]:
+    def stats(self) -> AgreementStats | None:
         """Compute aggregate statistics. Returns None if no samples."""
         if not self._samples:
             return None

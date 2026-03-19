@@ -6,20 +6,20 @@ Live pipeline visualization in terminal using Rich library.
 Shows Parse → Retrieve → Decide → Generate stages with timing.
 """
 
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional
-import time
+from typing import Optional
 
 try:
     from rich.console import Console
-    from rich.panel import Panel
-    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
-    from rich.table import Table
-    from rich.live import Live
     from rich.layout import Layout
-    from rich.text import Text
+    from rich.live import Live
+    from rich.panel import Panel
+    from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
     from rich.style import Style
+    from rich.table import Table
+    from rich.text import Text
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
@@ -40,12 +40,12 @@ class PipelineStage:
     name: str
     display_name: str
     status: StageStatus = StageStatus.PENDING
-    start_time: Optional[float] = None
-    end_time: Optional[float] = None
+    start_time: float | None = None
+    end_time: float | None = None
     detail: str = ""
 
     @property
-    def duration_ms(self) -> Optional[float]:
+    def duration_ms(self) -> float | None:
         """Get duration in milliseconds."""
         if self.start_time and self.end_time:
             return (self.end_time - self.start_time) * 1000
@@ -61,13 +61,13 @@ class PipelineStage:
 @dataclass
 class PipelineState:
     """Complete pipeline state."""
-    stages: List[PipelineStage] = field(default_factory=list)
+    stages: list[PipelineStage] = field(default_factory=list)
     query: str = ""
-    start_time: Optional[float] = None
-    end_time: Optional[float] = None
+    start_time: float | None = None
+    end_time: float | None = None
 
     @property
-    def total_duration_ms(self) -> Optional[float]:
+    def total_duration_ms(self) -> float | None:
         """Get total pipeline duration."""
         if self.start_time and self.end_time:
             return (self.end_time - self.start_time) * 1000
@@ -328,7 +328,7 @@ class CompactPipelineDisplay:
             raise ImportError("Rich library required")
         self.console = console or Console()
         self.current_stage = -1
-        self.completed_stages: List[bool] = [False] * len(self.STAGES)
+        self.completed_stages: list[bool] = [False] * len(self.STAGES)
 
     def reset(self):
         """Reset display."""

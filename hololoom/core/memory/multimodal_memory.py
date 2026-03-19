@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Multi-Modal Memory System - Elegant Cross-Modal Storage & Retrieval
 ====================================================================
@@ -20,19 +21,19 @@ Operations:
 - explore(): Navigate multi-modal knowledge graph
 """
 
-from typing import List, Dict, Optional, Any, Set, Tuple
-from dataclasses import dataclass, field
-from enum import Enum
-from datetime import datetime
 import asyncio
-import numpy as np
-from pathlib import Path
 import warnings
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
+
+import numpy as np
 
 try:
-    from hololoom.protocols.types import MemoryShard, Query
+    from hololoom.memory.neo4j_graph import Neo4jConfig, Neo4jKG
     from hololoom.memory.protocol import Memory, MemoryQuery, RetrievalResult
-    from hololoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
+    from hololoom.protocols.types import MemoryShard, Query
 except ImportError:
     warnings.warn("HoloLoom types not available - using fallbacks")
     MemoryShard = None
@@ -67,12 +68,12 @@ class ModalityMetadata:
     """Metadata for modality-specific features."""
     modality_type: ModalityType
     confidence: float
-    embedding: Optional[np.ndarray] = None
-    features: Optional[Dict[str, Any]] = None
-    source: Optional[str] = None
-    timestamp: Optional[datetime] = None
-    
-    def to_dict(self) -> Dict[str, Any]:
+    embedding: np.ndarray | None = None
+    features: dict[str, Any] | None = None
+    source: str | None = None
+    timestamp: datetime | None = None
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dict for storage."""
         return {
             'modality_type': self.modality_type.value,
@@ -82,9 +83,9 @@ class ModalityMetadata:
             'source': self.source,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None
         }
-    
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ModalityMetadata':
+    def from_dict(cls, data: dict[str, Any]) -> 'ModalityMetadata':
         """Create from dict."""
         data = data.copy()
         data['modality_type'] = ModalityType(data['modality_type'])
@@ -98,13 +99,13 @@ class ModalityMetadata:
 @dataclass
 class CrossModalResult:
     """Result from cross-modal search."""
-    memories: List[Memory]
-    scores: List[float]
-    modalities: List[ModalityType]
+    memories: list[Memory]
+    scores: list[float]
+    modalities: list[ModalityType]
     fusion_strategy: FusionStrategy
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    
-    def group_by_modality(self) -> Dict[ModalityType, List[Tuple[Memory, float]]]:
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def group_by_modality(self) -> dict[ModalityType, list[tuple[Memory, float]]]:
         """Group results by modality."""
         groups = {}
         for mem, score, mod in zip(self.memories, self.scores, self.modalities):
@@ -153,10 +154,10 @@ class MultiModalMemory:
             modality_filter=[ModalityType.IMAGE]
         )
     """
-    
+
     def __init__(
         self,
-        neo4j_config: Optional[Neo4jConfig] = None,
+        neo4j_config: Neo4jConfig | None = None,
         enable_neo4j: bool = True,
         enable_qdrant: bool = True,
         default_fusion: FusionStrategy = FusionStrategy.ATTENTION
@@ -173,17 +174,17 @@ class MultiModalMemory:
         self.default_fusion = default_fusion
         self.enable_neo4j = enable_neo4j
         self.enable_qdrant = enable_qdrant
-        
+
         # Storage backends
         self.graph_store = None
         self.vector_store = None
-        
+
         # In-memory cache for fast access
-        self.memory_cache: Dict[str, Memory] = {}
-        self.modality_index: Dict[ModalityType, Set[str]] = {
+        self.memory_cache: dict[str, Memory] = {}
+        self.modality_index: dict[ModalityType, set[str]] = {
             mod: set() for mod in ModalityType
         }
-        
+
         # Initialize backends
         if enable_neo4j:
             try:
@@ -192,16 +193,16 @@ class MultiModalMemory:
             except Exception as e:
                 warnings.warn(f"Neo4j unavailable: {e}. Using in-memory only.")
                 self.enable_neo4j = False
-        
+
         if enable_qdrant:
             # Qdrant integration coming soon
             warnings.warn("Qdrant integration pending - using in-memory vectors")
             self.enable_qdrant = False
-    
+
     # ========================================================================
     # Core Operations (Elegant API)
     # ========================================================================
-    
+
     async def store(
         self,
         shard: Any,
@@ -226,35 +227,35 @@ class MultiModalMemory:
         """
         # Extract modality metadata
         modality_meta = self._extract_modality(shard)
-        
+
         # Convert to Memory
         memory = self._shard_to_memory(shard, modality_meta)
-        
+
         # Cache in memory
         self.memory_cache[memory.id] = memory
         self.modality_index[modality_meta.modality_type].add(memory.id)
-        
+
         # Store in graph (if enabled)
         if self.enable_neo4j and self.graph_store:
             try:
                 await self._store_in_graph(memory, modality_meta)
             except Exception as e:
                 warnings.warn(f"Graph storage failed: {e}")
-        
+
         # Store in vector index (if enabled)
         if self.enable_qdrant and self.vector_store:
             try:
                 await self._store_in_vectors(memory, modality_meta)
             except Exception as e:
                 warnings.warn(f"Vector storage failed: {e}")
-        
+
         return memory.id
-    
+
     async def store_batch(
         self,
-        shards: List[Any],
+        shards: list[Any],
         user_id: str = "default"
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Store multiple shards efficiently.
         
@@ -268,13 +269,13 @@ class MultiModalMemory:
         # Store all in parallel
         tasks = [self.store(shard, user_id) for shard in shards]
         return await asyncio.gather(*tasks)
-    
+
     async def retrieve(
         self,
         query: str,
-        modality_filter: Optional[List[ModalityType]] = None,
+        modality_filter: list[ModalityType] | None = None,
         k: int = 10,
-        fusion_strategy: Optional[FusionStrategy] = None,
+        fusion_strategy: FusionStrategy | None = None,
         threshold: float = 0.0
     ) -> CrossModalResult:
         """
@@ -298,32 +299,32 @@ class MultiModalMemory:
             CrossModalResult with memories, scores, modalities
         """
         fusion = fusion_strategy or self.default_fusion
-        
+
         # Get query embedding (placeholder - needs actual embedding)
         query_embedding = self._embed_query(query)
-        
+
         # Filter by modality
         candidate_ids = self._get_candidates(modality_filter)
-        
+
         # Compute similarities
         results = []
         for mem_id in candidate_ids:
             memory = self.memory_cache.get(mem_id)
             if not memory:
                 continue
-            
+
             # Extract embedding from metadata
             embedding = memory.metadata.get('embedding')
             if embedding is None:
                 continue
-            
+
             # Convert to numpy if needed
             if isinstance(embedding, list):
                 embedding = np.array(embedding)
-            
+
             # Compute similarity
             similarity = self._compute_similarity(query_embedding, embedding)
-            
+
             if similarity >= threshold:
                 # Get modality safely
                 modality_str = memory.metadata.get('modality_type', 'unknown')
@@ -341,19 +342,19 @@ class MultiModalMemory:
                 else:
                     modality = ModalityType.UNKNOWN
                 results.append((memory, similarity, modality))
-        
+
         # Sort by similarity
         results.sort(key=lambda x: x[1], reverse=True)
-        
+
         # Take top k
         results = results[:k]
-        
+
         if not results:
             return CrossModalResult([], [], [], fusion, {})
-        
+
         # Unpack
         memories, scores, modalities = zip(*results)
-        
+
         return CrossModalResult(
             memories=list(memories),
             scores=list(scores),
@@ -365,13 +366,13 @@ class MultiModalMemory:
                 'filtered_modalities': [m.value for m in modality_filter] if modality_filter else 'all'
             }
         )
-    
+
     async def connect(
         self,
         id1: str,
         id2: str,
         relationship: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> bool:
         """
         Create cross-modal relationship.
@@ -407,14 +408,14 @@ class MultiModalMemory:
             # In-memory connection tracking (simple)
             warnings.warn("Graph storage not enabled - connection not persisted")
             return False
-    
+
     async def explore(
         self,
         start_id: str,
         hops: int = 1,
-        modality_filter: Optional[List[ModalityType]] = None,
-        relationship_filter: Optional[List[str]] = None
-    ) -> List[Tuple[Memory, int, str]]:
+        modality_filter: list[ModalityType] | None = None,
+        relationship_filter: list[str] | None = None
+    ) -> list[tuple[Memory, int, str]]:
         """
         Navigate multi-modal knowledge graph.
         
@@ -430,7 +431,7 @@ class MultiModalMemory:
         if not self.enable_neo4j or not self.graph_store:
             warnings.warn("Graph exploration requires Neo4j")
             return []
-        
+
         try:
             # Use graph traversal
             nodes = await self.graph_store.traverse(
@@ -438,40 +439,40 @@ class MultiModalMemory:
                 max_depth=hops,
                 relationship_types=relationship_filter
             )
-            
+
             # Filter by modality and convert to memories
             results = []
             for node, distance, rel in nodes:
                 memory = self.memory_cache.get(node['id'])
                 if not memory:
                     continue
-                
+
                 # Check modality filter
                 if modality_filter:
                     modality = ModalityType(memory.metadata.get('modality_type', 'unknown'))
                     if modality not in modality_filter:
                         continue
-                
+
                 results.append((memory, distance, rel))
-            
+
             return results
         except Exception as e:
             warnings.warn(f"Graph exploration failed: {e}")
             return []
-    
+
     # ========================================================================
     # Helper Methods
     # ========================================================================
-    
+
     def _extract_modality(self, shard: Any) -> ModalityMetadata:
         """Extract modality metadata from shard."""
         metadata = getattr(shard, 'metadata', {}) or {}
-        
+
         # Try to get modality from metadata or modality field
         modality_str = metadata.get('modality_type', 'unknown')
         if hasattr(shard, 'modality') and shard.modality:
             modality_str = str(shard.modality).lower()
-        
+
         # Map common modality strings
         modality_map = {
             'text': ModalityType.TEXT,
@@ -482,14 +483,14 @@ class MultiModalMemory:
             'multimodal': ModalityType.MULTIMODAL,
             'unknown': ModalityType.UNKNOWN
         }
-        
+
         modality_type = modality_map.get(modality_str.lower(), ModalityType.UNKNOWN)
-        
+
         confidence = metadata.get('confidence', 1.0)
         embedding = metadata.get('embedding')
         if embedding and isinstance(embedding, list):
             embedding = np.array(embedding)
-        
+
         return ModalityMetadata(
             modality_type=modality_type,
             confidence=confidence,
@@ -498,11 +499,11 @@ class MultiModalMemory:
             source=metadata.get('source'),
             timestamp=datetime.now()
         )
-    
+
     def _shard_to_memory(self, shard: Any, modality_meta: ModalityMetadata) -> Memory:
         """Convert MemoryShard to Memory."""
         from hololoom.memory.protocol import Memory
-        
+
         return Memory(
             id=shard.id,
             text=shard.text,
@@ -517,7 +518,7 @@ class MultiModalMemory:
                 **(getattr(shard, 'metadata', {}) or {})
             }
         )
-    
+
     async def _store_in_graph(self, memory: Memory, modality_meta: ModalityMetadata):
         """Store memory in Neo4j graph."""
         # Add node with modality properties
@@ -533,7 +534,7 @@ class MultiModalMemory:
                 'motifs': memory.context.get('motifs', [])
             }
         )
-        
+
         # Connect to entities
         for entity in memory.context.get('entities', []):
             entity_name = entity if isinstance(entity, str) else entity.get('text', '')
@@ -547,12 +548,12 @@ class MultiModalMemory:
                     )
                 except Exception:
                     pass  # Entity might not exist yet
-    
+
     async def _store_in_vectors(self, memory: Memory, modality_meta: ModalityMetadata):
         """Store memory embedding in Qdrant."""
         # Qdrant integration coming soon
         pass
-    
+
     def _embed_query(self, query: str) -> np.ndarray:
         """Embed query for search (uses same dimension as stored embeddings)."""
         # Check what embedding dimensions we have in cache
@@ -563,29 +564,29 @@ class MultiModalMemory:
                 if isinstance(emb, list):
                     emb = np.array(emb)
                 embedding_dims.add(len(emb))
-        
+
         # Use most common dimension, or default to 128
         target_dim = max(embedding_dims) if embedding_dims else 128
-        
+
         # Simple hash-based embedding for now (replace with actual embedder)
         np.random.seed(hash(query) % (2**31))
         return np.random.randn(target_dim)
-    
+
     def _get_candidates(
         self,
-        modality_filter: Optional[List[ModalityType]]
-    ) -> Set[str]:
+        modality_filter: list[ModalityType] | None
+    ) -> set[str]:
         """Get candidate memory IDs filtered by modality."""
         if modality_filter is None:
             # Return all memory IDs
             return set(self.memory_cache.keys())
-        
+
         # Union of modality indices
         candidates = set()
         for modality in modality_filter:
             candidates.update(self.modality_index[modality])
         return candidates
-    
+
     def _compute_similarity(
         self,
         query_embedding: np.ndarray,
@@ -598,25 +599,25 @@ class MultiModalMemory:
             min_dim = min(len(query_embedding), len(memory_embedding))
             query_embedding = query_embedding[:min_dim]
             memory_embedding = memory_embedding[:min_dim]
-        
+
         # Normalize
         query_norm = query_embedding / (np.linalg.norm(query_embedding) + 1e-8)
         memory_norm = memory_embedding / (np.linalg.norm(memory_embedding) + 1e-8)
-        
+
         # Cosine similarity
         similarity = np.dot(query_norm, memory_norm)
         return float(similarity)
-    
+
     # ========================================================================
     # Statistics & Introspection
     # ========================================================================
-    
-    def get_stats(self) -> Dict[str, Any]:
+
+    def get_stats(self) -> dict[str, Any]:
         """Get memory statistics."""
         stats = {
             'total_memories': len(self.memory_cache),
             'by_modality': {
-                mod.value: len(ids) 
+                mod.value: len(ids)
                 for mod, ids in self.modality_index.items()
                 if len(ids) > 0
             },
@@ -626,7 +627,7 @@ class MultiModalMemory:
             }
         }
         return stats
-    
+
     def __repr__(self) -> str:
         stats = self.get_stats()
         return (
@@ -642,7 +643,7 @@ class MultiModalMemory:
 # ============================================================================
 
 async def create_multimodal_memory(
-    neo4j_config: Optional[Neo4jConfig] = None,
+    neo4j_config: Neo4jConfig | None = None,
     **kwargs
 ) -> MultiModalMemory:
     """
@@ -661,36 +662,36 @@ async def create_multimodal_memory(
 
 async def example_usage():
     """Example of elegant multi-modal memory operations."""
-    from hololoom.spinningWheel.multimodal_spinner import MultiModalSpinner, CrossModalSpinner
-    
+    from hololoom.spinningWheel.multimodal_spinner import CrossModalSpinner, MultiModalSpinner
+
     # Create memory system
     memory = await create_multimodal_memory()
-    
+
     # Create spinners
     text_spinner = MultiModalSpinner()
     cross_spinner = CrossModalSpinner()
-    
+
     # Store text
     text_shards = await text_spinner.spin("Quantum computing uses qubits.")
     for shard in text_shards:
         await memory.store(shard)
-    
+
     # Store structured data
     data_shards = await text_spinner.spin({"topic": "quantum", "year": 2025})
     for shard in data_shards:
         await memory.store(shard)
-    
+
     # Cross-modal query
     results = await memory.retrieve(
         query="quantum computing",
         modality_filter=[ModalityType.TEXT, ModalityType.STRUCTURED],
         k=5
     )
-    
+
     print(f"Found {len(results.memories)} memories")
     print(f"Modalities: {[m.value for m in results.modalities]}")
     print(f"Scores: {results.scores}")
-    
+
     # Statistics
     print("\nMemory Stats:")
     print(memory.get_stats())

@@ -16,13 +16,13 @@ Deliver insights at the right time, not just any time.
 """
 
 import asyncio
-from typing import Dict, List, Optional, Any, Callable
-from dataclasses import dataclass, field
-from enum import Enum
+import heapq
 import time
 from collections import defaultdict
-import heapq
-
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # ============================================================================
 # Callback Types and States
@@ -59,7 +59,7 @@ class QueuedCallback:
     thread_id: str
     user_id: str
     agent_name: str
-    related_query: Optional[str] = None  # Query that triggered this
+    related_query: str | None = None  # Query that triggered this
 
     # Metadata for smart decisions
     impact_score: float = 0.5  # 0-1, how impactful is this?
@@ -68,11 +68,11 @@ class QueuedCallback:
 
     # Timing
     created_at: float = field(default_factory=time.time)
-    expires_at: Optional[float] = None  # Auto-expire after time
-    delivered_at: Optional[float] = None
+    expires_at: float | None = None  # Auto-expire after time
+    delivered_at: float | None = None
 
     # Batching
-    batch_key: Optional[str] = None  # Group by this key for batching
+    batch_key: str | None = None  # Group by this key for batching
 
     def __lt__(self, other):
         """Priority queue comparison"""
@@ -124,17 +124,17 @@ class SmartCallbackQueue:
         self.idle_threshold_seconds = idle_threshold_seconds
 
         # Priority queue (min heap)
-        self.queue: List[QueuedCallback] = []
+        self.queue: list[QueuedCallback] = []
 
         # Thread states
-        self.thread_states: Dict[str, ConversationState] = {}
+        self.thread_states: dict[str, ConversationState] = {}
 
         # Rate limiting
-        self.delivery_history: List[float] = []  # Timestamps of deliveries
+        self.delivery_history: list[float] = []  # Timestamps of deliveries
 
         # Batching
-        self.batch_buffer: Dict[str, List[QueuedCallback]] = defaultdict(list)
-        self.batch_timers: Dict[str, float] = {}  # When batch started
+        self.batch_buffer: dict[str, list[QueuedCallback]] = defaultdict(list)
+        self.batch_timers: dict[str, float] = {}  # When batch started
 
         # Statistics
         self.total_queued = 0
@@ -143,7 +143,7 @@ class SmartCallbackQueue:
         self.total_batched = 0
 
         # Background task
-        self.processor_task: Optional[asyncio.Task] = None
+        self.processor_task: asyncio.Task | None = None
         self.running = False
 
     async def start(self):
@@ -175,9 +175,9 @@ class SmartCallbackQueue:
         impact_score: float = 0.5,
         relevance_score: float = 0.5,
         urgency: float = 0.5,
-        related_query: Optional[str] = None,
-        expires_in_seconds: Optional[float] = None,
-        batch_key: Optional[str] = None
+        related_query: str | None = None,
+        expires_in_seconds: float | None = None,
+        batch_key: str | None = None
     ) -> str:
         """
         Queue a callback for smart delivery.
@@ -327,7 +327,7 @@ class SmartCallbackQueue:
 
             await self._deliver_batch(batch)
 
-    async def _deliver_batch(self, batch: List[QueuedCallback]):
+    async def _deliver_batch(self, batch: list[QueuedCallback]):
         """Deliver a batch of callbacks"""
         if not batch:
             return
@@ -367,7 +367,7 @@ class SmartCallbackQueue:
         except Exception as e:
             print(f"[SmartCallbackQueue] Callback delivery error: {e}")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get queue statistics"""
         return {
             'queue_size': len(self.queue),

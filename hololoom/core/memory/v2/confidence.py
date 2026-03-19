@@ -26,7 +26,7 @@ import logging
 import math
 import re
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 from .navigator import GraphBackend, NavigatorResult
 
@@ -73,7 +73,7 @@ def _simple_stem(word: str) -> str:
     return word
 
 
-def _content_stems(text: str) -> Set[str]:
+def _content_stems(text: str) -> set[str]:
     """Tokenize, remove stop words, and stem content words."""
     tokens = re.findall(r"\b\w+\b", text.lower())
     return {
@@ -105,8 +105,8 @@ def find_contradicting_pairs(ranked_nodes, node_data, graph=None):
         List of (node_id_a, node_id_b) contradicting pairs.
     """
     # --- Precompute entity neighbors per retrieved node ---
-    entity_neighbors: Dict[str, Set[str]] = {}
-    entity_names: Set[str] = set()
+    entity_neighbors: dict[str, set[str]] = {}
+    entity_names: set[str] = set()
 
     if graph is not None:
         try:
@@ -125,7 +125,7 @@ def find_contradicting_pairs(ranked_nodes, node_data, graph=None):
                     entity_names.add(name)
 
         for nid, _ in ranked_nodes:
-            ent_nbrs: Set[str] = set()
+            ent_nbrs: set[str] = set()
             try:
                 for nbr_id, _, _ in graph.neighbors(nid):
                     try:
@@ -242,7 +242,7 @@ class StructuralConfidence:
     graph_connectivity: float       # Fraction of results connected to others
     ppr_concentration: float = 0.0  # Gini of PPR scores (0=uniform, 1=focused)
     content_density: float = 0.0    # Fraction of results with substantial content
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -253,7 +253,7 @@ class NarrativeConfidence:
     temporal_order: float           # Source diversity (mix of types)
     contradiction_count: int        # Number of detected contradictions
     topical_coherence: float = 0.0  # Average word overlap between items
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -263,7 +263,7 @@ class DualConfidence:
     narrative: NarrativeConfidence
     combined: float                  # Geometric mean
     decision: str                    # "sufficient", "verify", "flag"
-    per_node: Dict[str, float]       # Per-node confidence scores
+    per_node: dict[str, float]       # Per-node confidence scores
 
 
 # =============================================================================
@@ -289,7 +289,7 @@ class ConfidenceEstimator:
     def __init__(
         self,
         graph: GraphBackend,
-        config: Optional[ConfidenceConfig] = None,
+        config: ConfidenceConfig | None = None,
         reranker_fn=None,  # Optional: (query: str, text: str) → float (0-1)
     ):
         self.graph = graph
@@ -354,7 +354,7 @@ class ConfidenceEstimator:
     # Cross-Encoder Reranking
     # =========================================================================
 
-    def _reranker_confidence(self, query: str, nav_result: NavigatorResult) -> Optional[float]:
+    def _reranker_confidence(self, query: str, nav_result: NavigatorResult) -> float | None:
         """Average cross-encoder reranker score across top-k retrieved items.
 
         When a small reranker model is available (e.g., via sentence-transformers
@@ -492,7 +492,7 @@ class ConfidenceEstimator:
         #    (fixes the bug where only adjacent-in-ranking pairs were checked)
         total_pairs = 0
         connected_pairs = 0
-        neighbor_cache: Dict[str, Set[str]] = {}
+        neighbor_cache: dict[str, set[str]] = {}
 
         for i, nid_a in enumerate(result_ids):
             if nid_a not in neighbor_cache:
@@ -511,7 +511,7 @@ class ConfidenceEstimator:
         pairwise_density = connected_pairs / max(1, total_pairs)
 
         # 2. Source diversity: Shannon entropy of memory type distribution, normalized
-        type_counts: Dict[str, int] = {}
+        type_counts: dict[str, int] = {}
         for nid in result_ids:
             data = nav_result.node_data.get(nid, {})
             mtype = data.get("memory_type", "unknown")
@@ -601,10 +601,10 @@ class ConfidenceEstimator:
     # Per-Node Confidence
     # =========================================================================
 
-    def _per_node_confidence(self, nav_result: NavigatorResult) -> Dict[str, float]:
+    def _per_node_confidence(self, nav_result: NavigatorResult) -> dict[str, float]:
         """Compute per-node confidence scores."""
         result_ids = set(nid for nid, _ in nav_result.ranked_nodes)
-        per_node: Dict[str, float] = {}
+        per_node: dict[str, float] = {}
 
         max_ppr = max(s for _, s in nav_result.ranked_nodes) if nav_result.ranked_nodes else 1.0
 
@@ -645,7 +645,7 @@ class ConfidenceEstimator:
     # =========================================================================
 
     @staticmethod
-    def _gini(values: List[float]) -> float:
+    def _gini(values: list[float]) -> float:
         """Gini coefficient: 0 = uniform, 1 = maximally concentrated."""
         if not values or len(values) < 2:
             return 0.0

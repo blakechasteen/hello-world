@@ -27,10 +27,9 @@ Usage:
 Created: December 2025
 """
 
-from hololoom.tapestry.signals.registry import SignalRegistry
-
 # Import builtins to trigger registration
 from hololoom.tapestry.signals import builtins
+from hololoom.tapestry.signals.registry import SignalRegistry
 
 __all__ = [
     "SignalRegistry",

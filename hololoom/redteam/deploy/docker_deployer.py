@@ -10,17 +10,15 @@ Date: 2025-12-09
 """
 
 import asyncio
-import json
 import logging
 import os
 import subprocess
-import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any
 
-from .config import DeploymentConfig, DeploymentEnvironment
+from .config import DeploymentConfig
 
 logger = logging.getLogger("carts-deploy.docker")
 
@@ -47,15 +45,15 @@ class EnhancedDockerDeployer:
 
     def __init__(self, config: DeploymentConfig):
         self.config = config
-        self.compose_file: Optional[Path] = None
+        self.compose_file: Path | None = None
 
     async def build_image(
         self,
         dockerfile: Path = None,
         context: Path = None,
         tag: str = None,
-        build_args: Dict[str, str] = None,
-    ) -> Dict[str, Any]:
+        build_args: dict[str, str] = None,
+    ) -> dict[str, Any]:
         """Build sandbox Docker image."""
         dockerfile = dockerfile or Path(__file__).parent.parent.parent.parent / "infra" / "docker" / "Dockerfile.sandbox"
         context = context or Path(__file__).parent.parent.parent.parent
@@ -101,9 +99,9 @@ class EnhancedDockerDeployer:
     async def compose_up(
         self,
         compose_file: Path = None,
-        env_vars: Dict[str, str] = None,
+        env_vars: dict[str, str] = None,
         detach: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Start sandbox using Docker Compose."""
         compose_file = compose_file or self._get_default_compose_file()
         self.compose_file = compose_file
@@ -160,7 +158,7 @@ class EnhancedDockerDeployer:
         self,
         compose_file: Path = None,
         volumes: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Stop and remove Compose services."""
         compose_file = compose_file or self.compose_file or self._get_default_compose_file()
 
@@ -185,7 +183,7 @@ class EnhancedDockerDeployer:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def get_container_health(self, container_name: str = None) -> Optional[DockerHealth]:
+    async def get_container_health(self, container_name: str = None) -> DockerHealth | None:
         """Get detailed container health information."""
         container_name = container_name or self.config.name
 
@@ -298,9 +296,9 @@ class EnhancedDockerDeployer:
 
     async def run_with_network_isolation(
         self,
-        command: List[str],
-        allowed_hosts: List[str] = None,
-    ) -> Dict[str, Any]:
+        command: list[str],
+        allowed_hosts: list[str] = None,
+    ) -> dict[str, Any]:
         """Run command with network isolation."""
         # Create isolated network if needed
         network_name = f"carts-isolated-{self.config.name}"
@@ -335,9 +333,9 @@ class EnhancedDockerDeployer:
 
     async def _run_in_container(
         self,
-        command: List[str],
+        command: list[str],
         network: str = "none",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run a command in a new container."""
         container_name = f"{self.config.name}-exec-{int(time.time())}"
 

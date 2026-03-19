@@ -8,11 +8,10 @@ Author: Claude Code
 Date: 2025-11-20
 """
 
-import asyncio
-from pathlib import Path
-
 # Add parent to path for imports
 import sys
+from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 def demo_basic_loading():

@@ -7,17 +7,14 @@ interpretable labels for clusters.
 Instead of "Cluster 0", you get "Machine Learning / Technical".
 """
 
-import numpy as np
-from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
-import warnings
+from typing import Any
+
+import numpy as np
 
 # Try to import semantic dimensions
 try:
-    from hololoom.semantic_calculus.dimensions import (
-        SemanticDimension,
-        STANDARD_DIMENSIONS
-    )
+    from hololoom.semantic_calculus.dimensions import STANDARD_DIMENSIONS, SemanticDimension
     _HAVE_SEMANTIC = True
 except ImportError:
     _HAVE_SEMANTIC = False
@@ -71,9 +68,9 @@ DOMAIN_CATEGORIES = {
 class LabelCandidate:
     """A candidate label for a cluster."""
     primary: str
-    secondary: Optional[str] = None
+    secondary: str | None = None
     confidence: float = 0.0
-    domain: Optional[str] = None
+    domain: str | None = None
 
     def __str__(self):
         if self.secondary:
@@ -82,12 +79,12 @@ class LabelCandidate:
 
 
 def label_clusters(
-    clusters: List[Any],
+    clusters: list[Any],
     embeddings: np.ndarray,
-    texts: List[str],
+    texts: list[str],
     use_semantic: bool = True,
     use_domain: bool = True
-) -> List[Any]:
+) -> list[Any]:
     """
     Generate semantic labels for clusters.
 
@@ -138,7 +135,7 @@ def label_clusters(
     return clusters
 
 
-def _detect_domain(text: str) -> Optional[LabelCandidate]:
+def _detect_domain(text: str) -> LabelCandidate | None:
     """Detect domain category from text."""
     text_lower = text.lower()
 
@@ -173,7 +170,7 @@ def _detect_domain(text: str) -> Optional[LabelCandidate]:
     return None
 
 
-def _get_semantic_label(centroid: np.ndarray) -> Optional[LabelCandidate]:
+def _get_semantic_label(centroid: np.ndarray) -> LabelCandidate | None:
     """Generate label from semantic dimension projections."""
     if not _HAVE_SEMANTIC or not STANDARD_DIMENSIONS:
         return None
@@ -219,7 +216,7 @@ def _get_semantic_label(centroid: np.ndarray) -> Optional[LabelCandidate]:
     )
 
 
-def _extract_keywords(texts: List[str], top_n: int = 3) -> Optional[LabelCandidate]:
+def _extract_keywords(texts: list[str], top_n: int = 3) -> LabelCandidate | None:
     """Extract representative keywords from cluster texts."""
     import re
     from collections import Counter
@@ -239,8 +236,7 @@ def _extract_keywords(texts: List[str], top_n: int = 3) -> Optional[LabelCandida
         'that', 'these', 'those', 'i', 'me', 'my', 'we', 'our', 'you', 'your',
         'he', 'him', 'his', 'she', 'her', 'it', 'its', 'they', 'them', 'their',
         'what', 'which', 'who', 'whom', 'whose', 'get', 'got', 'getting',
-        'use', 'using', 'used', 'make', 'made', 'making', 'like', 'just',
-        'know', 'think', 'see', 'want', 'way', 'look', 'first', 'new', 'one',
+        'use', 'using', 'make', 'made', 'making', 'like', 'know', 'think', 'see', 'want', 'way', 'look', 'first', 'new', 'one',
         'two', 'three', 'thing', 'things', 'time', 'year', 'years', 'day',
         'work', 'working', 'people', 'really', 'well', 'even', 'back', 'good'
     }
@@ -278,7 +274,7 @@ def _extract_keywords(texts: List[str], top_n: int = 3) -> Optional[LabelCandida
 
 
 def generate_cluster_summary(
-    clusters: List[Any],
+    clusters: list[Any],
     include_examples: int = 3
 ) -> str:
     """

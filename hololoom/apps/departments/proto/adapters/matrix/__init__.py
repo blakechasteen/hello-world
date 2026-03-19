@@ -46,8 +46,8 @@ Status: Production ready (2025-12-04)
 """
 
 from .proto_handlers import (
-    ProtoMatrixHandlers,
     MatrixMessage,
+    ProtoMatrixHandlers,
     ProtoSession,
     create_proto_handlers,
 )

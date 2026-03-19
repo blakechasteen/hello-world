@@ -8,12 +8,10 @@ NOTE: Renamed from "PolicyBandit" to "TrajectoryBandit" to avoid collision with
 HoloLoom's existing policy system (tool selection policies in policy/unified.py).
 """
 
-from dataclasses import dataclass
-from typing import Dict, List
-import random
 import json
+import random
+from dataclasses import dataclass
 from pathlib import Path
-
 
 # ============================================================================
 # Bandit State
@@ -28,7 +26,7 @@ class TrajectoryStats:
     successes: int = 0
     failures: int = 0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dict for persistence."""
         return {
             "successes": self.successes,
@@ -59,14 +57,14 @@ class TrajectoryBandit:
     Samples from these distributions to balance exploration and exploitation.
     """
 
-    def __init__(self, trajectory_names: List[str]):
+    def __init__(self, trajectory_names: list[str]):
         """
         Initialize bandit with given trajectory names.
 
         Args:
             trajectory_names: List of trajectory names to track
         """
-        self.trajectory_stats: Dict[str, TrajectoryStats] = {
+        self.trajectory_stats: dict[str, TrajectoryStats] = {
             name: TrajectoryStats() for name in trajectory_names
         }
 
@@ -127,7 +125,7 @@ class TrajectoryBandit:
         else:
             stats.failures += 1
 
-    def get_statistics(self) -> Dict[str, Dict]:
+    def get_statistics(self) -> dict[str, dict]:
         """Get statistics for all trajectories."""
         return {
             name: stats.to_dict()
@@ -151,7 +149,7 @@ class TrajectoryBandit:
             json.dump(data, f, indent=2)
 
     @classmethod
-    def load(cls, filepath: str, trajectory_names: List[str]) -> "TrajectoryBandit":
+    def load(cls, filepath: str, trajectory_names: list[str]) -> "TrajectoryBandit":
         """
         Load bandit state from JSON file.
 
@@ -162,7 +160,7 @@ class TrajectoryBandit:
         Returns:
             Loaded TrajectoryBandit instance
         """
-        with open(filepath, 'r') as f:
+        with open(filepath) as f:
             data = json.load(f)
 
         bandit = cls(trajectory_names)
@@ -185,14 +183,14 @@ class TrajectorySelector:
     Wraps TrajectoryBandit with a simpler API.
     """
 
-    def __init__(self, trajectory_names: List[str]):
+    def __init__(self, trajectory_names: list[str]):
         """
         Args:
             trajectory_names: List of available trajectory names
         """
         self.bandit = TrajectoryBandit(trajectory_names)
 
-    def select(self, trajectory_names: List[str]) -> str:
+    def select(self, trajectory_names: list[str]) -> str:
         """
         Select a trajectory for the given query.
 
@@ -210,7 +208,7 @@ class TrajectorySelector:
         """Update the bandit based on observed reward."""
         self.bandit.update(trajectory_name, reward)
 
-    def get_best_trajectories(self, top_k: int = 3) -> List[tuple[str, float]]:
+    def get_best_trajectories(self, top_k: int = 3) -> list[tuple[str, float]]:
         """
         Get the top-k trajectories by mean reward.
 
@@ -224,7 +222,7 @@ class TrajectorySelector:
         trajectories.sort(key=lambda x: x[1], reverse=True)
         return trajectories[:top_k]
 
-    def get_statistics(self) -> Dict[str, Dict]:
+    def get_statistics(self) -> dict[str, dict]:
         """Get detailed statistics for all trajectories."""
         return self.bandit.get_statistics()
 
@@ -233,7 +231,7 @@ class TrajectorySelector:
         self.bandit.save(filepath)
 
     @classmethod
-    def load(cls, filepath: str, trajectory_names: List[str]) -> "TrajectorySelector":
+    def load(cls, filepath: str, trajectory_names: list[str]) -> "TrajectorySelector":
         """Load bandit state from file."""
         bandit = TrajectoryBandit.load(filepath, trajectory_names)
         selector = cls(trajectory_names)

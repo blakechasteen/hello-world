@@ -5,28 +5,29 @@ Main interface for semantic calculus analysis.
 """
 
 import logging
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
-from typing import Dict, Any, Optional, Callable
 
 from .config import SemanticCalculusConfig
-from .flow_calculus import SemanticFlowCalculus
-from .dimensions import (
-    SemanticSpectrum,
-    STANDARD_DIMENSIONS,
-    EXTENDED_244_DIMENSIONS,
-)
 from .dimension_selector import (
-    SmartDimensionSelector,
     SelectionStrategy,
-    create_fused_36d_selection,
+    SmartDimensionSelector,
 )
-from .integrator import GeometricIntegrator
+from .dimensions import (
+    EXTENDED_244_DIMENSIONS,
+    STANDARD_DIMENSIONS,
+    SemanticSpectrum,
+)
 from .ethics import (
-    EthicalSemanticPolicy,
     COMPASSIONATE_COMMUNICATION,
     SCIENTIFIC_DISCOURSE,
     THERAPEUTIC_DIALOGUE,
+    EthicalSemanticPolicy,
 )
+from .flow_calculus import SemanticFlowCalculus
+from .integrator import GeometricIntegrator
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +49,9 @@ class SemanticAnalyzer:
         self,
         calculus: SemanticFlowCalculus,
         spectrum: SemanticSpectrum,
-        integrator: Optional[GeometricIntegrator] = None,
-        policy: Optional[EthicalSemanticPolicy] = None,
-        config: Optional[SemanticCalculusConfig] = None,
+        integrator: GeometricIntegrator | None = None,
+        policy: EthicalSemanticPolicy | None = None,
+        config: SemanticCalculusConfig | None = None,
     ):
         """
         Initialize semantic analyzer.
@@ -70,7 +71,7 @@ class SemanticAnalyzer:
 
         logger.info("SemanticAnalyzer initialized")
 
-    def analyze_text(self, text: str) -> Dict[str, Any]:
+    def analyze_text(self, text: str) -> dict[str, Any]:
         """
         Complete semantic analysis of text.
 
@@ -105,7 +106,7 @@ class SemanticAnalyzer:
 
         return result
 
-    def extract_features(self, text: str) -> Dict[str, Any]:
+    def extract_features(self, text: str) -> dict[str, Any]:
         """
         Extract features for DotPlasma integration.
 
@@ -166,7 +167,7 @@ class SemanticAnalyzer:
 
 def create_semantic_analyzer(
     embed_fn: Callable,
-    config: Optional[SemanticCalculusConfig] = None,
+    config: SemanticCalculusConfig | None = None,
 ) -> SemanticAnalyzer:
     """
     Factory function to create complete semantic analyzer.
@@ -219,7 +220,7 @@ def create_semantic_analyzer(
         }
         strategy = strategy_map.get(strategy_name.lower(), SelectionStrategy.HYBRID)
 
-        logger.info(f"Using SMART SELECTION for FUSED mode (36D from 244D)")
+        logger.info("Using SMART SELECTION for FUSED mode (36D from 244D)")
         logger.info(f"  Strategy: {strategy_name.upper()}, Domain: {domain_name}")
 
         selector = SmartDimensionSelector()
@@ -268,7 +269,7 @@ def create_semantic_analyzer(
     )
 
 
-def get_cache_stats(analyzer: SemanticAnalyzer) -> Dict[str, Any]:
+def get_cache_stats(analyzer: SemanticAnalyzer) -> dict[str, Any]:
     """
     Get cache statistics from analyzer.
 

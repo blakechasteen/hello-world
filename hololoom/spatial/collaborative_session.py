@@ -8,60 +8,74 @@
 # - Gesture-to-collaboration mappings
 # - Spatial knowledge overlay system
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Tuple, Set
-from datetime import datetime
 import asyncio
 import logging
 import uuid
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum, auto
+from typing import Any
 
-# Import spatial modules
-from hololoom.spatial.math_types import Vector3, Quaternion, Color, Transform, BoundingBox
-from hololoom.spatial.avatar_system import (
-    AvatarManager, Avatar, AvatarPresets, StatusType as AvatarStatusType,
-    Expression, ExpressionType, AnimationState, IKState
+from hololoom.collaboration.annotation_refinement import (
+    AnnotationRefiner,
+    AnnotationType,
+    RefinementResult,
 )
-from hololoom.spatial.whiteboard_3d import (
-    WhiteboardManager, Whiteboard3D, Stroke, Shape3D, TextAnnotation, StickyNote
+from hololoom.collaboration.attribution import (
+    AttributionManager,
+    Contribution,
+    ContributionType,
+    create_refinement_aware_attribution_manager,
 )
-from hololoom.spatial.physics_objects import (
-    PhysicsWorld, PhysicsBody, CollisionShape, BodyType as PhysicsBodyType
+from hololoom.collaboration.presence import (
+    PresenceManager,
+    UserPresence,
 )
-from hololoom.spatial.environment_mapping import (
-    EnvironmentMapper, Plane, SceneSnapshot, SurfaceType
-)
-from hololoom.spatial.hand_tracking import HandTracker, HandGesture, GestureType
-from hololoom.spatial.spatial_audio import SpatialAudioManager, AudioSource
-from hololoom.spatial.spatial_notifications import (
-    SpatialNotificationManager, Notification, NotificationType, NotificationPriority
-)
-from hololoom.spatial.gaze_tracking import GazeTracker, GazeRay
 
 # Import collaboration modules
 from hololoom.collaboration.session import (
-    Session, SessionManager, SessionState, SessionType, Participant, ParticipantRole
-)
-from hololoom.collaboration.presence import (
-    PresenceManager, UserPresence, ActivityStatus, FocusType, CursorPosition
+    SessionManager,
+    SessionType,
 )
 from hololoom.collaboration.sync import (
-    StateSynchronizer, Operation, OperationType, ConflictResolution
-)
-from hololoom.collaboration.attribution import (
-    AttributionManager, Contribution, ContributionType,
-    RefinementAwareAttributionManager, create_refinement_aware_attribution_manager
-)
-from hololoom.collaboration.voice import (
-    VoiceManager, VoiceRoom, VoiceRoomSettings
+    OperationType,
+    StateSynchronizer,
 )
 
 # Import MRF-powered learning modules (Phase 3)
 from hololoom.collaboration.ux_learning import (
-    CollaborationUXLearner, UXFeature, LearningContext, LearningDecision
+    CollaborationUXLearner,
+    LearningContext,
+    UXFeature,
 )
-from hololoom.collaboration.annotation_refinement import (
-    AnnotationRefiner, AnnotationType, RefinementStrategy, RefinementResult
+from hololoom.collaboration.voice import VoiceManager, VoiceRoom, VoiceRoomSettings
+from hololoom.spatial.avatar_system import (
+    Avatar,
+    AvatarManager,
+    AvatarPresets,
+    IKState,
+)
+from hololoom.spatial.environment_mapping import (
+    EnvironmentMapper,
+)
+from hololoom.spatial.gaze_tracking import GazeRay, GazeTracker
+from hololoom.spatial.hand_tracking import GestureType, HandGesture, HandTracker
+
+# Import spatial modules
+from hololoom.spatial.math_types import Color, Quaternion, Transform, Vector3
+from hololoom.spatial.physics_objects import PhysicsWorld
+from hololoom.spatial.spatial_audio import SpatialAudioManager
+from hololoom.spatial.spatial_notifications import (
+    Notification,
+    NotificationPriority,
+    NotificationType,
+    SpatialNotificationManager,
+)
+from hololoom.spatial.whiteboard_3d import (
+    Stroke,
+    Whiteboard3D,
+    WhiteboardManager,
 )
 
 logger = logging.getLogger(__name__)
@@ -117,29 +131,29 @@ class SpatialContext:
     # Location
     position: Vector3 = field(default_factory=Vector3)
     rotation: Quaternion = field(default_factory=Quaternion.identity)
-    current_zone: Optional[SpatialZoneType] = None
-    nearby_users: List[str] = field(default_factory=list)
+    current_zone: SpatialZoneType | None = None
+    nearby_users: list[str] = field(default_factory=list)
 
     # Activity
     activity: SpatialActivityType = SpatialActivityType.IDLE
-    activity_target: Optional[str] = None  # Object/user being interacted with
+    activity_target: str | None = None  # Object/user being interacted with
     activity_duration: float = 0.0  # Seconds in current activity
 
     # Gaze
-    gaze_target: Optional[str] = None
+    gaze_target: str | None = None
     gaze_duration: float = 0.0
-    attention_history: List[str] = field(default_factory=list)  # Last 10 targets
+    attention_history: list[str] = field(default_factory=list)  # Last 10 targets
 
     # Interaction
-    held_objects: List[str] = field(default_factory=list)
-    selected_objects: List[str] = field(default_factory=list)
-    active_tools: List[str] = field(default_factory=list)
+    held_objects: list[str] = field(default_factory=list)
+    selected_objects: list[str] = field(default_factory=list)
+    active_tools: list[str] = field(default_factory=list)
 
     # Temporal
     last_updated: datetime = field(default_factory=datetime.now)
     session_start: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "user_id": self.user_id,
             "position": self.position.to_dict(),
@@ -172,11 +186,11 @@ class SpatialZone:
 
     # Access
     is_public: bool = True
-    allowed_users: List[str] = field(default_factory=list)
+    allowed_users: list[str] = field(default_factory=list)
     max_occupants: int = 10
 
     # Current state
-    occupants: List[str] = field(default_factory=list)
+    occupants: list[str] = field(default_factory=list)
 
     # Visual
     color: Color = field(default_factory=lambda: Color(0.3, 0.5, 0.8, 0.2))
@@ -191,7 +205,7 @@ class SpatialZone:
             self.center.z - half_size.z <= point.z <= self.center.z + half_size.z
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "zone_id": self.zone_id,
             "zone_type": self.zone_type.name,
@@ -218,29 +232,29 @@ class SharedSpatialObject:
     transform: Transform = field(default_factory=Transform)
 
     # Ownership
-    owner_id: Optional[str] = None
+    owner_id: str | None = None
     is_locked: bool = False
-    locked_by: Optional[str] = None
+    locked_by: str | None = None
 
     # Synchronization
     version: int = 0
-    last_modifier: Optional[str] = None
+    last_modifier: str | None = None
     last_modified: datetime = field(default_factory=datetime.now)
 
     # Physics (optional)
-    physics_body_id: Optional[str] = None
+    physics_body_id: str | None = None
     is_grabbable: bool = True
     is_throwable: bool = True
 
     # Knowledge (optional - links to HoloLoom memory)
-    memory_id: Optional[str] = None
-    knowledge_node_id: Optional[str] = None
+    memory_id: str | None = None
+    knowledge_node_id: str | None = None
 
     # Visual
-    color: Optional[Color] = None
+    color: Color | None = None
     scale: Vector3 = field(default_factory=lambda: Vector3(1.0, 1.0, 1.0))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "object_id": self.object_id,
             "name": self.name,
@@ -267,7 +281,7 @@ class GestureMapping:
     action: GestureAction
     requires_target: bool = False
     cooldown_seconds: float = 0.5
-    last_triggered: Optional[datetime] = None
+    last_triggered: datetime | None = None
 
     def can_trigger(self) -> bool:
         """Check if gesture can be triggered (cooldown passed)."""
@@ -286,7 +300,7 @@ class ARContextProvider:
 
     def __init__(self, session: 'CollaborativeSpatialSession'):
         self.session = session
-        self.user_contexts: Dict[str, SpatialContext] = {}
+        self.user_contexts: dict[str, SpatialContext] = {}
         self.context_update_interval = 0.1  # 100ms
 
         # Activity detection thresholds
@@ -297,7 +311,7 @@ class ARContextProvider:
         self.nearby_distance = 3.0  # meters
         self.interaction_distance = 1.5  # meters
 
-    def get_context(self, user_id: str) -> Optional[SpatialContext]:
+    def get_context(self, user_id: str) -> SpatialContext | None:
         """Get current context for a user."""
         return self.user_contexts.get(user_id)
 
@@ -306,7 +320,7 @@ class ARContextProvider:
         user_id: str,
         position: Vector3,
         rotation: Quaternion,
-        gaze_ray: Optional[GazeRay] = None
+        gaze_ray: GazeRay | None = None
     ) -> SpatialContext:
         """Update spatial context for a user."""
         now = datetime.now()
@@ -352,14 +366,14 @@ class ARContextProvider:
         ctx.last_updated = now
         return ctx
 
-    def _detect_zone(self, position: Vector3) -> Optional[SpatialZoneType]:
+    def _detect_zone(self, position: Vector3) -> SpatialZoneType | None:
         """Detect which zone a position is in."""
         for zone in self.session.zones.values():
             if zone.contains_point(position):
                 return zone.zone_type
         return None
 
-    def _find_nearby_users(self, user_id: str, position: Vector3) -> List[str]:
+    def _find_nearby_users(self, user_id: str, position: Vector3) -> list[str]:
         """Find users within nearby distance."""
         nearby = []
         for other_id, ctx in self.user_contexts.items():
@@ -376,7 +390,7 @@ class ARContextProvider:
 
         return nearby
 
-    def _raycast_target(self, gaze_ray: GazeRay) -> Optional[str]:
+    def _raycast_target(self, gaze_ray: GazeRay) -> str | None:
         """Find what user is looking at (simplified raycast)."""
         # In production, this would do proper spatial queries
         # For now, check against shared objects and users
@@ -466,7 +480,7 @@ class ARContextProvider:
 
         return SpatialActivityType.VIEWING
 
-    def get_relevant_knowledge_query(self, user_id: str) -> Optional[str]:
+    def get_relevant_knowledge_query(self, user_id: str) -> str | None:
         """Generate a knowledge query based on spatial context."""
         ctx = self.get_context(user_id)
         if not ctx:
@@ -507,7 +521,7 @@ class ARContextProvider:
         if user_id in self.user_contexts:
             del self.user_contexts[user_id]
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export context provider state."""
         return {
             "user_contexts": {
@@ -527,8 +541,8 @@ class GestureCollaborationBridge:
 
     def __init__(self, session: 'CollaborativeSpatialSession'):
         self.session = session
-        self.mappings: Dict[GestureType, GestureMapping] = {}
-        self.gesture_handlers: Dict[GestureAction, Callable] = {}
+        self.mappings: dict[GestureType, GestureMapping] = {}
+        self.gesture_handlers: dict[GestureAction, Callable] = {}
 
         # Register default mappings
         self._register_default_mappings()
@@ -558,7 +572,7 @@ class GestureCollaborationBridge:
         self,
         user_id: str,
         gesture: HandGesture,
-        target: Optional[str] = None
+        target: str | None = None
     ) -> bool:
         """
         Handle a gesture and trigger collaboration action.
@@ -599,13 +613,13 @@ class GestureCollaborationBridge:
         self,
         user_id: str,
         action: GestureAction,
-        target: Optional[str]
+        target: str | None
     ):
         """Execute default action for gesture."""
         if action == GestureAction.WAVE:
             # Trigger wave animation and notification
             await self.session.notify_users(
-                f"User waved at everyone",
+                "User waved at everyone",
                 user_id,
                 NotificationType.INFO
             )
@@ -651,7 +665,7 @@ class GestureCollaborationBridge:
             cooldown_seconds=cooldown
         )
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export gesture mappings state."""
         return {
             "mappings": {
@@ -698,12 +712,12 @@ class CollaborativeSpatialSession:
         self.enable_annotation_refinement = enable_annotation_refinement
 
         # UX Learning - Thompson Sampling for collaboration preferences
-        self.ux_learner: Optional[CollaborationUXLearner] = None
+        self.ux_learner: CollaborationUXLearner | None = None
         if enable_ux_learning:
             self.ux_learner = CollaborationUXLearner()
 
         # Annotation refinement - MRF strategies for quality improvement
-        self.annotation_refiner: Optional[AnnotationRefiner] = None
+        self.annotation_refiner: AnnotationRefiner | None = None
         if enable_annotation_refinement:
             self.annotation_refiner = AnnotationRefiner()
 
@@ -719,7 +733,7 @@ class CollaborativeSpatialSession:
             self.attribution = AttributionManager()
 
         self.voice_manager = VoiceManager()
-        self.voice_room: Optional[VoiceRoom] = None
+        self.voice_room: VoiceRoom | None = None
 
         # Spatial layer
         self.avatar_manager = AvatarManager()
@@ -736,15 +750,15 @@ class CollaborativeSpatialSession:
         self.gesture_bridge = GestureCollaborationBridge(self)
 
         # Shared state
-        self.zones: Dict[str, SpatialZone] = {}
-        self.shared_objects: Dict[str, SharedSpatialObject] = {}
+        self.zones: dict[str, SpatialZone] = {}
+        self.shared_objects: dict[str, SharedSpatialObject] = {}
 
         # Event handlers
-        self._event_handlers: Dict[str, List[Callable]] = {}
+        self._event_handlers: dict[str, list[Callable]] = {}
 
         # Background tasks
         self._running = False
-        self._sync_task: Optional[asyncio.Task] = None
+        self._sync_task: asyncio.Task | None = None
 
         # Initialize session
         self._init_session(owner_id, owner_name)
@@ -894,7 +908,7 @@ class CollaborativeSpatialSession:
         user_id: str,
         display_name: str,
         avatar_preset: str = "casual"
-    ) -> Tuple[Avatar, UserPresence, Dict[str, Any]]:
+    ) -> tuple[Avatar, UserPresence, dict[str, Any]]:
         """
         User joins the collaborative spatial session.
 
@@ -955,7 +969,7 @@ class CollaborativeSpatialSession:
         self,
         user_id: str,
         display_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Apply Thompson Sampling learned UX defaults for a user.
 
@@ -1091,8 +1105,8 @@ class CollaborativeSpatialSession:
         user_id: str,
         position: Vector3,
         rotation: Quaternion,
-        ik_state: Optional[IKState] = None,
-        gaze_ray: Optional[GazeRay] = None
+        ik_state: IKState | None = None,
+        gaze_ray: GazeRay | None = None
     ):
         """Update user's spatial transform."""
         # Find avatar
@@ -1138,7 +1152,7 @@ class CollaborativeSpatialSession:
         object_type: str,
         position: Vector3,
         rotation: Quaternion = None,
-        knowledge_node_id: Optional[str] = None
+        knowledge_node_id: str | None = None
     ) -> SharedSpatialObject:
         """Create a new shared spatial object."""
         obj_id = str(uuid.uuid4())[:8]
@@ -1225,8 +1239,8 @@ class CollaborativeSpatialSession:
         user_id: str,
         object_id: str,
         position: Vector3,
-        rotation: Optional[Quaternion] = None,
-        scale: Optional[Vector3] = None
+        rotation: Quaternion | None = None,
+        scale: Vector3 | None = None
     ) -> bool:
         """Update a shared object's transform."""
         obj = self.shared_objects.get(object_id)
@@ -1285,7 +1299,7 @@ class CollaborativeSpatialSession:
         for user_id in self.presence_manager.presences.keys():
             self.notification_manager.show(notification, user_id)
 
-    async def share_object(self, object_id: str, target_user_ids: List[str]):
+    async def share_object(self, object_id: str, target_user_ids: list[str]):
         """Share an object with specific users."""
         obj = self.shared_objects.get(object_id)
         if not obj:
@@ -1308,7 +1322,7 @@ class CollaborativeSpatialSession:
         self,
         creator_id: str,
         position: Vector3,
-        size: Tuple[float, float] = (3.0, 2.0)
+        size: tuple[float, float] = (3.0, 2.0)
     ) -> Whiteboard3D:
         """Create a collaborative whiteboard."""
         whiteboard = self.whiteboard_manager.create_whiteboard(
@@ -1362,7 +1376,7 @@ class CollaborativeSpatialSession:
 
     # === Voice Integration ===
 
-    async def enable_voice(self, settings: Optional[VoiceRoomSettings] = None) -> VoiceRoom:
+    async def enable_voice(self, settings: VoiceRoomSettings | None = None) -> VoiceRoom:
         """Enable voice chat for the session."""
         if self.voice_room:
             return self.voice_room
@@ -1398,9 +1412,9 @@ class CollaborativeSpatialSession:
     async def notify_users(
         self,
         message: str,
-        sender_id: Optional[str] = None,
+        sender_id: str | None = None,
         notification_type: NotificationType = NotificationType.INFO,
-        target_users: Optional[List[str]] = None
+        target_users: list[str] | None = None
     ):
         """Send notification to users."""
         notification = Notification(
@@ -1425,7 +1439,7 @@ class CollaborativeSpatialSession:
         user_id: str,
         contribution_type: ContributionType,
         target_id: str,
-        data: Optional[Dict[str, Any]] = None
+        data: dict[str, Any] | None = None
     ) -> Contribution:
         """Record a user contribution."""
         # Get user name
@@ -1449,9 +1463,9 @@ class CollaborativeSpatialSession:
         text: str,
         annotation_type: AnnotationType,
         target_id: str,
-        position: Optional[Vector3] = None,
+        position: Vector3 | None = None,
         auto_refine: bool = True
-    ) -> Tuple[Contribution, Optional[RefinementResult]]:
+    ) -> tuple[Contribution, RefinementResult | None]:
         """
         Create an annotation with optional MRF refinement.
 
@@ -1558,7 +1572,7 @@ class CollaborativeSpatialSession:
         self,
         user_id: str,
         contribution_id: str,
-        reason: Optional[str] = None
+        reason: str | None = None
     ) -> bool:
         """
         Reject a refinement suggestion for an annotation.
@@ -1579,7 +1593,7 @@ class CollaborativeSpatialSession:
 
         return success
 
-    def get_pending_refinements(self, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_pending_refinements(self, user_id: str | None = None) -> list[dict[str, Any]]:
         """
         Get annotations with pending refinement suggestions.
 
@@ -1590,7 +1604,7 @@ class CollaborativeSpatialSession:
 
         return self.attribution.get_pending_refinements(user_id)
 
-    def get_learning_statistics(self) -> Dict[str, Any]:
+    def get_learning_statistics(self) -> dict[str, Any]:
         """
         Get learning system statistics for monitoring.
 
@@ -1622,7 +1636,7 @@ class CollaborativeSpatialSession:
             self._event_handlers[event] = []
         self._event_handlers[event].append(handler)
 
-    def _emit_event(self, event: str, data: Dict[str, Any]):
+    def _emit_event(self, event: str, data: dict[str, Any]):
         """Emit an event to handlers."""
         handlers = self._event_handlers.get(event, [])
         for handler in handlers:
@@ -1633,7 +1647,7 @@ class CollaborativeSpatialSession:
 
     # === State Export ===
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export complete session state for WebXR client."""
         state = {
             "session_id": self.session_id,

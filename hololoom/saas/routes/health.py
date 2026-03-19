@@ -12,7 +12,6 @@ Endpoints:
 import logging
 import time
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
@@ -37,8 +36,8 @@ class ComponentStatus(BaseModel):
     """Status of a single component"""
     name: str
     status: str  # "ok", "degraded", "error"
-    latency_ms: Optional[float] = None
-    message: Optional[str] = None
+    latency_ms: float | None = None
+    message: str | None = None
 
 
 class DetailedHealthResponse(BaseModel):
@@ -46,7 +45,7 @@ class DetailedHealthResponse(BaseModel):
     status: str
     backend: str
     timestamp: str
-    components: Dict[str, ComponentStatus]
+    components: dict[str, ComponentStatus]
     uptime_seconds: float
 
 

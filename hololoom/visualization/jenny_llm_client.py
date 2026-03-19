@@ -28,13 +28,12 @@ Usage:
 """
 
 import asyncio
-import json
 import logging
 import random
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List, AsyncIterator, Type
+from dataclasses import dataclass
+from typing import Any
 
 from .jenny_config_base import BaseConfig
 
@@ -62,8 +61,8 @@ class LLMClientConfig(BaseConfig):
     keepalive_expiry: float = 30.0
     # Provider-specific settings
     ollama_base_url: str = "http://localhost:11434"
-    anthropic_api_key: Optional[str] = None
-    openai_api_key: Optional[str] = None
+    anthropic_api_key: str | None = None
+    openai_api_key: str | None = None
 
     @classmethod
     def fast(cls) -> 'LLMClientConfig':
@@ -95,9 +94,9 @@ class LLMResponse:
     model: str
     provider: str
     latency_ms: float
-    tokens_used: Optional[int] = None
-    finish_reason: Optional[str] = None
-    raw_response: Optional[Dict[str, Any]] = None
+    tokens_used: int | None = None
+    finish_reason: str | None = None
+    raw_response: dict[str, Any] | None = None
     retries: int = 0
 
 
@@ -108,7 +107,7 @@ class LLMError:
     message: str
     provider: str
     retriable: bool = True
-    status_code: Optional[int] = None
+    status_code: int | None = None
 
 
 # ============================================================================
@@ -143,7 +142,7 @@ class AsyncLLMClientBase(ABC):
         return self._available
 
     @property
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         calls = max(self._stats["calls"], 1)
         return {
             **self._stats,
@@ -173,7 +172,7 @@ class AsyncLLMClientBase(ABC):
         """Provider-specific generation implementation."""
         ...
 
-    async def generate(self, prompt: str) -> Optional[LLMResponse]:
+    async def generate(self, prompt: str) -> LLMResponse | None:
         """
         Generate response with retry logic.
 
@@ -361,8 +360,9 @@ class AnthropicClient(AsyncLLMClientBase):
 
     async def connect(self) -> bool:
         try:
-            import httpx
             import os
+
+            import httpx
 
             api_key = self.config.anthropic_api_key or os.environ.get("ANTHROPIC_API_KEY")
             if not api_key:
@@ -439,8 +439,9 @@ class OpenAIClient(AsyncLLMClientBase):
 
     async def connect(self) -> bool:
         try:
-            import httpx
             import os
+
+            import httpx
 
             api_key = self.config.openai_api_key or os.environ.get("OPENAI_API_KEY")
             if not api_key:
@@ -512,8 +513,8 @@ class OpenAIClient(AsyncLLMClientBase):
 
 async def create_llm_client(
     provider: str = "ollama",
-    model: Optional[str] = None,
-    config: Optional[LLMClientConfig] = None,
+    model: str | None = None,
+    config: LLMClientConfig | None = None,
 ) -> AsyncLLMClientBase:
     """
     Create and connect an async LLM client.
@@ -559,8 +560,8 @@ async def create_llm_client(
 
 async def create_best_available_client(
     prefer_local: bool = True,
-    config: Optional[LLMClientConfig] = None,
-) -> Optional[AsyncLLMClientBase]:
+    config: LLMClientConfig | None = None,
+) -> AsyncLLMClientBase | None:
     """
     Create the best available LLM client.
 

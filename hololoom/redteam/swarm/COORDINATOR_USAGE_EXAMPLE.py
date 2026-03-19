@@ -12,13 +12,10 @@ Examples:
 """
 
 import asyncio
-import time
-from typing import List
 
-from coordinator import SwarmCoordinator
 from communication import MessageBus
+from coordinator import SwarmCoordinator
 from protocols import AgentTask, MessagePriority
-
 
 # ============================================================================
 # Example 1: Basic Campaign Execution
@@ -58,7 +55,7 @@ async def example_basic_campaign():
         )
 
         # Display results
-        print(f"\n✓ Campaign complete!")
+        print("\n✓ Campaign complete!")
         print(f"  Target: {result.target}")
         print(f"  Duration: {result.total_duration_ms:.0f}ms")
         print(f"  Vulnerabilities found: {len(result.vulnerabilities_found)}")
@@ -90,7 +87,7 @@ async def example_custom_task_distribution():
     coordinator = SwarmCoordinator(message_bus=bus)
 
     async with coordinator:
-        print(f"✓ Coordinator started")
+        print("✓ Coordinator started")
 
         # Create custom tasks
         tasks = [
@@ -248,7 +245,7 @@ async def example_agent_performance_analysis():
             contributions[a.agent_id] for a in coordinator._exploiters
         ]
 
-        print(f"\nTeam averages:")
+        print("\nTeam averages:")
         print(
             f"  Scouts: {sum(scout_scores) / len(scout_scores):.2%} "
             f"({len(coordinator._scouts)} agents)"
@@ -406,7 +403,7 @@ async def example_advanced_configuration():
     )
 
     await coordinator.start()
-    print(f"✓ Started balanced configuration")
+    print("✓ Started balanced configuration")
     await coordinator.stop()
 
 

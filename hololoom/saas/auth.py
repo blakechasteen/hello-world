@@ -11,13 +11,13 @@ Provides:
 
 import hashlib
 import hmac
-import time
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Tuple
-from dataclasses import dataclass, field
 import logging
+import time
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from typing import Any
 
-from fastapi import Request, HTTPException, Depends
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import APIKeyHeader
 
 logger = logging.getLogger(__name__)
@@ -67,9 +67,9 @@ class RateLimiter:
     """
 
     def __init__(self):
-        self._states: Dict[str, RateLimitState] = {}
+        self._states: dict[str, RateLimitState] = {}
 
-    def check(self, key_id: str, qps_limit: float) -> Tuple[bool, float]:
+    def check(self, key_id: str, qps_limit: float) -> tuple[bool, float]:
         """
         Check if request is allowed for given key.
 
@@ -133,12 +133,12 @@ class AuthContext:
     subscription_status: str
     queries_included: int = 0
     price_per_query_cents: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 async def validate_api_key(
     request: Request,
-    api_key: Optional[str] = Depends(api_key_header)
+    api_key: str | None = Depends(api_key_header)
 ) -> AuthContext:
     """
     FastAPI dependency for API key validation.
@@ -356,7 +356,7 @@ async def add_rate_limit_headers(request: Request, call_next):
 async def check_free_tier_limit(
     request: Request,
     auth: AuthContext
-) -> Tuple[bool, str]:
+) -> tuple[bool, str]:
     """
     Check if free tier daily limit is exceeded.
 

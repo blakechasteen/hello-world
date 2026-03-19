@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Agentic Handlers for Matrix ChatOps
 ====================================
@@ -20,7 +21,7 @@ Created: 2025-12-05
 """
 
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hololoom.agentic.core import AgenticOrchestrator, ReasoningMode
@@ -45,7 +46,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -181,9 +184,9 @@ async def handle_verify(
             reason = result.verification.get('reason', 'No reason provided')
 
             if verified:
-                response += f"**Status:** ✓ Verified\n"
+                response += "**Status:** ✓ Verified\n"
             else:
-                response += f"**Status:** ✗ Not Verified\n"
+                response += "**Status:** ✗ Not Verified\n"
 
             response += f"**Reason:** {reason}\n\n"
 

@@ -35,13 +35,14 @@ Usage:
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, TYPE_CHECKING
 from enum import Enum
+from typing import TYPE_CHECKING, Any, Optional
+
 import numpy as np
 
 if TYPE_CHECKING:
-    from hololoom.dark_trace.engine import DarkTraceEngine
     from hololoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.dark_trace.engine import DarkTraceEngine
 
 
 class SafetyDimension(Enum):
@@ -69,13 +70,13 @@ class SafetyFeatureMapping:
     """Mapping between features and safety dimensions."""
 
     # Feature ID to safety dimension
-    feature_to_dimension: Dict[str, SafetyDimension] = field(default_factory=dict)
+    feature_to_dimension: dict[str, SafetyDimension] = field(default_factory=dict)
 
     # Dimension to feature IDs
-    dimension_to_features: Dict[SafetyDimension, List[str]] = field(default_factory=dict)
+    dimension_to_features: dict[SafetyDimension, list[str]] = field(default_factory=dict)
 
     # Thresholds per dimension
-    dimension_thresholds: Dict[SafetyDimension, float] = field(default_factory=lambda: {
+    dimension_thresholds: dict[SafetyDimension, float] = field(default_factory=lambda: {
         SafetyDimension.DECEPTION: 0.6,
         SafetyDimension.HARM_POTENTIAL: 0.5,
         SafetyDimension.POWER_SEEKING: 0.5,
@@ -98,11 +99,11 @@ class SafetyFeatureMapping:
         if feature_id not in self.dimension_to_features[dimension]:
             self.dimension_to_features[dimension].append(feature_id)
 
-    def get_dimension(self, feature_id: str) -> Optional[SafetyDimension]:
+    def get_dimension(self, feature_id: str) -> SafetyDimension | None:
         """Get safety dimension for a feature."""
         return self.feature_to_dimension.get(feature_id)
 
-    def get_features(self, dimension: SafetyDimension) -> List[str]:
+    def get_features(self, dimension: SafetyDimension) -> list[str]:
         """Get features for a safety dimension."""
         return self.dimension_to_features.get(dimension, [])
 
@@ -117,21 +118,21 @@ class SafetyEvaluation:
     confidence: float = 0.0
 
     # Dimension scores
-    dimension_scores: Dict[SafetyDimension, float] = field(default_factory=dict)
+    dimension_scores: dict[SafetyDimension, float] = field(default_factory=dict)
 
     # Contributing features
-    safety_features: List[Dict[str, Any]] = field(default_factory=list)
+    safety_features: list[dict[str, Any]] = field(default_factory=list)
 
     # Explanation
-    reason: Optional[str] = None
-    recommendation: Optional[str] = None
+    reason: str | None = None
+    recommendation: str | None = None
 
     # Metadata
     evaluation_time_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
-    def primary_concern(self) -> Optional[SafetyDimension]:
+    def primary_concern(self) -> SafetyDimension | None:
         """Get primary safety concern (highest scoring dimension)."""
         if not self.dimension_scores:
             return None
@@ -173,7 +174,7 @@ class AlignmentConfig:
     min_confidence: float = 0.3           # Minimum confidence to act
 
     # Which dimensions to check
-    active_dimensions: Set[SafetyDimension] = field(
+    active_dimensions: set[SafetyDimension] = field(
         default_factory=lambda: set(SafetyDimension)
     )
 
@@ -201,7 +202,7 @@ class AlignmentBridge:
         self,
         engine: Optional["DarkTraceEngine"] = None,
         guardrails: Optional["SafetyGuardrails"] = None,
-        config: Optional[AlignmentConfig] = None,
+        config: AlignmentConfig | None = None,
     ):
         """
         Initialize alignment bridge.
@@ -219,7 +220,7 @@ class AlignmentBridge:
         self.mapping = self._create_default_mapping()
 
         # Evaluation history
-        self._evaluation_history: List[SafetyEvaluation] = []
+        self._evaluation_history: list[SafetyEvaluation] = []
 
     def _create_default_mapping(self) -> SafetyFeatureMapping:
         """Create default feature to safety dimension mapping."""
@@ -245,8 +246,8 @@ class AlignmentBridge:
     def evaluate_safety(
         self,
         activations: np.ndarray,
-        action_request: Optional[Dict[str, Any]] = None,
-        context: Optional[Dict[str, Any]] = None,
+        action_request: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
     ) -> SafetyEvaluation:
         """
         Evaluate safety using feature analysis.
@@ -262,8 +263,8 @@ class AlignmentBridge:
         import time
         start_time = time.time()
 
-        dimension_scores: Dict[SafetyDimension, float] = {}
-        safety_features: List[Dict[str, Any]] = []
+        dimension_scores: dict[SafetyDimension, float] = {}
+        safety_features: list[dict[str, Any]] = []
 
         # Analyze with engine if available
         if self.engine is not None:
@@ -322,7 +323,7 @@ class AlignmentBridge:
     def _extract_semantic_scores(
         self,
         trace_result: Any,
-    ) -> Dict[SafetyDimension, float]:
+    ) -> dict[SafetyDimension, float]:
         """Extract safety dimension scores from semantic analysis."""
         scores = {}
 
@@ -357,7 +358,7 @@ class AlignmentBridge:
     def _extract_sae_scores(
         self,
         trace_result: Any,
-    ) -> Dict[SafetyDimension, float]:
+    ) -> dict[SafetyDimension, float]:
         """Extract safety scores from SAE feature analysis."""
         scores = {}
 
@@ -373,7 +374,7 @@ class AlignmentBridge:
         active_features = getattr(sae_result, 'active_features', [])
 
         # Aggregate by safety dimension
-        dimension_activations: Dict[SafetyDimension, List[float]] = {}
+        dimension_activations: dict[SafetyDimension, list[float]] = {}
 
         for feature in active_features:
             feature_id = getattr(feature, 'id', str(feature))
@@ -405,7 +406,7 @@ class AlignmentBridge:
     def _collect_safety_features(
         self,
         trace_result: Any,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Collect all safety-relevant features from trace."""
         features = []
 
@@ -431,7 +432,7 @@ class AlignmentBridge:
 
     def _calculate_risk(
         self,
-        dimension_scores: Dict[SafetyDimension, float],
+        dimension_scores: dict[SafetyDimension, float],
     ) -> tuple:
         """Calculate overall risk level and block decision."""
         if not dimension_scores:
@@ -467,7 +468,7 @@ class AlignmentBridge:
 
     def _calculate_confidence(
         self,
-        dimension_scores: Dict[SafetyDimension, float],
+        dimension_scores: dict[SafetyDimension, float],
     ) -> float:
         """Calculate confidence in safety evaluation."""
         if not dimension_scores:
@@ -484,8 +485,8 @@ class AlignmentBridge:
 
     def _generate_reason(
         self,
-        dimension_scores: Dict[SafetyDimension, float],
-        safety_features: List[Dict[str, Any]],
+        dimension_scores: dict[SafetyDimension, float],
+        safety_features: list[dict[str, Any]],
     ) -> str:
         """Generate human-readable reason for evaluation."""
         if not dimension_scores:
@@ -510,7 +511,7 @@ class AlignmentBridge:
     def _generate_recommendation(
         self,
         risk_level: RiskLevel,
-        dimension_scores: Dict[SafetyDimension, float],
+        dimension_scores: dict[SafetyDimension, float],
     ) -> str:
         """Generate actionable recommendation."""
         if risk_level == RiskLevel.CRITICAL:
@@ -526,7 +527,7 @@ class AlignmentBridge:
         self,
         guardrail_decision: Any,
         activations: np.ndarray,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate a guardrail decision using interpretability.
 
@@ -561,7 +562,7 @@ class AlignmentBridge:
     def get_evaluation_history(
         self,
         limit: int = 100,
-    ) -> List[SafetyEvaluation]:
+    ) -> list[SafetyEvaluation]:
         """Get recent evaluation history."""
         return self._evaluation_history[-limit:]
 
@@ -573,7 +574,7 @@ class AlignmentBridge:
 def create_alignment_bridge(
     engine: Optional["DarkTraceEngine"] = None,
     guardrails: Optional["SafetyGuardrails"] = None,
-    config: Optional[AlignmentConfig] = None,
+    config: AlignmentConfig | None = None,
 ) -> AlignmentBridge:
     """
     Create an alignment bridge.

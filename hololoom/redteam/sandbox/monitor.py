@@ -22,8 +22,6 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import List, Tuple, Optional, Dict, Any
 
 logger = logging.getLogger("hololoom.redteam.sandbox.monitor")
 
@@ -143,7 +141,7 @@ class ResourceMonitor:
         - Fallback to basic time-based estimation
     """
 
-    def __init__(self, sample_interval_ms: int = 100, pid: Optional[int] = None):
+    def __init__(self, sample_interval_ms: int = 100, pid: int | None = None):
         """
         Initialize monitor.
 
@@ -153,14 +151,14 @@ class ResourceMonitor:
         """
         self._sample_interval = sample_interval_ms / 1000.0
         self._pid = pid
-        self._samples: List[ResourceSample] = []
+        self._samples: list[ResourceSample] = []
         self._monitoring = False
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
         self._start_time: float = 0.0
         self._overhead_start: float = 0.0
 
         # Baseline for per-sample overhead measurement
-        self._baseline_samples: List[float] = []
+        self._baseline_samples: list[float] = []
 
     async def start(self) -> None:
         """Start monitoring in background."""
@@ -229,8 +227,9 @@ class ResourceMonitor:
 
     def _sample_psutil(self) -> ResourceSample:
         """Sample using psutil (most accurate)."""
-        import psutil
         import os
+
+        import psutil
 
         process = psutil.Process(self._pid or os.getpid())
 
@@ -286,7 +285,7 @@ class ResourceMonitor:
 
         # Try /proc/self/stat (Linux only)
         try:
-            with open(f"/proc/{self._pid or os.getpid()}/stat", "r") as f:
+            with open(f"/proc/{self._pid or os.getpid()}/stat") as f:
                 stat_line = f.read().strip()
                 # Parse fields: pid, comm, state, ppid, pgrp, session, tty_nr,
                 # tpgid, flags, minflt, cminflt, majflt, cmajflt, utime, stime...
@@ -301,7 +300,7 @@ class ResourceMonitor:
 
         # Try /proc/self/status (for memory)
         try:
-            with open(f"/proc/{self._pid or os.getpid()}/status", "r") as f:
+            with open(f"/proc/{self._pid or os.getpid()}/status") as f:
                 for line in f:
                     if line.startswith("VmRSS:"):
                         # VmRSS: 12345 kB
@@ -321,11 +320,11 @@ class ResourceMonitor:
             network_bytes_recv=0,
         )
 
-    def get_current_sample(self) -> Optional[ResourceSample]:
+    def get_current_sample(self) -> ResourceSample | None:
         """Get most recent sample."""
         return self._samples[-1] if self._samples else None
 
-    def get_samples(self) -> List[ResourceSample]:
+    def get_samples(self) -> list[ResourceSample]:
         """Get all collected samples."""
         return self._samples.copy()
 
@@ -389,7 +388,7 @@ class ResourceMonitor:
         self,
         memory_limit_mb: int,
         timeout_seconds: float
-    ) -> Tuple[bool, List[str]]:
+    ) -> tuple[bool, list[str]]:
         """
         Check if current resource usage violates limits.
 

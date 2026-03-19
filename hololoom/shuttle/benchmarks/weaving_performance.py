@@ -16,22 +16,23 @@ Created: 2025-01-21
 """
 
 import asyncio
-import time
 import statistics
-from typing import List, Dict, Any
+import time
 from datetime import datetime
+from typing import Any
 
-# HoloLoom types
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.config import Config
 from hololoom.memory.graph import KG, KGEdge
 
+# HoloLoom types
+from hololoom.protocols.types import MemoryShard, Query
+
+from hololoom.config import Config
 
 # ============================================================================
 # Test Data
 # ============================================================================
 
-def create_test_shards() -> List[MemoryShard]:
+def create_test_shards() -> list[MemoryShard]:
     """Create test memory shards."""
     return [
         MemoryShard(
@@ -97,7 +98,7 @@ class BenchmarkRunner:
         config: Config,
         mode_name: str,
         enable_shuttle: bool
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Benchmark a single execution mode.
 
@@ -151,7 +152,7 @@ class BenchmarkRunner:
             'n_runs': self.n_runs * len(self.queries),
         }
 
-    async def run_all_benchmarks(self) -> List[Dict[str, Any]]:
+    async def run_all_benchmarks(self) -> list[dict[str, Any]]:
         """Run benchmarks for all modes (before/after)."""
         results = []
 
@@ -162,7 +163,7 @@ class BenchmarkRunner:
         ]
 
         print(f"\n{'='*80}")
-        print(f"Shuttle Integration Performance Benchmarks")
+        print("Shuttle Integration Performance Benchmarks")
         print(f"{'='*80}")
         print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"Runs per mode: {self.n_runs} × {len(self.queries)} queries = {self.n_runs * len(self.queries)} total")
@@ -193,7 +194,7 @@ class BenchmarkRunner:
 
         return results
 
-    def generate_report(self, results: List[Dict[str, Any]]) -> str:
+    def generate_report(self, results: list[dict[str, Any]]) -> str:
         """Generate markdown comparison report."""
         report = []
 

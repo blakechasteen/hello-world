@@ -14,21 +14,17 @@ Usage:
 
 import asyncio
 import logging
-from typing import Sequence, Dict, Any
+from collections.abc import Sequence
 
 try:
     from mcp.server import Server
-    from mcp.types import Tool, TextContent
+    from mcp.types import TextContent, Tool
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
     print("⚠️  MCP not installed. Run: pip install mcp")
 
-from .agentic_search_suite import (
-    SearchOrchestrator,
-    SearchStrategy,
-    SearchResult
-)
+from .agentic_search_suite import SearchOrchestrator, SearchStrategy
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

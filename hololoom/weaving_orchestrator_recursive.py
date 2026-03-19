@@ -42,24 +42,22 @@ Architecture:
 
 import logging
 import time
-from typing import Optional
 from dataclasses import dataclass
 
 from hololoom.config import Config
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.fabric.spacetime import Spacetime
-from hololoom.weaving_orchestrator import WeavingOrchestrator
 from hololoom.convergence.recursive_engine import (
-    RecursiveConvergenceEngine,
     RecursiveConvergenceResult,
-    create_recursive_engine
+    create_recursive_engine,
 )
+from hololoom.fabric.spacetime import Spacetime
 from hololoom.protocols.recursive_reasoning import (
-    RecursiveConfig,
+    ReasoningJournal,
     ReasoningStrategy,
-    ReasoningJournal
+    RecursiveConfig,
 )
+from hololoom.protocols.types import MemoryShard, Query
 from hololoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -71,9 +69,9 @@ class RecursiveSpacetime(Spacetime):
 
     Extends base Spacetime to include complete reasoning journal.
     """
-    reasoning_journal: Optional[ReasoningJournal] = None
+    reasoning_journal: ReasoningJournal | None = None
     iterations: int = 1
-    strategy_used: Optional[ReasoningStrategy] = None
+    strategy_used: ReasoningStrategy | None = None
 
 
 class RecursiveWeavingOrchestrator(WeavingOrchestrator):

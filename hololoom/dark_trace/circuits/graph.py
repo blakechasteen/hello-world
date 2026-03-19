@@ -17,10 +17,11 @@ Key Features:
 - Integration with CircuitTrace from tracer module
 """
 
+import heapq
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Set, Tuple, Any, Iterator
-import heapq
+from typing import Any
 
 
 class NodeType(Enum):
@@ -82,21 +83,21 @@ class CircuitNode:
     node_id: str
     node_type: NodeType
     layer_idx: int
-    position: Optional[int] = None  # Token position if applicable
+    position: int | None = None  # Token position if applicable
 
     # Activation information
     activation: float = 0.0
     importance: float = 0.0
 
     # SAE-specific
-    feature_idx: Optional[int] = None
-    feature_label: Optional[str] = None
+    feature_idx: int | None = None
+    feature_label: str | None = None
 
     # Attention-specific
-    head_idx: Optional[int] = None
+    head_idx: int | None = None
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __hash__(self) -> int:
         return hash(self.node_id)
@@ -139,7 +140,7 @@ class CircuitEdge:
     mutual_information: float = 0.0
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __hash__(self) -> int:
         return hash((self.source_id, self.target_id, self.edge_type))
@@ -163,8 +164,8 @@ class CircuitEdge:
 class CircuitPath:
     """A path through the circuit graph."""
 
-    nodes: List[CircuitNode]
-    edges: List[CircuitEdge]
+    nodes: list[CircuitNode]
+    edges: list[CircuitEdge]
 
     # Path metrics
     total_weight: float = 0.0
@@ -196,12 +197,12 @@ class CircuitPath:
         return len(self.edges)
 
     @property
-    def source(self) -> Optional[CircuitNode]:
+    def source(self) -> CircuitNode | None:
         """First node in the path."""
         return self.nodes[0] if self.nodes else None
 
     @property
-    def target(self) -> Optional[CircuitNode]:
+    def target(self) -> CircuitNode | None:
         """Last node in the path."""
         return self.nodes[-1] if self.nodes else None
 
@@ -209,7 +210,7 @@ class CircuitPath:
         """Check if path contains a node."""
         return any(n.node_id == node_id for n in self.nodes)
 
-    def get_node_types(self) -> List[NodeType]:
+    def get_node_types(self) -> list[NodeType]:
         """Get sequence of node types along path."""
         return [n.node_type for n in self.nodes]
 
@@ -242,10 +243,10 @@ class CircuitGraph:
 
     def __init__(self):
         """Initialize empty circuit graph."""
-        self._nodes: Dict[str, CircuitNode] = {}
-        self._edges: Dict[Tuple[str, str], List[CircuitEdge]] = {}
-        self._adjacency: Dict[str, Set[str]] = {}  # Forward adjacency
-        self._reverse_adjacency: Dict[str, Set[str]] = {}  # Backward adjacency
+        self._nodes: dict[str, CircuitNode] = {}
+        self._edges: dict[tuple[str, str], list[CircuitEdge]] = {}
+        self._adjacency: dict[str, set[str]] = {}  # Forward adjacency
+        self._reverse_adjacency: dict[str, set[str]] = {}  # Backward adjacency
 
     # ==================== Node Operations ====================
 
@@ -257,7 +258,7 @@ class CircuitGraph:
         if node.node_id not in self._reverse_adjacency:
             self._reverse_adjacency[node.node_id] = set()
 
-    def get_node(self, node_id: str) -> Optional[CircuitNode]:
+    def get_node(self, node_id: str) -> CircuitNode | None:
         """Get a node by ID."""
         return self._nodes.get(node_id)
 
@@ -279,10 +280,10 @@ class CircuitGraph:
 
     def get_nodes(
         self,
-        node_type: Optional[NodeType] = None,
-        layer_idx: Optional[int] = None,
+        node_type: NodeType | None = None,
+        layer_idx: int | None = None,
         min_importance: float = 0.0
-    ) -> List[CircuitNode]:
+    ) -> list[CircuitNode]:
         """Get nodes with optional filtering."""
         nodes = list(self._nodes.values())
 
@@ -296,7 +297,7 @@ class CircuitGraph:
         return nodes
 
     @property
-    def nodes(self) -> List[CircuitNode]:
+    def nodes(self) -> list[CircuitNode]:
         """All nodes in the graph."""
         return list(self._nodes.values())
 
@@ -327,8 +328,8 @@ class CircuitGraph:
         self,
         source_id: str,
         target_id: str,
-        edge_type: Optional[EdgeType] = None
-    ) -> Optional[CircuitEdge]:
+        edge_type: EdgeType | None = None
+    ) -> CircuitEdge | None:
         """Get an edge between two nodes."""
         key = (source_id, target_id)
         edges = self._edges.get(key, [])
@@ -340,13 +341,13 @@ class CircuitGraph:
 
     def get_edges(
         self,
-        source_id: Optional[str] = None,
-        target_id: Optional[str] = None,
-        edge_type: Optional[EdgeType] = None,
+        source_id: str | None = None,
+        target_id: str | None = None,
+        edge_type: EdgeType | None = None,
         causal_only: bool = False
-    ) -> List[CircuitEdge]:
+    ) -> list[CircuitEdge]:
         """Get edges with optional filtering."""
-        all_edges: List[CircuitEdge] = []
+        all_edges: list[CircuitEdge] = []
         for edge_list in self._edges.values():
             all_edges.extend(edge_list)
 
@@ -373,7 +374,7 @@ class CircuitGraph:
         self,
         source_id: str,
         target_id: str,
-        edge_type: Optional[EdgeType] = None
+        edge_type: EdgeType | None = None
     ) -> None:
         """Remove edge(s) between two nodes."""
         key = (source_id, target_id)
@@ -390,9 +391,9 @@ class CircuitGraph:
                 self._remove_edge_internal(source_id, target_id)
 
     @property
-    def edges(self) -> List[CircuitEdge]:
+    def edges(self) -> list[CircuitEdge]:
         """All edges in the graph."""
-        all_edges: List[CircuitEdge] = []
+        all_edges: list[CircuitEdge] = []
         for edge_list in self._edges.values():
             all_edges.extend(edge_list)
         return all_edges
@@ -404,17 +405,17 @@ class CircuitGraph:
 
     # ==================== Adjacency Operations ====================
 
-    def get_successors(self, node_id: str) -> List[CircuitNode]:
+    def get_successors(self, node_id: str) -> list[CircuitNode]:
         """Get nodes that this node connects to."""
         successor_ids = self._adjacency.get(node_id, set())
         return [self._nodes[nid] for nid in successor_ids if nid in self._nodes]
 
-    def get_predecessors(self, node_id: str) -> List[CircuitNode]:
+    def get_predecessors(self, node_id: str) -> list[CircuitNode]:
         """Get nodes that connect to this node."""
         predecessor_ids = self._reverse_adjacency.get(node_id, set())
         return [self._nodes[nid] for nid in predecessor_ids if nid in self._nodes]
 
-    def get_neighbors(self, node_id: str) -> List[CircuitNode]:
+    def get_neighbors(self, node_id: str) -> list[CircuitNode]:
         """Get all connected nodes (both directions)."""
         neighbor_ids = self._adjacency.get(node_id, set()) | self._reverse_adjacency.get(node_id, set())
         return [self._nodes[nid] for nid in neighbor_ids if nid in self._nodes]
@@ -426,7 +427,7 @@ class CircuitGraph:
         source_id: str,
         target_id: str,
         weight_key: str = "weight"
-    ) -> Optional[CircuitPath]:
+    ) -> CircuitPath | None:
         """
         Find shortest path between two nodes using Dijkstra's algorithm.
 
@@ -442,10 +443,10 @@ class CircuitGraph:
             return None
 
         # Dijkstra's algorithm
-        distances: Dict[str, float] = {source_id: 0}
-        predecessors: Dict[str, Tuple[str, CircuitEdge]] = {}
+        distances: dict[str, float] = {source_id: 0}
+        predecessors: dict[str, tuple[str, CircuitEdge]] = {}
         heap = [(0, source_id)]
-        visited: Set[str] = set()
+        visited: set[str] = set()
 
         while heap:
             dist, current = heapq.heappop(heap)
@@ -478,8 +479,8 @@ class CircuitGraph:
         if target_id not in predecessors and source_id != target_id:
             return None
 
-        path_nodes: List[CircuitNode] = []
-        path_edges: List[CircuitEdge] = []
+        path_nodes: list[CircuitNode] = []
+        path_edges: list[CircuitEdge] = []
         current = target_id
 
         while current != source_id:
@@ -500,7 +501,7 @@ class CircuitGraph:
         target_id: str,
         max_length: int = 10,
         causal_only: bool = False
-    ) -> List[CircuitPath]:
+    ) -> list[CircuitPath]:
         """
         Find all paths between two nodes (up to max length).
 
@@ -516,13 +517,13 @@ class CircuitGraph:
         if source_id not in self._nodes or target_id not in self._nodes:
             return []
 
-        paths: List[CircuitPath] = []
+        paths: list[CircuitPath] = []
 
         def dfs(
             current: str,
-            path_nodes: List[CircuitNode],
-            path_edges: List[CircuitEdge],
-            visited: Set[str]
+            path_nodes: list[CircuitNode],
+            path_edges: list[CircuitEdge],
+            visited: set[str]
         ):
             if len(path_edges) > max_length:
                 return
@@ -559,7 +560,7 @@ class CircuitGraph:
 
         return paths
 
-    def get_critical_path(self) -> Optional[CircuitPath]:
+    def get_critical_path(self) -> CircuitPath | None:
         """
         Find the critical path (highest importance path from input to output).
 
@@ -578,7 +579,7 @@ class CircuitGraph:
         if not input_nodes or not output_nodes:
             return None
 
-        best_path: Optional[CircuitPath] = None
+        best_path: CircuitPath | None = None
         best_importance = -float('inf')
 
         for input_node in input_nodes:
@@ -595,7 +596,7 @@ class CircuitGraph:
 
     def extract_subgraph(
         self,
-        node_ids: Set[str],
+        node_ids: set[str],
         include_connecting_edges: bool = True
     ) -> "CircuitGraph":
         """
@@ -662,7 +663,7 @@ class CircuitGraph:
         """Get out-degree of a node."""
         return len(self._adjacency.get(node_id, set()))
 
-    def get_degree_distribution(self) -> Dict[str, Dict[str, int]]:
+    def get_degree_distribution(self) -> dict[str, dict[str, int]]:
         """Get degree distribution for all nodes."""
         distribution = {}
         for node_id in self._nodes:
@@ -673,7 +674,7 @@ class CircuitGraph:
             }
         return distribution
 
-    def get_hub_nodes(self, top_k: int = 5) -> List[CircuitNode]:
+    def get_hub_nodes(self, top_k: int = 5) -> list[CircuitNode]:
         """Get nodes with highest connectivity (hubs)."""
         degree_dist = self.get_degree_distribution()
         sorted_nodes = sorted(
@@ -696,7 +697,7 @@ class CircuitGraph:
         Returns:
             CircuitGraph representation
         """
-        from hololoom.dark_trace.circuits.tracer import CircuitTrace, TraceNode, TraceEdge
+        from hololoom.dark_trace.circuits.tracer import CircuitTrace
 
         if not isinstance(trace, CircuitTrace):
             raise TypeError(f"Expected CircuitTrace, got {type(trace)}")
@@ -790,9 +791,9 @@ class CircuitGraph:
         for edge_list in self._edges.values():
             yield from edge_list
 
-    def iter_layers(self) -> Iterator[Tuple[int, List[CircuitNode]]]:
+    def iter_layers(self) -> Iterator[tuple[int, list[CircuitNode]]]:
         """Iterate over layers and their nodes."""
-        layer_nodes: Dict[int, List[CircuitNode]] = {}
+        layer_nodes: dict[int, list[CircuitNode]] = {}
         for node in self.nodes:
             if node.layer_idx not in layer_nodes:
                 layer_nodes[node.layer_idx] = []

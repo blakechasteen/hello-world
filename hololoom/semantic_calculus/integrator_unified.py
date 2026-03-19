@@ -27,16 +27,17 @@ Or for backward compatibility:
     integrator = GeometricIntegrator(projection_matrix)  # Still works!
 """
 
-import numpy as np
-from typing import Callable, List, Dict, Optional
+from collections.abc import Callable
 from dataclasses import dataclass
+
+import numpy as np
 
 # Import moonshot integrators
 try:
     from hololoom.memory.integrators import (
-        IntegratorType,
         DynamicalState,
         ForceFunction,
+        IntegratorType,
         create_integrator,
     )
     _HAVE_MOONSHOT = True
@@ -49,7 +50,7 @@ except ImportError:
     )
 
 # Import original semantic calculus components
-from .performance import ProjectionCache, HAS_NUMBA
+from .performance import ProjectionCache
 
 
 @dataclass
@@ -272,7 +273,7 @@ class UnifiedGeometricIntegrator:
         gradient_fn_full: Callable[[np.ndarray], np.ndarray],
         dt: float,
         n_steps: int
-    ) -> List[SemanticState]:
+    ) -> list[SemanticState]:
         """
         Integrate semantic trajectory.
 
@@ -309,9 +310,9 @@ class UnifiedGeometricIntegrator:
 
     def compute_energy_drift(
         self,
-        states: List[SemanticState],
+        states: list[SemanticState],
         potential_fn: Callable
-    ) -> Dict:
+    ) -> dict:
         """
         Measure energy conservation.
 

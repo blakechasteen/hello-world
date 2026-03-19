@@ -7,7 +7,6 @@ Key Insight: Causal paths tell us which actions lead to desired outcomes!
 """
 
 import logging
-from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass
 
 from hololoom.causal import CausalDAG
@@ -25,7 +24,7 @@ class CausalPath:
         strength: Cumulative causal strength
         length: Number of edges
     """
-    nodes: List[str]
+    nodes: list[str]
     strength: float
     length: int
 
@@ -62,7 +61,7 @@ class CausalChainFinder:
         self,
         goal_var: str,
         max_length: int = 5
-    ) -> List[CausalPath]:
+    ) -> list[CausalPath]:
         """
         Find all causal paths leading to goal variable.
 
@@ -102,7 +101,7 @@ class CausalChainFinder:
         self,
         source: str,
         target: str
-    ) -> Optional[CausalPath]:
+    ) -> CausalPath | None:
         """
         Find strongest causal path from source to target.
 
@@ -137,8 +136,8 @@ class CausalChainFinder:
     def find_controllable_causes(
         self,
         goal_var: str,
-        controllable_vars: Set[str]
-    ) -> List[CausalPath]:
+        controllable_vars: set[str]
+    ) -> list[CausalPath]:
         """
         Find controllable variables that cause goal.
 
@@ -168,7 +167,7 @@ class CausalChainFinder:
 
         return paths
 
-    def _calculate_path_strength(self, path: List[str]) -> float:
+    def _calculate_path_strength(self, path: list[str]) -> float:
         """
         Calculate cumulative strength of causal path.
 

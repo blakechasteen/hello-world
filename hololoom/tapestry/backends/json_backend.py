@@ -15,11 +15,10 @@ Created: December 2025
 """
 
 import json
-import shutil
 import logging
-from pathlib import Path
-from typing import Optional
 import os
+import shutil
+from pathlib import Path
 
 from hololoom.tapestry.protocol import Tapestry, TapestryBackend
 
@@ -57,7 +56,7 @@ class JsonTapestryBackend:
         """Check if tapestry file exists."""
         return self.path.exists()
 
-    async def load(self) -> Optional[Tapestry]:
+    async def load(self) -> Tapestry | None:
         """
         Load tapestry from JSON file.
 
@@ -69,7 +68,7 @@ class JsonTapestryBackend:
             return None
 
         try:
-            with open(self.path, 'r', encoding='utf-8') as f:
+            with open(self.path, encoding='utf-8') as f:
                 data = json.load(f)
             tapestry = Tapestry.from_dict(data)
             logger.info(f"Loaded tapestry '{tapestry.loom_id}' with {len(tapestry.threads)} threads")
@@ -140,7 +139,7 @@ class JsonTapestryBackend:
             self.path.unlink()
             logger.info(f"Deleted tapestry at {self.path}")
 
-    def get_backup_path(self) -> Optional[Path]:
+    def get_backup_path(self) -> Path | None:
         """Get path to most recent backup, if exists."""
         backup = self.path.with_suffix('.json.bak')
         if backup.exists():

@@ -9,18 +9,16 @@ Supports multiple backends:
 Created: 2025-11-22
 """
 
-from typing import List, Dict, Any, Optional, Tuple
-from dataclasses import dataclass
 import logging
-import numpy as np
 from datetime import datetime
 
+import numpy as np
+
 from hololoom.vision.protocol import (
-    DetectedObject,
     BoundingBox,
+    DetectedObject,
     ObjectDetectorProtocol,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +59,7 @@ class ObjectDetector(ObjectDetectorProtocol):
         backend: str = "mock",
         confidence_threshold: float = 0.5,
         max_detections: int = 20,
-        model_path: Optional[str] = None,
+        model_path: str | None = None,
     ):
         """
         Initialize object detector.
@@ -125,7 +123,7 @@ class ObjectDetector(ObjectDetectorProtocol):
             logger.error(f"Failed to load YOLO model: {e}")
             return False
 
-    async def process_frame(self, frame: np.ndarray) -> List[DetectedObject]:
+    async def process_frame(self, frame: np.ndarray) -> list[DetectedObject]:
         """Process frame (delegates to detect_objects)"""
         return await self.detect_objects(frame, self.confidence_threshold)
 
@@ -133,7 +131,7 @@ class ObjectDetector(ObjectDetectorProtocol):
         self,
         frame: np.ndarray,
         confidence_threshold: float = 0.5
-    ) -> List[DetectedObject]:
+    ) -> list[DetectedObject]:
         """
         Detect objects in frame.
 
@@ -158,7 +156,7 @@ class ObjectDetector(ObjectDetectorProtocol):
         self,
         frame: np.ndarray,
         confidence_threshold: float
-    ) -> List[DetectedObject]:
+    ) -> list[DetectedObject]:
         """YOLO detection"""
         if not self.model:
             return []
@@ -210,7 +208,7 @@ class ObjectDetector(ObjectDetectorProtocol):
         self,
         frame: np.ndarray,
         confidence_threshold: float
-    ) -> List[DetectedObject]:
+    ) -> list[DetectedObject]:
         """Mock detection for testing"""
         # Return some dummy objects for demonstration
         return [
@@ -237,7 +235,7 @@ class ObjectDetector(ObjectDetectorProtocol):
         self.model = None
         self.initialized = False
 
-    def get_capabilities(self) -> Dict[str, bool]:
+    def get_capabilities(self) -> dict[str, bool]:
         """Get detector capabilities"""
         return {
             "object_detection": True,
@@ -273,16 +271,16 @@ def create_object_detector(
 # ============================================================================
 
 def filter_objects_by_type(
-    objects: List[DetectedObject],
-    labels: List[str]
-) -> List[DetectedObject]:
+    objects: list[DetectedObject],
+    labels: list[str]
+) -> list[DetectedObject]:
     """Filter objects by label"""
     return [obj for obj in objects if obj.label in labels]
 
 
 def get_largest_object(
-    objects: List[DetectedObject]
-) -> Optional[DetectedObject]:
+    objects: list[DetectedObject]
+) -> DetectedObject | None:
     """Get object with largest bounding box"""
     if not objects:
         return None
@@ -291,9 +289,9 @@ def get_largest_object(
 
 
 def get_closest_to_center(
-    objects: List[DetectedObject],
-    frame_center: Tuple[float, float] = (0.5, 0.5)
-) -> Optional[DetectedObject]:
+    objects: list[DetectedObject],
+    frame_center: tuple[float, float] = (0.5, 0.5)
+) -> DetectedObject | None:
     """Get object closest to frame center"""
     if not objects:
         return None
@@ -306,9 +304,9 @@ def get_closest_to_center(
 
 
 def non_max_suppression(
-    objects: List[DetectedObject],
+    objects: list[DetectedObject],
     iou_threshold: float = 0.5
-) -> List[DetectedObject]:
+) -> list[DetectedObject]:
     """
     Apply non-maximum suppression to remove overlapping boxes.
 

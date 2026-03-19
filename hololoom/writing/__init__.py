@@ -30,35 +30,35 @@ Advanced API:
 
 from typing import List, Optional
 
-# Import primary API
-from .core.writer import write as _write
-from .core.protocol import MemoryShard
-
 # Import core classes for advanced usage
 from .core import (
-    Writer,
     Composer,
-    WritingContext,
-    WritingResult,
-    WritingMode,
+    OutputFormat,
     RefinementStrategy,
     StyleGuide,
-    OutputFormat
+    Writer,
+    WritingContext,
+    WritingMode,
+    WritingResult,
 )
+from .core.protocol import MemoryShard
+
+# Import primary API
+from .core.writer import write as _write
 
 # Import mode writers
-from .modes import NarrativeWriter, TechnicalWriter, AnalysisWriter, CreativeWriter
+from .modes import AnalysisWriter, CreativeWriter, NarrativeWriter, TechnicalWriter
 
 # Import refiners
-from .refinement import EleganceRefiner, BasicRefiner, VerifyRefiner
+from .refinement import BasicRefiner, EleganceRefiner, VerifyRefiner
 
 
 # Ruthlessly simple write function
 async def write(
     query: str,
-    memories: List[MemoryShard],
-    mode: Optional[str] = None,
-    style: Optional[str] = None,
+    memories: list[MemoryShard],
+    mode: str | None = None,
+    style: str | None = None,
     refine: bool = True,
     format: str = 'markdown'
 ) -> str:
@@ -120,12 +120,12 @@ async def write(
 
 
 async def write_batch(
-    queries: List[str],
-    memories: List[MemoryShard],
-    mode: Optional[str] = None,
-    style: Optional[str] = None,
+    queries: list[str],
+    memories: list[MemoryShard],
+    mode: str | None = None,
+    style: str | None = None,
     refine: bool = True
-) -> List[str]:
+) -> list[str]:
     """
     Batch writing with shared memory context.
 

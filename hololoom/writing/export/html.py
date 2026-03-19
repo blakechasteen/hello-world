@@ -12,7 +12,6 @@ Tufte principles:
 """
 
 import logging
-from typing import Dict, Any
 import re
 
 from ..core.protocol import WritingResult
@@ -264,34 +263,34 @@ class HTMLExporter:
         parts.append('            <h4>Quality Metrics</h4>')
 
         # Overall quality
-        parts.append(f'            <div class="quality-metric">')
+        parts.append('            <div class="quality-metric">')
         parts.append(f'                <strong>Overall Quality:</strong> {result.quality_score:.0%}')
-        parts.append(f'                <div class="quality-bar">')
+        parts.append('                <div class="quality-bar">')
         parts.append(f'                    <div class="quality-bar-fill" style="width: {result.quality_score * 100}%"></div>')
-        parts.append(f'                </div>')
-        parts.append(f'            </div>')
+        parts.append('                </div>')
+        parts.append('            </div>')
 
         # Confidence
-        parts.append(f'            <div class="quality-metric">')
+        parts.append('            <div class="quality-metric">')
         parts.append(f'                <strong>Confidence:</strong> {result.confidence:.0%}')
-        parts.append(f'                <div class="quality-bar">')
+        parts.append('                <div class="quality-bar">')
         parts.append(f'                    <div class="quality-bar-fill" style="width: {result.confidence * 100}%"></div>')
-        parts.append(f'                </div>')
-        parts.append(f'            </div>')
+        parts.append('                </div>')
+        parts.append('            </div>')
 
         # Refinement passes
         if result.refinement_passes:
-            parts.append(f'            <div class="quality-metric">')
+            parts.append('            <div class="quality-metric">')
             parts.append(f'                <strong>Refinement:</strong> {len(result.refinement_passes)} passes')
             trajectory = ' → '.join(f"{p.quality_score:.0%}" for p in result.refinement_passes)
             parts.append(f'                <div style="font-size: 0.9rem; color: #666; margin-top: 0.25rem;">{trajectory}</div>')
-            parts.append(f'            </div>')
+            parts.append('            </div>')
 
         # Mode and style
-        parts.append(f'            <div class="quality-metric" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">')
+        parts.append('            <div class="quality-metric" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">')
         parts.append(f'                <div><strong>Mode:</strong> {result.mode.value}</div>')
         parts.append(f'                <div><strong>Style:</strong> {result.style.value}</div>')
-        parts.append(f'            </div>')
+        parts.append('            </div>')
 
         parts.append('        </aside>')
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Workflow Handlers for Matrix ChatOps
 =====================================
@@ -25,7 +26,7 @@ Created: 2025-12-11
 
 import json
 import logging
-from typing import Optional, Dict, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     pass
@@ -54,7 +55,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -106,9 +109,9 @@ def set_generator(generator: 'WorkflowGenerator') -> None:
 async def _call_executor_api(
     method: str,
     endpoint: str,
-    data: Optional[Dict[str, Any]] = None,
+    data: dict[str, Any] | None = None,
     timeout: float = 30.0
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Call the workflow executor REST API.
 
@@ -243,12 +246,12 @@ async def handle_workflow_run(
         response = "🚀 **Workflow Executed**\n\n"
 
         if result.get('success', True):
-            response += f"**Status**: ✅ Success\n"
+            response += "**Status**: ✅ Success\n"
         else:
-            response += f"**Status**: ⚠️ Partial\n"
+            response += "**Status**: ⚠️ Partial\n"
 
         if result.get('outputs'):
-            response += f"\n**Outputs**:\n"
+            response += "\n**Outputs**:\n"
             for key, value in list(result.get('outputs', {}).items())[:5]:
                 val_str = str(value)[:200]
                 response += f"  • {key}: {val_str}\n"
@@ -293,7 +296,7 @@ async def handle_workflow_status(
 
         status = result.get('status', 'unknown')
         if status == 'healthy':
-            response += f"**Status**: ✅ Healthy\n"
+            response += "**Status**: ✅ Healthy\n"
         else:
             response += f"**Status**: ⚠️ {status}\n"
 
@@ -694,7 +697,7 @@ def register_workflow_handlers(
             hidden=True
         )
 
-    logger.info(f"Registered 8 workflow commands")
+    logger.info("Registered 8 workflow commands")
     return handlers
 
 

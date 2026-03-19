@@ -22,27 +22,23 @@ Usage:
 """
 
 import asyncio
-import time
 import logging
 import random
-from typing import Dict, Any, Optional, Union, List, Callable, AsyncContextManager
-from dataclasses import dataclass, field
-from pathlib import Path
-from contextlib import asynccontextmanager
-from enum import Enum
 import sys
+import time
+from contextlib import asynccontextmanager
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import Any, AsyncContextManager
 
 from hololoom.skills.base import (
-    BaseSkill,
-    SkillInput,
+    SkillCategory,
     SkillOutput,
     SkillStatus,
-    SkillMetadata,
-    SkillCategory,
     get_registry,
-    register_skill
 )
-from hololoom.skills.executor import SkillExecutor, ExecutionResult
+from hololoom.skills.executor import SkillExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +77,9 @@ class SkillError(Exception):
         error_code: SkillErrorCode = SkillErrorCode.INTERNAL_ERROR,
         skill_name: str = "",
         operation: str = "",
-        suggestions: Optional[List[str]] = None,
-        cause: Optional[Exception] = None,
-        context: Optional[Dict[str, Any]] = None
+        suggestions: list[str] | None = None,
+        cause: Exception | None = None,
+        context: dict[str, Any] | None = None
     ):
         super().__init__(message)
         self.message = message
@@ -93,7 +89,7 @@ class SkillError(Exception):
         self.suggestions = suggestions or []
         self.cause = cause
         self.context = context or {}
-        self.traceback_str: Optional[str] = None
+        self.traceback_str: str | None = None
 
         # Capture traceback if there's a cause
         if cause:
@@ -116,7 +112,7 @@ class SkillError(Exception):
 
         return '\n'.join(parts)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "error_code": self.error_code.value,
@@ -131,7 +127,7 @@ class SkillError(Exception):
         }
 
 
-def _find_similar_skills(skill_name: str, max_suggestions: int = 3) -> List[str]:
+def _find_similar_skills(skill_name: str, max_suggestions: int = 3) -> list[str]:
     """Find skills with similar names for suggestions."""
     registry = get_registry()
     all_skills = registry.list_all()
@@ -154,7 +150,7 @@ def _find_similar_skills(skill_name: str, max_suggestions: int = 3) -> List[str]
     return similar[:max_suggestions]
 
 
-def _format_parameter_error(params: Dict[str, Any], expected: Optional[List[str]] = None) -> str:
+def _format_parameter_error(params: dict[str, Any], expected: list[str] | None = None) -> str:
     """Format parameter information for error messages."""
     parts = [f"Provided parameters: {list(params.keys())}"]
     if expected:
@@ -243,15 +239,15 @@ class LaunchResult:
     # Retry metadata
     retry_count: int = 0
     total_attempts: int = 1
-    retry_delays_ms: List[float] = field(default_factory=list)
+    retry_delays_ms: list[float] = field(default_factory=list)
 
     # Raw output for advanced usage
-    raw_output: Optional[SkillOutput] = None
+    raw_output: SkillOutput | None = None
 
     # Error details for debugging (only populated on failure)
-    error_code: Optional[SkillErrorCode] = None
-    suggestions: List[str] = field(default_factory=list)
-    error_context: Optional[Dict[str, Any]] = None
+    error_code: SkillErrorCode | None = None
+    suggestions: list[str] = field(default_factory=list)
+    error_context: dict[str, Any] | None = None
 
     def __repr__(self):
         status = "OK" if self.success else "FAIL"
@@ -310,9 +306,9 @@ class LaunchResult:
         cls,
         message: str,
         skill_name: str = "",
-        error_code: Optional[SkillErrorCode] = None,
-        suggestions: Optional[List[str]] = None,
-        context: Optional[Dict[str, Any]] = None
+        error_code: SkillErrorCode | None = None,
+        suggestions: list[str] | None = None,
+        context: dict[str, Any] | None = None
     ) -> "LaunchResult":
         """Create error result with rich debugging information."""
         return cls(
@@ -340,7 +336,7 @@ class LaunchResult:
 
 
 # Global executor instance (lazy initialization)
-_global_executor: Optional[SkillExecutor] = None
+_global_executor: SkillExecutor | None = None
 
 
 def _get_executor() -> SkillExecutor:
@@ -356,8 +352,8 @@ async def launch_skill(
     operation: str = "execute",
     use_cache: bool = True,
     use_memory: bool = False,
-    timeout: Optional[float] = None,
-    retry: Optional[RetryConfig] = None,
+    timeout: float | None = None,
+    retry: RetryConfig | None = None,
     **parameters
 ) -> LaunchResult:
     """
@@ -427,8 +423,8 @@ async def launch_skill(
     # Default to no retries
     retry_config = retry or RetryConfig.none()
     max_attempts = retry_config.max_retries + 1
-    retry_delays: List[float] = []
-    last_error: Optional[Exception] = None
+    retry_delays: list[float] = []
+    last_error: Exception | None = None
 
     for attempt in range(max_attempts):
         try:
@@ -528,10 +524,10 @@ launch = launch_skill
 
 
 async def launch_parallel(
-    *skill_specs: Dict[str, Any],
+    *skill_specs: dict[str, Any],
     use_cache: bool = True,
     fail_fast: bool = False
-) -> List[LaunchResult]:
+) -> list[LaunchResult]:
     """
     Launch multiple skills in parallel.
 
@@ -581,10 +577,10 @@ async def launch_parallel(
 
 
 async def launch_chain(
-    *skill_specs: Dict[str, Any],
+    *skill_specs: dict[str, Any],
     use_cache: bool = True,
     stop_on_failure: bool = True
-) -> List[LaunchResult]:
+) -> list[LaunchResult]:
     """
     Launch skills sequentially (chain).
 
@@ -635,8 +631,8 @@ async def launch_chain(
 
 async def _enhance_with_memory(
     skill_name: str,
-    parameters: Dict[str, Any]
-) -> Dict[str, Any]:
+    parameters: dict[str, Any]
+) -> dict[str, Any]:
     """
     Enhance parameters with memory-informed context.
 
@@ -680,7 +676,7 @@ async def _enhance_with_memory(
 # Skill Discovery
 # ============================================================================
 
-def list_skills(category: Optional[str] = None) -> List[str]:
+def list_skills(category: str | None = None) -> list[str]:
     """
     List available skills.
 
@@ -702,7 +698,7 @@ def list_skills(category: Optional[str] = None) -> List[str]:
     return registry.list_all()
 
 
-def get_skill_info(skill_name: str) -> Optional[Dict[str, Any]]:
+def get_skill_info(skill_name: str) -> dict[str, Any] | None:
     """
     Get information about a skill.
 
@@ -733,7 +729,7 @@ def get_skill_info(skill_name: str) -> Optional[Dict[str, Any]]:
     }
 
 
-def get_launch_stats() -> Dict[str, Any]:
+def get_launch_stats() -> dict[str, Any]:
     """
     Get launcher statistics.
 
@@ -776,9 +772,9 @@ def launch_sync(
 @dataclass
 class SkillSessionContext:
     """Context for skill session with accumulated results."""
-    results: List[LaunchResult] = field(default_factory=list)
+    results: list[LaunchResult] = field(default_factory=list)
     start_time: float = field(default_factory=time.time)
-    _executor: Optional[SkillExecutor] = None
+    _executor: SkillExecutor | None = None
 
     @property
     def total_time_ms(self) -> float:
@@ -802,7 +798,7 @@ class SkillSessionContext:
             return 0.0
         return self.success_count / len(self.results)
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """Get session summary."""
         return {
             "total_launches": len(self.results),
@@ -847,10 +843,10 @@ async def skill_session() -> AsyncContextManager[SkillSessionContext]:
 
 @asynccontextmanager
 async def batch_launch(
-    skill_specs: List[Dict[str, Any]],
+    skill_specs: list[dict[str, Any]],
     parallel: bool = True,
     fail_fast: bool = False
-) -> AsyncContextManager[List[LaunchResult]]:
+) -> AsyncContextManager[list[LaunchResult]]:
     """
     Context manager for batch skill launching.
 
@@ -902,7 +898,7 @@ class SkillHealthStatus:
     message: str
     latency_ms: float = 0.0
     last_check: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 async def check_skill_health(
@@ -989,9 +985,9 @@ class SystemHealthStatus:
     healthy: bool
     total_skills: int
     healthy_skills: int
-    unhealthy_skills: List[str]
+    unhealthy_skills: list[str]
     check_time_ms: float
-    skill_statuses: Dict[str, SkillHealthStatus] = field(default_factory=dict)
+    skill_statuses: dict[str, SkillHealthStatus] = field(default_factory=dict)
 
     @property
     def health_rate(self) -> float:

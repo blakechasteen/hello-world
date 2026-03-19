@@ -28,9 +28,9 @@ Usage:
     # - Sentiment: positive
 """
 
-from typing import List, Optional, Dict, Any
-from datetime import datetime
 import hashlib
+from datetime import datetime
+from typing import Any
 
 try:
     from mem0 import MemoryClient
@@ -38,12 +38,12 @@ try:
 except ImportError:
     MEM0_AVAILABLE = False
 
-import sys
 from pathlib import Path
 
 # Import protocol types
 protocol_path = Path(__file__).parent.parent / 'protocol.py'
 import importlib.util
+
 spec = importlib.util.spec_from_file_location("protocol", protocol_path)
 protocol = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(protocol)
@@ -82,7 +82,7 @@ class Mem0MemoryStore:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         use_ollama: bool = True,
         ollama_base_url: str = "http://localhost:11434",
         ollama_model: str = "llama3.2:3b"
@@ -256,7 +256,7 @@ class Mem0MemoryStore:
             print(f"Failed to delete memory {memory_id}: {e}")
             return False
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Check health of Mem0 connection."""
         try:
             # Get all memories for default user to verify connection

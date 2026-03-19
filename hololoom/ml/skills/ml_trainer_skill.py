@@ -14,23 +14,14 @@ import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from hololoom.ml.config import (
-    DataConfig,
-    LinearRegressionConfig,
     MLSystemConfig,
-    RegistryConfig,
-    TrainingConfig,
-    ValidationConfig,
 )
 from hololoom.ml.protocol import (
-    DataSplit,
-    EvaluationResult,
     ModelStatus,
     ModelType,
-    PredictionResult,
-    TrainingResult,
 )
 from hololoom.ml.registry import ModelRegistry
 
@@ -55,8 +46,8 @@ class SkillInput:
     """Input for skill execution."""
 
     operation: MLOperation
-    parameters: Dict[str, Any] = field(default_factory=dict)
-    context: Dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -65,8 +56,8 @@ class SkillResult:
 
     success: bool
     message: str
-    data: Dict[str, Any] = field(default_factory=dict)
-    suggestions: List[str] = field(default_factory=list)
+    data: dict[str, Any] = field(default_factory=dict)
+    suggestions: list[str] = field(default_factory=list)
 
 
 class MLTrainerSkill:
@@ -99,12 +90,12 @@ class MLTrainerSkill:
     """
 
     # Trainer registry - maps model type to trainer class
-    _trainer_registry: Dict[ModelType, type] = {}
+    _trainer_registry: dict[ModelType, type] = {}
 
     def __init__(
         self,
-        config: Optional[MLSystemConfig] = None,
-        registry: Optional[ModelRegistry] = None,
+        config: MLSystemConfig | None = None,
+        registry: ModelRegistry | None = None,
     ):
         """
         Initialize ML Trainer Skill.
@@ -215,7 +206,7 @@ class MLTrainerSkill:
 
     def _parse_natural_language(
         self, text: str
-    ) -> tuple[Optional[MLOperation], Dict[str, Any]]:
+    ) -> tuple[MLOperation | None, dict[str, Any]]:
         """
         Parse natural language into operation and parameters.
 
@@ -225,7 +216,7 @@ class MLTrainerSkill:
         Returns:
             Tuple of (operation, parameters) or (None, {}) if not understood
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
 
         # TRAIN patterns
         train_patterns = [
@@ -365,7 +356,7 @@ class MLTrainerSkill:
             # Default to linear regression
             return "linear_regression"
 
-    async def _train(self, params: Dict[str, Any]) -> SkillResult:
+    async def _train(self, params: dict[str, Any]) -> SkillResult:
         """Execute training operation."""
         data_source = params.get("data_source")
         target_column = params.get("target_column")
@@ -497,7 +488,7 @@ class MLTrainerSkill:
                 message=f"Training error: {e}",
             )
 
-    async def _evaluate(self, params: Dict[str, Any]) -> SkillResult:
+    async def _evaluate(self, params: dict[str, Any]) -> SkillResult:
         """Execute evaluation operation."""
         model_id = params.get("model_id")
 
@@ -549,7 +540,7 @@ class MLTrainerSkill:
             },
         )
 
-    async def _predict(self, params: Dict[str, Any]) -> SkillResult:
+    async def _predict(self, params: dict[str, Any]) -> SkillResult:
         """Execute prediction operation."""
         model_id = params.get("model_id")
         data_source = params.get("data_source")
@@ -587,8 +578,9 @@ class MLTrainerSkill:
             )
 
         try:
-            from hololoom.ml.integration.spinningwheel_adapter import SpinningWheelMLAdapter
             import numpy as np
+
+            from hololoom.ml.integration.spinningwheel_adapter import SpinningWheelMLAdapter
 
             # Load data (use first column as dummy target)
             data_adapter = SpinningWheelMLAdapter(self.config.data)
@@ -661,7 +653,7 @@ class MLTrainerSkill:
                 message=f"Prediction error: {e}",
             )
 
-    async def _list_models(self, params: Dict[str, Any]) -> SkillResult:
+    async def _list_models(self, params: dict[str, Any]) -> SkillResult:
         """List available models."""
         model_type_str = params.get("model_type")
         status_str = params.get("status")
@@ -717,7 +709,7 @@ class MLTrainerSkill:
             },
         )
 
-    async def _describe_model(self, params: Dict[str, Any]) -> SkillResult:
+    async def _describe_model(self, params: dict[str, Any]) -> SkillResult:
         """Describe a specific model."""
         model_id = params.get("model_id")
 
@@ -769,7 +761,7 @@ class MLTrainerSkill:
             data=data,
         )
 
-    async def _delete_model(self, params: Dict[str, Any]) -> SkillResult:
+    async def _delete_model(self, params: dict[str, Any]) -> SkillResult:
         """Delete (archive) a model."""
         model_id = params.get("model_id")
 
@@ -795,7 +787,7 @@ class MLTrainerSkill:
                 suggestions=["Use 'list models' to see available models"],
             )
 
-    async def _compare_models(self, params: Dict[str, Any]) -> SkillResult:
+    async def _compare_models(self, params: dict[str, Any]) -> SkillResult:
         """Compare multiple models."""
         model_ids = params.get("model_ids", [])
 
@@ -843,7 +835,7 @@ class MLTrainerSkill:
             },
         )
 
-    async def _validate_data(self, params: Dict[str, Any]) -> SkillResult:
+    async def _validate_data(self, params: dict[str, Any]) -> SkillResult:
         """Validate data quality."""
         data_source = params.get("data_source")
         target_column = params.get("target_column")
@@ -856,9 +848,10 @@ class MLTrainerSkill:
             )
 
         try:
+            import numpy as np
+
             from hololoom.ml.integration.datapig_adapter import DataPigMLAdapter
             from hololoom.ml.integration.spinningwheel_adapter import SpinningWheelMLAdapter
-            import numpy as np
 
             # Load data
             data_adapter = SpinningWheelMLAdapter(self.config.data)
@@ -917,7 +910,7 @@ class MLTrainerSkill:
 
     def _get_error_suggestions(
         self, operation: MLOperation, error: Exception
-    ) -> List[str]:
+    ) -> list[str]:
         """Get helpful suggestions based on error type."""
         error_str = str(error).lower()
 
@@ -944,7 +937,7 @@ class MLTrainerSkill:
             f"Use 'help {operation.value}' for usage information",
         ]
 
-    def get_help(self, operation: Optional[str] = None) -> str:
+    def get_help(self, operation: str | None = None) -> str:
         """
         Get help text for operations.
 
@@ -1046,7 +1039,7 @@ Examples:
 
 # Convenience function for quick skill creation
 def create_ml_trainer_skill(
-    config: Optional[MLSystemConfig] = None,
+    config: MLSystemConfig | None = None,
 ) -> MLTrainerSkill:
     """
     Create an ML Trainer Skill instance.

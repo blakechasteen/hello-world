@@ -27,20 +27,16 @@ Consolidation Strategies:
 4. DEDUPLICATION - Merge duplicate/similar memories
 """
 
-from typing import List, Dict, Optional, Any, Callable
+import asyncio
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-import asyncio
-import logging
+from typing import Any
 
-from hololoom.protocols.types import MemoryShard
-from hololoom.memory.lifecycle_manager import (
-    ContextStreamManager,
-    MemoryScope,
-    LifeCycle
-)
 from hololoom.memory.graph import KG, KGEdge
+from hololoom.memory.lifecycle_manager import ContextStreamManager, MemoryScope
+from hololoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +59,10 @@ class ConsolidationResult:
     strategy: ConsolidationStrategy
     input_episodes: int
     output_facts: int
-    facts_stored: List[str]  # Memory IDs of stored facts
+    facts_stored: list[str]  # Memory IDs of stored facts
     episodes_pruned: int
     consolidation_time_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -76,9 +72,9 @@ class ConsolidationResult:
 # Import production LLM consolidator (Week 3)
 try:
     from hololoom.memory.llm_consolidator import (
-        ProductionLLMConsolidator,
         LLMConfig,
-        create_production_consolidator
+        ProductionLLMConsolidator,
+        create_production_consolidator,
     )
     PRODUCTION_LLM_AVAILABLE = True
 except ImportError:
@@ -98,9 +94,9 @@ class LLMConsolidator:
 
     def __init__(
         self,
-        llm_provider: Optional[str] = None,
-        llm_model: Optional[str] = None,
-        api_key: Optional[str] = None
+        llm_provider: str | None = None,
+        llm_model: str | None = None,
+        api_key: str | None = None
     ):
         """
         Initialize LLM consolidator.
@@ -129,7 +125,7 @@ class LLMConsolidator:
         else:
             self.production_consolidator = None
 
-    async def extract_facts(self, episodes: List[MemoryShard]) -> List[str]:
+    async def extract_facts(self, episodes: list[MemoryShard]) -> list[str]:
         """
         Extract semantic facts from episodic memories.
 
@@ -148,7 +144,7 @@ class LLMConsolidator:
         # Fallback to rule-based (Week 2)
         return await self._extract_facts_fallback(episodes)
 
-    async def _extract_facts_fallback(self, episodes: List[MemoryShard]) -> List[str]:
+    async def _extract_facts_fallback(self, episodes: list[MemoryShard]) -> list[str]:
         """Rule-based fact extraction (Week 2 fallback)."""
         facts = set()
         for episode in episodes:
@@ -160,8 +156,8 @@ class LLMConsolidator:
 
     async def extract_entities(
         self,
-        episodes: List[MemoryShard]
-    ) -> List[tuple[str, str, str]]:
+        episodes: list[MemoryShard]
+    ) -> list[tuple[str, str, str]]:
         """
         Extract entity relationships from episodes.
 
@@ -182,8 +178,8 @@ class LLMConsolidator:
 
     async def _extract_entities_fallback(
         self,
-        episodes: List[MemoryShard]
-    ) -> List[tuple[str, str, str]]:
+        episodes: list[MemoryShard]
+    ) -> list[tuple[str, str, str]]:
         """Rule-based entity extraction (Week 2 fallback)."""
         edges = []
         for episode in episodes:
@@ -194,8 +190,8 @@ class LLMConsolidator:
 
     async def deduplicate(
         self,
-        memories: List[MemoryShard]
-    ) -> List[MemoryShard]:
+        memories: list[MemoryShard]
+    ) -> list[MemoryShard]:
         """
         Deduplicate similar memories.
 
@@ -216,8 +212,8 @@ class LLMConsolidator:
 
     async def _deduplicate_fallback(
         self,
-        memories: List[MemoryShard]
-    ) -> List[MemoryShard]:
+        memories: list[MemoryShard]
+    ) -> list[MemoryShard]:
         """Rule-based deduplication (Week 2 fallback)."""
         seen_texts = set()
         unique_memories = []
@@ -227,7 +223,7 @@ class LLMConsolidator:
                 unique_memories.append(mem)
         return unique_memories
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get LLM usage statistics (Week 3)."""
         if self.production_consolidator:
             return self.production_consolidator.get_statistics()
@@ -264,10 +260,10 @@ class MemoryConsolidator:
     def __init__(
         self,
         stream_manager: ContextStreamManager,
-        knowledge_graph: Optional[KG] = None,
-        llm_provider: Optional[str] = None,
-        llm_model: Optional[str] = None,
-        llm_api_key: Optional[str] = None,
+        knowledge_graph: KG | None = None,
+        llm_provider: str | None = None,
+        llm_model: str | None = None,
+        llm_api_key: str | None = None,
         consolidation_interval_minutes: int = 60,
         prune_consolidated_episodes: bool = False
     ):
@@ -290,7 +286,7 @@ class MemoryConsolidator:
         self.prune_episodes = prune_consolidated_episodes
 
         # Background task
-        self._consolidation_task: Optional[asyncio.Task] = None
+        self._consolidation_task: asyncio.Task | None = None
         self._running = False
 
         # Statistics
@@ -413,7 +409,7 @@ class MemoryConsolidator:
 
     async def _consolidate_facts(
         self,
-        episodes: List[MemoryShard]
+        episodes: list[MemoryShard]
     ) -> ConsolidationResult:
         """Extract semantic facts from episodes."""
         # Extract facts using LLM or rules
@@ -463,7 +459,7 @@ class MemoryConsolidator:
 
     async def _consolidate_entities(
         self,
-        episodes: List[MemoryShard]
+        episodes: list[MemoryShard]
     ) -> ConsolidationResult:
         """Extract entities and relationships from episodes."""
         # Extract entity edges using LLM or rules
@@ -498,7 +494,7 @@ class MemoryConsolidator:
 
     async def _consolidate_summarization(
         self,
-        episodes: List[MemoryShard]
+        episodes: list[MemoryShard]
     ) -> ConsolidationResult:
         """Summarize episodes into condensed summaries."""
         # Group episodes by time window (e.g., 1-hour windows)
@@ -531,7 +527,7 @@ class MemoryConsolidator:
 
     async def _consolidate_deduplication(
         self,
-        episodes: List[MemoryShard]
+        episodes: list[MemoryShard]
     ) -> ConsolidationResult:
         """Deduplicate similar episodes."""
         unique_episodes = await self.llm.deduplicate(episodes)
@@ -548,7 +544,7 @@ class MemoryConsolidator:
             metadata={"duplicates_removed": duplicates_removed}
         )
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get consolidation statistics (Week 3: includes LLM usage)."""
         stats = {
             "total_consolidations": self.total_consolidations,

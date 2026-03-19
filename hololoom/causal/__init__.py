@@ -12,12 +12,12 @@ Public API:
     CounterfactualEngine: Twin network inference
 """
 
-from .dag import CausalNode, CausalEdge, CausalDAG, NodeType
-from .query import CausalQuery, QueryType, CausalAnswer
-from .intervention import InterventionEngine
 from .counterfactual import CounterfactualEngine
-from .neural_scm import NeuralStructuralCausalModel, NeuralMechanism
-from .discovery import CausalDiscovery, ActiveCausalLearner
+from .dag import CausalDAG, CausalEdge, CausalNode, NodeType
+from .discovery import ActiveCausalLearner, CausalDiscovery
+from .intervention import InterventionEngine
+from .neural_scm import NeuralMechanism, NeuralStructuralCausalModel
+from .query import CausalAnswer, CausalQuery, QueryType
 from .temporal import TemporalCausalDAG, TemporalEdge, TemporalState
 
 __all__ = [

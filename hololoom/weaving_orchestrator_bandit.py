@@ -33,28 +33,27 @@ Usage:
 
 from __future__ import annotations
 
-import asyncio
 import logging
-import time
 import random
-from typing import Dict, List, Any, Optional
+import time
 from dataclasses import dataclass, field
-
-# Core HoloLoom
-from hololoom.weaving_orchestrator import WeavingOrchestrator
-from hololoom.config import Config
-from hololoom.protocols.types import Query, MemoryShard
-
-# Thompson Sampling
-from hololoom.ts_core import create_thompson_sampler
-from hololoom.bandits.neural_ts.types import Context, Action, Observation
-from hololoom.bandits.neural_ts.eval import BanditEvaluator
+from typing import Any
 
 # Safety
-from hololoom.alignment.safety_guardrails import SafetyGuardrails, create_guardrails
+from hololoom.alignment.safety_guardrails import create_guardrails
+from hololoom.bandits.neural_ts.eval import BanditEvaluator
+from hololoom.bandits.neural_ts.types import Action, Context
+from hololoom.config import Config
 
 # Monitoring
 from hololoom.fabric.spacetime import Spacetime
+from hololoom.protocols.types import MemoryShard, Query
+
+# Thompson Sampling
+from hololoom.ts_core import create_thompson_sampler
+
+# Core HoloLoom
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -70,7 +69,7 @@ class BanditConfig:
     action_dim: int = 0  # Context-only (tool IDs only)
 
     # Neural-specific (if sampler_type="neural")
-    hidden_dims: List[int] = field(default_factory=lambda: [256, 128])
+    hidden_dims: list[int] = field(default_factory=lambda: [256, 128])
     backend: str = "bootstrap"  # "bootstrap" or "mc_dropout"
     n_ensemble: int = 7
 
@@ -132,10 +131,10 @@ class BanditOrchestrator(WeavingOrchestrator):
     def __init__(
         self,
         cfg: Config,
-        shards: Optional[List[MemoryShard]] = None,
+        shards: list[MemoryShard] | None = None,
         memory=None,
         yarn_graph=None,
-        bandit_config: Optional[BanditConfig] = None,
+        bandit_config: BanditConfig | None = None,
         enable_bandit: bool = True,  # Feature flag
         **kwargs,
     ):
@@ -187,7 +186,7 @@ class BanditOrchestrator(WeavingOrchestrator):
         self._safety_blocks = 0
 
         # Decision log (for debugging/analysis)
-        self.decision_log: List[Dict] = []
+        self.decision_log: list[dict] = []
 
         logger.info(
             f"BanditOrchestrator initialized: "
@@ -249,7 +248,7 @@ class BanditOrchestrator(WeavingOrchestrator):
         self,
         query: Query,
         embeddings: Any,
-    ) -> tuple[str, Dict]:
+    ) -> tuple[str, dict]:
         """
         Select tool using Thompson Sampling.
 
@@ -300,7 +299,7 @@ class BanditOrchestrator(WeavingOrchestrator):
             ctx = None  # Context passed directly
 
         else:
-            raise ValueError(f"Unknown sampler_type")
+            raise ValueError("Unknown sampler_type")
 
         # Safety check
         if self.safety:
@@ -463,7 +462,7 @@ class BanditOrchestrator(WeavingOrchestrator):
 
         return spacetime
 
-    def get_bandit_metrics(self) -> Dict[str, Any]:
+    def get_bandit_metrics(self) -> dict[str, Any]:
         """
         Get comprehensive bandit metrics.
 
@@ -513,7 +512,7 @@ class BanditOrchestrator(WeavingOrchestrator):
         self,
         limit: int = 100,
         bandit_only: bool = False,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Get recent decision log.
 
@@ -562,7 +561,7 @@ class BanditOrchestrator(WeavingOrchestrator):
 
 def create_bandit_orchestrator(
     cfg: Config,
-    shards: List[MemoryShard],
+    shards: list[MemoryShard],
     enable_bandit: bool = True,
     ab_test_ratio: float = 0.1,
     sampler_type: str = "neural",

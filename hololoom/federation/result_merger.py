@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 RAG Result Merger with MI-Based Deduplication
 ==============================================
@@ -17,7 +16,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 from hololoom.federation.types import GuildTrustLevel
 
@@ -29,7 +28,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 # Trust level weights for confidence aggregation
-TRUST_WEIGHTS: Dict[GuildTrustLevel, float] = {
+TRUST_WEIGHTS: dict[GuildTrustLevel, float] = {
     GuildTrustLevel.STARTER: 0.3,
     GuildTrustLevel.ESTABLISHED: 0.6,
     GuildTrustLevel.VETERAN: 1.0,
@@ -71,10 +70,10 @@ class NodeRAGResult:
 
     node_id: str
     response: str
-    sources: List[str]
+    sources: list[str]
     confidence: float
     trust_level: GuildTrustLevel = GuildTrustLevel.STARTER
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def source_count(self) -> int:
         """Number of sources."""
@@ -85,21 +84,21 @@ class NodeRAGResult:
 class MergedRAGResult:
     """Merged RAG result from multiple federation nodes."""
 
-    sources: List[SourceWithProvenance]
+    sources: list[SourceWithProvenance]
     confidence: float
     original_count: int
     merged_count: int
-    contributing_nodes: List[str]
-    mi_scores: Dict[str, float]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    contributing_nodes: list[str]
+    mi_scores: dict[str, float]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
-    def unique_sources(self) -> List[str]:
+    def unique_sources(self) -> list[str]:
         """Get unique source contents."""
         return [s.content for s in self.sources]
 
     @property
-    def top_sources(self) -> List[str]:
+    def top_sources(self) -> list[str]:
         """Get top sources by effective score (for RAGResult compatibility)."""
         sorted_sources = sorted(
             self.sources,
@@ -148,7 +147,7 @@ class RAGResultMerger:
 
     def __init__(
         self,
-        importance_scorer: Optional[Any] = None,
+        importance_scorer: Any | None = None,
         similarity_threshold: float = DEFAULT_SIMILARITY_THRESHOLD,
         min_mi_threshold: float = MIN_MI_THRESHOLD,
     ):
@@ -180,7 +179,7 @@ class RAGResultMerger:
 
     def merge(
         self,
-        results: List[NodeRAGResult],
+        results: list[NodeRAGResult],
         query: str,
         max_sources: int = 20,
     ) -> MergedRAGResult:
@@ -281,8 +280,8 @@ class RAGResultMerger:
 
     def _combine_sources(
         self,
-        results: List[NodeRAGResult],
-    ) -> List[SourceWithProvenance]:
+        results: list[NodeRAGResult],
+    ) -> list[SourceWithProvenance]:
         """
         Combine sources from all nodes with provenance tracking.
 
@@ -308,9 +307,9 @@ class RAGResultMerger:
 
     def _compute_mi_scores(
         self,
-        sources: List[SourceWithProvenance],
+        sources: list[SourceWithProvenance],
         query: str,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Compute MI scores for all sources.
 
@@ -379,8 +378,8 @@ class RAGResultMerger:
 
     def _deduplicate(
         self,
-        sources: List[SourceWithProvenance],
-    ) -> List[SourceWithProvenance]:
+        sources: list[SourceWithProvenance],
+    ) -> list[SourceWithProvenance]:
         """
         Deduplicate sources by semantic similarity.
 
@@ -403,7 +402,7 @@ class RAGResultMerger:
             reverse=True
         )
 
-        kept: List[SourceWithProvenance] = []
+        kept: list[SourceWithProvenance] = []
 
         for source in sorted_sources:
             is_duplicate = False
@@ -445,8 +444,8 @@ class RAGResultMerger:
 
     def _aggregate_confidence(
         self,
-        results: List[NodeRAGResult],
-        selected_sources: List[SourceWithProvenance],
+        results: list[NodeRAGResult],
+        selected_sources: list[SourceWithProvenance],
     ) -> float:
         """
         Aggregate confidence across nodes.
@@ -493,7 +492,7 @@ class RAGResultMerger:
 # ============================================================================
 
 def create_result_merger(
-    importance_scorer: Optional[Any] = None,
+    importance_scorer: Any | None = None,
     similarity_threshold: float = DEFAULT_SIMILARITY_THRESHOLD,
     min_mi_threshold: float = MIN_MI_THRESHOLD,
 ) -> RAGResultMerger:

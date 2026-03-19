@@ -7,12 +7,11 @@ graceful degradation support.
 Created: 2025-01-21
 """
 
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Dict, Any, List
-import logging
 
-from .exceptions import ConfigurationError, BackendUnavailableError
+from .exceptions import BackendUnavailableError, ConfigurationError
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +76,7 @@ class ShuttleConfig:
 
     # Error handling
     enable_graceful_degradation: bool = True
-    fallback_chain: List[ShuttleMode] = field(default_factory=lambda: [
+    fallback_chain: list[ShuttleMode] = field(default_factory=lambda: [
         ShuttleMode.FULL,
         ShuttleMode.LITE,
         ShuttleMode.MINIMAL

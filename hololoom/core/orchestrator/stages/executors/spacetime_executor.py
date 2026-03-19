@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Spacetime Executor - Step 9: Fabric Assembly
 =============================================
@@ -17,13 +16,14 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import logging
-from typing import Callable, Optional, Any, Dict, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
     from hololoom.config import Config
+    from hololoom.orchestrator.context import WeavingContext
 
 
 class SpacetimeExecutor(BaseStageExecutor):
@@ -57,12 +57,12 @@ class SpacetimeExecutor(BaseStageExecutor):
 
     def __init__(
         self,
-        cfg: 'Config',
-        semantic_cache: Optional[Any] = None,
-        dashboard_constructor: Optional[Any] = None,
-        awareness_context: Optional[Dict[str, Any]] = None,
-        logger: Optional[logging.Logger] = None,
-        emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+        cfg: Config,
+        semantic_cache: Any | None = None,
+        dashboard_constructor: Any | None = None,
+        awareness_context: dict[str, Any] | None = None,
+        logger: logging.Logger | None = None,
+        emit_stage_event: Callable[[int, str, float], None] | None = None,
     ):
         """
         Initialize Spacetime Executor.
@@ -81,7 +81,7 @@ class SpacetimeExecutor(BaseStageExecutor):
         self.dashboard_constructor = dashboard_constructor
         self.awareness_context = awareness_context
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute spacetime fabric assembly.
 
@@ -114,7 +114,7 @@ class SpacetimeExecutor(BaseStageExecutor):
 
         return ctx
 
-    def update_semantic_cache(self, semantic_cache: Optional[Any]) -> None:
+    def update_semantic_cache(self, semantic_cache: Any | None) -> None:
         """
         Update semantic cache.
 
@@ -123,7 +123,7 @@ class SpacetimeExecutor(BaseStageExecutor):
         """
         self.semantic_cache = semantic_cache
 
-    def update_dashboard_constructor(self, dashboard_constructor: Optional[Any]) -> None:
+    def update_dashboard_constructor(self, dashboard_constructor: Any | None) -> None:
         """
         Update dashboard constructor.
 
@@ -132,7 +132,7 @@ class SpacetimeExecutor(BaseStageExecutor):
         """
         self.dashboard_constructor = dashboard_constructor
 
-    def update_awareness_context(self, awareness_context: Optional[Dict[str, Any]]) -> None:
+    def update_awareness_context(self, awareness_context: dict[str, Any] | None) -> None:
         """
         Update awareness context for consciousness integration.
 

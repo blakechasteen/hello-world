@@ -31,12 +31,13 @@ import json
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Optional, Tuple
+
 import httpx
-from .scheduler import SimpleScheduler
-from ..shared.types import LoomStatus, NodeRecord, JobResult, NodeCapabilities, NodeStatus
-from ..shared.logging import get_logger
+
 from ..hololoom_bridge import HoloLoomBridge
+from ..shared.logging import get_logger
+from ..shared.types import LoomStatus, NodeCapabilities, NodeRecord, NodeStatus
+from .scheduler import SimpleScheduler
 
 logger = get_logger(__name__, component="shuttle")
 
@@ -63,7 +64,7 @@ class CommandHandler:
         shared_secret: str,
         scheduler: SimpleScheduler,
         job_timeout: int = 60,
-        hololoom_url: Optional[str] = None,
+        hololoom_url: str | None = None,
     ):
         """
         Initialize command handler.
@@ -80,7 +81,7 @@ class CommandHandler:
         self.scheduler = scheduler
         self.job_timeout = job_timeout
         self.hololoom = HoloLoomBridge(hololoom_url) if hololoom_url else None
-        self._pending_jobs: Dict[str, PendingJob] = {}
+        self._pending_jobs: dict[str, PendingJob] = {}
 
     async def handle(self, message: str) -> str:
         """
@@ -469,7 +470,6 @@ Use `!status {job_id}` to check progress."""
         pending = self._pending_jobs[job_id]
 
         # Create a minimal node record for polling
-        from ..shared.types import NodeRecord, NodeCapabilities, NodeStatus
 
         node = NodeRecord(
             node_id=pending.node_id,
@@ -556,7 +556,6 @@ Check again with `!status {job_id}` or cancel with `!cancel {job_id}`"""
         pending = self._pending_jobs[job_id]
 
         # Create a minimal node record for cancellation
-        from ..shared.types import NodeRecord, NodeCapabilities, NodeStatus
 
         node = NodeRecord(
             node_id=pending.node_id,
@@ -629,5 +628,5 @@ Total Time: {elapsed:.1f}s"""
             query_preview = pending.query[:30] + "..." if len(pending.query) > 30 else pending.query
             lines.append(f"• `{job_id}` ({pending.command_type}) - {elapsed:.0f}s - {query_preview}")
 
-        lines.append(f"\nUse `!status <job_id>` to check a specific job.")
+        lines.append("\nUse `!status <job_id>` to check a specific job.")
         return "\n".join(lines)

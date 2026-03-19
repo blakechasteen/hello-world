@@ -19,13 +19,12 @@ Author: Claude Code
 Date: October 29, 2025
 """
 
+import re
+import subprocess
 import sys
 import time
-from pathlib import Path
-from typing import List, Dict, Any, Tuple
-import subprocess
-import re
 from dataclasses import dataclass
+from pathlib import Path
 
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -52,7 +51,7 @@ class TestReport:
     failed: int
     skipped: int
     duration: float
-    results: List[TestResult]
+    results: list[TestResult]
     file_name: str
 
 
@@ -60,7 +59,7 @@ class TestReport:
 # Test Runner
 # ============================================================================
 
-def run_pytest(test_file: str) -> Tuple[TestReport, str]:
+def run_pytest(test_file: str) -> tuple[TestReport, str]:
     """
     Run pytest on a file and capture results.
 
@@ -73,7 +72,6 @@ def run_pytest(test_file: str) -> Tuple[TestReport, str]:
 
     # Run the test file directly since it has pytest.main() at the bottom
     # Capture output
-    import subprocess
     result = subprocess.run(
         [sys.executable, test_file],
         capture_output=True,
@@ -87,7 +85,7 @@ def run_pytest(test_file: str) -> Tuple[TestReport, str]:
 
     # Debug: Print first line of output if there are issues
     if 'ERROR' in output.upper() and 'collected 0' in output:
-        print(f"  [!] Warning: Test collection or execution issues")
+        print("  [!] Warning: Test collection or execution issues")
         first_error = [line for line in output.split('\n') if 'ERROR' in line or 'error' in line]
         if first_error:
             print(f"  {first_error[0][:100]}")
@@ -157,7 +155,7 @@ def run_pytest(test_file: str) -> Tuple[TestReport, str]:
 # Visualization Helpers
 # ============================================================================
 
-def sparkline(values: List[float], width: int = 20) -> str:
+def sparkline(values: list[float], width: int = 20) -> str:
     """
     Generate ASCII sparkline.
 
@@ -222,7 +220,7 @@ def progress_bar(value: float, total: float, width: int = 40) -> str:
     return f'{bar} {percent_str}'
 
 
-def category_breakdown(results: List[TestResult]) -> Dict[str, Dict[str, int]]:
+def category_breakdown(results: list[TestResult]) -> dict[str, dict[str, int]]:
     """
     Break down results by category.
 
@@ -288,7 +286,7 @@ def ruthless_elegance_score(report: TestReport) -> float:
 # Report Generation
 # ============================================================================
 
-def generate_visual_report(reports: List[TestReport]) -> str:
+def generate_visual_report(reports: list[TestReport]) -> str:
     """
     Generate beautiful visual test report.
 
@@ -359,7 +357,7 @@ def generate_visual_report(reports: List[TestReport]) -> str:
         phil_pass = sum(1 for r in philosophy_tests if r.status == 'passed')
         lines.append(f"- Philosophy (30%): {(phil_pass / len(philosophy_tests) * 100):.1f}%")
     else:
-        lines.append(f"- Philosophy (30%): N/A")
+        lines.append("- Philosophy (30%): N/A")
     lines.append("")
 
     # Individual Reports
@@ -418,7 +416,7 @@ def generate_visual_report(reports: List[TestReport]) -> str:
     if total_tests > 0:
         lines.append(f"**Average per Test:** {(total_duration / total_tests):.3f}s")
     else:
-        lines.append(f"**Average per Test:** N/A (no tests detected)")
+        lines.append("**Average per Test:** N/A (no tests detected)")
     lines.append("")
 
     # Speed assessment

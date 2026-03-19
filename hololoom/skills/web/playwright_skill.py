@@ -1,14 +1,20 @@
 """Playwright Skill - Browser automation and testing"""
 
-import asyncio
 import time
-from typing import Dict, Any, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 # Check for playwright availability
 try:
-    from playwright.async_api import async_playwright, Browser, Page
+    from playwright.async_api import Browser, Page, async_playwright
     PLAYWRIGHT_AVAILABLE = True
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False
@@ -89,7 +95,7 @@ class PlaywrightSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _navigate(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _navigate(self, params: dict[str, Any]) -> dict[str, Any]:
         """Navigate to URL."""
         url = params["url"]
         headless = params.get("headless", True)
@@ -109,7 +115,7 @@ class PlaywrightSkill(BaseSkill):
                 "loaded": True
             }
 
-    async def _screenshot(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _screenshot(self, params: dict[str, Any]) -> dict[str, Any]:
         """Take screenshot of page."""
         url = params["url"]
         path = params.get("path", "screenshot.png")
@@ -137,7 +143,7 @@ class PlaywrightSkill(BaseSkill):
                 "full_page": full_page
             }
 
-    async def _pdf(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _pdf(self, params: dict[str, Any]) -> dict[str, Any]:
         """Save page as PDF."""
         url = params["url"]
         path = params.get("path", "page.pdf")
@@ -162,7 +168,7 @@ class PlaywrightSkill(BaseSkill):
                 "size_kb": round(size_kb, 2)
             }
 
-    async def _scrape(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _scrape(self, params: dict[str, Any]) -> dict[str, Any]:
         """Scrape text content from page."""
         url = params["url"]
         selector = params.get("selector", "body")
@@ -192,7 +198,7 @@ class PlaywrightSkill(BaseSkill):
                 "images": images
             }
 
-    async def _fill_form(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _fill_form(self, params: dict[str, Any]) -> dict[str, Any]:
         """Fill form fields."""
         url = params["url"]
         fields = params["fields"]  # {selector: value}
@@ -223,7 +229,7 @@ class PlaywrightSkill(BaseSkill):
                 "submitted": submitted
             }
 
-    async def _click(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _click(self, params: dict[str, Any]) -> dict[str, Any]:
         """Click element."""
         url = params["url"]
         selector = params["selector"]
@@ -244,7 +250,7 @@ class PlaywrightSkill(BaseSkill):
                 "clicked": True
             }
 
-    async def _wait_for(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _wait_for(self, params: dict[str, Any]) -> dict[str, Any]:
         """Wait for element to appear."""
         url = params["url"]
         selector = params["selector"]
@@ -273,4 +279,5 @@ class PlaywrightSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(PlaywrightSkill())

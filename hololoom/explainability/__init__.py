@@ -17,53 +17,47 @@ Research:
 - Doshi-Velez & Kim (2017): Towards rigorous science of interpretability
 """
 
-from .feature_attribution import (
-    FeatureAttributor,
-    AttributionMethod,
-    FeatureImportance,
-    ShapleyValues,
-    LimeExplainer,
-)
-
 from .attention_explainer import (
     AttentionExplainer,
-    AttentionPattern,
     AttentionHeatmap,
+    AttentionPattern,
     visualize_attention,
 )
-
 from .counterfactual_generator import (
-    CounterfactualGenerator,
     Counterfactual,
+    CounterfactualGenerator,
     MinimalEdit,
     find_counterfactuals,
 )
-
-from .natural_language import (
-    NaturalLanguageExplainer,
-    ExplanationType,
-    generate_explanation,
-    explain_decision,
-)
-
 from .decision_tree_extractor import (
     DecisionTreeExtractor,
-    extract_rules,
     RuleSet,
+    extract_rules,
     visualize_tree,
 )
-
+from .explainer import (
+    Explanation,
+    UnifiedExplainer,
+    explain,
+)
+from .feature_attribution import (
+    AttributionMethod,
+    FeatureAttributor,
+    FeatureImportance,
+    LimeExplainer,
+    ShapleyValues,
+)
+from .natural_language import (
+    ExplanationType,
+    NaturalLanguageExplainer,
+    explain_decision,
+    generate_explanation,
+)
 from .provenance_tracker import (
-    ProvenanceTracker,
     ComputationalTrace,
     LineageGraph,
+    ProvenanceTracker,
     trace_decision,
-)
-
-from .explainer import (
-    UnifiedExplainer,
-    Explanation,
-    explain,
 )
 
 __all__ = [

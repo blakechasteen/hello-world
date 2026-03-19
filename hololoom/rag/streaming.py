@@ -19,10 +19,11 @@ Usage:
         # Last token has is_final=True and full metadata
 """
 
-from dataclasses import dataclass, field
-from typing import AsyncGenerator, Dict, Any, Optional, List, Tuple
-import time
 import logging
+import time
+from collections.abc import AsyncGenerator
+from dataclasses import dataclass, field
+from typing import Any
 
 from hololoom.protocols.types import Query
 
@@ -44,7 +45,7 @@ class StreamToken:
     text: str
     index: int
     cumulative_text: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     is_final: bool = False
 
     def __repr__(self) -> str:
@@ -63,7 +64,7 @@ class StreamingError(Exception):
 async def stream_from_orchestrator(
     orchestrator: Any,
     query: Query,
-    context_sources: List[str],
+    context_sources: list[str],
 ) -> AsyncGenerator[StreamToken, None]:
     """
     Stream tokens from orchestrator's LLM provider.
@@ -240,7 +241,7 @@ class StreamingRAGMixin:
         # 1. Skip cache for streaming (can't partially stream cached results)
 
         # 2. Retrieve memories
-        logger.debug(f"Retrieving memories for streaming query...")
+        logger.debug("Retrieving memories for streaming query...")
         memories = await self.loom.recall(question, limit=max_sources)
         sources = [mem.text for mem in memories[:max_sources]]
         logger.debug(f"Retrieved {len(sources)} sources")

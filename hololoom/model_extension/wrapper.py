@@ -22,50 +22,39 @@ Quick Start:
         print(f"Sources: {response.sources}")
 """
 
+import logging
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import (
-    List, Optional, Dict, Any, AsyncIterator,
-    Union, Callable, Awaitable
-)
-import asyncio
-import logging
-import uuid
+from typing import Any
 
+from hololoom.protocols import Memory
+
+from .governance import (
+    GovernanceEngine,
+    PolicyDecision,
+)
 from .providers import (
-    create_provider,
-    get_best_available_provider,
     BaseLLMProvider,
     GenerationConfig,
     GenerationResult,
-    Message,
-    MessageRole,
+    create_provider,
+    get_best_available_provider,
 )
 from .uncertainty import (
     UncertaintyEnvelope,
-    ConfidenceTier,
     UncertaintySource,
     compute_variance_aware_confidence,
     should_refuse_to_converge,
 )
 from .verification import (
-    VerificationStatus,
-    VerificationTier,
     ClaimType,
     VerificationEngine,
-    verify_response,
+    VerificationStatus,
+    VerificationTier,
     should_block_for_safety,
 )
-from .governance import (
-    PolicyTier,
-    PolicyDecision,
-    GovernanceEngine,
-    is_safe_for_execution,
-    requires_human_approval,
-)
-from hololoom.protocols import Memory
-
 
 logger = logging.getLogger(__name__)
 
@@ -119,9 +108,9 @@ class LLMConfig:
         generation_config: LLM generation parameters
     """
     provider: str = "anthropic"
-    model: Optional[str] = None
-    api_key: Optional[str] = None
-    base_url: Optional[str] = None
+    model: str | None = None
+    api_key: str | None = None
+    base_url: str | None = None
 
     # Memory settings
     retrieval_strategy: RetrievalStrategy = RetrievalStrategy.HYBRID
@@ -145,7 +134,7 @@ class LLMConfig:
     human_approval_threshold: float = 0.3
 
     # Generation settings
-    generation_config: Optional[GenerationConfig] = None
+    generation_config: GenerationConfig | None = None
 
     def __post_init__(self):
         if self.generation_config is None:
@@ -178,7 +167,7 @@ class MemorySource:
     node_id: str
     relevance: float  # 0.0-1.0
     source_type: str  # "semantic", "graph", "learned"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -200,11 +189,11 @@ class MemoryAugmentedResponse:
     answer: str
     confidence: float
     uncertainty: UncertaintyEnvelope
-    sources: List[MemorySource] = field(default_factory=list)
-    verification: Optional[VerificationStatus] = None
-    governance: Optional[PolicyDecision] = None
-    raw_response: Optional[GenerationResult] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    sources: list[MemorySource] = field(default_factory=list)
+    verification: VerificationStatus | None = None
+    governance: PolicyDecision | None = None
+    raw_response: GenerationResult | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
@@ -224,7 +213,7 @@ class MemoryAugmentedResponse:
             return True
         return False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "answer": self.answer,
@@ -279,10 +268,10 @@ class MemoryAugmentedLLM:
 
     def __init__(
         self,
-        config: Optional[LLMConfig] = None,
-        provider: Optional[str] = None,
-        model: Optional[str] = None,
-        api_key: Optional[str] = None,
+        config: LLMConfig | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        api_key: str | None = None,
         **kwargs,
     ):
         """
@@ -310,17 +299,17 @@ class MemoryAugmentedLLM:
             self.config = LLMConfig(**config_kwargs)
 
         # Components (initialized in __aenter__)
-        self._provider: Optional[BaseLLMProvider] = None
+        self._provider: BaseLLMProvider | None = None
         self._memory_backend = None  # HoloLoom memory system
         self._knowledge_graph = None  # Yarn Graph
         self._vector_store = None     # Vector memory
-        self._governance_engine: Optional[GovernanceEngine] = None
-        self._verification_engine: Optional[VerificationEngine] = None
+        self._governance_engine: GovernanceEngine | None = None
+        self._verification_engine: VerificationEngine | None = None
 
         # Learning state
-        self._learning_buffer: List[Dict[str, Any]] = []
-        self._pattern_weights: Dict[str, float] = {}
-        self._query_history: List[Dict[str, Any]] = []
+        self._learning_buffer: list[dict[str, Any]] = []
+        self._pattern_weights: dict[str, float] = {}
+        self._query_history: list[dict[str, Any]] = []
 
         # State
         self._initialized = False
@@ -381,8 +370,8 @@ class MemoryAugmentedLLM:
         """Initialize HoloLoom memory components."""
         try:
             # Try to import HoloLoom memory components
-            from hololoom.memory.backend_factory import create_memory_backend
             from hololoom.config import Config
+            from hololoom.memory.backend_factory import create_memory_backend
 
             # Create memory backend
             holo_config = Config.fast()
@@ -432,10 +421,10 @@ class MemoryAugmentedLLM:
 
     async def learn(
         self,
-        content: Union[str, List[str]],
-        metadata: Optional[Dict[str, Any]] = None,
+        content: str | list[str],
+        metadata: dict[str, Any] | None = None,
         source: str = "user",
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Learn from content by storing it in memory.
 
@@ -481,7 +470,7 @@ class MemoryAugmentedLLM:
     async def query(
         self,
         question: str,
-        context_override: Optional[str] = None,
+        context_override: str | None = None,
         claim_type: ClaimType = ClaimType.FACTUAL,
         stakes: str = "normal",
     ) -> MemoryAugmentedResponse:
@@ -640,8 +629,8 @@ class MemoryAugmentedLLM:
         self,
         query: str,
         k: int = 10,
-        strategy: Optional[RetrievalStrategy] = None,
-    ) -> List[MemorySource]:
+        strategy: RetrievalStrategy | None = None,
+    ) -> list[MemorySource]:
         """
         Recall memories similar to query.
 
@@ -659,7 +648,7 @@ class MemoryAugmentedLLM:
     async def reflect(
         self,
         response: MemoryAugmentedResponse,
-        feedback: Dict[str, Any],
+        feedback: dict[str, Any],
     ) -> None:
         """
         Reflect on a response and learn from feedback.
@@ -714,9 +703,9 @@ class MemoryAugmentedLLM:
     async def _store_memory(
         self,
         content: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
         source: str = "user",
-    ) -> Optional[str]:
+    ) -> str | None:
         """Store content in memory backend."""
         if self._memory_backend is None:
             return None
@@ -746,9 +735,9 @@ class MemoryAugmentedLLM:
     async def _retrieve_context(
         self,
         query: str,
-        k: Optional[int] = None,
-        strategy: Optional[RetrievalStrategy] = None,
-    ) -> List[MemorySource]:
+        k: int | None = None,
+        strategy: RetrievalStrategy | None = None,
+    ) -> list[MemorySource]:
         """Retrieve context from memory."""
         k = k or self.config.max_retrieved_memories
         strategy = strategy or self.config.retrieval_strategy
@@ -780,7 +769,7 @@ class MemoryAugmentedLLM:
         self,
         query: str,
         k: int,
-    ) -> List[MemorySource]:
+    ) -> list[MemorySource]:
         """Semantic (vector) retrieval."""
         sources = []
 
@@ -809,7 +798,7 @@ class MemoryAugmentedLLM:
         self,
         query: str,
         k: int,
-    ) -> List[MemorySource]:
+    ) -> list[MemorySource]:
         """Graph-based retrieval."""
         sources = []
 
@@ -840,7 +829,7 @@ class MemoryAugmentedLLM:
         self,
         query: str,
         k: int,
-    ) -> List[MemorySource]:
+    ) -> list[MemorySource]:
         """Adaptively choose retrieval strategy."""
         # Simple heuristic: use pattern weights
         semantic_weight = self._pattern_weights.get("source:semantic", 0.5)
@@ -856,9 +845,9 @@ class MemoryAugmentedLLM:
 
     def _merge_sources(
         self,
-        sources1: List[MemorySource],
-        sources2: List[MemorySource],
-    ) -> List[MemorySource]:
+        sources1: list[MemorySource],
+        sources2: list[MemorySource],
+    ) -> list[MemorySource]:
         """Merge two source lists, removing duplicates."""
         seen_ids = set()
         merged = []
@@ -902,7 +891,7 @@ Please answer based on the context above. If the context doesn't contain relevan
 
 Please answer to the best of your knowledge."""
 
-    def _format_context(self, sources: List[MemorySource]) -> str:
+    def _format_context(self, sources: list[MemorySource]) -> str:
         """Format sources into context string."""
         if not sources:
             return ""
@@ -939,7 +928,7 @@ Please answer to the best of your knowledge."""
     def _memory_only_response(
         self,
         question: str,
-        sources: List[MemorySource],
+        sources: list[MemorySource],
     ) -> MemoryAugmentedResponse:
         """Generate response from memory only (no LLM)."""
         if not sources:
@@ -1007,7 +996,7 @@ Please answer to the best of your knowledge."""
         except Exception as e:
             logger.warning(f"Failed to flush learning buffer: {e}")
 
-    def get_learning_statistics(self) -> Dict[str, Any]:
+    def get_learning_statistics(self) -> dict[str, Any]:
         """Get learning statistics."""
         return {
             "buffer_size": len(self._learning_buffer),
@@ -1025,10 +1014,10 @@ class InMemoryBackend:
     """Simple in-memory backend for when HoloLoom is not available."""
 
     def __init__(self):
-        self._memories: Dict[str, Dict[str, Any]] = {}
+        self._memories: dict[str, dict[str, Any]] = {}
         self._counter = 0
 
-    def add(self, content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def add(self, content: str, metadata: dict[str, Any] | None = None) -> str:
         """Add memory."""
         self._counter += 1
         node_id = f"mem_{self._counter}"
@@ -1039,7 +1028,7 @@ class InMemoryBackend:
         }
         return node_id
 
-    def search(self, query: str, k: int = 10) -> List[Dict[str, Any]]:
+    def search(self, query: str, k: int = 10) -> list[dict[str, Any]]:
         """Simple substring search."""
         results = []
         query_lower = query.lower()
@@ -1071,18 +1060,18 @@ class InMemoryBackend:
         results.sort(key=lambda x: x["score"], reverse=True)
         return results[:k]
 
-    def get_related(self, query: str, k: int = 10) -> List[Dict[str, Any]]:
+    def get_related(self, query: str, k: int = 10) -> list[dict[str, Any]]:
         """Alias for search."""
         return self.search(query, k)
 
-    async def recall(self, query: str, k: int = 10) -> List[Dict[str, Any]]:
+    async def recall(self, query: str, k: int = 10) -> list[dict[str, Any]]:
         """Async recall wrapper."""
         return self.search(query, k)
 
     async def store(
         self,
         content: str,
-        metadata: Dict[str, Any],
+        metadata: dict[str, Any],
         source: str,
     ) -> str:
         """Async store wrapper."""
@@ -1100,8 +1089,8 @@ class InMemoryBackend:
 
 async def create_memory_augmented_llm(
     provider: str = "anthropic",
-    model: Optional[str] = None,
-    api_key: Optional[str] = None,
+    model: str | None = None,
+    api_key: str | None = None,
     **kwargs,
 ) -> MemoryAugmentedLLM:
     """

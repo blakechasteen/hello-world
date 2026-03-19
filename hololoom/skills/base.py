@@ -13,13 +13,12 @@ Philosophy:
 Created: November 24, 2025
 """
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field, asdict
-from typing import Dict, Any, Optional, List, Callable
-from enum import Enum
-import time
 import logging
-from pathlib import Path
+import time
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +49,10 @@ class SkillStatus(Enum):
 class SkillInput:
     """Standardized skill input."""
     operation: str              # What to do
-    parameters: Dict[str, Any]  # Operation-specific params
-    context: Optional[Dict[str, Any]] = None  # Additional context
-    timeout_seconds: Optional[float] = None   # Execution timeout
-    metadata: Optional[Dict[str, Any]] = None  # User metadata
+    parameters: dict[str, Any]  # Operation-specific params
+    context: dict[str, Any] | None = None  # Additional context
+    timeout_seconds: float | None = None   # Execution timeout
+    metadata: dict[str, Any] | None = None  # User metadata
 
 
 @dataclass
@@ -68,15 +67,15 @@ class SkillOutput:
     timestamp: float = field(default_factory=time.time)
 
     # Detailed information
-    details: Optional[Dict[str, Any]] = None
-    warnings: List[str] = field(default_factory=list)
-    errors: List[str] = field(default_factory=list)
+    details: dict[str, Any] | None = None
+    warnings: list[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
     # Provenance
-    skill_name: Optional[str] = None
-    skill_version: Optional[str] = None
+    skill_name: str | None = None
+    skill_version: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'status': self.status.value,
@@ -99,7 +98,7 @@ class SkillMetadata:
     version: str
     author: str
     category: SkillCategory
-    tags: List[str]
+    tags: list[str]
     description_short: str
     description_long: str
 
@@ -112,12 +111,12 @@ class SkillMetadata:
     requires_user_input: bool = False
 
     # Dependencies
-    external_dependencies: List[str] = field(default_factory=list)
-    skill_dependencies: List[str] = field(default_factory=list)
+    external_dependencies: list[str] = field(default_factory=list)
+    skill_dependencies: list[str] = field(default_factory=list)
 
     # Performance
-    expected_latency_ms: Optional[str] = None  # "50-500ms"
-    token_usage: Optional[str] = None          # "600-2500 tokens"
+    expected_latency_ms: str | None = None  # "50-500ms"
+    token_usage: str | None = None          # "600-2500 tokens"
 
 
 class BaseSkill(ABC):
@@ -200,7 +199,7 @@ class BaseSkill(ABC):
         """
         pass
 
-    def estimate_cost(self, skill_input: SkillInput) -> Dict[str, Any]:
+    def estimate_cost(self, skill_input: SkillInput) -> dict[str, Any]:
         """
         Estimate execution cost (optional override).
 
@@ -278,7 +277,7 @@ class BaseSkill(ABC):
                 skill_version=self._metadata.version
             )
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get skill execution statistics.
 
@@ -308,8 +307,8 @@ class SkillRegistry:
 
     def __init__(self):
         """Initialize registry."""
-        self._skills: Dict[str, BaseSkill] = {}
-        self._categories: Dict[SkillCategory, List[str]] = {}
+        self._skills: dict[str, BaseSkill] = {}
+        self._categories: dict[SkillCategory, list[str]] = {}
 
     def register(self, skill: BaseSkill):
         """
@@ -328,7 +327,7 @@ class SkillRegistry:
 
         logger.info(f"Registered skill: {metadata.name} v{metadata.version}")
 
-    def get(self, name: str) -> Optional[BaseSkill]:
+    def get(self, name: str) -> BaseSkill | None:
         """
         Get skill by name.
 
@@ -340,7 +339,7 @@ class SkillRegistry:
         """
         return self._skills.get(name)
 
-    def list_by_category(self, category: SkillCategory) -> List[str]:
+    def list_by_category(self, category: SkillCategory) -> list[str]:
         """
         List skills in category.
 
@@ -352,7 +351,7 @@ class SkillRegistry:
         """
         return self._categories.get(category, [])
 
-    def list_all(self) -> List[str]:
+    def list_all(self) -> list[str]:
         """
         List all registered skills.
 
@@ -361,7 +360,7 @@ class SkillRegistry:
         """
         return list(self._skills.keys())
 
-    def get_metadata_all(self) -> Dict[str, SkillMetadata]:
+    def get_metadata_all(self) -> dict[str, SkillMetadata]:
         """
         Get metadata for all skills.
 

@@ -12,10 +12,9 @@ Endpoints:
 - GET /audit-trail - Recent audit trail entries
 """
 
-import os
 import logging
+import os
 from datetime import datetime
-from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, Request
 

@@ -28,19 +28,18 @@ Author: HoloLoom Team
 Date: 2025-12-01 (Jenny MVP Week 1)
 """
 
+import json
 import logging
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any
 from pathlib import Path
-from collections import defaultdict
-import json
+from typing import Any
 
 from .jenny_spec import (
+    DissolutionTrigger,
     JennySpec,
     LifecycleStage,
-    DissolutionTrigger,
-    PanelTypeJenny,
 )
 
 logger = logging.getLogger(__name__)
@@ -64,14 +63,14 @@ class SpecLedgerEntry:
     logged_at: datetime = field(default_factory=datetime.now)
 
     # Lifecycle tracking
-    lifecycle_history: List[Dict[str, Any]] = field(default_factory=list)
+    lifecycle_history: list[dict[str, Any]] = field(default_factory=list)
 
     # Additional audit metadata
-    compiler_context: Dict[str, Any] = field(default_factory=dict)
+    compiler_context: dict[str, Any] = field(default_factory=dict)
     render_count: int = 0
     pin_count: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to serializable dictionary."""
         return {
             "entry_id": self.entry_id,
@@ -86,7 +85,7 @@ class SpecLedgerEntry:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "SpecLedgerEntry":
+    def from_dict(cls, data: dict[str, Any]) -> "SpecLedgerEntry":
         """Create from dictionary."""
         return cls(
             entry_id=data["entry_id"],
@@ -148,7 +147,7 @@ class SpecLedger:
 
     def __init__(
         self,
-        persist_path: Optional[Path] = None,
+        persist_path: Path | None = None,
         auto_flush: bool = True,
         max_memory_entries: int = 10000,
     ):
@@ -161,13 +160,13 @@ class SpecLedger:
             max_memory_entries: Maximum entries to keep in memory (LRU eviction)
         """
         # In-memory storage
-        self.entries: Dict[str, SpecLedgerEntry] = {}
+        self.entries: dict[str, SpecLedgerEntry] = {}
 
         # Indexes for fast queries
-        self._by_spacetime: Dict[str, List[str]] = defaultdict(list)
-        self._by_session: Dict[str, List[str]] = defaultdict(list)
-        self._by_panel_type: Dict[str, List[str]] = defaultdict(list)
-        self._by_spec_id: Dict[str, str] = {}  # spec_id → entry_id
+        self._by_spacetime: dict[str, list[str]] = defaultdict(list)
+        self._by_session: dict[str, list[str]] = defaultdict(list)
+        self._by_panel_type: dict[str, list[str]] = defaultdict(list)
+        self._by_spec_id: dict[str, str] = {}  # spec_id → entry_id
 
         # Configuration
         self.persist_path = Path(persist_path) if persist_path else None
@@ -176,8 +175,8 @@ class SpecLedger:
 
         # Statistics counters (in-memory, fast)
         self._total_logged = 0
-        self._panel_type_counts: Dict[str, int] = defaultdict(int)
-        self._dissolution_trigger_counts: Dict[str, int] = defaultdict(int)
+        self._panel_type_counts: dict[str, int] = defaultdict(int)
+        self._dissolution_trigger_counts: dict[str, int] = defaultdict(int)
 
         # Initialize persistence
         if self.persist_path:
@@ -198,7 +197,7 @@ class SpecLedger:
         spec: JennySpec,
         spacetime_id: str,
         session_id: str = "default",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> str:
         """
         Log a spec to the ledger.
@@ -256,7 +255,7 @@ class SpecLedger:
         self,
         spec_id: str,
         new_stage: LifecycleStage,
-        trigger: Optional[DissolutionTrigger] = None
+        trigger: DissolutionTrigger | None = None
     ) -> None:
         """
         Log a lifecycle transition for a spec.
@@ -310,7 +309,7 @@ class SpecLedger:
     # Query Methods
     # ========================================================================
 
-    async def get_spec(self, spec_id: str) -> Optional[JennySpec]:
+    async def get_spec(self, spec_id: str) -> JennySpec | None:
         """
         Retrieve a spec by ID.
 
@@ -327,7 +326,7 @@ class SpecLedger:
         entry = self.entries.get(entry_id)
         return entry.spec if entry else None
 
-    async def get_entry(self, entry_id: str) -> Optional[SpecLedgerEntry]:
+    async def get_entry(self, entry_id: str) -> SpecLedgerEntry | None:
         """
         Retrieve a full ledger entry by entry ID.
 
@@ -339,7 +338,7 @@ class SpecLedger:
         """
         return self.entries.get(entry_id)
 
-    async def query_by_spacetime(self, spacetime_id: str) -> List[JennySpec]:
+    async def query_by_spacetime(self, spacetime_id: str) -> list[JennySpec]:
         """
         Query all specs generated from a Spacetime.
 
@@ -361,7 +360,7 @@ class SpecLedger:
         start_time: str,
         end_time: str,
         limit: int = 100
-    ) -> List[JennySpec]:
+    ) -> list[JennySpec]:
         """
         Query specs within a time range.
 
@@ -389,7 +388,7 @@ class SpecLedger:
         self,
         panel_type: str,
         limit: int = 100
-    ) -> List[JennySpec]:
+    ) -> list[JennySpec]:
         """
         Query specs by panel type.
 
@@ -411,7 +410,7 @@ class SpecLedger:
         self,
         session_id: str,
         limit: int = 100
-    ) -> List[JennySpec]:
+    ) -> list[JennySpec]:
         """
         Query specs from a session.
 
@@ -429,7 +428,7 @@ class SpecLedger:
             if eid in self.entries
         ]
 
-    async def replay_session(self, session_id: str) -> List[JennySpec]:
+    async def replay_session(self, session_id: str) -> list[JennySpec]:
         """
         Replay all specs from a session in order.
 
@@ -459,9 +458,9 @@ class SpecLedger:
 
     async def get_statistics(
         self,
-        start_time: Optional[str] = None,
-        end_time: Optional[str] = None
-    ) -> Dict[str, Any]:
+        start_time: str | None = None,
+        end_time: str | None = None
+    ) -> dict[str, Any]:
         """
         Get ledger statistics.
 
@@ -531,7 +530,7 @@ class SpecLedger:
             "avg_renders_per_spec": round(total_renders / len(entries), 2) if entries else 0.0,
         }
 
-    def get_quick_stats(self) -> Dict[str, Any]:
+    def get_quick_stats(self) -> dict[str, Any]:
         """
         Get quick statistics (from in-memory counters).
 
@@ -638,7 +637,7 @@ class SpecLedger:
 # ============================================================================
 
 def create_spec_ledger(
-    persist_path: Optional[Path] = None,
+    persist_path: Path | None = None,
     auto_flush: bool = True,
     max_memory_entries: int = 10000,
 ) -> SpecLedger:

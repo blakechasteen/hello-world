@@ -14,7 +14,6 @@ Date: November 2025
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 from enum import Enum
 
 
@@ -146,7 +145,7 @@ class SLAValidator:
         """
         self.sla = sla
 
-    def validate(self, metrics: Dict[str, float]) -> List[SLAViolation]:
+    def validate(self, metrics: dict[str, float]) -> list[SLAViolation]:
         """
         Validate metrics against SLA.
 
@@ -215,7 +214,7 @@ class SLAValidator:
 
         return violations
 
-    def is_compliant(self, metrics: Dict[str, float]) -> bool:
+    def is_compliant(self, metrics: dict[str, float]) -> bool:
         """
         Check if metrics are SLA compliant.
 
@@ -231,7 +230,7 @@ class SLAValidator:
     def get_compliance_report(
         self,
         department_id: str,
-        metrics: Dict[str, float]
+        metrics: dict[str, float]
     ) -> str:
         """
         Generate compliance report.

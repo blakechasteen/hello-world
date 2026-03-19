@@ -5,11 +5,11 @@ Template Base Protocol
 Base protocol for content templates.
 """
 
-from typing import Protocol, Dict, Any, List, Optional
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Protocol
 
-from ..core.protocol import MemoryShard, WritingContext
+from ..core.protocol import MemoryShard
 
 
 class TemplateType(Enum):
@@ -25,9 +25,9 @@ class TemplateType(Enum):
 class TemplateContext:
     """Context for template filling."""
     template_type: TemplateType
-    variables: Dict[str, Any]  # Template variables (recipient, subject, etc.)
-    memories: List[MemoryShard]
-    metadata: Dict[str, Any]
+    variables: dict[str, Any]  # Template variables (recipient, subject, etc.)
+    memories: list[MemoryShard]
+    metadata: dict[str, Any]
 
     def __post_init__(self):
         if self.metadata is None:
@@ -39,9 +39,9 @@ class TemplateResult:
     """Result of template generation."""
     content: str
     template_type: TemplateType
-    variables_used: List[str]
-    sections: Dict[str, str]  # Section name -> content
-    metadata: Dict[str, Any]
+    variables_used: list[str]
+    sections: dict[str, str]  # Section name -> content
+    metadata: dict[str, Any]
 
 
 class TemplateProtocol(Protocol):
@@ -66,7 +66,7 @@ class TemplateProtocol(Protocol):
         """
         ...
 
-    def get_required_variables(self) -> List[str]:
+    def get_required_variables(self) -> list[str]:
         """
         Get list of required template variables.
 
@@ -75,7 +75,7 @@ class TemplateProtocol(Protocol):
         """
         ...
 
-    def get_optional_variables(self) -> List[str]:
+    def get_optional_variables(self) -> list[str]:
         """
         Get list of optional template variables.
 

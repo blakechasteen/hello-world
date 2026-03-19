@@ -5,14 +5,16 @@ Main entry point for bandit-based action selection in HoloLoom.
 Handles Thompson Sampling, online learning, and diagnostics.
 """
 
-import torch
 import time
 from typing import Any
-from hololoom.bandits.neural_ts.types import Context, Action, Observation
-from hololoom.bandits.neural_ts.posterior import BootstrapPosterior, MCDropoutPosterior
+
+import torch
+
 from hololoom.bandits.neural_ts.featurizer import ContextActionFeaturizer
+from hololoom.bandits.neural_ts.posterior import BootstrapPosterior, MCDropoutPosterior
 from hololoom.bandits.neural_ts.replay import ReplayBuffer
 from hololoom.bandits.neural_ts.trainer import BanditTrainer
+from hololoom.bandits.neural_ts.types import Action, Context, Observation
 
 
 class NeuralThompsonPolicy:

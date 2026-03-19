@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Proto Agentic Bridge
 ====================
@@ -18,9 +19,9 @@ Status: Production ready (2025-12-02)
 
 import logging
 import time
-from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any, Optional
 
 # Import HoloLoom types
 try:
@@ -70,8 +71,8 @@ class AgenticBridgeResult:
     steps_taken: int = 0
     duration_ms: float = 0.0
     mode_used: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    error: Optional[str] = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
 
 
 class AgenticBridge:

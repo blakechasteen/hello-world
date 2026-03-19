@@ -10,9 +10,9 @@ This package contains:
 """
 
 from .protocols import (
-    WeavingStageProtocol,
     ComplexityStrategyProtocol,
     StageResult,
+    WeavingStageProtocol,
 )
 
 __all__ = [

@@ -8,16 +8,16 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
-import json
+from typing import Any
 
 import numpy as np
 
-from .circuit_explorer import CircuitExplorer, CircuitNode, CircuitEdge, NodeType
+from .circuit_explorer import CircuitEdge, CircuitExplorer, CircuitNode
+from .drift_monitor import DriftEvent, DriftMonitor, DriftSeverity
 from .feature_heatmap import FeatureHeatmap, HeatmapConfig
-from .drift_monitor import DriftMonitor, DriftEvent, DriftType, DriftSeverity
 
 
 @dataclass
@@ -52,8 +52,8 @@ class SAESummary:
     n_active: int
     sparsity: float
     reconstruction_loss: float
-    top_features: List[Tuple[int, str, float]] = field(default_factory=list)  # (idx, name, activation)
-    feature_correlations: Optional[np.ndarray] = None
+    top_features: list[tuple[int, str, float]] = field(default_factory=list)  # (idx, name, activation)
+    feature_correlations: np.ndarray | None = None
 
 
 @dataclass
@@ -67,7 +67,7 @@ class MetricsSnapshot:
     safety_blocks: int
     cache_hit_rate: float
     memory_mb: float
-    custom_metrics: Dict[str, float] = field(default_factory=dict)
+    custom_metrics: dict[str, float] = field(default_factory=dict)
 
 
 class DarkTraceDashboard:
@@ -78,24 +78,24 @@ class DarkTraceDashboard:
     view with real-time updates and interactive exploration.
     """
 
-    def __init__(self, config: Optional[DashboardConfig] = None):
+    def __init__(self, config: DashboardConfig | None = None):
         self.config = config or DashboardConfig()
 
         # Component data
-        self.circuit_explorer: Optional[CircuitExplorer] = None
-        self.feature_activations: Optional[np.ndarray] = None
-        self.feature_names: Optional[List[str]] = None
-        self.token_names: Optional[List[str]] = None
-        self.drift_events: List[DriftEvent] = []
-        self.sae_summary: Optional[SAESummary] = None
-        self.metrics_history: List[MetricsSnapshot] = []
-        self.alerts: List[Dict[str, Any]] = []
+        self.circuit_explorer: CircuitExplorer | None = None
+        self.feature_activations: np.ndarray | None = None
+        self.feature_names: list[str] | None = None
+        self.token_names: list[str] | None = None
+        self.drift_events: list[DriftEvent] = []
+        self.sae_summary: SAESummary | None = None
+        self.metrics_history: list[MetricsSnapshot] = []
+        self.alerts: list[dict[str, Any]] = []
 
     def set_circuit(
         self,
-        nodes: List[CircuitNode],
-        edges: List[CircuitEdge],
-        highlighted_path: Optional[List[str]] = None,
+        nodes: list[CircuitNode],
+        edges: list[CircuitEdge],
+        highlighted_path: list[str] | None = None,
     ) -> None:
         """Set circuit explorer data."""
         self.circuit_explorer = CircuitExplorer()
@@ -106,8 +106,8 @@ class DarkTraceDashboard:
     def set_feature_activations(
         self,
         activations: np.ndarray,
-        feature_names: Optional[List[str]] = None,
-        token_names: Optional[List[str]] = None,
+        feature_names: list[str] | None = None,
+        token_names: list[str] | None = None,
     ) -> None:
         """Set feature activation data for heatmap."""
         self.feature_activations = activations

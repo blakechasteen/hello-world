@@ -8,7 +8,7 @@ fallback Yarn Graph for thread selection based on temporal window.
 """
 
 import logging
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -29,9 +29,9 @@ class ThreadSelectionStage:
     def __init__(
         self,
         yarn_graph: Any,
-        shuttle_stage: Optional[Any] = None,
+        shuttle_stage: Any | None = None,
         enable_shuttle: bool = False,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         self.yarn_graph = yarn_graph
         self.shuttle_stage = shuttle_stage

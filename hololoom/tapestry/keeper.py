@@ -20,23 +20,23 @@ Created: December 2025
 """
 
 import logging
-from typing import Optional, Tuple, Callable, Awaitable, Any, List
+from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from typing import Any
 
+from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
+from hololoom.tapestry.git import GitIntegration
+from hololoom.tapestry.inspector import FabricInspector
 from hololoom.tapestry.protocol import (
-    Tapestry,
-    Thread,
-    ThreadStatus,
-    TapestryBackend,
     FabricCheckResult,
     NoTapestryError,
-    VerificationFailedError
+    Tapestry,
+    TapestryBackend,
+    Thread,
+    ThreadStatus,
 )
-from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
-from hololoom.tapestry.inspector import FabricInspector
 from hololoom.tapestry.warper import Warper
-from hololoom.tapestry.git import GitIntegration
 
 logger = logging.getLogger(__name__)
 
@@ -54,18 +54,18 @@ class SessionContext:
     """
     keeper: 'LoomKeeper'
     tapestry: Tapestry
-    _current_thread: Optional[Thread] = field(default=None, repr=False)
+    _current_thread: Thread | None = field(default=None, repr=False)
 
     @property
-    def next_thread(self) -> Optional[Thread]:
+    def next_thread(self) -> Thread | None:
         """Get next unwoven thread (respecting dependencies)."""
         return self.tapestry.next_unwoven()
 
     async def weave(
         self,
         executor: Callable[[Thread], Awaitable[Any]],
-        thread: Optional[Thread] = None
-    ) -> Tuple[bool, Optional[FabricCheckResult]]:
+        thread: Thread | None = None
+    ) -> tuple[bool, FabricCheckResult | None]:
         """
         Execute and verify a thread.
 
@@ -130,9 +130,9 @@ class LoomKeeper:
 
     def __init__(
         self,
-        backend: Optional[TapestryBackend] = None,
-        inspector: Optional[FabricInspector] = None,
-        git: Optional[GitIntegration] = None,
+        backend: TapestryBackend | None = None,
+        inspector: FabricInspector | None = None,
+        git: GitIntegration | None = None,
         path: str = ".hololoom/tapestry.json"
     ):
         """
@@ -161,7 +161,7 @@ class LoomKeeper:
     async def start(
         self,
         goal: str,
-        threads: Optional[List[str]] = None
+        threads: list[str] | None = None
     ) -> Tapestry:
         """
         Start new weaving session.
@@ -176,7 +176,7 @@ class LoomKeeper:
         logger.info(f"Starting new session: {goal[:50]}...")
         return await self.warper.setup(goal, threads)
 
-    async def resume(self) -> Optional[Tuple[Tapestry, Optional[Thread]]]:
+    async def resume(self) -> tuple[Tapestry, Thread | None] | None:
         """
         Resume existing session.
 
@@ -320,7 +320,7 @@ class LoomKeeper:
         return tapestry
 
     @asynccontextmanager
-    async def session(self, goal_or_resume: Optional[str] = None):
+    async def session(self, goal_or_resume: str | None = None):
         """
         Context manager for scoped sessions.
 
@@ -360,7 +360,7 @@ class LoomKeeper:
             await self.backend.save(ctx.tapestry)
             logger.info(f"Session complete: {ctx.tapestry.get_status_summary()}")
 
-    async def get_status(self) -> Optional[dict]:
+    async def get_status(self) -> dict | None:
         """
         Get current session status.
 

@@ -27,13 +27,12 @@ Usage:
 import asyncio
 import json
 import logging
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from pathlib import Path
-from collections import defaultdict
 import random
 import statistics
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 try:
     from promptly_integration import PromptlyEnhancedBot, UltrapromptConfig
@@ -48,15 +47,15 @@ class ExperimentVariant:
     variant_id: str
     name: str
     description: str
-    ultraprompt_config: Dict[str, Any]
-    prompt_template: Optional[str] = None
+    ultraprompt_config: dict[str, Any]
+    prompt_template: str | None = None
 
     # Statistics
     exposures: int = 0
     successes: int = 0  # Quality score >= threshold
     total_quality_score: float = 0.0
-    user_satisfaction: List[float] = field(default_factory=list)
-    response_times: List[float] = field(default_factory=list)
+    user_satisfaction: list[float] = field(default_factory=list)
+    response_times: list[float] = field(default_factory=list)
     retry_count: int = 0
 
 
@@ -66,10 +65,10 @@ class Experiment:
     experiment_id: str
     name: str
     description: str
-    variants: List[ExperimentVariant]
+    variants: list[ExperimentVariant]
 
     # Configuration
-    traffic_allocation: Dict[str, float]  # variant_id -> percentage
+    traffic_allocation: dict[str, float]  # variant_id -> percentage
     success_metric: str = "quality_score"
     min_sample_size: int = 30
     confidence_level: float = 0.95
@@ -77,8 +76,8 @@ class Experiment:
     # State
     status: str = "active"  # active, completed, cancelled
     started_at: datetime = field(default_factory=datetime.now)
-    completed_at: Optional[datetime] = None
-    winner: Optional[str] = None
+    completed_at: datetime | None = None
+    winner: str | None = None
 
     # Results
     statistical_significance: float = 0.0
@@ -96,8 +95,8 @@ class LearningPattern:
     last_seen: datetime
 
     # Evidence
-    example_queries: List[str] = field(default_factory=list)
-    example_responses: List[str] = field(default_factory=list)
+    example_queries: list[str] = field(default_factory=list)
+    example_responses: list[str] = field(default_factory=list)
 
 
 class SelfImprovingBot:
@@ -111,11 +110,11 @@ class SelfImprovingBot:
 
     def __init__(
         self,
-        base_bot: Optional[PromptlyEnhancedBot] = None,
+        base_bot: PromptlyEnhancedBot | None = None,
         improvement_interval: int = 3600,  # 1 hour
         experiment_duration: int = 86400,  # 24 hours
         min_improvement_threshold: float = 0.05,  # 5% improvement
-        storage_path: Optional[Path] = None
+        storage_path: Path | None = None
     ):
         if not PROMPTLY_AVAILABLE:
             raise ImportError("Promptly integration required")
@@ -128,13 +127,13 @@ class SelfImprovingBot:
         self.storage_path.mkdir(parents=True, exist_ok=True)
 
         # Active experiments
-        self.experiments: Dict[str, Experiment] = {}
+        self.experiments: dict[str, Experiment] = {}
 
         # Learned patterns
-        self.patterns: Dict[str, LearningPattern] = {}
+        self.patterns: dict[str, LearningPattern] = {}
 
         # Current active variants (per query type)
-        self.active_variants: Dict[str, str] = {}
+        self.active_variants: dict[str, str] = {}
 
         # Improvement statistics
         self.stats = {
@@ -149,7 +148,7 @@ class SelfImprovingBot:
         self._load_state()
 
         # Improvement loop task
-        self.improvement_task: Optional[asyncio.Task] = None
+        self.improvement_task: asyncio.Task | None = None
 
         logging.info("SelfImprovingBot initialized")
 
@@ -294,7 +293,7 @@ class SelfImprovingBot:
             f"Quality: {pattern.quality_score:.2f}"
         )
 
-    async def _identify_opportunities(self) -> List[Dict[str, Any]]:
+    async def _identify_opportunities(self) -> list[dict[str, Any]]:
         """Identify improvement opportunities from usage data"""
         opportunities = []
 
@@ -324,7 +323,7 @@ class SelfImprovingBot:
 
         return opportunities
 
-    async def _launch_experiment(self, opportunity: Dict[str, Any]):
+    async def _launch_experiment(self, opportunity: dict[str, Any]):
         """Launch new A/B test experiment based on opportunity"""
 
         if opportunity["type"] == "quality_improvement":
@@ -439,9 +438,9 @@ class SelfImprovingBot:
     async def process_query(
         self,
         query: str,
-        context: Optional[Dict] = None,
-        query_type: Optional[str] = None
-    ) -> Dict[str, Any]:
+        context: dict | None = None,
+        query_type: str | None = None
+    ) -> dict[str, Any]:
         """
         Process query with active experiments and learning.
 
@@ -542,7 +541,7 @@ class SelfImprovingBot:
         if quality_score >= self.base_bot.judge_config.min_score_threshold:
             variant.successes += 1
 
-    def _get_variant(self, variant_id: str) -> Optional[ExperimentVariant]:
+    def _get_variant(self, variant_id: str) -> ExperimentVariant | None:
         """Get variant by ID from any experiment"""
         for experiment in self.experiments.values():
             for variant in experiment.variants:
@@ -550,7 +549,7 @@ class SelfImprovingBot:
                     return variant
         return None
 
-    def _analyze_experiment(self, experiment: Experiment) -> Dict[str, Any]:
+    def _analyze_experiment(self, experiment: Experiment) -> dict[str, Any]:
         """Analyze experiment results and determine winner"""
 
         results = {}
@@ -649,7 +648,7 @@ class SelfImprovingBot:
         else:
             return "general"
 
-    def _get_current_config(self) -> Dict[str, Any]:
+    def _get_current_config(self) -> dict[str, Any]:
         """Get current ultraprompt configuration"""
         config = self.base_bot.ultraprompt_config
         return {
@@ -660,13 +659,13 @@ class SelfImprovingBot:
             "sections": config.sections
         }
 
-    def _apply_ultraprompt_config(self, config: Dict[str, Any]):
+    def _apply_ultraprompt_config(self, config: dict[str, Any]):
         """Apply ultraprompt configuration"""
         for key, value in config.items():
             if hasattr(self.base_bot.ultraprompt_config, key):
                 setattr(self.base_bot.ultraprompt_config, key, value)
 
-    def get_improvement_stats(self) -> Dict[str, Any]:
+    def get_improvement_stats(self) -> dict[str, Any]:
         """Get improvement statistics"""
         return {
             **self.stats,
@@ -676,7 +675,7 @@ class SelfImprovingBot:
             "active_variants": dict(self.active_variants)
         }
 
-    def get_experiment_results(self, exp_id: str) -> Optional[Dict[str, Any]]:
+    def get_experiment_results(self, exp_id: str) -> dict[str, Any] | None:
         """Get detailed experiment results"""
         experiment = self.experiments.get(exp_id)
         if not experiment:
@@ -741,7 +740,7 @@ class SelfImprovingBot:
             return
 
         try:
-            with open(state_file, 'r') as f:
+            with open(state_file) as f:
                 state = json.load(f)
 
             # Load stats

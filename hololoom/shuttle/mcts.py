@@ -6,18 +6,18 @@ Explores different expansion paths to find high-quality context for answering qu
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Callable
+
 import math
 import random
-
+from collections.abc import Callable
+from dataclasses import dataclass, field
 
 # ============================================================================
 # Type Aliases
 # ============================================================================
 
 # Maps node_id -> list of neighbor node_ids
-NeighborMap = Dict[str, List[str]]
+NeighborMap = dict[str, list[str]]
 
 
 # ============================================================================
@@ -32,14 +32,14 @@ class MCTSState:
     Represents the current set of selected nodes and depth in the search tree.
     In real usage, this tracks which nodes have been included in the context.
     """
-    selected_nodes: List[str]
+    selected_nodes: list[str]
     depth: int
 
     def is_terminal(self, max_depth: int) -> bool:
         """Check if this is a terminal state (can't expand further)."""
         return self.depth >= max_depth
 
-    def available_actions(self, neighbor_map: NeighborMap) -> List[str]:
+    def available_actions(self, neighbor_map: NeighborMap) -> list[str]:
         """
         Return a list of candidate node_ids we could expand next.
 
@@ -73,10 +73,10 @@ class MCTSNode:
     Tracks visit statistics and children for the UCB1 selection algorithm.
     """
     state: MCTSState
-    parent: Optional[MCTSNode] = None
-    action_from_parent: Optional[str] = None  # node_id that was added
+    parent: MCTSNode | None = None
+    action_from_parent: str | None = None  # node_id that was added
 
-    children: List[MCTSNode] = field(default_factory=list)
+    children: list[MCTSNode] = field(default_factory=list)
     visits: int = 0
     value_sum: float = 0.0
 
@@ -298,7 +298,7 @@ class MCTSResult:
     iterations_run: int
     best_reward: float
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dict."""
         return {
             "selected_nodes": self.state.selected_nodes,

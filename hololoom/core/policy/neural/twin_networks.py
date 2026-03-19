@@ -25,11 +25,12 @@ Public API:
     evaluate_counterfactual: Compute counterfactual outcome
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Tuple, Callable
 import logging
-import numpy as np
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ class CounterfactualQuery:
     intervention_value: Any
     actual_value: Any
     outcome_variable: str
-    context: Dict[str, Any] = None
+    context: dict[str, Any] = None
 
     def __repr__(self) -> str:
         return (f"CF: What if {self.intervened_variable}={self.intervention_value} "
@@ -129,7 +130,7 @@ if PYTORCH_AVAILABLE:
 
         def __init__(self,
                      input_dim: int,
-                     hidden_dims: List[int],
+                     hidden_dims: list[int],
                      output_dim: int,
                      dropout: float = 0.1):
             """
@@ -221,7 +222,7 @@ class TwinNetworkNumpy:
 
     def __init__(self,
                  input_dim: int,
-                 hidden_dims: List[int],
+                 hidden_dims: list[int],
                  output_dim: int):
         """Initialize numpy twin network."""
         self.input_dim = input_dim
@@ -280,7 +281,7 @@ class TwinNetwork:
 
     def __init__(self,
                  input_dim: int,
-                 hidden_dims: List[int] = None,
+                 hidden_dims: list[int] = None,
                  output_dim: int = 1,
                  learning_rate: float = 0.001):
         """
@@ -361,7 +362,7 @@ class TwinNetwork:
                    x_factual: np.ndarray,
                    y_factual: np.ndarray,
                    x_counterfactual: np.ndarray,
-                   y_counterfactual: np.ndarray) -> Dict[str, float]:
+                   y_counterfactual: np.ndarray) -> dict[str, float]:
         """
         Single training step.
 

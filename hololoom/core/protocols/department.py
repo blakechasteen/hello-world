@@ -45,15 +45,12 @@ Author: HoloLoom Architecture Team
 Timestamp: 2025-11-13
 """
 
-from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import (
-    Any, Dict, List, Optional, Protocol, Union, Callable, runtime_checkable
-)
+from typing import Any, Protocol, runtime_checkable
 from uuid import UUID, uuid4
-
 
 # ============================================================================
 # Confidence Level and Metadata
@@ -95,19 +92,19 @@ class ConfidenceMetadata:
     """
     score: float                           # 0-1, higher = more confident
     level: ConfidenceLevel                 # CRITICAL/LOW/MEDIUM/HIGH/VERIFIED
-    justification: List[str] = field(default_factory=list)  # Why confident?
-    sources: List[str] = field(default_factory=list)        # Where did signal come from?
+    justification: list[str] = field(default_factory=list)  # Why confident?
+    sources: list[str] = field(default_factory=list)        # Where did signal come from?
     timestamp: datetime = field(default_factory=datetime.utcnow)
     calibration_count: int = 0             # How many times calibrated?
-    calibration_history: List[float] = field(default_factory=list)  # Historical scores
+    calibration_history: list[float] = field(default_factory=list)  # Historical scores
 
     @classmethod
     def from_score(
         cls,
         score: float,
-        justification: Optional[List[str]] = None,
-        sources: Optional[List[str]] = None,
-        uncertainty_sources: Optional[List[str]] = None,
+        justification: list[str] | None = None,
+        sources: list[str] | None = None,
+        uncertainty_sources: list[str] | None = None,
     ) -> 'ConfidenceMetadata':
         """
         Create ConfidenceMetadata from numeric score.
@@ -185,8 +182,8 @@ class PrivacyEnvelope:
     """
     content: Any                            # The actual data
     level: PrivacyLevel                     # Who can access?
-    redaction_rules: List[str] = field(default_factory=list)  # Redact what?
-    access_log: List[Dict[str, Any]] = field(default_factory=list)
+    redaction_rules: list[str] = field(default_factory=list)  # Redact what?
+    access_log: list[dict[str, Any]] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)
 
     def log_access(self, accessor: str, reason: str, approved: bool = True) -> None:
@@ -232,9 +229,9 @@ class DepartmentRequest:
     """
     task_id: UUID = field(default_factory=uuid4)     # Unique task ID
     task_type: str = ""                              # Operation type
-    parameters: Dict[str, Any] = field(default_factory=dict)  # Input data
-    context: Dict[str, Any] = field(default_factory=dict)    # Surrounding info
-    constraints: Dict[str, Any] = field(default_factory=dict)  # Limits
+    parameters: dict[str, Any] = field(default_factory=dict)  # Input data
+    context: dict[str, Any] = field(default_factory=dict)    # Surrounding info
+    constraints: dict[str, Any] = field(default_factory=dict)  # Limits
     timestamp: datetime = field(default_factory=datetime.utcnow)
     priority: int = 50                               # 0-100, higher = more urgent
 
@@ -261,10 +258,10 @@ class DepartmentResponse:
     task_id: UUID                                    # Echo back request ID
     result: Any                                      # The answer
     confidence: ConfidenceMetadata                   # How sure?
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
     latency_ms: float = 0.0                          # How long did it take?
-    error: Optional[str] = None                      # Error message if failed
+    error: str | None = None                      # Error message if failed
 
 
 # ============================================================================
@@ -303,7 +300,7 @@ class VerificationCheck:
     status: VerificationStatus                       # PASSED/FAILED/SKIPPED
     reason: str                                      # Why this status?
     score: float = 0.0                               # 0-1, optional metric
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -350,11 +347,11 @@ class VerificationResult:
         )
     """
     verified: bool = False                           # All checks passed?
-    checks: List[VerificationCheck] = field(default_factory=list)
+    checks: list[VerificationCheck] = field(default_factory=list)
     overall_score: float = 0.0                       # Aggregate verification score
     summary: str = ""                                # Overall summary
     confidence: float = 0.0                          # 0-1 confidence in verification
-    recommendations: List[str] = field(default_factory=list)  # Improvement suggestions
+    recommendations: list[str] = field(default_factory=list)  # Improvement suggestions
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     @property
@@ -476,7 +473,7 @@ class Department(Protocol):
         """
         ...
 
-    async def update_strategy(self, feedback: Dict[str, Any]) -> None:
+    async def update_strategy(self, feedback: dict[str, Any]) -> None:
         """
         Learn from feedback to improve future responses.
 
@@ -491,7 +488,7 @@ class Department(Protocol):
         """
         ...
 
-    async def get_capabilities(self) -> Dict[str, Any]:
+    async def get_capabilities(self) -> dict[str, Any]:
         """
         Report what this department can do.
 
@@ -509,7 +506,7 @@ class Department(Protocol):
         """
         ...
 
-    async def get_metrics(self) -> Dict[str, Any]:
+    async def get_metrics(self) -> dict[str, Any]:
         """
         Get performance metrics.
 
@@ -554,8 +551,8 @@ DepartmentProtocol = Department
 
 def create_simple_request(
     task_type: str,
-    parameters: Dict[str, Any],
-    constraints: Optional[Dict[str, Any]] = None
+    parameters: dict[str, Any],
+    constraints: dict[str, Any] | None = None
 ) -> DepartmentRequest:
     """
     Create a simple department request.
@@ -654,7 +651,7 @@ class DepartmentConfig:
     name: str                                        # Department name
     domain: str                                      # Domain (beekeeping, etc.)
     version: str = "1.0.0"                           # Semantic version
-    supported_tasks: List[str] = field(default_factory=list)
+    supported_tasks: list[str] = field(default_factory=list)
     confidence_range: tuple = (0.0, 1.0)             # (min, max) expected confidence
     enable_learning: bool = True                     # Can improve?
     enable_verification: bool = True                 # Verify responses?
@@ -688,9 +685,9 @@ class DepartmentManifest:
         )
     """
     config: DepartmentConfig
-    capabilities: List[str] = field(default_factory=list)
-    dependencies: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    capabilities: list[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -727,7 +724,7 @@ def compute_learning_rate(
 
 
 def should_update_now(
-    last_update: Optional[datetime],
+    last_update: datetime | None,
     min_interval_seconds: float = 60.0,
     confidence_threshold: float = 0.75
 ) -> bool:

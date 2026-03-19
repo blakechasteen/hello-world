@@ -14,21 +14,21 @@ Intelligent routing system with two approaches:
 """
 
 # Learned routing (existing)
-from .learned import ThompsonBandit, LearnedRouter
-from .metrics import RoutingMetrics, MetricsCollector
 from .ab_test import ABTestRouter, StrategyVariant
 
 # Gradient flow routing (Phase 1)
 from .flow_router import (
     FlowRouter,
-    ServerRouter,
-    ToolRouter,
     ServerConfig,
+    ServerRouter,
     ToolConfig,
+    ToolRouter,
     create_flow_router,
     create_server_router,
-    create_tool_router
+    create_tool_router,
 )
+from .learned import LearnedRouter, ThompsonBandit
+from .metrics import MetricsCollector, RoutingMetrics
 
 __all__ = [
     # Learned routing

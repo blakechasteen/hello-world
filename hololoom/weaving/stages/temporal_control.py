@@ -11,12 +11,12 @@ This stage manages temporal aspects of the weaving cycle including:
 
 import logging
 import time
-from typing import Dict, Any, Optional
 from datetime import datetime
+from typing import Any
 
-from hololoom.protocols.types import Query
-from hololoom.chrono.trigger import ChronoTrigger, TemporalWindow, ExecutionLimits
+from hololoom.chrono.trigger import ChronoTrigger, ExecutionLimits
 from hololoom.loom.command import PatternSpec
+from hololoom.protocols.types import Query
 from hololoom.weaving.protocols import StageResult
 
 
@@ -31,7 +31,7 @@ class TemporalControlStage:
     def __init__(
         self,
         chrono_trigger: ChronoTrigger,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         """
         Initialize the temporal control stage.
@@ -47,7 +47,7 @@ class TemporalControlStage:
     async def execute(
         self,
         query: Query,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         pattern_spec: PatternSpec,
     ) -> StageResult:
         """

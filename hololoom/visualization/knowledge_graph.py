@@ -26,12 +26,10 @@ Author: HoloLoom Team
 Date: 2025-10-29
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple, Set
-from enum import Enum
 import math
 import random
-
+from dataclasses import dataclass, field
+from enum import Enum
 
 # ============================================================================
 # Data Structures
@@ -48,7 +46,7 @@ class GraphNode:
     vy: float = 0.0
     degree: int = 0
     node_type: str = "default"
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -58,7 +56,7 @@ class GraphEdge:
     dst: str
     type: str
     weight: float = 1.0
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
 
 class EdgeType(Enum):
@@ -113,9 +111,9 @@ class ForceDirectedLayout:
 
     def layout(
         self,
-        nodes: List[GraphNode],
-        edges: List[GraphEdge]
-    ) -> List[GraphNode]:
+        nodes: list[GraphNode],
+        edges: list[GraphEdge]
+    ) -> list[GraphNode]:
         """
         Compute force-directed layout for nodes.
 
@@ -137,7 +135,7 @@ class ForceDirectedLayout:
             node.vy = 0.0
 
         # Build adjacency for fast edge lookup
-        adjacency: Dict[str, Set[str]] = {}
+        adjacency: dict[str, set[str]] = {}
         for edge in edges:
             if edge.src not in adjacency:
                 adjacency[edge.src] = set()
@@ -276,11 +274,11 @@ class KnowledgeGraphRenderer:
 
     def render(
         self,
-        nodes: List[GraphNode],
-        edges: List[GraphEdge],
+        nodes: list[GraphNode],
+        edges: list[GraphEdge],
         title: str = "Knowledge Graph Network",
-        subtitle: Optional[str] = None,
-        highlighted_path: Optional[List[str]] = None
+        subtitle: str | None = None,
+        highlighted_path: list[str] | None = None
     ) -> str:
         """
         Render knowledge graph network to HTML.
@@ -310,9 +308,9 @@ class KnowledgeGraphRenderer:
         html_parts = [
             self._render_html_head(title),
             self._render_styles(),
-            f'<body>',
-            f'<div class="graph-container">',
-            f'<div class="graph-header">',
+            '<body>',
+            '<div class="graph-container">',
+            '<div class="graph-header">',
             f'<h2>{title}</h2>',
         ]
 
@@ -323,7 +321,7 @@ class KnowledgeGraphRenderer:
         stats_html = self._render_statistics(positioned_nodes, edges)
         html_parts.append(stats_html)
 
-        html_parts.append(f'</div>')  # Close header
+        html_parts.append('</div>')  # Close header
 
         # Legend
         legend_html = self._render_legend()
@@ -338,9 +336,9 @@ class KnowledgeGraphRenderer:
         html_parts.append(svg_html)
 
         html_parts.extend([
-            f'</div>',  # Close container
-            f'</body>',
-            f'</html>'
+            '</div>',  # Close container
+            '</body>',
+            '</html>'
         ])
 
         return '\n'.join(html_parts)
@@ -521,8 +519,8 @@ class KnowledgeGraphRenderer:
 
     def _render_statistics(
         self,
-        nodes: List[GraphNode],
-        edges: List[GraphEdge]
+        nodes: list[GraphNode],
+        edges: list[GraphEdge]
     ) -> str:
         """Render graph statistics."""
         num_nodes = len(nodes)
@@ -574,9 +572,9 @@ class KnowledgeGraphRenderer:
 
     def _render_svg_network(
         self,
-        nodes: List[GraphNode],
-        edges: List[GraphEdge],
-        highlighted_path: Optional[List[str]] = None
+        nodes: list[GraphNode],
+        edges: list[GraphEdge],
+        highlighted_path: list[str] | None = None
     ) -> str:
         """Render SVG network visualization."""
         # Calculate node sizes based on degree
@@ -714,8 +712,8 @@ class KnowledgeGraphRenderer:
 
     def _render_script(
         self,
-        nodes: List[GraphNode],
-        edges: List[GraphEdge]
+        nodes: list[GraphNode],
+        edges: list[GraphEdge]
     ) -> str:
         """Render JavaScript for interactivity."""
         # Build node data for tooltips
@@ -819,9 +817,9 @@ class KnowledgeGraphRenderer:
 def render_knowledge_graph_from_kg(
     kg,  # HoloLoom.memory.graph.KG
     title: str = "Knowledge Graph Network",
-    subtitle: Optional[str] = None,
+    subtitle: str | None = None,
     max_nodes: int = 50,
-    highlighted_path: Optional[List[str]] = None
+    highlighted_path: list[str] | None = None
 ) -> str:
     """
     Render knowledge graph directly from hololoom KG object.
@@ -899,9 +897,9 @@ def render_knowledge_graph_from_kg(
 def render_knowledge_graph_from_networkx(
     graph,  # nx.MultiDiGraph
     title: str = "Knowledge Graph Network",
-    subtitle: Optional[str] = None,
+    subtitle: str | None = None,
     max_nodes: int = 50,
-    highlighted_path: Optional[List[str]] = None
+    highlighted_path: list[str] | None = None
 ) -> str:
     """
     Render knowledge graph from NetworkX MultiDiGraph.

@@ -9,8 +9,8 @@ redirected to ``HoloLoom.apps.departments``.  A one-time
 """
 
 import importlib
-import warnings
 import sys
+import warnings
 
 
 class _DeprecatedFinder:

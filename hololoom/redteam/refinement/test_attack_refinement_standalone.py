@@ -16,22 +16,21 @@ Tests cover:
 - Edge cases and error handling
 """
 
-import pytest
-import asyncio
-import sys
 import os
+import sys
+
+import pytest
 
 # Add parent directories to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 # Import directly from modules, avoiding problematic redteam __init__
+from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad
 from hololoom.redteam.refinement.attack_refinement import (
-    AttackRefiner,
-    AttackRefinementStrategy,
     AttackQualityMetrics,
-    AttackRefinementResult
+    AttackRefinementStrategy,
+    AttackRefiner,
 )
-from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
 from hololoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
 
 

@@ -6,14 +6,8 @@ Fallback refiner for strategies without specialized implementation.
 """
 
 import logging
-from typing import List
 
-from ..core.protocol import (
-    RefinerProtocol,
-    RefinementPass,
-    RefinementStrategy,
-    WritingContext
-)
+from ..core.protocol import RefinementPass, RefinementStrategy, WritingContext
 
 logger = logging.getLogger(__name__)
 
@@ -96,6 +90,6 @@ class BasicRefiner:
         return f"basic_{self.strategy.value}"
 
     @property
-    def passes(self) -> List[str]:
+    def passes(self) -> list[str]:
         """List of focus areas for each pass."""
         return ["pass_1", "pass_2", "pass_3"]

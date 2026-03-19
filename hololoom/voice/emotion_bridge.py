@@ -15,13 +15,12 @@ Date: November 2025
 
 import asyncio
 import json
-import subprocess
 import logging
-import os
+import subprocess
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
+from typing import Any
 
 try:
     import structlog
@@ -66,7 +65,7 @@ class EmotionBridgeConfig:
 
     # Node.js path
     node_executable: str = "node"
-    pipeline_script: Optional[str] = None  # Auto-detect if None
+    pipeline_script: str | None = None  # Auto-detect if None
 
     # Signal detection
     enable_facial: bool = True
@@ -75,7 +74,7 @@ class EmotionBridgeConfig:
 
     # Fusion
     fusion_strategy: FusionStrategy = FusionStrategy.BAYESIAN
-    modality_weights: Dict[str, float] = field(default_factory=lambda: {
+    modality_weights: dict[str, float] = field(default_factory=lambda: {
         'facial': 0.4,
         'vocal': 0.35,
         'text': 0.25
@@ -88,7 +87,7 @@ class EmotionBridgeConfig:
     # LLM integration
     llm_provider: str = "anthropic"
     llm_model: str = "claude-3-5-sonnet-20241022"
-    llm_api_key: Optional[str] = None
+    llm_api_key: str | None = None
 
     # Planning
     enable_action_planning: bool = True
@@ -137,10 +136,10 @@ class EmotionBridgeConfig:
 @dataclass
 class EmotionalInput:
     """Input to emotional intelligence pipeline"""
-    text: Optional[str] = None
-    video_frame: Optional[bytes] = None  # Image bytes (JPEG/PNG)
-    audio_buffer: Optional[bytes] = None  # Audio bytes (WAV)
-    context: Dict[str, Any] = field(default_factory=dict)
+    text: str | None = None
+    video_frame: bytes | None = None  # Image bytes (JPEG/PNG)
+    audio_buffer: bytes | None = None  # Audio bytes (WAV)
+    context: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -154,28 +153,28 @@ class EmotionResult:
     arousal: float  # 0 (calm) to 1 (excited)
 
     # Modality-specific results
-    facial_emotion: Optional[str] = None
-    facial_confidence: Optional[float] = None
-    vocal_emotion: Optional[str] = None
-    vocal_confidence: Optional[float] = None
-    text_emotion: Optional[str] = None
-    text_confidence: Optional[float] = None
+    facial_emotion: str | None = None
+    facial_confidence: float | None = None
+    vocal_emotion: str | None = None
+    vocal_confidence: float | None = None
+    text_emotion: str | None = None
+    text_confidence: float | None = None
 
     # Meta-interpretation
-    meta_interpretation: Optional[str] = None
-    nuances: List[str] = field(default_factory=list)
-    hidden_emotions: List[str] = field(default_factory=list)
+    meta_interpretation: str | None = None
+    nuances: list[str] = field(default_factory=list)
+    hidden_emotions: list[str] = field(default_factory=list)
 
     # Action plan
-    suggested_actions: List[str] = field(default_factory=list)
-    conversation_strategy: Optional[str] = None
+    suggested_actions: list[str] = field(default_factory=list)
+    conversation_strategy: str | None = None
 
     # Metadata
-    processing_time_ms: Optional[float] = None
-    fusion_strategy_used: Optional[str] = None
+    processing_time_ms: float | None = None
+    fusion_strategy_used: str | None = None
 
     @classmethod
-    def from_js_result(cls, js_data: Dict[str, Any]) -> 'EmotionResult':
+    def from_js_result(cls, js_data: dict[str, Any]) -> 'EmotionResult':
         """Create EmotionResult from JavaScript pipeline output"""
         fused = js_data.get('fusedEmotion', {})
         meta = js_data.get('metaInterpretation', {})
@@ -226,7 +225,7 @@ class NodeJSBridge:
 
     def __init__(self, config: EmotionBridgeConfig):
         self.config = config
-        self.process: Optional[subprocess.Popen] = None
+        self.process: subprocess.Popen | None = None
         self.script_path = self._find_pipeline_script()
 
         if STRUCTLOG_AVAILABLE:
@@ -349,7 +348,7 @@ process.stdin.resume();
 """
         return wrapper
 
-    async def call(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def call(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
         """Call Node.js method via JSON-RPC"""
         if self.process is None:
             await self.start()
@@ -429,7 +428,7 @@ class EmotionBridge:
             print(f"Suggested actions: {result.suggested_actions}")
     """
 
-    def __init__(self, config: Optional[EmotionBridgeConfig] = None):
+    def __init__(self, config: EmotionBridgeConfig | None = None):
         self.config = config or EmotionBridgeConfig.standard()
         self.bridge = NodeJSBridge(self.config)
         self._started = False
@@ -467,10 +466,10 @@ class EmotionBridge:
 
     async def analyze_emotion(
         self,
-        text: Optional[str] = None,
-        video_frame: Optional[bytes] = None,
-        audio_buffer: Optional[bytes] = None,
-        context: Optional[Dict[str, Any]] = None
+        text: str | None = None,
+        video_frame: bytes | None = None,
+        audio_buffer: bytes | None = None,
+        context: dict[str, Any] | None = None
     ) -> EmotionResult:
         """
         Analyze emotion from multimodal input
@@ -530,7 +529,7 @@ class EmotionBridge:
 # Voice Agent Integration
 # ============================================================================
 
-async def enhance_voice_agent_with_emotions(voice_agent, emotion_config: Optional[EmotionBridgeConfig] = None):
+async def enhance_voice_agent_with_emotions(voice_agent, emotion_config: EmotionBridgeConfig | None = None):
     """
     Enhance VoiceAgent with emotional intelligence
 
@@ -641,9 +640,9 @@ async def example_voice_agent_integration():
 
     # Import voice agent (if available)
     try:
+        from hololoom.config import Config
         from hololoom.voice import VoiceAgent
         from hololoom.weaving_orchestrator import WeavingOrchestrator
-        from hololoom.config import Config
     except ImportError:
         print("HoloLoom not available - skipping example")
         return

@@ -33,23 +33,25 @@ Fusion Strategies:
 4. GATED: Learn gates to weight lower-level contributions
 """
 
-import sys
 import os
+import sys
+
 # Add repository root to path for imports
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if repo_root not in sys.path:
     sys.path.insert(0, repo_root)
 
 import asyncio
-import numpy as np
-from typing import Dict, List, Optional, AsyncIterator, Callable, Tuple
-from dataclasses import dataclass, field
-from collections import deque
-from enum import Enum
 import time
+from collections import deque
+from collections.abc import AsyncIterator, Callable
+from dataclasses import dataclass
+from enum import Enum
+
+import numpy as np
 
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
-from hololoom.semantic_calculus.dimensions import SemanticSpectrum, STANDARD_DIMENSIONS
+from hololoom.semantic_calculus.dimensions import STANDARD_DIMENSIONS, SemanticSpectrum
 
 
 class FusionStrategy(Enum):
@@ -65,7 +67,7 @@ class RecursiveState:
     """State at a recursive Matryoshka level."""
     embedding: np.ndarray           # Raw embedding at this scale's dimension
     semantic: np.ndarray            # Projected semantic understanding
-    inherited_semantics: Dict[str, np.ndarray]  # From lower levels
+    inherited_semantics: dict[str, np.ndarray]  # From lower levels
     timestamp: float
     token_count: int
 
@@ -101,7 +103,7 @@ class RecursiveFusion:
     def fuse_for_phrase(
         self,
         phrase_embedding: np.ndarray,  # 192D
-        word_semantic: Optional[np.ndarray]  # 16D
+        word_semantic: np.ndarray | None  # 16D
     ) -> np.ndarray:
         """Fuse word-level semantics into phrase embedding."""
         if word_semantic is None:
@@ -133,8 +135,8 @@ class RecursiveFusion:
     def fuse_for_sentence(
         self,
         sentence_embedding: np.ndarray,  # 384D
-        phrase_semantic: Optional[np.ndarray],  # 64D
-        word_semantic: Optional[np.ndarray]  # 16D
+        phrase_semantic: np.ndarray | None,  # 64D
+        word_semantic: np.ndarray | None  # 16D
     ) -> np.ndarray:
         """Fuse phrase-level and word-level semantics into sentence."""
         if phrase_semantic is None and word_semantic is None:
@@ -174,9 +176,9 @@ class RecursiveFusion:
     def fuse_for_paragraph(
         self,
         paragraph_embedding: np.ndarray,  # 384D
-        sentence_semantic: Optional[np.ndarray],  # 128D
-        phrase_semantic: Optional[np.ndarray],  # 64D
-        word_semantic: Optional[np.ndarray]  # 16D
+        sentence_semantic: np.ndarray | None,  # 128D
+        phrase_semantic: np.ndarray | None,  # 64D
+        word_semantic: np.ndarray | None  # 16D
     ) -> np.ndarray:
         """Fuse all lower levels into paragraph."""
         if self.strategy == FusionStrategy.CONCATENATE:
@@ -264,10 +266,12 @@ class RecursiveMatryoshkaCalculus:
         self.spectrum_word = SemanticSpectrum(dimensions=STANDARD_DIMENSIONS[:16])
 
         from hololoom.semantic_calculus.dimensions import (
+            ARCHETYPAL_DIMENSIONS,
+            EMOTIONAL_DEPTH_DIMENSIONS,
+            EXTENDED_244_DIMENSIONS,
             NARRATIVE_DIMENSIONS,
-            EMOTIONAL_DEPTH_DIMENSIONS, RELATIONAL_DIMENSIONS,
-            ARCHETYPAL_DIMENSIONS, PHILOSOPHICAL_DIMENSIONS,
-            EXTENDED_244_DIMENSIONS
+            PHILOSOPHICAL_DIMENSIONS,
+            RELATIONAL_DIMENSIONS,
         )
         phrase_dims = (STANDARD_DIMENSIONS + NARRATIVE_DIMENSIONS +
                       EMOTIONAL_DEPTH_DIMENSIONS + RELATIONAL_DIMENSIONS)
@@ -296,7 +300,7 @@ class RecursiveMatryoshkaCalculus:
         print("✅ Recursive axes ready!\n")
 
         # Recursive state tracking
-        self.current_states: Dict[RecursiveMatryoshkaScale, RecursiveState] = {}
+        self.current_states: dict[RecursiveMatryoshkaScale, RecursiveState] = {}
 
         # Windows for token buffering
         self.windows = {
@@ -314,7 +318,7 @@ class RecursiveMatryoshkaCalculus:
     async def stream_analyze(
         self,
         text_stream: AsyncIterator[str]
-    ) -> AsyncIterator[Dict]:
+    ) -> AsyncIterator[dict]:
         """Stream analyze with recursive composition."""
         last_snapshot = time.time()
 
@@ -483,7 +487,7 @@ class RecursiveMatryoshkaCalculus:
         semantic_proj = spectrum.project_vector(embedding)
         return np.array([semantic_proj[dim.name] for dim in spectrum.dimensions])
 
-    def _create_snapshot(self) -> Dict:
+    def _create_snapshot(self) -> dict:
         """Create snapshot with recursive information."""
         snapshot = {
             'timestamp': time.time(),
@@ -504,7 +508,7 @@ class RecursiveMatryoshkaCalculus:
 
         return snapshot
 
-    def _get_dominant_dims(self, semantic: np.ndarray) -> List[str]:
+    def _get_dominant_dims(self, semantic: np.ndarray) -> list[str]:
         """Get dimension names with highest magnitudes."""
         # This is a placeholder - would need to track which spectrum
         top_indices = np.argsort(np.abs(semantic))[-5:][::-1]

@@ -3,23 +3,22 @@ import warnings as _warnings
 # Core memory imports — graceful degradation if numpy/networkx not installed
 try:
     from .cache import (
-        Retriever,
-        MemoryShard,
-        RetrieverMS,
-        MemoryManager,
-        PDVClient,
         MemoAIClient,
+        MemoryManager,
+        MemoryShard,
+        PDVClient,
+        Retriever,
+        RetrieverMS,
+        create_memory_manager,
         create_retriever,
-        create_memory_manager
     )
-
     from .graph import (
-        KGStore,
-        KGEdge,
         KG,
+        KGEdge,
+        KGStore,
         LegacyShardsAdapter,
+        build_kg_from_text,
         extract_entities_simple,
-        build_kg_from_text
     )
 
     # Weaving Metaphor Aliases
@@ -48,11 +47,11 @@ try:
         BetaWaveContextPacker,
         BetaWavePacker,  # Backward compat alias
         CompositionalAwarenessLayer,
-        SmartContextPacker,
         ContextPacker,  # Backward compat alias
         DualStreamGenerator,
         MemoryFusion,
         MetaAwarenessLayer,
+        SmartContextPacker,
     )
 except ImportError:
     pass
@@ -61,9 +60,9 @@ except ImportError:
 try:
     from .symphony import (
         MemoryConductor,
+        MemoryCoordinationResult,
         MemoryQuery,
         MemoryStrategy,
-        MemoryCoordinationResult,
         create_memory_conductor,
     )
 except ImportError:
@@ -71,28 +70,32 @@ except ImportError:
 
 # Re-export yarn module
 try:
-    from .yarn import Yarn, EggrollYarn
+    from .yarn import EggrollYarn, Yarn
 except ImportError:
     pass
 
 # Borrowed Features (March 2026) — graceful degradation if deps missing
 try:
-    from .retrieval_planner import RetrievalPlanner, RetrievalPlan, RetrievalComplexity
-    from .version_log import VersionLog, MemoryDelta
-    from .synthesis import SynthesisResult, default_synthesis_fn
     from .memfs import MemFS, MemoryFile
+    from .retrieval_planner import RetrievalComplexity, RetrievalPlan, RetrievalPlanner
+    from .security_screen import (
+        SecurityScreenError,
+        create_security_screen,
+        default_security_screen,
+    )
     from .sleep_consolidator import SleepConsolidator
-    from .security_screen import SecurityScreenError, default_security_screen, create_security_screen
+    from .synthesis import SynthesisResult, default_synthesis_fn
+    from .version_log import MemoryDelta, VersionLog
 except ImportError as e:
     import warnings
     warnings.warn(f"Memory borrowed features unavailable: {e}")
 
 # Token Maximization (March 2026) — graceful degradation if deps missing
 try:
+    from .multi_resolution import MultiResolutionRenderer, RenderResolution, ResolutionPolicy
     from .query_cache import QueryCache, QueryCacheEntry
-    from .multi_resolution import MultiResolutionRenderer, ResolutionPolicy, RenderResolution
-    from .repo_cache import RepoCache, RepoCacheEntry
     from .render_cache import RenderCache, RenderCacheEntry
+    from .repo_cache import RepoCache, RepoCacheEntry
 except ImportError as e:
     import warnings
     warnings.warn(f"Memory token maximization features unavailable: {e}")

@@ -13,10 +13,9 @@ Run:
 """
 
 import asyncio
-from datetime import datetime
 from dataclasses import dataclass
-from typing import List, Dict, Any
-
+from datetime import datetime
+from typing import Any
 
 # ============================================================================
 # Mock Components (Simplified)
@@ -28,7 +27,7 @@ class Message:
     role: str
     content: str
     timestamp: float
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -36,15 +35,15 @@ class Thread:
     """Conversation thread"""
     thread_id: str
     name: str
-    messages: List[Message]
-    metadata: Dict[str, Any]
+    messages: list[Message]
+    metadata: dict[str, Any]
 
 
 class SimpleThreadManager:
     """Simplified ThreadManager for demo"""
 
     def __init__(self):
-        self.threads: Dict[str, Thread] = {}
+        self.threads: dict[str, Thread] = {}
         self.active_thread_id: str = None
         self._next_id = 1
 
@@ -94,7 +93,7 @@ class SimpleYarnGraph:
     """Simplified YarnGraph for demo"""
 
     def __init__(self):
-        self.edges: List[Dict[str, Any]] = []
+        self.edges: list[dict[str, Any]] = []
 
     def add_edge(self, edge):
         """Add edge to graph"""
@@ -136,10 +135,10 @@ async def run_demo():
     5. Return to orchard thread
     6. Show YarnGraph relationships
     """
-    from hololoom.voice.threads.thread import ThreadBrancher
-
     # Set UTF-8 encoding for Windows console
     import sys
+
+    from hololoom.voice.threads.thread import ThreadBrancher
     if sys.platform == 'win32':
         import codecs
         sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')

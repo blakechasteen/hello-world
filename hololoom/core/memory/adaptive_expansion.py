@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Adaptive Graph Expansion (Phase 1)
 ===================================
@@ -17,13 +18,11 @@ Phase: 1 of 4 (Streaming Graph Expansion Roadmap)
 """
 
 import heapq
-import time
-import math
 import logging
-from typing import Dict, List, Set, Tuple, Optional, Any
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-from collections import defaultdict
+from typing import Any
 
 try:
     import networkx as nx
@@ -91,8 +90,8 @@ class ExpansionNode:
     node_id: str
     priority: float  # Negative for max-heap
     hop_distance: int
-    parent_id: Optional[str] = None
-    edge_type: Optional[str] = None
+    parent_id: str | None = None
+    edge_type: str | None = None
     relevance_score: float = 0.0
     importance_score: float = 0.0
     token_estimate: int = 0
@@ -118,15 +117,15 @@ class ExpansionResult:
         execution_time_ms: Time taken for expansion
         metadata: Additional expansion statistics
     """
-    nodes: List[str]
-    edges: List[Tuple[str, str, str]]
+    nodes: list[str]
+    edges: list[tuple[str, str, str]]
     total_tokens: int
     avg_relevance: float
     hops_taken: int
     nodes_visited: int
     stopping_reason: str
     execution_time_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -155,7 +154,7 @@ class RelevanceScorer:
 
     def __init__(
         self,
-        embedder: Optional[Any] = None,
+        embedder: Any | None = None,
         distance_decay: float = 0.85,
         use_edge_weights: bool = True
     ):
@@ -172,8 +171,8 @@ class RelevanceScorer:
         self.use_edge_weights = use_edge_weights
 
         # Cache for query embedding
-        self._query_embedding: Optional[Any] = None
-        self._query_text: Optional[str] = None
+        self._query_embedding: Any | None = None
+        self._query_text: str | None = None
 
     def set_query(self, query: str):
         """
@@ -194,9 +193,9 @@ class RelevanceScorer:
         self,
         node_id: str,
         hop_distance: int,
-        edge_type: Optional[str] = None,
-        node_content: Optional[str] = None,
-        importance_scores: Optional[Dict[str, float]] = None
+        edge_type: str | None = None,
+        node_content: str | None = None,
+        importance_scores: dict[str, float] | None = None
     ) -> float:
         """
         Compute query-aware relevance score.
@@ -279,7 +278,7 @@ class BudgetTracker:
     def __init__(
         self,
         token_budget: int,
-        matryoshka_scales: List[int] = [384, 256, 128],
+        matryoshka_scales: list[int] = [384, 256, 128],
         avg_tokens_per_node: int = 100
     ):
         """
@@ -295,13 +294,13 @@ class BudgetTracker:
         self.avg_tokens_per_node = avg_tokens_per_node
 
         self.consumed_tokens = 0
-        self.node_token_estimates: Dict[str, int] = {}
+        self.node_token_estimates: dict[str, int] = {}
 
     def estimate_tokens(
         self,
         node_id: str,
         importance_score: float,
-        node_content: Optional[str] = None
+        node_content: str | None = None
     ) -> int:
         """
         Estimate token cost for a node (Matryoshka-aware).
@@ -400,9 +399,9 @@ class AdaptiveExpander:
 
     def __init__(
         self,
-        relevance_scorer: Optional[RelevanceScorer] = None,
-        embedder: Optional[Any] = None,
-        matryoshka_scales: List[int] = [384, 256, 128],
+        relevance_scorer: RelevanceScorer | None = None,
+        embedder: Any | None = None,
+        matryoshka_scales: list[int] = [384, 256, 128],
         avg_tokens_per_node: int = 100
     ):
         """
@@ -432,13 +431,13 @@ class AdaptiveExpander:
     async def expand(
         self,
         query: str,
-        seed_nodes: List[str],
+        seed_nodes: list[str],
         graph: Any,  # KG or NetworkX MultiDiGraph
         token_budget: int = 2000,
         min_relevance: float = 0.3,
         max_hops: int = 5,
-        importance_scores: Optional[Dict[str, float]] = None,
-        node_contents: Optional[Dict[str, str]] = None
+        importance_scores: dict[str, float] | None = None,
+        node_contents: dict[str, str] | None = None
     ) -> ExpansionResult:
         """
         Adaptive graph expansion with budget and relevance constraints.
@@ -474,12 +473,12 @@ class AdaptiveExpander:
         )
 
         # Priority queue (max-heap via negative priorities)
-        frontier: List[ExpansionNode] = []
+        frontier: list[ExpansionNode] = []
 
         # Visited tracking
-        visited: Set[str] = set()
-        expanded_nodes: List[str] = []
-        expanded_edges: List[Tuple[str, str, str]] = []
+        visited: set[str] = set()
+        expanded_nodes: list[str] = []
+        expanded_edges: list[tuple[str, str, str]] = []
 
         # Initialize frontier with seed nodes
         for seed in seed_nodes:
@@ -657,7 +656,7 @@ class AdaptiveExpander:
 
         return result
 
-    def _get_edge_type(self, graph: Any, src: str, dst: str) -> Optional[str]:
+    def _get_edge_type(self, graph: Any, src: str, dst: str) -> str | None:
         """Get edge type between nodes."""
         try:
             if hasattr(graph, 'G'):
@@ -673,7 +672,7 @@ class AdaptiveExpander:
             pass
         return 'UNKNOWN'
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get expander statistics."""
         return self._stats.copy()
 
@@ -684,14 +683,14 @@ class AdaptiveExpander:
 
 async def expand_context_adaptive(
     query: str,
-    seed_nodes: List[str],
+    seed_nodes: list[str],
     graph: Any,
     token_budget: int = 2000,
     min_relevance: float = 0.3,
     max_hops: int = 5,
-    embedder: Optional[Any] = None,
-    importance_scores: Optional[Dict[str, float]] = None,
-    node_contents: Optional[Dict[str, str]] = None
+    embedder: Any | None = None,
+    importance_scores: dict[str, float] | None = None,
+    node_contents: dict[str, str] | None = None
 ) -> ExpansionResult:
     """
     Convenience function for adaptive graph expansion.

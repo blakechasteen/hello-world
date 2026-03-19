@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Code Handlers for Matrix ChatOps
 =================================
@@ -21,11 +22,11 @@ Usage:
 """
 
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from hololoom.apps.chatops.core.matrix_bot import MatrixBot
     from hololoom.apps.chatops.core.chatops_bridge import ChatOpsOrchestrator
+    from hololoom.apps.chatops.core.matrix_bot import MatrixBot
     from hololoom.apps.departments.claude_code import ClaudeCodeDepartment
 
 try:
@@ -486,7 +487,9 @@ def register_code_handlers(
 
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:

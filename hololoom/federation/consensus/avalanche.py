@@ -18,21 +18,19 @@ Reference:
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import random
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from typing import Any
 
 from .protocol import (
     ConsensusProtocol,
     ConsensusResult,
     FinalityType,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -159,15 +157,15 @@ class AvalancheProposal:
     preference: AvalanchePreference = field(default=None)
 
     # Voting records
-    votes_for: Set[str] = field(default_factory=set)
-    votes_against: Set[str] = field(default_factory=set)
+    votes_for: set[str] = field(default_factory=set)
+    votes_against: set[str] = field(default_factory=set)
 
     # Query history
     query_rounds: int = 0
-    query_history: List[Tuple[int, bool]] = field(default_factory=list)
+    query_history: list[tuple[int, bool]] = field(default_factory=list)
 
     # Result caching
-    result: Optional[ConsensusResult] = None
+    result: ConsensusResult | None = None
 
     def __post_init__(self):
         if self.preference is None:
@@ -239,7 +237,7 @@ class AvalancheConsensus(ConsensusProtocol):
         *,
         node_id: str = "node_0",
         total_nodes: int = 1000,
-        params: Optional[AvalancheParams] = None,
+        params: AvalancheParams | None = None,
         max_rounds: int = 100,
     ):
         self._node_id = node_id
@@ -248,7 +246,7 @@ class AvalancheConsensus(ConsensusProtocol):
         self._max_rounds = max_rounds
 
         # State
-        self._proposals: Dict[str, AvalancheProposal] = {}
+        self._proposals: dict[str, AvalancheProposal] = {}
 
         logger.debug(
             f"Avalanche initialized: n={total_nodes}, k={self._params.k}, "
@@ -331,7 +329,7 @@ class AvalancheConsensus(ConsensusProtocol):
     async def process_query_round(
         self,
         proposal_id: str,
-        votes: Dict[str, bool],
+        votes: dict[str, bool],
     ) -> bool:
         """
         Process a query round with collected votes.
@@ -452,7 +450,7 @@ class AvalancheConsensus(ConsensusProtocol):
 
         return result
 
-    async def get_state(self) -> Dict[str, Any]:
+    async def get_state(self) -> dict[str, Any]:
         """Get current protocol state."""
         base = await super().get_state()
         base.update({
@@ -475,9 +473,9 @@ class AvalancheConsensus(ConsensusProtocol):
 
     def select_sample(
         self,
-        available_peers: List[str],
-        exclude: Optional[Set[str]] = None,
-    ) -> List[str]:
+        available_peers: list[str],
+        exclude: set[str] | None = None,
+    ) -> list[str]:
         """
         Select k random peers for a query round.
 
@@ -496,7 +494,7 @@ class AvalancheConsensus(ConsensusProtocol):
         k = min(self._params.k, len(peers))
         return random.sample(peers, k)
 
-    def get_preference(self, proposal_id: str) -> Optional[AvalanchePreference]:
+    def get_preference(self, proposal_id: str) -> AvalanchePreference | None:
         """Get the current preference for a proposal."""
         if proposal_id not in self._proposals:
             return None
@@ -512,7 +510,7 @@ class AvalancheConsensus(ConsensusProtocol):
         self,
         proposal_id: str,
         query_fn,
-        max_rounds: Optional[int] = None,
+        max_rounds: int | None = None,
     ) -> ConsensusResult:
         """
         Run the full Avalanche consensus loop.

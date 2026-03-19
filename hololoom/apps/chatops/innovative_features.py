@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Innovative ChatOps Features
 ============================
@@ -34,13 +33,13 @@ Usage:
     await dashboard.render("system_metrics")
 """
 
-import logging
 import asyncio
-from typing import Dict, List, Optional, Any, Callable
+import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-import json
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -66,12 +65,12 @@ class WorkflowStep:
     id: str
     type: WorkflowStepType
     name: str
-    config: Dict[str, Any] = field(default_factory=dict)
-    next_step: Optional[str] = None
-    on_error: Optional[str] = None
+    config: dict[str, Any] = field(default_factory=dict)
+    next_step: str | None = None
+    on_error: str | None = None
     timeout_seconds: int = 300
     retry_count: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -81,11 +80,11 @@ class WorkflowExecution:
     execution_id: str
     status: str  # pending, running, completed, failed
     started_at: datetime
-    completed_at: Optional[datetime] = None
-    current_step: Optional[str] = None
-    variables: Dict[str, Any] = field(default_factory=dict)
-    step_results: Dict[str, Any] = field(default_factory=dict)
-    errors: List[str] = field(default_factory=list)
+    completed_at: datetime | None = None
+    current_step: str | None = None
+    variables: dict[str, Any] = field(default_factory=dict)
+    step_results: dict[str, Any] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
 
 
 class WorkflowEngine:
@@ -127,9 +126,9 @@ class WorkflowEngine:
 
     def __init__(self):
         """Initialize workflow engine."""
-        self.workflows: Dict[str, List[WorkflowStep]] = {}
-        self.executions: Dict[str, WorkflowExecution] = {}
-        self.step_handlers: Dict[WorkflowStepType, Callable] = {}
+        self.workflows: dict[str, list[WorkflowStep]] = {}
+        self.executions: dict[str, WorkflowExecution] = {}
+        self.step_handlers: dict[WorkflowStepType, Callable] = {}
 
         # Register default handlers
         self._register_default_handlers()
@@ -139,8 +138,8 @@ class WorkflowEngine:
     def create_workflow(
         self,
         workflow_id: str,
-        steps: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        steps: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Create a workflow from step definitions.
 
@@ -176,7 +175,7 @@ class WorkflowEngine:
     async def execute(
         self,
         workflow_id: str,
-        variables: Optional[Dict[str, Any]] = None
+        variables: dict[str, Any] | None = None
     ) -> WorkflowExecution:
         """
         Execute a workflow.
@@ -299,13 +298,13 @@ class Incident:
     severity: IncidentSeverity
     status: str  # detected, investigating, resolving, resolved
     detected_at: datetime
-    resolved_at: Optional[datetime] = None
-    assigned_to: Optional[str] = None
-    affected_services: List[str] = field(default_factory=list)
-    timeline: List[Dict[str, Any]] = field(default_factory=list)
-    root_cause: Optional[str] = None
-    resolution: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    resolved_at: datetime | None = None
+    assigned_to: str | None = None
+    affected_services: list[str] = field(default_factory=list)
+    timeline: list[dict[str, Any]] = field(default_factory=list)
+    root_cause: str | None = None
+    resolution: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class IncidentManager:
@@ -350,16 +349,16 @@ class IncidentManager:
 
     def __init__(self):
         """Initialize incident manager."""
-        self.incidents: Dict[str, Incident] = {}
-        self.remediation_playbooks: Dict[str, List[str]] = {}
-        self.escalation_chains: Dict[IncidentSeverity, List[str]] = {}
+        self.incidents: dict[str, Incident] = {}
+        self.remediation_playbooks: dict[str, list[str]] = {}
+        self.escalation_chains: dict[IncidentSeverity, list[str]] = {}
 
         # Load default playbooks
         self._load_default_playbooks()
 
         logger.info("IncidentManager initialized")
 
-    async def detect_incident(self, alert: Dict[str, Any]) -> Incident:
+    async def detect_incident(self, alert: dict[str, Any]) -> Incident:
         """
         Detect and create incident from alert.
 
@@ -400,7 +399,7 @@ class IncidentManager:
 
         return incident
 
-    async def auto_remediate(self, incident: Incident) -> Dict[str, Any]:
+    async def auto_remediate(self, incident: Incident) -> dict[str, Any]:
         """
         Attempt automatic remediation.
 
@@ -457,7 +456,7 @@ class IncidentManager:
         self,
         step: str,
         incident: Incident
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute a single remediation step."""
         logger.info(f"Executing remediation step: {step}")
 
@@ -466,7 +465,7 @@ class IncidentManager:
 
         return {"success": True, "output": f"Step '{step}' completed"}
 
-    def _classify_severity(self, alert: Dict[str, Any]) -> IncidentSeverity:
+    def _classify_severity(self, alert: dict[str, Any]) -> IncidentSeverity:
         """Classify incident severity from alert."""
         value = alert.get("value", 0)
         threshold = alert.get("threshold", 0)
@@ -590,13 +589,13 @@ class ChatDashboard:
 
     def __init__(self):
         """Initialize dashboard renderer."""
-        self.templates: Dict[str, Callable] = {}
+        self.templates: dict[str, Callable] = {}
         self._register_default_templates()
 
     async def render(
         self,
         dashboard_name: str,
-        data: Dict[str, Any]
+        data: dict[str, Any]
     ) -> str:
         """
         Render a dashboard.
@@ -618,7 +617,7 @@ class ChatDashboard:
     def _register_default_templates(self) -> None:
         """Register default dashboard templates."""
 
-        def system_metrics(data: Dict[str, Any]) -> str:
+        def system_metrics(data: dict[str, Any]) -> str:
             """System metrics dashboard."""
             def bar(value: float, width: int = 10) -> str:
                 filled = int(value / 100 * width)
@@ -694,7 +693,7 @@ if __name__ == "__main__":
         print(f"Remediation: {remediation['status']}")
 
         postmortem = manager.generate_postmortem(incident)
-        print(f"\nPost-mortem preview:")
+        print("\nPost-mortem preview:")
         print(postmortem[:200] + "...")
         print()
 

@@ -9,15 +9,13 @@ Philosophy: "Great writing isn't written, it's refined."
 
 import logging
 import time
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 from .protocol import (
-    ComposerProtocol,
+    RefinementPass,
+    RefinementStrategy,
     WritingContext,
     WritingResult,
-    RefinementStrategy,
-    RefinementPass,
-    QUALITY_DIMENSIONS
 )
 
 logger = logging.getLogger(__name__)
@@ -34,7 +32,7 @@ class Composer:
     4. Learning (learns which refinements work)
     """
 
-    def __init__(self, refiners: Optional[Dict[RefinementStrategy, Any]] = None):
+    def __init__(self, refiners: dict[RefinementStrategy, Any] | None = None):
         """
         Initialize composer.
 
@@ -66,7 +64,7 @@ class Composer:
             Writing result with refinement history
         """
         start_time = time.time()
-        refinement_passes: List[RefinementPass] = []
+        refinement_passes: list[RefinementPass] = []
         current_text = initial_draft
 
         # Get refiner for strategy
@@ -152,7 +150,7 @@ class Composer:
         self,
         text: str,
         context: WritingContext
-    ) -> tuple[float, Dict[str, float]]:
+    ) -> tuple[float, dict[str, float]]:
         """
         Score content quality across multiple dimensions.
 
@@ -307,7 +305,7 @@ class Composer:
         elegance = 0.5 * variety_score + 0.5 * active_score
         return max(0.3, elegance)
 
-    def _get_dimension_weights(self, context: WritingContext) -> Dict[str, float]:
+    def _get_dimension_weights(self, context: WritingContext) -> dict[str, float]:
         """Get quality dimension weights based on context."""
         # Default weights
         weights = {
@@ -341,7 +339,7 @@ class Composer:
 
         return weights
 
-    def _calculate_confidence(self, refinement_passes: List[RefinementPass]) -> float:
+    def _calculate_confidence(self, refinement_passes: list[RefinementPass]) -> float:
         """Calculate confidence based on refinement trajectory."""
         if not refinement_passes:
             return 0.5

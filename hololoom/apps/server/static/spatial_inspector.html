@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spatial Inspector — HoloLoom</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0f;
+  color: #c8c8d0;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  overflow: hidden;
+  height: 100vh;
+}
+#canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  cursor: grab;
+}
+#canvas:active { cursor: grabbing; }
+
+/* HUD overlay */
+#hud {
+  position: absolute;
+  top: 16px; left: 16px;
+  pointer-events: none;
+  z-index: 10;
+}
+#hud > div {
+  background: rgba(10, 10, 15, 0.85);
+  border: 1px solid #2a2a3a;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+}
+.status-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.dot-disconnected { background: #ff4444; }
+.dot-connecting { background: #ffaa00; animation: pulse 1s infinite; }
+.dot-connected { background: #44ff88; }
+@keyframes pulse { 50% { opacity: 0.4; } }
+
+#trajectory-badge {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 4px 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.traj-exploring { background: #1a3a2a; color: #44ff88; border: 1px solid #2a5a3a; }
+.traj-comparing { background: #3a2a1a; color: #ffaa44; border: 1px solid #5a3a2a; }
+.traj-deep_dive { background: #1a2a3a; color: #4488ff; border: 1px solid #2a3a5a; }
+.traj-deciding { background: #3a1a3a; color: #ff44ff; border: 1px solid #5a2a5a; }
+.traj-wrapping_up { background: #2a2a2a; color: #888888; border: 1px solid #3a3a3a; }
+
+#stats { font-size: 12px; line-height: 1.6; }
+#stats span { color: #8888ff; }
+
+/* Controls */
+#controls {
+  position: absolute;
+  top: 16px; right: 16px;
+  z-index: 10;
+}
+#controls input, #controls button {
+  background: rgba(10, 10, 15, 0.85);
+  border: 1px solid #2a2a3a;
+  border-radius: 4px;
+  color: #c8c8d0;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+#controls input { width: 200px; }
+#controls input:focus { border-color: #4488ff; }
+#controls button {
+  cursor: pointer;
+  margin-left: 6px;
+}
+#controls button:hover { background: #1a1a2a; border-color: #4488ff; }
+
+/* Tooltip */
+#tooltip {
+  position: absolute;
+  display: none;
+  background: rgba(10, 10, 15, 0.95);
+  border: 1px solid #4488ff;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  max-width: 280px;
+  pointer-events: none;
+  z-index: 20;
+  backdrop-filter: blur(8px);
+}
+#tooltip .tt-title { color: #ffffff; font-weight: bold; margin-bottom: 4px; }
+#tooltip .tt-meta { color: #8888aa; font-size: 11px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div id="hud">
+  <div>
+    <span class="status-dot dot-disconnected" id="status-dot"></span>
+    <span id="status-text">disconnected</span>
+  </div>
+  <div id="trajectory-box" style="display:none;">
+    <span id="trajectory-badge"></span>
+    <span id="turn-count" style="margin-left: 8px; font-size: 12px;"></span>
+  </div>
+  <div id="stats">
+    nodes: <span id="stat-nodes">0</span>
+    &nbsp; edges: <span id="stat-edges">0</span>
+    &nbsp; layout: <span id="stat-layout">—</span>
+  </div>
+</div>
+
+<div id="controls">
+  <input id="room-input" type="text" placeholder="room_id" value="default" />
+  <button id="connect-btn">connect</button>
+</div>
+
+<div id="tooltip">
+  <div class="tt-title" id="tt-title"></div>
+  <div class="tt-meta" id="tt-meta"></div>
+</div>
+
+<script>
+// ============================================================================
+// State
+// ============================================================================
+const state = {
+  ws: null,
+  nodes: [],     // { id, x, y, vx, vy, title, importance, style, color, tags, confidence }
+  edges: [],     // { source, target, type, style }
+  nodeMap: {},   // id -> node ref
+  trajectory: null,
+  turnCount: 0,
+  layout: null,
+  // interaction
+  drag: null,
+  pan: { x: 0, y: 0 },
+  panStart: null,
+  zoom: 1,
+  hover: null,
+  // force sim
+  simAlpha: 1,
+};
+
+// ============================================================================
+// Canvas
+// ============================================================================
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth * devicePixelRatio;
+  canvas.height = window.innerHeight * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ============================================================================
+// WebSocket
+// ============================================================================
+function connect(roomId) {
+  if (state.ws) { state.ws.close(); state.ws = null; }
+
+  setStatus('connecting');
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const url = `${proto}//${location.host}/ws/spatial/${roomId}`;
+  const ws = new WebSocket(url);
+
+  ws.onopen = () => {
+    setStatus('connected');
+    state.ws = ws;
+    // request current scene in case we missed updates
+    ws.send(JSON.stringify({ type: 'request_scene' }));
+  };
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'scene_update') handleSceneUpdate(msg);
+    if (msg.type === 'heartbeat') ws.send(JSON.stringify({ type: 'heartbeat' }));
+  };
+
+  ws.onclose = () => setStatus('disconnected');
+  ws.onerror = () => setStatus('disconnected');
+}
+
+function setStatus(s) {
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  dot.className = 'status-dot dot-' + s;
+  text.textContent = s;
+}
+
+document.getElementById('connect-btn').onclick = () => {
+  connect(document.getElementById('room-input').value || 'default');
+};
+document.getElementById('room-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('connect-btn').click();
+});
+
+// ============================================================================
+// Scene update handler
+// ============================================================================
+function handleSceneUpdate(msg) {
+  const overlays = msg.overlays || {};
+  const edges = msg.edges || {};
+
+  // Build nodes
+  const newNodes = [];
+  const newMap = {};
+  for (const [id, o] of Object.entries(overlays)) {
+    const existing = state.nodeMap[id];
+    const node = {
+      id,
+      title: o.title || id,
+      importance: o.importance || 0.5,
+      confidence: o.confidence || 1.0,
+      style: o.style || 'CARD',
+      tags: o.tags || [],
+      color: overlayColor(o),
+      // keep position if node existed, else random
+      x: existing ? existing.x : (Math.random() - 0.5) * 400,
+      y: existing ? existing.y : (Math.random() - 0.5) * 300,
+      vx: 0, vy: 0,
+      radius: 12 + (o.importance || 0.5) * 20,
+    };
+    newNodes.push(node);
+    newMap[id] = node;
+  }
+
+  // Build edges
+  const newEdges = [];
+  for (const [id, e] of Object.entries(edges)) {
+    if (newMap[e.source_overlay_id] && newMap[e.target_overlay_id]) {
+      newEdges.push({
+        source: e.source_overlay_id,
+        target: e.target_overlay_id,
+        type: e.relationship_type || 'RELATED',
+        style: e.style || 'LINE',
+        color: edgeColor(e),
+      });
+    }
+  }
+
+  state.nodes = newNodes;
+  state.edges = newEdges;
+  state.nodeMap = newMap;
+  state.simAlpha = 1; // restart simulation
+
+  // Trajectory + metadata
+  state.trajectory = msg.trajectory || null;
+  state.turnCount = msg.turn_count || 0;
+  state.layout = msg.current_layout || null;
+
+  updateHUD();
+}
+
+function overlayColor(o) {
+  if (o.primary_color) {
+    const c = o.primary_color;
+    return `rgba(${(c.r*255)|0}, ${(c.g*255)|0}, ${(c.b*255)|0}, ${c.a || 0.9})`;
+  }
+  // fallback by importance
+  const imp = o.importance || 0.5;
+  const h = 220 + imp * 60;  // blue -> purple
+  return `hsla(${h}, 70%, ${50 + imp * 20}%, 0.9)`;
+}
+
+function edgeColor(e) {
+  if (e.color) {
+    const c = e.color;
+    return `rgba(${(c.r*255)|0}, ${(c.g*255)|0}, ${(c.b*255)|0}, ${c.a || 0.4})`;
+  }
+  const colors = {
+    RELATED: 'rgba(100, 100, 160, 0.3)',
+    COMPARED: 'rgba(255, 170, 68, 0.4)',
+    LEADS_TO: 'rgba(68, 136, 255, 0.4)',
+  };
+  return colors[e.type] || 'rgba(100, 100, 160, 0.3)';
+}
+
+function updateHUD() {
+  document.getElementById('stat-nodes').textContent = state.nodes.length;
+  document.getElementById('stat-edges').textContent = state.edges.length;
+  document.getElementById('stat-layout').textContent = state.layout || '—';
+
+  const tbox = document.getElementById('trajectory-box');
+  const badge = document.getElementById('trajectory-badge');
+  const turns = document.getElementById('turn-count');
+  if (state.trajectory) {
+    tbox.style.display = '';
+    const t = String(state.trajectory).toLowerCase();
+    badge.textContent = t.replace('_', ' ');
+    badge.className = 'traj-' + t;
+    turns.textContent = `turn ${state.turnCount}`;
+  } else {
+    tbox.style.display = 'none';
+  }
+}
+
+// ============================================================================
+// Force simulation (simple spring + repulsion)
+// ============================================================================
+function simulate() {
+  if (state.simAlpha < 0.001) return;
+  state.simAlpha *= 0.995;
+
+  const nodes = state.nodes;
+  const edges = state.edges;
+  const alpha = state.simAlpha;
+
+  // Repulsion (all pairs)
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      let dx = b.x - a.x, dy = b.y - a.y;
+      let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      let force = -800 / (dist * dist);
+      let fx = (dx / dist) * force * alpha;
+      let fy = (dy / dist) * force * alpha;
+      a.vx -= fx; a.vy -= fy;
+      b.vx += fx; b.vy += fy;
+    }
+  }
+
+  // Spring attraction (edges)
+  for (const e of edges) {
+    const a = state.nodeMap[e.source], b = state.nodeMap[e.target];
+    if (!a || !b) continue;
+    let dx = b.x - a.x, dy = b.y - a.y;
+    let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    let force = (dist - 120) * 0.02 * alpha;
+    let fx = (dx / dist) * force;
+    let fy = (dy / dist) * force;
+    a.vx += fx; a.vy += fy;
+    b.vx -= fx; b.vy -= fy;
+  }
+
+  // Center gravity
+  for (const n of nodes) {
+    n.vx -= n.x * 0.001 * alpha;
+    n.vy -= n.y * 0.001 * alpha;
+  }
+
+  // Integrate
+  for (const n of nodes) {
+    if (state.drag && state.drag.id === n.id) continue;
+    n.vx *= 0.9;
+    n.vy *= 0.9;
+    n.x += n.vx;
+    n.y += n.vy;
+  }
+}
+
+// ============================================================================
+// Rendering
+// ============================================================================
+function draw() {
+  const W = window.innerWidth, H = window.innerHeight;
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.translate(W / 2 + state.pan.x, H / 2 + state.pan.y);
+  ctx.scale(state.zoom, state.zoom);
+
+  // Edges
+  for (const e of state.edges) {
+    const a = state.nodeMap[e.source], b = state.nodeMap[e.target];
+    if (!a || !b) continue;
+
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+
+    // Arrows for LEADS_TO
+    if (e.type === 'LEADS_TO') {
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / dist, uy = dy / dist;
+      const tx = b.x - ux * b.radius, ty = b.y - uy * b.radius;
+      ctx.lineTo(tx, ty);
+      // arrowhead
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - ux * 8 + uy * 5, ty - uy * 8 - ux * 5);
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - ux * 8 - uy * 5, ty - uy * 8 + ux * 5);
+    } else {
+      ctx.lineTo(b.x, b.y);
+    }
+
+    ctx.strokeStyle = e.color;
+    ctx.lineWidth = e.style === 'BEAM' ? 2.5 : 1.5;
+    if (e.style === 'DASHED') ctx.setLineDash([6, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Nodes
+  for (const n of state.nodes) {
+    const isHover = state.hover === n.id;
+
+    // Glow
+    if (n.importance > 0.7 || isHover) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius + 8, 0, Math.PI * 2);
+      const glow = ctx.createRadialGradient(n.x, n.y, n.radius, n.x, n.y, n.radius + 8);
+      glow.addColorStop(0, n.color);
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.fill();
+    }
+
+    // Circle
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+    ctx.fillStyle = isHover ? '#2a2a4a' : '#14141f';
+    ctx.fill();
+    ctx.strokeStyle = n.color;
+    ctx.lineWidth = isHover ? 2.5 : 1.5;
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = '#e0e0e8';
+    ctx.font = `${isHover ? 13 : 11}px 'SF Mono', 'Fira Code', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const label = n.title.length > 16 ? n.title.slice(0, 14) + '…' : n.title;
+    ctx.fillText(label, n.x, n.y);
+  }
+
+  ctx.restore();
+}
+
+// ============================================================================
+// Interaction
+// ============================================================================
+function screenToWorld(sx, sy) {
+  const W = window.innerWidth, H = window.innerHeight;
+  return {
+    x: (sx - W / 2 - state.pan.x) / state.zoom,
+    y: (sy - H / 2 - state.pan.y) / state.zoom,
+  };
+}
+
+function nodeAt(wx, wy) {
+  for (let i = state.nodes.length - 1; i >= 0; i--) {
+    const n = state.nodes[i];
+    const dx = n.x - wx, dy = n.y - wy;
+    if (dx * dx + dy * dy < n.radius * n.radius) return n;
+  }
+  return null;
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  const { x, y } = screenToWorld(e.clientX, e.clientY);
+  const hit = nodeAt(x, y);
+  if (hit) {
+    state.drag = hit;
+    state.simAlpha = Math.max(state.simAlpha, 0.3);
+  } else {
+    state.panStart = { x: e.clientX - state.pan.x, y: e.clientY - state.pan.y };
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const { x, y } = screenToWorld(e.clientX, e.clientY);
+
+  if (state.drag) {
+    state.drag.x = x;
+    state.drag.y = y;
+    state.drag.vx = 0;
+    state.drag.vy = 0;
+  } else if (state.panStart) {
+    state.pan.x = e.clientX - state.panStart.x;
+    state.pan.y = e.clientY - state.panStart.y;
+  } else {
+    // Hover
+    const hit = nodeAt(x, y);
+    state.hover = hit ? hit.id : null;
+    showTooltip(hit, e.clientX, e.clientY);
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  state.drag = null;
+  state.panStart = null;
+});
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const factor = e.deltaY > 0 ? 0.92 : 1.08;
+  state.zoom = Math.max(0.1, Math.min(5, state.zoom * factor));
+}, { passive: false });
+
+function showTooltip(node, sx, sy) {
+  const tt = document.getElementById('tooltip');
+  if (!node) { tt.style.display = 'none'; return; }
+
+  document.getElementById('tt-title').textContent = node.title;
+  let meta = `importance: ${node.importance.toFixed(2)}`;
+  meta += `\nconfidence: ${node.confidence.toFixed(2)}`;
+  meta += `\nstyle: ${node.style}`;
+  if (node.tags.length) meta += `\ntags: ${node.tags.join(', ')}`;
+  document.getElementById('tt-meta').textContent = meta;
+
+  tt.style.display = 'block';
+  tt.style.left = (sx + 16) + 'px';
+  tt.style.top = (sy - 10) + 'px';
+}
+
+// ============================================================================
+// Main loop
+// ============================================================================
+function loop() {
+  simulate();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+// Auto-connect on load
+connect(document.getElementById('room-input').value || 'default');
+</script>
+</body>
+</html>

@@ -20,20 +20,18 @@ Date: 2025-10-29 (Phase 3 Implementation)
 """
 
 import logging
-from typing import Dict, List, Any, Optional, Set, Tuple
-from dataclasses import dataclass, field
-from collections import defaultdict, Counter
-import time
 import math
+import time
+from collections import Counter
+from dataclasses import dataclass, field
+from typing import Any
+
+from hololoom.config import Config
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.protocols.types import MemoryShard, Query
 
 # HoloLoom components
-from hololoom.recursive.loop_integration import (
-    LearningLoopEngine,
-    LearningLoopConfig
-)
-from hololoom.fabric.spacetime import Spacetime
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.config import Config
+from hololoom.recursive.loop_integration import LearningLoopConfig, LearningLoopEngine
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +116,7 @@ class HotPatternTracker:
         self.decay_interval = decay_interval
 
         # Usage records by element ID
-        self.usage: Dict[str, UsageRecord] = {}
+        self.usage: dict[str, UsageRecord] = {}
 
         # Last decay time
         self.last_decay = time.time()
@@ -178,9 +176,9 @@ class HotPatternTracker:
 
     def get_hot_patterns(
         self,
-        element_type: Optional[str] = None,
+        element_type: str | None = None,
         top_k: int = 10
-    ) -> List[UsageRecord]:
+    ) -> list[UsageRecord]:
         """
         Get hottest patterns (most valuable knowledge).
 
@@ -211,7 +209,7 @@ class HotPatternTracker:
         self,
         age_threshold: float = 3600.0,  # 1 hour
         top_k: int = 10
-    ) -> List[UsageRecord]:
+    ) -> list[UsageRecord]:
         """
         Get coldest patterns (stale knowledge).
 
@@ -280,7 +278,7 @@ class HotPatternTracker:
 
         return len(to_remove)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get tracker statistics"""
         if not self.usage:
             return {
@@ -314,8 +312,8 @@ class HotPatternTracker:
 @dataclass
 class RetrievalWeights:
     """Dynamic retrieval weights based on usage"""
-    thread_weights: Dict[str, float] = field(default_factory=dict)
-    motif_weights: Dict[str, float] = field(default_factory=dict)
+    thread_weights: dict[str, float] = field(default_factory=dict)
+    motif_weights: dict[str, float] = field(default_factory=dict)
     base_weight: float = 1.0  # Default weight for unknown elements
 
 
@@ -398,9 +396,9 @@ class AdaptiveRetriever:
 
     def boost_shards(
         self,
-        shards: List[MemoryShard],
-        query_motifs: List[str]
-    ) -> List[Tuple[MemoryShard, float]]:
+        shards: list[MemoryShard],
+        query_motifs: list[str]
+    ) -> list[tuple[MemoryShard, float]]:
         """
         Apply weights to shards based on hot patterns.
 
@@ -493,10 +491,10 @@ class HotPatternFeedbackEngine:
     def __init__(
         self,
         cfg: Config,
-        shards: Optional[List[MemoryShard]] = None,
-        memory: Optional[Any] = None,
-        loop_config: Optional[LearningLoopConfig] = None,
-        hot_config: Optional[HotPatternConfig] = None
+        shards: list[MemoryShard] | None = None,
+        memory: Any | None = None,
+        loop_config: LearningLoopConfig | None = None,
+        hot_config: HotPatternConfig | None = None
     ):
         """
         Initialize hot pattern feedback engine.
@@ -515,7 +513,7 @@ class HotPatternFeedbackEngine:
         self.hot_config = hot_config or HotPatternConfig()
 
         # Create components
-        self.learning_engine: Optional[LearningLoopEngine] = None
+        self.learning_engine: LearningLoopEngine | None = None
         self.hot_tracker = HotPatternTracker(
             decay_rate=self.hot_config.decay_rate
         )
@@ -597,13 +595,13 @@ class HotPatternFeedbackEngine:
 
     def get_hot_patterns(
         self,
-        element_type: Optional[str] = None,
+        element_type: str | None = None,
         top_k: int = 10
-    ) -> List[UsageRecord]:
+    ) -> list[UsageRecord]:
         """Get hottest patterns"""
         return self.hot_tracker.get_hot_patterns(element_type, top_k)
 
-    def get_hot_stats(self) -> Dict[str, Any]:
+    def get_hot_stats(self) -> dict[str, Any]:
         """Get complete statistics"""
         learning_stats = self.learning_engine.get_learning_stats() if self.learning_engine else {}
         hot_stats = self.hot_tracker.get_statistics()
@@ -617,9 +615,9 @@ class HotPatternFeedbackEngine:
 
     def get_weighted_shards(
         self,
-        query_motifs: List[str],
+        query_motifs: list[str],
         top_k: int = 5
-    ) -> List[Tuple[MemoryShard, float]]:
+    ) -> list[tuple[MemoryShard, float]]:
         """Get shards weighted by hot patterns"""
         weighted = self.adaptive_retriever.boost_shards(self.shards, query_motifs)
         return weighted[:top_k]

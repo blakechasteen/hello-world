@@ -10,7 +10,8 @@ Author: Claude Code
 Date: November 7, 2025 (Elegance Track - Day 3)
 """
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
+
 import numpy as np
 
 # Import BanditStrategy from shared types (no circular dependency)
@@ -80,8 +81,8 @@ class TSBandit:
     def select_with_strategy(
         self,
         neural_probs: np.ndarray,
-        strategy: Optional[BanditStrategy] = None
-    ) -> Tuple[int, Dict[str, Any]]:
+        strategy: BanditStrategy | None = None
+    ) -> tuple[int, dict[str, Any]]:
         """
         Select arm using specified strategy.
 
@@ -150,7 +151,9 @@ class TSBandit:
 
     def save(self, path: str) -> None:
         """Atomic save of bandit state to JSON."""
-        import json, tempfile, os
+        import json
+        import os
+        import tempfile
         state = {
             "n_arms": self.n_arms,
             "strategy": self.strategy.value,
@@ -170,7 +173,8 @@ class TSBandit:
     @classmethod
     def load(cls, path: str) -> "TSBandit":
         """Load bandit state from JSON. Returns fresh bandit if file missing/corrupt."""
-        import json, os
+        import json
+        import os
         if not os.path.exists(path):
             raise FileNotFoundError(path)
         with open(path) as f:
@@ -186,7 +190,7 @@ class TSBandit:
         bandit.pulls = np.array(state["pulls"])
         return bandit
 
-    def get_stats(self) -> Dict[int, Dict[str, float]]:
+    def get_stats(self) -> dict[int, dict[str, float]]:
         """Get statistics for all arms."""
         stats = {}
         for i in range(len(self.success)):

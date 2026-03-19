@@ -17,18 +17,20 @@ Architecture:
     - Embedder functions -> Calculus-compatible interface
 """
 
-from typing import Dict, Any, Optional, Callable, List
 import logging
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 
 from . import (
-    SemanticFlowCalculus,
-    SemanticSpectrum,
-    EthicalSemanticPolicy,
     COMPASSIONATE_COMMUNICATION,
     SCIENTIFIC_DISCOURSE,
     THERAPEUTIC_DIALOGUE,
+    EthicalSemanticPolicy,
     GeometricIntegrator,
+    SemanticFlowCalculus,
+    SemanticSpectrum,
 )
 
 logger = logging.getLogger(__name__)
@@ -138,9 +140,9 @@ class SemanticAnalyzer:
         self,
         calculus: SemanticFlowCalculus,
         spectrum: SemanticSpectrum,
-        integrator: Optional[GeometricIntegrator] = None,
-        policy: Optional[EthicalSemanticPolicy] = None,
-        config: Optional[SemanticCalculusConfig] = None,
+        integrator: GeometricIntegrator | None = None,
+        policy: EthicalSemanticPolicy | None = None,
+        config: SemanticCalculusConfig | None = None,
     ):
         """
         Initialize semantic analyzer.
@@ -160,7 +162,7 @@ class SemanticAnalyzer:
 
         logger.info("SemanticAnalyzer initialized")
 
-    def analyze_text(self, text: str) -> Dict[str, Any]:
+    def analyze_text(self, text: str) -> dict[str, Any]:
         """
         Complete semantic analysis of text.
 
@@ -195,7 +197,7 @@ class SemanticAnalyzer:
 
         return result
 
-    def extract_features(self, text: str) -> Dict[str, Any]:
+    def extract_features(self, text: str) -> dict[str, Any]:
         """
         Extract features for DotPlasma integration.
 
@@ -256,7 +258,7 @@ class SemanticAnalyzer:
 
 def create_semantic_analyzer(
     embed_fn: Callable,
-    config: Optional[SemanticCalculusConfig] = None,
+    config: SemanticCalculusConfig | None = None,
 ) -> SemanticAnalyzer:
     """
     Factory function to create complete semantic analyzer.
@@ -325,7 +327,7 @@ def create_semantic_analyzer(
 # ResonanceShed Adapter
 # ============================================================================
 
-def create_semantic_thread(analyzer: SemanticAnalyzer, text: str, weight: float = 1.0) -> Dict[str, Any]:
+def create_semantic_thread(analyzer: SemanticAnalyzer, text: str, weight: float = 1.0) -> dict[str, Any]:
     """
     Create a semantic flow thread for ResonanceShed.
 
@@ -358,7 +360,7 @@ def create_semantic_thread(analyzer: SemanticAnalyzer, text: str, weight: float 
 # Convenience Functions
 # ============================================================================
 
-def quick_analysis(text: str, embed_fn: Callable) -> Dict[str, Any]:
+def quick_analysis(text: str, embed_fn: Callable) -> dict[str, Any]:
     """
     Quick one-shot semantic analysis.
 
@@ -373,7 +375,7 @@ def quick_analysis(text: str, embed_fn: Callable) -> Dict[str, Any]:
     return analyzer.analyze_text(text)
 
 
-def get_cache_stats(analyzer: SemanticAnalyzer) -> Dict[str, Any]:
+def get_cache_stats(analyzer: SemanticAnalyzer) -> dict[str, Any]:
     """
     Get cache statistics from analyzer.
 

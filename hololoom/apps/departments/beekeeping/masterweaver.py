@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 MasterWeaver Department - Beekeeping entity extraction and knowledge management.
 
@@ -19,22 +18,22 @@ Design Philosophy:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional, Tuple, Set
+
+import json
+import logging
+import re
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-import json
-import re
-import logging
-from dataclasses import dataclass
+from typing import Any
 
 from ..base import BaseDepartment
 from ..protocol import (
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
     VerificationResult,
-    ConfidenceMetadata,
-    ConfidenceLevel,
-    DepartmentConfig
 )
 
 logger = logging.getLogger(__name__)
@@ -52,8 +51,8 @@ class ExtractedEntity:
     category: str  # e.g., "colony_members", "hive_components"
     confidence: float
     source: str  # "llm", "pattern", "hybrid"
-    context: List[str]
-    metadata: Dict[str, Any]
+    context: list[str]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -106,11 +105,11 @@ class MasterWeaverDepartment(BaseDepartment):
 
     def __init__(
         self,
-        taxonomy_path: Optional[Path] = None,
+        taxonomy_path: Path | None = None,
         enable_llm: bool = True,
         ollama_endpoint: str = "http://localhost:11434",
-        openai_api_key: Optional[str] = None,
-        dept_config: Optional[DepartmentConfig] = None
+        openai_api_key: str | None = None,
+        dept_config: DepartmentConfig | None = None
     ):
         """
         Initialize MasterWeaver Department.
@@ -141,7 +140,7 @@ class MasterWeaverDepartment(BaseDepartment):
             taxonomy_path = Path(__file__).parent / "taxonomy.json"
 
         self.taxonomy_path = taxonomy_path
-        self.taxonomy: Dict[str, Any] = {}
+        self.taxonomy: dict[str, Any] = {}
 
         # LLM configuration
         self.enable_llm = enable_llm
@@ -149,11 +148,11 @@ class MasterWeaverDepartment(BaseDepartment):
         self.openai_api_key = openai_api_key
 
         # LLM clients (lazy initialization)
-        self._ollama_client: Optional[Any] = None
-        self._openai_client: Optional[Any] = None
+        self._ollama_client: Any | None = None
+        self._openai_client: Any | None = None
 
         # Pattern cache
-        self._compiled_patterns: Dict[str, re.Pattern] = {}
+        self._compiled_patterns: dict[str, re.Pattern] = {}
 
         # Extraction statistics
         self._extraction_stats = {
@@ -180,7 +179,7 @@ class MasterWeaverDepartment(BaseDepartment):
 
         # Load taxonomy
         logger.info(f"Loading taxonomy from {self.taxonomy_path}")
-        with open(self.taxonomy_path, 'r') as f:
+        with open(self.taxonomy_path) as f:
             self.taxonomy = json.load(f)
 
         # Compile regex patterns
@@ -448,7 +447,7 @@ class MasterWeaverDepartment(BaseDepartment):
     async def _extract_entities(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Extract entities using specified strategy."""
         text = request.parameters.get("text", "")
         strategy = request.parameters.get("strategy", "hybrid")
@@ -512,7 +511,7 @@ class MasterWeaverDepartment(BaseDepartment):
     async def _validate_taxonomy(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Validate entities against taxonomy."""
         entities = request.parameters.get("entities", [])
 
@@ -562,7 +561,7 @@ class MasterWeaverDepartment(BaseDepartment):
     async def _enrich_knowledge(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Enrich entities with relationships."""
         entities = request.parameters.get("entities", [])
 
@@ -604,7 +603,7 @@ class MasterWeaverDepartment(BaseDepartment):
     # Pattern-Based Extraction
     # ========================================================================
 
-    def _extract_entities_pattern(self, text: str) -> List[ExtractedEntity]:
+    def _extract_entities_pattern(self, text: str) -> list[ExtractedEntity]:
         """Extract entities using regex patterns from taxonomy."""
         entities = []
 
@@ -659,8 +658,8 @@ class MasterWeaverDepartment(BaseDepartment):
     def _get_compiled_patterns(
         self,
         entity_type: str,
-        entity_data: Dict[str, Any]
-    ) -> List[re.Pattern]:
+        entity_data: dict[str, Any]
+    ) -> list[re.Pattern]:
         """Get compiled patterns for entity type."""
         if entity_type in self._compiled_patterns:
             return self._compiled_patterns[entity_type]
@@ -676,7 +675,7 @@ class MasterWeaverDepartment(BaseDepartment):
         text: str,
         start: int,
         end: int,
-        boost_terms: List[str]
+        boost_terms: list[str]
     ) -> float:
         """Calculate confidence boost based on context."""
         if not boost_terms:
@@ -699,7 +698,7 @@ class MasterWeaverDepartment(BaseDepartment):
         start: int,
         end: int,
         window: int = 30
-    ) -> List[str]:
+    ) -> list[str]:
         """Extract context words around entity."""
         context_start = max(0, start - window)
         context_end = min(len(text), end + window)
@@ -713,7 +712,7 @@ class MasterWeaverDepartment(BaseDepartment):
     # LLM-Based Extraction
     # ========================================================================
 
-    async def _extract_entities_llm(self, text: str) -> List[ExtractedEntity]:
+    async def _extract_entities_llm(self, text: str) -> list[ExtractedEntity]:
         """Extract entities using LLM (Ollama with OpenAI fallback)."""
         if not self.enable_llm:
             logger.warning("LLM extraction disabled")
@@ -761,7 +760,7 @@ class MasterWeaverDepartment(BaseDepartment):
                 logger.warning(f"Failed to initialize OpenAI client: {e}")
                 self._openai_client = None
 
-    async def _extract_with_ollama(self, text: str) -> List[ExtractedEntity]:
+    async def _extract_with_ollama(self, text: str) -> list[ExtractedEntity]:
         """Extract entities using Ollama."""
         # Build prompt
         prompt = self._build_extraction_prompt(text)
@@ -776,7 +775,7 @@ class MasterWeaverDepartment(BaseDepartment):
         entities = self._parse_llm_response(response.get("response", ""), source="llm")
         return entities
 
-    async def _extract_with_openai(self, text: str) -> List[ExtractedEntity]:
+    async def _extract_with_openai(self, text: str) -> list[ExtractedEntity]:
         """Extract entities using OpenAI."""
         # Build prompt
         prompt = self._build_extraction_prompt(text)
@@ -824,7 +823,7 @@ Format as JSON:
         self,
         response: str,
         source: str
-    ) -> List[ExtractedEntity]:
+    ) -> list[ExtractedEntity]:
         """Parse LLM response into entities."""
         entities = []
 
@@ -862,9 +861,9 @@ Format as JSON:
 
     def _validate_entities(
         self,
-        entities: List[ExtractedEntity],
+        entities: list[ExtractedEntity],
         strict: bool = True
-    ) -> List[ExtractedEntity]:
+    ) -> list[ExtractedEntity]:
         """Validate entities against taxonomy."""
         validated = []
 
@@ -889,7 +888,7 @@ Format as JSON:
     def _is_valid_entity(
         self,
         entity: ExtractedEntity
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Check if entity is valid according to taxonomy."""
         # Find entity in taxonomy
         for category, entity_types in self.taxonomy.get("entity_types", {}).items():
@@ -943,7 +942,7 @@ Format as JSON:
 
     def _calculate_extraction_confidence(
         self,
-        entities: List[ExtractedEntity],
+        entities: list[ExtractedEntity],
         strategy: str,
         text_length: int
     ) -> ConfidenceMetadata:
@@ -983,12 +982,12 @@ Format as JSON:
 
     def _merge_entities(
         self,
-        pattern_entities: List[ExtractedEntity],
-        llm_entities: List[ExtractedEntity]
-    ) -> List[ExtractedEntity]:
+        pattern_entities: list[ExtractedEntity],
+        llm_entities: list[ExtractedEntity]
+    ) -> list[ExtractedEntity]:
         """Merge entities from pattern and LLM extraction."""
         merged = []
-        seen_texts: Set[str] = set()
+        seen_texts: set[str] = set()
 
         # Add pattern entities first (higher precision)
         for entity in pattern_entities:
@@ -1006,8 +1005,8 @@ Format as JSON:
 
     def _extract_relationships(
         self,
-        entities: List[Dict[str, Any]]
-    ) -> List[EntityRelationship]:
+        entities: list[dict[str, Any]]
+    ) -> list[EntityRelationship]:
         """Extract relationships between entities."""
         relationships = []
 
@@ -1040,10 +1039,10 @@ Format as JSON:
 
     def _infer_relationship(
         self,
-        source: Dict[str, Any],
-        target: Dict[str, Any],
-        rel_types: Dict[str, Any]
-    ) -> Tuple[Optional[str], float, str]:
+        source: dict[str, Any],
+        target: dict[str, Any],
+        rel_types: dict[str, Any]
+    ) -> tuple[str | None, float, str]:
         """Infer relationship between two entities."""
         source_type = source.get("type", "")
         target_type = target.get("type", "")
@@ -1077,9 +1076,9 @@ Format as JSON:
 
     def _build_reasoning(
         self,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         request: DepartmentRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Build reasoning dict for response."""
         return {
             "extraction_strategy": result.get("strategy", "unknown"),
@@ -1090,9 +1089,9 @@ Format as JSON:
 
     async def _build_session_state(
         self,
-        session_id: Optional[str],
-        result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        session_id: str | None,
+        result: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Build session state update."""
         if not session_id:
             return None

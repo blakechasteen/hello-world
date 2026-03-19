@@ -13,11 +13,10 @@ Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from enum import Enum
 import random
-from collections import defaultdict
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 
 class RoutingVariant(Enum):
@@ -32,7 +31,7 @@ class RoutingVariant(Enum):
 class ABTestConfig:
     """Configuration for A/B test"""
     test_name: str
-    variants: Dict[RoutingVariant, float]  # variant → traffic %
+    variants: dict[RoutingVariant, float]  # variant → traffic %
     control_variant: RoutingVariant = RoutingVariant.CONTROL
     min_sample_size: int = 100
     confidence_threshold: float = 0.95
@@ -108,15 +107,15 @@ class ABTestRouter:
             raise ValueError(f"Traffic splits must sum to 1.0, got {total_traffic}")
 
         # Metrics by variant
-        self._metrics: Dict[RoutingVariant, VariantMetrics] = {
+        self._metrics: dict[RoutingVariant, VariantMetrics] = {
             variant: VariantMetrics(variant=variant)
             for variant in config.variants.keys()
         }
 
         # User assignments (sticky assignments for consistency)
-        self._user_assignments: Dict[str, RoutingVariant] = {}
+        self._user_assignments: dict[str, RoutingVariant] = {}
 
-    def assign_variant(self, user_id: Optional[str] = None) -> RoutingVariant:
+    def assign_variant(self, user_id: str | None = None) -> RoutingVariant:
         """
         Assign user to routing variant.
 
@@ -176,7 +175,7 @@ class ABTestRouter:
             metrics.avg_latency_ms * (n - 1) + latency_ms
         ) / n
 
-    def get_results(self) -> Dict[str, Any]:
+    def get_results(self) -> dict[str, Any]:
         """
         Get A/B test results with statistical analysis.
 
@@ -276,7 +275,7 @@ class ABTestRouter:
         else:
             return 0.5 + (z / 1.96) * 0.45  # Linear interpolation
 
-    def promote_winner(self) -> Optional[RoutingVariant]:
+    def promote_winner(self) -> RoutingVariant | None:
         """
         Promote winning variant if test is conclusive.
 
@@ -312,7 +311,7 @@ class ABTestRouter:
         }
         self._user_assignments.clear()
 
-    def export_results(self) -> Dict[str, Any]:
+    def export_results(self) -> dict[str, Any]:
         """
         Export full A/B test results for analysis.
 

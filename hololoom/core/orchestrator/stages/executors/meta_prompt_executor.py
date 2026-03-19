@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Meta-Prompt Executor - Step 0: Query Enhancement
 =================================================
@@ -17,7 +16,8 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import logging
-from typing import Callable, Optional, Any, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols import BaseStageExecutor
 
@@ -52,9 +52,9 @@ class MetaPromptExecutor(BaseStageExecutor):
     def __init__(
         self,
         enable_enhancement: bool = False,
-        proto_llm_call: Optional[Callable[[str], Any]] = None,
-        logger: Optional[logging.Logger] = None,
-        emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+        proto_llm_call: Callable[[str], Any] | None = None,
+        logger: logging.Logger | None = None,
+        emit_stage_event: Callable[[int, str, float], None] | None = None,
     ):
         """
         Initialize Meta-Prompt Executor.
@@ -69,7 +69,7 @@ class MetaPromptExecutor(BaseStageExecutor):
         self.enable_enhancement = enable_enhancement
         self.proto_llm_call = proto_llm_call
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute meta-prompt enhancement.
 

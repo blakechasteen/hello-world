@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Neo4j Memory Store - Thread-Based Graph Storage
 ===============================================
@@ -12,14 +13,13 @@ Thread Types:
 """
 
 import logging
-from typing import Dict, List, Optional
 from datetime import datetime
 
 from ..protocol import Memory, MemoryQuery, RetrievalResult, Strategy
 
 # Optional neo4j import
 try:
-    from neo4j import GraphDatabase, Driver
+    from neo4j import Driver, GraphDatabase
     _HAVE_NEO4J = True
 except ImportError:
     GraphDatabase = None
@@ -43,7 +43,7 @@ class Neo4jMemoryStore:
     
     Requires: pip install neo4j
     """
-    
+
     def __init__(
         self,
         uri: str = "bolt://localhost:7687",
@@ -55,16 +55,16 @@ class Neo4jMemoryStore:
             raise RuntimeError(
                 "neo4j driver not installed. Install with: pip install neo4j"
             )
-        
+
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         self.database = database
         self.logger = logging.getLogger(__name__)
-        
+
         # Create constraints and indexes
         self._setup_schema()
-        
+
         self.logger.info(f"Neo4j store initialized: {uri}/{database}")
-    
+
     def _setup_schema(self):
         """Create indexes and constraints."""
         with self.driver.session(database=self.database) as session:
@@ -74,7 +74,7 @@ class Neo4jMemoryStore:
                 session.run("CREATE CONSTRAINT thread_name IF NOT EXISTS FOR (t:THREAD) REQUIRE (t.type, t.name) IS UNIQUE")
             except Exception as e:
                 self.logger.warning(f"Schema setup warning: {e}")
-    
+
     async def store(self, memory: Memory) -> str:
         """
         Store memory as KNOT crossing THREADs.
@@ -88,7 +88,7 @@ class Neo4jMemoryStore:
         with self.driver.session(database=self.database) as session:
             # Generate ID if needed
             mem_id = memory.id or f"knot_{memory.timestamp.isoformat()}"
-            
+
             # Create KNOT node
             session.run("""
                 CREATE (k:KNOT {
@@ -103,14 +103,14 @@ class Neo4jMemoryStore:
                 'timestamp': memory.timestamp.isoformat(),
                 'user_id': memory.metadata.get('user_id', 'default')
             })
-            
+
             # Create thread connections
             self._connect_threads(session, mem_id, memory.context)
-            
+
             self.logger.info(f"Stored KNOT {mem_id} with threads")
             return mem_id
 
-    async def store_many(self, memories: List[Memory]) -> List[str]:
+    async def store_many(self, memories: list[Memory]) -> list[str]:
         """Store multiple memories (batch operation)."""
         memory_ids = []
         for memory in memories:
@@ -118,32 +118,32 @@ class Neo4jMemoryStore:
             memory_ids.append(memory_id)
         return memory_ids
 
-    async def get_by_id(self, memory_id: str) -> Optional[Memory]:
+    async def get_by_id(self, memory_id: str) -> Memory | None:
         """Get a specific memory by ID."""
         with self.driver.session(database=self.database) as session:
             result = session.run("""
                 MATCH (k:KNOT {id: $id})
                 RETURN k.id AS id, k.text AS text, k.timestamp AS timestamp, k.user_id AS user_id
             """, {'id': memory_id})
-            
+
             record = result.single()
             if not record:
                 return None
-            
+
             # Convert timestamp
             timestamp = datetime.fromisoformat(record['timestamp'])
-            
+
             # Get thread connections for context
             thread_result = session.run("""
                 MATCH (k:KNOT {id: $id})-[r]->(t:THREAD)
                 RETURN type(r) AS rel_type, t.type AS thread_type, t.name AS thread_name
             """, {'id': memory_id})
-            
+
             context = {}
             for thread_record in thread_result:
                 thread_type = thread_record['thread_type'].lower()
                 thread_name = thread_record['thread_name']
-                
+
                 if thread_type == 'time':
                     context['time'] = thread_name
                 elif thread_type == 'place':
@@ -160,7 +160,7 @@ class Neo4jMemoryStore:
                     if 'symbols' not in context:
                         context['symbols'] = []
                     context['symbols'].append(thread_name)
-            
+
             return Memory(
                 id=record['id'],
                 text=record['text'],
@@ -168,8 +168,8 @@ class Neo4jMemoryStore:
                 context=context,
                 metadata={'user_id': record['user_id']}
             )
-    
-    def _connect_threads(self, session, knot_id: str, context: Dict):
+
+    def _connect_threads(self, session, knot_id: str, context: dict):
         """Connect KNOT to THREADs based on context."""
         # TIME thread
         if 'time' in context:
@@ -179,7 +179,7 @@ class Neo4jMemoryStore:
                 MATCH (k:KNOT {id: $knot_id})
                 MERGE (k)-[:IN_TIME]->(t)
             """, {'knot_id': knot_id, 'name': str(context['time'])})
-        
+
         # PLACE thread
         if 'place' in context:
             session.run("""
@@ -188,7 +188,7 @@ class Neo4jMemoryStore:
                 MATCH (k:KNOT {id: $knot_id})
                 MERGE (k)-[:AT_PLACE]->(t)
             """, {'knot_id': knot_id, 'name': str(context['place'])})
-        
+
         # ACTOR threads (can be list)
         people = context.get('people', [])
         if isinstance(people, str):
@@ -200,7 +200,7 @@ class Neo4jMemoryStore:
                 MATCH (k:KNOT {id: $knot_id})
                 MERGE (k)-[:WITH_ACTOR]->(t)
             """, {'knot_id': knot_id, 'name': str(person)})
-        
+
         # THEME threads (can be list)
         topics = context.get('topics', [])
         if isinstance(topics, str):
@@ -212,7 +212,7 @@ class Neo4jMemoryStore:
                 MATCH (k:KNOT {id: $knot_id})
                 MERGE (k)-[:ABOUT_THEME]->(t)
             """, {'knot_id': knot_id, 'name': str(topic)})
-    
+
     async def retrieve(
         self,
         query: MemoryQuery,
@@ -236,9 +236,9 @@ class Neo4jMemoryStore:
             else:
                 # Default: text search
                 results = self._retrieve_text(session, query)
-            
+
             return results
-    
+
     def _retrieve_temporal(self, session, query: MemoryQuery) -> RetrievalResult:
         """Get recent memories."""
         result = session.run("""
@@ -248,9 +248,9 @@ class Neo4jMemoryStore:
             ORDER BY k.timestamp DESC
             LIMIT $limit
         """, {'user_id': query.user_id, 'limit': query.limit})
-        
+
         return self._results_to_retrieval(result, 'temporal')
-    
+
     def _retrieve_text(self, session, query: MemoryQuery) -> RetrievalResult:
         """Text-based search (contains)."""
         result = session.run("""
@@ -264,9 +264,9 @@ class Neo4jMemoryStore:
             'query': query.text,
             'limit': query.limit
         })
-        
+
         return self._results_to_retrieval(result, 'text_search')
-    
+
     def _retrieve_graph(self, session, query: MemoryQuery) -> RetrievalResult:
         """Graph traversal from query threads."""
         # Extract potential threads from query
@@ -277,14 +277,14 @@ class Neo4jMemoryStore:
             RETURN k.id AS id, k.text AS text, k.timestamp AS timestamp
             LIMIT $limit
         """, {'user_id': query.user_id, 'limit': query.limit})
-        
+
         return self._results_to_retrieval(result, 'graph')
-    
+
     def _results_to_retrieval(self, result, strategy_name: str) -> RetrievalResult:
         """Convert Neo4j results to RetrievalResult."""
         memories = []
         scores = []
-        
+
         for record in result:
             mem = Memory(
                 id=record['id'],
@@ -295,14 +295,14 @@ class Neo4jMemoryStore:
             )
             memories.append(mem)
             scores.append(1.0)  # Uniform scores for now
-        
+
         return RetrievalResult(
             memories=memories,
             scores=scores,
             strategy_used=strategy_name,
             metadata={'backend': 'neo4j', 'result_count': len(memories)}
         )
-    
+
     async def delete(self, memory_id: str) -> bool:
         """Delete KNOT and its thread connections."""
         with self.driver.session(database=self.database) as session:
@@ -311,23 +311,23 @@ class Neo4jMemoryStore:
                 DETACH DELETE k
                 RETURN count(k) AS deleted
             """, {'id': memory_id})
-            
+
             record = result.single()
             deleted = record['deleted'] if record else 0
             return deleted > 0
-    
-    async def health_check(self) -> Dict:
+
+    async def health_check(self) -> dict:
         """Check Neo4j connection."""
         try:
             with self.driver.session(database=self.database) as session:
                 result = session.run("MATCH (k:KNOT) RETURN count(k) AS count")
                 record = result.single()
                 knot_count = record['count'] if record else 0
-                
+
                 result = session.run("MATCH (t:THREAD) RETURN count(t) AS count")
                 record = result.single()
                 thread_count = record['count'] if record else 0
-                
+
                 return {
                     'status': 'healthy',
                     'backend': 'neo4j',
@@ -341,12 +341,12 @@ class Neo4jMemoryStore:
                 'backend': 'neo4j',
                 'error': str(e)
             }
-    
+
     def close(self):
         """Close Neo4j driver."""
         if self.driver:
             self.driver.close()
-    
+
     def __del__(self):
         """Cleanup on deletion."""
         self.close()

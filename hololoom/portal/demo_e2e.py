@@ -23,10 +23,8 @@ Date: 2025-12-09
 
 import argparse
 import asyncio
-import json
 import sys
 import time
-from typing import Dict, List, Optional
 
 try:
     import httpx
@@ -54,8 +52,8 @@ class PortalDemo:
 
     def __init__(self, verbose: bool = True):
         self.verbose = verbose
-        self.client: Optional[httpx.AsyncClient] = None
-        self.results: Dict[str, bool] = {}
+        self.client: httpx.AsyncClient | None = None
+        self.results: dict[str, bool] = {}
 
     async def __aenter__(self):
         self.client = httpx.AsyncClient(timeout=30.0)
@@ -333,7 +331,7 @@ class PortalDemo:
 
             if response.status_code == 200:
                 status = response.json()
-                self.log(f"Node 1 status:", "OK")
+                self.log("Node 1 status:", "OK")
                 self.log(f"  CPU: {status.get('cpu_percent', 0):.1f}%")
                 self.log(f"  Memory: {status.get('memory_percent', 0):.1f}%")
                 self.log(f"  Current jobs: {status.get('current_jobs', 0)}")

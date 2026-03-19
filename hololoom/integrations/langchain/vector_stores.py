@@ -19,23 +19,22 @@ Author: Claude Code
 Date: 2025-11-20
 """
 
-from typing import Optional, Dict, Any, List, Union, Tuple
-from enum import Enum
-import warnings
 import os
+import warnings
+from enum import Enum
+from typing import Any
 
 try:
     # Core LangChain vector stores
-    from langchain.vectorstores import (
-        Qdrant,
-        Pinecone,
-        Weaviate,
-        Chroma,
-        FAISS,
-    )
-
     from langchain.embeddings.base import Embeddings
     from langchain.schema import Document
+    from langchain.vectorstores import (
+        FAISS,
+        Chroma,
+        Pinecone,
+        Qdrant,
+        Weaviate,
+    )
 
     LANGCHAIN_AVAILABLE = True
 except ImportError:
@@ -86,8 +85,8 @@ class VectorStoreFactory:
 
     def __init__(
         self,
-        store_type: Union[VectorStoreType, str] = VectorStoreType.QDRANT,
-        embedding_function: Optional[Any] = None,
+        store_type: VectorStoreType | str = VectorStoreType.QDRANT,
+        embedding_function: Any | None = None,
         **config
     ):
         """
@@ -153,9 +152,9 @@ class VectorStoreFactory:
 
     def add_shards(
         self,
-        shards: List[Any],
+        shards: list[Any],
         batch_size: int = 100
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Add HoloLoom MemoryShards to vector store.
 
@@ -199,8 +198,8 @@ class VectorStoreFactory:
         self,
         query: str,
         k: int = 10,
-        filter: Optional[Dict[str, Any]] = None
-    ) -> List[Tuple[str, float]]:
+        filter: dict[str, Any] | None = None
+    ) -> list[tuple[str, float]]:
         """
         Search for similar documents.
 
@@ -230,7 +229,7 @@ class VectorStoreFactory:
         query: str,
         k: int = 10,
         alpha: float = 0.5
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Hybrid search (semantic + keyword).
 
@@ -364,8 +363,8 @@ class VectorStoreFactory:
     def _get_hololoom_embeddings(self) -> Any:
         """Get HoloLoom's embedding function wrapped for LangChain."""
         try:
-            from hololoom.embedding.spectral import MatryoshkaEmbeddings
             from hololoom.config import Config
+            from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
             # Create HoloLoom embeddings
             config = Config.fast()
@@ -378,14 +377,14 @@ class VectorStoreFactory:
                 def __init__(self, hololoom_embeddings):
                     self.hololoom = hololoom_embeddings
 
-                def embed_documents(self, texts: List[str]) -> List[List[float]]:
+                def embed_documents(self, texts: list[str]) -> list[list[float]]:
                     """Embed documents."""
                     return [
                         self.hololoom.encode(text, scale=384).tolist()
                         for text in texts
                     ]
 
-                def embed_query(self, text: str) -> List[float]:
+                def embed_query(self, text: str) -> list[float]:
                     """Embed query."""
                     return self.hololoom.encode(text, scale=384).tolist()
 
@@ -410,7 +409,7 @@ class VectorStoreFactory:
 
 def create_vector_store(
     store_type: str = "qdrant",
-    embedding_function: Optional[Any] = None,
+    embedding_function: Any | None = None,
     **config
 ) -> VectorStoreFactory:
     """
@@ -435,7 +434,7 @@ def create_vector_store(
     )
 
 
-def list_vector_stores() -> Dict[str, Dict[str, Any]]:
+def list_vector_stores() -> dict[str, dict[str, Any]]:
     """
     List all available vector stores and their requirements.
 

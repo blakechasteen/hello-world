@@ -1,14 +1,14 @@
 """Skill Composition - Chain skills into complex workflows"""
 
-import asyncio
-import time
 import logging
-from typing import Dict, Any, List, Optional, Callable, Union
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
-from hololoom.skills.base import SkillOutput, SkillStatus
-from hololoom.skills.executor import SkillExecutor, ExecutionResult, BatchResult
+from hololoom.skills.base import SkillStatus
+from hololoom.skills.executor import SkillExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -29,28 +29,28 @@ class WorkflowStep:
     step_type: StepType
 
     # For EXECUTE steps
-    skill_name: Optional[str] = None
-    operation: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = None
+    skill_name: str | None = None
+    operation: str | None = None
+    parameters: dict[str, Any] | None = None
 
     # For PARALLEL steps
-    parallel_steps: Optional[List['WorkflowStep']] = None
+    parallel_steps: list['WorkflowStep'] | None = None
 
     # For CONDITIONAL steps
-    condition: Optional[Callable[[Dict[str, Any]], bool]] = None
-    if_true: Optional[List['WorkflowStep']] = None
-    if_false: Optional[List['WorkflowStep']] = None
+    condition: Callable[[dict[str, Any]], bool] | None = None
+    if_true: list['WorkflowStep'] | None = None
+    if_false: list['WorkflowStep'] | None = None
 
     # For LOOP steps
-    loop_condition: Optional[Callable[[Dict[str, Any], int], bool]] = None
-    loop_steps: Optional[List['WorkflowStep']] = None
+    loop_condition: Callable[[dict[str, Any], int], bool] | None = None
+    loop_steps: list['WorkflowStep'] | None = None
     max_iterations: int = 10
 
     # For TRANSFORM steps
-    transform_func: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None
+    transform_func: Callable[[dict[str, Any]], dict[str, Any]] | None = None
 
     # Metadata
-    timeout: Optional[float] = None
+    timeout: float | None = None
     continue_on_failure: bool = False
 
 
@@ -60,12 +60,12 @@ class WorkflowResult:
     success: bool
     steps_executed: int
     total_time_ms: float
-    outputs: Dict[str, Any]  # Named outputs from steps
-    errors: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
+    outputs: dict[str, Any]  # Named outputs from steps
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     # Detailed execution trace
-    step_results: List[Dict[str, Any]] = field(default_factory=list)
+    step_results: list[dict[str, Any]] = field(default_factory=list)
 
 
 class SkillWorkflow:
@@ -84,8 +84,8 @@ class SkillWorkflow:
     def __init__(
         self,
         name: str,
-        steps: List[WorkflowStep],
-        executor: Optional[SkillExecutor] = None
+        steps: list[WorkflowStep],
+        executor: SkillExecutor | None = None
     ):
         """
         Initialize workflow.
@@ -100,12 +100,12 @@ class SkillWorkflow:
         self.executor = executor or SkillExecutor()
 
         # Workflow context - shared state across steps
-        self._context: Dict[str, Any] = {}
+        self._context: dict[str, Any] = {}
 
     async def execute(
         self,
-        initial_context: Optional[Dict[str, Any]] = None,
-        timeout: Optional[float] = None
+        initial_context: dict[str, Any] | None = None,
+        timeout: float | None = None
     ) -> WorkflowResult:
         """
         Execute workflow.
@@ -180,7 +180,7 @@ class SkillWorkflow:
             step_results=step_results
         )
 
-    async def _execute_step(self, step: WorkflowStep) -> Dict[str, Any]:
+    async def _execute_step(self, step: WorkflowStep) -> dict[str, Any]:
         """
         Execute a single workflow step.
 
@@ -233,7 +233,7 @@ class SkillWorkflow:
                 "execution_time_ms": step_time
             }
 
-    async def _execute_skill_step(self, step: WorkflowStep) -> Dict[str, Any]:
+    async def _execute_skill_step(self, step: WorkflowStep) -> dict[str, Any]:
         """Execute a skill execution step."""
         # Resolve parameters from context
         parameters = self._resolve_parameters(step.parameters)
@@ -256,7 +256,7 @@ class SkillWorkflow:
             "execution_time_ms": result.output.execution_time_ms
         }
 
-    async def _execute_parallel_step(self, step: WorkflowStep) -> Dict[str, Any]:
+    async def _execute_parallel_step(self, step: WorkflowStep) -> dict[str, Any]:
         """Execute multiple steps in parallel."""
         # Build execution specs from parallel steps
         executions = []
@@ -289,7 +289,7 @@ class SkillWorkflow:
             "cache_hit_rate": batch_result.cache_hit_rate
         }
 
-    async def _execute_conditional_step(self, step: WorkflowStep) -> Dict[str, Any]:
+    async def _execute_conditional_step(self, step: WorkflowStep) -> dict[str, Any]:
         """Execute conditional branch."""
         # Evaluate condition
         condition_result = step.condition(self._context)
@@ -313,7 +313,7 @@ class SkillWorkflow:
             "steps_executed": len(branch_steps)
         }
 
-    async def _execute_loop_step(self, step: WorkflowStep) -> Dict[str, Any]:
+    async def _execute_loop_step(self, step: WorkflowStep) -> dict[str, Any]:
         """Execute loop iteration."""
         iteration = 0
         iterations_executed = 0
@@ -336,7 +336,7 @@ class SkillWorkflow:
             "max_iterations": step.max_iterations
         }
 
-    async def _execute_transform_step(self, step: WorkflowStep) -> Dict[str, Any]:
+    async def _execute_transform_step(self, step: WorkflowStep) -> dict[str, Any]:
         """Execute data transformation."""
         # Apply transformation function
         transformed = step.transform_func(self._context)
@@ -349,7 +349,7 @@ class SkillWorkflow:
             "keys_added": len(transformed)
         }
 
-    def _resolve_parameters(self, parameters: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    def _resolve_parameters(self, parameters: dict[str, Any] | None) -> dict[str, Any]:
         """
         Resolve parameters from context.
 
@@ -392,7 +392,7 @@ def execute_step(
     name: str,
     skill_name: str,
     operation: str,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     **kwargs
 ) -> WorkflowStep:
     """
@@ -420,7 +420,7 @@ def execute_step(
 
 def parallel_step(
     name: str,
-    steps: List[WorkflowStep],
+    steps: list[WorkflowStep],
     **kwargs
 ) -> WorkflowStep:
     """
@@ -444,9 +444,9 @@ def parallel_step(
 
 def conditional_step(
     name: str,
-    condition: Callable[[Dict[str, Any]], bool],
-    if_true: List[WorkflowStep],
-    if_false: Optional[List[WorkflowStep]] = None,
+    condition: Callable[[dict[str, Any]], bool],
+    if_true: list[WorkflowStep],
+    if_false: list[WorkflowStep] | None = None,
     **kwargs
 ) -> WorkflowStep:
     """
@@ -474,7 +474,7 @@ def conditional_step(
 
 def transform_step(
     name: str,
-    transform_func: Callable[[Dict[str, Any]], Dict[str, Any]],
+    transform_func: Callable[[dict[str, Any]], dict[str, Any]],
     **kwargs
 ) -> WorkflowStep:
     """

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Awareness Handlers for Matrix ChatOps
 ======================================
@@ -24,13 +25,12 @@ Created: 2025-12-15
 """
 
 import logging
-from datetime import datetime
-from typing import Optional, Dict, Any, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from hololoom.memory.awareness_graph import AwarenessGraph
-    from hololoom.memory.spring_dynamics import SpringDynamics
     from hololoom.memory.multi_wave_engine import MultiWaveMemoryEngine
+    from hololoom.memory.spring_dynamics import SpringDynamics
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -44,9 +44,9 @@ except ImportError:
 try:
     from hololoom.memory.awareness_graph import AwarenessGraph
     from hololoom.memory.awareness_types import (
-        AwarenessMetrics,
+        ActivationBudget,
         ActivationStrategy,
-        ActivationBudget
+        AwarenessMetrics,
     )
     AWARENESS_AVAILABLE = True
 except ImportError:
@@ -57,7 +57,7 @@ except ImportError:
     ActivationBudget = None
 
 try:
-    from hololoom.memory.spring_dynamics import SpringDynamics, SpringConfig
+    from hololoom.memory.spring_dynamics import SpringConfig, SpringDynamics
     SPRING_AVAILABLE = True
 except ImportError:
     SPRING_AVAILABLE = False
@@ -66,9 +66,9 @@ except ImportError:
 
 try:
     from hololoom.memory.multi_wave_engine import (
-        MultiWaveMemoryEngine,
         BrainWaveMode,
-        ThetaWaveConsolidator
+        MultiWaveMemoryEngine,
+        ThetaWaveConsolidator,
     )
     MULTIWAVE_AVAILABLE = True
 except ImportError:
@@ -79,7 +79,7 @@ except ImportError:
 
 # Meta-awareness (may not exist yet - graceful degradation)
 try:
-    from hololoom.awareness.meta_awareness import MetaConfidence, KnowledgeGapHypothesis
+    from hololoom.awareness.meta_awareness import KnowledgeGapHypothesis, MetaConfidence
     META_AWARENESS_AVAILABLE = True
 except ImportError:
     META_AWARENESS_AVAILABLE = False
@@ -89,7 +89,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -377,7 +379,7 @@ async def handle_aware_spring(
 
     try:
         # Set initial activations
-        initial = {node_id: 1.0 for node_id in node_ids}
+        initial = dict.fromkeys(node_ids, 1.0)
 
         if hasattr(dynamics, 'activate_nodes'):
             dynamics.activate_nodes(initial)
@@ -393,7 +395,7 @@ async def handle_aware_spring(
         activated = result.activated_nodes
 
         output = [
-            f"**⚡ Spring Propagation**\n",
+            "**⚡ Spring Propagation**\n",
             f"**Seeds:** {', '.join(f'`{n}`' for n in node_ids)}",
             f"**Iterations:** {getattr(result, 'iterations', 'N/A')}",
             f"**Energy:** {getattr(result, 'final_energy', 'N/A')}",
@@ -477,7 +479,7 @@ async def handle_aware_wave_mode(
         info = mode_info.get(mode_name, ("⚪ Unknown", "N/A", "Unknown state", "N/A"))
 
         output = [
-            f"**🌊 Current Brain Wave Mode**\n",
+            "**🌊 Current Brain Wave Mode**\n",
             f"**Mode:** {info[0]}",
             f"**Frequency:** {info[1]}",
             f"**State:** {info[2]}",

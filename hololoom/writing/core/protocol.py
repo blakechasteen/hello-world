@@ -6,9 +6,9 @@ Protocol definitions for the HoloLoom writing system.
 Defines interfaces for writers, composers, and refiners.
 """
 
-from typing import Protocol, List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Protocol
 
 # Import from hololoom types
 try:
@@ -19,7 +19,7 @@ except ImportError:
     class MemoryShard:
         id: str
         text: str
-        metadata: Dict[str, Any] = None
+        metadata: dict[str, Any] = None
 
 
 class WritingMode(Enum):
@@ -66,10 +66,10 @@ class OutputFormat(Enum):
 class WritingContext:
     """Context for content generation."""
     query: str
-    memories: List[MemoryShard]
+    memories: list[MemoryShard]
     mode: WritingMode = WritingMode.AUTO
     style: StyleGuide = StyleGuide.AUTO
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -85,7 +85,7 @@ class RefinementPass:
     input_text: str
     output_text: str
     quality_score: float          # 0.0-1.0
-    improvements: List[str]       # List of improvements made
+    improvements: list[str]       # List of improvements made
     duration_ms: float
 
 
@@ -97,11 +97,11 @@ class WritingResult:
     style: StyleGuide
     quality_score: float          # 0.0-1.0
     confidence: float             # 0.0-1.0
-    refinement_passes: List[RefinementPass]
-    metadata: Dict[str, Any]
+    refinement_passes: list[RefinementPass]
+    metadata: dict[str, Any]
 
     @property
-    def quality_trajectory(self) -> List[float]:
+    def quality_trajectory(self) -> list[float]:
         """Quality scores across refinement passes."""
         return [p.quality_score for p in self.refinement_passes]
 
@@ -153,7 +153,7 @@ class WriterProtocol(Protocol):
     def detect_mode(
         self,
         query: str,
-        memories: List[MemoryShard]
+        memories: list[MemoryShard]
     ) -> WritingMode:
         """
         Auto-detect appropriate writing mode.
@@ -170,7 +170,7 @@ class WriterProtocol(Protocol):
     def detect_style(
         self,
         query: str,
-        memories: List[MemoryShard],
+        memories: list[MemoryShard],
         mode: WritingMode
     ) -> StyleGuide:
         """
@@ -221,7 +221,7 @@ class ComposerProtocol(Protocol):
         self,
         text: str,
         context: WritingContext
-    ) -> Tuple[float, Dict[str, float]]:
+    ) -> tuple[float, dict[str, float]]:
         """
         Score content quality.
 
@@ -268,7 +268,7 @@ class RefinerProtocol(Protocol):
         ...
 
     @property
-    def passes(self) -> List[str]:
+    def passes(self) -> list[str]:
         """List of focus areas for each pass."""
         ...
 

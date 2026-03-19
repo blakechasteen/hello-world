@@ -15,12 +15,9 @@ Key Metrics:
 Validated in Demo 3 (ECE < 0.10)
 """
 
-import time
 import logging
-from typing import List, Dict, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
-
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +51,11 @@ class CalibrationCurve:
     """Calibration curve data"""
     calibrated: bool
     ece: float
-    bin_centers: List[float]
-    binned_actual: List[Optional[float]]
-    binned_predicted: List[float]
+    bin_centers: list[float]
+    binned_actual: list[float | None]
+    binned_predicted: list[float]
     sample_size: int
-    backend: Optional[str] = None
+    backend: str | None = None
 
     def to_dict(self) -> dict:
         """Convert to dictionary"""
@@ -113,7 +110,7 @@ class ConfidenceCalibrator:
         Args:
             min_observations: Minimum observations required for calibration
         """
-        self.calibration_history: List[CalibrationObservation] = []
+        self.calibration_history: list[CalibrationObservation] = []
         self.min_observations = min_observations
 
         # Statistics
@@ -157,7 +154,7 @@ class ConfidenceCalibrator:
 
     def get_calibration_curve(
         self,
-        backend: Optional[str] = None,
+        backend: str | None = None,
         num_bins: int = 10
     ) -> CalibrationCurve:
         """
@@ -303,7 +300,7 @@ class ConfidenceCalibrator:
         else:
             return 1.0
 
-    def get_backend_calibration(self, backend: str) -> Dict:
+    def get_backend_calibration(self, backend: str) -> dict:
         """
         Get calibration metrics for specific backend
 
@@ -345,13 +342,13 @@ class ConfidenceCalibrator:
         Returns:
             Human-readable summary
         """
-        summary = f"Confidence Calibration Summary:\n"
+        summary = "Confidence Calibration Summary:\n"
         summary += f"  Total observations: {self.observation_count}\n"
         summary += f"  Min observations for calibration: {self.min_observations}\n\n"
 
         # Overall calibration
         overall_curve = self.get_calibration_curve()
-        summary += f"Overall:\n"
+        summary += "Overall:\n"
         summary += f"  Calibrated: {overall_curve.calibrated}\n"
         summary += f"  ECE: {overall_curve.ece:.3f} ({'<0.10 target' if overall_curve.calibrated else '>=0.10'})\n"
         summary += f"  Sample size: {overall_curve.sample_size}\n\n"
@@ -367,7 +364,7 @@ class ConfidenceCalibrator:
 
         return summary
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """
         Get calibration statistics
 

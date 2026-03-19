@@ -7,15 +7,12 @@ This is the "Wolfram Alpha" layer - it automatically generates optimal
 dashboards based on query analysis.
 """
 
-from typing import Dict, List, Any
-from datetime import datetime
 import json
+from datetime import datetime
+from typing import Any
 
-from .strategy_selector import StrategySelector, QueryIntent
-from .dashboard import (
-    Dashboard, Panel, PanelType, PanelSize, LayoutType,
-    SpacetimeLike, DashboardStrategy
-)
+from .dashboard import Dashboard, LayoutType, Panel, PanelType, SpacetimeLike
+from .strategy_selector import StrategySelector
 
 
 class DashboardConstructor:
@@ -188,7 +185,7 @@ class DashboardRenderer:
         }
         return layouts.get(layout, layouts[LayoutType.FLOW])
 
-    def _render_panels(self, panels: List[Panel], layout_class: str) -> str:
+    def _render_panels(self, panels: list[Panel], layout_class: str) -> str:
         """Render all panels."""
         html_parts = []
         for panel in panels:

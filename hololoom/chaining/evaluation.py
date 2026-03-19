@@ -27,14 +27,13 @@ Author: HoloLoom Architecture Team
 Date: December 2025
 """
 
-import time
 import json
 import logging
-import asyncio
-from typing import Dict, List, Optional, Any, Callable, Union
-from dataclasses import dataclass, field, asdict
+import time
+from collections.abc import Callable
+from dataclasses import asdict, dataclass, field
 from enum import Enum
-from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -67,13 +66,13 @@ class JudgeCriteria(Enum):
 @dataclass
 class JudgeConfig:
     """Configuration for LLM judge evaluation."""
-    criteria: List[JudgeCriteria]
+    criteria: list[JudgeCriteria]
     provider: str = "ollama"
     model: str = "llama3.2:3b"
     temperature: float = 0.3  # Lower for consistent scoring
     use_rubric: bool = True
-    reference_output: Optional[str] = None
-    custom_criteria: Optional[str] = None
+    reference_output: str | None = None
+    custom_criteria: str | None = None
     timeout_seconds: float = 30.0
     max_retries: int = 2
 
@@ -81,10 +80,10 @@ class JudgeConfig:
 @dataclass
 class TestCase:
     """A single test case for chain evaluation."""
-    input_data: Dict[str, Any]
-    expected_output: Optional[str] = None
-    context: Optional[Dict[str, Any]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    input_data: dict[str, Any]
+    expected_output: str | None = None
+    context: dict[str, Any] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -115,14 +114,14 @@ class JudgeScore:
 class JudgeResult:
     """Complete evaluation result from LLM judge."""
     output: str
-    scores: List[JudgeScore]
+    scores: list[JudgeScore]
     overall_score: float
     summary: str
     chain_name: str = ""
     execution_time_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def get_score_by_criterion(self, criterion: str) -> Optional[JudgeScore]:
+    def get_score_by_criterion(self, criterion: str) -> JudgeScore | None:
         """Get score for a specific criterion."""
         for score in self.scores:
             if score.criterion == criterion:
@@ -146,15 +145,15 @@ class ChainEvalResult:
     """Result of evaluating a chain across multiple test cases."""
     chain_name: str
     variant_name: str
-    test_results: List[JudgeResult]
-    aggregate_scores: Dict[str, float]
+    test_results: list[JudgeResult]
+    aggregate_scores: dict[str, float]
     overall_score: float
     total_time_ms: float
     success_count: int
     error_count: int
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get summary statistics."""
         return {
             "chain_name": self.chain_name,
@@ -272,7 +271,7 @@ Score the coherence between chain steps on a scale of 0-10:
         self,
         provider: str = "ollama",
         model: str = "llama3.2:3b",
-        base_url: Optional[str] = None
+        base_url: str | None = None
     ):
         """
         Initialize LLM judge.
@@ -363,7 +362,7 @@ Score the coherence between chain steps on a scale of 0-10:
 
         return "\n".join(prompt_parts)
 
-    def _parse_judge_response(self, response: str) -> Dict[str, Any]:
+    def _parse_judge_response(self, response: str) -> dict[str, Any]:
         """Parse LLM judge response."""
         try:
             # Try to extract JSON from response
@@ -473,7 +472,7 @@ Score the coherence between chain steps on a scale of 0-10:
         output_a: str,
         output_b: str,
         config: JudgeConfig
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compare two outputs and determine which is better.
 
@@ -526,9 +525,9 @@ class ChainEvaluator:
 
     def __init__(
         self,
-        ab_test: Optional[Any] = None,
-        judge: Optional[LLMJudge] = None,
-        chain_executor: Optional[Callable] = None
+        ab_test: Any | None = None,
+        judge: LLMJudge | None = None,
+        chain_executor: Callable | None = None
     ):
         """
         Initialize chain evaluator.
@@ -545,9 +544,9 @@ class ChainEvaluator:
     async def _execute_chain(
         self,
         chain: Any,
-        input_data: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        input_data: dict[str, Any],
+        context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Execute a chain and return results."""
         if self.chain_executor:
             return await self.chain_executor(chain, input_data, context)
@@ -608,9 +607,9 @@ class ChainEvaluator:
     async def evaluate_chain(
         self,
         chain: Any,
-        test_cases: List[TestCase],
+        test_cases: list[TestCase],
         variant_name: str,
-        config: Optional[JudgeConfig] = None
+        config: JudgeConfig | None = None
     ) -> ChainEvalResult:
         """
         Evaluate chain across multiple test cases.
@@ -711,9 +710,9 @@ class ChainEvaluator:
         self,
         chain_a: Any,
         chain_b: Any,
-        test_cases: List[TestCase],
-        config: Optional[JudgeConfig] = None
-    ) -> Dict[str, Any]:
+        test_cases: list[TestCase],
+        config: JudgeConfig | None = None
+    ) -> dict[str, Any]:
         """
         Compare two chain variants.
 
@@ -854,7 +853,7 @@ class EvalPresets:
 # =============================================================================
 
 def create_evaluator(
-    ab_test: Optional[Any] = None,
+    ab_test: Any | None = None,
     provider: str = "ollama",
     model: str = "llama3.2:3b"
 ) -> ChainEvaluator:

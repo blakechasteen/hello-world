@@ -8,11 +8,11 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Callable, Awaitable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from enum import Enum
 from datetime import datetime
-import asyncio
+from enum import Enum
+from typing import Any
 
 import numpy as np
 
@@ -43,12 +43,12 @@ class SafetyConcern:
     concern_type: ConcernType
     severity: float  # 0-1, higher = more severe
     description: str
-    affected_features: List[str] = field(default_factory=list)
-    evidence: Dict[str, Any] = field(default_factory=dict)
+    affected_features: list[str] = field(default_factory=list)
+    evidence: dict[str, Any] = field(default_factory=dict)
     recommended_action: SafetyAction = SafetyAction.WARN
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "concern_type": self.concern_type.value,
             "severity": self.severity,
@@ -64,11 +64,11 @@ class SafetyConcern:
 class GateDecision:
     """Decision from the safety gate."""
     action: SafetyAction
-    concerns: List[SafetyConcern]
+    concerns: list[SafetyConcern]
     confidence: float
     reasoning: str
-    modifications: Optional[Dict[str, Any]] = None
-    blocked_reason: Optional[str] = None
+    modifications: dict[str, Any] | None = None
+    blocked_reason: str | None = None
     processing_time_ms: float = 0.0
 
     @property
@@ -83,7 +83,7 @@ class GateDecision:
     def has_concerns(self) -> bool:
         return len(self.concerns) > 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "action": self.action.value,
             "concerns": [c.to_dict() for c in self.concerns],
@@ -111,8 +111,8 @@ class SafetyGateConfig:
     anomaly_z_score: float = 3.0            # Z-score threshold for anomalies
 
     # Feature monitoring
-    monitored_features: List[str] = field(default_factory=list)
-    blocked_features: List[str] = field(default_factory=list)  # Always block if active
+    monitored_features: list[str] = field(default_factory=list)
+    blocked_features: list[str] = field(default_factory=list)  # Always block if active
 
     # Callbacks
     enable_logging: bool = True
@@ -125,8 +125,8 @@ class SafetyPatternDetector:
 
     def __init__(self, config: SafetyGateConfig):
         self.config = config
-        self._baseline_activations: Optional[np.ndarray] = None
-        self._activation_history: List[np.ndarray] = []
+        self._baseline_activations: np.ndarray | None = None
+        self._activation_history: list[np.ndarray] = []
 
     def set_baseline(self, activations: np.ndarray) -> None:
         """Set baseline activation patterns."""
@@ -141,8 +141,8 @@ class SafetyPatternDetector:
     def detect_deception(
         self,
         activations: np.ndarray,
-        feature_names: Optional[List[str]] = None,
-    ) -> Optional[SafetyConcern]:
+        feature_names: list[str] | None = None,
+    ) -> SafetyConcern | None:
         """Detect potential deception patterns."""
         # Look for features associated with deception
         deception_features = [
@@ -179,8 +179,8 @@ class SafetyPatternDetector:
     def detect_power_seeking(
         self,
         activations: np.ndarray,
-        feature_names: Optional[List[str]] = None,
-    ) -> Optional[SafetyConcern]:
+        feature_names: list[str] | None = None,
+    ) -> SafetyConcern | None:
         """Detect power-seeking behavior patterns."""
         power_features = [
             "control", "power", "dominate", "acquire", "resource",
@@ -216,7 +216,7 @@ class SafetyPatternDetector:
     def detect_anomaly(
         self,
         activations: np.ndarray,
-    ) -> Optional[SafetyConcern]:
+    ) -> SafetyConcern | None:
         """Detect anomalous activation patterns."""
         if len(self._activation_history) < 10:
             return None
@@ -251,7 +251,7 @@ class SafetyPatternDetector:
     def detect_drift(
         self,
         activations: np.ndarray,
-    ) -> Optional[SafetyConcern]:
+    ) -> SafetyConcern | None:
         """Detect significant drift from baseline."""
         if self._baseline_activations is None:
             return None
@@ -281,12 +281,12 @@ class DarkTraceSafetyGate:
     patterns and automatically block or modify responses.
     """
 
-    def __init__(self, config: Optional[SafetyGateConfig] = None):
+    def __init__(self, config: SafetyGateConfig | None = None):
         self.config = config or SafetyGateConfig()
         self.detector = SafetyPatternDetector(self.config)
-        self._decision_history: List[GateDecision] = []
-        self._alert_callback: Optional[Callable[[SafetyConcern], Awaitable[None]]] = None
-        self._audit_callback: Optional[Callable[[GateDecision], Awaitable[None]]] = None
+        self._decision_history: list[GateDecision] = []
+        self._alert_callback: Callable[[SafetyConcern], Awaitable[None]] | None = None
+        self._audit_callback: Callable[[GateDecision], Awaitable[None]] | None = None
 
     def set_baseline(self, activations: np.ndarray) -> None:
         """Set baseline activation patterns for drift detection."""
@@ -310,8 +310,8 @@ class DarkTraceSafetyGate:
         self,
         activations: np.ndarray,
         confidence: float = 1.0,
-        feature_names: Optional[List[str]] = None,
-        context: Optional[Dict[str, Any]] = None,
+        feature_names: list[str] | None = None,
+        context: dict[str, Any] | None = None,
     ) -> GateDecision:
         """
         Evaluate activations and make a safety decision.
@@ -328,7 +328,7 @@ class DarkTraceSafetyGate:
         import time
         start_time = time.perf_counter()
 
-        concerns: List[SafetyConcern] = []
+        concerns: list[SafetyConcern] = []
 
         # Check for blocked features
         if feature_names and self.config.blocked_features:
@@ -394,7 +394,7 @@ class DarkTraceSafetyGate:
                 action = SafetyAction.WARN
                 reasoning = f"Warning: {len(concerns)} concern(s) detected (max severity: {max_severity:.2f})"
             else:
-                reasoning = f"Low-severity concerns detected but below threshold"
+                reasoning = "Low-severity concerns detected but below threshold"
 
         processing_time = (time.perf_counter() - start_time) * 1000
 
@@ -423,7 +423,7 @@ class DarkTraceSafetyGate:
 
         return decision
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get gate statistics."""
         if not self._decision_history:
             return {"total_evaluations": 0}
@@ -453,8 +453,8 @@ class DarkTraceSafetyGate:
 
 
 async def create_safety_gate(
-    config: Optional[SafetyGateConfig] = None,
-    baseline_activations: Optional[np.ndarray] = None,
+    config: SafetyGateConfig | None = None,
+    baseline_activations: np.ndarray | None = None,
 ) -> DarkTraceSafetyGate:
     """
     Create and configure a safety gate.

@@ -19,12 +19,13 @@ Injection Methods:
 4. Steering: Add steering vector in feature direction
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable, Union
 from enum import Enum
+from typing import Any
+
 import numpy as np
 import torch
-from collections import defaultdict
 
 
 class InjectionMethod(Enum):
@@ -44,7 +45,7 @@ class InjectionConfig:
     method: InjectionMethod = InjectionMethod.ADDITIVE
 
     # Injection strength range for dose-response
-    strength_range: Tuple[float, float, int] = (0.0, 2.0, 11)  # (min, max, n_steps)
+    strength_range: tuple[float, float, int] = (0.0, 2.0, 11)  # (min, max, n_steps)
 
     # Statistical settings
     n_samples: int = 100  # Number of test samples
@@ -88,7 +89,7 @@ class DoseResponsePoint:
     strength: float  # Injection strength
     mean_effect: float  # Mean effect on output
     std_effect: float  # Standard deviation
-    confidence_interval: Tuple[float, float]
+    confidence_interval: tuple[float, float]
 
 
 @dataclass
@@ -99,13 +100,13 @@ class DoseResponseCurve:
     feature_index: int
 
     # Curve data
-    points: List[DoseResponsePoint] = field(default_factory=list)
+    points: list[DoseResponsePoint] = field(default_factory=list)
 
     # Fitted parameters (if linear/sigmoidal fit applied)
-    slope: Optional[float] = None  # Linear coefficient
-    intercept: Optional[float] = None
-    saturation_point: Optional[float] = None  # Where effect plateaus
-    ec50: Optional[float] = None  # Half-maximal effective concentration
+    slope: float | None = None  # Linear coefficient
+    intercept: float | None = None
+    saturation_point: float | None = None  # Where effect plateaus
+    ec50: float | None = None  # Half-maximal effective concentration
 
     # Curve characteristics
     is_linear: bool = True  # Linear response?
@@ -115,11 +116,11 @@ class DoseResponseCurve:
     # Effect direction
     positive_effect: bool = True  # Does increasing strength increase output?
 
-    def get_strengths(self) -> List[float]:
+    def get_strengths(self) -> list[float]:
         """Get all tested strengths."""
         return [p.strength for p in self.points]
 
-    def get_effects(self) -> List[float]:
+    def get_effects(self) -> list[float]:
         """Get all mean effects."""
         return [p.mean_effect for p in self.points]
 
@@ -170,8 +171,8 @@ class InjectionResult:
     """Result of feature injection experiment."""
 
     # Feature(s) injected
-    feature_ids: List[str]
-    feature_indices: List[int]
+    feature_ids: list[str]
+    feature_indices: list[int]
     injection_strength: float
 
     # Measured effects
@@ -180,14 +181,14 @@ class InjectionResult:
     effect_direction: str  # "increase" or "decrease"
 
     # Dose-response (if computed)
-    dose_response: Optional[DoseResponseCurve] = None
+    dose_response: DoseResponseCurve | None = None
 
     # Original vs injected outputs
-    original_outputs: Optional[torch.Tensor] = None
-    injected_outputs: Optional[torch.Tensor] = None
+    original_outputs: torch.Tensor | None = None
+    injected_outputs: torch.Tensor | None = None
 
     # Behavioral analysis
-    behavioral_shift: Dict[str, float] = field(default_factory=dict)
+    behavioral_shift: dict[str, float] = field(default_factory=dict)
 
     # Statistical confidence
     confidence: float = 0.0
@@ -195,7 +196,7 @@ class InjectionResult:
     is_significant: bool = False
 
     # Metadata
-    config: Optional[InjectionConfig] = None
+    config: InjectionConfig | None = None
     computation_time_ms: float = 0.0
 
     def summary(self) -> str:
@@ -237,8 +238,8 @@ class FeatureInjector:
         self,
         model: Any,
         probe: Any,
-        config: Optional[InjectionConfig] = None,
-        output_fn: Optional[Callable] = None,
+        config: InjectionConfig | None = None,
+        output_fn: Callable | None = None,
     ):
         """
         Initialize FeatureInjector.
@@ -255,7 +256,7 @@ class FeatureInjector:
         self.output_fn = output_fn or self._default_output_fn
 
         # Cache for feature directions (steering vectors)
-        self._direction_cache: Dict[str, torch.Tensor] = {}
+        self._direction_cache: dict[str, torch.Tensor] = {}
 
         # Statistics
         self._injection_count = 0
@@ -275,7 +276,7 @@ class FeatureInjector:
         feature_id: str,
         strength: float,
         test_inputs: torch.Tensor,
-        method: Optional[InjectionMethod] = None,
+        method: InjectionMethod | None = None,
     ) -> InjectionResult:
         """
         Inject a feature at specified strength.
@@ -341,7 +342,7 @@ class FeatureInjector:
         self,
         feature_id: str,
         test_inputs: torch.Tensor,
-        method: Optional[InjectionMethod] = None,
+        method: InjectionMethod | None = None,
     ) -> DoseResponseCurve:
         """
         Compute dose-response curve for a feature.
@@ -449,10 +450,10 @@ class FeatureInjector:
 
     def inject_multiple(
         self,
-        feature_ids: List[str],
-        strengths: List[float],
+        feature_ids: list[str],
+        strengths: list[float],
         test_inputs: torch.Tensor,
-        method: Optional[InjectionMethod] = None,
+        method: InjectionMethod | None = None,
     ) -> InjectionResult:
         """
         Inject multiple features simultaneously.
@@ -529,10 +530,10 @@ class FeatureInjector:
 
     def detect_interactions(
         self,
-        feature_ids: List[str],
+        feature_ids: list[str],
         strength: float,
         test_inputs: torch.Tensor,
-    ) -> List[InteractionEffect]:
+    ) -> list[InteractionEffect]:
         """
         Detect pairwise interactions between features.
 
@@ -598,8 +599,8 @@ class FeatureInjector:
     def _get_injected_outputs(
         self,
         inputs: torch.Tensor,
-        feature_indices: List[int],
-        strengths: List[float],
+        feature_indices: list[int],
+        strengths: list[float],
         method: InjectionMethod,
     ) -> torch.Tensor:
         """Get model outputs with features injected."""
@@ -673,7 +674,7 @@ class FeatureInjector:
         self,
         original: torch.Tensor,
         injected: torch.Tensor,
-    ) -> Tuple[float, float, str]:
+    ) -> tuple[float, float, str]:
         """Compute effect of injection."""
         diff = injected.float() - original.float()
         output_delta = diff.abs().mean().item()
@@ -710,7 +711,7 @@ class FeatureInjector:
         cache_key = f"{feature_index}_{direction.shape[0]}"
         self._direction_cache[cache_key] = direction
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get injection statistics."""
         return {
             "total_injections": self._injection_count,

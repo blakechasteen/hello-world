@@ -38,53 +38,96 @@ Quick Start:
 # Protocol Layer - Unified Interpretability Interface
 # =============================================================================
 
-from hololoom.dark_trace.protocol import (
-    # Enums
-    LensType,
-    FeatureSource,
-    SafetyFlag,
-    # Core dataclasses
-    Feature,
-    FeatureActivation,
-    SteeringVector,
-    # Protocols
-    TraceLens,
-    CausalValidator,
-    # Base class
-    BaseLens,
-    # Type aliases
-    Activations,
-    FeatureMap,
-    GoalMap,
-    ActiveFeatures,
+from hololoom.dark_trace.auto_probe import (
+    AutoProbe,
 )
 
 # =============================================================================
-# Result Layer - Analysis Output Structures
+# Engine Layer - Main API
 # =============================================================================
+from hololoom.dark_trace.engine import (
+    DarkTraceEngine,
+    create_engine,
+)
 
-from hololoom.dark_trace.result import (
-    # Core results
-    LensResult,
-    TraceResult,
-    # Steering and causal results
-    SteeringResult,
-    AblationResult,
-    InjectionResult,
-    PatchResult,
-    # Circuit discovery
-    CircuitNode,
-    CircuitEdge,
-    CircuitTrace,
-    # Evaluation
-    LensEvaluationMetrics,
-    DarkTraceEvaluationReport,
+# =============================================================================
+# Integration Layer - HoloLoom System Integration
+# =============================================================================
+from hololoom.dark_trace.integration import (
+    # Alignment integration
+    AlignmentBridge,
+    AlignmentConfig,
+    # Orchestrator integration
+    DarkTraceOrchestrator,
+    DriftDetector,
+    FeatureStatistics,
+    # Monitoring
+    InterpretabilityMonitor,
+    MonitorConfig,
+    OrchestratorConfig,
+    SafetyFeatureMapping,
+    TracedSpacetime,
+    create_alignment_bridge,
+    create_monitor,
+    create_traced_orchestrator,
+)
+
+# =============================================================================
+# Model Adapters - Multi-Model Support
+# =============================================================================
+from hololoom.dark_trace.models import (
+    ActivationCache,
+    ActivationHook,
+    DummyAdapter,
+    # Fingerprinting
+    FeatureFingerprint,
+    FingerprintComparison,
+    FingerprintConfig,
+    HookHandle,
+    LayerInfo,
+    LayerType,
+    # Adapter protocol
+    ModelAdapter,
+    ModelCapabilities,
+    ModelFingerprinter,
+    # Policy adapter
+    PolicyAdapter,
+    SteeringConfig,
+    # Transformer adapter
+    TransformerAdapter,
+    compare_fingerprints,
+    create_hook,
+    find_model_specific_features,
+    find_universal_features,
+    make_cache_key,
+)
+from hololoom.dark_trace.probe import (
+    MindProbe,
+)
+from hololoom.dark_trace.protocol import (
+    # Type aliases
+    Activations,
+    ActiveFeatures,
+    # Base class
+    BaseLens,
+    CausalValidator,
+    # Core dataclasses
+    Feature,
+    FeatureActivation,
+    FeatureMap,
+    FeatureSource,
+    GoalMap,
+    # Enums
+    LensType,
+    SafetyFlag,
+    SteeringVector,
+    # Protocols
+    TraceLens,
 )
 
 # =============================================================================
 # Registry Layer - Unified Feature Namespace
 # =============================================================================
-
 from hololoom.dark_trace.registry import (
     CorrelationMatrix,
     FeatureRegistry,
@@ -94,107 +137,54 @@ from hololoom.dark_trace.registry import (
 )
 
 # =============================================================================
-# Configuration Layer - Presets and Settings
+# Result Layer - Analysis Output Structures
 # =============================================================================
-
-from hololoom.dark_trace.trace_config import (
-    # Mode enum
-    TraceMode,
-    # Component configs
-    SAEConfig,
-    SemanticConfig,
-    DomainConfig,
-    CausalConfig,
-    SafetyConfig,
-    CorrelationConfig,
-    LoggingConfig,
-    # Main config with presets
-    TraceConfig,
-)
-
-# =============================================================================
-# Engine Layer - Main API
-# =============================================================================
-
-from hololoom.dark_trace.engine import (
-    DarkTraceEngine,
-    create_engine,
+from hololoom.dark_trace.result import (
+    AblationResult,
+    CircuitEdge,
+    # Circuit discovery
+    CircuitNode,
+    CircuitTrace,
+    DarkTraceEvaluationReport,
+    InjectionResult,
+    # Evaluation
+    LensEvaluationMetrics,
+    # Core results
+    LensResult,
+    PatchResult,
+    # Steering and causal results
+    SteeringResult,
+    TraceResult,
 )
 
 # =============================================================================
 # Existing Components - SAE, Probes, Steering
 # =============================================================================
-
 from hololoom.dark_trace.sae import (
-    SparseAutoEncoder,
     DarkSaeTrainer,
+    SparseAutoEncoder,
 )
-
-from hololoom.dark_trace.probe import (
-    MindProbe,
-)
-
 from hololoom.dark_trace.steering_policy import (
-    PIDSteeringController,
     ConsistencyGuard,
-)
-
-from hololoom.dark_trace.auto_probe import (
-    AutoProbe,
+    PIDSteeringController,
 )
 
 # =============================================================================
-# Model Adapters - Multi-Model Support
+# Configuration Layer - Presets and Settings
 # =============================================================================
-
-from hololoom.dark_trace.models import (
-    # Adapter protocol
-    ModelAdapter,
-    LayerInfo,
-    LayerType,
-    ModelCapabilities,
-    SteeringConfig,
-    HookHandle,
-    ActivationHook,
-    DummyAdapter,
-    ActivationCache,
-    create_hook,
-    make_cache_key,
-    # Policy adapter
-    PolicyAdapter,
-    # Transformer adapter
-    TransformerAdapter,
-    # Fingerprinting
-    FeatureFingerprint,
-    ModelFingerprinter,
-    FingerprintConfig,
-    FingerprintComparison,
-    compare_fingerprints,
-    find_universal_features,
-    find_model_specific_features,
-)
-
-# =============================================================================
-# Integration Layer - HoloLoom System Integration
-# =============================================================================
-
-from hololoom.dark_trace.integration import (
-    # Orchestrator integration
-    DarkTraceOrchestrator,
-    TracedSpacetime,
-    OrchestratorConfig,
-    create_traced_orchestrator,
-    # Alignment integration
-    AlignmentBridge,
-    SafetyFeatureMapping,
-    AlignmentConfig,
-    create_alignment_bridge,
-    # Monitoring
-    InterpretabilityMonitor,
-    FeatureStatistics,
-    DriftDetector,
-    MonitorConfig,
-    create_monitor,
+from hololoom.dark_trace.trace_config import (
+    CausalConfig,
+    CorrelationConfig,
+    DomainConfig,
+    LoggingConfig,
+    # Component configs
+    SAEConfig,
+    SafetyConfig,
+    SemanticConfig,
+    # Main config with presets
+    TraceConfig,
+    # Mode enum
+    TraceMode,
 )
 
 # =============================================================================

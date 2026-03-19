@@ -17,8 +17,9 @@ Date: December 2025
 """
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any, Callable
+from typing import Any
 
 
 @dataclass
@@ -49,7 +50,7 @@ class MemoryLLM:
 
     def __init__(
         self,
-        llm: Optional[Callable[[str], str]] = None,
+        llm: Callable[[str], str] | None = None,
         system: str = "You are a helpful assistant with memory of our conversation.",
         max_context: int = 5,
     ):
@@ -63,8 +64,8 @@ class MemoryLLM:
         self.system = system
         self.max_context = max_context
 
-        self._memories: List[Memory] = []
-        self._history: List[tuple] = []  # (role, content)
+        self._memories: list[Memory] = []
+        self._history: list[tuple] = []  # (role, content)
         self._embedder = None
         self._init_embedder()
 
@@ -104,7 +105,7 @@ class MemoryLLM:
 
         return response
 
-    def remember(self, text: str, metadata: Optional[Dict] = None) -> None:
+    def remember(self, text: str, metadata: dict | None = None) -> None:
         """Store a memory."""
         embedding = None
         if self._embedder:
@@ -118,7 +119,7 @@ class MemoryLLM:
             embedding=embedding,
         ))
 
-    def recall(self, query: str, k: Optional[int] = None) -> List[Memory]:
+    def recall(self, query: str, k: int | None = None) -> list[Memory]:
         """Find relevant memories."""
         if not self._memories:
             return []
@@ -156,7 +157,7 @@ class MemoryLLM:
 
         return result
 
-    def _build_prompt(self, message: str, memories: List[Memory]) -> str:
+    def _build_prompt(self, message: str, memories: list[Memory]) -> str:
         """Build prompt with context."""
         parts = [self.system]
 
@@ -179,7 +180,7 @@ class MemoryLLM:
         self._history.clear()
 
     @property
-    def memories(self) -> List[Memory]:
+    def memories(self) -> list[Memory]:
         """Access all memories."""
         return self._memories
 

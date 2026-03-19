@@ -10,11 +10,10 @@ Request/Response models for:
 - Billing webhooks
 """
 
-from datetime import datetime, date
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, EmailStr, validator
-import re
+from datetime import datetime
+from typing import Any
 
+from pydantic import BaseModel, EmailStr, Field, validator
 
 # ============================================================================
 # Customer Models
@@ -24,7 +23,7 @@ class SignupRequest(BaseModel):
     """Customer signup request"""
     email: EmailStr
     name: str = Field(..., min_length=1, max_length=255)
-    company: Optional[str] = Field(None, max_length=255)
+    company: str | None = Field(None, max_length=255)
     password: str = Field(..., min_length=8, max_length=128)
 
     @validator("name")
@@ -78,18 +77,18 @@ class CustomerProfile(BaseModel):
     customer_id: str
     email: str
     name: str
-    company: Optional[str] = None
+    company: str | None = None
     plan: str
     status: str
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
     usage_this_month: int = 0
     queries_included: int = 0
 
 
 class CustomerUpdateRequest(BaseModel):
     """Customer profile update request"""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    company: Optional[str] = Field(None, max_length=255)
+    name: str | None = Field(None, min_length=1, max_length=255)
+    company: str | None = Field(None, max_length=255)
 
 
 # ============================================================================
@@ -99,7 +98,7 @@ class CustomerUpdateRequest(BaseModel):
 class APIKeyCreateRequest(BaseModel):
     """API key creation request"""
     name: str = Field("Default", min_length=1, max_length=255)
-    expires_in_days: Optional[int] = Field(None, ge=1, le=365)
+    expires_in_days: int | None = Field(None, ge=1, le=365)
 
 
 class APIKeyResponse(BaseModel):
@@ -109,9 +108,9 @@ class APIKeyResponse(BaseModel):
     key_prefix: str = Field(..., description="First 8 characters for identification")
     status: str
     rate_limit_qps: float
-    created_at: Optional[datetime] = None
-    expires_at: Optional[datetime] = None
-    last_used: Optional[datetime] = None
+    created_at: datetime | None = None
+    expires_at: datetime | None = None
+    last_used: datetime | None = None
     request_count: int = 0
 
 
@@ -122,13 +121,13 @@ class APIKeyCreateResponse(BaseModel):
     secret: str = Field(..., description="API secret - shown ONLY on creation")
     key_prefix: str
     rate_limit_qps: float
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
     message: str = "Save your API secret - it won't be shown again"
 
 
 class APIKeyListResponse(BaseModel):
     """List of API keys"""
-    api_keys: List[APIKeyResponse]
+    api_keys: list[APIKeyResponse]
 
 
 # ============================================================================
@@ -140,10 +139,10 @@ class SubscriptionResponse(BaseModel):
     subscription_id: str
     plan: str
     status: str
-    current_period_start: Optional[datetime] = None
-    current_period_end: Optional[datetime] = None
+    current_period_start: datetime | None = None
+    current_period_end: datetime | None = None
     queries_included: int
-    price_per_query_cents: Optional[float] = None
+    price_per_query_cents: float | None = None
     cancel_at_period_end: bool = False
 
 
@@ -155,16 +154,16 @@ class UpgradeRequest(BaseModel):
 class UpgradeResponse(BaseModel):
     """Plan upgrade response"""
     success: bool
-    checkout_url: Optional[str] = None  # Stripe checkout URL
+    checkout_url: str | None = None  # Stripe checkout URL
     new_plan: str
-    effective_date: Optional[datetime] = None
+    effective_date: datetime | None = None
     message: str
 
 
 class CancelResponse(BaseModel):
     """Subscription cancellation response"""
     success: bool
-    cancels_at: Optional[datetime] = None
+    cancels_at: datetime | None = None
     message: str
 
 
@@ -186,12 +185,12 @@ class UsageDay(BaseModel):
 
 class UsageSummary(BaseModel):
     """Usage summary for dashboard"""
-    current_period: Dict[str, str]  # {"start": ISO, "end": ISO}
+    current_period: dict[str, str]  # {"start": ISO, "end": ISO}
     queries_used: int
     queries_included: int
     overage_queries: int
     estimated_cost_cents: int
-    daily_breakdown: List[UsageDay]
+    daily_breakdown: list[UsageDay]
 
 
 class UsageResponse(BaseModel):
@@ -212,13 +211,13 @@ class Invoice(BaseModel):
     status: str  # paid, open, void, uncollectible
     period_start: str
     period_end: str
-    pdf_url: Optional[str] = None
+    pdf_url: str | None = None
     created_at: str
 
 
 class InvoiceListResponse(BaseModel):
     """List of invoices"""
-    invoices: List[Invoice]
+    invoices: list[Invoice]
 
 
 class PaymentMethod(BaseModel):
@@ -231,9 +230,9 @@ class PaymentMethod(BaseModel):
 
 class BillingInfo(BaseModel):
     """Billing information"""
-    payment_method: Optional[PaymentMethod] = None
-    next_invoice_date: Optional[str] = None
-    next_invoice_amount_cents: Optional[int] = None
+    payment_method: PaymentMethod | None = None
+    next_invoice_date: str | None = None
+    next_invoice_amount_cents: int | None = None
 
 
 # ============================================================================
@@ -244,7 +243,7 @@ class StripeWebhookPayload(BaseModel):
     """Stripe webhook event payload"""
     id: str
     type: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
     created: int
 
 
@@ -256,7 +255,7 @@ class ErrorResponse(BaseModel):
     """Error response"""
     error: str
     code: str
-    details: Optional[Dict[str, Any]] = None
+    details: dict[str, Any] | None = None
 
 
 class RateLimitError(BaseModel):
@@ -278,7 +277,7 @@ class ValidationError(BaseModel):
     """Validation error"""
     error: str = "Validation failed"
     code: str = "validation_error"
-    details: Dict[str, List[str]]  # field -> list of errors
+    details: dict[str, list[str]]  # field -> list of errors
 
 
 # ============================================================================
@@ -288,8 +287,8 @@ class ValidationError(BaseModel):
 class UsageHeaders(BaseModel):
     """Usage headers included in responses"""
     x_usage_queries: int = Field(..., alias="X-Usage-Queries")
-    x_usage_limit: Optional[int] = Field(None, alias="X-Usage-Limit")
-    x_usage_remaining: Optional[int] = Field(None, alias="X-Usage-Remaining")
+    x_usage_limit: int | None = Field(None, alias="X-Usage-Limit")
+    x_usage_remaining: int | None = Field(None, alias="X-Usage-Remaining")
 
     class Config:
         populate_by_name = True
@@ -317,7 +316,7 @@ class PlanConfig(BaseModel):
     queries_included: int
     price_per_query_cents: float
     rate_limit_qps: float
-    features: Dict[str, Any]
+    features: dict[str, Any]
 
 
 # Default plan configurations

@@ -48,11 +48,11 @@ Phase: 11.2 - Alignment Bridge (Safety Integration)
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.plugins.interface import DarkTracePlugin
-    from hololoom.dark_trace.plugins.safety_gate import TrustLevel, PluginCapability
+    from hololoom.dark_trace.plugins.safety_gate import PluginCapability, TrustLevel
     from hololoom.dark_trace.result import TraceResult
 
 logger = logging.getLogger("hololoom.dark_trace.plugins.alignment_bridge")
@@ -93,13 +93,13 @@ class PluginAuditEventType:
 class PluginAuditEntry:
     """A single audit log entry for plugin operations."""
     event_type: str
-    plugin_name: Optional[str]
+    plugin_name: str | None
     timestamp: datetime
-    data: Dict[str, Any]
+    data: dict[str, Any]
     severity: str = "info"  # debug, info, warning, error, critical
-    trace_id: Optional[str] = None
+    trace_id: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "event_type": self.event_type,
@@ -122,10 +122,10 @@ class DeceptionCheckResult:
     confidence: float  # 0.0 = definitely not, 1.0 = definitely deceptive
     claimed_behavior: str
     observed_behavior: str
-    discrepancies: List[str] = field(default_factory=list)
+    discrepancies: list[str] = field(default_factory=list)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "is_deceptive": self.is_deceptive,
@@ -146,11 +146,11 @@ class PowerSeekingCheckResult:
     """Result of checking for power-seeking behavior."""
     is_power_seeking: bool
     confidence: float
-    patterns_detected: List[str]
-    capabilities_requested: List[str]
+    patterns_detected: list[str]
+    capabilities_requested: list[str]
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "is_power_seeking": self.is_power_seeking,
@@ -180,10 +180,10 @@ class PluginAlignmentBridge:
 
     def __init__(
         self,
-        guardrails: Optional[Any] = None,
-        audit_trail: Optional[Any] = None,
-        deception_detector: Optional[Any] = None,
-        convergence_guard: Optional[Any] = None,
+        guardrails: Any | None = None,
+        audit_trail: Any | None = None,
+        deception_detector: Any | None = None,
+        convergence_guard: Any | None = None,
         enable_local_audit: bool = True,
     ) -> None:
         """
@@ -203,7 +203,7 @@ class PluginAlignmentBridge:
         self._enable_local_audit = enable_local_audit
 
         # Local audit log (backup if no AuditTrail)
-        self._local_audit: List[PluginAuditEntry] = []
+        self._local_audit: list[PluginAuditEntry] = []
         self._max_local_entries = 10000
 
         # Metrics
@@ -217,7 +217,7 @@ class PluginAlignmentBridge:
         }
 
         # Plugin behavior tracking for deception detection
-        self._plugin_behaviors: Dict[str, List[Dict[str, Any]]] = {}
+        self._plugin_behaviors: dict[str, list[dict[str, Any]]] = {}
 
         logger.info("PluginAlignmentBridge initialized")
 
@@ -230,9 +230,9 @@ class PluginAlignmentBridge:
         plugin: "DarkTracePlugin",
         trust_level: "TrustLevel",
         success: bool = True,
-        failure_reason: Optional[str] = None,
-        granted_capabilities: Optional[List[Any]] = None,
-        denied_capabilities: Optional[List[Any]] = None,
+        failure_reason: str | None = None,
+        granted_capabilities: list[Any] | None = None,
+        denied_capabilities: list[Any] | None = None,
     ) -> None:
         """
         Log plugin registration to audit trail.
@@ -343,9 +343,9 @@ class PluginAlignmentBridge:
         plugin_name: str,
         operation: str,
         result: Any,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         success: bool = True,
-        error: Optional[str] = None,
+        error: str | None = None,
     ) -> None:
         """
         Audit a plugin operation.
@@ -414,10 +414,10 @@ class PluginAlignmentBridge:
     async def _log_event(
         self,
         event_type: str,
-        plugin_name: Optional[str],
-        data: Dict[str, Any],
+        plugin_name: str | None,
+        data: dict[str, Any],
         severity: str = "info",
-        trace_id: Optional[str] = None,
+        trace_id: str | None = None,
     ) -> None:
         """Log an event to both local and external audit trail."""
         entry = PluginAuditEntry(
@@ -463,7 +463,7 @@ class PluginAlignmentBridge:
         plugin_name: str,
         operation: str,
         result: Any,
-        context: Optional[Dict[str, Any]],
+        context: dict[str, Any] | None,
     ) -> None:
         """Track plugin behavior for deception detection."""
         if plugin_name not in self._plugin_behaviors:
@@ -518,7 +518,7 @@ class PluginAlignmentBridge:
         if analysis_result is not None:
             observed_behavior += f"; Result type: {type(analysis_result).__name__}"
 
-        discrepancies: List[str] = []
+        discrepancies: list[str] = []
         confidence = 0.0
 
         # Check for discrepancies
@@ -578,7 +578,7 @@ class PluginAlignmentBridge:
     async def monitor_power_seeking(
         self,
         plugin_name: str,
-        requested_capabilities: List["PluginCapability"],
+        requested_capabilities: list["PluginCapability"],
         current_trust_level: "TrustLevel",
     ) -> PowerSeekingCheckResult:
         """
@@ -599,7 +599,7 @@ class PluginAlignmentBridge:
         """
         self._metrics["power_seeking_checks"] += 1
 
-        patterns_detected: List[str] = []
+        patterns_detected: list[str] = []
         confidence = 0.0
 
         # Get capability strings for analysis
@@ -674,7 +674,7 @@ class PluginAlignmentBridge:
     # Safety Metrics
     # -------------------------------------------------------------------------
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get alignment bridge metrics for monitoring."""
         return {
             **self._metrics,
@@ -685,9 +685,9 @@ class PluginAlignmentBridge:
     def get_recent_audit_entries(
         self,
         limit: int = 100,
-        plugin_name: Optional[str] = None,
-        event_type: Optional[str] = None,
-    ) -> List[PluginAuditEntry]:
+        plugin_name: str | None = None,
+        event_type: str | None = None,
+    ) -> list[PluginAuditEntry]:
         """
         Get recent audit entries with optional filtering.
 
@@ -711,12 +711,12 @@ class PluginAlignmentBridge:
 
     async def query_audit_trail(
         self,
-        event_types: Optional[List[str]] = None,
-        plugin_name: Optional[str] = None,
-        start_time: Optional[datetime] = None,
-        end_time: Optional[datetime] = None,
+        event_types: list[str] | None = None,
+        plugin_name: str | None = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
         limit: int = 100,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Query the audit trail.
 
@@ -763,12 +763,12 @@ class PluginAlignmentBridge:
     # -------------------------------------------------------------------------
 
     @property
-    def guardrails(self) -> Optional[Any]:
+    def guardrails(self) -> Any | None:
         """Get the SafetyGuardrails instance."""
         return self._guardrails
 
     @property
-    def audit_trail(self) -> Optional[Any]:
+    def audit_trail(self) -> Any | None:
         """Get the AuditTrail instance."""
         return self._audit_trail
 
@@ -778,8 +778,8 @@ class PluginAlignmentBridge:
 # =============================================================================
 
 def create_alignment_bridge(
-    guardrails: Optional[Any] = None,
-    audit_trail: Optional[Any] = None,
+    guardrails: Any | None = None,
+    audit_trail: Any | None = None,
     auto_create_components: bool = True,
 ) -> PluginAlignmentBridge:
     """
@@ -799,10 +799,10 @@ def create_alignment_bridge(
     if auto_create_components:
         try:
             from hololoom.alignment import (
-                create_guardrails,
                 create_audit_trail,
                 create_detector,
                 create_guard,
+                create_guardrails,
             )
 
             if guardrails is None:

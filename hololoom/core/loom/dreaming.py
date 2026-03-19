@@ -29,18 +29,15 @@ Author: HoloLoom Architecture Team
 import asyncio
 import logging
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any
 
 from hololoom.loom.protocol import (
-    Loom,
     DreamInsight,
     InsightType,
-    MathInsight,
-    PatternInsight,
-    CorrectionInsight,
-    DiscoveryInsight,
+    Loom,
 )
 
 logger = logging.getLogger(__name__)
@@ -59,8 +56,8 @@ class DreamCycleStats:
 
     # Collection stats
     total_insights_collected: int = 0
-    insights_by_loom: Dict[str, int] = field(default_factory=dict)
-    insights_by_type: Dict[str, int] = field(default_factory=dict)
+    insights_by_loom: dict[str, int] = field(default_factory=dict)
+    insights_by_type: dict[str, int] = field(default_factory=dict)
 
     # Distribution stats
     math_shared: int = 0
@@ -75,7 +72,7 @@ class DreamCycleStats:
     # Duration
     duration_ms: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "cycle_number": self.cycle_number,
@@ -115,7 +112,7 @@ class DreamOrchestratorMetrics:
     avg_cycle_duration_ms: float = 0.0
 
     # Recent history
-    recent_cycles: List[DreamCycleStats] = field(default_factory=list)
+    recent_cycles: list[DreamCycleStats] = field(default_factory=list)
 
     def add_cycle(self, stats: DreamCycleStats):
         """Add cycle stats and update cumulative metrics."""
@@ -144,7 +141,7 @@ class DreamOrchestratorMetrics:
         if len(self.recent_cycles) > 10:
             self.recent_cycles.pop(0)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "total_cycles": self.total_cycles,
@@ -192,13 +189,13 @@ class DreamOrchestrator:
 
     def __init__(
         self,
-        looms: List[Loom],
+        looms: list[Loom],
         consolidation_interval: int = 3600,
         math_bleed_rate: float = 0.3,
         pattern_bleed_rate: float = 0.2,
         discovery_confidence_threshold: float = 0.8,
         max_insights_per_cycle: int = 100,
-        on_cycle_complete: Optional[Callable[[DreamCycleStats], None]] = None,
+        on_cycle_complete: Callable[[DreamCycleStats], None] | None = None,
     ):
         """
         Initialize the Dream Orchestrator.
@@ -222,12 +219,12 @@ class DreamOrchestrator:
 
         # State
         self._running = False
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
         self._cycle_count = 0
         self._metrics = DreamOrchestratorMetrics()
 
         # Loom name lookup
-        self._loom_names: Dict[str, Loom] = {
+        self._loom_names: dict[str, Loom] = {
             loom.perspective: loom for loom in looms
         }
 
@@ -399,7 +396,7 @@ class DreamOrchestrator:
 
     # ========== Collection ==========
 
-    async def _collect_insights(self, stats: DreamCycleStats) -> List[DreamInsight]:
+    async def _collect_insights(self, stats: DreamCycleStats) -> list[DreamInsight]:
         """
         Collect shareable insights from all looms.
 
@@ -438,9 +435,9 @@ class DreamOrchestrator:
 
     def _sample_insights(
         self,
-        insights: List[DreamInsight],
+        insights: list[DreamInsight],
         rate: float
-    ) -> List[DreamInsight]:
+    ) -> list[DreamInsight]:
         """
         Sample insights based on bleed rate and confidence.
 
@@ -498,7 +495,7 @@ class DreamOrchestrator:
 
     async def _distribute_insights(
         self,
-        insights: List[DreamInsight]
+        insights: list[DreamInsight]
     ) -> int:
         """
         Distribute insights to looms (excluding source loom).
@@ -531,7 +528,7 @@ class DreamOrchestrator:
 
     # ========== Metrics ==========
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get orchestrator metrics."""
         return {
             "running": self._running,
@@ -554,7 +551,7 @@ class DreamOrchestrator:
 # ============================================================================
 
 def create_dream_orchestrator(
-    looms: List[Loom],
+    looms: list[Loom],
     consolidation_interval: int = 3600,
     math_bleed_rate: float = 0.3,
     pattern_bleed_rate: float = 0.2,

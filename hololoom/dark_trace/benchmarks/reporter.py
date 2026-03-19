@@ -10,12 +10,12 @@ Created: December 2025
 
 import json
 import time
-from typing import Any, Dict, List, Optional, Union
-from dataclasses import dataclass, field
-from pathlib import Path
+from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
-from .suite import BenchmarkSuiteResult, BenchmarkResult, BenchmarkCategory
+from .suite import BenchmarkResult, BenchmarkSuiteResult
 
 
 @dataclass
@@ -45,7 +45,7 @@ class BenchmarkReporter:
     - Prometheus: Metrics export for monitoring
     """
 
-    def __init__(self, config: Optional[ReportConfig] = None):
+    def __init__(self, config: ReportConfig | None = None):
         self.config = config or ReportConfig()
 
     def generate_html(self, suite_result: BenchmarkSuiteResult) -> str:
@@ -174,7 +174,7 @@ class BenchmarkReporter:
     def save(
         self,
         suite_result: BenchmarkSuiteResult,
-        path: Union[str, Path],
+        path: str | Path,
         format: str = "html"
     ) -> None:
         """Save report to file."""
@@ -498,10 +498,10 @@ class BenchmarkReporter:
 
     def _group_by_category(
         self,
-        results: List[BenchmarkResult]
-    ) -> Dict[str, List[BenchmarkResult]]:
+        results: list[BenchmarkResult]
+    ) -> dict[str, list[BenchmarkResult]]:
         """Group results by category."""
-        groups: Dict[str, List[BenchmarkResult]] = {}
+        groups: dict[str, list[BenchmarkResult]] = {}
         for result in results:
             category = result.category.value
             if category not in groups:
@@ -509,7 +509,7 @@ class BenchmarkReporter:
             groups[category].append(result)
         return groups
 
-    def _analyze_results(self, suite_result: BenchmarkSuiteResult) -> Dict[str, Any]:
+    def _analyze_results(self, suite_result: BenchmarkSuiteResult) -> dict[str, Any]:
         """Analyze benchmark results."""
         results = suite_result.results
         if not results:
@@ -545,7 +545,7 @@ class BenchmarkReporter:
     def _generate_recommendations(
         self,
         suite_result: BenchmarkSuiteResult
-    ) -> List[Dict[str, str]]:
+    ) -> list[dict[str, str]]:
         """Generate recommendations based on results."""
         recommendations = []
 
@@ -597,7 +597,7 @@ class BenchmarkReporter:
 def generate_report(
     suite_result: BenchmarkSuiteResult,
     format: str = "html",
-    config: Optional[ReportConfig] = None
+    config: ReportConfig | None = None
 ) -> str:
     """Convenience function to generate a report."""
     reporter = BenchmarkReporter(config)

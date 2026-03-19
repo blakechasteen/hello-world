@@ -9,6 +9,6 @@ Exports:
 - ExecutionLimits: Timeout and halt condition configuration
 """
 
-from .trigger import ChronoTrigger, TemporalWindow, ExecutionLimits
+from .trigger import ChronoTrigger, ExecutionLimits, TemporalWindow
 
 __all__ = ["ChronoTrigger", "TemporalWindow", "ExecutionLimits"]

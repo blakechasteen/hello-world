@@ -9,16 +9,16 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
     from hololoom.fabric.spacetime import Spacetime
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 logger = logging.getLogger(__name__)
 
 
-async def close_orchestrator(orch: 'WeavingOrchestrator') -> None:
+async def close_orchestrator(orch: WeavingOrchestrator) -> None:
     """Clean up all orchestrator resources. Idempotent."""
     if orch._closed:
         return
@@ -96,7 +96,7 @@ async def close_orchestrator(orch: 'WeavingOrchestrator') -> None:
     logger.info("WeavingOrchestrator closed successfully")
 
 
-async def get_health(orch: 'WeavingOrchestrator') -> Optional[Dict[str, Any]]:
+async def get_health(orch: WeavingOrchestrator) -> dict[str, Any] | None:
     """Get production health check status."""
     if not orch.enable_production_hardening or not orch.health_checker:
         logger.warning("[PRODUCTION] Health checks not enabled")
@@ -115,7 +115,7 @@ async def get_health(orch: 'WeavingOrchestrator') -> Optional[Dict[str, Any]]:
         }
 
 
-def get_circuit_breaker_status(orch: 'WeavingOrchestrator') -> Optional[Dict[str, Any]]:
+def get_circuit_breaker_status(orch: WeavingOrchestrator) -> dict[str, Any] | None:
     """Get circuit breaker states for all registered backends."""
     if not orch.enable_production_hardening or not orch.breaker_registry:
         logger.warning("[PRODUCTION] Circuit breakers not enabled")
@@ -142,7 +142,7 @@ def get_circuit_breaker_status(orch: 'WeavingOrchestrator') -> Optional[Dict[str
         return {"error": str(e), "timestamp": time.time()}
 
 
-def save_dashboard(orch: 'WeavingOrchestrator', spacetime: 'Spacetime', output_path: str) -> None:
+def save_dashboard(orch: WeavingOrchestrator, spacetime: Spacetime, output_path: str) -> None:
     """Save dashboard from Spacetime to HTML file."""
     if not orch.enable_dashboards:
         raise ValueError("Dashboards are not enabled. Initialize with enable_dashboards=True")
@@ -156,7 +156,7 @@ def save_dashboard(orch: 'WeavingOrchestrator', spacetime: 'Spacetime', output_p
     logger.info(f"[DASHBOARD] Saved to {output_path}")
 
 
-async def dream(orch: 'WeavingOrchestrator', num_epochs: int = 1, num_workers: int = 5) -> None:
+async def dream(orch: WeavingOrchestrator, num_epochs: int = 1, num_workers: int = 5) -> None:
     """Trigger EGGROLL evolutionary training on recent experiences."""
     logger.info(f"[DREAM] Starting EGGROLL dream cycle (epochs={num_epochs}, workers={num_workers})")
 

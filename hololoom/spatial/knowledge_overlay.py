@@ -8,16 +8,16 @@
 # - Interactive query and exploration
 # - Memory palace visualization
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Tuple, Set
-from datetime import datetime
-import asyncio
 import logging
 import math
 import uuid
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum, auto
+from typing import Any
 
-from hololoom.spatial.math_types import Vector3, Quaternion, Color, Transform, BoundingBox
+from hololoom.spatial.math_types import Color, Quaternion, Vector3
 
 logger = logging.getLogger(__name__)
 
@@ -77,9 +77,9 @@ class KnowledgeNodeOverlay:
 
     # Content
     title: str
-    summary: Optional[str] = None
-    content: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
+    summary: str | None = None
+    content: str | None = None
+    tags: list[str] = field(default_factory=list)
     confidence: float = 1.0
 
     # Spatial
@@ -120,7 +120,7 @@ class KnowledgeNodeOverlay:
     created_at: datetime = field(default_factory=datetime.now)
     last_accessed: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "overlay_id": self.overlay_id,
             "node_id": self.node_id,
@@ -176,7 +176,7 @@ class KnowledgeEdgeOverlay:
     is_visible: bool = True
     opacity: float = 1.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "edge_id": self.edge_id,
             "source_overlay_id": self.source_overlay_id,
@@ -200,7 +200,7 @@ class OverlayCluster:
     """
     cluster_id: str
     name: str
-    overlays: List[str] = field(default_factory=list)  # Overlay IDs
+    overlays: list[str] = field(default_factory=list)  # Overlay IDs
 
     # Spatial
     center: Vector3 = field(default_factory=Vector3)
@@ -215,7 +215,7 @@ class OverlayCluster:
     is_expanded: bool = True
     is_focused: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "cluster_id": self.cluster_id,
             "name": self.name,
@@ -245,8 +245,8 @@ class MemoryPalaceRoom:
     entrance_position: Vector3 = field(default_factory=Vector3)
 
     # Content
-    overlays: List[str] = field(default_factory=list)
-    connected_rooms: List[str] = field(default_factory=list)
+    overlays: list[str] = field(default_factory=list)
+    connected_rooms: list[str] = field(default_factory=list)
 
     # Visual
     ambient_color: Color = field(default_factory=lambda: Color(0.2, 0.25, 0.3))
@@ -256,7 +256,7 @@ class MemoryPalaceRoom:
     is_discovered: bool = False
     is_current: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "room_id": self.room_id,
             "name": self.name,
@@ -291,10 +291,10 @@ class LayoutEngine:
 
     def compute_layout(
         self,
-        overlays: List[KnowledgeNodeOverlay],
-        edges: List[KnowledgeEdgeOverlay],
-        algorithm: Optional[LayoutAlgorithm] = None
-    ) -> Dict[str, Vector3]:
+        overlays: list[KnowledgeNodeOverlay],
+        edges: list[KnowledgeEdgeOverlay],
+        algorithm: LayoutAlgorithm | None = None
+    ) -> dict[str, Vector3]:
         """
         Compute positions for overlays using specified algorithm.
 
@@ -319,16 +319,16 @@ class LayoutEngine:
 
     def _force_directed_layout(
         self,
-        overlays: List[KnowledgeNodeOverlay],
-        edges: List[KnowledgeEdgeOverlay]
-    ) -> Dict[str, Vector3]:
+        overlays: list[KnowledgeNodeOverlay],
+        edges: list[KnowledgeEdgeOverlay]
+    ) -> dict[str, Vector3]:
         """Force-directed spring layout."""
         if not overlays:
             return {}
 
         # Initialize positions randomly
-        positions: Dict[str, Vector3] = {}
-        velocities: Dict[str, Vector3] = {}
+        positions: dict[str, Vector3] = {}
+        velocities: dict[str, Vector3] = {}
 
         for i, overlay in enumerate(overlays):
             angle = (i / len(overlays)) * 2 * math.pi
@@ -346,7 +346,7 @@ class LayoutEngine:
 
         # Iterate
         for _ in range(self.iterations):
-            forces: Dict[str, Vector3] = {oid: Vector3(0, 0, 0) for oid in positions}
+            forces: dict[str, Vector3] = {oid: Vector3(0, 0, 0) for oid in positions}
 
             # Repulsion between all pairs
             overlay_ids = list(positions.keys())
@@ -429,9 +429,9 @@ class LayoutEngine:
 
     def _radial_layout(
         self,
-        overlays: List[KnowledgeNodeOverlay],
-        edges: List[KnowledgeEdgeOverlay]
-    ) -> Dict[str, Vector3]:
+        overlays: list[KnowledgeNodeOverlay],
+        edges: list[KnowledgeEdgeOverlay]
+    ) -> dict[str, Vector3]:
         """Radial layout from center, with more important nodes closer."""
         positions = {}
 
@@ -456,15 +456,15 @@ class LayoutEngine:
 
     def _hierarchical_layout(
         self,
-        overlays: List[KnowledgeNodeOverlay],
-        edges: List[KnowledgeEdgeOverlay]
-    ) -> Dict[str, Vector3]:
+        overlays: list[KnowledgeNodeOverlay],
+        edges: list[KnowledgeEdgeOverlay]
+    ) -> dict[str, Vector3]:
         """Tree-like hierarchical layout."""
         positions = {}
 
         # Find roots (no incoming edges)
-        incoming: Dict[str, int] = {o.overlay_id: 0 for o in overlays}
-        children: Dict[str, List[str]] = {o.overlay_id: [] for o in overlays}
+        incoming: dict[str, int] = {o.overlay_id: 0 for o in overlays}
+        children: dict[str, list[str]] = {o.overlay_id: [] for o in overlays}
 
         for edge in edges:
             if edge.target_overlay_id in incoming:
@@ -477,7 +477,7 @@ class LayoutEngine:
             roots = [overlays[0].overlay_id] if overlays else []
 
         # BFS to assign levels
-        levels: Dict[str, int] = {}
+        levels: dict[str, int] = {}
         queue = [(rid, 0) for rid in roots]
         visited = set()
 
@@ -493,8 +493,8 @@ class LayoutEngine:
                     queue.append((child_id, level + 1))
 
         # Position by level
-        level_counts: Dict[int, int] = {}
-        level_indices: Dict[str, int] = {}
+        level_counts: dict[int, int] = {}
+        level_indices: dict[str, int] = {}
 
         for oid, level in levels.items():
             if level not in level_counts:
@@ -519,7 +519,7 @@ class LayoutEngine:
 
         return positions
 
-    def _circular_layout(self, overlays: List[KnowledgeNodeOverlay]) -> Dict[str, Vector3]:
+    def _circular_layout(self, overlays: list[KnowledgeNodeOverlay]) -> dict[str, Vector3]:
         """Simple circular layout."""
         positions = {}
 
@@ -533,7 +533,7 @@ class LayoutEngine:
 
         return positions
 
-    def _grid_layout(self, overlays: List[KnowledgeNodeOverlay]) -> Dict[str, Vector3]:
+    def _grid_layout(self, overlays: list[KnowledgeNodeOverlay]) -> dict[str, Vector3]:
         """Grid layout."""
         positions = {}
 
@@ -554,12 +554,12 @@ class LayoutEngine:
 
     def _cluster_layout(
         self,
-        overlays: List[KnowledgeNodeOverlay],
-        edges: List[KnowledgeEdgeOverlay]
-    ) -> Dict[str, Vector3]:
+        overlays: list[KnowledgeNodeOverlay],
+        edges: list[KnowledgeEdgeOverlay]
+    ) -> dict[str, Vector3]:
         """Cluster-based layout grouping connected nodes."""
         # Simple clustering by tag similarity
-        clusters: Dict[str, List[str]] = {}
+        clusters: dict[str, list[str]] = {}
 
         for overlay in overlays:
             # Use first tag as cluster key
@@ -602,10 +602,10 @@ class KnowledgeOverlayManager:
     """
 
     def __init__(self):
-        self.overlays: Dict[str, KnowledgeNodeOverlay] = {}
-        self.edges: Dict[str, KnowledgeEdgeOverlay] = {}
-        self.clusters: Dict[str, OverlayCluster] = {}
-        self.rooms: Dict[str, MemoryPalaceRoom] = {}
+        self.overlays: dict[str, KnowledgeNodeOverlay] = {}
+        self.edges: dict[str, KnowledgeEdgeOverlay] = {}
+        self.clusters: dict[str, OverlayCluster] = {}
+        self.rooms: dict[str, MemoryPalaceRoom] = {}
 
         self.layout_engine = LayoutEngine()
         self.current_layout = LayoutAlgorithm.FORCE_DIRECTED
@@ -619,10 +619,10 @@ class KnowledgeOverlayManager:
         self._running = False
 
         # Event handlers
-        self._event_handlers: Dict[str, List[Callable]] = {}
+        self._event_handlers: dict[str, list[Callable]] = {}
 
         # Color palette for tags
-        self._tag_colors: Dict[str, Color] = {}
+        self._tag_colors: dict[str, Color] = {}
         self._color_palette = [
             Color(0.2, 0.4, 0.8),   # Blue
             Color(0.2, 0.7, 0.4),   # Green
@@ -648,13 +648,13 @@ class KnowledgeOverlayManager:
         self,
         node_id: str,
         title: str,
-        summary: Optional[str] = None,
-        content: Optional[str] = None,
-        tags: Optional[List[str]] = None,
+        summary: str | None = None,
+        content: str | None = None,
+        tags: list[str] | None = None,
         confidence: float = 1.0,
         importance: float = 0.5,
-        position: Optional[Vector3] = None,
-        style: Optional[OverlayStyle] = None
+        position: Vector3 | None = None,
+        style: OverlayStyle | None = None
     ) -> KnowledgeNodeOverlay:
         """Create a new knowledge overlay."""
         overlay_id = str(uuid.uuid4())[:8]
@@ -686,9 +686,9 @@ class KnowledgeOverlayManager:
 
     def create_overlays_from_knowledge(
         self,
-        knowledge_nodes: List[Dict[str, Any]],
-        relationships: List[Dict[str, Any]]
-    ) -> Tuple[List[KnowledgeNodeOverlay], List[KnowledgeEdgeOverlay]]:
+        knowledge_nodes: list[dict[str, Any]],
+        relationships: list[dict[str, Any]]
+    ) -> tuple[list[KnowledgeNodeOverlay], list[KnowledgeEdgeOverlay]]:
         """
         Create overlays from hololoom knowledge graph data.
 
@@ -702,7 +702,7 @@ class KnowledgeOverlayManager:
             (overlays, edges)
         """
         # Create node-to-overlay mapping
-        node_to_overlay: Dict[str, str] = {}
+        node_to_overlay: dict[str, str] = {}
         created_overlays = []
 
         for node in knowledge_nodes:
@@ -755,11 +755,11 @@ class KnowledgeOverlayManager:
         self._emit_event("overlay_removed", {"overlay_id": overlay_id})
         return True
 
-    def get_overlay(self, overlay_id: str) -> Optional[KnowledgeNodeOverlay]:
+    def get_overlay(self, overlay_id: str) -> KnowledgeNodeOverlay | None:
         """Get overlay by ID."""
         return self.overlays.get(overlay_id)
 
-    def get_overlay_by_node(self, node_id: str) -> Optional[KnowledgeNodeOverlay]:
+    def get_overlay_by_node(self, node_id: str) -> KnowledgeNodeOverlay | None:
         """Get overlay by knowledge node ID."""
         for overlay in self.overlays.values():
             if overlay.node_id == node_id:
@@ -804,9 +804,9 @@ class KnowledgeOverlayManager:
 
     def apply_layout(
         self,
-        algorithm: Optional[LayoutAlgorithm] = None,
-        center: Optional[Vector3] = None,
-        spread: Optional[float] = None
+        algorithm: LayoutAlgorithm | None = None,
+        center: Vector3 | None = None,
+        spread: float | None = None
     ):
         """Apply layout algorithm to all overlays."""
         if center:
@@ -835,7 +835,7 @@ class KnowledgeOverlayManager:
     def update_visibility(
         self,
         viewer_position: Vector3,
-        gaze_target: Optional[str] = None
+        gaze_target: str | None = None
     ):
         """Update overlay visibility based on viewer position and gaze."""
         for overlay in self.overlays.values():
@@ -921,8 +921,8 @@ class KnowledgeOverlayManager:
     def create_cluster(
         self,
         name: str,
-        overlay_ids: List[str],
-        center: Optional[Vector3] = None
+        overlay_ids: list[str],
+        center: Vector3 | None = None
     ) -> OverlayCluster:
         """Create a cluster of overlays."""
         cluster_id = str(uuid.uuid4())[:8]
@@ -951,9 +951,9 @@ class KnowledgeOverlayManager:
         self.clusters[cluster_id] = cluster
         return cluster
 
-    def auto_cluster(self, min_cluster_size: int = 2) -> List[OverlayCluster]:
+    def auto_cluster(self, min_cluster_size: int = 2) -> list[OverlayCluster]:
         """Automatically cluster overlays by tags."""
-        tag_groups: Dict[str, List[str]] = {}
+        tag_groups: dict[str, list[str]] = {}
 
         for overlay in self.overlays.values():
             for tag in overlay.tags:
@@ -976,7 +976,7 @@ class KnowledgeOverlayManager:
         name: str,
         theme: str,
         center: Vector3,
-        size: Optional[Vector3] = None
+        size: Vector3 | None = None
     ) -> MemoryPalaceRoom:
         """Create a room in the memory palace."""
         room_id = str(uuid.uuid4())[:8]
@@ -1005,8 +1005,8 @@ class KnowledgeOverlayManager:
 
     def build_memory_palace(
         self,
-        room_configs: List[Dict[str, Any]]
-    ) -> Dict[str, MemoryPalaceRoom]:
+        room_configs: list[dict[str, Any]]
+    ) -> dict[str, MemoryPalaceRoom]:
         """
         Build a complete memory palace from configuration.
 
@@ -1017,7 +1017,7 @@ class KnowledgeOverlayManager:
                 - connected_rooms: List of room names to connect to
         """
         # Create rooms
-        room_by_name: Dict[str, str] = {}  # name -> room_id
+        room_by_name: dict[str, str] = {}  # name -> room_id
 
         for i, config in enumerate(room_configs):
             pos = config.get("position", {"x": i * 15, "y": 0, "z": 0})
@@ -1074,7 +1074,7 @@ class KnowledgeOverlayManager:
     async def show_query_results(
         self,
         query: str,
-        results: List[Dict[str, Any]],
+        results: list[dict[str, Any]],
         viewer_position: Vector3
     ):
         """Display query results as overlays arranged around the viewer."""
@@ -1123,7 +1123,7 @@ class KnowledgeOverlayManager:
             self._event_handlers[event] = []
         self._event_handlers[event].append(handler)
 
-    def _emit_event(self, event: str, data: Dict[str, Any]):
+    def _emit_event(self, event: str, data: dict[str, Any]):
         """Emit event to handlers."""
         for handler in self._event_handlers.get(event, []):
             try:
@@ -1133,7 +1133,7 @@ class KnowledgeOverlayManager:
 
     # === State Export ===
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export state for WebXR client."""
         return {
             "overlays": {oid: o.to_dict() for oid, o in self.overlays.items()},

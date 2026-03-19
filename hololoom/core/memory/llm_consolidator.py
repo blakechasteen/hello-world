@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Production LLM Consolidator (Week 3)
 =====================================
@@ -22,18 +23,15 @@ From LangMem research:
 - "Background consolidation reduces 100s of episodes → 10s of facts"
 """
 
-from typing import List, Dict, Optional, Any, Literal
-from dataclasses import dataclass, field
-from datetime import datetime
-import asyncio
 import logging
 import os
-import json
-
-from hololoom.protocols.types import MemoryShard
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Literal
 
 # UnifiedMRF for enhanced prompting (Phase 2.2 - Nov 2025)
-from hololoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+from hololoom.prompting.unified_mrf import MetapromptConfig, ModelProvider, UnifiedMRF
+from hololoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +47,8 @@ class LLMConfig:
     """LLM provider configuration."""
     provider: LLMProvider
     model: str
-    api_key: Optional[str] = None
-    base_url: Optional[str] = None  # For Ollama/vLLM
+    api_key: str | None = None
+    base_url: str | None = None  # For Ollama/vLLM
     max_tokens: int = 500
     temperature: float = 0.3  # Low temp for factual extraction
     timeout: float = 30.0
@@ -155,7 +153,7 @@ class LLMClient:
         """
         self.config = config
         self.total_cost_usd = 0.0
-        self.usage_history: List[LLMUsage] = []
+        self.usage_history: list[LLMUsage] = []
 
         # Initialize provider-specific client
         if config.provider == "openai":
@@ -232,7 +230,7 @@ class LLMClient:
             logger.error(f"Failed to initialize vLLM: {e}")
             self.client = None
 
-    async def complete(self, prompt: str) -> Optional[str]:
+    async def complete(self, prompt: str) -> str | None:
         """
         Generate completion from LLM.
 
@@ -257,7 +255,7 @@ class LLMClient:
             logger.error(f"LLM completion failed: {e}", exc_info=True)
             return None
 
-    async def _complete_openai(self, prompt: str) -> Optional[str]:
+    async def _complete_openai(self, prompt: str) -> str | None:
         """OpenAI/vLLM completion."""
         response = await self.client.chat.completions.create(
             model=self.config.model,
@@ -283,7 +281,7 @@ class LLMClient:
 
         return response.choices[0].message.content
 
-    async def _complete_anthropic(self, prompt: str) -> Optional[str]:
+    async def _complete_anthropic(self, prompt: str) -> str | None:
         """Anthropic completion."""
         response = await self.client.messages.create(
             model=self.config.model,
@@ -307,7 +305,7 @@ class LLMClient:
 
         return response.content[0].text
 
-    async def _complete_ollama(self, prompt: str) -> Optional[str]:
+    async def _complete_ollama(self, prompt: str) -> str | None:
         """Ollama completion."""
         response = await self.client.chat(
             model=self.config.model,
@@ -346,7 +344,7 @@ class LLMClient:
             f"{prompt_tokens + completion_tokens}t tokens, ${cost_usd:.4f}"
         )
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get LLM usage statistics."""
         if not self.usage_history:
             return {
@@ -392,9 +390,9 @@ class ProductionLLMConsolidator:
 
     def __init__(
         self,
-        config: Optional[LLMConfig] = None,
+        config: LLMConfig | None = None,
         enable_fallback: bool = True,
-        model_provider: Optional[str] = None  # NEW (Phase 2.2)
+        model_provider: str | None = None  # NEW (Phase 2.2)
     ):
         """
         Initialize production LLM consolidator.
@@ -426,7 +424,7 @@ class ProductionLLMConsolidator:
             f"mrf_model={model_provider}"
         )
 
-    async def extract_facts(self, episodes: List[MemoryShard]) -> List[str]:
+    async def extract_facts(self, episodes: list[MemoryShard]) -> list[str]:
         """
         Extract semantic facts from episodic memories.
 
@@ -456,7 +454,7 @@ class ProductionLLMConsolidator:
 
         return []
 
-    async def _extract_facts_llm(self, episodes: List[MemoryShard]) -> List[str]:
+    async def _extract_facts_llm(self, episodes: list[MemoryShard]) -> list[str]:
         """
         LLM-based fact extraction.
 
@@ -588,7 +586,7 @@ class ProductionLLMConsolidator:
 
         return facts[:10]  # Limit to 10 facts
 
-    async def _extract_facts_fallback(self, episodes: List[MemoryShard]) -> List[str]:
+    async def _extract_facts_fallback(self, episodes: list[MemoryShard]) -> list[str]:
         """Rule-based fact extraction (fallback)."""
         facts = set()
         for episode in episodes:
@@ -603,8 +601,8 @@ class ProductionLLMConsolidator:
 
     async def extract_entities(
         self,
-        episodes: List[MemoryShard]
-    ) -> List[tuple[str, str, str]]:
+        episodes: list[MemoryShard]
+    ) -> list[tuple[str, str, str]]:
         """
         Extract entity relationships from episodes.
 
@@ -636,8 +634,8 @@ class ProductionLLMConsolidator:
 
     async def _extract_entities_llm(
         self,
-        episodes: List[MemoryShard]
-    ) -> List[tuple[str, str, str]]:
+        episodes: list[MemoryShard]
+    ) -> list[tuple[str, str, str]]:
         """
         LLM-based entity extraction.
 
@@ -775,8 +773,8 @@ class ProductionLLMConsolidator:
 
     async def _extract_entities_fallback(
         self,
-        episodes: List[MemoryShard]
-    ) -> List[tuple[str, str, str]]:
+        episodes: list[MemoryShard]
+    ) -> list[tuple[str, str, str]]:
         """Rule-based entity extraction (fallback)."""
         edges = []
         for episode in episodes:
@@ -788,8 +786,8 @@ class ProductionLLMConsolidator:
 
     async def deduplicate(
         self,
-        memories: List[MemoryShard]
-    ) -> List[MemoryShard]:
+        memories: list[MemoryShard]
+    ) -> list[MemoryShard]:
         """
         Deduplicate similar memories.
 
@@ -821,8 +819,8 @@ class ProductionLLMConsolidator:
 
     async def _deduplicate_llm(
         self,
-        memories: List[MemoryShard]
-    ) -> List[MemoryShard]:
+        memories: list[MemoryShard]
+    ) -> list[MemoryShard]:
         """LLM-based deduplication."""
         # Format memories for prompt
         memory_texts = "\n".join([
@@ -854,8 +852,8 @@ class ProductionLLMConsolidator:
 
     async def _deduplicate_fallback(
         self,
-        memories: List[MemoryShard]
-    ) -> List[MemoryShard]:
+        memories: list[MemoryShard]
+    ) -> list[MemoryShard]:
         """Rule-based deduplication (fallback)."""
         seen_texts = set()
         unique_memories = []
@@ -867,7 +865,7 @@ class ProductionLLMConsolidator:
 
         return unique_memories
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get LLM usage statistics."""
         if self.llm_client:
             return self.llm_client.get_statistics()
@@ -884,9 +882,9 @@ class ProductionLLMConsolidator:
 
 def create_llm_config(
     provider: LLMProvider = "openai",
-    model: Optional[str] = None,
-    api_key: Optional[str] = None,
-    base_url: Optional[str] = None
+    model: str | None = None,
+    api_key: str | None = None,
+    base_url: str | None = None
 ) -> LLMConfig:
     """
     Create LLM configuration with sensible defaults.
@@ -920,10 +918,10 @@ def create_llm_config(
 
 def create_production_consolidator(
     provider: LLMProvider = "openai",
-    model: Optional[str] = None,
-    api_key: Optional[str] = None,
+    model: str | None = None,
+    api_key: str | None = None,
     enable_fallback: bool = True,
-    model_provider: Optional[str] = None  # NEW (Phase 2.2)
+    model_provider: str | None = None  # NEW (Phase 2.2)
 ) -> ProductionLLMConsolidator:
     """
     Create production LLM consolidator with sensible defaults.

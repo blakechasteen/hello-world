@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Recursive Learning Integration
 ===============================
@@ -29,15 +28,14 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from hololoom.protocols.types import Query
 from hololoom.fabric.spacetime import Spacetime
-
+from hololoom.protocols.types import Query
 
 logger = logging.getLogger(__name__)
 
 
 async def apply_recursive_learning(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     spacetime: Spacetime,
     query: Query
 ) -> Spacetime:

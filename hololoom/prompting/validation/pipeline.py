@@ -13,8 +13,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any
 
 
 class ValidationPhase(Enum):
@@ -33,20 +32,20 @@ class ValidationContext:
     start_time: datetime = field(default_factory=datetime.now)
 
     # Data accumulated across phases
-    baseline_queries: List[Dict[str, Any]] = field(default_factory=list)
-    mrf_queries: List[Dict[str, Any]] = field(default_factory=list)
+    baseline_queries: list[dict[str, Any]] = field(default_factory=list)
+    mrf_queries: list[dict[str, Any]] = field(default_factory=list)
 
     # Results from validators
-    validator_results: Dict[str, Any] = field(default_factory=dict)
+    validator_results: dict[str, Any] = field(default_factory=dict)
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def add_result(self, validator_name: str, result: Any):
         """Add result from a validator."""
         self.validator_results[validator_name] = result
 
-    def get_result(self, validator_name: str) -> Optional[Any]:
+    def get_result(self, validator_name: str) -> Any | None:
         """Get result from a validator."""
         return self.validator_results.get(validator_name)
 
@@ -71,7 +70,7 @@ class Validator(ABC):
         self.enabled = True
 
     @abstractmethod
-    async def validate(self, context: ValidationContext) -> Dict[str, Any]:
+    async def validate(self, context: ValidationContext) -> dict[str, Any]:
         """
         Run validation and return results.
 
@@ -99,7 +98,7 @@ class QualityValidator(Validator):
         super().__init__("quality")
         self.min_improvement_pct = min_improvement_pct
 
-    async def validate(self, context: ValidationContext) -> Dict[str, Any]:
+    async def validate(self, context: ValidationContext) -> dict[str, Any]:
         """Validate quality improvements."""
         # Extract quality scores
         baseline_quality = [
@@ -136,7 +135,7 @@ class LatencyValidator(Validator):
         super().__init__("latency")
         self.max_regression_pct = max_regression_pct
 
-    async def validate(self, context: ValidationContext) -> Dict[str, Any]:
+    async def validate(self, context: ValidationContext) -> dict[str, Any]:
         """Validate latency hasn't regressed significantly."""
         baseline_latencies = [
             q.get('latency_ms', 0.0)
@@ -171,7 +170,7 @@ class UserSatisfactionValidator(Validator):
         super().__init__("user_satisfaction")
         self.min_rating = min_rating
 
-    async def validate(self, context: ValidationContext) -> Dict[str, Any]:
+    async def validate(self, context: ValidationContext) -> dict[str, Any]:
         """Validate user satisfaction."""
         mrf_ratings = [
             q.get('user_rating', 0)
@@ -207,7 +206,7 @@ class StatisticalValidator(Validator):
         super().__init__("statistical")
         self.significance_level = significance_level
 
-    async def validate(self, context: ValidationContext) -> Dict[str, Any]:
+    async def validate(self, context: ValidationContext) -> dict[str, Any]:
         """Run statistical significance tests."""
         from .statistical_analysis import StatisticalAnalyzer
 
@@ -274,7 +273,7 @@ class ValidationPipeline:
     """
 
     def __init__(self):
-        self.validators: List[Validator] = []
+        self.validators: list[Validator] = []
 
     def add_validator(self, validator: Validator):
         """Add a validator to the pipeline."""
@@ -288,8 +287,8 @@ class ValidationPipeline:
 
     async def run(
         self,
-        baseline_queries: List[Dict[str, Any]],
-        mrf_queries: List[Dict[str, Any]],
+        baseline_queries: list[dict[str, Any]],
+        mrf_queries: list[dict[str, Any]],
         phase: ValidationPhase = ValidationPhase.ANALYSIS
     ) -> 'PipelineResults':
         """
@@ -384,7 +383,7 @@ class PipelineResults:
     """Results from validation pipeline."""
 
     passed: bool = False
-    validator_results: Dict[str, Any] = field(default_factory=dict)
+    validator_results: dict[str, Any] = field(default_factory=dict)
     summary: str = ""
 
     def get_recommendation(self) -> str:
@@ -447,7 +446,7 @@ if __name__ == "__main__":
         print(f"Summary: {results.summary}")
         print(f"Recommendation: {results.get_recommendation()}")
 
-        print(f"\nValidator Results:")
+        print("\nValidator Results:")
         for name, result in results.validator_results.items():
             status = result.get('status', 'unknown')
             print(f"  {name}: {status.upper()}")

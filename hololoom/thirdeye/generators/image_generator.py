@@ -24,19 +24,17 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, Any, Optional, List, Union
+import io
 from dataclasses import dataclass, field
 from pathlib import Path
-import asyncio
-import io
+from typing import Any
 
 from .prompt_builder import SceneToPrompt, build_prompt_from_scene
 from .sd_backend import (
-    StableDiffusionBackend,
-    ComfyUIBackend,
     A1111Backend,
+    ComfyUIBackend,
     GenerationParams,
-    GenerationResult,
+    StableDiffusionBackend,
 )
 
 
@@ -78,9 +76,9 @@ class GeneratedImage:
     prompt: str
     negative_prompt: str
     seed: int
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def save(self, path: Union[str, Path]) -> Path:
+    def save(self, path: str | Path) -> Path:
         """Save image to file."""
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -112,9 +110,9 @@ class ImageGenerator:
     - Returns clean result objects
     """
 
-    def __init__(self, config: Optional[GenerationConfig] = None):
+    def __init__(self, config: GenerationConfig | None = None):
         self.config = config or GenerationConfig()
-        self._backend: Optional[StableDiffusionBackend] = None
+        self._backend: StableDiffusionBackend | None = None
         self._prompt_builder = SceneToPrompt()
 
     async def _get_backend(self) -> StableDiffusionBackend:
@@ -132,7 +130,7 @@ class ImageGenerator:
                 )
         return self._backend
 
-    async def check_backend(self) -> Dict[str, Any]:
+    async def check_backend(self) -> dict[str, Any]:
         """Check if image generation backend is available."""
         backend = await self._get_backend()
         available = await backend.health_check()
@@ -148,9 +146,9 @@ class ImageGenerator:
 
     async def generate_from_scene(
         self,
-        scene: Dict[str, Any],
-        config: Optional[GenerationConfig] = None,
-    ) -> Union[GeneratedImage, Dict[str, str]]:
+        scene: dict[str, Any],
+        config: GenerationConfig | None = None,
+    ) -> GeneratedImage | dict[str, str]:
         """
         Generate an image from a ThirdEye scene.
 
@@ -175,10 +173,10 @@ class ImageGenerator:
     async def generate_from_text(
         self,
         text: str,
-        style: Optional[str] = None,
-        negative: Optional[str] = None,
-        config: Optional[GenerationConfig] = None,
-    ) -> Union[GeneratedImage, Dict[str, str]]:
+        style: str | None = None,
+        negative: str | None = None,
+        config: GenerationConfig | None = None,
+    ) -> GeneratedImage | dict[str, str]:
         """
         Generate an image from text description.
 
@@ -214,7 +212,7 @@ class ImageGenerator:
         positive: str,
         negative: str,
         config: GenerationConfig,
-    ) -> Union[GeneratedImage, Dict[str, str]]:
+    ) -> GeneratedImage | dict[str, str]:
         """Internal generation method."""
         backend = await self._get_backend()
 
@@ -278,9 +276,9 @@ class ImageGenerator:
 
     async def generate_batch(
         self,
-        scenes: List[Dict[str, Any]],
-        config: Optional[GenerationConfig] = None,
-    ) -> List[Union[GeneratedImage, Dict[str, str]]]:
+        scenes: list[dict[str, Any]],
+        config: GenerationConfig | None = None,
+    ) -> list[GeneratedImage | dict[str, str]]:
         """
         Generate images for multiple scenes.
 
@@ -306,12 +304,12 @@ class ImageGenerator:
 
 # Convenience function for quick generation
 async def generate_image(
-    source: Union[str, Dict[str, Any]],
+    source: str | dict[str, Any],
     width: int = 512,
     height: int = 512,
     steps: int = 20,
     seed: int = -1,
-) -> Union[GeneratedImage, Dict[str, str]]:
+) -> GeneratedImage | dict[str, str]:
     """
     Quick image generation from text or scene.
 

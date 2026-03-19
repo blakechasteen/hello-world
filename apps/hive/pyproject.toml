@@ -1,0 +1,14 @@
+[project]
+name = "hive"
+version = "0.1.0"
+description = "Hive management CLI — scored observations for apiary health"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[project.scripts]
+hive = "hive.cli:main"

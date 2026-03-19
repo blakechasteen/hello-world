@@ -12,7 +12,7 @@ Created: 2025-01-20
 """
 
 import logging
-from typing import Optional
+
 from hololoom.llm.unified_client import LLMConfig, LLMResponse
 
 logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ class AnthropicProvider:
             import anthropic
             self.client = anthropic.AsyncAnthropic(api_key=config.api_key)
             self._available = True
-            logger.info(f"✓ Anthropic client initialized")
+            logger.info("✓ Anthropic client initialized")
         except ImportError:
             logger.warning("⚠ Anthropic not installed. Install with: pip install anthropic")
 
@@ -61,7 +61,7 @@ class AnthropicProvider:
         prompt: str,
         max_tokens: int = 500,
         temperature: float = 0.7,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         **kwargs
     ) -> LLMResponse:
         """

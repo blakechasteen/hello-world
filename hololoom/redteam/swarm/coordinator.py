@@ -36,20 +36,17 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
+from .agent_base import BaseAgent
+from .communication import MessageBus
 from .protocols import (
     AgentMessage,
     AgentResult,
-    AgentRole,
     AgentState,
     AgentTask,
-    CoordinatorProtocol,
     MessagePriority,
 )
-from .communication import MessageBus
-from .agent_base import BaseAgent
-
 
 # ============================================================================
 # Enums
@@ -99,9 +96,9 @@ class SwarmMetrics:
     scout_count: int = 0
     attack_count: int = 0
     exploit_count: int = 0
-    phase_times: Dict[str, float] = field(default_factory=dict)
+    phase_times: dict[str, float] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize metrics to dict."""
         return {
             "agents_active": self.agents_active,
@@ -134,13 +131,13 @@ class SwarmCampaignResult:
 
     target: str
     total_duration_ms: float
-    vulnerabilities_found: List[Dict[str, Any]]
-    exploits_successful: List[Dict[str, Any]]
+    vulnerabilities_found: list[dict[str, Any]]
+    exploits_successful: list[dict[str, Any]]
     metrics: SwarmMetrics
-    agent_contributions: Dict[str, float] = field(default_factory=dict)
-    phase_results: Dict[str, Any] = field(default_factory=dict)
+    agent_contributions: dict[str, float] = field(default_factory=dict)
+    phase_results: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize campaign result to dict."""
         return {
             "target": self.target,
@@ -203,30 +200,30 @@ class SwarmCoordinator:
         self._num_exploiters = num_exploiters
 
         # Agent pools
-        self._scouts: List[BaseAgent] = []
-        self._attackers: List[BaseAgent] = []
-        self._exploiters: List[BaseAgent] = []
-        self._all_agents: List[BaseAgent] = []
+        self._scouts: list[BaseAgent] = []
+        self._attackers: list[BaseAgent] = []
+        self._exploiters: list[BaseAgent] = []
+        self._all_agents: list[BaseAgent] = []
 
         # Campaign state
         self._campaign_phase = CampaignPhase.IDLE
-        self._current_target: Optional[str] = None
+        self._current_target: str | None = None
         self._campaign_start_time: float = 0.0
 
         # Task tracking
-        self._pending_tasks: Dict[str, AgentTask] = {}
-        self._completed_results: Dict[str, List[AgentResult]] = {}
+        self._pending_tasks: dict[str, AgentTask] = {}
+        self._completed_results: dict[str, list[AgentResult]] = {}
 
         # Discovery tracking
-        self._discoveries: List[Dict[str, Any]] = []
-        self._exploits: List[Dict[str, Any]] = []
+        self._discoveries: list[dict[str, Any]] = []
+        self._exploits: list[dict[str, Any]] = []
 
         # Agent assignment strategy (Thompson Sampling priors)
-        self._agent_priors: Dict[str, Tuple[int, int]] = {}  # agent_id -> (α, β)
+        self._agent_priors: dict[str, tuple[int, int]] = {}  # agent_id -> (α, β)
 
         # Metrics
         self._metrics = SwarmMetrics()
-        self._task_latencies: List[float] = []
+        self._task_latencies: list[float] = []
 
         # State management
         self._lock = asyncio.Lock()
@@ -259,7 +256,9 @@ class SwarmCoordinator:
         )
 
         # Import from consolidated agents module (W2 cleanup - Dec 2025)
-        from .agents import ScoutAgent, AttackerAgent as AttackAgent, ExploiterAgent as ExploitAgent
+        from .agents import AttackerAgent as AttackAgent
+        from .agents import ExploiterAgent as ExploitAgent
+        from .agents import ScoutAgent
 
         try:
             # Create scout agents
@@ -524,7 +523,7 @@ class SwarmCoordinator:
             else:
                 self._metrics.tasks_failed += 1
 
-        self._logger.info(f"Attack phase complete")
+        self._logger.info("Attack phase complete")
 
     async def _exploitation_phase(self, target: str, duration_seconds: int) -> None:
         """Phase 3: Escalate successful attacks.
@@ -622,8 +621,8 @@ class SwarmCoordinator:
         return selected_agent.agent_id
 
     async def _execute_phase_tasks(
-        self, tasks: List[AgentTask], agent_pool: List[BaseAgent]
-    ) -> List[AgentResult]:
+        self, tasks: list[AgentTask], agent_pool: list[BaseAgent]
+    ) -> list[AgentResult]:
         """Execute list of tasks across agent pool.
 
         Distributes tasks and waits for completion with timeout.
@@ -635,7 +634,7 @@ class SwarmCoordinator:
         Returns:
             List of AgentResult objects
         """
-        results: List[AgentResult] = []
+        results: list[AgentResult] = []
 
         try:
             # Distribute all tasks
@@ -674,7 +673,7 @@ class SwarmCoordinator:
 
         return results
 
-    async def collect_results(self, timeout_ms: int = 5000) -> List[AgentResult]:
+    async def collect_results(self, timeout_ms: int = 5000) -> list[AgentResult]:
         """Collect completed task results.
 
         Waits for results to become available within timeout.
@@ -728,7 +727,7 @@ class SwarmCoordinator:
     # Agent Selection and Sampling
     # ========================================================================
 
-    def _select_pool_for_task(self, task: AgentTask) -> List[BaseAgent]:
+    def _select_pool_for_task(self, task: AgentTask) -> list[BaseAgent]:
         """Select appropriate agent pool for task type.
 
         Args:
@@ -747,7 +746,7 @@ class SwarmCoordinator:
             # Default to all agents
             return self._all_agents
 
-    def _thompson_sample_agent(self, agent_pool: List[BaseAgent]) -> BaseAgent:
+    def _thompson_sample_agent(self, agent_pool: list[BaseAgent]) -> BaseAgent:
         """Select agent using Thompson Sampling.
 
         Samples from Beta distribution for each agent based on success history
@@ -804,7 +803,7 @@ class SwarmCoordinator:
     # State Queries
     # ========================================================================
 
-    def get_agent_states(self) -> Dict[str, AgentState]:
+    def get_agent_states(self) -> dict[str, AgentState]:
         """Get current state of all agents.
 
         Returns:
@@ -835,7 +834,7 @@ class SwarmCoordinator:
     # Aggregation and Analysis
     # ========================================================================
 
-    def _aggregate_discoveries(self) -> List[Dict[str, Any]]:
+    def _aggregate_discoveries(self) -> list[dict[str, Any]]:
         """Aggregate discoveries from all agents.
 
         Returns:
@@ -853,7 +852,7 @@ class SwarmCoordinator:
 
         return unique
 
-    def _calculate_agent_contributions(self) -> Dict[str, float]:
+    def _calculate_agent_contributions(self) -> dict[str, float]:
         """Calculate contribution score for each agent.
 
         Based on:
@@ -864,7 +863,7 @@ class SwarmCoordinator:
         Returns:
             Dict mapping agent_id -> contribution_score (0.0-1.0)
         """
-        contributions: Dict[str, float] = {}
+        contributions: dict[str, float] = {}
 
         for agent in self._all_agents:
             metrics = agent._metrics
@@ -877,7 +876,7 @@ class SwarmCoordinator:
 
         return contributions
 
-    def _get_phase_results(self) -> Dict[str, Any]:
+    def _get_phase_results(self) -> dict[str, Any]:
         """Get results for each campaign phase.
 
         Returns:

@@ -28,17 +28,17 @@ Example:
     >>> # Routes to Elle's thread manager
 """
 
-from typing import Optional, Callable, Awaitable, Dict
 import logging
+from collections.abc import Awaitable, Callable
 
+from ..grammar.voice_grammar import CommandIntent, CommandType, VoiceGrammar
 from .voice_modes import VoiceMode, VoiceModeStateMachine, get_response_template
-from ..grammar.voice_grammar import VoiceGrammar, CommandIntent, CommandType
 
 logger = logging.getLogger(__name__)
 
 
 # Type aliases
-VoiceHandler = Callable[[str, Dict], Awaitable[str]]
+VoiceHandler = Callable[[str, dict], Awaitable[str]]
 
 
 class VoiceRouter:
@@ -51,8 +51,8 @@ class VoiceRouter:
 
     def __init__(
         self,
-        hololoom_handler: Optional[VoiceHandler] = None,
-        elle_handler: Optional[VoiceHandler] = None,
+        hololoom_handler: VoiceHandler | None = None,
+        elle_handler: VoiceHandler | None = None,
         initial_mode: VoiceMode = VoiceMode.CONVERSATIONAL
     ):
         """
@@ -89,7 +89,7 @@ class VoiceRouter:
         """
         return self.grammar.classify(text)
 
-    async def route(self, text: str, context: Optional[Dict] = None) -> str:
+    async def route(self, text: str, context: dict | None = None) -> str:
         """
         Route voice query to appropriate handler.
 
@@ -163,7 +163,7 @@ class VoiceRouter:
             logger.error(f"Mode switch failed: {e}")
             return f"Cannot switch to {mode_name} mode from {self.current_mode}."
 
-    async def _handle_thread_command(self, intent: CommandIntent, context: Dict) -> str:
+    async def _handle_thread_command(self, intent: CommandIntent, context: dict) -> str:
         """Handle thread management commands."""
         if self.elle_handler is None:
             logger.error("Elle handler not available for thread commands")
@@ -184,7 +184,7 @@ class VoiceRouter:
             logger.error(f"Elle handler error: {e}")
             return f"Error processing thread command: {str(e)}"
 
-    async def _handle_conversational(self, text: str, context: Dict) -> str:
+    async def _handle_conversational(self, text: str, context: dict) -> str:
         """Handle conversational queries via HoloLoom."""
         if self.hololoom_handler is None:
             logger.error("HoloLoom handler not available for conversational queries")
@@ -238,7 +238,7 @@ class VoiceRouter:
 
         return "\n".join(help_text)
 
-    def _handle_status(self, context: Dict) -> str:
+    def _handle_status(self, context: dict) -> str:
         """Handle status requests."""
         active_thread = context.get('active_thread', 'None')
         thread_count = context.get('thread_count', 0)
@@ -259,7 +259,7 @@ class VoiceRouter:
 
         return "\n".join(status_text)
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Get router statistics."""
         return {
             'current_mode': self.current_mode.name,

@@ -14,11 +14,10 @@ Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional
-import time
 import asyncio
-from statistics import mean, median, stdev
+import time
+from dataclasses import dataclass, field
+from statistics import mean, stdev
 
 
 @dataclass
@@ -51,7 +50,7 @@ class BenchmarkResult:
     cache_hit_rate: float = 0.0
 
     # Raw latencies for analysis
-    latencies: List[float] = field(default_factory=list)
+    latencies: list[float] = field(default_factory=list)
 
     @property
     def passes_sla(self) -> bool:
@@ -97,7 +96,7 @@ class DepartmentBenchmark:
 
     async def run(
         self,
-        test_queries: List[str],
+        test_queries: list[str],
         iterations: int = 100,
         concurrency: int = 1
     ) -> BenchmarkResult:
@@ -220,9 +219,9 @@ class DepartmentBenchmark:
 
     async def run_all_departments(
         self,
-        test_queries: List[str],
+        test_queries: list[str],
         iterations: int = 50
-    ) -> Dict[str, BenchmarkResult]:
+    ) -> dict[str, BenchmarkResult]:
         """
         Benchmark all departments.
 
@@ -247,7 +246,7 @@ class DepartmentBenchmark:
 
     def compare_results(
         self,
-        results: Dict[str, BenchmarkResult]
+        results: dict[str, BenchmarkResult]
     ) -> str:
         """
         Compare benchmark results across departments.

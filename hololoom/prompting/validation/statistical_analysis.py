@@ -11,10 +11,9 @@ Status: Production validation framework
 import json
 import math
 import statistics
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 
 class SignificanceLevel(Enum):
@@ -52,7 +51,7 @@ class TTestResult:
     ci_upper: float
     confidence_level: float = 0.95
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
             "sample_statistics": {
@@ -82,24 +81,24 @@ class ValidationReport:
     """Complete validation report comparing traditional vs UnifiedMRF."""
 
     # Quality metrics comparison
-    quality_ttest: Optional[TTestResult] = None
-    accuracy_ttest: Optional[TTestResult] = None
-    completeness_ttest: Optional[TTestResult] = None
+    quality_ttest: TTestResult | None = None
+    accuracy_ttest: TTestResult | None = None
+    completeness_ttest: TTestResult | None = None
 
     # Latency comparison
-    latency_ttest: Optional[TTestResult] = None
+    latency_ttest: TTestResult | None = None
 
     # User feedback comparison
-    rating_ttest: Optional[TTestResult] = None
-    thumbs_up_rate_traditional: Optional[float] = None
-    thumbs_up_rate_mrf: Optional[float] = None
+    rating_ttest: TTestResult | None = None
+    thumbs_up_rate_traditional: float | None = None
+    thumbs_up_rate_mrf: float | None = None
 
     # Overall assessment
     overall_significant: bool = False
     recommended_action: str = ""
     summary: str = ""
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for JSON export."""
         return {
             "quality_metrics": {
@@ -156,8 +155,8 @@ class StatisticalAnalyzer:
 
     def independent_ttest(
         self,
-        group_a: List[float],
-        group_b: List[float],
+        group_a: list[float],
+        group_b: list[float],
         significance_level: SignificanceLevel = SignificanceLevel.P_05,
         confidence_level: float = 0.95
     ) -> TTestResult:
@@ -294,8 +293,8 @@ class StatisticalAnalyzer:
 
     def validate_production_results(
         self,
-        traditional_data: List[Dict],
-        mrf_data: List[Dict]
+        traditional_data: list[dict],
+        mrf_data: list[dict]
     ) -> ValidationReport:
         """
         Complete validation comparing traditional vs UnifiedMRF.
@@ -426,17 +425,17 @@ if __name__ == "__main__":
     print("="*60)
 
     if report.quality_ttest:
-        print(f"\nQuality Score:")
+        print("\nQuality Score:")
         print(f"  Traditional: {report.quality_ttest.mean_a:.3f} ± {report.quality_ttest.std_a:.3f}")
         print(f"  UnifiedMRF:  {report.quality_ttest.mean_b:.3f} ± {report.quality_ttest.std_b:.3f}")
         print(f"  Significant: {report.quality_ttest.is_significant}")
         print(f"  P-value: {report.quality_ttest.p_value:.4f}")
         print(f"  Effect size: {report.quality_ttest.effect_size:.2f}")
 
-    print(f"\nOverall Assessment:")
+    print("\nOverall Assessment:")
     print(f"  Significant: {report.overall_significant}")
     print(f"  Recommended Action: {report.recommended_action}")
-    print(f"\nSummary:")
+    print("\nSummary:")
     print(f"  {report.summary}")
 
     print("\n" + "="*60)

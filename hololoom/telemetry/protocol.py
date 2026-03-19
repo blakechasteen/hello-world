@@ -8,11 +8,11 @@ collection across all HoloLoom systems.
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Protocol, TypeVar, runtime_checkable
-
+from typing import Any, Protocol, TypeVar, runtime_checkable
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  ENUMS
@@ -68,14 +68,14 @@ class SpanData:
 
     name: str
     context: SpanContext
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
     kind: SpanKind = SpanKind.INTERNAL
     status: SpanStatus = SpanStatus.UNSET
     start_time: datetime = field(default_factory=datetime.utcnow)
-    end_time: Optional[datetime] = None
-    attributes: Dict[str, Any] = field(default_factory=dict)
-    events: List[Dict[str, Any]] = field(default_factory=list)
-    links: List[SpanContext] = field(default_factory=list)
+    end_time: datetime | None = None
+    attributes: dict[str, Any] = field(default_factory=dict)
+    events: list[dict[str, Any]] = field(default_factory=list)
+    links: list[SpanContext] = field(default_factory=list)
 
     @property
     def duration_ms(self) -> float:
@@ -85,7 +85,7 @@ class SpanData:
         delta = self.end_time - self.start_time
         return delta.total_seconds() * 1000
 
-    def add_event(self, name: str, attributes: Optional[Dict[str, Any]] = None) -> None:
+    def add_event(self, name: str, attributes: dict[str, Any] | None = None) -> None:
         """Add an event to this span."""
         self.events.append({
             "name": name,
@@ -115,7 +115,7 @@ class MetricPoint:
     name: str
     value: float
     metric_type: MetricType
-    labels: Dict[str, str] = field(default_factory=dict)
+    labels: dict[str, str] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
     description: str = ""
     unit: str = ""
@@ -125,10 +125,10 @@ class MetricPoint:
 class HistogramBuckets:
     """Histogram bucket configuration."""
 
-    boundaries: List[float] = field(default_factory=lambda: [
+    boundaries: list[float] = field(default_factory=lambda: [
         0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0
     ])
-    counts: List[int] = field(default_factory=list)
+    counts: list[int] = field(default_factory=list)
     sum_value: float = 0.0
     count: int = 0
 
@@ -160,8 +160,8 @@ class TracingProtocol(Protocol):
         name: str,
         *,
         kind: SpanKind = SpanKind.INTERNAL,
-        attributes: Optional[Dict[str, Any]] = None,
-        parent: Optional[SpanContext] = None,
+        attributes: dict[str, Any] | None = None,
+        parent: SpanContext | None = None,
     ) -> SpanData:
         """Start a new span."""
         ...
@@ -172,17 +172,17 @@ class TracingProtocol(Protocol):
         ...
 
     @abstractmethod
-    def get_current_span(self) -> Optional[SpanData]:
+    def get_current_span(self) -> SpanData | None:
         """Get the currently active span."""
         ...
 
     @abstractmethod
-    def inject_context(self, carrier: Dict[str, str]) -> None:
+    def inject_context(self, carrier: dict[str, str]) -> None:
         """Inject trace context into a carrier (e.g., HTTP headers)."""
         ...
 
     @abstractmethod
-    def extract_context(self, carrier: Dict[str, str]) -> Optional[SpanContext]:
+    def extract_context(self, carrier: dict[str, str]) -> SpanContext | None:
         """Extract trace context from a carrier."""
         ...
 
@@ -196,7 +196,7 @@ class MetricsProtocol(Protocol):
         self,
         name: str,
         value: float = 1.0,
-        labels: Optional[Dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
         description: str = "",
     ) -> None:
         """Increment a counter metric."""
@@ -207,7 +207,7 @@ class MetricsProtocol(Protocol):
         self,
         name: str,
         value: float,
-        labels: Optional[Dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
         description: str = "",
     ) -> None:
         """Set a gauge metric value."""
@@ -218,8 +218,8 @@ class MetricsProtocol(Protocol):
         self,
         name: str,
         value: float,
-        labels: Optional[Dict[str, str]] = None,
-        buckets: Optional[List[float]] = None,
+        labels: dict[str, str] | None = None,
+        buckets: list[float] | None = None,
         description: str = "",
     ) -> None:
         """Observe a histogram metric value."""
@@ -230,8 +230,8 @@ class MetricsProtocol(Protocol):
         self,
         name: str,
         value: float,
-        labels: Optional[Dict[str, str]] = None,
-        quantiles: Optional[List[float]] = None,
+        labels: dict[str, str] | None = None,
+        quantiles: list[float] | None = None,
         description: str = "",
     ) -> None:
         """Observe a summary metric value."""
@@ -295,8 +295,8 @@ def generate_span_id() -> str:
 
 
 def create_span_context(
-    trace_id: Optional[str] = None,
-    span_id: Optional[str] = None,
+    trace_id: str | None = None,
+    span_id: str | None = None,
 ) -> SpanContext:
     """Create a new span context with optional IDs."""
     return SpanContext(

@@ -25,13 +25,13 @@ Created: December 2025
 """
 
 from hololoom.tapestry.protocol import (
-    ThreadStatus,
-    Thread,
-    Tapestry,
-    SignalResult,
     FabricCheckResult,
-    TapestryBackend,
     FabricSignal,
+    SignalResult,
+    Tapestry,
+    TapestryBackend,
+    Thread,
+    ThreadStatus,
 )
 
 __all__ = [

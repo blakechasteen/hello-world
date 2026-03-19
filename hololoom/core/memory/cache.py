@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 HoloLoom Memory Management - Cache & Retrieval
 ===============================================
@@ -17,20 +18,21 @@ Memory is the "loom's yarn reserve" - what we've woven before and can access qui
 We maintain multiple memory tiers for different access patterns and persistence needs.
 """
 
+import asyncio
 import json
 import time
-import asyncio
 import warnings
-from pathlib import Path
 from collections import deque
 from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional, Protocol
+from pathlib import Path
+from typing import Protocol
 
 import numpy as np
 
-# Import only from shared types and embedding
-from hololoom.protocols.types import Query, Context, Features, Vector
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
+
+# Import only from shared types and embedding
+from hololoom.protocols.types import Context, Features, Query
 
 # Optional BM25 dependency
 try:
@@ -56,12 +58,12 @@ class MemoryShard:
     id: str
     text: str
     episode: str  # Episode/session this shard belongs to
-    entities: List[str] = field(default_factory=list)
-    motifs: List[str] = field(default_factory=list)
-    scales: Dict[str, List[float]] = field(default_factory=dict)  # Pre-computed embeddings
-    metadata: Dict = field(default_factory=dict)
-    
-    def to_dict(self) -> Dict:
+    entities: list[str] = field(default_factory=list)
+    motifs: list[str] = field(default_factory=list)
+    scales: dict[str, list[float]] = field(default_factory=dict)  # Pre-computed embeddings
+    metadata: dict = field(default_factory=dict)
+
+    def to_dict(self) -> dict:
         """Serialize for persistence."""
         return {
             "id": self.id,
@@ -72,9 +74,9 @@ class MemoryShard:
             "scales": self.scales,
             "metadata": self.metadata
         }
-    
+
     @classmethod
-    def from_dict(cls, data: Dict) -> 'MemoryShard':
+    def from_dict(cls, data: dict) -> 'MemoryShard':
         """Deserialize from storage."""
         return cls(
             id=data.get("id", ""),
@@ -93,13 +95,13 @@ class MemoryShard:
 
 class Retriever(Protocol):
     """Protocol for retrieval implementations."""
-    
+
     async def search(
         self,
         query: str,
         k: int = 6,
         fast: bool = False
-    ) -> List[Tuple[MemoryShard, float]]:
+    ) -> list[tuple[MemoryShard, float]]:
         """
         Search for relevant memory shards.
         
@@ -135,23 +137,23 @@ class RetrieverMS:
     This implements coarse-to-fine retrieval: quick filtering with small
     embeddings, refined ranking with large embeddings.
     """
-    
-    shards: List[MemoryShard]
+
+    shards: list[MemoryShard]
     emb: MatryoshkaEmbeddings
-    fusion_weights: Optional[Dict[int, float]] = None
+    fusion_weights: dict[int, float] | None = None
     bm25_weight: float = 0.15  # BM25 contribution to final score
-    
+
     def __post_init__(self):
         self.texts = [s.text for s in self.shards]
-        
+
         # Refresh embedder for this corpus
         self.emb.refresh_runtime_qr(self.texts)
-        
+
         # Pre-compute embeddings at all scales
-        self.vecs_per_scale: Dict[int, np.ndarray] = {}
+        self.vecs_per_scale: dict[int, np.ndarray] = {}
         for d in self.emb.sizes:
             self.vecs_per_scale[d] = self.emb.encode_scales(self.texts, size=d)
-        
+
         # Set default fusion weights if not provided
         if self.fusion_weights is None:
             # Default: larger scales get more weight
@@ -160,14 +162,14 @@ class RetrieverMS:
                 d: (i + 1) / sum(range(1, n_scales + 1))
                 for i, d in enumerate(self.emb.sizes)
             }
-        
+
         # Initialize BM25 if available
         if _HAVE_BM25 and len(self.texts) > 0:
             tokenized = [t.lower().split() for t in self.texts]
             self.bm25 = BM25Okapi(tokenized)
         else:
             self.bm25 = None
-    
+
     def _normalize(self, scores: np.ndarray) -> np.ndarray:
         """
         Normalize scores to [0, 1] using z-score + sigmoid.
@@ -178,13 +180,13 @@ class RetrieverMS:
         sd = float(scores.std() + 1e-9)
         z = (scores - mu) / sd
         return 1.0 / (1.0 + np.exp(-z))
-    
+
     async def search(
         self,
         query: str,
         k: int = 6,
         fast: bool = False
-    ) -> List[Tuple[MemoryShard, float]]:
+    ) -> list[tuple[MemoryShard, float]]:
         """
         Search for relevant shards using multi-scale retrieval.
         
@@ -200,8 +202,8 @@ class RetrieverMS:
             return await self._fast_search(query, k)
         else:
             return await self._fused_search(query, k)
-    
-    async def _fast_search(self, query: str, k: int) -> List[Tuple[MemoryShard, float]]:
+
+    async def _fast_search(self, query: str, k: int) -> list[tuple[MemoryShard, float]]:
         """
         Fast retrieval using smallest scale only.
         
@@ -212,19 +214,19 @@ class RetrieverMS:
         """
         d = min(self.emb.sizes)  # Smallest dimension
         mat = self.vecs_per_scale[d]
-        
+
         # Encode query at this scale
         q = self.emb.encode_scales([query], size=d)[0]
-        
+
         # Compute similarities
         scores = mat @ q
         scores = self._normalize(scores)
-        
+
         # Get top-k
         idx = np.argsort(-scores)[:k]
         return [(self.shards[i], float(scores[i])) for i in idx]
-    
-    async def _fused_search(self, query: str, k: int) -> List[Tuple[MemoryShard, float]]:
+
+    async def _fused_search(self, query: str, k: int) -> list[tuple[MemoryShard, float]]:
         """
         Full retrieval with multi-scale fusion + BM25.
         
@@ -234,26 +236,26 @@ class RetrieverMS:
         - Final ranking in multi-stage systems
         """
         fused = np.zeros(len(self.texts))
-        
+
         # Fuse scores from all scales
         for d, mat in self.vecs_per_scale.items():
             # Encode query at this scale
             q = self.emb.encode_scales([query], size=d)[0]
-            
+
             # Compute similarities
             scores = mat @ q
-            
+
             # Normalize and weight
             scores = self._normalize(scores)
             weight = self.fusion_weights.get(d, 0.0)
             fused += weight * scores
-        
+
         # Add BM25 scores if available
         if self.bm25:
             bm_scores = self.bm25.get_scores(query.lower().split())
             bm_scores = self._normalize(bm_scores)
             fused = (1 - self.bm25_weight) * fused + self.bm25_weight * bm_scores
-        
+
         # Get top-k
         idx = np.argsort(-fused)[:k]
         return [(self.shards[i], float(fused[i])) for i in idx]
@@ -271,14 +273,14 @@ class PDVClient:
     PDV is the "long-term memory" - durable storage of all interactions.
     Writes are append-only JSONL for simplicity and durability.
     """
-    
+
     root: str = "data"
-    
+
     def __post_init__(self):
         self.root_path = Path(self.root)
         self.root_path.mkdir(parents=True, exist_ok=True)
         self.shard_file = self.root_path / "pdv_shards.jsonl"
-    
+
     async def store_shard(self, shard: MemoryShard):
         """
         Store a memory shard to PDV.
@@ -287,12 +289,12 @@ class PDVClient:
         """
         with self.shard_file.open('a', encoding='utf-8') as f:
             f.write(json.dumps(shard.to_dict()) + "\n")
-    
-    async def load_all_shards(self) -> List[MemoryShard]:
+
+    async def load_all_shards(self) -> list[MemoryShard]:
         """Load all shards from PDV."""
         if not self.shard_file.exists():
             return []
-        
+
         shards = []
         with self.shard_file.open('r', encoding='utf-8') as f:
             for line in f:
@@ -301,7 +303,7 @@ class PDVClient:
                     shards.append(MemoryShard.from_dict(data))
                 except Exception as e:
                     warnings.warn(f"Failed to load shard: {e}")
-        
+
         return shards
 
 
@@ -313,18 +315,18 @@ class MemoAIClient:
     MemoAI is the "semantic index" - fast vector retrieval.
     Stores embeddings at multiple scales for Matryoshka retrieval.
     """
-    
+
     root: str = "data"
-    
+
     def __post_init__(self):
         self.root_path = Path(self.root)
         self.root_path.mkdir(parents=True, exist_ok=True)
         self.vec_file = self.root_path / "memoai_vectors.jsonl"
-    
+
     async def upsert_vectors(
         self,
         shard_id: str,
-        scale_vectors: Dict[str, List[float]]
+        scale_vectors: dict[str, list[float]]
     ):
         """
         Upsert pre-computed vectors for a shard.
@@ -338,7 +340,7 @@ class MemoAIClient:
             "vectors": scale_vectors,
             "ts": int(time.time())
         }
-        
+
         with self.vec_file.open('a', encoding='utf-8') as f:
             f.write(json.dumps(rec) + "\n")
 
@@ -362,46 +364,46 @@ class MemoryManager:
     - Falls back to vector retrieval if cache miss
     - Asynchronously persists to PDV/MemoAI (non-blocking)
     """
-    
+
     retriever: RetrieverMS
     pdv: PDVClient
     memo: MemoAIClient
     working_memory_size: int = 100
     episodic_buffer_size: int = 100
-    
+
     def __post_init__(self):
         # Tier 1: Working memory (fast cache)
-        self.working_memory: Dict[int, Context] = {}
-        
+        self.working_memory: dict[int, Context] = {}
+
         # Tier 2: Episodic buffer (recent interactions)
         self.episodic_buffer = deque(maxlen=self.episodic_buffer_size)
-        
+
         # Async persistence queue
         self.persistence_queue = asyncio.Queue()
-        
+
         # Start background archiver
         self._archiver_task = None
         self._start_archiver()
-    
+
     def _start_archiver(self):
         """Start background task for async persistence."""
         async def archiver():
             while True:
                 try:
                     item = await self.persistence_queue.get()
-                    
+
                     # Persist to both PDV (raw) and MemoAI (vectors)
                     await asyncio.gather(
                         self.pdv.store_shard(item['shard']),
                         self.memo.upsert_vectors(item['shard'].id, item['shard'].scales)
                     )
-                    
+
                     self.persistence_queue.task_done()
                 except Exception as e:
                     warnings.warn(f"Persistence failed: {e}")
-        
+
         self._archiver_task = asyncio.create_task(archiver())
-    
+
     async def retrieve(self, query: Query, kg_sub, fast: bool = False) -> Context:
         """
         Retrieve context for a query.
@@ -424,14 +426,14 @@ class MemoryManager:
         q_hash = hash(query.text)
         if q_hash in self.working_memory:
             return self.working_memory[q_hash]
-        
+
         # Cache miss - perform retrieval
         hits = await self.retriever.search(query.text, k=6, fast=fast)
         shard_texts = [s.text for s, _ in hits]
-        
+
         # Calculate relevance score
         relevance = float(np.mean([score for _, score in hits])) if hits else 0.0
-        
+
         # Build context
         context = Context(
             hits=[(s, score) for s, score in hits],
@@ -439,22 +441,22 @@ class MemoryManager:
             shard_texts=shard_texts,
             relevance=relevance
         )
-        
+
         # Cache in working memory
         self.working_memory[q_hash] = context
-        
+
         # Prune cache if too large
         if len(self.working_memory) > self.working_memory_size:
             # Remove oldest entry (simple FIFO)
             oldest_key = next(iter(self.working_memory))
             del self.working_memory[oldest_key]
-        
+
         return context
-    
+
     async def persist(
         self,
         query: Query,
-        results: Dict,
+        results: dict,
         features: Features
     ):
         """
@@ -474,16 +476,16 @@ class MemoryManager:
             'features': features,
             'timestamp': time.time()
         })
-        
+
         # Extract entities (simple heuristic: capitalized words)
         entities = [w for w in query.text.split() if w and w[0].isupper()]
-        
+
         # Pre-compute embeddings for all scales
         scales = {
             str(d): self.retriever.emb.encode_scales([query.text], size=d)[0].tolist()
             for d in self.retriever.emb.sizes
         }
-        
+
         # Create memory shard
         shard = MemoryShard(
             id=f"q_{hash(query.text)}",
@@ -498,10 +500,10 @@ class MemoryManager:
                 'results': results
             }
         )
-        
+
         # Queue for async persistence
         await self.persistence_queue.put({'shard': shard})
-    
+
     async def shutdown(self):
         """Graceful shutdown - wait for persistence queue to drain."""
         await self.persistence_queue.join()
@@ -514,9 +516,9 @@ class MemoryManager:
 # ============================================================================
 
 def create_retriever(
-    shards: List[MemoryShard],
+    shards: list[MemoryShard],
     emb: MatryoshkaEmbeddings,
-    fusion_weights: Optional[Dict[int, float]] = None
+    fusion_weights: dict[int, float] | None = None
 ) -> RetrieverMS:
     """
     Factory function to create a retriever.
@@ -537,9 +539,9 @@ def create_retriever(
 
 
 def create_memory_manager(
-    shards: List[MemoryShard],
+    shards: list[MemoryShard],
     emb: MatryoshkaEmbeddings,
-    fusion_weights: Optional[Dict[int, float]] = None,
+    fusion_weights: dict[int, float] | None = None,
     root: str = "data"
 ) -> MemoryManager:
     """
@@ -557,7 +559,7 @@ def create_memory_manager(
     retriever = create_retriever(shards, emb, fusion_weights)
     pdv = PDVClient(root=root)
     memo = MemoAIClient(root=root)
-    
+
     return MemoryManager(
         retriever=retriever,
         pdv=pdv,
@@ -571,10 +573,10 @@ def create_memory_manager(
 
 if __name__ == "__main__":
     from embedding.spectral import MatryoshkaEmbeddings
-    
+
     async def demo():
         print("=== Memory Cache Demo ===\n")
-        
+
         # Create sample shards
         shards = [
             MemoryShard(
@@ -599,26 +601,26 @@ if __name__ == "__main__":
                 motifs=["explanation"]
             ),
         ]
-        
+
         # Create embedder and memory manager
         emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
         memory = create_memory_manager(shards, emb, root="demo_data")
-        
+
         # Test retrieval
         query_text = "How does attention work in transformers?"
-        
+
         print("Fast retrieval:")
         fast_results = await memory.retriever.search(query_text, k=2, fast=True)
         for shard, score in fast_results:
             print(f"  [{score:.3f}] {shard.text[:60]}...")
-        
+
         print("\nFused retrieval:")
         fused_results = await memory.retriever.search(query_text, k=2, fast=False)
         for shard, score in fused_results:
             print(f"  [{score:.3f}] {shard.text[:60]}...")
-        
+
         # Cleanup
         await memory.shutdown()
         print("\n✓ Demo complete!")
-    
+
     asyncio.run(demo())

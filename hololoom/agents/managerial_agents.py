@@ -32,19 +32,11 @@ Add managerial layer only when complexity demands it.
 5. **MotivationalCoach**: Adjusts learning rates, confidence thresholds
 """
 
-from typing import Dict, List, Optional, Any, Set
-from dataclasses import dataclass, field
-from enum import Enum
 import time
-import numpy as np
+from dataclasses import dataclass, field
+from typing import Any
 
-from hololoom.agents.agent_orchestration import (
-    PersistentAgent,
-    AgentOrchestrationSystem,
-    TaskPriority,
-    TaskType
-)
-
+from hololoom.agents.agent_orchestration import AgentOrchestrationSystem, PersistentAgent
 
 # ============================================================================
 # Performance Monitoring
@@ -112,13 +104,13 @@ class PerformanceMonitor:
         self.check_interval_seconds = check_interval_seconds
 
         # Metrics history
-        self.metrics_history: Dict[str, List[AgentHealthMetrics]] = {}
+        self.metrics_history: dict[str, list[AgentHealthMetrics]] = {}
 
         # Alerts
-        self.active_alerts: Dict[str, List[str]] = {}
+        self.active_alerts: dict[str, list[str]] = {}
 
         # Running
-        self.monitor_task: Optional[Any] = None
+        self.monitor_task: Any | None = None
         self.running = False
 
     async def start(self, orchestration_system: AgentOrchestrationSystem):
@@ -159,7 +151,7 @@ class PerformanceMonitor:
 
         return metrics
 
-    def detect_issues(self, agent_name: str) -> List[str]:
+    def detect_issues(self, agent_name: str) -> list[str]:
         """Detect issues from metrics history"""
         if agent_name not in self.metrics_history:
             return []
@@ -194,7 +186,7 @@ class PerformanceMonitor:
 
         return issues
 
-    def recommend_actions(self, agent_name: str, issues: List[str]) -> List[Dict[str, Any]]:
+    def recommend_actions(self, agent_name: str, issues: list[str]) -> list[dict[str, Any]]:
         """Recommend actions to address issues"""
         actions = []
 
@@ -261,15 +253,15 @@ class QualityController:
         self.refinement_threshold = refinement_threshold
 
         # Quality tracking
-        self.quality_violations: Dict[str, int] = {}
-        self.refinements_triggered: Dict[str, int] = {}
+        self.quality_violations: dict[str, int] = {}
+        self.refinements_triggered: dict[str, int] = {}
 
     def validate_output(
         self,
         agent_name: str,
         result: Any,
-        context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Validate agent output quality.
 
@@ -321,7 +313,7 @@ class QualityController:
             'recommendation': recommendation
         }
 
-    def get_quality_report(self, agent_name: str) -> Dict[str, Any]:
+    def get_quality_report(self, agent_name: str) -> dict[str, Any]:
         """Get quality report for agent"""
         return {
             'violations': self.quality_violations.get(agent_name, 0),
@@ -353,16 +345,16 @@ class ResourceAllocator:
         self.rebalance_interval_seconds = rebalance_interval_seconds
 
         # Current allocations
-        self.agent_budgets: Dict[str, float] = {}
+        self.agent_budgets: dict[str, float] = {}
 
         # Usage tracking
-        self.agent_usage: Dict[str, float] = {}
+        self.agent_usage: dict[str, float] = {}
 
     def allocate_budgets(
         self,
-        agents: Dict[str, PersistentAgent],
-        metrics: Dict[str, AgentHealthMetrics]
-    ) -> Dict[str, float]:
+        agents: dict[str, PersistentAgent],
+        metrics: dict[str, AgentHealthMetrics]
+    ) -> dict[str, float]:
         """
         Allocate compute budgets to agents.
 
@@ -394,7 +386,7 @@ class ResourceAllocator:
         if total_priority == 0:
             # Equal distribution
             budget_per_agent = self.total_compute_budget / len(agents)
-            return {name: budget_per_agent for name in agents.keys()}
+            return dict.fromkeys(agents.keys(), budget_per_agent)
 
         # Allocate proportionally
         allocations = {}
@@ -428,7 +420,7 @@ class MotivationalCoach:
 
     def __init__(self):
         # Parameter adjustments
-        self.adjustments: Dict[str, Dict[str, Any]] = {}
+        self.adjustments: dict[str, dict[str, Any]] = {}
 
     def assess_agent_state(
         self,
@@ -456,7 +448,7 @@ class MotivationalCoach:
         agent_name: str,
         state: str,
         metrics: AgentHealthMetrics
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Recommend parameter adjustments based on state.
         """
@@ -515,7 +507,7 @@ class ManagerialSystem:
 
         # Running
         self.running = False
-        self.management_task: Optional[Any] = None
+        self.management_task: Any | None = None
 
     async def start(self):
         """Start managerial system"""
@@ -528,7 +520,7 @@ class ManagerialSystem:
         self.running = False
         await self.performance_monitor.stop()
 
-    def get_comprehensive_report(self) -> Dict[str, Any]:
+    def get_comprehensive_report(self) -> dict[str, Any]:
         """Get comprehensive management report"""
         return {
             'performance_monitoring': {

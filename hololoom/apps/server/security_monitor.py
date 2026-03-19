@@ -12,21 +12,19 @@ Created: 2025-11-26
 """
 
 import asyncio
-import json
+import hashlib
 import logging
 import smtplib
-import time
 from collections import defaultdict, deque
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from enum import Enum
-from typing import Dict, List, Optional, Set, Deque, Any, Tuple
+from typing import Any
+
 import aiohttp
-import hashlib
 from fastapi import WebSocket
-import re
 
 logger = logging.getLogger(__name__)
 
@@ -60,11 +58,11 @@ class SecurityEvent:
     severity: AlertSeverity
     timestamp: datetime
     client_ip: str
-    details: Dict[str, Any]
-    user_id: Optional[str] = None
-    request_path: Optional[str] = None
-    rule_id: Optional[str] = None
-    fingerprint: Optional[str] = None  # For deduplication
+    details: dict[str, Any]
+    user_id: str | None = None
+    request_path: str | None = None
+    rule_id: str | None = None
+    fingerprint: str | None = None  # For deduplication
 
 
 @dataclass
@@ -75,10 +73,10 @@ class Alert:
     title: str
     description: str
     timestamp: datetime
-    events: List[SecurityEvent]
+    events: list[SecurityEvent]
     action_required: bool = False
     auto_resolved: bool = False
-    resolution_time: Optional[datetime] = None
+    resolution_time: datetime | None = None
 
 
 @dataclass
@@ -88,11 +86,11 @@ class AttackerProfile:
     first_seen: datetime
     last_seen: datetime
     total_events: int = 0
-    event_types: Dict[str, int] = field(default_factory=dict)
+    event_types: dict[str, int] = field(default_factory=dict)
     blocked: bool = False
     risk_score: float = 0.0
-    geographic_location: Optional[str] = None
-    user_agents: Set[str] = field(default_factory=set)
+    geographic_location: str | None = None
+    user_agents: set[str] = field(default_factory=set)
 
 
 class SecurityMonitor:
@@ -107,8 +105,8 @@ class SecurityMonitor:
         enable_email_alerts: bool = False,
         enable_slack_alerts: bool = False,
         enable_prometheus: bool = True,
-        smtp_config: Optional[Dict] = None,
-        slack_webhook_url: Optional[str] = None
+        smtp_config: dict | None = None,
+        slack_webhook_url: str | None = None
     ):
         # Configuration
         self.alert_threshold_auth_failures = alert_threshold_auth_failures
@@ -122,17 +120,17 @@ class SecurityMonitor:
         self.slack_webhook_url = slack_webhook_url
 
         # Event storage
-        self.events: Deque[SecurityEvent] = deque(maxlen=10000)
-        self.events_by_ip: Dict[str, Deque[SecurityEvent]] = defaultdict(lambda: deque(maxlen=1000))
-        self.events_by_type: Dict[SecurityEventType, Deque[SecurityEvent]] = defaultdict(lambda: deque(maxlen=1000))
+        self.events: deque[SecurityEvent] = deque(maxlen=10000)
+        self.events_by_ip: dict[str, deque[SecurityEvent]] = defaultdict(lambda: deque(maxlen=1000))
+        self.events_by_type: dict[SecurityEventType, deque[SecurityEvent]] = defaultdict(lambda: deque(maxlen=1000))
 
         # Attacker tracking
-        self.attacker_profiles: Dict[str, AttackerProfile] = {}
-        self.blocked_ips: Set[str] = set()
+        self.attacker_profiles: dict[str, AttackerProfile] = {}
+        self.blocked_ips: set[str] = set()
 
         # Alert management
-        self.active_alerts: Dict[str, Alert] = {}
-        self.alert_history: Deque[Alert] = deque(maxlen=1000)
+        self.active_alerts: dict[str, Alert] = {}
+        self.alert_history: deque[Alert] = deque(maxlen=1000)
         self.alert_counter = 0
 
         # Metrics for Prometheus
@@ -147,10 +145,10 @@ class SecurityMonitor:
         }
 
         # WebSocket connections for real-time dashboard
-        self.websocket_clients: Set[WebSocket] = set()
+        self.websocket_clients: set[WebSocket] = set()
 
         # Background tasks
-        self.background_tasks: List[asyncio.Task] = []
+        self.background_tasks: list[asyncio.Task] = []
 
         logger.info("SecurityMonitor initialized")
 
@@ -189,10 +187,10 @@ class SecurityMonitor:
         event_type: SecurityEventType,
         client_ip: str,
         severity: AlertSeverity = AlertSeverity.WARNING,
-        details: Optional[Dict] = None,
-        user_id: Optional[str] = None,
-        request_path: Optional[str] = None,
-        rule_id: Optional[str] = None
+        details: dict | None = None,
+        user_id: str | None = None,
+        request_path: str | None = None,
+        rule_id: str | None = None
     ):
         """Log a security event"""
 
@@ -230,7 +228,7 @@ class SecurityMonitor:
     async def log_auth_failure(
         self,
         client_ip: str,
-        username: Optional[str] = None,
+        username: str | None = None,
         reason: str = "Invalid credentials"
     ):
         """Log authentication failure"""
@@ -287,7 +285,7 @@ class SecurityMonitor:
             rule_id=rule_id
         )
 
-    async def log_detailed_violation(self, log_entry: Dict[str, Any]):
+    async def log_detailed_violation(self, log_entry: dict[str, Any]):
         """Log detailed WAF violation with full context"""
 
         await self.log_event(
@@ -387,7 +385,7 @@ class SecurityMonitor:
         if len(auth_failures) >= self.alert_threshold_auth_failures:
             await self._create_alert(
                 severity=AlertSeverity.HIGH,
-                title=f"Brute Force Attack Detected",
+                title="Brute Force Attack Detected",
                 description=f"IP {event.client_ip} has {len(auth_failures)} auth failures in {self.time_window_seconds} seconds",
                 events=auth_failures
             )
@@ -400,7 +398,7 @@ class SecurityMonitor:
         if len(waf_violations) >= self.alert_threshold_waf_violations:
             await self._create_alert(
                 severity=AlertSeverity.CRITICAL,
-                title=f"Multiple WAF Violations",
+                title="Multiple WAF Violations",
                 description=f"IP {event.client_ip} triggered {len(waf_violations)} WAF violations",
                 events=waf_violations,
                 action_required=True
@@ -414,7 +412,7 @@ class SecurityMonitor:
         if len(rate_limits) >= self.alert_threshold_rate_limit:
             await self._create_alert(
                 severity=AlertSeverity.WARNING,
-                title=f"Excessive Rate Limiting",
+                title="Excessive Rate Limiting",
                 description=f"IP {event.client_ip} hit rate limits {len(rate_limits)} times",
                 events=rate_limits
             )
@@ -424,7 +422,7 @@ class SecurityMonitor:
         severity: AlertSeverity,
         title: str,
         description: str,
-        events: List[SecurityEvent],
+        events: list[SecurityEvent],
         action_required: bool = False
     ):
         """Create and send security alert"""
@@ -882,7 +880,7 @@ class SecurityMonitor:
 
         return "\n".join(lines)
 
-    def get_dashboard_data(self) -> Dict[str, Any]:
+    def get_dashboard_data(self) -> dict[str, Any]:
         """Get data for security dashboard"""
 
         now = datetime.utcnow()
@@ -938,7 +936,7 @@ class SecurityMonitor:
             "timeline": self._generate_timeline_data(recent_events_hour)
         }
 
-    def _generate_timeline_data(self, events: List[SecurityEvent]) -> List[Dict]:
+    def _generate_timeline_data(self, events: list[SecurityEvent]) -> list[dict]:
         """Generate timeline data for visualization"""
 
         # Group events by 5-minute intervals
@@ -965,14 +963,14 @@ class SecurityMonitor:
         self,
         event_type: SecurityEventType,
         client_ip: str,
-        rule_id: Optional[str]
+        rule_id: str | None
     ) -> str:
         """Generate fingerprint for event deduplication"""
 
         data = f"{event_type.value}:{client_ip}:{rule_id or ''}"
         return hashlib.md5(data.encode()).hexdigest()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get comprehensive security statistics"""
 
         return {

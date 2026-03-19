@@ -23,18 +23,12 @@ Author: Claude Code
 Date: 2025-11-22
 """
 
-import math
-from typing import Dict, List, Any, Optional, Tuple
-from collections import defaultdict
 import logging
+from collections import defaultdict
+from typing import Any
 
-from .protocol import (
-    CompressionResult,
-    ImportanceMap,
-    NodeEmbeddings,
-    ScaleAssignments
-)
 from .config import CompressionConfig
+from .protocol import CompressionResult, ImportanceMap, NodeEmbeddings, ScaleAssignments
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +41,7 @@ class ContextCompressor:
     to maximize information density within token budget.
     """
 
-    def __init__(self, config: Optional[CompressionConfig] = None):
+    def __init__(self, config: CompressionConfig | None = None):
         """
         Initialize context compressor.
 
@@ -66,10 +60,10 @@ class ContextCompressor:
 
     def compress(
         self,
-        nodes: List[str],
+        nodes: list[str],
         importance_scores: ImportanceMap,
-        target_ratio: Optional[float] = None,
-        preserve_top_k: Optional[int] = None
+        target_ratio: float | None = None,
+        preserve_top_k: int | None = None
     ) -> CompressionResult:
         """
         Compress context by selecting most important nodes.
@@ -157,12 +151,12 @@ class ContextCompressor:
 
     def matryoshka_compress(
         self,
-        nodes: List[str],
+        nodes: list[str],
         importance_scores: ImportanceMap,
-        embeddings: Optional[NodeEmbeddings] = None,
-        scales: Optional[List[int]] = None,
-        mi_scores: Optional[Dict[str, float]] = None
-    ) -> Tuple[List[str], ScaleAssignments]:
+        embeddings: NodeEmbeddings | None = None,
+        scales: list[int] | None = None,
+        mi_scores: dict[str, float] | None = None
+    ) -> tuple[list[str], ScaleAssignments]:
         """
         Multi-scale compression using Matryoshka embeddings.
 
@@ -266,7 +260,7 @@ class ContextCompressor:
 
     def adaptive_compress(
         self,
-        nodes: List[str],
+        nodes: list[str],
         importance_scores: ImportanceMap,
         min_tokens: int = 500,
         max_tokens: int = 4000
@@ -332,11 +326,11 @@ class ContextCompressor:
 
     def information_budget_compress(
         self,
-        nodes: List[str],
+        nodes: list[str],
         importance_scores: ImportanceMap,
-        mi_scores: Dict[str, float],
-        information_budget: Optional[float] = None,
-        token_budget: Optional[int] = None
+        mi_scores: dict[str, float],
+        information_budget: float | None = None,
+        token_budget: int | None = None
     ) -> CompressionResult:
         """
         Information Bottleneck-based compression using Tishby's principle.
@@ -493,8 +487,8 @@ class ContextCompressor:
 
     def estimate_tokens(
         self,
-        nodes: List[str],
-        scale_assignments: Optional[ScaleAssignments] = None
+        nodes: list[str],
+        scale_assignments: ScaleAssignments | None = None
     ) -> int:
         """
         Estimate token count for node list.
@@ -536,7 +530,7 @@ class ContextCompressor:
 
         return total_tokens
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get compression statistics."""
         return self._stats.copy()
 
@@ -550,7 +544,7 @@ class ContextCompressor:
 
     # Helper methods
 
-    def _count_by_scale(self, scale_assignments: ScaleAssignments) -> Dict[int, int]:
+    def _count_by_scale(self, scale_assignments: ScaleAssignments) -> dict[int, int]:
         """Count nodes by assigned scale."""
         counts = defaultdict(int)
         for scale in scale_assignments.values():
@@ -561,10 +555,10 @@ class ContextCompressor:
 # Convenience functions
 
 def quick_compress(
-    nodes: List[str],
+    nodes: list[str],
     importance_scores: ImportanceMap,
     target_ratio: float = 0.5
-) -> List[str]:
+) -> list[str]:
     """
     Quick compression - just returns compressed node list.
 
@@ -582,11 +576,11 @@ def quick_compress(
 
 
 def compress_to_budget(
-    nodes: List[str],
+    nodes: list[str],
     importance_scores: ImportanceMap,
     max_tokens: int = 2000,
     avg_tokens_per_node: int = 50
-) -> List[str]:
+) -> list[str]:
     """
     Compress to fit within token budget.
 

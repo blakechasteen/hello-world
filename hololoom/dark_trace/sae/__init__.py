@@ -47,37 +47,51 @@ Usage:
 """
 
 # Core SAE architecture
+# Activation buffer
+from hololoom.dark_trace.sae.activation_buffer import (
+    ActivationBuffer,
+    ActivationSample,
+    get_activation_buffer,
+    init_activation_buffer,
+)
 from hololoom.dark_trace.sae.core import (
-    ResearchSAE,
-    FeatureHealth,
     ActivationTracker,
+    FeatureHealth,
+    ResearchSAE,
 )
 
-# Research-grade training
-from hololoom.dark_trace.sae.trainer import (
-    ResearchTrainer,
-    TrainingConfig,
-    L1AnnealingScheduler,
-    DeadFeatureResampler,
-    TrainingMetrics,
+# SAE-backed governance detectors
+from hololoom.dark_trace.sae.detectors import (
+    FeatureMap,
+    SAEAdversarialDetector,
+    SAEDeceptionDetector,
+    SAEPowerSeekingDetector,
+    SAESelfModificationDetector,
 )
 
 # Evaluation and metrics
 from hololoom.dark_trace.sae.evaluator import (
-    SAEEvaluator,
-    ReconstructionMetrics,
-    SparsityMetrics,
     HealthMetrics,
+    ReconstructionMetrics,
     SAEEvaluationReport,
+    SAEEvaluator,
+    SparsityMetrics,
 )
 
 # Auto-labeling
 from hololoom.dark_trace.sae.labeler import (
-    FeatureLabeler,
     ActivationPatternAnalyzer,
-    SemanticAlignmentScorer,
-    LabelCache,
     FeatureLabel,
+    FeatureLabeler,
+    LabelCache,
+    SemanticAlignmentScorer,
+)
+
+# Legacy (backward compatibility)
+# For new projects, use ResearchSAE and ResearchTrainer instead
+from hololoom.dark_trace.sae.legacy import (
+    DarkSaeTrainer,
+    SparseAutoEncoder,
 )
 
 # TraceLens integration
@@ -85,28 +99,13 @@ from hololoom.dark_trace.sae.lens import (
     SAELens,
 )
 
-# Activation buffer
-from hololoom.dark_trace.sae.activation_buffer import (
-    ActivationBuffer,
-    ActivationSample,
-    init_activation_buffer,
-    get_activation_buffer,
-)
-
-# SAE-backed governance detectors
-from hololoom.dark_trace.sae.detectors import (
-    FeatureMap,
-    SAEDeceptionDetector,
-    SAEPowerSeekingDetector,
-    SAESelfModificationDetector,
-    SAEAdversarialDetector,
-)
-
-# Legacy (backward compatibility)
-# For new projects, use ResearchSAE and ResearchTrainer instead
-from hololoom.dark_trace.sae.legacy import (
-    SparseAutoEncoder,
-    DarkSaeTrainer,
+# Research-grade training
+from hololoom.dark_trace.sae.trainer import (
+    DeadFeatureResampler,
+    L1AnnealingScheduler,
+    ResearchTrainer,
+    TrainingConfig,
+    TrainingMetrics,
 )
 
 __all__ = [

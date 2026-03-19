@@ -10,13 +10,14 @@ Research Basis:
 - Logit Lens: Understanding layer-wise predictions
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple, Callable
+from collections import defaultdict
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
-import numpy as np
+from typing import Any
+
 import torch
 import torch.nn as nn
-from collections import defaultdict
 
 
 class TrainingStrategy(Enum):
@@ -33,7 +34,7 @@ class LayerSAEConfig:
 
     # SAE architecture
     expansion_factor: int = 4  # Hidden dim = input_dim * expansion
-    n_features: Optional[int] = None  # Override expansion_factor
+    n_features: int | None = None  # Override expansion_factor
 
     # Training parameters
     l1_coefficient: float = 3e-4
@@ -89,12 +90,12 @@ class LayerActivations:
 
     layer_idx: int
     activations: torch.Tensor  # [batch, seq, dim]
-    residual_stream: Optional[torch.Tensor] = None  # Before layer
-    attention_out: Optional[torch.Tensor] = None  # Attention contribution
-    mlp_out: Optional[torch.Tensor] = None  # MLP contribution
+    residual_stream: torch.Tensor | None = None  # Before layer
+    attention_out: torch.Tensor | None = None  # Attention contribution
+    mlp_out: torch.Tensor | None = None  # MLP contribution
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         """Get activation shape."""
         return tuple(self.activations.shape)
 
@@ -109,17 +110,17 @@ class MultiLayerFeatures:
     """Features extracted from multiple layers."""
 
     # Per-layer feature activations
-    layer_features: Dict[int, torch.Tensor]  # layer_idx -> [batch, seq, n_features]
+    layer_features: dict[int, torch.Tensor]  # layer_idx -> [batch, seq, n_features]
 
     # Cross-layer statistics
-    feature_correlations: Optional[torch.Tensor] = None  # [n_layers, n_layers]
-    shared_features: Optional[List[Tuple[int, int, float]]] = None  # (layer1, layer2, correlation)
+    feature_correlations: torch.Tensor | None = None  # [n_layers, n_layers]
+    shared_features: list[tuple[int, int, float]] | None = None  # (layer1, layer2, correlation)
 
     # Metadata
     n_layers: int = 0
     total_features: int = 0
 
-    def get_layer(self, layer_idx: int) -> Optional[torch.Tensor]:
+    def get_layer(self, layer_idx: int) -> torch.Tensor | None:
         """Get features for a specific layer."""
         return self.layer_features.get(layer_idx)
 
@@ -127,7 +128,7 @@ class MultiLayerFeatures:
         self,
         layer_idx: int,
         threshold: float = 0.1,
-    ) -> List[int]:
+    ) -> list[int]:
         """Get indices of active features at a layer."""
         features = self.layer_features.get(layer_idx)
         if features is None:
@@ -152,7 +153,7 @@ class LayerSAE(nn.Module):
         input_dim: int,
         n_features: int,
         layer_idx: int,
-        config: Optional[LayerSAEConfig] = None,
+        config: LayerSAEConfig | None = None,
     ):
         """
         Initialize layer SAE.
@@ -189,7 +190,7 @@ class LayerSAE(nn.Module):
 
         # Training state
         self._trained = False
-        self._training_history: List[Dict[str, float]] = []
+        self._training_history: list[dict[str, float]] = []
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -249,7 +250,7 @@ class LayerSAE(nn.Module):
         self,
         x: torch.Tensor,
         return_features: bool = False,
-    ) -> torch.Tensor | Tuple[torch.Tensor, torch.Tensor]:
+    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass: encode then decode.
 
@@ -271,7 +272,7 @@ class LayerSAE(nn.Module):
         self,
         x: torch.Tensor,
         update_stats: bool = True,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         Compute training loss.
 
@@ -329,7 +330,7 @@ class LayerSAE(nn.Module):
             "l0": (features_flat > 0).float().mean(),  # Average active features
         }
 
-    def get_feature_stats(self) -> Dict[str, Any]:
+    def get_feature_stats(self) -> dict[str, Any]:
         """Get feature activation statistics."""
         if self._total_samples == 0:
             return {"alive_fraction": 0.0, "mean_activation": 0.0}
@@ -372,8 +373,8 @@ class LayerSAEManager:
         model: Any,
         n_layers: int,
         layer_dim: int,
-        config: Optional[LayerSAEConfig] = None,
-        activation_hook: Optional[Callable] = None,
+        config: LayerSAEConfig | None = None,
+        activation_hook: Callable | None = None,
     ):
         """
         Initialize layer SAE manager.
@@ -398,7 +399,7 @@ class LayerSAEManager:
             n_features = layer_dim * self.config.expansion_factor
 
         # Create SAE for each layer
-        self.layer_saes: Dict[int, LayerSAE] = {}
+        self.layer_saes: dict[int, LayerSAE] = {}
         for layer_idx in range(n_layers):
             self.layer_saes[layer_idx] = LayerSAE(
                 input_dim=layer_dim,
@@ -409,17 +410,17 @@ class LayerSAEManager:
 
         # Training state
         self._trained_layers: set = set()
-        self._training_stats: Dict[int, List[Dict]] = defaultdict(list)
+        self._training_stats: dict[int, list[dict]] = defaultdict(list)
 
-    def get_layer_sae(self, layer_idx: int) -> Optional[LayerSAE]:
+    def get_layer_sae(self, layer_idx: int) -> LayerSAE | None:
         """Get SAE for a specific layer."""
         return self.layer_saes.get(layer_idx)
 
     def extract_activations(
         self,
         inputs: Any,
-        layers: Optional[List[int]] = None,
-    ) -> Dict[int, LayerActivations]:
+        layers: list[int] | None = None,
+    ) -> dict[int, LayerActivations]:
         """
         Extract activations from specified layers.
 
@@ -455,7 +456,7 @@ class LayerSAEManager:
     def encode_all_layers(
         self,
         inputs: Any,
-        layers: Optional[List[int]] = None,
+        layers: list[int] | None = None,
     ) -> MultiLayerFeatures:
         """
         Extract SAE features from all (or specified) layers.
@@ -491,8 +492,8 @@ class LayerSAEManager:
         self,
         layer_idx: int,
         training_data: Any,
-        n_steps: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        n_steps: int | None = None,
+    ) -> dict[str, Any]:
         """
         Train SAE for a single layer.
 
@@ -566,8 +567,8 @@ class LayerSAEManager:
     async def train_all(
         self,
         training_data: Any,
-        layers: Optional[List[int]] = None,
-    ) -> Dict[str, Any]:
+        layers: list[int] | None = None,
+    ) -> dict[str, Any]:
         """
         Train SAEs for all (or specified) layers.
 
@@ -612,7 +613,7 @@ class LayerSAEManager:
             "results": results,
         }
 
-    def get_training_summary(self) -> Dict[str, Any]:
+    def get_training_summary(self) -> dict[str, Any]:
         """Get summary of training across all layers."""
         summaries = {}
 
@@ -662,7 +663,7 @@ def create_layer_sae_manager(
     model: Any,
     n_layers: int,
     layer_dim: int,
-    config: Optional[LayerSAEConfig] = None,
+    config: LayerSAEConfig | None = None,
 ) -> LayerSAEManager:
     """
     Factory function to create LayerSAEManager.

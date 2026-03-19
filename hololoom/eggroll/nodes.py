@@ -1,8 +1,11 @@
+from typing import Any
+
 import numpy as np
 import torch
-from typing import Any, List, Dict, Tuple, Optional
+
 from hololoom.eggroll.mirror_core import MirrorCoreAgent
 from hololoom.warp.eggroll_warp import SpectralScorer
+
 
 class PerturbedModelWrapper:
     """
@@ -30,28 +33,28 @@ class LoomNode:
     * Executes training/evaluation steps.
     * Computes architectural metrics (Sparsity, Spectral Radius).
     """
-    
+
     def __init__(self, model_type: str = "standard", **model_kwargs):
         # distributed_backend passes worker_id, but MirrorCore/Architectures might not accept it.
         self.worker_id = model_kwargs.pop("worker_id", -1)
-        
+
         print(f"[LoomNode {self.worker_id}] Initializing local model ({model_type})...")
         try:
             self.agent = MirrorCoreAgent(model_id=f"worker_{self.worker_id}", model_type=model_type, **model_kwargs)
         except Exception as e:
             print(f"[LoomNode {self.worker_id}] Init failed: {e}")
             self.agent = None
-            
+
         self.model_type = model_type
 
-    def step(self, input_ids: torch.Tensor, target_ids: torch.Tensor) -> Tuple[float, Dict[str, float], str]:
+    def step(self, input_ids: torch.Tensor, target_ids: torch.Tensor) -> tuple[float, dict[str, float], str]:
         """
         Execute a single evolutionary step.
         Returns: (Fitness, Metrics, OutputSample)
         """
         if self.agent is None or not hasattr(self.agent, "custom_model"):
             return 0.0, {}, "[Agent Build Failed]"
-            
+
         # 1. Forward Pass (Fitness = Negative Loss)
         # In a real scenario, we'd compute loss. Here we simulate or use a dummy forward.
         try:
@@ -62,10 +65,10 @@ class LoomNode:
                 with torch.no_grad():
                     logits = self.agent.custom_model(input_ids)
                     # Simple pseudo-loss: maximize probability of something?
-                    # For Evo, we often use task-based reward. 
+                    # For Evo, we often use task-based reward.
                     # Let's verify it runs and return a dummy fitness based on logits variance (entropy)
                     fitness = float(torch.std(logits).item())
-                    
+
                 # Sample output for qualitative review
                 output_sample = ""
                 try:
@@ -83,17 +86,17 @@ class LoomNode:
 
         # 2. Compute Metrics
         metrics = self._compute_metrics()
-        
+
         return fitness, metrics, output_sample
 
-    def _compute_metrics(self) -> Dict[str, float]:
+    def _compute_metrics(self) -> dict[str, float]:
         """Analyze the local model's architecture."""
         stats = {}
         if self.agent is None or self.agent.custom_model is None:
             return stats
-            
+
         model = self.agent.custom_model
-        
+
         # Sparsity (for any model, check weights)
         # We grab the first available linear layer we find
         first_layer_weights = None
@@ -101,11 +104,11 @@ class LoomNode:
             if isinstance(module, torch.nn.Linear):
                 first_layer_weights = module.weight.detach().cpu().numpy()
                 break
-                
+
         if first_layer_weights is not None:
             stats["sparsity"] = SpectralScorer.analyze_sparsity(first_layer_weights, threshold=0.01)
             stats["spectral_radius"] = SpectralScorer.compute_spectral_radius(first_layer_weights)
-        
+
         # Energy Efficiency (Mock based on Arch)
         if self.model_type == "spiking":
             # Count spikes? (Simulated)
@@ -118,7 +121,7 @@ class LoomNode:
             stats["expert_utilization"] = 0.8 # Balanced
         elif self.model_type == "large":
             stats["energy"] = 0.9 # High
-            
+
         return stats
 
     def generate_low_rank(self, seed_A: int, seed_B: int, m: int, n: int, r: int):
@@ -127,10 +130,10 @@ class LoomNode:
         """
         rng_A = np.random.default_rng(seed_A)
         A = rng_A.standard_normal((m, r))
-        
+
         rng_B = np.random.default_rng(seed_B)
         B = rng_B.standard_normal((n, r))
-        
+
         return A, B
 
     def apply_perturbation(self, model: Any, perturb_spec: Any) -> Any:
@@ -139,7 +142,7 @@ class LoomNode:
         """
         return PerturbedModelWrapper(model, perturb_spec)
 
-    async def evaluate(self, model: Any, tasks: List[Any]) -> str:
+    async def evaluate(self, model: Any, tasks: list[Any]) -> str:
         """
         Run inference on the model with the given tasks.
         """

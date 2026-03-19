@@ -22,24 +22,21 @@ Also implements:
 
 import json
 import logging
-import time
 import uuid
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Optional
 
+from .bus import MemoryItem, MemoryQuery, MemoryResult
 from .bus_config import (
-    AuditAction,
     MemoryBusConfig,
-    MemoryType,
-    PressureTier,
     ResolutionPath,
 )
-from .bus import MemoryQuery, MemoryItem, MemoryResult
-from .version_log import MemoryDelta
 from .security_screen import SecurityScreenError
+from .version_log import MemoryDelta
 
 logger = logging.getLogger(__name__)
 
@@ -54,14 +51,14 @@ class StoredItem:
     id: str
     content: str
     memory_type: str
-    entity_type: Optional[str] = None
-    entity_ids: List[str] = field(default_factory=list)
-    properties: Dict[str, Any] = field(default_factory=dict)
+    entity_type: str | None = None
+    entity_ids: list[str] = field(default_factory=list)
+    properties: dict[str, Any] = field(default_factory=dict)
     importance: float = 0.5
     timestamp: str = ""
     access_count: int = 0
-    last_accessed: Optional[str] = None
-    ttl_seconds: Optional[float] = None  # None = never expires
+    last_accessed: str | None = None
+    ttl_seconds: float | None = None  # None = never expires
     token_estimate: int = 0  # Pre-computed token cost (content + properties)
 
     def is_expired(self) -> bool:
@@ -74,7 +71,7 @@ class StoredItem:
         self.access_count += 1
         self.last_accessed = datetime.utcnow().isoformat()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "content": self.content,
@@ -87,7 +84,7 @@ class StoredItem:
             **self.properties,
         }
 
-    def to_snapshot(self) -> Dict[str, Any]:
+    def to_snapshot(self) -> dict[str, Any]:
         """Full serialization for persistence (includes entity_ids, last_accessed)."""
         return {
             "id": self.id,
@@ -105,7 +102,7 @@ class StoredItem:
         }
 
     @classmethod
-    def from_snapshot(cls, d: Dict[str, Any]) -> "StoredItem":
+    def from_snapshot(cls, d: dict[str, Any]) -> "StoredItem":
         """Reconstruct StoredItem from snapshot dict."""
         item = cls(
             id=d["id"],
@@ -142,13 +139,13 @@ class LiteMemoryBus:
 
     def __init__(
         self,
-        config: Optional[MemoryBusConfig] = None,
-        semantic_fn: Optional[Callable] = None,
-        default_ttl: Optional[float] = None,
+        config: MemoryBusConfig | None = None,
+        semantic_fn: Callable | None = None,
+        default_ttl: float | None = None,
         retrieval_planner: Optional["RetrievalPlanner"] = None,
         version_log: Optional["VersionLog"] = None,
-        synthesis_fn: Optional[Callable] = None,
-        security_screen: Optional[Callable] = None,
+        synthesis_fn: Callable | None = None,
+        security_screen: Callable | None = None,
         query_cache: Optional["QueryCache"] = None,
         multi_resolution: Optional["MultiResolutionRenderer"] = None,
         repo_cache: Optional["RepoCache"] = None,
@@ -180,26 +177,26 @@ class LiteMemoryBus:
         self._repo_cache = repo_cache
 
         # Core stores
-        self._items: Dict[str, StoredItem] = {}              # id → StoredItem
-        self._by_type: Dict[str, List[str]] = defaultdict(list)  # memory_type → [ids]
-        self._by_entity_type: Dict[str, List[str]] = defaultdict(list)
+        self._items: dict[str, StoredItem] = {}              # id → StoredItem
+        self._by_type: dict[str, list[str]] = defaultdict(list)  # memory_type → [ids]
+        self._by_entity_type: dict[str, list[str]] = defaultdict(list)
 
         # Graph: adjacency list
-        self._edges: Dict[str, List[Tuple[str, str]]] = defaultdict(list)  # id → [(target_id, rel_type)]
+        self._edges: dict[str, list[tuple[str, str]]] = defaultdict(list)  # id → [(target_id, rel_type)]
 
         # Entity aliases
-        self._aliases: Dict[str, str] = {}  # alias_lower → canonical_id
+        self._aliases: dict[str, str] = {}  # alias_lower → canonical_id
 
         # Audit log (in-memory ring buffer)
-        self._audit: List[Dict[str, Any]] = []
+        self._audit: list[dict[str, Any]] = []
         self._max_audit = 1000
 
         # Post-store hooks: list of fn(item_id, StoredItem) callables
-        self._post_store_hooks: List[Callable] = []
+        self._post_store_hooks: list[Callable] = []
 
         # Stats
         self._query_count = 0
-        self._resolution_counts: Dict[str, int] = {
+        self._resolution_counts: dict[str, int] = {
             ResolutionPath.EXACT.value: 0,
             ResolutionPath.STRUCTURED.value: 0,
             ResolutionPath.GRAPH.value: 0,
@@ -221,7 +218,7 @@ class LiteMemoryBus:
     # Lifecycle (matches MemoryBus API)
     # =========================================================================
 
-    async def initialize(self) -> Dict[str, Any]:
+    async def initialize(self) -> dict[str, Any]:
         self._initialized = True
         return {
             "neo4j": "lite (in-memory)",
@@ -245,7 +242,7 @@ class LiteMemoryBus:
 
     SNAPSHOT_VERSION = 2  # v2: added StoredItem.token_estimate
 
-    def to_snapshot_dict(self) -> Dict[str, Any]:
+    def to_snapshot_dict(self) -> dict[str, Any]:
         """Serialize graph state to a dict (items, edges, aliases)."""
         return {
             "_version": self.SNAPSHOT_VERSION,
@@ -260,7 +257,7 @@ class LiteMemoryBus:
             "aliases": dict(self._aliases),
         }
 
-    def from_snapshot_dict(self, snapshot: Dict[str, Any]) -> None:
+    def from_snapshot_dict(self, snapshot: dict[str, Any]) -> None:
         """Restore graph state from a dict. Rebuilds secondary indices."""
         version = snapshot.get("_version", 0)
         if version > self.SNAPSHOT_VERSION:
@@ -321,7 +318,7 @@ class LiteMemoryBus:
         if not p.exists():
             return False
 
-        with open(p, "r") as f:
+        with open(p) as f:
             snapshot = json.load(f)
 
         self.from_snapshot_dict(snapshot)
@@ -395,14 +392,14 @@ class LiteMemoryBus:
         # Nothing matched
         return _return(MemoryResult(items=[], query=q, resolution_path="none", token_estimate=0))
 
-    def get_item(self, item_id: str) -> Optional[StoredItem]:
+    def get_item(self, item_id: str) -> StoredItem | None:
         """Public accessor for a stored item by ID. Returns None if not found or expired."""
         item = self._items.get(item_id)
         if item is None or item.is_expired():
             return None
         return item
 
-    def _query_exact(self, entity_ids: List[str]) -> List[Dict]:
+    def _query_exact(self, entity_ids: list[str]) -> list[dict]:
         """Level 1: Direct ID lookup."""
         items = []
         for eid in entity_ids:
@@ -412,7 +409,7 @@ class LiteMemoryBus:
                 items.append(stored.to_dict())
         return items
 
-    def _query_structured(self, q: MemoryQuery) -> List[Dict]:
+    def _query_structured(self, q: MemoryQuery) -> list[dict]:
         """Level 2: Predicate scan over stored items."""
         candidates = list(self._items.values())
         results = []
@@ -447,11 +444,11 @@ class LiteMemoryBus:
         results.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
         return results[:q.max_results]
 
-    def _query_graph(self, q: MemoryQuery) -> List[Dict]:
+    def _query_graph(self, q: MemoryQuery) -> list[dict]:
         """Level 3: Keyword search + graph traversal."""
         intent_lower = q.intent.lower()
         keywords = intent_lower.split()
-        scored: List[Tuple[float, Dict]] = []
+        scored: list[tuple[float, dict]] = []
 
         for item in self._items.values():
             if item.is_expired():
@@ -483,7 +480,7 @@ class LiteMemoryBus:
         scored.sort(key=lambda x: x[0], reverse=True)
         return [s[1] for s in scored[:q.max_results]]
 
-    async def _query_semantic(self, q: MemoryQuery) -> List[Dict]:
+    async def _query_semantic(self, q: MemoryQuery) -> list[dict]:
         """Level 4: Delegate to pluggable semantic function."""
         if not self.semantic_fn:
             return []
@@ -624,9 +621,9 @@ class LiteMemoryBus:
     async def resolve_entity(
         self,
         name_or_alias: str,
-        loom_scope: Optional[str] = None,
+        loom_scope: str | None = None,
         max_candidates: int = 3,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Resolve a name/alias to entity IDs."""
         candidates = []
         key = name_or_alias.lower()
@@ -731,7 +728,7 @@ class LiteMemoryBus:
             logger.info("Decay: forgot %d low-importance items", forgotten)
         return forgotten
 
-    async def consolidate(self, memory_type: str = "episodic", max_items: int = 10) -> Optional[str]:
+    async def consolidate(self, memory_type: str = "episodic", max_items: int = 10) -> str | None:
         """Consolidate multiple items of the same type into a summary.
 
         Returns the new summary item ID, or None if nothing to consolidate.
@@ -771,7 +768,7 @@ class LiteMemoryBus:
     # =========================================================================
 
     def _build_result(
-        self, items: List[Dict], q: MemoryQuery, path: ResolutionPath
+        self, items: list[dict], q: MemoryQuery, path: ResolutionPath
     ) -> MemoryResult:
         """Build result with token budget enforcement and multi-resolution packing."""
         budget = self.config.token_budget_absolute
@@ -834,7 +831,7 @@ class LiteMemoryBus:
         )
 
     @staticmethod
-    def _item_tokens(item: Dict) -> int:
+    def _item_tokens(item: dict) -> int:
         """Use pre-computed token_estimate if available, fall back to heuristic."""
         cached = item.get("token_estimate", 0)
         if cached > 0:
@@ -842,7 +839,7 @@ class LiteMemoryBus:
         return max(1, len(str(item)) // 4)
 
     @staticmethod
-    def _estimate_tokens(item: Dict) -> int:
+    def _estimate_tokens(item: dict) -> int:
         """Legacy heuristic token estimation. Prefer _item_tokens()."""
         return max(1, len(str(item)) // 4)
 
@@ -850,7 +847,7 @@ class LiteMemoryBus:
     # Status & Pressure
     # =========================================================================
 
-    def status(self) -> Dict[str, Any]:
+    def status(self) -> dict[str, Any]:
         total_queries = max(1, self._query_count)
         semantic_pct = self._resolution_counts.get(ResolutionPath.SEMANTIC.value, 0) / total_queries
         return {
@@ -865,7 +862,7 @@ class LiteMemoryBus:
             "semantic_fallback_pct": round(semantic_pct, 3),
         }
 
-    def pressure(self) -> Dict[str, Any]:
+    def pressure(self) -> dict[str, Any]:
         utilization = self._total_tokens_used / max(1, self.config.token_budget_absolute)
         tier = self.config.pressure_tier_for(min(1.0, utilization))
         return {
@@ -881,7 +878,7 @@ class LiteMemoryBus:
     # Explain
     # =========================================================================
 
-    async def explain(self, node_id: str) -> Dict[str, Any]:
+    async def explain(self, node_id: str) -> dict[str, Any]:
         """Provenance chain for an item."""
         if node_id not in self._items:
             return {"node_id": node_id, "error": "not found"}
@@ -914,7 +911,7 @@ class LiteMemoryBus:
     def to_dot(
         self,
         max_label_len: int = 40,
-        highlight_ids: Optional[Set[str]] = None,
+        highlight_ids: set[str] | None = None,
     ) -> str:
         """Export the graph as a Graphviz DOT string.
 
@@ -959,7 +956,7 @@ class LiteMemoryBus:
             attrs = [
                 f'label="{label}"',
                 f'shape={shape}',
-                f'style=filled',
+                'style=filled',
                 f'fillcolor="{fill}"',
             ]
             if item_id in highlight_ids:
@@ -968,7 +965,7 @@ class LiteMemoryBus:
 
             lines.append(f'  "{self._dot_escape(item_id)}" [{", ".join(attrs)}];')
 
-        seen_edges: Set[Tuple[str, str, str]] = set()
+        seen_edges: set[tuple[str, str, str]] = set()
         for source_id, edge_list in self._edges.items():
             for target_id, rel_type in edge_list:
                 pair = tuple(sorted([source_id, target_id])) + (rel_type,)
@@ -985,7 +982,7 @@ class LiteMemoryBus:
         lines.append("}")
         return "\n".join(lines)
 
-    def to_graph_dict(self, include_content: bool = True) -> Dict[str, Any]:
+    def to_graph_dict(self, include_content: bool = True) -> dict[str, Any]:
         """Export the graph as a plain dict (for networkx or JSON visualization).
 
         Args:
@@ -996,7 +993,7 @@ class LiteMemoryBus:
         """
         nodes = []
         for item_id, item in self._items.items():
-            node: Dict[str, Any] = {
+            node: dict[str, Any] = {
                 "id": item_id,
                 "memory_type": item.memory_type,
                 "importance": item.importance,
@@ -1007,7 +1004,7 @@ class LiteMemoryBus:
                 node["content"] = item.content
             nodes.append(node)
 
-        seen_edges: Set[Tuple[str, str, str]] = set()
+        seen_edges: set[tuple[str, str, str]] = set()
         edges = []
         for source_id, edge_list in self._edges.items():
             for target_id, rel_type in edge_list:
@@ -1043,8 +1040,8 @@ class LiteMemoryBus:
         Returns:
             A new LiteMemoryBus containing only the neighborhood.
         """
-        visited: Set[str] = set()
-        queue: List[Tuple[str, int]] = [(center_id, 0)]
+        visited: set[str] = set()
+        queue: list[tuple[str, int]] = [(center_id, 0)]
 
         while queue:
             node_id, d = queue.pop(0)
@@ -1096,7 +1093,7 @@ class LiteMemoryBus:
     # Bulk Load (for shard migration)
     # =========================================================================
 
-    async def load_shards(self, shards: List[Any], memory_type: str = "factual") -> int:
+    async def load_shards(self, shards: list[Any], memory_type: str = "factual") -> int:
         """Bulk-load MemoryShard objects into the bus.
 
         Bridges the existing shard-based system into the bus architecture.
@@ -1135,7 +1132,7 @@ class LiteMemoryBus:
     # Audit (in-memory ring buffer)
     # =========================================================================
 
-    def _audit_log(self, loop_id: str, q: Optional[MemoryQuery], result: Optional[MemoryResult] = None, detail: Optional[Dict] = None):
+    def _audit_log(self, loop_id: str, q: MemoryQuery | None, result: MemoryResult | None = None, detail: dict | None = None):
         entry = {
             "loop_id": loop_id,
             "timestamp": datetime.utcnow().isoformat(),
@@ -1150,5 +1147,5 @@ class LiteMemoryBus:
         if len(self._audit) > self._max_audit:
             self._audit = self._audit[-self._max_audit:]
 
-    def get_audit(self, limit: int = 20) -> List[Dict]:
+    def get_audit(self, limit: int = 20) -> list[dict]:
         return list(reversed(self._audit[-limit:]))

@@ -20,12 +20,10 @@ Integration with HoloLoom:
 
 import json
 import zipfile
-import shutil
-from pathlib import Path
-from typing import Dict, List, Optional, Any
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from dataclasses import dataclass, field, asdict
-import tempfile
+from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -45,12 +43,12 @@ class SkillPackage:
     """
     name: str
     version: str
-    author: Optional[str] = None
-    description: Optional[str] = None
+    author: str | None = None
+    description: str | None = None
     license: str = "MIT"
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
-    skills: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    skills: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -84,8 +82,8 @@ class PackageManager:
     def export_skill(
         self,
         skill_name: str,
-        skill_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        skill_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Export a single skill.
 
@@ -106,9 +104,9 @@ class PackageManager:
     def create_package(
         self,
         package_name: str,
-        skills: Dict[str, Dict[str, Any]],
-        author: Optional[str] = None,
-        description: Optional[str] = None,
+        skills: dict[str, dict[str, Any]],
+        author: str | None = None,
+        description: str | None = None,
         version: str = "1.0.0"
     ) -> SkillPackage:
         """
@@ -209,7 +207,7 @@ class PackageManager:
                 data = json.loads(manifest)
         else:
             # Load from JSON
-            with open(package_path, 'r', encoding='utf-8') as f:
+            with open(package_path, encoding='utf-8') as f:
                 data = json.load(f)
 
         return SkillPackage.from_dict(data)
@@ -218,8 +216,8 @@ class PackageManager:
         self,
         package: SkillPackage,
         overwrite: bool = False,
-        prefix: Optional[str] = None
-    ) -> Dict[str, Any]:
+        prefix: str | None = None
+    ) -> dict[str, Any]:
         """
         Import a package into HoloLoom.
 
@@ -335,7 +333,7 @@ class PackageManager:
 # ============================================================================
 
 def quick_export(
-    skills: Dict[str, Dict[str, Any]],
+    skills: dict[str, dict[str, Any]],
     package_name: str,
     output_path: str = None,
     author: str = None
@@ -368,7 +366,7 @@ def quick_export(
 def quick_import(
     package_path: str,
     overwrite: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Quick import from package file.
 

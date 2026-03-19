@@ -15,14 +15,13 @@ Key Capabilities:
 Created: 2025-12-28
 """
 
-from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Any, Optional, Set
-from datetime import datetime
-from pathlib import Path
-from enum import Enum
-import json
 import hashlib
-
+import json
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 # =============================================================================
 # Data Structures
@@ -59,28 +58,28 @@ class CatalogedVulnerability:
     epsilon: float                   # Perturbation bound used
 
     # Evidence
-    best_perturbation: Optional[List[float]] = None  # Best adversarial perturbation
+    best_perturbation: list[float] | None = None  # Best adversarial perturbation
     activation_before: float = 0.0
     activation_after: float = 0.0
     activation_change: float = 0.0
 
     # Tracking
     status: VulnerabilityStatus = VulnerabilityStatus.ACTIVE
-    last_verified: Optional[str] = None  # ISO timestamp
+    last_verified: str | None = None  # ISO timestamp
     notes: str = ""
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
     # History
-    version_history: List[Dict[str, Any]] = field(default_factory=list)
+    version_history: list[dict[str, Any]] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         d = asdict(self)
         d["status"] = self.status.value
         return d
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "CatalogedVulnerability":
+    def from_dict(cls, data: dict[str, Any]) -> "CatalogedVulnerability":
         """Create from dictionary."""
         data = data.copy()
         if isinstance(data.get("status"), str):
@@ -105,9 +104,9 @@ class CatalogSummary:
     active_count: int
     mitigated_count: int
     regressed_count: int
-    by_level: Dict[str, int]
-    by_method: Dict[str, int]
-    most_vulnerable_features: List[int]
+    by_level: dict[str, int]
+    by_method: dict[str, int]
+    most_vulnerable_features: list[int]
     avg_vulnerability_score: float
     last_updated: str
 
@@ -117,11 +116,11 @@ class RegressionReport:
     """Report on vulnerability regressions between versions."""
     from_version: str
     to_version: str
-    new_vulnerabilities: List[CatalogedVulnerability]
-    fixed_vulnerabilities: List[CatalogedVulnerability]
-    regressed_vulnerabilities: List[CatalogedVulnerability]
-    unchanged_vulnerabilities: List[CatalogedVulnerability]
-    summary: Dict[str, Any]
+    new_vulnerabilities: list[CatalogedVulnerability]
+    fixed_vulnerabilities: list[CatalogedVulnerability]
+    regressed_vulnerabilities: list[CatalogedVulnerability]
+    unchanged_vulnerabilities: list[CatalogedVulnerability]
+    summary: dict[str, Any]
 
 
 # =============================================================================
@@ -155,7 +154,7 @@ class AdversarialCatalog:
         report = catalog.compare_versions("v1.0", "v1.1")
     """
 
-    def __init__(self, storage_path: Optional[str] = None):
+    def __init__(self, storage_path: str | None = None):
         """
         Initialize catalog.
 
@@ -163,7 +162,7 @@ class AdversarialCatalog:
             storage_path: Path for persistence (None for in-memory only)
         """
         self.storage_path = Path(storage_path) if storage_path else None
-        self._vulnerabilities: Dict[str, CatalogedVulnerability] = {}
+        self._vulnerabilities: dict[str, CatalogedVulnerability] = {}
 
         # Load existing if path provided
         if self.storage_path and self.storage_path.exists():
@@ -181,11 +180,11 @@ class AdversarialCatalog:
         vulnerability_level: str,
         attack_method: str,
         epsilon: float,
-        best_perturbation: Optional[List[float]] = None,
+        best_perturbation: list[float] | None = None,
         activation_before: float = 0.0,
         activation_after: float = 0.0,
         notes: str = "",
-        tags: Optional[List[str]] = None
+        tags: list[str] | None = None
     ) -> CatalogedVulnerability:
         """
         Add a new vulnerability to the catalog.
@@ -234,7 +233,7 @@ class AdversarialCatalog:
         self._save()
         return vuln
 
-    def get_vulnerability(self, vuln_id: str) -> Optional[CatalogedVulnerability]:
+    def get_vulnerability(self, vuln_id: str) -> CatalogedVulnerability | None:
         """Get vulnerability by ID."""
         return self._vulnerabilities.get(vuln_id)
 
@@ -277,31 +276,31 @@ class AdversarialCatalog:
     # Queries
     # -------------------------------------------------------------------------
 
-    def get_all(self) -> List[CatalogedVulnerability]:
+    def get_all(self) -> list[CatalogedVulnerability]:
         """Get all vulnerabilities."""
         return list(self._vulnerabilities.values())
 
-    def get_by_feature(self, feature_idx: int) -> List[CatalogedVulnerability]:
+    def get_by_feature(self, feature_idx: int) -> list[CatalogedVulnerability]:
         """Get all vulnerabilities for a feature."""
         return [v for v in self._vulnerabilities.values()
                 if v.feature_idx == feature_idx]
 
-    def get_by_level(self, level: str) -> List[CatalogedVulnerability]:
+    def get_by_level(self, level: str) -> list[CatalogedVulnerability]:
         """Get vulnerabilities by level."""
         return [v for v in self._vulnerabilities.values()
                 if v.vulnerability_level == level]
 
-    def get_by_status(self, status: VulnerabilityStatus) -> List[CatalogedVulnerability]:
+    def get_by_status(self, status: VulnerabilityStatus) -> list[CatalogedVulnerability]:
         """Get vulnerabilities by status."""
         return [v for v in self._vulnerabilities.values()
                 if v.status == status]
 
-    def get_by_version(self, model_version: str) -> List[CatalogedVulnerability]:
+    def get_by_version(self, model_version: str) -> list[CatalogedVulnerability]:
         """Get vulnerabilities for a specific model version."""
         return [v for v in self._vulnerabilities.values()
                 if v.model_version == model_version]
 
-    def get_active_critical(self) -> List[CatalogedVulnerability]:
+    def get_active_critical(self) -> list[CatalogedVulnerability]:
         """Get active CRITICAL and HIGH vulnerabilities."""
         return [v for v in self._vulnerabilities.values()
                 if v.status == VulnerabilityStatus.ACTIVE
@@ -309,12 +308,12 @@ class AdversarialCatalog:
 
     def search(
         self,
-        feature_idx: Optional[int] = None,
-        model_version: Optional[str] = None,
-        min_score: Optional[float] = None,
-        status: Optional[VulnerabilityStatus] = None,
-        tags: Optional[List[str]] = None
-    ) -> List[CatalogedVulnerability]:
+        feature_idx: int | None = None,
+        model_version: str | None = None,
+        min_score: float | None = None,
+        status: VulnerabilityStatus | None = None,
+        tags: list[str] | None = None
+    ) -> list[CatalogedVulnerability]:
         """
         Search vulnerabilities with filters.
 
@@ -367,17 +366,17 @@ class AdversarialCatalog:
         regressed = sum(1 for v in vulns if v.status == VulnerabilityStatus.REGRESSED)
 
         # Count by level
-        by_level: Dict[str, int] = {}
+        by_level: dict[str, int] = {}
         for v in vulns:
             by_level[v.vulnerability_level] = by_level.get(v.vulnerability_level, 0) + 1
 
         # Count by method
-        by_method: Dict[str, int] = {}
+        by_method: dict[str, int] = {}
         for v in vulns:
             by_method[v.attack_method] = by_method.get(v.attack_method, 0) + 1
 
         # Most vulnerable features
-        feature_scores: Dict[int, float] = {}
+        feature_scores: dict[int, float] = {}
         for v in vulns:
             if v.feature_idx not in feature_scores:
                 feature_scores[v.feature_idx] = 0.0
@@ -490,7 +489,7 @@ class AdversarialCatalog:
         if not catalog_file.exists():
             return
 
-        with open(catalog_file, 'r') as f:
+        with open(catalog_file) as f:
             data = json.load(f)
 
         for vuln_data in data.get("vulnerabilities", []):
@@ -517,7 +516,7 @@ class AdversarialCatalog:
             filepath: Path to JSON file
             merge: If True, merge with existing. If False, replace.
         """
-        with open(filepath, 'r') as f:
+        with open(filepath) as f:
             data = json.load(f)
 
         if not merge:
@@ -536,7 +535,7 @@ class AdversarialCatalog:
 
 
 def create_catalog(
-    storage_path: Optional[str] = None
+    storage_path: str | None = None
 ) -> AdversarialCatalog:
     """
     Factory function for catalog.

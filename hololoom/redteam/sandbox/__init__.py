@@ -53,41 +53,37 @@ Date: 2025-12-05
 # Protocols
 # =============================================================================
 
-from .protocols import (
-    SandboxMode,
-    SandboxConfig,
-    SandboxResult,
-    ProcessIsolationProtocol,
-    NetworkPolicyProtocol,
-    FilesystemSandboxProtocol,
-)
+# =============================================================================
+# Filesystem Isolation (NEW - November 2025)
+# =============================================================================
+from . import filesystem as _fs_module
 
 # =============================================================================
 # Monitoring
 # =============================================================================
-
 from .monitor import (
+    ResourceMonitor,
     ResourceSample,
     ResourceSummary,
-    ResourceMonitor,
+)
+from .protocols import (
+    FilesystemSandboxProtocol,
+    NetworkPolicyProtocol,
+    ProcessIsolationProtocol,
+    SandboxConfig,
+    SandboxMode,
+    SandboxResult,
 )
 
 # =============================================================================
 # Sandboxed Executor (Main Integration)
 # =============================================================================
-
 from .sandboxed_executor import (
     SandboxedExecutor,
     create_sandboxed_executor,
     create_sandboxed_executor_sync,
     sandboxed_attack_execution,
 )
-
-# =============================================================================
-# Filesystem Isolation (NEW - November 2025)
-# =============================================================================
-
-from . import filesystem as _fs_module
 
 FilesystemSandbox = _fs_module.FilesystemSandbox
 FilesystemBackend = _fs_module.SandboxBackend

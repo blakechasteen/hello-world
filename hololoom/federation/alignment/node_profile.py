@@ -24,10 +24,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from .protocol import AlignmentStatus, DeceptionFlag
-
+from .protocol import DeceptionFlag
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  CONSTANTS - Trust score adjustments
@@ -73,7 +72,7 @@ class TrustLevel(Enum):
     HIGHLY_TRUSTED = "highly_trusted"  # score >= 0.95 - minimal verification
 
     @classmethod
-    def from_score(cls, score: float) -> "TrustLevel":
+    def from_score(cls, score: float) -> TrustLevel:
         """Classify trust level from score."""
         if score < 0.3:
             return cls.UNTRUSTED
@@ -103,8 +102,8 @@ class AlignmentEvent:
     event_type: AlignmentEventType
     request_id: str
     trust_delta: float               # Change to trust score
-    deception_flags: List[DeceptionFlag] = field(default_factory=list)
-    details: Dict[str, Any] = field(default_factory=dict)
+    deception_flags: list[DeceptionFlag] = field(default_factory=list)
+    details: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     @property
@@ -117,7 +116,7 @@ class AlignmentEvent:
         """Check if this event degraded trust."""
         return self.trust_delta < 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "event_type": self.event_type.name,
@@ -129,7 +128,7 @@ class AlignmentEvent:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "AlignmentEvent":
+    def from_dict(cls, data: dict[str, Any]) -> AlignmentEvent:
         """Deserialize from dictionary."""
         return cls(
             event_type=AlignmentEventType[data["event_type"]],
@@ -159,7 +158,7 @@ class NodeAlignmentProfile:
 
     node_id: str
     trust_score: float = INITIAL_TRUST_SCORE
-    events: List[AlignmentEvent] = field(default_factory=list)
+    events: list[AlignmentEvent] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)
     last_updated: datetime = field(default_factory=datetime.utcnow)
 
@@ -255,7 +254,7 @@ class NodeAlignmentProfile:
     def record_failed_verification(
         self,
         request_id: str,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ) -> None:
         """Record a failed alignment verification."""
         self.record_event(AlignmentEvent(
@@ -268,8 +267,8 @@ class NodeAlignmentProfile:
     def record_deception(
         self,
         request_id: str,
-        flags: List[DeceptionFlag],
-        details: Optional[Dict[str, Any]] = None
+        flags: list[DeceptionFlag],
+        details: dict[str, Any] | None = None
     ) -> None:
         """Record detected deception behavior."""
         self.record_event(AlignmentEvent(
@@ -283,9 +282,9 @@ class NodeAlignmentProfile:
     def record_deception_incident(
         self,
         request_id: str,
-        flags: List[DeceptionFlag],
+        flags: list[DeceptionFlag],
         severity: float = 1.0,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ) -> None:
         """
         Record detected deception behavior with severity.
@@ -314,7 +313,7 @@ class NodeAlignmentProfile:
     def record_resource_violation(
         self,
         request_id: str,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ) -> None:
         """Record anomalous resource usage."""
         self.record_event(AlignmentEvent(
@@ -345,7 +344,7 @@ class NodeAlignmentProfile:
     def record_escalation(
         self,
         request_id: str,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ) -> None:
         """Record that an escalation was required."""
         self.record_event(AlignmentEvent(
@@ -358,7 +357,7 @@ class NodeAlignmentProfile:
     def record_cleared(
         self,
         request_id: str,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ) -> None:
         """Record that node was cleared after escalation."""
         self.record_event(AlignmentEvent(
@@ -371,8 +370,8 @@ class NodeAlignmentProfile:
     def get_recent_events(
         self,
         hours: int = 24,
-        event_types: Optional[List[AlignmentEventType]] = None
-    ) -> List[AlignmentEvent]:
+        event_types: list[AlignmentEventType] | None = None
+    ) -> list[AlignmentEvent]:
         """Get recent events within time window."""
         cutoff = datetime.utcnow() - timedelta(hours=hours)
         events = [e for e in self.events if e.timestamp > cutoff]
@@ -392,7 +391,7 @@ class NodeAlignmentProfile:
             return 0.0
         return sum(e.trust_delta for e in recent)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "node_id": self.node_id,
@@ -414,7 +413,7 @@ class NodeAlignmentProfile:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "NodeAlignmentProfile":
+    def from_dict(cls, data: dict[str, Any]) -> NodeAlignmentProfile:
         """Deserialize from dictionary."""
         stats = data.get("statistics", {})
         profile = cls(
@@ -450,7 +449,7 @@ class NodeProfileRegistry:
 
     def __init__(self) -> None:
         """Initialize empty registry."""
-        self._profiles: Dict[str, NodeAlignmentProfile] = {}
+        self._profiles: dict[str, NodeAlignmentProfile] = {}
 
     def get_or_create(self, node_id: str) -> NodeAlignmentProfile:
         """
@@ -466,7 +465,7 @@ class NodeProfileRegistry:
             self._profiles[node_id] = NodeAlignmentProfile(node_id=node_id)
         return self._profiles[node_id]
 
-    def get(self, node_id: str) -> Optional[NodeAlignmentProfile]:
+    def get(self, node_id: str) -> NodeAlignmentProfile | None:
         """Get profile if exists."""
         return self._profiles.get(node_id)
 
@@ -475,21 +474,21 @@ class NodeProfileRegistry:
         profile = self._profiles.get(node_id)
         return profile.trust_score if profile else INITIAL_TRUST_SCORE
 
-    def get_trust_scores(self, node_ids: List[str]) -> Dict[str, float]:
+    def get_trust_scores(self, node_ids: list[str]) -> dict[str, float]:
         """Get trust scores for multiple nodes."""
         return {
             node_id: self.get_trust_score(node_id)
             for node_id in node_ids
         }
 
-    def get_untrusted_nodes(self) -> List[str]:
+    def get_untrusted_nodes(self) -> list[str]:
         """Get list of nodes below trust threshold."""
         return [
             node_id for node_id, profile in self._profiles.items()
             if not profile.is_trustworthy
         ]
 
-    def get_highly_trusted_nodes(self, min_count: int = 0) -> List[str]:
+    def get_highly_trusted_nodes(self, min_count: int = 0) -> list[str]:
         """Get list of highly trusted nodes."""
         trusted = [
             node_id for node_id, profile in self._profiles.items()
@@ -497,11 +496,11 @@ class NodeProfileRegistry:
         ]
         return trusted[:min_count] if min_count else trusted
 
-    def remove(self, node_id: str) -> Optional[NodeAlignmentProfile]:
+    def remove(self, node_id: str) -> NodeAlignmentProfile | None:
         """Remove and return profile."""
         return self._profiles.pop(node_id, None)
 
-    def all_profiles(self) -> Dict[str, NodeAlignmentProfile]:
+    def all_profiles(self) -> dict[str, NodeAlignmentProfile]:
         """Get all profiles (read-only view)."""
         return dict(self._profiles)
 

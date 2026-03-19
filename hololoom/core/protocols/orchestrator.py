@@ -19,7 +19,7 @@ Date: 2026-03-12
 
 from __future__ import annotations
 
-from typing import Any, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from hololoom.protocols.types import ComplexityLevel, Query
 
@@ -37,9 +37,9 @@ class WeavingOrchestratorProtocol(Protocol):
     async def weave(
         self,
         query: Query,
-        pattern_override: Optional[Any] = None,
-        complexity: Optional[ComplexityLevel] = None,
-        auto_enhance: Optional[bool] = None,
+        pattern_override: Any | None = None,
+        complexity: ComplexityLevel | None = None,
+        auto_enhance: bool | None = None,
     ) -> Any:
         """
         Execute the weaving cycle.

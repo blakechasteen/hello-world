@@ -21,13 +21,12 @@ Author: HoloLoom Architecture Team
 Date: 2025-10-29
 """
 
-from typing import List, Protocol, runtime_checkable
 from dataclasses import dataclass
-
+from typing import Protocol, runtime_checkable
 
 # Import core types
 try:
-    from hololoom.protocols.types import Query, MemoryShard
+    from hololoom.protocols.types import MemoryShard, Query
 except ImportError:
     # Fallback for circular imports
     from typing import Any
@@ -65,7 +64,7 @@ class RetrievalStrategy(Protocol):
         query: Query,
         k: int = 5,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Retrieve memories relevant to query.
 
@@ -128,7 +127,7 @@ class RetrievalResult:
     """
 
     # Core results
-    shards: List[MemoryShard]
+    shards: list[MemoryShard]
 
     # Metadata
     strategy: str                    # "static", "spring", "hybrid"
@@ -174,7 +173,7 @@ class SpringActivationMetadata:
     final_energy: float            # Final energy state
 
     # Activation spread
-    seed_nodes: List[str]          # Initial activated nodes
+    seed_nodes: list[str]          # Initial activated nodes
     activated_count: int           # Total nodes activated above threshold
     activation_threshold: float    # Min activation to retrieve
 

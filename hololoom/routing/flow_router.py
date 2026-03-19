@@ -21,18 +21,18 @@ Usage:
     )
 """
 
-from typing import Dict, List, Optional, Callable, Any
+from collections.abc import Callable
 from dataclasses import dataclass
-import asyncio
+from typing import Any
 
 from ..physics.gradient_flow import (
     GradientFlowEngine,
     RouteDecision,
     combined_loss,
+    cost_loss,
     create_tool_selection_loss,
-    load_loss,
     latency_loss,
-    cost_loss
+    load_loss,
 )
 
 
@@ -79,8 +79,8 @@ class FlowRouter:
 
     def __init__(
         self,
-        targets: List[str],
-        loss_fn: Callable[[Dict[str, float]], float],
+        targets: list[str],
+        loss_fn: Callable[[dict[str, float]], float],
         learning_rate: float = 0.1,
         noise_level: float = 0.05,
         max_steps: int = 10
@@ -102,12 +102,12 @@ class FlowRouter:
             noise_level=noise_level
         )
         self.max_steps = max_steps
-        self.route_history: List[RouteDecision] = []
+        self.route_history: list[RouteDecision] = []
 
     async def route(
         self,
-        current_metrics: Dict[str, Dict[str, float]],
-        query: Optional[str] = None
+        current_metrics: dict[str, dict[str, float]],
+        query: str | None = None
     ) -> RouteDecision:
         """
         Route query to optimal target.
@@ -137,7 +137,7 @@ class FlowRouter:
 
         return decision
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get routing statistics."""
         if not self.route_history:
             return {
@@ -185,7 +185,7 @@ class ServerRouter(FlowRouter):
 
     def __init__(
         self,
-        servers: List[ServerConfig],
+        servers: list[ServerConfig],
         load_weight: float = 0.5,
         latency_weight: float = 0.3,
         cost_weight: float = 0.2
@@ -243,13 +243,13 @@ class ServerRouter(FlowRouter):
 
         return decision
 
-    def get_loads(self) -> Dict[str, float]:
+    def get_loads(self) -> dict[str, float]:
         """Get current server loads."""
         return dict(self.current_loads)
 
     def reset_loads(self):
         """Reset all server loads to 0."""
-        self.current_loads = {name: 0.0 for name in self.servers.keys()}
+        self.current_loads = dict.fromkeys(self.servers.keys(), 0.0)
 
 
 class ToolRouter(FlowRouter):
@@ -273,7 +273,7 @@ class ToolRouter(FlowRouter):
 
     def __init__(
         self,
-        tools: List[ToolConfig],
+        tools: list[ToolConfig],
         cost_weight: float = 0.3,
         quality_weight: float = 0.5,
         latency_weight: float = 0.2
@@ -324,8 +324,8 @@ class ToolRouter(FlowRouter):
 # Factory functions
 
 def create_flow_router(
-    servers: Optional[List[str]] = None,
-    tools: Optional[List[str]] = None,
+    servers: list[str] | None = None,
+    tools: list[str] | None = None,
     loss_fn: str = "combined",
     **kwargs
 ) -> FlowRouter:
@@ -364,8 +364,8 @@ def create_flow_router(
 
 
 def create_server_router(
-    server_names: List[str],
-    max_loads: Optional[List[float]] = None,
+    server_names: list[str],
+    max_loads: list[float] | None = None,
     **kwargs
 ) -> ServerRouter:
     """
@@ -391,7 +391,7 @@ def create_server_router(
 
 
 def create_tool_router(
-    tool_configs: List[Dict[str, float]],
+    tool_configs: list[dict[str, float]],
     **kwargs
 ) -> ToolRouter:
     """

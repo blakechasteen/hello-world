@@ -15,14 +15,13 @@ Research:
 - Durfee (2001): Distributed problem solving
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Set, Optional, Tuple, Callable
-from enum import Enum
 import logging
-from collections import defaultdict
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from enum import Enum
 
 # Import Layer 2 core
-from hololoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action
+from hololoom.planning.planner import Action, Goal, HierarchicalPlanner, Plan
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +65,8 @@ class Task:
     """Task to be allocated to agent(s)."""
     task_id: str
     goal: Goal
-    required_capabilities: Set[str]
-    deadline: Optional[float] = None
+    required_capabilities: set[str]
+    deadline: float | None = None
     priority: float = 1.0
     difficulty: float = 1.0
 
@@ -89,7 +88,7 @@ class Proposal:
     cost: float
     expected_duration: float
     confidence: float  # 0-1, confidence in success
-    required_resources: Dict[str, float] = field(default_factory=dict)
+    required_resources: dict[str, float] = field(default_factory=dict)
     utility: float = 0.0  # Expected utility for proposer
 
     def __repr__(self):
@@ -100,12 +99,12 @@ class Proposal:
 @dataclass
 class Agreement:
     """Negotiated agreement between agents."""
-    agents: List[str]
+    agents: list[str]
     task_id: str
     joint_plan: Plan
-    resource_allocation: Dict[str, Dict[str, float]]  # agent -> resources
-    utility_distribution: Dict[str, float]  # agent -> utility
-    commitments: Dict[str, List[Action]]  # agent -> committed actions
+    resource_allocation: dict[str, dict[str, float]]  # agent -> resources
+    utility_distribution: dict[str, float]  # agent -> utility
+    commitments: dict[str, list[Action]]  # agent -> committed actions
 
     def __repr__(self):
         return (f"Agreement({len(self.agents)} agents, "
@@ -125,8 +124,8 @@ class Message:
 @dataclass
 class Coalition:
     """Coalition of cooperating agents."""
-    members: Set[str]
-    tasks: List[Task]
+    members: set[str]
+    tasks: list[Task]
     value: float  # Coalition value (Shapley value)
     is_stable: bool = False
 
@@ -145,8 +144,8 @@ class Agent:
                  agent_id: str,
                  agent_type: AgentType,
                  planner: HierarchicalPlanner,
-                 capabilities: List[Capability],
-                 resources: Optional[Dict[str, float]] = None):
+                 capabilities: list[Capability],
+                 resources: dict[str, float] | None = None):
         """
         Initialize agent.
 
@@ -164,8 +163,8 @@ class Agent:
         self.resources = resources or {}
 
         # Communication
-        self.inbox: List[Message] = []
-        self.commitments: Dict[str, Agreement] = {}  # task_id -> agreement
+        self.inbox: list[Message] = []
+        self.commitments: dict[str, Agreement] = {}  # task_id -> agreement
 
         logger.info(f"Initialized {agent_type.value} agent {agent_id} "
                    f"with {len(capabilities)} capabilities")
@@ -205,7 +204,7 @@ class Agent:
     # Proposal Generation
     # ------------------------------------------------------------------------
 
-    def propose_plan(self, task: Task, current_state: Dict) -> Optional[Proposal]:
+    def propose_plan(self, task: Task, current_state: dict) -> Proposal | None:
         """
         Generate plan proposal for task.
 
@@ -307,7 +306,7 @@ class Agent:
         self.inbox.append(message)
         logger.debug(f"{self.agent_id} ← {message.sender}: {message.msg_type.value}")
 
-    def process_messages(self) -> List[Message]:
+    def process_messages(self) -> list[Message]:
         """Process all messages in inbox. Returns responses."""
         responses = []
         for msg in self.inbox:
@@ -318,7 +317,7 @@ class Agent:
         self.inbox.clear()
         return responses
 
-    def _handle_message(self, msg: Message) -> Optional[Message]:
+    def _handle_message(self, msg: Message) -> Message | None:
         """Handle single message. Returns response if any."""
         if msg.msg_type == MessageType.PROPOSE:
             proposal = msg.content
@@ -363,7 +362,7 @@ class MultiAgentCoordinator:
     """Coordinates multiple planning agents."""
 
     def __init__(self,
-                 agents: List[Agent],
+                 agents: list[Agent],
                  protocol: NegotiationProtocol = NegotiationProtocol.CONTRACT_NET):
         """
         Initialize coordinator.
@@ -382,8 +381,8 @@ class MultiAgentCoordinator:
     # Task Allocation
     # ------------------------------------------------------------------------
 
-    def allocate_tasks(self, tasks: List[Task],
-                      current_state: Dict) -> Dict[str, str]:
+    def allocate_tasks(self, tasks: list[Task],
+                      current_state: dict) -> dict[str, str]:
         """
         Allocate tasks to agents.
 
@@ -402,8 +401,8 @@ class MultiAgentCoordinator:
             # Default: greedy assignment
             return self._allocate_greedy(tasks, current_state)
 
-    def _allocate_contract_net(self, tasks: List[Task],
-                               current_state: Dict) -> Dict[str, str]:
+    def _allocate_contract_net(self, tasks: list[Task],
+                               current_state: dict) -> dict[str, str]:
         """
         Contract Net Protocol (Smith 1980).
 
@@ -458,8 +457,8 @@ class MultiAgentCoordinator:
 
         return allocation
 
-    def _allocate_greedy(self, tasks: List[Task],
-                        current_state: Dict) -> Dict[str, str]:
+    def _allocate_greedy(self, tasks: list[Task],
+                        current_state: dict) -> dict[str, str]:
         """Greedy task allocation: best agent for each task."""
         allocation = {}
 
@@ -481,8 +480,8 @@ class MultiAgentCoordinator:
 
         return allocation
 
-    def _allocate_auction(self, tasks: List[Task],
-                         current_state: Dict) -> Dict[str, str]:
+    def _allocate_auction(self, tasks: list[Task],
+                         current_state: dict) -> dict[str, str]:
         """Auction-based allocation (similar to Contract Net but with bidding rounds)."""
         # For now, same as Contract Net
         # TODO: Implement multi-round bidding
@@ -493,7 +492,7 @@ class MultiAgentCoordinator:
     # ------------------------------------------------------------------------
 
     def form_coalition(self, task: Task,
-                      current_state: Dict) -> Optional[Coalition]:
+                      current_state: dict) -> Coalition | None:
         """
         Form coalition of agents to achieve task.
 
@@ -544,9 +543,9 @@ class MultiAgentCoordinator:
 
         return None
 
-    def _calculate_coalition_value(self, members: Set[str],
+    def _calculate_coalition_value(self, members: set[str],
                                    task: Task,
-                                   current_state: Dict) -> float:
+                                   current_state: dict) -> float:
         """
         Calculate coalition value (Shapley value).
 
@@ -567,9 +566,9 @@ class MultiAgentCoordinator:
         avg_cost = total_cost / len(members) if members else 0
         return total_utility - avg_cost
 
-    def _check_coalition_stability(self, members: Set[str],
+    def _check_coalition_stability(self, members: set[str],
                                    task: Task, value: float,
-                                   current_state: Dict) -> bool:
+                                   current_state: dict) -> bool:
         """
         Check if coalition is stable (core stability).
 
@@ -595,7 +594,7 @@ class MultiAgentCoordinator:
     # Conflict Resolution
     # ------------------------------------------------------------------------
 
-    def resolve_conflicts(self, plans: List[Tuple[str, Plan]]) -> List[Tuple[str, Plan]]:
+    def resolve_conflicts(self, plans: list[tuple[str, Plan]]) -> list[tuple[str, Plan]]:
         """
         Resolve conflicts between agent plans.
 
@@ -633,7 +632,7 @@ class MultiAgentCoordinator:
         logger.info("Conflicts resolved")
         return resolved_plans
 
-    def _detect_conflicts(self, plans: List[Tuple[str, Plan]]) -> List[Dict]:
+    def _detect_conflicts(self, plans: list[tuple[str, Plan]]) -> list[dict]:
         """Detect conflicts between plans."""
         conflicts = []
 
@@ -647,7 +646,7 @@ class MultiAgentCoordinator:
 
         return conflicts
 
-    def _resolve_conflict(self, conflict: Dict, agent_id: str,
+    def _resolve_conflict(self, conflict: dict, agent_id: str,
                          plan: Plan) -> Plan:
         """Resolve a specific conflict for an agent's plan."""
         # TODO: Implement conflict resolution strategies
@@ -663,7 +662,7 @@ class MultiAgentCoordinator:
     # ------------------------------------------------------------------------
 
     def execute_joint_plan(self, agreement: Agreement,
-                          executor: Callable) -> Dict:
+                          executor: Callable) -> dict:
         """
         Execute coordinated plan.
 
@@ -706,7 +705,7 @@ class MultiAgentCoordinator:
                 return results
 
         results['success'] = True
-        logger.info(f"Joint plan completed successfully")
+        logger.info("Joint plan completed successfully")
         return results
 
 
@@ -717,7 +716,7 @@ class MultiAgentCoordinator:
 def create_agent(agent_id: str,
                 agent_type: AgentType,
                 dag: 'CausalDAG',  # From Layer 1
-                capabilities: List[str],
+                capabilities: list[str],
                 proficiency: float = 0.8) -> Agent:
     """
     Convenient agent factory.

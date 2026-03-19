@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Weaving Memory Adapter - Bridge between WeavingShuttle and Memory Backends
 ===========================================================================
@@ -20,16 +20,16 @@ the implementation details. This adapter is the "translation layer".
 
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional, Union
-from datetime import datetime, timedelta
-import hashlib
+from datetime import datetime
+from typing import Any, Optional
 
 # Shared types
 from hololoom.protocols.types import MemoryShard, Query
 
 # Try importing various memory backends
 try:
-    from hololoom.memory.unified import UnifiedMemory, RecallStrategy, Memory as UnifiedMemoryObj
+    from hololoom.memory.unified import Memory as UnifiedMemoryObj
+    from hololoom.memory.unified import RecallStrategy, UnifiedMemory
     UNIFIED_MEMORY_AVAILABLE = True
 except ImportError:
     UNIFIED_MEMORY_AVAILABLE = False
@@ -161,9 +161,9 @@ class WeavingMemoryAdapter:
 
     def __init__(
         self,
-        backend: Optional[Any] = None,
+        backend: Any | None = None,
         backend_type: str = "in_memory",
-        initial_shards: Optional[List[MemoryShard]] = None
+        initial_shards: list[MemoryShard] | None = None
     ):
         """
         Initialize memory adapter.
@@ -178,7 +178,7 @@ class WeavingMemoryAdapter:
         self.logger = logging.getLogger(__name__)
 
         # In-memory fallback
-        self.shards: Dict[str, MemoryShard] = {}
+        self.shards: dict[str, MemoryShard] = {}
         if initial_shards:
             self.shards = {shard.id: shard for shard in initial_shards}
 
@@ -225,8 +225,8 @@ class WeavingMemoryAdapter:
     def from_backend_factory(
         cls,
         backend_type: str = "hybrid",
-        neo4j_config: Optional[Dict] = None,
-        qdrant_config: Optional[Dict] = None
+        neo4j_config: dict | None = None,
+        qdrant_config: dict | None = None
     ) -> 'WeavingMemoryAdapter':
         """
         Create adapter from backend factory.
@@ -255,7 +255,7 @@ class WeavingMemoryAdapter:
             return cls(backend_type="in_memory")
 
     @classmethod
-    def from_shards(cls, shards: List[MemoryShard]) -> 'WeavingMemoryAdapter':
+    def from_shards(cls, shards: list[MemoryShard]) -> 'WeavingMemoryAdapter':
         """
         Create adapter with in-memory shard storage (fallback/testing).
 
@@ -275,7 +275,7 @@ class WeavingMemoryAdapter:
         self,
         temporal_window: Optional['TemporalWindow'],
         query: Query
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Select threads based on temporal window and query.
 
@@ -311,7 +311,7 @@ class WeavingMemoryAdapter:
 
         return shards
 
-    def _select_via_unified(self, query: Query, temporal_window: Optional['TemporalWindow']) -> List[MemoryShard]:
+    def _select_via_unified(self, query: Query, temporal_window: Optional['TemporalWindow']) -> list[MemoryShard]:
         """Select threads via UnifiedMemory backend."""
         try:
             # Determine limit from temporal window
@@ -335,7 +335,7 @@ class WeavingMemoryAdapter:
             self.logger.error(f"UnifiedMemory recall failed: {e}")
             return []
 
-    def _select_via_factory(self, query: Query, temporal_window: Optional['TemporalWindow']) -> List[MemoryShard]:
+    def _select_via_factory(self, query: Query, temporal_window: Optional['TemporalWindow']) -> list[MemoryShard]:
         """Select threads via backend factory."""
         try:
             # Determine limit from temporal window
@@ -370,7 +370,7 @@ class WeavingMemoryAdapter:
             self.logger.error(f"Backend factory retrieve failed: {e}", exc_info=True)
             return []
 
-    def _select_via_in_memory(self, query: Query) -> List[MemoryShard]:
+    def _select_via_in_memory(self, query: Query) -> list[MemoryShard]:
         """Select threads from in-memory shards (simple fallback)."""
         # Simple implementation: return all shards
         # In production, would do BM25 or similarity search
@@ -380,9 +380,9 @@ class WeavingMemoryAdapter:
 
     def _apply_temporal_filter(
         self,
-        shards: List[MemoryShard],
+        shards: list[MemoryShard],
         temporal_window: 'TemporalWindow'
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Filter shards by temporal window bounds.
 
@@ -428,9 +428,9 @@ class WeavingMemoryAdapter:
 
     def _apply_recency_weighting(
         self,
-        shards: List[MemoryShard],
+        shards: list[MemoryShard],
         temporal_window: 'TemporalWindow'
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Apply exponential decay recency weighting.
 
@@ -481,7 +481,7 @@ class WeavingMemoryAdapter:
         weighted.sort(key=lambda x: x[0], reverse=True)
 
         sorted_shards = [shard for score, shard in weighted]
-        
+
         if weighted:
             self.logger.debug(
                 f"Recency weighting: top shard score={weighted[0][0]:.4f}, "
@@ -489,7 +489,7 @@ class WeavingMemoryAdapter:
             )
         else:
             self.logger.debug("Recency weighting: no shards to weight")
-            
+
         return sorted_shards
 
     # ========================================================================
@@ -534,7 +534,7 @@ class WeavingMemoryAdapter:
         """Synchronous version of add_shard."""
         return asyncio.run(self.add_shard(shard))
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get memory backend statistics.
 
@@ -566,7 +566,7 @@ class WeavingMemoryAdapter:
 
 def create_weaving_memory(
     mode: str = "in_memory",
-    shards: Optional[List[MemoryShard]] = None,
+    shards: list[MemoryShard] | None = None,
     **kwargs
 ) -> WeavingMemoryAdapter:
     """

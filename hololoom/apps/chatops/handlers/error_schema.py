@@ -12,11 +12,11 @@ Philosophy: Errors should guide users to success, not just report failure.
 Created: 2025-12-15
 """
 
+import random
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
-import time
-import random
+from typing import Any
 
 
 class ErrorCategory(Enum):
@@ -57,16 +57,16 @@ class ChatOpsError(Exception):
 
     # Remediation
     suggestion: str = ""                           # Primary fix suggestion
-    alternatives: List[str] = field(default_factory=list)  # Other options
-    docs_url: Optional[str] = None                 # Link to documentation
+    alternatives: list[str] = field(default_factory=list)  # Other options
+    docs_url: str | None = None                 # Link to documentation
 
     # Context
     command: str = ""                              # Which command failed
-    retry_after_seconds: Optional[float] = None    # For cooldowns
-    required_permission: Optional[str] = None      # For auth errors
+    retry_after_seconds: float | None = None    # For cooldowns
+    required_permission: str | None = None      # For auth errors
 
     # Technical details (for logging, not user display)
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
     # Tracking for learning
     error_id: str = field(default_factory=lambda: f"err-{int(time.time() * 1000)}-{random.randint(1000, 9999)}")
@@ -113,7 +113,7 @@ class ChatOpsError(Exception):
 
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize for JSON output."""
         return {
             "error": True,
@@ -218,7 +218,7 @@ def cooldown_error(command: str, remaining: float) -> ChatOpsError:
     )
 
 
-def command_not_found_error(command: str, suggestions: List[str]) -> ChatOpsError:
+def command_not_found_error(command: str, suggestions: list[str]) -> ChatOpsError:
     """Create structured error for unknown command with fuzzy suggestions."""
     suggestion = (
         f"Did you mean: {', '.join(f'!{s}' for s in suggestions[:3])}?"
@@ -295,7 +295,7 @@ def internal_error(command: str, error: Exception) -> ChatOpsError:
 def dependency_missing_error(
     command: str,
     dependency: str,
-    install_hint: Optional[str] = None
+    install_hint: str | None = None
 ) -> ChatOpsError:
     """Create structured error for missing optional dependency."""
     suggestion = f"The '{dependency}' component is not available"
@@ -360,8 +360,8 @@ class SuggestionOutcome:
     error_category: str
     suggestion_id: str
     recovered: bool
-    recovery_time_seconds: Optional[float] = None
-    user_feedback: Optional[str] = None
+    recovery_time_seconds: float | None = None
+    user_feedback: str | None = None
 
 
 class ErrorSuggestionLearner:
@@ -378,15 +378,15 @@ class ErrorSuggestionLearner:
     def __init__(self, quality_threshold: float = 0.7):
         # Thompson Sampling priors: (alpha, beta) per suggestion
         # Key: f"{error_category}:{suggestion_id}"
-        self._suggestion_priors: Dict[str, Tuple[float, float]] = {}
-        self._recovery_tracker: Dict[str, Dict[str, Any]] = {}
+        self._suggestion_priors: dict[str, tuple[float, float]] = {}
+        self._recovery_tracker: dict[str, dict[str, Any]] = {}
         self._quality_threshold = quality_threshold
 
     def get_ranked_suggestions(
         self,
         error: ChatOpsError,
-        base_suggestions: List[str]
-    ) -> List[Tuple[str, float]]:
+        base_suggestions: list[str]
+    ) -> list[tuple[str, float]]:
         """
         Return suggestions ranked by Thompson-sampled expected value.
 
@@ -460,7 +460,7 @@ class ErrorSuggestionLearner:
         # Cleanup old tracker entry
         del self._recovery_tracker[error_id]
 
-    def get_suggestion_stats(self) -> Dict[str, Dict[str, float]]:
+    def get_suggestion_stats(self) -> dict[str, dict[str, float]]:
         """Get statistics about suggestion effectiveness."""
         stats = {}
         for key, (alpha, beta) in self._suggestion_priors.items():
@@ -488,7 +488,7 @@ class ErrorSuggestionLearner:
         """Load learned priors from file."""
         import json
         try:
-            with open(filepath, 'r') as f:
+            with open(filepath) as f:
                 data = json.load(f)
                 self._suggestion_priors = {
                     k: tuple(v) for k, v in data.get("priors", {}).items()
@@ -515,12 +515,12 @@ class WizardStep:
 class WizardSession:
     """Active recovery wizard session."""
     error: ChatOpsError
-    steps: List[WizardStep]
+    steps: list[WizardStep]
     current_step: int = 0
     session_id: str = field(default_factory=lambda: f"wiz-{int(time.time() * 1000)}")
     started_at: float = field(default_factory=time.time)
 
-    def get_current_step(self) -> Optional[WizardStep]:
+    def get_current_step(self) -> WizardStep | None:
         """Get current wizard step."""
         if 0 <= self.current_step < len(self.steps):
             return self.steps[self.current_step]
@@ -556,7 +556,7 @@ class ErrorRecoveryWizard:
     """
 
     # Pre-defined recovery flows
-    RECOVERY_FLOWS: Dict[ErrorCategory, List[WizardStep]] = {
+    RECOVERY_FLOWS: dict[ErrorCategory, list[WizardStep]] = {
         ErrorCategory.AUTH_REQUIRED: [
             WizardStep(
                 title="Check Authentication Status",
@@ -625,10 +625,10 @@ class ErrorRecoveryWizard:
         ]
     }
 
-    _active_sessions: Dict[str, WizardSession] = {}
+    _active_sessions: dict[str, WizardSession] = {}
 
     @classmethod
-    def start_recovery(cls, error: ChatOpsError) -> Optional[WizardSession]:
+    def start_recovery(cls, error: ChatOpsError) -> WizardSession | None:
         """Start a guided recovery session for an error."""
         flow = cls.RECOVERY_FLOWS.get(error.category, [])
         if not flow:
@@ -650,12 +650,12 @@ class ErrorRecoveryWizard:
         return session
 
     @classmethod
-    def get_session(cls, session_id: str) -> Optional[WizardSession]:
+    def get_session(cls, session_id: str) -> WizardSession | None:
         """Get an active recovery session."""
         return cls._active_sessions.get(session_id)
 
     @classmethod
-    def advance_session(cls, session_id: str) -> Optional[WizardSession]:
+    def advance_session(cls, session_id: str) -> WizardSession | None:
         """Advance a session to the next step."""
         session = cls._active_sessions.get(session_id)
         if session:
@@ -678,7 +678,7 @@ class ErrorRecoveryWizard:
 # Global Learner Instance
 # =============================================================================
 
-_global_learner: Optional[ErrorSuggestionLearner] = None
+_global_learner: ErrorSuggestionLearner | None = None
 
 
 def get_suggestion_learner() -> ErrorSuggestionLearner:

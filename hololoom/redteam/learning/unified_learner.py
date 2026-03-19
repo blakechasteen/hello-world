@@ -15,39 +15,13 @@ Author: CARTS Team
 Date: 2025-12-03
 """
 
-import asyncio
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any
 
-from .learning_protocols import (
-    LearningResult,
-    HeatScore,
-    ContextKey,
-    ABTestResult,
-    LearningLevel,
-)
-from .hot_payloads import (
-    HotPayloadTracker,
-    create_hot_payload_tracker,
-)
-from .contextual_bandit import (
-    ContextualRedTeamBandit,
-    ContextualSelectionResult,
-    create_contextual_bandit,
-    create_context_key,
-)
-from .hierarchical_learning import (
-    HierarchicalLearner,
-    HierarchicalSelection,
-    HierarchicalUpdate,
-    create_hierarchical_learner,
-    create_hierarchical_update,
-)
 from .attack_ab_testing import (
-    AttackABTester,
     ABTestAnalysis,
     create_ab_tester,
 )
@@ -55,9 +29,23 @@ from .background_learner import (
     BackgroundLearner,
     BackgroundLearnerConfig,
     LearningEvent,
-    create_background_learner,
 )
-
+from .contextual_bandit import (
+    create_context_key,
+    create_contextual_bandit,
+)
+from .hierarchical_learning import (
+    HierarchicalSelection,
+    create_hierarchical_learner,
+    create_hierarchical_update,
+)
+from .hot_payloads import (
+    create_hot_payload_tracker,
+)
+from .learning_protocols import (
+    ContextKey,
+    HeatScore,
+)
 
 # =============================================================================
 # Logging
@@ -90,15 +78,15 @@ class UnifiedSelection:
         metadata: Additional selection metadata
     """
     strategy: str
-    payload_id: Optional[str] = None
-    mutation_type: Optional[str] = None
-    context: Optional[ContextKey] = None
+    payload_id: str | None = None
+    mutation_type: str | None = None
+    context: ContextKey | None = None
     confidence: float = 0.5
     selection_method: str = "unified"
-    hierarchical_selection: Optional[HierarchicalSelection] = None
+    hierarchical_selection: HierarchicalSelection | None = None
     is_hot_payload: bool = False
-    ab_test_variant: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    ab_test_variant: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -118,14 +106,14 @@ class UnifiedUpdate:
         metadata: Additional metadata about the update
     """
     strategy: str
-    payload_id: Optional[str]
-    mutation_type: Optional[str]
+    payload_id: str | None
+    mutation_type: str | None
     success: bool
     severity: float
-    context: Optional[ContextKey] = None
-    components_updated: List[str] = field(default_factory=list)
+    context: ContextKey | None = None
+    components_updated: list[str] = field(default_factory=list)
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -145,14 +133,14 @@ class UnifiedStats:
     """
     total_selections: int = 0
     total_updates: int = 0
-    contextual_bandit_stats: Dict[str, Any] = field(default_factory=dict)
-    hierarchical_stats: Dict[str, Any] = field(default_factory=dict)
-    hot_payload_stats: Dict[str, Any] = field(default_factory=dict)
-    ab_test_stats: Dict[str, Any] = field(default_factory=dict)
-    background_stats: Dict[str, Any] = field(default_factory=dict)
-    component_health: Dict[str, bool] = field(default_factory=dict)
+    contextual_bandit_stats: dict[str, Any] = field(default_factory=dict)
+    hierarchical_stats: dict[str, Any] = field(default_factory=dict)
+    hot_payload_stats: dict[str, Any] = field(default_factory=dict)
+    ab_test_stats: dict[str, Any] = field(default_factory=dict)
+    background_stats: dict[str, Any] = field(default_factory=dict)
+    component_health: dict[str, bool] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'total_selections': self.total_selections,
@@ -200,7 +188,7 @@ class UnifiedLearnerConfig:
     cold_threshold: float = 0.3
     background_update_interval: float = 60.0
     background_decay_interval: float = 300.0
-    state_dir: Optional[Path] = None
+    state_dir: Path | None = None
 
 
 # =============================================================================
@@ -250,8 +238,8 @@ class UnifiedLearner:
 
     def __init__(
         self,
-        strategies: List[str],
-        config: Optional[UnifiedLearnerConfig] = None,
+        strategies: list[str],
+        config: UnifiedLearnerConfig | None = None,
     ):
         """
         Initialize unified learner.
@@ -269,8 +257,8 @@ class UnifiedLearner:
 
         # Build mapping from enum values/names to allowed strategy names
         # e.g., 'unicode_bypass' -> 'UNICODE_BYPASS', 'UNICODE_BYPASS' -> 'UNICODE_BYPASS'
-        self._strategy_value_to_name: Dict[str, str] = {}
-        self._allowed_enum_values: Set[str] = set()
+        self._strategy_value_to_name: dict[str, str] = {}
+        self._allowed_enum_values: set[str] = set()
         for s in strategies:
             # Strategy name is what user provided (e.g., 'UNICODE_BYPASS')
             # Map both the name and the lowercase value to it
@@ -398,9 +386,9 @@ class UnifiedLearner:
 
     def select(
         self,
-        context: Optional[ContextKey] = None,
+        context: ContextKey | None = None,
         prefer_hot: bool = True,
-        ab_test_name: Optional[str] = None,
+        ab_test_name: str | None = None,
     ) -> UnifiedSelection:
         """
         Select attack strategy using all learning components.
@@ -500,8 +488,8 @@ class UnifiedLearner:
     def select_top_k(
         self,
         k: int,
-        context: Optional[ContextKey] = None,
-    ) -> List[UnifiedSelection]:
+        context: ContextKey | None = None,
+    ) -> list[UnifiedSelection]:
         """
         Select top-k strategies.
 
@@ -535,13 +523,13 @@ class UnifiedLearner:
     def update(
         self,
         strategy: str,
-        payload_id: Optional[str],
-        mutation_type: Optional[str],
+        payload_id: str | None,
+        mutation_type: str | None,
         success: bool,
         severity: float = 0.0,
-        context: Optional[ContextKey] = None,
-        ab_test_name: Optional[str] = None,
-        ab_variant: Optional[str] = None,
+        context: ContextKey | None = None,
+        ab_test_name: str | None = None,
+        ab_variant: str | None = None,
     ) -> UnifiedUpdate:
         """
         Update all learning components with attack result.
@@ -701,7 +689,7 @@ class UnifiedLearner:
                 min_samples=min_samples,
             )
 
-    def analyze_ab_test(self, name: str) -> Optional[ABTestAnalysis]:
+    def analyze_ab_test(self, name: str) -> ABTestAnalysis | None:
         """
         Analyze A/B test results.
 
@@ -715,7 +703,7 @@ class UnifiedLearner:
             return self.ab_tester.analyze(name)
         return None
 
-    def conclude_ab_test(self, name: str) -> Optional[ABTestAnalysis]:
+    def conclude_ab_test(self, name: str) -> ABTestAnalysis | None:
         """
         Conclude A/B test and return final results.
 
@@ -733,13 +721,13 @@ class UnifiedLearner:
     # Hot Payloads
     # -------------------------------------------------------------------------
 
-    def get_hot_payloads(self, limit: int = 10) -> List[HeatScore]:
+    def get_hot_payloads(self, limit: int = 10) -> list[HeatScore]:
         """Get hottest payloads."""
         if self.hot_tracker:
             return self.hot_tracker.get_hot_payloads(limit=limit)
         return []
 
-    def get_cold_payloads(self, limit: int = 10) -> List[HeatScore]:
+    def get_cold_payloads(self, limit: int = 10) -> list[HeatScore]:
         """Get coldest payloads."""
         if self.hot_tracker:
             return self.hot_tracker.get_cold_payloads(limit=limit)
@@ -755,7 +743,7 @@ class UnifiedLearner:
     # Background Learning Callbacks
     # -------------------------------------------------------------------------
 
-    def _on_background_update(self, events: List[LearningEvent]) -> None:
+    def _on_background_update(self, events: list[LearningEvent]) -> None:
         """Handle background update with buffered events."""
         logger.debug(f"Background update with {len(events)} events")
 
@@ -900,9 +888,9 @@ class UnifiedLearner:
 # =============================================================================
 
 def create_unified_learner(
-    strategies: Optional[List[str]] = None,
+    strategies: list[str] | None = None,
     enable_all: bool = True,
-    state_dir: Optional[str] = None,
+    state_dir: str | None = None,
 ) -> UnifiedLearner:
     """
     Create unified learner with default configuration.
@@ -1022,7 +1010,7 @@ async def run_learning_demo(
         stats = learner.get_stats()
 
         if verbose:
-            print(f"\nFinal Statistics:")
+            print("\nFinal Statistics:")
             print(f"  Total selections: {stats.total_selections}")
             print(f"  Total updates: {stats.total_updates}")
             print(f"  Hot payloads: {len(learner.get_hot_payloads())}")

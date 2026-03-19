@@ -12,8 +12,8 @@ Phase: 11 - Plugin Ecosystem
 """
 
 from hololoom.dark_trace.plugins.examples.hello_plugin import (
-    HelloWorldPlugin,
     HelloAnalysisResult,
+    HelloWorldPlugin,
     create_test_template,
 )
 

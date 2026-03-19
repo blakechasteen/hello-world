@@ -67,44 +67,38 @@ References:
 - spec_ledger.py (Provenance)
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List, Callable, Awaitable, Union, Set, Type
-
-from .jenny_config_base import BaseConfigWithDefaults
-from datetime import datetime
-from uuid import uuid4
 import asyncio
+from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Optional
+from uuid import uuid4
+
+from .jenny_actions import (
+    ActionResult,
+    ActionStatus,
+    JennyActionHandler,
+    create_action_handler,
+)
+from .jenny_config_base import BaseConfigWithDefaults
+from .jenny_lifecycle import (
+    JennyLifecycleManagerBase,
+    create_lifecycle_manager,
+)
 
 # Core components
 from .jenny_spec import (
-    JennySpec,
-    LifecycleStage,
+    ACTION_DISMISS,
+    ACTION_PIN,
+    ACTION_WHY,
     BindingMode,
     DissolutionTrigger,
+    JennySpec,
+    LifecycleStage,
     PanelTypeJenny,
-    PanelSizeJenny,
-    LayoutHint,
     create_action,
     get_default_actions,
-    ACTION_PIN,
-    ACTION_DISMISS,
-    ACTION_WHY,
-)
-from .jenny_compiler import JennyCompiler, QueryAnalysis
-from .jenny_lifecycle import (
-    JennyLifecycleManagerBase,
-    InMemoryLifecycleManager,
-    PanelState,
-    PanelNotFoundError,
-    InvalidTransitionError,
-    create_lifecycle_manager,
-)
-from .jenny_actions import (
-    ActionStatus,
-    ActionResult,
-    JennyActionHandler,
-    create_action_handler,
 )
 
 # MRF integration for learning callback (Phase C)
@@ -114,24 +108,17 @@ try:
 except ImportError:
     MRF_AVAILABLE = False
     JennyMRFCompiler = None  # type: ignore
-from .jenny_streaming import (
-    StreamStatus,
-    UpdateType,
-    StreamUpdate,
-    Subscription,
-    StreamingManager,
-    create_streaming_manager,
-)
 from .jenny_renderer import (
     JennyRendererBase,
-    HTMLRenderer,
-    TerminalRenderer,
-    JSONRenderer,
     RenderTarget,
     create_renderer,
 )
-from .spec_ledger import SpecLedger, SpecLedgerEntry
-
+from .jenny_streaming import (
+    StreamingManager,
+    StreamUpdate,
+    create_streaming_manager,
+)
+from .spec_ledger import SpecLedger
 
 # ============================================================================
 # Runtime Configuration
@@ -161,7 +148,7 @@ class JennyConfig(BaseConfigWithDefaults):
 
     # Ledger
     enable_ledger: bool = True
-    ledger_persist_path: Optional[str] = None
+    ledger_persist_path: str | None = None
 
     # Compiler
     compiler_version: str = "jenny-v1.0.0"
@@ -183,7 +170,7 @@ class JennyPanel:
     spec: JennySpec
     html: str
     terminal: str
-    json_data: Dict[str, Any]
+    json_data: dict[str, Any]
 
     # Convenience accessors
     @property
@@ -203,11 +190,11 @@ class JennyPanel:
         return self.spec.panel_type
 
     @property
-    def content(self) -> Dict[str, Any]:
+    def content(self) -> dict[str, Any]:
         return self.spec.content
 
     @property
-    def actions(self) -> List[Dict[str, Any]]:
+    def actions(self) -> list[dict[str, Any]]:
         return self.spec.actions
 
     def __repr__(self) -> str:
@@ -251,7 +238,7 @@ class JennyRuntime:
 
     def __init__(
         self,
-        config: Optional[JennyConfig] = None,
+        config: JennyConfig | None = None,
         compiler: Optional["JennyMRFCompiler"] = None,
     ):
         """
@@ -269,13 +256,13 @@ class JennyRuntime:
 
         # Core components (created on start)
         self._compiler_version: str = self._config.compiler_version
-        self._lifecycle: Optional[JennyLifecycleManagerBase] = None
-        self._actions: Optional[JennyActionHandler] = None
-        self._streaming: Optional[StreamingManager] = None
-        self._ledger: Optional[SpecLedger] = None
+        self._lifecycle: JennyLifecycleManagerBase | None = None
+        self._actions: JennyActionHandler | None = None
+        self._streaming: StreamingManager | None = None
+        self._ledger: SpecLedger | None = None
 
         # Renderers (lazy-loaded)
-        self._renderers: Dict[RenderTarget, JennyRendererBase] = {}
+        self._renderers: dict[RenderTarget, JennyRendererBase] = {}
 
         # Statistics
         self._stats = {
@@ -286,10 +273,10 @@ class JennyRuntime:
         }
 
         # Track all created panel IDs (needed for list_panels with DISSOLVING/ARCHIVED)
-        self._panel_ids: Set[str] = set()
+        self._panel_ids: set[str] = set()
 
         # Cleanup task handle
-        self._cleanup_task: Optional[asyncio.Task] = None
+        self._cleanup_task: asyncio.Task | None = None
 
     # ========================================================================
     # Lifecycle Management
@@ -382,10 +369,10 @@ class JennyRuntime:
     async def ask(
         self,
         query: str,
-        context: Optional[Dict[str, Any]] = None,
-        panel_type: Optional[PanelTypeJenny] = None,
+        context: dict[str, Any] | None = None,
+        panel_type: PanelTypeJenny | None = None,
         binding_mode: BindingMode = BindingMode.STATIC,
-        data_source: Optional[str] = None,
+        data_source: str | None = None,
     ) -> JennyPanel:
         """
         Ask Jenny a question - generate a panel.
@@ -439,10 +426,10 @@ class JennyRuntime:
     def _create_spec_from_query(
         self,
         query: str,
-        context: Dict[str, Any],
-        panel_type: Optional[PanelTypeJenny] = None,
+        context: dict[str, Any],
+        panel_type: PanelTypeJenny | None = None,
         binding_mode: BindingMode = BindingMode.STATIC,
-        data_source: Optional[str] = None,
+        data_source: str | None = None,
     ) -> JennySpec:
         """
         Create JennySpec directly from a query string.
@@ -508,8 +495,8 @@ class JennyRuntime:
         self,
         panel_type: PanelTypeJenny,
         query: str,
-        context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """Generate appropriate content structure for panel type."""
         if panel_type == PanelTypeJenny.TEXT:
             return {
@@ -569,9 +556,9 @@ class JennyRuntime:
     async def compile_spacetime(
         self,
         spacetime: Any,
-        features: Optional[Dict[str, Any]] = None,
+        features: dict[str, Any] | None = None,
         panel_count: int = 4,
-    ) -> List[JennyPanel]:
+    ) -> list[JennyPanel]:
         """
         Compile a Spacetime object into Jenny panels.
 
@@ -609,7 +596,7 @@ class JennyRuntime:
         }
 
         # Build panels based on what the Spacetime contains
-        panels: List[JennyPanel] = []
+        panels: list[JennyPanel] = []
 
         # 1. Always: primary response panel
         primary = await self.ask(query, context={
@@ -674,9 +661,9 @@ class JennyRuntime:
 
     async def act(
         self,
-        panel: Union[JennyPanel, str],
-        action: Union[str, Dict[str, Any]],
-        context: Optional[Dict[str, Any]] = None,
+        panel: JennyPanel | str,
+        action: str | dict[str, Any],
+        context: dict[str, Any] | None = None,
     ) -> ActionResult:
         """
         Execute an action on a panel.
@@ -728,7 +715,7 @@ class JennyRuntime:
 
         return result
 
-    def _resolve_action(self, action_name: str) -> Dict[str, Any]:
+    def _resolve_action(self, action_name: str) -> dict[str, Any]:
         """Resolve action name to action dict."""
         actions = {
             "pin": ACTION_PIN,
@@ -741,7 +728,7 @@ class JennyRuntime:
         }
         return actions.get(action_name, create_action(action_name, action_name))
 
-    async def get_panel(self, panel_id: str) -> Optional[JennyPanel]:
+    async def get_panel(self, panel_id: str) -> JennyPanel | None:
         """
         Get a panel by ID.
 
@@ -762,8 +749,8 @@ class JennyRuntime:
 
     async def list_panels(
         self,
-        lifecycle: Optional[LifecycleStage] = None,
-    ) -> List[JennyPanel]:
+        lifecycle: LifecycleStage | None = None,
+    ) -> list[JennyPanel]:
         """
         List panels, optionally filtered by lifecycle stage.
 
@@ -809,7 +796,7 @@ class JennyRuntime:
 
     async def subscribe(
         self,
-        panel: Union[JennyPanel, str],
+        panel: JennyPanel | str,
         callback: Callable[[StreamUpdate], Awaitable[None]],
     ) -> str:
         """
@@ -845,7 +832,7 @@ class JennyRuntime:
     # Provenance & History
     # ========================================================================
 
-    def history(self, limit: int = 100) -> List[Dict[str, Any]]:
+    def history(self, limit: int = 100) -> list[dict[str, Any]]:
         """
         Get complete interaction history.
 
@@ -904,7 +891,7 @@ class JennyRuntime:
 
         return history_items[:limit]
 
-    def action_history(self, limit: int = 100) -> List[Dict[str, Any]]:
+    def action_history(self, limit: int = 100) -> list[dict[str, Any]]:
         """Get action execution history."""
         if not self._actions:
             return []
@@ -923,7 +910,7 @@ class JennyRuntime:
             })
         return result
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get runtime statistics."""
         stats = dict(self._stats)
 
@@ -1019,7 +1006,7 @@ class JennyRuntime:
     def ask_sync(
         self,
         query: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> JennyPanel:
         """
         Synchronous version of ask() for simple scripts.
@@ -1036,7 +1023,7 @@ class JennyRuntime:
 
     def act_sync(
         self,
-        panel: Union[JennyPanel, str],
+        panel: JennyPanel | str,
         action: str,
     ) -> ActionResult:
         """Synchronous version of act()."""
@@ -1054,7 +1041,7 @@ class JennyRuntime:
 # ============================================================================
 
 def create_runtime(
-    config: Optional[JennyConfig] = None,
+    config: JennyConfig | None = None,
     compiler: Optional["JennyMRFCompiler"] = None,
 ) -> JennyRuntime:
     """
@@ -1074,7 +1061,7 @@ def create_runtime(
 
 @asynccontextmanager
 async def jenny_session(
-    config: Optional[JennyConfig] = None,
+    config: JennyConfig | None = None,
     compiler: Optional["JennyMRFCompiler"] = None,
 ):
     """

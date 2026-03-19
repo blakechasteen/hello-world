@@ -43,25 +43,24 @@ Phase 5 Information-Theoretic Packing:
 """
 
 # Protocol definitions
-from .protocol import (
-    ImportanceSignal,
-    ActivationState,
-    CompressionResult,
-    BetaWave,
-    ActivationSpreaderProtocol,
-    ImportanceScorerProtocol,
-    ContextCompressorProtocol,
-    ContextPackerProtocol,
-    ActivationMap,
-    ImportanceMap,
-)
-
 # Configuration
 from .config import (
     BetaWaveConfig,
-    ImportanceScorerConfig,
     CompressionConfig,
     ContextPackerConfig,
+    ImportanceScorerConfig,
+)
+from .protocol import (
+    ActivationMap,
+    ActivationSpreaderProtocol,
+    ActivationState,
+    BetaWave,
+    CompressionResult,
+    ContextCompressorProtocol,
+    ContextPackerProtocol,
+    ImportanceMap,
+    ImportanceScorerProtocol,
+    ImportanceSignal,
 )
 
 # Core implementations (lazy loading for faster imports)

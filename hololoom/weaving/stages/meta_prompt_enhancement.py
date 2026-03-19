@@ -8,7 +8,8 @@ and enhanced queries on the context.
 """
 
 import logging
-from typing import Callable, ClassVar, Optional, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -28,9 +29,9 @@ class MetaPromptEnhancementStage:
 
     def __init__(
         self,
-        proto_llm_call: Optional[Callable] = None,
+        proto_llm_call: Callable | None = None,
         enable_enhancement: bool = True,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         self.proto_llm_call = proto_llm_call
         self.enable_enhancement = enable_enhancement

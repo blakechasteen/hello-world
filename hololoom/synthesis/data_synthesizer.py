@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Data Synthesizer
 ================
@@ -15,9 +14,8 @@ The alchemy: Signal → Training Data → Intelligence
 """
 
 import json
-from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
+from typing import Any
 
 try:
     from .pattern_extractor import Pattern, PatternType
@@ -40,9 +38,9 @@ class TrainingExample:
     input: str = ""
     output: str = ""
     system: str = ""  # System prompt
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_alpaca(self) -> Dict[str, str]:
+    def to_alpaca(self) -> dict[str, str]:
         """Convert to Alpaca format."""
         return {
             'instruction': self.instruction,
@@ -50,7 +48,7 @@ class TrainingExample:
             'output': self.output
         }
 
-    def to_chatml(self) -> List[Dict[str, str]]:
+    def to_chatml(self) -> list[dict[str, str]]:
         """Convert to ChatML format."""
         messages = []
 
@@ -67,7 +65,7 @@ class TrainingExample:
 
         return messages
 
-    def to_raw(self) -> Dict[str, Any]:
+    def to_raw(self) -> dict[str, Any]:
         """Convert to raw format with all fields."""
         return {
             'instruction': self.instruction,
@@ -96,7 +94,7 @@ class DataSynthesizer:
     training examples that capture YOUR reasoning.
     """
 
-    def __init__(self, config: Optional[SynthesisConfig] = None):
+    def __init__(self, config: SynthesisConfig | None = None):
         """
         Initialize synthesizer.
 
@@ -105,7 +103,7 @@ class DataSynthesizer:
         """
         self.config = config or SynthesisConfig()
 
-    def synthesize(self, patterns: List[Pattern]) -> List[TrainingExample]:
+    def synthesize(self, patterns: list[Pattern]) -> list[TrainingExample]:
         """
         Synthesize training examples from patterns.
 
@@ -153,7 +151,7 @@ class DataSynthesizer:
 
         return examples
 
-    def _synthesize_qa(self, pattern: Pattern) -> List[TrainingExample]:
+    def _synthesize_qa(self, pattern: Pattern) -> list[TrainingExample]:
         """Synthesize Q&A training example."""
         content = pattern.content
 
@@ -182,7 +180,7 @@ class DataSynthesizer:
 
         return [example]
 
-    def _synthesize_reasoning(self, pattern: Pattern) -> List[TrainingExample]:
+    def _synthesize_reasoning(self, pattern: Pattern) -> list[TrainingExample]:
         """Synthesize reasoning chain example."""
         content = pattern.content
 
@@ -211,7 +209,7 @@ class DataSynthesizer:
 
         return [example]
 
-    def _synthesize_causal(self, pattern: Pattern) -> List[TrainingExample]:
+    def _synthesize_causal(self, pattern: Pattern) -> list[TrainingExample]:
         """Synthesize causal relationship example."""
         content = pattern.content
 
@@ -230,7 +228,7 @@ class DataSynthesizer:
 
         return [example]
 
-    def _synthesize_decision(self, pattern: Pattern) -> List[TrainingExample]:
+    def _synthesize_decision(self, pattern: Pattern) -> list[TrainingExample]:
         """Synthesize decision pattern example."""
         content = pattern.content
 
@@ -249,7 +247,7 @@ class DataSynthesizer:
 
         return [example]
 
-    def _synthesize_comparison(self, pattern: Pattern) -> List[TrainingExample]:
+    def _synthesize_comparison(self, pattern: Pattern) -> list[TrainingExample]:
         """Synthesize comparison example."""
         content = pattern.content
 
@@ -268,7 +266,7 @@ class DataSynthesizer:
 
         return [example]
 
-    def _synthesize_procedure(self, pattern: Pattern) -> List[TrainingExample]:
+    def _synthesize_procedure(self, pattern: Pattern) -> list[TrainingExample]:
         """Synthesize procedure example."""
         content = pattern.content
 
@@ -295,7 +293,7 @@ class DataSynthesizer:
 
         return [example]
 
-    def _synthesize_definition(self, pattern: Pattern) -> List[TrainingExample]:
+    def _synthesize_definition(self, pattern: Pattern) -> list[TrainingExample]:
         """Synthesize definition example."""
         content = pattern.content
 
@@ -318,7 +316,7 @@ class DataSynthesizer:
 
         return [example]
 
-    def export_jsonl(self, examples: List[TrainingExample],
+    def export_jsonl(self, examples: list[TrainingExample],
                     output_file: str, format: str = 'alpaca'):
         """
         Export training examples to JSONL file.
@@ -339,7 +337,7 @@ class DataSynthesizer:
 
                 f.write(json.dumps(data, ensure_ascii=False) + '\n')
 
-    def export_statistics(self, examples: List[TrainingExample]) -> Dict[str, Any]:
+    def export_statistics(self, examples: list[TrainingExample]) -> dict[str, Any]:
         """
         Get statistics about synthesized data.
 

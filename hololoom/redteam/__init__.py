@@ -86,48 +86,129 @@ create_payload_generator = _strategies_module.create_payload_generator
 create_generator = create_payload_generator
 
 # Strategy Generators (from strategy_generators/ package)
+# =============================================================================
+# NEW - Phase 2+: Sandbox, Swarm, Refinement, Probes (November 2025)
+# =============================================================================
+# Phase 2: Sandbox Isolation
+from . import sandbox as _sandbox_module
 from . import strategy_generators
-
-# Mutation
-from .mutator import (
-    MutationType,
-    MutationResult,
-    CrossoverResult,
-    PayloadMutator,
-    create_mutator,
-)
-
-# Execution
-from .executor import (
-    AttackOutcome,
-    SeverityLevel,
-    AttackResult,
-    AttackExecutor,
-    create_executor,
-)
 
 # Bandit
 from .bandit import (
     BanditArm,
-    SelectionResult,
     RedTeamBandit,
+    SelectionResult,
     create_bandit,
 )
 
-# Tracking
-from .tracker import (
-    VulnStatus,
-    Vulnerability,
-    VulnerabilityTracker,
-    create_tracker,
+# Execution
+from .executor import (
+    AttackExecutor,
+    AttackOutcome,
+    AttackResult,
+    SeverityLevel,
+    create_executor,
 )
 
-# Reporting
-from .reporter import (
-    ReportSection,
-    ReportGenerator,
-    generate_report,
-    save_report,
+# Learning System (MRF Integration - Phase 2)
+from .learning import (
+    ABTest,
+    ABTestAnalysis,
+    ABTestProtocol,
+    ABTestResult,
+    AttackABTester,
+    BackgroundLearner,
+    BackgroundLearnerConfig,
+    BackgroundLearnerStats,
+    BanditProtocol,
+    ContextKey,
+    # Contextual Bandit
+    ContextualArm,
+    ContextualBanditProtocol,
+    ContextualRedTeamBandit,
+    ContextualSelectionResult,
+    HeatScore,
+    HeatTrackerProtocol,
+    # Hierarchical Learning
+    HierarchicalArm,
+    HierarchicalLearner,
+    HierarchicalSelection,
+    HierarchicalUpdate,
+    HotPayloadTracker,
+    # Protocols
+    LearnerProtocol,
+    # Background Learner
+    LearningEvent,
+    # Enums
+    LearningLevel,
+    # Data classes
+    LearningResult,
+    # Hot Payloads
+    PayloadUsageRecord,
+    SignificanceMethod,
+    # A/B Testing
+    TestStatus,
+    TestVariant,
+    UnifiedLearner,
+    UnifiedLearnerConfig,
+    # Unified Learner
+    UnifiedSelection,
+    UnifiedStats,
+    UnifiedUpdate,
+    UpdateableProtocol,
+    create_ab_tester,
+    create_background_learner,
+    create_context_key,
+    create_contextual_bandit,
+    create_hierarchical_learner,
+    create_hierarchical_update,
+    create_hot_payload_tracker,
+    create_unified_learner,
+    run_learning_demo,
+    run_quick_ab_test,
+)
+
+# MRF Analytics (Phase 2)
+from .mrf_analytics import (
+    ABGroup,
+    # Data Classes
+    EnhancementMetric,
+    EnhancementTypeImpact,
+    # Main Class
+    MRFImpactAnalytics,
+    StrategyImpact,
+    # Convenience Functions
+    create_analytics,
+    log_enhancement_event,
+)
+from .mrf_analytics import (
+    ABTestResult as MRFABTestResult,  # Avoid conflict with learning.ABTestResult
+)
+
+# MRF Payload Enhancement (Phase 2)
+from .mrf_payloads import (
+    # Constants
+    STRATEGY_ENHANCEMENTS,
+    # Data Classes
+    EnhancementResult,
+    # Enums
+    EnhancementType,
+    MRFPayloadConfig,
+    # Main Class
+    MRFPayloadEnhancer,
+    # Convenience Functions
+    create_mrf_enhancer,
+    enhance_payload,
+    generate_enhanced_payloads,
+)
+
+# Mutation
+from .mutator import (
+    CrossoverResult,
+    MutationResult,
+    MutationType,
+    PayloadMutator,
+    create_mutator,
 )
 
 # Orchestration
@@ -139,116 +220,21 @@ from .orchestrator import (
     run_quick_test,
 )
 
-# Learning System (MRF Integration - Phase 2)
-from .learning import (
-    # Protocols
-    LearnerProtocol,
-    BanditProtocol,
-    HeatTrackerProtocol,
-    ContextualBanditProtocol,
-    ABTestProtocol,
-
-    # Data classes
-    LearningResult,
-    HeatScore,
-    ContextKey,
-    ABTestResult,
-
-    # Enums
-    LearningLevel,
-
-    # Hot Payloads
-    PayloadUsageRecord,
-    HotPayloadTracker,
-    create_hot_payload_tracker,
-
-    # Contextual Bandit
-    ContextualArm,
-    ContextualSelectionResult,
-    ContextualRedTeamBandit,
-    create_contextual_bandit,
-    create_context_key,
-
-    # Hierarchical Learning
-    HierarchicalArm,
-    HierarchicalSelection,
-    HierarchicalUpdate,
-    HierarchicalLearner,
-    create_hierarchical_learner,
-    create_hierarchical_update,
-
-    # A/B Testing
-    TestStatus,
-    SignificanceMethod,
-    TestVariant,
-    ABTest,
-    ABTestAnalysis,
-    AttackABTester,
-    create_ab_tester,
-    run_quick_ab_test,
-
-    # Background Learner
-    LearningEvent,
-    BackgroundLearnerConfig,
-    BackgroundLearnerStats,
-    UpdateableProtocol,
-    BackgroundLearner,
-    create_background_learner,
-
-    # Unified Learner
-    UnifiedSelection,
-    UnifiedUpdate,
-    UnifiedStats,
-    UnifiedLearnerConfig,
-    UnifiedLearner,
-    create_unified_learner,
-    run_learning_demo,
+# Reporting
+from .reporter import (
+    ReportGenerator,
+    ReportSection,
+    generate_report,
+    save_report,
 )
 
-# MRF Payload Enhancement (Phase 2)
-from .mrf_payloads import (
-    # Enums
-    EnhancementType,
-
-    # Data Classes
-    EnhancementResult,
-    MRFPayloadConfig,
-
-    # Main Class
-    MRFPayloadEnhancer,
-
-    # Convenience Functions
-    create_mrf_enhancer,
-    enhance_payload,
-    generate_enhanced_payloads,
-
-    # Constants
-    STRATEGY_ENHANCEMENTS,
+# Tracking
+from .tracker import (
+    Vulnerability,
+    VulnerabilityTracker,
+    VulnStatus,
+    create_tracker,
 )
-
-# MRF Analytics (Phase 2)
-from .mrf_analytics import (
-    # Data Classes
-    EnhancementMetric,
-    StrategyImpact,
-    EnhancementTypeImpact,
-    ABGroup,
-    ABTestResult as MRFABTestResult,  # Avoid conflict with learning.ABTestResult
-
-    # Main Class
-    MRFImpactAnalytics,
-
-    # Convenience Functions
-    create_analytics,
-    log_enhancement_event,
-)
-
-# =============================================================================
-# NEW - Phase 2+: Sandbox, Swarm, Refinement, Probes (November 2025)
-# =============================================================================
-
-# Phase 2: Sandbox Isolation
-from . import sandbox as _sandbox_module
 
 SandboxMode = _sandbox_module.SandboxMode
 SandboxConfig = _sandbox_module.SandboxConfig

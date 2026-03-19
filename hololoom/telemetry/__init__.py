@@ -48,110 +48,104 @@ Quick Start:
 #  PROTOCOL TYPES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-from hololoom.telemetry.protocol import (
-    # Protocols
-    TracingProtocol,
-    MetricsProtocol,
-    SpanProcessorProtocol,
-    # Span types
-    SpanContext,
-    SpanData,
-    SpanKind,
-    SpanStatus,
-    # Metric types
-    MetricPoint,
-    MetricType,
-    HistogramBuckets,
-    # Factory functions
-    create_span_context,
-    generate_trace_id,
-    generate_span_id,
-)
-
 # ═══════════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
-
 from hololoom.telemetry.config import (
-    TelemetryConfig,
-    TracingConfig,
+    ExporterType,
     MetricsConfig,
     SamplingStrategy,
-    ExporterType,
-)
-
-# ═══════════════════════════════════════════════════════════════════════════════
-#  TRACING
-# ═══════════════════════════════════════════════════════════════════════════════
-
-from hololoom.telemetry.tracing import (
-    # Tracer
-    OTelTracer,
-    create_tracer,
-    get_tracer,
-    # Decorator
-    span,
-    # Processors
-    ConsoleSpanProcessor,
-    BatchSpanProcessor,
-    # Context propagation
-    TraceContextManager,
-    W3CTraceContext,
-    get_current_context,
-    set_current_context,
-    clear_context,
-    run_with_context,
-    run_with_context_async,
-    # Baggage
-    get_baggage,
-    set_baggage,
-    get_all_baggage,
-    clear_baggage,
-)
-
-# ═══════════════════════════════════════════════════════════════════════════════
-#  METRICS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-from hololoom.telemetry.metrics import (
-    # Registry
-    PrometheusRegistry,
-    create_registry,
-    get_registry,
-    # Metric types
-    Counter,
-    Gauge,
-    Histogram,
-    Summary,
-    # Convenience functions
-    counter,
-    gauge,
-    histogram,
-    summary,
-    # Collectors
-    HoloLoomCollector,
-    create_default_collector,
+    TelemetryConfig,
+    TracingConfig,
 )
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  EXPORTERS
 # ═══════════════════════════════════════════════════════════════════════════════
-
 from hololoom.telemetry.exporters import (
     # Jaeger
     JaegerExporter,
-    create_jaeger_exporter,
     # Prometheus HTTP
     PrometheusHTTPServer,
+    create_jaeger_exporter,
     create_prometheus_server,
     start_metrics_server,
 )
 
 # ═══════════════════════════════════════════════════════════════════════════════
+#  METRICS
+# ═══════════════════════════════════════════════════════════════════════════════
+from hololoom.telemetry.metrics import (
+    # Metric types
+    Counter,
+    Gauge,
+    Histogram,
+    # Collectors
+    HoloLoomCollector,
+    # Registry
+    PrometheusRegistry,
+    Summary,
+    # Convenience functions
+    counter,
+    create_default_collector,
+    create_registry,
+    gauge,
+    get_registry,
+    histogram,
+    summary,
+)
+
+# ═══════════════════════════════════════════════════════════════════════════════
 #  CONVENIENCE: GLOBAL COLLECTOR
 # ═══════════════════════════════════════════════════════════════════════════════
-
 from hololoom.telemetry.metrics.collectors import get_collector
+from hololoom.telemetry.protocol import (
+    HistogramBuckets,
+    # Metric types
+    MetricPoint,
+    MetricsProtocol,
+    MetricType,
+    # Span types
+    SpanContext,
+    SpanData,
+    SpanKind,
+    SpanProcessorProtocol,
+    SpanStatus,
+    # Protocols
+    TracingProtocol,
+    # Factory functions
+    create_span_context,
+    generate_span_id,
+    generate_trace_id,
+)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TRACING
+# ═══════════════════════════════════════════════════════════════════════════════
+from hololoom.telemetry.tracing import (
+    BatchSpanProcessor,
+    # Processors
+    ConsoleSpanProcessor,
+    # Tracer
+    OTelTracer,
+    # Context propagation
+    TraceContextManager,
+    W3CTraceContext,
+    clear_baggage,
+    clear_context,
+    create_tracer,
+    get_all_baggage,
+    # Baggage
+    get_baggage,
+    get_current_context,
+    get_tracer,
+    run_with_context,
+    run_with_context_async,
+    set_baggage,
+    set_current_context,
+    # Decorator
+    span,
+)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  PUBLIC API

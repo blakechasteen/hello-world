@@ -6,15 +6,9 @@ Templates for structured report generation.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from .base import (
-    TemplateProtocol,
-    TemplateType,
-    TemplateContext,
-    TemplateResult
-)
+from .base import TemplateContext, TemplateResult, TemplateType
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +153,7 @@ class ReportTemplate:
 
         return '\n'.join(parts)
 
-    def _generate_executive_summary(self, memories: List) -> str:
+    def _generate_executive_summary(self, memories: list) -> str:
         """Generate executive summary."""
         parts = ["## Executive Summary", ""]
 
@@ -199,7 +193,7 @@ class ReportTemplate:
 
         return '\n'.join(parts)
 
-    def _generate_introduction(self, title: str, memories: List) -> str:
+    def _generate_introduction(self, title: str, memories: list) -> str:
         """Generate introduction."""
         parts = ["## 1. Introduction", ""]
 
@@ -220,7 +214,7 @@ class ReportTemplate:
 
         return '\n\n'.join(parts)
 
-    def _generate_executive_body(self, memories: List) -> str:
+    def _generate_executive_body(self, memories: list) -> str:
         """Generate executive report body."""
         parts = ["## 2. Key Findings", ""]
 
@@ -232,7 +226,7 @@ class ReportTemplate:
 
         return '\n'.join(parts)
 
-    def _generate_technical_body(self, memories: List) -> str:
+    def _generate_technical_body(self, memories: list) -> str:
         """Generate technical report body."""
         parts = ["## 2. Technical Details", ""]
 
@@ -255,7 +249,7 @@ class ReportTemplate:
 
         return '\n'.join(parts)
 
-    def _generate_research_body(self, memories: List) -> str:
+    def _generate_research_body(self, memories: list) -> str:
         """Generate research report body."""
         parts = []
 
@@ -292,7 +286,7 @@ class ReportTemplate:
 
         return '\n'.join(parts)
 
-    def _generate_conclusions(self, memories: List) -> str:
+    def _generate_conclusions(self, memories: list) -> str:
         """Generate conclusions."""
         parts = ["## Conclusions", ""]
 
@@ -315,7 +309,7 @@ class ReportTemplate:
 
         return '\n\n'.join(parts)
 
-    def _generate_recommendations(self, memories: List) -> str:
+    def _generate_recommendations(self, memories: list) -> str:
         """Generate recommendations (for executive reports)."""
         parts = ["## Recommendations", ""]
 
@@ -339,11 +333,11 @@ class ReportTemplate:
 
         return '\n'.join(parts)
 
-    def get_required_variables(self) -> List[str]:
+    def get_required_variables(self) -> list[str]:
         """Get required template variables."""
         return ['title']
 
-    def get_optional_variables(self) -> List[str]:
+    def get_optional_variables(self) -> list[str]:
         """Get optional template variables."""
         return ['author', 'date']
 

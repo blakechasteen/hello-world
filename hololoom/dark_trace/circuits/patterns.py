@@ -19,8 +19,7 @@ Key Features:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Set, Tuple, Any, Callable
-import re
+from typing import Any
 
 
 class PatternCategory(Enum):
@@ -83,18 +82,18 @@ class PatternSignature:
     """
 
     # Node type sequence (e.g., [ATTENTION_HEAD, MLP_LAYER, SAE_FEATURE])
-    node_type_sequence: List[str]
+    node_type_sequence: list[str]
 
     # Edge type constraints
-    edge_type_constraints: Dict[Tuple[int, int], str] = field(default_factory=dict)
+    edge_type_constraints: dict[tuple[int, int], str] = field(default_factory=dict)
 
     # Layer constraints
-    layer_span: Optional[Tuple[int, int]] = None  # (min_layer, max_layer)
+    layer_span: tuple[int, int] | None = None  # (min_layer, max_layer)
     layer_progression: str = "forward"  # forward, backward, any
 
     # Activation constraints
     min_activation_threshold: float = 0.0
-    activation_pattern: Optional[str] = None  # regex for activation sequence
+    activation_pattern: str | None = None  # regex for activation sequence
 
     # Structural constraints
     min_nodes: int = 1
@@ -121,21 +120,21 @@ class KnownPattern:
     signature: PatternSignature
 
     # Canonical example
-    canonical_nodes: List[str] = field(default_factory=list)
-    canonical_edges: List[Tuple[str, str]] = field(default_factory=list)
+    canonical_nodes: list[str] = field(default_factory=list)
+    canonical_edges: list[tuple[str, str]] = field(default_factory=list)
 
     # Research reference
-    paper_reference: Optional[str] = None
-    discovery_date: Optional[str] = None
+    paper_reference: str | None = None
+    discovery_date: str | None = None
 
     # Pattern characteristics
     is_safety_relevant: bool = False
-    typical_layers: Optional[Tuple[int, int]] = None
-    expected_features: List[str] = field(default_factory=list)
+    typical_layers: tuple[int, int] | None = None
+    expected_features: list[str] = field(default_factory=list)
 
     # Matching configuration
     similarity_threshold: float = 0.7
-    required_components: Set[str] = field(default_factory=set)
+    required_components: set[str] = field(default_factory=set)
 
     def __hash__(self) -> int:
         return hash(self.pattern_id)
@@ -146,8 +145,8 @@ class PatternMatch:
     """Result of pattern matching."""
 
     pattern: KnownPattern
-    matched_nodes: List[str]
-    matched_edges: List[Tuple[str, str]]
+    matched_nodes: list[str]
+    matched_edges: list[tuple[str, str]]
 
     # Match quality
     similarity_score: float
@@ -155,12 +154,12 @@ class PatternMatch:
     activation_match: float  # How well activations match
 
     # Alignment
-    node_alignment: Dict[str, str] = field(default_factory=dict)  # pattern_node -> graph_node
+    node_alignment: dict[str, str] = field(default_factory=dict)  # pattern_node -> graph_node
 
     # Confidence
     confidence: float = 0.0
     is_partial_match: bool = False
-    missing_components: List[str] = field(default_factory=list)
+    missing_components: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Compute confidence."""
@@ -185,15 +184,15 @@ class Anomaly:
     description: str
 
     # Location
-    affected_nodes: List[str] = field(default_factory=list)
-    affected_edges: List[Tuple[str, str]] = field(default_factory=list)
-    layer_range: Optional[Tuple[int, int]] = None
+    affected_nodes: list[str] = field(default_factory=list)
+    affected_edges: list[tuple[str, str]] = field(default_factory=list)
+    layer_range: tuple[int, int] | None = None
 
     # Evidence
-    evidence: Dict[str, Any] = field(default_factory=dict)
+    evidence: dict[str, Any] = field(default_factory=dict)
 
     # Recommendations
-    recommendations: List[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
 
     @property
     def is_critical(self) -> bool:
@@ -220,7 +219,7 @@ class PatternLibrary:
 
     def __init__(self):
         """Initialize with built-in patterns."""
-        self._patterns: Dict[str, KnownPattern] = {}
+        self._patterns: dict[str, KnownPattern] = {}
         self._load_builtin_patterns()
 
     def _load_builtin_patterns(self):
@@ -358,20 +357,20 @@ class PatternLibrary:
         """Add a pattern to the library."""
         self._patterns[pattern.pattern_id] = pattern
 
-    def get_pattern(self, pattern_id: str) -> Optional[KnownPattern]:
+    def get_pattern(self, pattern_id: str) -> KnownPattern | None:
         """Get a pattern by ID."""
         return self._patterns.get(pattern_id)
 
-    def get_patterns_by_category(self, category: PatternCategory) -> List[KnownPattern]:
+    def get_patterns_by_category(self, category: PatternCategory) -> list[KnownPattern]:
         """Get all patterns in a category."""
         return [p for p in self._patterns.values() if p.category == category]
 
-    def get_safety_relevant_patterns(self) -> List[KnownPattern]:
+    def get_safety_relevant_patterns(self) -> list[KnownPattern]:
         """Get all safety-relevant patterns."""
         return [p for p in self._patterns.values() if p.is_safety_relevant]
 
     @property
-    def patterns(self) -> List[KnownPattern]:
+    def patterns(self) -> list[KnownPattern]:
         """All patterns in the library."""
         return list(self._patterns.values())
 
@@ -396,7 +395,7 @@ class CircuitPatternMatcher:
         match = matcher.match_pattern(circuit_graph, "ioi_circuit")
     """
 
-    def __init__(self, library: Optional[PatternLibrary] = None):
+    def __init__(self, library: PatternLibrary | None = None):
         """
         Initialize pattern matcher.
 
@@ -409,8 +408,8 @@ class CircuitPatternMatcher:
         self,
         graph: Any,  # CircuitGraph
         min_confidence: float = 0.5,
-        categories: Optional[List[PatternCategory]] = None
-    ) -> List[PatternMatch]:
+        categories: list[PatternCategory] | None = None
+    ) -> list[PatternMatch]:
         """
         Find all matching patterns in a circuit graph.
 
@@ -441,7 +440,7 @@ class CircuitPatternMatcher:
         self,
         graph: Any,  # CircuitGraph
         pattern_id: str
-    ) -> Optional[PatternMatch]:
+    ) -> PatternMatch | None:
         """
         Match against a specific pattern.
 
@@ -462,7 +461,7 @@ class CircuitPatternMatcher:
         self,
         graph: Any,  # CircuitGraph
         pattern: KnownPattern
-    ) -> Optional[PatternMatch]:
+    ) -> PatternMatch | None:
         """Match graph against a single pattern."""
         from hololoom.dark_trace.circuits.graph import CircuitGraph
 
@@ -475,9 +474,9 @@ class CircuitPatternMatcher:
             return None
 
         # Find candidate subgraphs
-        matched_nodes: List[str] = []
-        matched_edges: List[Tuple[str, str]] = []
-        node_alignment: Dict[str, str] = {}
+        matched_nodes: list[str] = []
+        matched_edges: list[tuple[str, str]] = []
+        node_alignment: dict[str, str] = {}
 
         # Check layer span
         if signature.layer_span:
@@ -631,7 +630,7 @@ class AnomalyDetector:
         self.bottleneck_ratio = bottleneck_ratio
         self.max_depth = max_depth
 
-    def detect(self, graph: Any) -> List[Anomaly]:  # CircuitGraph
+    def detect(self, graph: Any) -> list[Anomaly]:  # CircuitGraph
         """
         Detect all anomalies in a circuit graph.
 
@@ -641,7 +640,7 @@ class AnomalyDetector:
         Returns:
             List of detected Anomaly objects
         """
-        anomalies: List[Anomaly] = []
+        anomalies: list[Anomaly] = []
 
         # Structural anomalies
         anomalies.extend(self._detect_disconnected(graph))
@@ -658,7 +657,7 @@ class AnomalyDetector:
 
         return anomalies
 
-    def _detect_disconnected(self, graph: Any) -> List[Anomaly]:
+    def _detect_disconnected(self, graph: Any) -> list[Anomaly]:
         """Detect disconnected components."""
         from hololoom.dark_trace.circuits.graph import CircuitGraph
 
@@ -685,7 +684,7 @@ class AnomalyDetector:
 
         return anomalies
 
-    def _detect_excessive_depth(self, graph: Any) -> List[Anomaly]:
+    def _detect_excessive_depth(self, graph: Any) -> list[Anomaly]:
         """Detect unusually deep paths."""
         from hololoom.dark_trace.circuits.graph import CircuitGraph
 
@@ -711,7 +710,7 @@ class AnomalyDetector:
 
         return anomalies
 
-    def _get_max_path_length(self, graph: Any, node_id: str, visited: Set[str]) -> int:
+    def _get_max_path_length(self, graph: Any, node_id: str, visited: set[str]) -> int:
         """Get maximum path length from a node using DFS."""
         if node_id in visited:
             return 0
@@ -726,7 +725,7 @@ class AnomalyDetector:
 
         return max_length
 
-    def _detect_bottlenecks(self, graph: Any) -> List[Anomaly]:
+    def _detect_bottlenecks(self, graph: Any) -> list[Anomaly]:
         """Detect information bottlenecks."""
         from hololoom.dark_trace.circuits.graph import CircuitGraph
 
@@ -754,7 +753,7 @@ class AnomalyDetector:
 
         return anomalies
 
-    def _detect_circular(self, graph: Any) -> List[Anomaly]:
+    def _detect_circular(self, graph: Any) -> list[Anomaly]:
         """Detect circular dependencies."""
         from hololoom.dark_trace.circuits.graph import CircuitGraph
 
@@ -764,7 +763,7 @@ class AnomalyDetector:
         anomalies = []
 
         # Simple cycle detection using DFS
-        def has_cycle_from(start: str, current: str, visited: Set[str], path: Set[str]) -> bool:
+        def has_cycle_from(start: str, current: str, visited: set[str], path: set[str]) -> bool:
             if current in path:
                 return True
             if current in visited:
@@ -781,7 +780,7 @@ class AnomalyDetector:
             return False
 
         # Check for cycles
-        visited: Set[str] = set()
+        visited: set[str] = set()
         for node in graph.nodes:
             if node.node_id not in visited:
                 if has_cycle_from(node.node_id, node.node_id, visited, set()):
@@ -795,7 +794,7 @@ class AnomalyDetector:
 
         return anomalies
 
-    def _detect_dead_features(self, graph: Any) -> List[Anomaly]:
+    def _detect_dead_features(self, graph: Any) -> list[Anomaly]:
         """Detect features that never activate."""
         from hololoom.dark_trace.circuits.graph import CircuitGraph, NodeType
 
@@ -821,7 +820,7 @@ class AnomalyDetector:
 
         return anomalies
 
-    def _detect_saturated(self, graph: Any) -> List[Anomaly]:
+    def _detect_saturated(self, graph: Any) -> list[Anomaly]:
         """Detect always-on features."""
         from hololoom.dark_trace.circuits.graph import CircuitGraph, NodeType
 
@@ -847,9 +846,9 @@ class AnomalyDetector:
 
         return anomalies
 
-    def _detect_hidden_paths(self, graph: Any) -> List[Anomaly]:
+    def _detect_hidden_paths(self, graph: Any) -> list[Anomaly]:
         """Detect potential hidden information paths (safety-relevant)."""
-        from hololoom.dark_trace.circuits.graph import CircuitGraph, EdgeType
+        from hololoom.dark_trace.circuits.graph import CircuitGraph
 
         if not isinstance(graph, CircuitGraph):
             return []

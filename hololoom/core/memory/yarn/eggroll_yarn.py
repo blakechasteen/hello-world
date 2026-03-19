@@ -1,7 +1,8 @@
-import numpy as np
-from typing import Any, Dict, List
+from typing import Any
+
 import networkx as nx
-from dataclasses import asdict
+import numpy as np
+
 
 class Yarn:
     """
@@ -13,11 +14,11 @@ class Yarn:
     * Stores reversible perturbation traces.
     * Analyzes lineage centrality.
     """
-    
+
     def __init__(self):
         self.history = []
         self.graph = nx.DiGraph()
-        
+
         # Connect to Unified Memory
         try:
             from hololoom.memory.unified import UnifiedMemory
@@ -27,7 +28,7 @@ class Yarn:
             self.has_memory = False
             print("Warning: UnifiedMemory not available, running in local mode.")
 
-    def log(self, perturb_spec: Any, reward: float, embedding: np.ndarray, metadata: Dict[str, Any]):
+    def log(self, perturb_spec: Any, reward: float, embedding: np.ndarray, metadata: dict[str, Any]):
         """
         Log a step in the lineage.
         """
@@ -38,16 +39,16 @@ class Yarn:
             "metadata": metadata
         }
         self.history.append(entry)
-        
+
         # Update Graph
         model_id = metadata.get("model_id")
         parent_id = metadata.get("parent_model_id")
-        
+
         if model_id:
             self.graph.add_node(model_id, reward=reward)
             if parent_id and self.graph.has_node(parent_id):
                 self.graph.add_edge(parent_id, model_id)
-                
+
             # Persist to Unified Memory
             if self.has_memory:
                 try:
@@ -65,17 +66,17 @@ class Yarn:
         """
         try:
             from hololoom.eggroll.math_crusher import GraphTheory
-            
+
             if len(self.graph) < 2:
                 return "N/A"
-                
+
             # Convert to adjacency matrix
             nodes = list(self.graph.nodes())
             adj = nx.to_numpy_array(self.graph, nodelist=nodes)
-            
+
             # Compute Eigenvector Centrality
             centrality = GraphTheory.eigenvector_centrality(adj)
-            
+
             # Find max centrality
             if len(centrality) > 0:
                 idx = np.argmax(centrality)

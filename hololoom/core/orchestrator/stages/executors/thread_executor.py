@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Thread Selection Executor - Step 3: Yarn Graph / Shuttle
 =========================================================
@@ -17,13 +16,14 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import logging
-from typing import Callable, Optional, Any, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
     from hololoom.memory.graph import KG
+    from hololoom.orchestrator.context import WeavingContext
 
 
 class ThreadSelectionExecutor(BaseStageExecutor):
@@ -52,11 +52,11 @@ class ThreadSelectionExecutor(BaseStageExecutor):
 
     def __init__(
         self,
-        yarn_graph: 'KG',
-        shuttle_stage: Optional[Any] = None,
+        yarn_graph: KG,
+        shuttle_stage: Any | None = None,
         enable_shuttle: bool = False,
-        logger: Optional[logging.Logger] = None,
-        emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+        logger: logging.Logger | None = None,
+        emit_stage_event: Callable[[int, str, float], None] | None = None,
     ):
         """
         Initialize Thread Selection Executor.
@@ -73,7 +73,7 @@ class ThreadSelectionExecutor(BaseStageExecutor):
         self.shuttle_stage = shuttle_stage
         self.enable_shuttle = enable_shuttle
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute thread selection.
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Hybrid Retrieval System (Week 4)
 =================================
@@ -20,22 +21,20 @@ Architecture:
 - HybridRetriever: Combines all three with RRF
 """
 
-from typing import List, Dict, Optional, Any, Tuple, Union
-from dataclasses import dataclass, field
-from datetime import datetime
 import logging
 import math
 import re
 from collections import Counter
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
-from hololoom.protocols.types import MemoryShard
 from hololoom.memory.graph import KG
 from hololoom.memory.retrieval_result import (
     RetrievalResultEnhanced,
-    RetrievalStatus,
     TraversalResult,
-    ensure_retrieval_result
 )
+from hololoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 
@@ -58,11 +57,11 @@ class RetrievalScore:
 @dataclass
 class RetrievalResult:
     """Result from retrieval operation."""
-    memories: List[MemoryShard]
-    scores: List[RetrievalScore]
+    memories: list[MemoryShard]
+    scores: list[RetrievalScore]
     total_candidates: int
     retrieval_time_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -99,8 +98,8 @@ class SemanticRetriever:
 
         # Try to load sentence-transformers
         try:
-            from sentence_transformers import SentenceTransformer
             import numpy as np
+            from sentence_transformers import SentenceTransformer
 
             self.model = SentenceTransformer(model_name)
             self.np = np
@@ -113,9 +112,9 @@ class SemanticRetriever:
             self.available = False
 
         # Cache embeddings
-        self.embedding_cache: Dict[str, Any] = {}
+        self.embedding_cache: dict[str, Any] = {}
 
-    def embed(self, text: str) -> Optional[Any]:
+    def embed(self, text: str) -> Any | None:
         """
         Embed text into vector space.
 
@@ -164,9 +163,9 @@ class SemanticRetriever:
     async def retrieve(
         self,
         query: str,
-        memories: List[MemoryShard],
+        memories: list[MemoryShard],
         limit: int = 10
-    ) -> Union[List[Tuple[MemoryShard, float]], RetrievalResultEnhanced]:
+    ) -> list[tuple[MemoryShard, float]] | RetrievalResultEnhanced:
         """
         Retrieve memories using semantic similarity.
 
@@ -244,9 +243,9 @@ class SemanticRetriever:
     async def _retrieve_fallback(
         self,
         query: str,
-        memories: List[MemoryShard],
+        memories: list[MemoryShard],
         limit: int
-    ) -> List[Tuple[MemoryShard, float]]:
+    ) -> list[tuple[MemoryShard, float]]:
         """Fallback to simple keyword matching."""
         query_words = set(query.lower().split())
 
@@ -294,12 +293,12 @@ class BM25Retriever:
         self.b = b
 
         # Document statistics
-        self.doc_freqs: Dict[str, int] = {}  # Term → doc count
-        self.doc_lengths: Dict[str, int] = {}  # Doc ID → length
+        self.doc_freqs: dict[str, int] = {}  # Term → doc count
+        self.doc_lengths: dict[str, int] = {}  # Doc ID → length
         self.avg_doc_length: float = 0.0
         self.num_docs: int = 0
 
-    def tokenize(self, text: str) -> List[str]:
+    def tokenize(self, text: str) -> list[str]:
         """
         Tokenize text into terms.
 
@@ -314,7 +313,7 @@ class BM25Retriever:
         terms = re.findall(r'\w+', text)
         return terms
 
-    def index_documents(self, memories: List[MemoryShard]):
+    def index_documents(self, memories: list[MemoryShard]):
         """
         Index documents for BM25 scoring.
 
@@ -359,7 +358,7 @@ class BM25Retriever:
         # BM25 IDF: log((N - df + 0.5) / (df + 0.5))
         return math.log((self.num_docs - df + 0.5) / (df + 0.5))
 
-    def score_document(self, query_terms: List[str], doc_terms: List[str], doc_id: str) -> float:
+    def score_document(self, query_terms: list[str], doc_terms: list[str], doc_id: str) -> float:
         """
         Score document for query using BM25.
 
@@ -400,9 +399,9 @@ class BM25Retriever:
     async def retrieve(
         self,
         query: str,
-        memories: List[MemoryShard],
+        memories: list[MemoryShard],
         limit: int = 10
-    ) -> List[Tuple[MemoryShard, float]]:
+    ) -> list[tuple[MemoryShard, float]]:
         """
         Retrieve memories using BM25.
 
@@ -466,7 +465,7 @@ class GraphRetriever:
         self.max_hops = max_hops
         self.hop_decay = hop_decay
 
-    def extract_entities(self, query: str) -> List[str]:
+    def extract_entities(self, query: str) -> list[str]:
         """
         Extract entities from query (simple approach).
 
@@ -491,7 +490,7 @@ class GraphRetriever:
 
         return entities
 
-    def traverse(self, start_entity: str, max_hops: int) -> Union[Dict[str, float], TraversalResult]:
+    def traverse(self, start_entity: str, max_hops: int) -> dict[str, float] | TraversalResult:
         """
         Multi-hop traversal from start entity.
 
@@ -541,9 +540,9 @@ class GraphRetriever:
     async def retrieve(
         self,
         query: str,
-        memories: List[MemoryShard],
+        memories: list[MemoryShard],
         limit: int = 10
-    ) -> Union[List[Tuple[MemoryShard, float]], RetrievalResultEnhanced]:
+    ) -> list[tuple[MemoryShard, float]] | RetrievalResultEnhanced:
         """
         Retrieve memories using graph traversal.
 
@@ -633,9 +632,9 @@ class GraphRetriever:
 # ============================================================================
 
 def reciprocal_rank_fusion(
-    rankings: List[List[Tuple[MemoryShard, float]]],
+    rankings: list[list[tuple[MemoryShard, float]]],
     k: int = 60
-) -> List[Tuple[MemoryShard, float]]:
+) -> list[tuple[MemoryShard, float]]:
     """
     Combine multiple rankings using Reciprocal Rank Fusion.
 
@@ -649,8 +648,8 @@ def reciprocal_rank_fusion(
         Fused ranking
     """
     # Aggregate scores
-    memory_scores: Dict[str, float] = {}
-    memory_objs: Dict[str, MemoryShard] = {}
+    memory_scores: dict[str, float] = {}
+    memory_objs: dict[str, MemoryShard] = {}
 
     for ranking in rankings:
         for rank, (memory, _) in enumerate(ranking, start=1):
@@ -713,7 +712,7 @@ class HybridRetriever:
     async def retrieve(
         self,
         query: str,
-        memories: List[MemoryShard],
+        memories: list[MemoryShard],
         limit: int = 10
     ) -> RetrievalResult:
         """
@@ -733,7 +732,7 @@ class HybridRetriever:
         methods_used = []
         retrieval_status = {}  # Track status per method for debugging
 
-        def _extract_results(result: Union[List, RetrievalResultEnhanced], method_name: str) -> Optional[List]:
+        def _extract_results(result: list | RetrievalResultEnhanced, method_name: str) -> list | None:
             """Helper to extract tuple list from result, handling both success and failure cases."""
             if isinstance(result, RetrievalResultEnhanced):
                 # Result is an enhanced type (failure or fallback)

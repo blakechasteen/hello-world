@@ -13,14 +13,13 @@ Usage:
     print(prof.summary())
 """
 
-import time
-import asyncio
-import logging
 import functools
-from typing import Dict, List, Any, Optional, Callable
-from dataclasses import dataclass, field
-from contextlib import asynccontextmanager, contextmanager
+import logging
+import time
 from collections import defaultdict
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Any, Optional
 
 # Optional: psutil for memory tracking
 try:
@@ -38,12 +37,12 @@ class ProfileEntry:
     """Single profiling measurement."""
     name: str
     start_time: float
-    end_time: Optional[float] = None
-    duration: Optional[float] = None
+    end_time: float | None = None
+    duration: float | None = None
     memory_start: int = 0
-    memory_end: Optional[int] = None
-    memory_delta: Optional[int] = None
-    metrics: Dict[str, Any] = field(default_factory=dict)
+    memory_end: int | None = None
+    memory_delta: int | None = None
+    metrics: dict[str, Any] = field(default_factory=dict)
 
     def finish(self):
         """Complete the profile entry."""
@@ -72,9 +71,9 @@ class Profiler:
     def __init__(self, name: str, parent: Optional['Profiler'] = None):
         self.name = name
         self.parent = parent
-        self.entry: Optional[ProfileEntry] = None
-        self.children: List[ProfileEntry] = []
-        self.custom_metrics: Dict[str, Any] = {}
+        self.entry: ProfileEntry | None = None
+        self.children: list[ProfileEntry] = []
+        self.custom_metrics: dict[str, Any] = {}
 
     async def __aenter__(self):
         """Start profiling (async context)."""
@@ -127,7 +126,7 @@ class Profiler:
         """Create a child profiler."""
         return Profiler(name=name, parent=self)
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """Generate summary statistics."""
         if not self.entry:
             return {}
@@ -188,8 +187,8 @@ class ProfilerRegistry:
     """
 
     def __init__(self):
-        self.profiles: List[ProfileEntry] = []
-        self.metrics_by_name: Dict[str, List[float]] = defaultdict(list)
+        self.profiles: list[ProfileEntry] = []
+        self.metrics_by_name: dict[str, list[float]] = defaultdict(list)
 
     def record(self, profiler: Profiler):
         """Record a completed profiler run."""
@@ -213,7 +212,7 @@ class ProfilerRegistry:
                         child.duration * 1000
                     )
 
-    def aggregate_stats(self) -> Dict[str, Dict[str, float]]:
+    def aggregate_stats(self) -> dict[str, dict[str, float]]:
         """Compute aggregate statistics (mean, p50, p95, p99)."""
         import statistics
 
@@ -243,7 +242,7 @@ class ProfilerRegistry:
         self.metrics_by_name.clear()
 
 
-def profile_async(name: Optional[str] = None):
+def profile_async(name: str | None = None):
     """
     Decorator for profiling async functions.
 
@@ -266,7 +265,7 @@ def profile_async(name: Optional[str] = None):
     return decorator
 
 
-def profile_sync(name: Optional[str] = None):
+def profile_sync(name: str | None = None):
     """
     Decorator for profiling sync functions.
 

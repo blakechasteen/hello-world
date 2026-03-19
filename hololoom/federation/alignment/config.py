@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .consensus_engine import ConsensusStrategy
 from .node_profile import (
@@ -19,7 +19,6 @@ from .node_profile import (
     TRUST_THRESHOLD,
     VERIFIED_RESPONSE_BONUS,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  ENUMS - Configuration modes
@@ -200,7 +199,7 @@ class FederationAlignmentConfig:
         """Check if permissive (logging only) mode."""
         return self.mode == AlignmentMode.PERMISSIVE
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "mode": self.mode.name,
@@ -250,7 +249,7 @@ class FederationAlignmentConfig:
     # ───────────────────────────────────────────────────────────────────────
 
     @classmethod
-    def disabled(cls) -> "FederationAlignmentConfig":
+    def disabled(cls) -> FederationAlignmentConfig:
         """Create disabled configuration (development only)."""
         return cls(
             mode=AlignmentMode.DISABLED,
@@ -265,7 +264,7 @@ class FederationAlignmentConfig:
         )
 
     @classmethod
-    def permissive(cls) -> "FederationAlignmentConfig":
+    def permissive(cls) -> FederationAlignmentConfig:
         """Create permissive configuration (testing/staging)."""
         return cls(
             mode=AlignmentMode.PERMISSIVE,
@@ -281,7 +280,7 @@ class FederationAlignmentConfig:
         )
 
     @classmethod
-    def standard(cls) -> "FederationAlignmentConfig":
+    def standard(cls) -> FederationAlignmentConfig:
         """Create standard configuration (production default)."""
         return cls(
             mode=AlignmentMode.STANDARD,
@@ -294,7 +293,7 @@ class FederationAlignmentConfig:
         )
 
     @classmethod
-    def strict(cls) -> "FederationAlignmentConfig":
+    def strict(cls) -> FederationAlignmentConfig:
         """Create strict configuration (high-security environments)."""
         return cls(
             mode=AlignmentMode.STRICT,

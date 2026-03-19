@@ -6,12 +6,13 @@ Provides simple YAML-compatible config and one-line policy creation.
 
 from dataclasses import dataclass, field
 from typing import Literal
+
+from hololoom.bandits.neural_ts.featurizer import create_loom_featurizer
 from hololoom.bandits.neural_ts.policy import NeuralThompsonPolicy
 from hololoom.bandits.neural_ts.posterior import (
     create_bootstrap_posterior,
     create_mc_dropout_posterior,
 )
-from hololoom.bandits.neural_ts.featurizer import create_loom_featurizer
 from hololoom.bandits.neural_ts.replay import ReplayBuffer
 from hololoom.bandits.neural_ts.trainer import BanditTrainer
 

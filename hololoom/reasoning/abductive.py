@@ -27,12 +27,11 @@ Public API:
     generate_hypotheses: Helper for hypothesis generation
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Callable, Set, Tuple
-from enum import Enum
 import logging
-from collections import defaultdict
 import math
+from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -58,12 +57,12 @@ class Hypothesis:
         observations_explained: Which observations this hypothesis explains
         supporting_evidence: Evidence supporting this hypothesis
     """
-    explanation: Dict[str, Any]
+    explanation: dict[str, Any]
     likelihood: float
     prior: float
     complexity: float
-    observations_explained: Set[str] = field(default_factory=set)
-    supporting_evidence: List[str] = field(default_factory=list)
+    observations_explained: set[str] = field(default_factory=set)
+    supporting_evidence: list[str] = field(default_factory=list)
 
     def score(self) -> float:
         """
@@ -105,7 +104,7 @@ class Observation:
     variable: str
     value: Any
     confidence: float = 1.0
-    timestamp: Optional[float] = None
+    timestamp: float | None = None
 
     def __hash__(self):
         """Make observations hashable for set operations."""
@@ -160,7 +159,7 @@ class HypothesisGenerator:
     Multiple strategies: single-cause, multi-cause, composite hypotheses.
     """
 
-    def __init__(self, causal_rules: List[CausalRule]):
+    def __init__(self, causal_rules: list[CausalRule]):
         """
         Initialize generator with causal knowledge.
 
@@ -170,15 +169,15 @@ class HypothesisGenerator:
         self.causal_rules = causal_rules
 
         # Index: effect → causes for fast lookup
-        self.effect_to_causes: Dict[Tuple[str, Any], List[CausalRule]] = defaultdict(list)
+        self.effect_to_causes: dict[tuple[str, Any], list[CausalRule]] = defaultdict(list)
         for rule in causal_rules:
             key = (rule.effect_variable, rule.effect_value)
             self.effect_to_causes[key].append(rule)
 
     def generate(self,
-                observations: List[Observation],
+                observations: list[Observation],
                 max_hypotheses: int = 20,
-                allow_multi_cause: bool = True) -> List[Dict[str, Any]]:
+                allow_multi_cause: bool = True) -> list[dict[str, Any]]:
         """
         Generate candidate hypotheses from observations.
 
@@ -214,7 +213,7 @@ class HypothesisGenerator:
         logger.info(f"Generated {len(unique_hypotheses)} unique hypotheses")
         return unique_hypotheses[:max_hypotheses]
 
-    def _generate_single_cause(self, observations: List[Observation]) -> List[Dict[str, Any]]:
+    def _generate_single_cause(self, observations: list[Observation]) -> list[dict[str, Any]]:
         """Generate hypotheses with single cause explaining all observations."""
         hypotheses = []
 
@@ -230,8 +229,8 @@ class HypothesisGenerator:
         return hypotheses
 
     def _generate_multi_cause(self,
-                             observations: List[Observation],
-                             single_hypotheses: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+                             observations: list[Observation],
+                             single_hypotheses: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Generate hypotheses with multiple causes (conjunctions)."""
         multi_hypotheses = []
 
@@ -245,14 +244,14 @@ class HypothesisGenerator:
 
         return multi_hypotheses
 
-    def _compatible(self, h1: Dict[str, Any], h2: Dict[str, Any]) -> bool:
+    def _compatible(self, h1: dict[str, Any], h2: dict[str, Any]) -> bool:
         """Check if two hypotheses can be merged (no conflicts)."""
         for var in h1:
             if var in h2 and h1[var] != h2[var]:
                 return False
         return True
 
-    def _deduplicate(self, hypotheses: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _deduplicate(self, hypotheses: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Remove duplicate hypotheses."""
         seen = set()
         unique = []
@@ -278,8 +277,8 @@ class HypothesisScorer:
     """
 
     def __init__(self,
-                 causal_rules: List[CausalRule],
-                 prior_probabilities: Optional[Dict[str, Dict[Any, float]]] = None):
+                 causal_rules: list[CausalRule],
+                 prior_probabilities: dict[str, dict[Any, float]] | None = None):
         """
         Initialize scorer with causal model and priors.
 
@@ -291,14 +290,14 @@ class HypothesisScorer:
         self.prior_probabilities = prior_probabilities or {}
 
         # Index for fast lookup
-        self.cause_to_effects: Dict[Tuple[str, Any], List[CausalRule]] = defaultdict(list)
+        self.cause_to_effects: dict[tuple[str, Any], list[CausalRule]] = defaultdict(list)
         for rule in causal_rules:
             key = (rule.cause_variable, rule.cause_value)
             self.cause_to_effects[key].append(rule)
 
     def score(self,
-             hypothesis_dict: Dict[str, Any],
-             observations: List[Observation]) -> Hypothesis:
+             hypothesis_dict: dict[str, Any],
+             observations: list[Observation]) -> Hypothesis:
         """
         Score a single hypothesis.
 
@@ -332,8 +331,8 @@ class HypothesisScorer:
         )
 
     def _calculate_likelihood(self,
-                            hypothesis: Dict[str, Any],
-                            observations: List[Observation]) -> float:
+                            hypothesis: dict[str, Any],
+                            observations: list[Observation]) -> float:
         """
         Calculate P(observations | hypothesis).
 
@@ -369,7 +368,7 @@ class HypothesisScorer:
         return 0.5  # Neutral
 
     def _probability_of_observation(self,
-                                   hypothesis: Dict[str, Any],
+                                   hypothesis: dict[str, Any],
                                    observation: Observation) -> float:
         """
         Calculate P(observation | hypothesis).
@@ -393,7 +392,7 @@ class HypothesisScorer:
         # No rule found → observation unlikely given hypothesis
         return 0.1  # Small probability (not impossible, but unlikely)
 
-    def _calculate_prior(self, hypothesis: Dict[str, Any]) -> float:
+    def _calculate_prior(self, hypothesis: dict[str, Any]) -> float:
         """
         Calculate P(hypothesis) - base rate probability.
 
@@ -422,7 +421,7 @@ class HypothesisScorer:
 
         return 0.5
 
-    def _calculate_complexity(self, hypothesis: Dict[str, Any]) -> float:
+    def _calculate_complexity(self, hypothesis: dict[str, Any]) -> float:
         """
         Calculate complexity penalty (Occam's razor).
 
@@ -437,8 +436,8 @@ class HypothesisScorer:
         return float(len(hypothesis))
 
     def _find_explained_observations(self,
-                                    hypothesis: Dict[str, Any],
-                                    observations: List[Observation]) -> Set[str]:
+                                    hypothesis: dict[str, Any],
+                                    observations: list[Observation]) -> set[str]:
         """Find which observations this hypothesis explains."""
         explained = set()
         for obs in observations:
@@ -447,8 +446,8 @@ class HypothesisScorer:
         return explained
 
     def _find_supporting_evidence(self,
-                                 hypothesis: Dict[str, Any],
-                                 observations: List[Observation]) -> List[str]:
+                                 hypothesis: dict[str, Any],
+                                 observations: list[Observation]) -> list[str]:
         """Find evidence supporting this hypothesis."""
         evidence = []
         for obs in observations:
@@ -476,8 +475,8 @@ class AbductiveReasoner:
     """
 
     def __init__(self,
-                 causal_rules: List[CausalRule],
-                 prior_probabilities: Optional[Dict[str, Dict[Any, float]]] = None):
+                 causal_rules: list[CausalRule],
+                 prior_probabilities: dict[str, dict[Any, float]] | None = None):
         """
         Initialize reasoner with causal knowledge.
 
@@ -490,10 +489,10 @@ class AbductiveReasoner:
         self.causal_rules = causal_rules
 
     def explain(self,
-               observations: List[Observation],
+               observations: list[Observation],
                max_hypotheses: int = 10,
                allow_multi_cause: bool = True,
-               min_score: float = 0.0) -> List[Hypothesis]:
+               min_score: float = 0.0) -> list[Hypothesis]:
         """
         Generate best explanations for observations.
 
@@ -541,7 +540,7 @@ class AbductiveReasoner:
 
     def explain_single(self,
                       observation: Observation,
-                      max_hypotheses: int = 5) -> List[Hypothesis]:
+                      max_hypotheses: int = 5) -> list[Hypothesis]:
         """
         Explain a single observation.
 
@@ -556,7 +555,7 @@ class AbductiveReasoner:
         """
         return self.explain([observation], max_hypotheses=max_hypotheses)
 
-    def best_explanation(self, observations: List[Observation]) -> Optional[Hypothesis]:
+    def best_explanation(self, observations: list[Observation]) -> Hypothesis | None:
         """
         Get single best explanation.
 
@@ -570,9 +569,9 @@ class AbductiveReasoner:
         return explanations[0] if explanations else None
 
     def compare_hypotheses(self,
-                          h1: Dict[str, Any],
-                          h2: Dict[str, Any],
-                          observations: List[Observation]) -> Tuple[Hypothesis, Hypothesis]:
+                          h1: dict[str, Any],
+                          h2: dict[str, Any],
+                          observations: list[Observation]) -> tuple[Hypothesis, Hypothesis]:
         """
         Compare two specific hypotheses.
 
@@ -591,8 +590,8 @@ class AbductiveReasoner:
         return (scored_h1, scored_h2)
 
     def explain_with_confidence(self,
-                               observations: List[Observation],
-                               confidence_threshold: float = 0.7) -> Optional[Hypothesis]:
+                               observations: list[Observation],
+                               confidence_threshold: float = 0.7) -> Hypothesis | None:
         """
         Get best explanation only if confidence is high enough.
 

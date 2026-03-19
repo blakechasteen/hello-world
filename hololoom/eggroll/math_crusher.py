@@ -1,6 +1,7 @@
-import numpy as np
-from typing import List, Tuple, Any
 from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 # ==========================================
 # 1. Hyperbolic Geometry (Poincaré Ball)
@@ -11,7 +12,7 @@ class HyperbolicGeometry:
     Operations in the Poincaré Ball Model of Hyperbolic Geometry.
     Useful for representing hierarchical structures (entailment, taxonomy).
     """
-    
+
     @staticmethod
     def exp_map(v: np.ndarray, c: float = 1.0) -> np.ndarray:
         """
@@ -32,11 +33,11 @@ class HyperbolicGeometry:
         sq_norm_u = np.sum(u ** 2)
         sq_norm_v = np.sum(v ** 2)
         sq_dist = np.sum((u - v) ** 2)
-        
+
         # Clip to avoid numerical instability near boundary
         sq_norm_u = np.clip(sq_norm_u, 0, 1 - 1e-5)
         sq_norm_v = np.clip(sq_norm_v, 0, 1 - 1e-5)
-        
+
         val = 1 + 2 * c * sq_dist / ((1 - c * sq_norm_u) * (1 - c * sq_norm_v))
         return np.arccosh(np.maximum(val, 1.0 + 1e-7)) / np.sqrt(c)
 
@@ -49,7 +50,7 @@ class TopologicalFeatures:
     Topological Data Analysis (TDA) utilities.
     Computes Betti numbers (holes) from point clouds using a simplified filtration.
     """
-    
+
     @staticmethod
     def compute_betti_0(point_cloud: np.ndarray, epsilon: float) -> int:
         """
@@ -58,13 +59,13 @@ class TopologicalFeatures:
         """
         n = len(point_cloud)
         if n == 0: return 0
-        
+
         parent = list(range(n))
         def find(i):
             if parent[i] == i: return i
             parent[i] = find(parent[i])
             return parent[i]
-        
+
         def union(i, j):
             root_i = find(i)
             root_j = find(j)
@@ -72,7 +73,7 @@ class TopologicalFeatures:
                 parent[root_i] = root_j
                 return True
             return False
-            
+
         # Build edges < epsilon
         components = n
         for i in range(n):
@@ -81,7 +82,7 @@ class TopologicalFeatures:
                 if dist < epsilon:
                     if union(i, j):
                         components -= 1
-                        
+
         return components
 
 # ==========================================
@@ -93,7 +94,7 @@ class HyperdimensionalComputing:
     Vector Symbolic Architecture (VSA) operations.
     Algebra of high-dimensional vectors (MAP: Multiply, Add, Permute).
     """
-    
+
     @staticmethod
     def bind(u: np.ndarray, v: np.ndarray) -> np.ndarray:
         """
@@ -103,7 +104,7 @@ class HyperdimensionalComputing:
         return u * v
 
     @staticmethod
-    def bundle(vectors: List[np.ndarray]) -> np.ndarray:
+    def bundle(vectors: list[np.ndarray]) -> np.ndarray:
         """
         Bundling (Superposition) operation.
         Element-wise sum, usually followed by normalization.
@@ -121,7 +122,7 @@ class DifferentialEvolution:
     Differential Evolution strategy for continuous optimization.
     x_new = x_a + F * (x_b - x_c)
     """
-    
+
     @staticmethod
     def mutate(population: Any, F: float = 0.8) -> Any:
         """
@@ -132,12 +133,12 @@ class DifferentialEvolution:
         if isinstance(population, (float, int)):
             # Scalar mutation
             return population * (1.0 + np.random.normal(0, 0.1))
-            
+
         if isinstance(population, list) and len(population) >= 3:
             indices = np.random.choice(len(population), 3, replace=False)
             a, b, c = population[indices[0]], population[indices[1]], population[indices[2]]
             return a + F * (b - c)
-            
+
         return population
 
 # ==========================================
@@ -151,7 +152,7 @@ class Functor:
     """
     def map_object(self, obj: Any) -> Any:
         raise NotImplementedError
-    
+
     def map_morphism(self, f: Any) -> Any:
         raise NotImplementedError
 
@@ -159,7 +160,7 @@ class Functor:
 class LinearMap:
     """A morphism in the category of Vector Spaces (Vect_K)."""
     matrix: np.ndarray
-    
+
     def __call__(self, v: np.ndarray) -> np.ndarray:
         return self.matrix @ v
 
@@ -172,7 +173,7 @@ class TangentFunctor(Functor):
         # T(M) -> (p, v)
         # Here we just return the zero vector at that point (tangent origin)
         return np.zeros_like(weights)
-        
+
     def map_morphism(self, update_step: LinearMap) -> LinearMap:
         # Maps a function f: M -> M to df: TM -> TM
         # For linear updates, the derivative is the map itself
@@ -187,31 +188,31 @@ class PIDController:
     Proportional-Integral-Derivative Controller.
     Uses Calculus to regulate a process variable (e.g., Learning Rate).
     
-    u(t) = K_p e(t) + K_i \int e(t) dt + K_d \frac{de(t)}{dt}
+    u(t) = K_p e(t) + K_i \\int e(t) dt + K_d \frac{de(t)}{dt}
     """
     def __init__(self, kp: float, ki: float, kd: float, setpoint: float = 0.0):
         self.kp = kp
         self.ki = ki
         self.kd = kd
         self.setpoint = setpoint
-        
+
         self.prev_error = 0.0
         self.integral = 0.0
-        
+
     def update(self, measurement: float, dt: float = 1.0) -> float:
         """
         Compute control output.
         """
         error = self.setpoint - measurement
-        
+
         # Integral term (Area under curve)
         self.integral += error * dt
-        
+
         # Derivative term (Slope/Rate of change)
         derivative = (error - self.prev_error) / dt
-        
+
         output = (self.kp * error) + (self.ki * self.integral) + (self.kd * derivative)
-        
+
         self.prev_error = error
         return output
 
@@ -223,7 +224,7 @@ class StatisticalMeasures:
     """
     Statistical distances and information theoretic measures.
     """
-    
+
     @staticmethod
     def kl_divergence(p: np.ndarray, q: np.ndarray) -> float:
         """
@@ -262,7 +263,7 @@ class CalculusTools:
     """
     Advanced Calculus and Signal Processing tools.
     """
-    
+
     @staticmethod
     def exponential_moving_average(current: float, history: float, alpha: float = 0.9) -> float:
         """
@@ -272,19 +273,19 @@ class CalculusTools:
         return alpha * current + (1 - alpha) * history
 
     @staticmethod
-    def compute_curvature(gradients: List[np.ndarray]) -> float:
+    def compute_curvature(gradients: list[np.ndarray]) -> float:
         """
         Estimate curvature (2nd derivative approximation) from a sequence of gradients.
         High curvature -> unstable landscape -> lower learning rate.
         """
         if len(gradients) < 2: return 0.0
-        
+
         # Secant equation approximation for 2nd derivative
         # f''(x) ~ (f'(x) - f'(x-1)) / dx
         # Here we just look at the change in gradient direction/magnitude
         g_t = gradients[-1]
         g_prev = gradients[-2]
-        
+
         diff = np.linalg.norm(g_t - g_prev)
         return diff
 
@@ -295,14 +296,14 @@ class CalculusTools:
         Useful for detecting loops or oscillations in agent behavior.
         """
         if len(signal) < 4: return 0.0
-        
+
         # Fast Fourier Transform
         fft_vals = np.fft.rfft(signal)
         # Power spectrum
         power = np.abs(fft_vals)**2
         # Ignore DC component (0 Hz)
         power[0] = 0
-        
+
         # Return peak power (strength of periodicity)
         return np.max(power)
 
@@ -315,12 +316,12 @@ class CyberneticRegulator:
     Cybernetic mechanisms for self-regulation and homeostasis.
     Based on Ashby's Law of Requisite Variety and Wiener's Feedback.
     """
-    
+
     def __init__(self, target_variety: float = 1.0):
         self.internal_state = 1.0 # "Energy" or "Capacity"
         self.target_variety = target_variety
         self.homeostasis_bounds = (0.5, 1.5)
-        
+
     def regulate(self, disturbance_variety: float) -> float:
         """
         Apply Ashby's Law: Only variety can destroy variety.
@@ -328,16 +329,16 @@ class CyberneticRegulator:
         """
         # Calculate variety gap
         gap = disturbance_variety - self.internal_state
-        
+
         # Negative Feedback Loop to restore balance
         # If disturbance > internal, we need to increase internal capacity
         response = 0.1 * gap
         self.internal_state += response
-        
+
         # Homeostatic clamping
         lower, upper = self.homeostasis_bounds
         self.internal_state = max(lower, min(upper, self.internal_state))
-        
+
         return self.internal_state
 
     def check_viability(self) -> bool:
@@ -357,14 +358,14 @@ class GraphTheory:
     """
     @staticmethod
     def eigenvector_centrality(adjacency_matrix: np.ndarray, max_iter: int = 100) -> np.ndarray:
-        """
+        r"""
         Compute Eigenvector Centrality (influence) of nodes.
         Ax = \lambda x
         """
         n = adjacency_matrix.shape[0]
         if n == 0: return np.array([])
         x = np.ones(n) / np.sqrt(n)
-        
+
         for _ in range(max_iter):
             prev_x = x.copy()
             x = adjacency_matrix @ x
@@ -372,7 +373,7 @@ class GraphTheory:
             if norm == 0: break
             x = x / norm
             if np.allclose(x, prev_x): break
-            
+
         return x
 
     @staticmethod
@@ -381,16 +382,16 @@ class GraphTheory:
         Partition graph into k clusters using Laplacian eigenvalues.
         """
         if adjacency_matrix.shape[0] == 0: return np.array([])
-        
+
         # Degree matrix
         degrees = np.sum(adjacency_matrix, axis=1)
         D = np.diag(degrees)
         # Laplacian
         L = D - adjacency_matrix
-        
+
         # Eigen decomposition
         vals, vecs = np.linalg.eigh(L)
-        
+
         # Use k smallest eigenvectors
         return vecs[:, :k]
 
@@ -421,7 +422,7 @@ class Combinatorics:
         if k < 0 or k > n: return 0
         if k == 0: return 1 if n == 0 else 0
         if k == 1 or k == n: return 1
-        
+
         # Iterative DP for efficiency
         dp = [[0] * (k + 1) for _ in range(n + 1)]
         dp[0][0] = 1
@@ -446,7 +447,7 @@ class InformationTheory:
         """
         p_x = np.sum(p_xy, axis=1)
         p_y = np.sum(p_xy, axis=0)
-        
+
         mi = 0.0
         rows, cols = p_xy.shape
         for i in range(rows):
@@ -464,24 +465,24 @@ class NumericalCalculus:
     Numerical methods for Calculus.
     """
     @staticmethod
-    def runge_kutta_4(f, y0: float, t0: float, dt: float, steps: int) -> List[float]:
+    def runge_kutta_4(f, y0: float, t0: float, dt: float, steps: int) -> list[float]:
         """
         RK4 method for solving ODE: dy/dt = f(t, y)
         """
         y = y0
         t = t0
         history = [y]
-        
+
         for _ in range(steps):
             k1 = f(t, y)
             k2 = f(t + 0.5*dt, y + 0.5*dt*k1)
             k3 = f(t + 0.5*dt, y + 0.5*dt*k2)
             k4 = f(t + dt, y + dt*k3)
-            
+
             y += (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
             t += dt
             history.append(y)
-            
+
         return history
 
 # ==========================================
@@ -501,7 +502,7 @@ class RiemannianGeometry:
         dot = np.dot(u, v)
         norm_u = np.linalg.norm(u)
         norm_v = np.linalg.norm(v)
-        
+
         # Clip for numerical stability
         cos_theta = np.clip(dot / (norm_u * norm_v), -1.0, 1.0)
         return r * np.arccos(cos_theta)
@@ -541,12 +542,12 @@ class AdvancedMatrixOps:
         """
         if A.shape[1] != B.shape[1]:
             raise ValueError("Matrices must have same number of columns")
-        
+
         cols = A.shape[1]
         result = []
         for i in range(cols):
             result.append(np.kron(A[:, i], B[:, i]))
-            
+
         return np.column_stack(result)
 
 # ==========================================
@@ -562,7 +563,7 @@ class AdvancedRegression:
         self.beta = beta   # Precision of noise
         self.m_N = None    # Posterior mean
         self.S_N = None    # Posterior covariance
-        
+
     def fit_bayesian_linear(self, Phi: np.ndarray, t: np.ndarray):
         """
         Update posterior distribution p(w|t) = N(w | m_N, S_N).
@@ -570,26 +571,26 @@ class AdvancedRegression:
         t: Target values (N)
         """
         N, M = Phi.shape
-        
+
         # S_N^-1 = alpha * I + beta * Phi.T @ Phi
         S_N_inv = self.alpha * np.eye(M) + self.beta * (Phi.T @ Phi)
         self.S_N = np.linalg.inv(S_N_inv)
-        
+
         # m_N = beta * S_N @ Phi.T @ t
         self.m_N = self.beta * (self.S_N @ Phi.T @ t)
-        
-    def predict(self, phi_new: np.ndarray) -> Tuple[float, float]:
+
+    def predict(self, phi_new: np.ndarray) -> tuple[float, float]:
         """
         Predict predictive distribution p(t|x, t_train) = N(t | m, sigma^2).
         Returns (mean, variance).
         """
         if self.m_N is None:
             return 0.0, 1.0/self.beta
-            
+
         # Mean = m_N.T @ phi
         y_mean = self.m_N @ phi_new
-        
+
         # Variance = 1/beta + phi.T @ S_N @ phi
         y_var = (1.0 / self.beta) + (phi_new.T @ self.S_N @ phi_new)
-        
+
         return y_mean, y_var

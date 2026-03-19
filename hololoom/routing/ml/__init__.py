@@ -13,10 +13,10 @@ Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
-from .ml_router import MLRouter, RoutingPrediction
 from .feature_extraction import RoutingFeatureExtractor, RoutingFeatures
+from .ml_router import MLRouter, RoutingPrediction
+from .model_registry import ModelMetadata, ModelRegistry
 from .training_pipeline import OnlineTrainingPipeline, TrainingConfig
-from .model_registry import ModelRegistry, ModelMetadata
 
 __all__ = [
     "MLRouter",

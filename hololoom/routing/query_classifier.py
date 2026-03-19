@@ -13,10 +13,9 @@ Author: Claude Code
 Date: 2025-11-12
 """
 
-from enum import Enum
-from typing import Set, Pattern
 import re
 from dataclasses import dataclass
+from enum import Enum
 
 
 class QueryComplexity(Enum):
@@ -33,7 +32,7 @@ class ClassificationResult:
     complexity: QueryComplexity
     confidence: float  # 0-1
     reasoning: str
-    detected_patterns: Set[str] = None
+    detected_patterns: set[str] = None
 
     def __post_init__(self):
         if self.detected_patterns is None:

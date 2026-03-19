@@ -43,40 +43,39 @@ Status: Production Ready (2025-12-02)
 __version__ = "0.1.0"
 
 # Core
-from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig, ProtoMode
-
-# Domain
-from hololoom.apps.departments.proto.domain import (
-    ProtoIntent,
-    ProtoAction,
-    ProtoResponse,
-    CodeContext,
-    IntentType,
-    ProtoSession,
-    ProtoEventType,
-    ProtoEvent,
-)
-
 # Abilities
 from hololoom.apps.departments.proto.abilities import (
     Ability,
-    BaseAbility,
+    AbilityContext,
     AbilityManifest,
     AbilityRegistry,
-    AbilityTrustLevel,
-    AbilityTier,
-    AbilityContext,
     AbilityResult,
+    AbilityTier,
+    AbilityTrustLevel,
+    BaseAbility,
     PreflightResult,
     VerificationResult,
+)
+from hololoom.apps.departments.proto.core import ProtoConfig, ProtoEngine, ProtoMode
+
+# Domain
+from hololoom.apps.departments.proto.domain import (
+    CodeContext,
+    IntentType,
+    ProtoAction,
+    ProtoEvent,
+    ProtoEventType,
+    ProtoIntent,
+    ProtoResponse,
+    ProtoSession,
 )
 
 # Integration
 from hololoom.apps.departments.proto.integration import (
     AgenticBridge,
-    ProtoReasoningMode,
     AgenticBridgeResult,
     ProtoDepartment,
+    ProtoReasoningMode,
 )
 
 __all__ = [

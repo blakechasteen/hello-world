@@ -15,21 +15,19 @@ Exports:
 """
 
 from hololoom.apps.departments.proto.domain.entities import (
-    IntentType,
     CodeContext,
-    ProtoIntent,
+    IntentType,
     ProtoAction,
+    ProtoIntent,
     ProtoResponse,
 )
-
+from hololoom.apps.departments.proto.domain.events import (
+    ProtoEvent,
+    ProtoEventType,
+)
 from hololoom.apps.departments.proto.domain.session import (
     ConversationTurn,
     ProtoSession,
-)
-
-from hololoom.apps.departments.proto.domain.events import (
-    ProtoEventType,
-    ProtoEvent,
 )
 
 __all__ = [

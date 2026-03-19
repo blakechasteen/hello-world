@@ -11,9 +11,10 @@ Research:
 - Pearl (2009): Causality - Counterfactual reasoning foundations
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Callable, Set
 from enum import Enum
+from typing import Any
 
 try:
     import torch
@@ -35,9 +36,9 @@ class CounterfactualMethod(Enum):
 @dataclass
 class Counterfactual:
     """A counterfactual explanation"""
-    original: Dict[str, Any]  # Original input
-    counterfactual: Dict[str, Any]  # Modified input
-    changes: Dict[str, tuple]  # Changes: {feature: (old_value, new_value)}
+    original: dict[str, Any]  # Original input
+    counterfactual: dict[str, Any]  # Modified input
+    changes: dict[str, tuple]  # Changes: {feature: (old_value, new_value)}
 
     # Predictions
     original_prediction: Any
@@ -93,10 +94,10 @@ class CounterfactualGenerator:
 
     def __init__(
         self,
-        model: Optional[Callable] = None,
+        model: Callable | None = None,
         method: CounterfactualMethod = CounterfactualMethod.MINIMAL_EDIT,
         max_changes: int = 3,
-        twin_network: Optional[Any] = None  # From Layer 4
+        twin_network: Any | None = None  # From Layer 4
     ):
         """
         Args:
@@ -112,11 +113,11 @@ class CounterfactualGenerator:
 
     def generate(
         self,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         target_prediction: Any,
-        current_prediction: Optional[Any] = None,
+        current_prediction: Any | None = None,
         num_counterfactuals: int = 1
-    ) -> List[Counterfactual]:
+    ) -> list[Counterfactual]:
         """
         Generate counterfactual explanations.
 
@@ -140,10 +141,10 @@ class CounterfactualGenerator:
 
     def _twin_network_counterfactual(
         self,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         target_prediction: Any,
         num_counterfactuals: int
-    ) -> List[Counterfactual]:
+    ) -> list[Counterfactual]:
         """
         Use twin networks (Layer 4) for exact counterfactual reasoning.
 
@@ -191,10 +192,10 @@ class CounterfactualGenerator:
 
     def _minimal_edit_counterfactual(
         self,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         target_prediction: Any,
         num_counterfactuals: int = 1
-    ) -> List[Counterfactual]:
+    ) -> list[Counterfactual]:
         """
         Find minimal edits (fewest feature changes) to flip prediction.
 
@@ -268,10 +269,10 @@ class CounterfactualGenerator:
 
     def _diverse_counterfactuals(
         self,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         target_prediction: Any,
         num_counterfactuals: int
-    ) -> List[Counterfactual]:
+    ) -> list[Counterfactual]:
         """
         Generate diverse counterfactuals (DiCE approach).
 
@@ -298,9 +299,9 @@ class CounterfactualGenerator:
 
     def _generate_single_diverse_cf(
         self,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         target_prediction: Any,
-        avoid_features: Set[str]
+        avoid_features: set[str]
     ) -> Counterfactual:
         """Generate single diverse counterfactual avoiding certain features"""
         modified = features.copy()
@@ -336,17 +337,17 @@ class CounterfactualGenerator:
 
     def _greedy_search_counterfactual(
         self,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         target_prediction: Any
-    ) -> List[Counterfactual]:
+    ) -> list[Counterfactual]:
         """Simple greedy search fallback"""
         return self._minimal_edit_counterfactual(features, target_prediction, num_counterfactuals=1)
 
     def _generate_intervention(
         self,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         seed: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate intervention for twin network"""
         import random
         random.seed(seed)
@@ -366,7 +367,7 @@ class CounterfactualGenerator:
         self,
         feature_name: str,
         current_value: Any
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Get candidate values for a feature"""
         if isinstance(current_value, bool):
             return [not current_value]
@@ -382,7 +383,7 @@ class CounterfactualGenerator:
         else:
             return [current_value]  # Can't change
 
-    def _evaluate_model(self, features: Dict[str, Any]) -> Any:
+    def _evaluate_model(self, features: dict[str, Any]) -> Any:
         """Evaluate model on features"""
         if self.model is None:
             return None
@@ -402,8 +403,8 @@ class CounterfactualGenerator:
 
     def _compute_distance(
         self,
-        features1: Dict[str, Any],
-        features2: Dict[str, Any]
+        features1: dict[str, Any],
+        features2: dict[str, Any]
     ) -> float:
         """Compute distance between two feature sets"""
         distance = 0.0
@@ -452,11 +453,11 @@ class CounterfactualGenerator:
 
 def find_counterfactuals(
     model: Callable,
-    features: Dict[str, Any],
+    features: dict[str, Any],
     target_prediction: Any,
     method: CounterfactualMethod = CounterfactualMethod.MINIMAL_EDIT,
     num_counterfactuals: int = 3
-) -> List[Counterfactual]:
+) -> list[Counterfactual]:
     """
     Convenience function to find counterfactuals.
 

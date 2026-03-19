@@ -16,10 +16,9 @@ Follows Edward Tufte's visualization principles:
 Philosophy: "Show the learning evolution."
 """
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
-from datetime import datetime
 import math
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -34,8 +33,8 @@ class ArmSnapshot:
     beta: float  # Beta distribution shape parameter (failures + prior)
     expected_reward: float  # α / (α + β), the posterior mean
     pull_count: int  # Total times this arm was selected
-    timestamp: Optional[float] = None  # Unix timestamp
-    metadata: Optional[Dict[str, Any]] = None  # Extra context
+    timestamp: float | None = None  # Unix timestamp
+    metadata: dict[str, Any] | None = None  # Extra context
 
     def __post_init__(self):
         """Validate data consistency."""
@@ -80,7 +79,7 @@ class StrategyEvolution:
     """Complete evolution of a single strategy over time."""
 
     strategy_name: str
-    snapshots: List[ArmSnapshot] = field(default_factory=list)
+    snapshots: list[ArmSnapshot] = field(default_factory=list)
 
     def add_snapshot(self, snapshot: ArmSnapshot) -> None:
         """Add a snapshot to the evolution."""
@@ -109,7 +108,7 @@ class StrategyEvolution:
         return variance < 0.01
 
     @property
-    def convergence_time(self) -> Optional[float]:
+    def convergence_time(self) -> float | None:
         """When did this strategy converge? Returns timestamp or None."""
         if len(self.snapshots) < 3:
             return None
@@ -167,7 +166,7 @@ class ThompsonEvolutionRenderer:
         """
         self.width = width
         self.height = height
-        self.evolutions: Dict[str, StrategyEvolution] = {}
+        self.evolutions: dict[str, StrategyEvolution] = {}
 
     def add_snapshot(self, snapshot: ArmSnapshot) -> None:
         """Add a Thompson Sampling snapshot.
@@ -184,7 +183,7 @@ class ThompsonEvolutionRenderer:
     def render_html(
         self,
         title: str = "Thompson Sampling Evolution",
-        subtitle: Optional[str] = None,
+        subtitle: str | None = None,
     ) -> str:
         """Render complete HTML visualization.
 
@@ -229,7 +228,7 @@ class ThompsonEvolutionRenderer:
     def _render_header(
         self,
         title: str,
-        subtitle: Optional[str] = None,
+        subtitle: str | None = None,
     ) -> str:
         """Render title and subtitle."""
         html = f'<div class="header">\n  <h1>{title}</h1>'
@@ -331,7 +330,7 @@ class ThompsonEvolutionRenderer:
 
     def _build_sparkline(
         self,
-        data: List[float],
+        data: list[float],
         width: int = 120,
         height: int = 30,
     ) -> str:
@@ -527,7 +526,7 @@ class ThompsonEvolutionRenderer:
 
     # ========== Data Analysis ==========
 
-    def get_convergence_info(self) -> Dict[str, Any]:
+    def get_convergence_info(self) -> dict[str, Any]:
         """Analyze convergence patterns.
 
         Returns:
@@ -896,10 +895,10 @@ body {
 
 
 def render_thompson_evolution(
-    strategies: List[str],
-    snapshots_per_strategy: Dict[str, List[tuple]],
+    strategies: list[str],
+    snapshots_per_strategy: dict[str, list[tuple]],
     title: str = "Thompson Sampling Evolution",
-    subtitle: Optional[str] = None,
+    subtitle: str | None = None,
 ) -> str:
     """Convenience function to render Thompson Sampling evolution.
 

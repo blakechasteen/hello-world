@@ -66,7 +66,7 @@ def calculate_total(items):
     return total
 """
 
-    print(f"Sample code to review:")
+    print("Sample code to review:")
     print(sample_code)
     print()
 
@@ -86,14 +86,14 @@ def calculate_total(items):
         print()
 
         if result.success:
-            print(f"SUCCESS!")
+            print("SUCCESS!")
             print()
-            print(f"Output:")
+            print("Output:")
             print("-"*80)
             print(result.output)
             print("-"*80)
             print()
-            print(f"Metadata:")
+            print("Metadata:")
             print(f"  Confidence: {result.confidence:.2f}")
             print(f"  Iterations: {result.iterations}")
             print(f"  Strategy: {result.strategy_used}")

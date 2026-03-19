@@ -17,42 +17,32 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, Any, List, Optional, Tuple
-from dataclasses import dataclass, field
 import asyncio
+from dataclasses import dataclass, field
+from typing import Any
 
-from . import VisualizationMode, detect_visualization_mode
-from .scene_composer import SceneComposer, ConversationContext
+from . import VisualizationMode
 from .conversation_memory import (
-    ConversationMemory,
-    EntityState,
     EntityType,
-    get_conversation_memory,
     extract_entities_from_text,
     extract_relationships_from_text,
+    get_conversation_memory,
 )
+from .layer_composer import (
+    LayerComposer,
+)
+from .scene_composer import SceneComposer
 from .semantic_extractor import (
-    SemanticExtractor,
     SemanticProfile,
-    EnrichedScene,
     get_semantic_extractor,
 )
 from .visual_styles import (
-    VisualStyle,
     StyleName,
+    VisualStyle,
     get_style,
     get_style_for_mode,
     get_style_for_mood,
 )
-from .layer_composer import (
-    LayerComposer,
-    LayerType,
-    ComposedScene,
-    compose_layered_scene,
-)
-from .ui_visualizer import extract_ui_from_text
-from .narrative_visualizer import extract_narrative_from_text
-from .architecture_visualizer import extract_architecture_from_text
 
 
 @dataclass
@@ -72,7 +62,7 @@ class ComposerConfig:
     semantic_threshold: float = 0.3
 
     # Style settings
-    default_style: Optional[StyleName] = None
+    default_style: StyleName | None = None
     auto_style_from_mood: bool = True
 
     # Layer settings
@@ -94,20 +84,20 @@ class EnhancedScene:
     """
     mode: str
     title: str
-    elements: List[Dict[str, Any]]
-    camera: Dict[str, Any]
-    lighting: Dict[str, Any]
-    background: Dict[str, Any]
+    elements: list[dict[str, Any]]
+    camera: dict[str, Any]
+    lighting: dict[str, Any]
+    background: dict[str, Any]
 
     # Enhanced data
-    style: Optional[VisualStyle] = None
-    semantic_profile: Optional[SemanticProfile] = None
-    persistent_entities: List[Dict[str, Any]] = field(default_factory=list)
-    layer_config: Optional[Dict[str, Any]] = None
-    transition: Optional[Dict[str, Any]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    style: VisualStyle | None = None
+    semantic_profile: SemanticProfile | None = None
+    persistent_entities: list[dict[str, Any]] = field(default_factory=list)
+    layer_config: dict[str, Any] | None = None
+    transition: dict[str, Any] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         result = {
             'mode': self.mode,
@@ -165,7 +155,7 @@ class EnhancedSceneComposer:
 
     def __init__(
         self,
-        config: Optional[ComposerConfig] = None,
+        config: ComposerConfig | None = None,
         hololoom=None,
     ):
         self.config = config or ComposerConfig()
@@ -177,15 +167,15 @@ class EnhancedSceneComposer:
         self.layer_composer = LayerComposer() if self.config.enable_layers else None
 
         # State
-        self._current_style: Optional[VisualStyle] = None
-        self._active_layers: List[Dict[str, Any]] = []
+        self._current_style: VisualStyle | None = None
+        self._active_layers: list[dict[str, Any]] = []
 
     async def compose_async(
         self,
         text: str,
-        force_mode: Optional[str] = None,
-        force_style: Optional[str] = None,
-        additional_scenes: Optional[List[Dict[str, Any]]] = None,
+        force_mode: str | None = None,
+        force_style: str | None = None,
+        additional_scenes: list[dict[str, Any]] | None = None,
     ) -> EnhancedScene:
         """
         Compose an enhanced scene asynchronously.
@@ -273,9 +263,9 @@ class EnhancedSceneComposer:
     def compose(
         self,
         text: str,
-        force_mode: Optional[str] = None,
-        force_style: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        force_mode: str | None = None,
+        force_style: str | None = None,
+    ) -> dict[str, Any]:
         """
         Compose an enhanced scene synchronously.
 
@@ -306,9 +296,9 @@ class EnhancedSceneComposer:
     def _select_style(
         self,
         mode: str,
-        profile: Optional[SemanticProfile],
-        force_style: Optional[str],
-    ) -> Optional[VisualStyle]:
+        profile: SemanticProfile | None,
+        force_style: str | None,
+    ) -> VisualStyle | None:
         """Select appropriate visual style."""
         if not self.config.enable_styles:
             return None
@@ -333,16 +323,16 @@ class EnhancedSceneComposer:
 
     def _apply_style(
         self,
-        elements: List[Dict[str, Any]],
-        style: Optional[VisualStyle],
-    ) -> List[Dict[str, Any]]:
+        elements: list[dict[str, Any]],
+        style: VisualStyle | None,
+    ) -> list[dict[str, Any]]:
         """Apply visual style to elements."""
         if not style:
             return elements
 
         return [style.apply_to_element(elem) for elem in elements]
 
-    def _get_persistent_entities(self, current_mode: str) -> List[Dict[str, Any]]:
+    def _get_persistent_entities(self, current_mode: str) -> list[dict[str, Any]]:
         """Get persistent entities relevant to current mode."""
         if not self.memory:
             return []
@@ -375,9 +365,9 @@ class EnhancedSceneComposer:
 
     def _merge_persistent_entities(
         self,
-        elements: List[Dict[str, Any]],
-        persistent: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        elements: list[dict[str, Any]],
+        persistent: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Merge persistent entities with new elements."""
         # Create lookup of existing elements by name
         existing_names = {
@@ -405,9 +395,9 @@ class EnhancedSceneComposer:
 
     def _apply_semantic_effects(
         self,
-        elements: List[Dict[str, Any]],
+        elements: list[dict[str, Any]],
         profile: SemanticProfile,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Apply semantic-derived effects to elements."""
         result = []
 
@@ -432,10 +422,10 @@ class EnhancedSceneComposer:
 
     def _generate_lighting(
         self,
-        style: Optional[VisualStyle],
-        profile: Optional[SemanticProfile],
+        style: VisualStyle | None,
+        profile: SemanticProfile | None,
         base_lighting: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate lighting configuration."""
         if style:
             lighting = {
@@ -480,10 +470,10 @@ class EnhancedSceneComposer:
 
     def _generate_background(
         self,
-        style: Optional[VisualStyle],
-        profile: Optional[SemanticProfile],
+        style: VisualStyle | None,
+        profile: SemanticProfile | None,
         base_background: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate background configuration."""
         if style:
             return {
@@ -496,7 +486,7 @@ class EnhancedSceneComposer:
 
         return {'type': 'gradient', 'colors': ['#1a1a2e', '#16213e']}
 
-    def get_memory_state(self) -> Dict[str, Any]:
+    def get_memory_state(self) -> dict[str, Any]:
         """Get current memory state for debugging."""
         if not self.memory:
             return {'enabled': False}
@@ -519,11 +509,11 @@ class EnhancedSceneComposer:
 
 
 # Singleton instance
-_enhanced_composer: Optional[EnhancedSceneComposer] = None
+_enhanced_composer: EnhancedSceneComposer | None = None
 
 
 def get_enhanced_composer(
-    config: Optional[ComposerConfig] = None,
+    config: ComposerConfig | None = None,
     hololoom=None,
 ) -> EnhancedSceneComposer:
     """Get or create enhanced scene composer singleton."""
@@ -535,9 +525,9 @@ def get_enhanced_composer(
 
 def compose_enhanced_scene(
     text: str,
-    force_mode: Optional[str] = None,
-    force_style: Optional[str] = None,
-) -> Dict[str, Any]:
+    force_mode: str | None = None,
+    force_style: str | None = None,
+) -> dict[str, Any]:
     """
     Convenience function to compose an enhanced scene.
 

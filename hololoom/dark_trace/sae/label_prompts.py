@@ -15,8 +15,7 @@ Created: 2025-12-28
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
-
+from typing import Any
 
 # =============================================================================
 # Single Feature Labeling
@@ -183,16 +182,16 @@ Explanation: [Your analysis of the relationship]
 class LabelPromptContext:
     """Context for building label prompts."""
     feature_idx: int
-    examples: List[str]
-    activation_values: List[float]
+    examples: list[str]
+    activation_values: list[float]
     activation_pattern: str = ""
-    semantic_alignments: Dict[str, float] = None
-    primary_semantic_axis: Optional[str] = None
+    semantic_alignments: dict[str, float] = None
+    primary_semantic_axis: str | None = None
     alignment_score: float = 0.0
 
     # For verification
-    current_description: Optional[str] = None
-    current_confidence: Optional[float] = None
+    current_description: str | None = None
+    current_confidence: float | None = None
 
     # Metadata
     max_example_length: int = 200
@@ -268,7 +267,7 @@ class LabelPromptBuilder:
 
     def build_batch_prompt(
         self,
-        contexts: List[LabelPromptContext],
+        contexts: list[LabelPromptContext],
         max_features: int = 10,
     ) -> str:
         """
@@ -384,8 +383,8 @@ class LabelPromptBuilder:
 
     def _format_examples(
         self,
-        examples: List[str],
-        activation_values: List[float],
+        examples: list[str],
+        activation_values: list[float],
         max_length: int = 200,
         max_count: int = 10,
     ) -> str:
@@ -459,15 +458,15 @@ class ParsedLabelResponse:
     """Parsed response from labeling prompt."""
     description: str
     confidence: float
-    reasoning: Optional[str] = None
-    primary_concept: Optional[str] = None
+    reasoning: str | None = None
+    primary_concept: str | None = None
 
     # For verification
-    verdict: Optional[str] = None  # VERIFIED, REFINED, UNCLEAR
+    verdict: str | None = None  # VERIFIED, REFINED, UNCLEAR
 
     # For comparison
-    relationship: Optional[str] = None  # SYNONYMOUS, RELATED, DISTINCT, COMPOSITIONAL
-    similarity_score: Optional[float] = None
+    relationship: str | None = None  # SYNONYMOUS, RELATED, DISTINCT, COMPOSITIONAL
+    similarity_score: float | None = None
 
 
 class LabelResponseParser:
@@ -527,7 +526,7 @@ class LabelResponseParser:
     def parse_batch_response(
         self,
         response: str,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Parse JSON response from batch labeling.
 

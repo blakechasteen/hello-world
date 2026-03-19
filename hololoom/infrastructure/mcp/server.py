@@ -15,29 +15,25 @@ Features:
 """
 
 import asyncio
+import hashlib
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
-import hashlib
+from typing import Any
 
-from hololoom.infrastructure.sql import SQLBackend, SQLConfig, create_sql_backend
 from hololoom.infrastructure.mcp.protocol import (
+    AVAILABLE_TOOLS,
+    ErrorCode,
+    MCPError,
     MCPRequest,
     MCPResponse,
-    MCPError,
-    Session,
     RequestType,
-    ResponseStatus,
-    ErrorCode,
+    Session,
     ToolName,
-    AVAILABLE_TOOLS,
-    QUERY_SQL_TOOL,
-    create_success_response,
     create_error_response,
+    create_success_response,
     validate_query_sql_params,
-    generate_session_id
 )
-
+from hololoom.infrastructure.sql import SQLBackend, SQLConfig, create_sql_backend
 
 logger = logging.getLogger(__name__)
 
@@ -61,10 +57,10 @@ class MCPServer:
             sql_backend: Connected SQL backend
         """
         self.sql_backend = sql_backend
-        self.sessions: Dict[str, Session] = {}
+        self.sessions: dict[str, Session] = {}
         self.request_count = 0
         self.error_count = 0
-        self._cleanup_task: Optional[asyncio.Task] = None
+        self._cleanup_task: asyncio.Task | None = None
 
     async def __aenter__(self):
         """Async context manager entry"""
@@ -340,7 +336,7 @@ class MCPServer:
             except Exception as e:
                 logger.error(f"Session cleanup error: {e}", exc_info=True)
 
-    def get_session_stats(self) -> Dict[str, Any]:
+    def get_session_stats(self) -> dict[str, Any]:
         """Get session statistics"""
         active_sessions = sum(
             1 for s in self.sessions.values()
@@ -361,7 +357,7 @@ class MCPServer:
 # ============================================================================
 
 async def create_mcp_server(
-    sql_config: Optional[SQLConfig] = None
+    sql_config: SQLConfig | None = None
 ) -> MCPServer:
     """
     Create MCP server with SQL backend

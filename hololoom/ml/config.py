@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class NormalizationMethod(Enum):
@@ -62,15 +62,15 @@ class DataConfig:
 
     test_size: float = 0.2
     val_size: float = 0.0  # 0 means no separate validation set
-    random_state: Optional[int] = 42
+    random_state: int | None = 42
     normalization: NormalizationMethod = NormalizationMethod.STANDARD
     missing_value_strategy: MissingValueStrategy = MissingValueStrategy.MEAN
-    missing_fill_value: Optional[float] = None
+    missing_fill_value: float | None = None
     categorical_encoding: str = "onehot"
     max_categories: int = 20
     shuffle: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "test_size": self.test_size,
@@ -101,10 +101,10 @@ class LinearRegressionConfig:
 
     fit_intercept: bool = True
     copy_X: bool = True
-    n_jobs: Optional[int] = None
+    n_jobs: int | None = None
     positive: bool = False
 
-    def to_sklearn_params(self) -> Dict[str, Any]:
+    def to_sklearn_params(self) -> dict[str, Any]:
         """Convert to sklearn parameters."""
         return {
             "fit_intercept": self.fit_intercept,
@@ -131,11 +131,11 @@ class RidgeConfig:
     alpha: float = 1.0
     fit_intercept: bool = True
     solver: str = "auto"
-    max_iter: Optional[int] = None
+    max_iter: int | None = None
     tol: float = 1e-4
-    random_state: Optional[int] = None
+    random_state: int | None = None
 
-    def to_sklearn_params(self) -> Dict[str, Any]:
+    def to_sklearn_params(self) -> dict[str, Any]:
         """Convert to sklearn parameters."""
         params = {
             "alpha": self.alpha,
@@ -173,9 +173,9 @@ class LassoConfig:
     warm_start: bool = False
     positive: bool = False
     selection: str = "cyclic"
-    random_state: Optional[int] = None
+    random_state: int | None = None
 
-    def to_sklearn_params(self) -> Dict[str, Any]:
+    def to_sklearn_params(self) -> dict[str, Any]:
         """Convert to sklearn parameters."""
         params = {
             "alpha": self.alpha,
@@ -218,7 +218,7 @@ class TrainingConfig:
     tuning_cv_folds: int = 3
     n_jobs: int = -1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "cv_folds": self.cv_folds,
@@ -259,7 +259,7 @@ class RegistryConfig:
         if isinstance(self.storage_path, str):
             self.storage_path = Path(self.storage_path)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "storage_path": str(self.storage_path),
@@ -296,7 +296,7 @@ class ValidationConfig:
     check_constant_features: bool = True
     check_target_distribution: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "strictness": self.strictness.value,
@@ -344,7 +344,7 @@ class MLSystemConfig:
     log_level: str = "INFO"
 
     @classmethod
-    def default(cls) -> "MLSystemConfig":
+    def default(cls) -> MLSystemConfig:
         """
         Create default configuration.
 
@@ -353,7 +353,7 @@ class MLSystemConfig:
         return cls()
 
     @classmethod
-    def fast(cls) -> "MLSystemConfig":
+    def fast(cls) -> MLSystemConfig:
         """
         Create fast configuration.
 
@@ -377,7 +377,7 @@ class MLSystemConfig:
         )
 
     @classmethod
-    def research(cls) -> "MLSystemConfig":
+    def research(cls) -> MLSystemConfig:
         """
         Create research configuration.
 
@@ -406,7 +406,7 @@ class MLSystemConfig:
             log_level="DEBUG",
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert entire configuration to dictionary."""
         return {
             "data": self.data.to_dict(),

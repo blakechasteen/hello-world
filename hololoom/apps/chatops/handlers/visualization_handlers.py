@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Visualization Handlers for Matrix ChatOps
 ==========================================
@@ -22,7 +23,7 @@ Created: 2025-12-05
 """
 
 import logging
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
@@ -72,7 +73,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -95,16 +98,16 @@ class SessionMetrics:
 
     def __init__(self, max_history: int = 100):
         self.max_history = max_history
-        self.confidences: List[float] = []
-        self.cached: List[bool] = []
-        self.query_texts: List[str] = []
+        self.confidences: list[float] = []
+        self.cached: list[bool] = []
+        self.query_texts: list[str] = []
         self.cache_hits: int = 0
         self.cache_misses: int = 0
         self.total_queries: int = 0
-        self.cached_latencies: List[float] = []
-        self.uncached_latencies: List[float] = []
-        self.stage_timings: List[Dict[str, float]] = []
-        self.rag_results: List[Dict[str, Any]] = []
+        self.cached_latencies: list[float] = []
+        self.uncached_latencies: list[float] = []
+        self.stage_timings: list[dict[str, float]] = []
+        self.rag_results: list[dict[str, Any]] = []
 
     def record_query(
         self,
@@ -112,8 +115,8 @@ class SessionMetrics:
         cached: bool,
         query_text: str,
         latency_ms: float,
-        stage_timings: Optional[Dict[str, float]] = None,
-        rag_result: Optional[Dict[str, Any]] = None
+        stage_timings: dict[str, float] | None = None,
+        rag_result: dict[str, Any] | None = None
     ) -> None:
         """Record metrics from a query."""
         # Confidence tracking
@@ -231,7 +234,7 @@ async def handle_dashboard_confidence(
         )
 
         # Return summary with link to full dashboard
-        summary = f"📈 **Confidence Trajectory**\n\n"
+        summary = "📈 **Confidence Trajectory**\n\n"
         summary += f"**Queries analyzed:** {len(metrics.confidences)}\n"
 
         if metrics.confidences:
@@ -303,7 +306,7 @@ async def handle_dashboard_cache(
         )
 
         # Build summary
-        summary = f"💾 **Cache Performance**\n\n"
+        summary = "💾 **Cache Performance**\n\n"
         summary += f"**Hit Rate:** {hit_rate:.1%}\n"
         summary += f"**Total Queries:** {metrics.total_queries}\n"
         summary += f"**Cache Hits:** {metrics.cache_hits}\n"
@@ -384,7 +387,7 @@ async def handle_dashboard_waterfall(
         total_duration = cumulative
 
         # Build summary
-        summary = f"📊 **Pipeline Waterfall**\n\n"
+        summary = "📊 **Pipeline Waterfall**\n\n"
         summary += f"**Total Duration:** {total_duration:.1f}ms\n"
         summary += f"**Stages:** {len(stages)}\n\n"
 
@@ -464,13 +467,13 @@ async def handle_dashboard_knowledge(
         )
 
         # Build summary
-        summary = f"🕸️ **Knowledge Graph**\n\n"
+        summary = "🕸️ **Knowledge Graph**\n\n"
         summary += f"**Total Nodes:** {kg.number_of_nodes()}\n"
         summary += f"**Total Edges:** {kg.number_of_edges()}\n"
         summary += f"**Displayed:** {len(nodes)} nodes, {len(edges)} edges\n"
 
         # Edge type breakdown
-        edge_types: Dict[str, int] = {}
+        edge_types: dict[str, int] = {}
         for u, v, data in kg.edges(data=True):
             edge_type = data.get('relation', 'UNKNOWN')
             edge_types[edge_type] = edge_types.get(edge_type, 0) + 1
@@ -538,7 +541,7 @@ async def handle_dashboard_rag(
         html = dashboard.render()
 
         # Build summary
-        summary = f"📚 **RAG Performance Dashboard**\n\n"
+        summary = "📚 **RAG Performance Dashboard**\n\n"
         summary += f"**Queries Analyzed:** {len(results)}\n"
 
         if results:
@@ -549,7 +552,7 @@ async def handle_dashboard_rag(
             summary += f"**Avg Sources:** {avg_sources:.1f}\n"
 
             # Mode breakdown
-            modes: Dict[str, int] = {}
+            modes: dict[str, int] = {}
             for r in results:
                 modes[r.reasoning_mode] = modes.get(r.reasoning_mode, 0) + 1
 

@@ -18,7 +18,8 @@ Resources:
 
 import json
 import logging
-from typing import Any, Dict, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,6 @@ except ImportError:
     logger.info("MCP SDK not installed — mcp_bus_server unavailable")
 
 from .bus import MemoryBus, MemoryItem, MemoryQuery
-from .bus_config import MemoryBusConfig
 
 
 def create_mcp_bus_server(

@@ -41,8 +41,9 @@ Usage:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable, Set
 from enum import Enum
+from typing import Any
+
 import numpy as np
 import torch
 
@@ -136,28 +137,28 @@ class PatchResult:
     recovery_rate: float  # How much of source behavior was recovered
 
     # Patch details
-    features_patched: List[str]
-    patch_points: List[PatchPoint]
+    features_patched: list[str]
+    patch_points: list[PatchPoint]
     method: PatchingMethod
 
     # Statistics
     is_significant: bool
-    p_value: Optional[float]
-    confidence_interval: Optional[Tuple[float, float]]
+    p_value: float | None
+    confidence_interval: tuple[float, float] | None
 
     # Metadata
     source_input: str
     target_input: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def summary(self) -> str:
         """Generate human-readable summary."""
         lines = [
-            f"Activation Patching Result",
-            f"=" * 40,
+            "Activation Patching Result",
+            "=" * 40,
             f"Features patched: {len(self.features_patched)}",
             f"Method: {self.method.value}",
-            f"",
+            "",
             f"Effect on target: {self.effect_on_target:.4f}",
             f"Recovery rate: {self.recovery_rate:.2%}",
             f"Significant: {'Yes' if self.is_significant else 'No'}",
@@ -201,17 +202,17 @@ class CausalTrace:
     """Result of causal tracing analysis."""
 
     # Graph structure
-    nodes: List[CausalNode]
-    edges: List[CausalEdge]
+    nodes: list[CausalNode]
+    edges: list[CausalEdge]
 
     # Summary statistics
-    critical_features: List[str]  # Features with significant causal effect
-    bottleneck_features: List[str]  # High incoming, low outgoing flow
-    hub_features: List[str]  # High both incoming and outgoing
+    critical_features: list[str]  # Features with significant causal effect
+    bottleneck_features: list[str]  # High incoming, low outgoing flow
+    hub_features: list[str]  # High both incoming and outgoing
 
     # Layer-wise analysis
-    layer_importance: Dict[int, float]  # Importance score per layer
-    position_importance: Dict[int, float]  # Importance score per position
+    layer_importance: dict[int, float]  # Importance score per layer
+    position_importance: dict[int, float]  # Importance score per position
 
     # Overall metrics
     total_causal_effect: float
@@ -222,9 +223,9 @@ class CausalTrace:
     source_input: str
     target_input: str
     trace_direction: TraceDirection
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def get_critical_path(self) -> List[str]:
+    def get_critical_path(self) -> list[str]:
         """Get the most important causal pathway."""
         # Sort critical features by causal effect
         critical_with_effect = [
@@ -238,17 +239,17 @@ class CausalTrace:
     def summary(self) -> str:
         """Generate human-readable summary."""
         lines = [
-            f"Causal Trace Analysis",
-            f"=" * 40,
+            "Causal Trace Analysis",
+            "=" * 40,
             f"Total nodes: {len(self.nodes)}",
             f"Total edges: {len(self.edges)}",
             f"Critical features: {len(self.critical_features)}",
-            f"",
+            "",
             f"Total causal effect: {self.total_causal_effect:.4f}",
             f"Localization score: {self.localization_score:.4f}",
             f"Distinct pathways: {self.pathway_count}",
-            f"",
-            f"Top critical features:",
+            "",
+            "Top critical features:",
         ]
 
         for feature in self.critical_features[:5]:
@@ -276,13 +277,13 @@ class InformationFlow:
     """Result of information flow analysis."""
 
     # Flow graph
-    flow_nodes: List[FlowNode]
+    flow_nodes: list[FlowNode]
     flow_matrix: np.ndarray  # [n_features, n_features] flow strengths
 
     # Summary
-    source_features: List[str]  # Net information producers
-    sink_features: List[str]  # Net information consumers
-    bottleneck_features: List[str]  # High throughput, constrained capacity
+    source_features: list[str]  # Net information producers
+    sink_features: list[str]  # Net information consumers
+    bottleneck_features: list[str]  # High throughput, constrained capacity
 
     # Metrics
     total_flow: float
@@ -290,12 +291,12 @@ class InformationFlow:
     redundancy_score: float  # How much parallel flow exists
 
     # Per-input analysis (if multiple inputs)
-    per_input_flows: Optional[Dict[str, Dict[str, float]]]
+    per_input_flows: dict[str, dict[str, float]] | None
 
     # Metadata
-    inputs_analyzed: List[str]
-    features_analyzed: List[str]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    inputs_analyzed: list[str]
+    features_analyzed: list[str]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def get_flow(self, source: str, target: str) -> float:
         """Get flow strength between two features."""
@@ -309,15 +310,15 @@ class InformationFlow:
     def summary(self) -> str:
         """Generate human-readable summary."""
         lines = [
-            f"Information Flow Analysis",
-            f"=" * 40,
+            "Information Flow Analysis",
+            "=" * 40,
             f"Features analyzed: {len(self.features_analyzed)}",
             f"Inputs analyzed: {len(self.inputs_analyzed)}",
-            f"",
+            "",
             f"Total flow: {self.total_flow:.4f}",
             f"Flow efficiency: {self.flow_efficiency:.2%}",
             f"Redundancy score: {self.redundancy_score:.4f}",
-            f"",
+            "",
             f"Source features (net producers): {len(self.source_features)}",
             f"Sink features (net consumers): {len(self.sink_features)}",
             f"Bottleneck features: {len(self.bottleneck_features)}",
@@ -354,7 +355,7 @@ class ActivationPatcher:
         self,
         model: Any,
         probe: Any,  # MindProbe for activation access
-        config: Optional[PatchConfig] = None,
+        config: PatchConfig | None = None,
     ):
         """
         Initialize activation patcher.
@@ -369,14 +370,14 @@ class ActivationPatcher:
         self.config = config or PatchConfig.default()
 
         # Activation cache
-        self._activation_cache: Dict[str, Dict[str, torch.Tensor]] = {}
+        self._activation_cache: dict[str, dict[str, torch.Tensor]] = {}
 
     def patch(
         self,
         source_input: str,
         target_input: str,
-        features: List[str],
-        method: Optional[PatchingMethod] = None,
+        features: list[str],
+        method: PatchingMethod | None = None,
     ) -> PatchResult:
         """
         Patch activations from source to target context.
@@ -462,8 +463,8 @@ class ActivationPatcher:
         self,
         source_input: str,
         target_input: str,
-        features: Optional[List[str]] = None,
-        direction: Optional[TraceDirection] = None,
+        features: list[str] | None = None,
+        direction: TraceDirection | None = None,
     ) -> CausalTrace:
         """
         Trace causal pathway from input to output.
@@ -552,8 +553,8 @@ class ActivationPatcher:
 
     def analyze_information_flow(
         self,
-        inputs: List[str],
-        features: List[str],
+        inputs: list[str],
+        features: list[str],
     ) -> InformationFlow:
         """
         Analyze information flow between features.
@@ -640,9 +641,9 @@ class ActivationPatcher:
         self,
         source_input: str,
         target_input: str,
-        features: List[str],
-        sweep_values: Optional[List[float]] = None,
-    ) -> List[PatchResult]:
+        features: list[str],
+        sweep_values: list[float] | None = None,
+    ) -> list[PatchResult]:
         """
         Sweep interpolation values for patching.
 
@@ -682,7 +683,7 @@ class ActivationPatcher:
     # Private Methods
     # =========================================================================
 
-    def _get_activations(self, input_text: str) -> Dict[str, torch.Tensor]:
+    def _get_activations(self, input_text: str) -> dict[str, torch.Tensor]:
         """Get activations for input, using cache if available."""
         if self.config.cache_activations and input_text in self._activation_cache:
             return self._activation_cache[input_text]
@@ -717,7 +718,7 @@ class ActivationPatcher:
     def _run_with_patches(
         self,
         input_text: str,
-        patches: Dict[str, torch.Tensor],
+        patches: dict[str, torch.Tensor],
     ) -> Any:
         """Run model with activation patches applied."""
         if hasattr(self.probe, 'run_with_patches'):
@@ -729,7 +730,7 @@ class ActivationPatcher:
     def _run_with_hooks(
         self,
         input_text: str,
-        patches: Dict[str, torch.Tensor],
+        patches: dict[str, torch.Tensor],
     ) -> Any:
         """Run model with hook-based activation patching."""
         handles = []
@@ -821,9 +822,9 @@ class ActivationPatcher:
         self,
         source_input: str,
         target_input: str,
-        features: List[str],
+        features: list[str],
         observed_effect: float,
-    ) -> Tuple[bool, Optional[float], Optional[Tuple[float, float]]]:
+    ) -> tuple[bool, float | None, tuple[float, float] | None]:
         """Test statistical significance of patching effect."""
         # Generate null distribution via noised runs
         null_effects = []
@@ -861,7 +862,7 @@ class ActivationPatcher:
         self,
         source_input: str,
         target_input: str,
-        features: List[str],
+        features: list[str],
     ) -> float:
         """Compute effect with noise added."""
         # Add noise to source activations before patching
@@ -887,13 +888,13 @@ class ActivationPatcher:
             return self.probe.get_feature_layer(feature_id)
         return 0  # Default to layer 0
 
-    def _get_feature_module(self, feature_id: str) -> Optional[torch.nn.Module]:
+    def _get_feature_module(self, feature_id: str) -> torch.nn.Module | None:
         """Get the module corresponding to a feature."""
         if hasattr(self.probe, 'get_feature_module'):
             return self.probe.get_feature_module(feature_id)
         return None
 
-    def _get_all_features(self) -> List[str]:
+    def _get_all_features(self) -> list[str]:
         """Get all available feature IDs."""
         if hasattr(self.probe, 'get_all_features'):
             return self.probe.get_all_features()
@@ -901,9 +902,9 @@ class ActivationPatcher:
 
     def _build_causal_edges(
         self,
-        nodes: List[CausalNode],
+        nodes: list[CausalNode],
         direction: TraceDirection,
-    ) -> List[CausalEdge]:
+    ) -> list[CausalEdge]:
         """Build causal edge structure."""
         edges = []
 
@@ -954,9 +955,9 @@ class ActivationPatcher:
 
     def _find_bottlenecks(
         self,
-        nodes: List[CausalNode],
-        edges: List[CausalEdge],
-    ) -> List[str]:
+        nodes: list[CausalNode],
+        edges: list[CausalEdge],
+    ) -> list[str]:
         """Find bottleneck features (high incoming, low outgoing)."""
         incoming = {n.feature_id: 0.0 for n in nodes}
         outgoing = {n.feature_id: 0.0 for n in nodes}
@@ -977,9 +978,9 @@ class ActivationPatcher:
 
     def _find_hubs(
         self,
-        nodes: List[CausalNode],
-        edges: List[CausalEdge],
-    ) -> List[str]:
+        nodes: list[CausalNode],
+        edges: list[CausalEdge],
+    ) -> list[str]:
         """Find hub features (high both incoming and outgoing)."""
         incoming = {n.feature_id: 0.0 for n in nodes}
         outgoing = {n.feature_id: 0.0 for n in nodes}
@@ -1000,8 +1001,8 @@ class ActivationPatcher:
 
     def _compute_layer_importance(
         self,
-        nodes: List[CausalNode],
-    ) -> Dict[int, float]:
+        nodes: list[CausalNode],
+    ) -> dict[int, float]:
         """Compute importance score per layer."""
         by_layer = {}
         for node in nodes:
@@ -1016,8 +1017,8 @@ class ActivationPatcher:
 
     def _compute_position_importance(
         self,
-        nodes: List[CausalNode],
-    ) -> Dict[int, float]:
+        nodes: list[CausalNode],
+    ) -> dict[int, float]:
         """Compute importance score per position."""
         by_position = {}
         for node in nodes:
@@ -1030,7 +1031,7 @@ class ActivationPatcher:
             for pos, effects in by_position.items()
         }
 
-    def _compute_localization(self, nodes: List[CausalNode]) -> float:
+    def _compute_localization(self, nodes: list[CausalNode]) -> float:
         """Compute how localized causal effects are (Gini coefficient)."""
         effects = sorted([n.causal_effect for n in nodes], reverse=True)
         if not effects or sum(effects) == 0:
@@ -1040,7 +1041,7 @@ class ActivationPatcher:
         cumsum = np.cumsum(effects)
         return float((n + 1 - 2 * sum(cumsum) / cumsum[-1]) / n)
 
-    def _count_pathways(self, edges: List[CausalEdge]) -> int:
+    def _count_pathways(self, edges: list[CausalEdge]) -> int:
         """Count distinct causal pathways."""
         # Simplified: count connected components
         if not edges:
@@ -1071,7 +1072,7 @@ class ActivationPatcher:
 
     def _measure_pairwise_flow(
         self,
-        inputs: List[str],
+        inputs: list[str],
         src_feature: str,
         tgt_feature: str,
     ) -> float:
@@ -1138,8 +1139,8 @@ class ActivationPatcher:
     def _analyze_single_input_flow(
         self,
         input_text: str,
-        features: List[str],
-    ) -> Dict[str, float]:
+        features: list[str],
+    ) -> dict[str, float]:
         """Analyze flow for a single input."""
         flows = {}
         for feature in features:

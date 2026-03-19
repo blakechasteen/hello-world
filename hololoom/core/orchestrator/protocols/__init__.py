@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom Orchestrator Protocols Package
 ========================================
@@ -55,35 +54,36 @@ Date: 2025-12-09
 """
 
 # Stage Protocols (Phase 2)
-from .stage import (
-    StageExecutorProtocol,
-    BaseStageExecutor,
-)
-
 # Component Protocols (Phase 3)
 from .components import (
-    PatternSelectorProtocol,
-    ThreadSelectorProtocol,
-    FeatureExtractorProtocol,
     ConvergenceProtocol,
-    ToolExecutorProtocol,
+    FeatureExtractorProtocol,
+    PatternSelectorProtocol,
     SpacetimeAssemblerProtocol,
+    ThreadSelectorProtocol,
+    ToolExecutorProtocol,
 )
 
 # Default Implementations (Phase 3)
 from .defaults import (
-    DefaultPatternSelector,
-    DefaultThreadSelector,
-    DefaultFeatureExtractor,
     DefaultConvergence,
-    DefaultToolExecutor,
+    DefaultFeatureExtractor,
+    DefaultPatternSelector,
     DefaultSpacetimeAssembler,
+    DefaultThreadSelector,
+    DefaultToolExecutor,
+)
+from .stage import (
+    BaseStageExecutor,
+    GateExecutor,
+    StageExecutorProtocol,
 )
 
 __all__ = [
     # Stage Protocols (Phase 2)
     'StageExecutorProtocol',
     'BaseStageExecutor',
+    'GateExecutor',
 
     # Component Protocols (Phase 3)
     'PatternSelectorProtocol',

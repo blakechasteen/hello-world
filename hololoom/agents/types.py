@@ -4,9 +4,9 @@ Agent system type definitions.
 Data structures for specialized agent bots with working memory.
 """
 
-from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional, Set
+from dataclasses import asdict, dataclass, field
 from enum import Enum
+
 import numpy as np
 
 
@@ -35,12 +35,12 @@ class WorkingMemoryState:
     momentum: float = 0.7  # How sticky is focus
 
     # LEVEL 2: GRAPH (Activation Dynamics)
-    activation_map: Dict[str, float] = field(default_factory=dict)  # node_id → activation
+    activation_map: dict[str, float] = field(default_factory=dict)  # node_id → activation
     propagation_decay: float = 0.85
 
     # LEVEL 3: COMPUTATIONAL (Warp Space)
-    tensioned_threads: Set[str] = field(default_factory=set)  # Currently in warp
-    tension_profile: Dict[str, float] = field(default_factory=dict)  # Persistent tensions
+    tensioned_threads: set[str] = field(default_factory=set)  # Currently in warp
+    tension_profile: dict[str, float] = field(default_factory=dict)  # Persistent tensions
 
     def copy(self) -> 'WorkingMemoryState':
         """Deep copy of state"""
@@ -64,23 +64,23 @@ class WorkingMemorySnapshot:
     # Semantic state
     focus_vector: np.ndarray
     attention_radius: float
-    top_semantic_dimensions: List[str]
+    top_semantic_dimensions: list[str]
 
     # Graph state
-    activation_map: Dict[str, float]
-    highly_activated: List[str]  # nodes > 0.7
+    activation_map: dict[str, float]
+    highly_activated: list[str]  # nodes > 0.7
 
     # Computational state
-    tensioned_threads: List[str]
-    tension_profile: Dict[str, float]
-    warp_operations: List[str]  # What math was done
+    tensioned_threads: list[str]
+    tension_profile: dict[str, float]
+    warp_operations: list[str]  # What math was done
 
     # Outcome
     confidence: float
     success: bool  # confidence > threshold
-    tool_used: Optional[str] = None
+    tool_used: str | None = None
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize (handle numpy arrays)"""
         d = asdict(self)
         d['focus_vector'] = self.focus_vector.tolist()
@@ -88,7 +88,7 @@ class WorkingMemorySnapshot:
         return d
 
     @classmethod
-    def from_dict(cls, d: Dict) -> 'WorkingMemorySnapshot':
+    def from_dict(cls, d: dict) -> 'WorkingMemorySnapshot':
         """Deserialize"""
         d['focus_vector'] = np.array(d['focus_vector'])
         return cls(**d)
@@ -101,8 +101,8 @@ class LearnedPattern:
 
     # Context (what the pattern looks like)
     semantic_region: np.ndarray  # Centroid of successful focus vectors
-    typical_activation_pattern: Dict[str, float]  # Average activations
-    critical_threads: List[str]  # Threads present in >80% of successes
+    typical_activation_pattern: dict[str, float]  # Average activations
+    critical_threads: list[str]  # Threads present in >80% of successes
 
     # Performance (how well it works)
     success_count: int
@@ -117,7 +117,7 @@ class LearnedPattern:
         """Success rate of this pattern"""
         return self.success_count / self.total_count if self.total_count > 0 else 0.0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize"""
         return {
             'pattern_id': self.pattern_id,
@@ -132,7 +132,7 @@ class LearnedPattern:
         }
 
     @classmethod
-    def from_dict(cls, d: Dict) -> 'LearnedPattern':
+    def from_dict(cls, d: dict) -> 'LearnedPattern':
         """Deserialize"""
         d['semantic_region'] = np.array(d['semantic_region'])
         return cls(**d)
@@ -147,12 +147,12 @@ class AgentProfile:
 
     # Custom instructions
     system_prompt: str
-    priorities: List[str] = field(default_factory=list)  # ["accuracy", "speed", "cost_efficiency"]
-    semantic_dimensions: List[str] = field(default_factory=list)  # Which 244D dimensions to emphasize
+    priorities: list[str] = field(default_factory=list)  # ["accuracy", "speed", "cost_efficiency"]
+    semantic_dimensions: list[str] = field(default_factory=list)  # Which 244D dimensions to emphasize
 
     # Tool preferences
-    preferred_tools: List[str] = field(default_factory=list)
-    tool_thresholds: Dict[str, float] = field(default_factory=dict)  # Confidence thresholds per tool
+    preferred_tools: list[str] = field(default_factory=list)
+    tool_thresholds: dict[str, float] = field(default_factory=dict)  # Confidence thresholds per tool
 
     # Memory configuration
     context_window_size: int = 10

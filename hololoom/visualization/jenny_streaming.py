@@ -25,16 +25,16 @@ References:
 - spec_ledger.py (provenance tracking)
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List, Callable, Awaitable, Set
-from enum import Enum
-from datetime import datetime
-from uuid import uuid4
 import asyncio
 import json
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
+from uuid import uuid4
 
-from .jenny_spec import JennySpec, BindingMode
-
+from .jenny_spec import BindingMode, JennySpec
 
 # ============================================================================
 # Streaming Types
@@ -70,15 +70,15 @@ class StreamUpdate:
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Update payload
-    data: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
 
     # Error info (if update_type == ERROR)
-    error: Optional[str] = None
+    error: str | None = None
 
     # Sequence number for ordering
     sequence: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize for WebSocket/SSE transmission."""
         return {
             "update_id": self.update_id,
@@ -114,12 +114,12 @@ class Subscription:
 
     # State
     status: StreamStatus = StreamStatus.ACTIVE
-    last_update: Optional[datetime] = None
+    last_update: datetime | None = None
     sequence: int = 0
     error_count: int = 0
 
     # Callback
-    callback: Optional[Callable[[StreamUpdate], Awaitable[None]]] = None
+    callback: Callable[[StreamUpdate], Awaitable[None]] | None = None
 
 
 # ============================================================================
@@ -133,14 +133,14 @@ class DataSourceProtocol:
     Implementations provide actual data fetching/streaming logic.
     """
 
-    async def fetch(self, query: str) -> Dict[str, Any]:
+    async def fetch(self, query: str) -> dict[str, Any]:
         """Fetch current data for a query (REACTIVE mode)."""
         raise NotImplementedError
 
     async def subscribe(
         self,
         query: str,
-        callback: Callable[[Dict[str, Any]], Awaitable[None]],
+        callback: Callable[[dict[str, Any]], Awaitable[None]],
     ) -> str:
         """Subscribe to streaming data (STREAMING mode). Returns subscription ID."""
         raise NotImplementedError
@@ -162,10 +162,10 @@ class MockDataSource(DataSourceProtocol):
     """
 
     def __init__(self):
-        self._subscriptions: Dict[str, asyncio.Task] = {}
+        self._subscriptions: dict[str, asyncio.Task] = {}
         self._counter: int = 0
 
-    async def fetch(self, query: str) -> Dict[str, Any]:
+    async def fetch(self, query: str) -> dict[str, Any]:
         """Return mock data for query."""
         self._counter += 1
         return {
@@ -177,7 +177,7 @@ class MockDataSource(DataSourceProtocol):
     async def subscribe(
         self,
         query: str,
-        callback: Callable[[Dict[str, Any]], Awaitable[None]],
+        callback: Callable[[dict[str, Any]], Awaitable[None]],
     ) -> str:
         """Start mock streaming updates."""
         subscription_id = str(uuid4())
@@ -235,7 +235,7 @@ class StreamingManager:
 
     def __init__(
         self,
-        data_source: Optional[DataSourceProtocol] = None,
+        data_source: DataSourceProtocol | None = None,
         max_subscriptions: int = 100,
         default_refresh_interval_ms: int = 5000,
         max_reconnect_attempts: int = 3,
@@ -258,13 +258,13 @@ class StreamingManager:
         self._reconnect_delay_ms = reconnect_delay_ms
 
         # Active subscriptions
-        self._subscriptions: Dict[str, Subscription] = {}
+        self._subscriptions: dict[str, Subscription] = {}
 
         # Background tasks for reactive polling
-        self._poll_tasks: Dict[str, asyncio.Task] = {}
+        self._poll_tasks: dict[str, asyncio.Task] = {}
 
         # Streaming source subscriptions
-        self._stream_sub_ids: Dict[str, str] = {}  # our_id → source_id
+        self._stream_sub_ids: dict[str, str] = {}  # our_id → source_id
 
         # Statistics
         self._total_updates_sent: int = 0
@@ -274,7 +274,7 @@ class StreamingManager:
         self,
         spec: JennySpec,
         callback: Callable[[StreamUpdate], Awaitable[None]],
-        refresh_interval_ms: Optional[int] = None,
+        refresh_interval_ms: int | None = None,
     ) -> str:
         """
         Subscribe a panel to its data source.
@@ -385,25 +385,25 @@ class StreamingManager:
 
         return True
 
-    def get_subscription(self, subscription_id: str) -> Optional[Subscription]:
+    def get_subscription(self, subscription_id: str) -> Subscription | None:
         """Get subscription details."""
         return self._subscriptions.get(subscription_id)
 
-    def get_subscriptions_for_spec(self, spec_id: str) -> List[Subscription]:
+    def get_subscriptions_for_spec(self, spec_id: str) -> list[Subscription]:
         """Get all subscriptions for a spec."""
         return [
             sub for sub in self._subscriptions.values()
             if sub.spec_id == spec_id
         ]
 
-    def get_active_subscriptions(self) -> List[Subscription]:
+    def get_active_subscriptions(self) -> list[Subscription]:
         """Get all active subscriptions."""
         return [
             sub for sub in self._subscriptions.values()
             if sub.status == StreamStatus.ACTIVE
         ]
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get streaming statistics."""
         active = sum(1 for s in self._subscriptions.values() if s.status == StreamStatus.ACTIVE)
         paused = sum(1 for s in self._subscriptions.values() if s.status == StreamStatus.PAUSED)
@@ -482,7 +482,7 @@ class StreamingManager:
     async def _start_streaming(self, subscription: Subscription) -> None:
         """Start streaming subscription via data source."""
 
-        async def handle_stream_data(data: Dict[str, Any]):
+        async def handle_stream_data(data: dict[str, Any]):
             subscription.sequence += 1
             update = StreamUpdate(
                 spec_id=subscription.spec_id,
@@ -502,7 +502,7 @@ class StreamingManager:
                 handle_stream_data,
             )
             self._stream_sub_ids[subscription.subscription_id] = source_sub_id
-        except Exception as e:
+        except Exception:
             subscription.status = StreamStatus.DISCONNECTED
             subscription.error_count += 1
             self._total_errors += 1
@@ -573,7 +573,7 @@ class StreamingIndicator:
     # Progress indicator
     show_progress: bool = False
     progress_label: str = ""
-    progress_value: Optional[float] = None  # None = indeterminate
+    progress_value: float | None = None  # None = indeterminate
 
     # Reconnection status
     show_reconnect_status: bool = False
@@ -582,9 +582,9 @@ class StreamingIndicator:
     reconnect_message: str = ""
 
     # Render hints
-    render_hints: Dict[str, Any] = field(default_factory=dict)
+    render_hints: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize for JSON transmission."""
         return {
             "badge": self.badge.value,
@@ -605,7 +605,7 @@ class StreamingIndicator:
 
 
 # Badge configurations with styling
-BADGE_STYLES: Dict[StreamingBadge, Dict[str, Any]] = {
+BADGE_STYLES: dict[StreamingBadge, dict[str, Any]] = {
     StreamingBadge.LIVE: {
         "label": "LIVE",
         "tooltip": "Live SSE/WebSocket connection active",
@@ -659,10 +659,10 @@ BADGE_STYLES: Dict[StreamingBadge, Dict[str, Any]] = {
 
 def get_streaming_indicator(
     spec: JennySpec,
-    subscription: Optional[Subscription] = None,
+    subscription: Subscription | None = None,
     token_count: int = 0,
     bytes_received: int = 0,
-) -> Optional[StreamingIndicator]:
+) -> StreamingIndicator | None:
     """
     Generate a streaming indicator for a panel.
 
@@ -1017,7 +1017,7 @@ def render_streaming_badge_html(indicator: StreamingIndicator) -> str:
 # ============================================================================
 
 def create_streaming_manager(
-    data_source: Optional[DataSourceProtocol] = None,
+    data_source: DataSourceProtocol | None = None,
     max_subscriptions: int = 100,
 ) -> StreamingManager:
     """

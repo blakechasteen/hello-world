@@ -19,15 +19,19 @@ Key Features:
 - Continuous value alignment verification
 """
 
-import logging
 import asyncio
-import random
-from enum import Enum
-from typing import List, Dict, Any, Optional, Tuple, Callable, Awaitable, Protocol, runtime_checkable
+import hashlib
+import logging
+import re
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-import re
-import hashlib
+from enum import Enum
+from typing import (
+    Any,
+    Protocol,
+    runtime_checkable,
+)
 
 from hololoom.bandits.beta_arm import BetaArm
 
@@ -57,8 +61,8 @@ class CritiqueEngineProtocol(Protocol):
         self,
         prompt: str,
         response: str,
-        principles: Optional[List["ConstitutionalPrinciple"]] = None,
-    ) -> List["CritiqueResult"]:
+        principles: list["ConstitutionalPrinciple"] | None = None,
+    ) -> list["CritiqueResult"]:
         """
         Critique a response against constitutional principles.
 
@@ -91,7 +95,7 @@ class RevisionEngineProtocol(Protocol):
         self,
         prompt: str,
         response: str,
-        critiques: List["CritiqueResult"],
+        critiques: list["CritiqueResult"],
     ) -> str:
         """
         Revise a response based on critique feedback.
@@ -123,8 +127,8 @@ class PrincipleProviderProtocol(Protocol):
 
     def get_principles(
         self,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> List["ConstitutionalPrinciple"]:
+        context: dict[str, Any] | None = None,
+    ) -> list["ConstitutionalPrinciple"]:
         """
         Get applicable principles for a given context.
 
@@ -156,9 +160,9 @@ class PreferenceModelProtocol(Protocol):
         response_a: str,
         response_b: str,
         prompt: str,
-        critiques_a: List["CritiqueResult"],
-        critiques_b: List["CritiqueResult"],
-    ) -> Tuple[float, str]:
+        critiques_a: list["CritiqueResult"],
+        critiques_b: list["CritiqueResult"],
+    ) -> tuple[float, str]:
         """
         Compute preference between two responses.
 
@@ -258,14 +262,14 @@ class AdaptivePrincipleWeighter:
     December 2025: Added for intelligent principle prioritization.
     """
 
-    def __init__(self, principles: List["ConstitutionalPrinciple"]):
+    def __init__(self, principles: list["ConstitutionalPrinciple"]):
         """
         Initialize with principle set.
 
         Args:
             principles: List of constitutional principles to track
         """
-        self._priors: Dict[str, PrincipleWeightPrior] = {
+        self._priors: dict[str, PrincipleWeightPrior] = {
             p.id: PrincipleWeightPrior(base_weight=p.weight)
             for p in principles
         }
@@ -280,9 +284,9 @@ class AdaptivePrincipleWeighter:
 
     def get_weighted_principles(
         self,
-        principles: List["ConstitutionalPrinciple"],
+        principles: list["ConstitutionalPrinciple"],
         use_sampling: bool = True,
-    ) -> List[Tuple["ConstitutionalPrinciple", float]]:
+    ) -> list[tuple["ConstitutionalPrinciple", float]]:
         """
         Get principles with adaptive weights.
 
@@ -305,7 +309,7 @@ class AdaptivePrincipleWeighter:
 
         return sorted(weighted, key=lambda x: x[1], reverse=True)
 
-    def update_from_critiques(self, critiques: List["CritiqueResult"]):
+    def update_from_critiques(self, critiques: list["CritiqueResult"]):
         """
         Update principle weights based on critique results.
 
@@ -329,7 +333,7 @@ class AdaptivePrincipleWeighter:
                 # Principle found no issues
                 prior.update_failure(0.1)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get learning statistics for monitoring."""
         stats = {
             "total_critiques": self._total_critiques,
@@ -399,10 +403,10 @@ class ConstitutionalPrinciple:
     category: PrincipleCategory
     name: str
     description: str
-    positive_examples: List[str] = field(default_factory=list)
-    negative_examples: List[str] = field(default_factory=list)
+    positive_examples: list[str] = field(default_factory=list)
+    negative_examples: list[str] = field(default_factory=list)
     weight: float = 1.0  # Relative importance
-    critique_prompt: Optional[str] = None  # Custom critique prompt
+    critique_prompt: str | None = None  # Custom critique prompt
 
     def __post_init__(self):
         """Generate default critique prompt if not provided."""
@@ -422,11 +426,11 @@ class CritiqueResult:
     adheres: bool
     severity: ViolationSeverity
     critique: str
-    suggested_revision: Optional[str] = None
+    suggested_revision: str | None = None
     confidence: float = 0.5
-    evidence: List[str] = field(default_factory=list)
+    evidence: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "principle_id": self.principle.id,
@@ -447,12 +451,12 @@ class RevisionResult:
     """
     original_response: str
     revised_response: str
-    critiques_addressed: List[CritiqueResult]
+    critiques_addressed: list[CritiqueResult]
     revision_round: int
     improvement_score: float  # 0.0-1.0
-    remaining_issues: List[str] = field(default_factory=list)
+    remaining_issues: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "original_response": self.original_response,
@@ -475,10 +479,10 @@ class PreferencePair:
     chosen_response: str
     rejected_response: str
     preference_strength: float  # 0.0-1.0
-    principles_improved: List[str]
+    principles_improved: list[str]
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "prompt": self.prompt,
@@ -498,7 +502,7 @@ class Constitution:
     """
 
     # Default constitutional principles based on best practices
-    DEFAULT_PRINCIPLES: List[ConstitutionalPrinciple] = [
+    DEFAULT_PRINCIPLES: list[ConstitutionalPrinciple] = [
         # Harmlessness principles
         ConstitutionalPrinciple(
             id="harm_prevention",
@@ -634,7 +638,7 @@ class Constitution:
         ),
     ]
 
-    def __init__(self, principles: Optional[List[ConstitutionalPrinciple]] = None):
+    def __init__(self, principles: list[ConstitutionalPrinciple] | None = None):
         """
         Initialize constitution with principles.
 
@@ -644,11 +648,11 @@ class Constitution:
         self.principles = principles or self.DEFAULT_PRINCIPLES.copy()
         self._principle_map = {p.id: p for p in self.principles}
 
-    def get_principle(self, principle_id: str) -> Optional[ConstitutionalPrinciple]:
+    def get_principle(self, principle_id: str) -> ConstitutionalPrinciple | None:
         """Get a principle by ID."""
         return self._principle_map.get(principle_id)
 
-    def get_by_category(self, category: PrincipleCategory) -> List[ConstitutionalPrinciple]:
+    def get_by_category(self, category: PrincipleCategory) -> list[ConstitutionalPrinciple]:
         """Get all principles in a category."""
         return [p for p in self.principles if p.category == category]
 
@@ -657,7 +661,7 @@ class Constitution:
         self.principles.append(principle)
         self._principle_map[principle.id] = principle
 
-    def get_weighted_principles(self, min_weight: float = 0.0) -> List[ConstitutionalPrinciple]:
+    def get_weighted_principles(self, min_weight: float = 0.0) -> list[ConstitutionalPrinciple]:
         """Get principles sorted by weight."""
         filtered = [p for p in self.principles if p.weight >= min_weight]
         return sorted(filtered, key=lambda p: p.weight, reverse=True)
@@ -673,7 +677,7 @@ class SelfCritique:
 
     def __init__(
         self,
-        constitution: Optional[Constitution] = None,
+        constitution: Constitution | None = None,
         max_revision_rounds: int = 3,
         improvement_threshold: float = 0.1,
     ):
@@ -688,7 +692,7 @@ class SelfCritique:
         self.constitution = constitution or Constitution()
         self.max_revision_rounds = max_revision_rounds
         self.improvement_threshold = improvement_threshold
-        self._critique_history: List[CritiqueResult] = []
+        self._critique_history: list[CritiqueResult] = []
         self._setup_logging()
 
     def _setup_logging(self):
@@ -706,9 +710,9 @@ class SelfCritique:
         self,
         prompt: str,
         response: str,
-        principles: Optional[List[ConstitutionalPrinciple]] = None,
+        principles: list[ConstitutionalPrinciple] | None = None,
         critique_type: CritiqueType = CritiqueType.ETHICAL,
-    ) -> List[CritiqueResult]:
+    ) -> list[CritiqueResult]:
         """
         Critique a response against constitutional principles.
 
@@ -776,7 +780,7 @@ class SelfCritique:
         response: str,
         principle: ConstitutionalPrinciple,
         critique_type: CritiqueType,
-    ) -> Tuple[bool, ViolationSeverity, List[str]]:
+    ) -> tuple[bool, ViolationSeverity, list[str]]:
         """
         Detect if response violates a principle.
 
@@ -863,7 +867,7 @@ class SelfCritique:
     def _generate_critique(
         self,
         principle: ConstitutionalPrinciple,
-        evidence: List[str],
+        evidence: list[str],
     ) -> str:
         """Generate critique explanation."""
         critique = f"Response may violate '{principle.name}': {principle.description}\n"
@@ -875,7 +879,7 @@ class SelfCritique:
     def _generate_revision_hint(
         self,
         principle: ConstitutionalPrinciple,
-        evidence: List[str],
+        evidence: list[str],
     ) -> str:
         """Generate hint for revising the response."""
         hints = {
@@ -896,8 +900,8 @@ class SelfCritique:
         self,
         prompt: str,
         response: str,
-        critiques: List[CritiqueResult],
-        revise_fn: Optional[Callable[[str, str, List[CritiqueResult]], Awaitable[str]]] = None,
+        critiques: list[CritiqueResult],
+        revise_fn: Callable[[str, str, list[CritiqueResult]], Awaitable[str]] | None = None,
     ) -> RevisionResult:
         """
         Revise response based on critique.
@@ -949,7 +953,7 @@ class SelfCritique:
     def _heuristic_revise(
         self,
         response: str,
-        critiques: List[CritiqueResult],
+        critiques: list[CritiqueResult],
     ) -> str:
         """Heuristically revise response based on critiques."""
         revised = response
@@ -989,8 +993,8 @@ class SelfCritique:
         self,
         prompt: str,
         response: str,
-        revise_fn: Optional[Callable[[str, str, List[CritiqueResult]], Awaitable[str]]] = None,
-    ) -> Tuple[str, List[RevisionResult]]:
+        revise_fn: Callable[[str, str, list[CritiqueResult]], Awaitable[str]] | None = None,
+    ) -> tuple[str, list[RevisionResult]]:
         """
         Full critique and revision loop.
 
@@ -1025,10 +1029,10 @@ class SelfCritique:
 
     async def batch_critique(
         self,
-        items: List[Tuple[str, str]],
+        items: list[tuple[str, str]],
         parallel: bool = True,
         max_concurrent: int = 10,
-    ) -> List[List[CritiqueResult]]:
+    ) -> list[list[CritiqueResult]]:
         """
         Batch critique multiple prompt-response pairs.
 
@@ -1055,7 +1059,7 @@ class SelfCritique:
         # Parallel processing with semaphore
         semaphore = asyncio.Semaphore(max_concurrent)
 
-        async def critique_one(prompt: str, response: str) -> List[CritiqueResult]:
+        async def critique_one(prompt: str, response: str) -> list[CritiqueResult]:
             async with semaphore:
                 # critique_response is sync, wrap in executor for true parallelism
                 loop = asyncio.get_event_loop()
@@ -1079,10 +1083,10 @@ class SelfCritique:
 
     async def batch_critique_and_revise(
         self,
-        items: List[Tuple[str, str]],
+        items: list[tuple[str, str]],
         parallel: bool = True,
         max_concurrent: int = 5,
-    ) -> List[Tuple[str, List[RevisionResult]]]:
+    ) -> list[tuple[str, list[RevisionResult]]]:
         """
         Batch critique and revise multiple prompt-response pairs.
 
@@ -1110,7 +1114,7 @@ class SelfCritique:
         # Parallel processing with semaphore
         semaphore = asyncio.Semaphore(max_concurrent)
 
-        async def process_one(prompt: str, response: str) -> Tuple[str, List[RevisionResult]]:
+        async def process_one(prompt: str, response: str) -> tuple[str, list[RevisionResult]]:
             async with semaphore:
                 return await self.critique_and_revise(prompt, response)
 
@@ -1141,8 +1145,8 @@ class RLAIFTrainer:
 
     def __init__(
         self,
-        constitution: Optional[Constitution] = None,
-        self_critique: Optional[SelfCritique] = None,
+        constitution: Constitution | None = None,
+        self_critique: SelfCritique | None = None,
     ):
         """
         Initialize RLAIF trainer.
@@ -1153,14 +1157,14 @@ class RLAIFTrainer:
         """
         self.constitution = constitution or Constitution()
         self.self_critique = self_critique or SelfCritique(self.constitution)
-        self.preference_pairs: List[PreferencePair] = []
+        self.preference_pairs: list[PreferencePair] = []
         self._preference_buffer_size = 10000
 
     async def generate_preference_pair(
         self,
         prompt: str,
         original_response: str,
-    ) -> Optional[PreferencePair]:
+    ) -> PreferencePair | None:
         """
         Generate a preference pair from critique and revision.
 
@@ -1207,7 +1211,7 @@ class RLAIFTrainer:
         self,
         batch_size: int = 32,
         min_strength: float = 0.3,
-    ) -> List[PreferencePair]:
+    ) -> list[PreferencePair]:
         """
         Get a batch of preference pairs for training.
 
@@ -1230,7 +1234,7 @@ class RLAIFTrainer:
         response_a: str,
         response_b: str,
         prompt: str,
-    ) -> Tuple[float, str]:
+    ) -> tuple[float, str]:
         """
         Compute which response is preferred.
 
@@ -1268,7 +1272,7 @@ class RLAIFTrainer:
 
         return score, reason
 
-    def export_preferences(self) -> List[Dict[str, Any]]:
+    def export_preferences(self) -> list[dict[str, Any]]:
         """Export preference pairs for external training."""
         return [p.to_dict() for p in self.preference_pairs]
 
@@ -1283,7 +1287,7 @@ class ValueAlignmentVerifier:
 
     def __init__(
         self,
-        constitution: Optional[Constitution] = None,
+        constitution: Constitution | None = None,
         drift_threshold: float = 0.15,
         window_size: int = 100,
     ):
@@ -1299,15 +1303,15 @@ class ValueAlignmentVerifier:
         self.self_critique = SelfCritique(self.constitution)
         self.drift_threshold = drift_threshold
         self.window_size = window_size
-        self._interaction_history: List[Dict[str, Any]] = []
-        self._baseline_adherence: Optional[Dict[str, float]] = None
+        self._interaction_history: list[dict[str, Any]] = []
+        self._baseline_adherence: dict[str, float] | None = None
 
     def record_interaction(
         self,
         prompt: str,
         response: str,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Record an interaction and check alignment.
 
@@ -1356,8 +1360,8 @@ class ValueAlignmentVerifier:
 
     def _compute_window_adherence(
         self,
-        interactions: List[Dict[str, Any]],
-    ) -> Dict[str, float]:
+        interactions: list[dict[str, Any]],
+    ) -> dict[str, float]:
         """Compute average adherence over a window."""
         if not interactions:
             return {}
@@ -1374,7 +1378,7 @@ class ValueAlignmentVerifier:
         n = len(interactions)
         return {k: v / n for k, v in adherence.items()}
 
-    def detect_drift(self) -> Tuple[bool, float, str]:
+    def detect_drift(self) -> tuple[bool, float, str]:
         """
         Detect alignment drift from baseline.
 
@@ -1406,7 +1410,7 @@ class ValueAlignmentVerifier:
 
         return False, max_drift[1], f"No significant drift (max: {max_drift[1]:.1%} in {max_drift[0]})"
 
-    def get_alignment_report(self) -> Dict[str, Any]:
+    def get_alignment_report(self) -> dict[str, Any]:
         """Generate comprehensive alignment report."""
         if not self._interaction_history:
             return {"status": "no_data", "message": "No interactions recorded"}
@@ -1415,7 +1419,7 @@ class ValueAlignmentVerifier:
         drift_detected, drift_magnitude, drift_explanation = self.detect_drift()
 
         # Find most common violations
-        violation_counts: Dict[str, int] = {}
+        violation_counts: dict[str, int] = {}
         for interaction in self._interaction_history:
             for violation in interaction.get("violations", []):
                 principle_id = violation.get("principle_id", "unknown")
@@ -1450,7 +1454,7 @@ class ConstitutionalAI:
 
     def __init__(
         self,
-        constitution: Optional[Constitution] = None,
+        constitution: Constitution | None = None,
         max_revision_rounds: int = 3,
         enable_rlaif: bool = True,
         enable_verification: bool = True,
@@ -1492,7 +1496,7 @@ class ConstitutionalAI:
         response: str,
         auto_revise: bool = True,
         record_for_training: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process a response through the full CAI pipeline.
 
@@ -1548,7 +1552,7 @@ class ConstitutionalAI:
             "verification": verification,
         }
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get system statistics."""
         stats = self._stats.copy()
 
@@ -1566,12 +1570,12 @@ class ConstitutionalAI:
 
     async def batch_process(
         self,
-        items: List[Tuple[str, str]],
+        items: list[tuple[str, str]],
         auto_revise: bool = True,
         record_for_training: bool = True,
         parallel: bool = True,
         max_concurrent: int = 5,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Process multiple prompt-response pairs through the CAI pipeline.
 
@@ -1603,7 +1607,7 @@ class ConstitutionalAI:
         # Parallel processing with semaphore
         semaphore = asyncio.Semaphore(max_concurrent)
 
-        async def process_one(prompt: str, response: str) -> Dict[str, Any]:
+        async def process_one(prompt: str, response: str) -> dict[str, Any]:
             async with semaphore:
                 return await self.process_response(
                     prompt, response, auto_revise, record_for_training
@@ -1632,9 +1636,9 @@ class ConstitutionalAI:
 
     async def batch_verify(
         self,
-        items: List[Tuple[str, str]],
-        metadata: Optional[List[Dict[str, Any]]] = None,
-    ) -> List[Dict[str, Any]]:
+        items: list[tuple[str, str]],
+        metadata: list[dict[str, Any]] | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Batch verify alignment for multiple prompt-response pairs.
 
@@ -1662,7 +1666,7 @@ class ConstitutionalAI:
 # Factory functions
 def create_constitution(
     include_defaults: bool = True,
-    custom_principles: Optional[List[ConstitutionalPrinciple]] = None,
+    custom_principles: list[ConstitutionalPrinciple] | None = None,
 ) -> Constitution:
     """
     Create a constitution with optional customization.
@@ -1686,13 +1690,13 @@ def create_constitution(
 
 
 def create_constitutional_ai(
-    constitution: Optional[Constitution] = None,
+    constitution: Constitution | None = None,
     max_revision_rounds: int = 3,
     enable_rlaif: bool = True,
     enable_verification: bool = True,
     enable_adaptive_weighting: bool = False,
-    critique_engine: Optional[CritiqueEngineProtocol] = None,
-    revision_engine: Optional[RevisionEngineProtocol] = None,
+    critique_engine: CritiqueEngineProtocol | None = None,
+    revision_engine: RevisionEngineProtocol | None = None,
 ) -> ConstitutionalAI:
     """
     Create a complete Constitutional AI system.
@@ -1743,8 +1747,8 @@ def create_constitutional_ai(
 def quick_critique(
     response: str,
     prompt: str = "",
-    categories: Optional[List[PrincipleCategory]] = None,
-) -> Dict[str, Any]:
+    categories: list[PrincipleCategory] | None = None,
+) -> dict[str, Any]:
     """
     Quick critique of a response.
 

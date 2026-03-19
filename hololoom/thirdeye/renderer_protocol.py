@@ -10,12 +10,12 @@ Author: HoloLoom Team
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, Any, List, Optional, Protocol, runtime_checkable
+from enum import Enum
+from typing import Any, Protocol, runtime_checkable
 
 from hololoom.thirdeye.concept import Concept, ConceptWorld
-from hololoom.thirdeye.transition import Transition
 from hololoom.thirdeye.thoughtspace import ThoughtspaceState
+from hololoom.thirdeye.transition import Transition
 
 
 class RenderDimension(Enum):
@@ -63,7 +63,7 @@ class RenderConfig:
     label_font_size: int = 12
     label_font_family: str = "system-ui, sans-serif"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON for client configuration."""
         return {
             "dimension": self.dimension.value,
@@ -93,10 +93,10 @@ class RenderCommand:
     """
 
     command_type: str
-    target_id: Optional[str] = None
-    data: Dict[str, Any] = field(default_factory=dict)
+    target_id: str | None = None
+    data: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON for WebSocket streaming."""
         return {
             "type": self.command_type,
@@ -115,14 +115,14 @@ class RenderFrame:
     """
 
     frame_id: int
-    commands: List[RenderCommand] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    commands: list[RenderCommand] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def add_command(self, command: RenderCommand) -> None:
         """Add a command to this frame."""
         self.commands.append(command)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON for WebSocket streaming."""
         return {
             "frame_id": self.frame_id,
@@ -178,9 +178,9 @@ class ConceptRenderer(Protocol):
     def render_transition(
         self,
         transition: Transition,
-        from_concept: Optional[Concept],
+        from_concept: Concept | None,
         to_concept: Concept,
-    ) -> List[RenderCommand]:
+    ) -> list[RenderCommand]:
         """
         Generate render commands for a concept transition.
 
@@ -268,7 +268,7 @@ class BaseConceptRenderer(ABC):
     that specific renderers can override.
     """
 
-    def __init__(self, config: Optional[RenderConfig] = None):
+    def __init__(self, config: RenderConfig | None = None):
         """Initialize with optional config."""
         self._config = config or RenderConfig()
         self._frame_counter = 0
@@ -361,9 +361,9 @@ class BaseConceptRenderer(ABC):
     def render_transition(
         self,
         transition: Transition,
-        from_concept: Optional[Concept],
+        from_concept: Concept | None,
         to_concept: Concept,
-    ) -> List[RenderCommand]:
+    ) -> list[RenderCommand]:
         """Must be implemented by subclasses."""
         pass
 

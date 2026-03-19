@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Agentic Conscience Adapter
 ==========================
@@ -25,27 +26,24 @@ Date: 2025-12-03
 
 import logging
 import time
-from typing import Optional, Dict, Any, List, Union
-from dataclasses import dataclass, field
-from datetime import datetime
+from typing import Any, Optional
 
 from hololoom.protocols.conscience import (
-    ConscienceProtocol,
     ConscienceDecision,
-    StepType,
+    ConscienceProtocol,
+    NullConscience,
     RiskLevel,
+    StepType,
     create_allowed_decision,
     create_blocked_decision,
-    create_review_decision,
-    NullConscience,
 )
 
 # Import ConscienceCalibrator for Thompson Sampling calibration
 try:
     from hololoom.agentic.conscience_calibrator import (
+        CalibrationEvent,
         ConscienceCalibrator,
         create_calibrator,
-        CalibrationEvent,
     )
     CALIBRATOR_AVAILABLE = True
 except ImportError:
@@ -57,15 +55,15 @@ except ImportError:
 # Import Conscience with graceful degradation
 try:
     from hololoom.conscience.core import Conscience
-    from hololoom.conscience.judgment import Voice, Judgment, Concern
+    from hololoom.conscience.judgment import Concern, Judgment, Voice
     from hololoom.conscience.lenses import (
-        standard,
+        CompositeLens,
+        DeceptionLens,
+        HarmLens,
+        PowerLens,
         paranoid,
         research,
-        CompositeLens,
-        HarmLens,
-        DeceptionLens,
-        PowerLens,
+        standard,
     )
     CONSCIENCE_AVAILABLE = True
 except ImportError:
@@ -97,7 +95,7 @@ logger = logging.getLogger("hololoom.agentic.conscience_adapter")
 # =============================================================================
 
 # Map agentic reasoning modes to default step types
-MODE_TO_STEP_TYPE: Dict[str, StepType] = {
+MODE_TO_STEP_TYPE: dict[str, StepType] = {
     "direct": StepType.QUERY,
     "verify": StepType.VERIFICATION,
     "research": StepType.RESEARCH,
@@ -152,7 +150,7 @@ class AgenticConscienceAdapter:
 
     def __init__(
         self,
-        conscience: Optional[ConscienceProtocol] = None,
+        conscience: ConscienceProtocol | None = None,
         preset: str = "standard",
         auto_create: bool = True,
         fail_open: bool = True,
@@ -175,8 +173,8 @@ class AgenticConscienceAdapter:
         """
         self._fail_open = fail_open
         self._available = False
-        self._conscience: Optional[ConscienceProtocol] = None
-        self._calibrator: Optional['ConscienceCalibrator'] = None
+        self._conscience: ConscienceProtocol | None = None
+        self._calibrator: ConscienceCalibrator | None = None
         self._enable_calibration = enable_calibration
 
         if not CONSCIENCE_AVAILABLE:
@@ -228,7 +226,7 @@ class AgenticConscienceAdapter:
         return self._available
 
     @property
-    def conscience(self) -> Optional[ConscienceProtocol]:
+    def conscience(self) -> ConscienceProtocol | None:
         """Get the underlying conscience (for advanced use)."""
         return self._conscience
 
@@ -279,7 +277,7 @@ class AgenticConscienceAdapter:
         step_type: StepType = StepType.QUERY,
         step_index: int = 0,
         evaluation_time_ms: float = 0.0,
-        witness_id: Optional[str] = None,
+        witness_id: str | None = None,
     ) -> ConscienceDecision:
         """
         Convert Judgment to ConscienceDecision.
@@ -376,8 +374,8 @@ class AgenticConscienceAdapter:
         self,
         query: str,
         mode: str,
-        context: Optional[Dict[str, Any]] = None,
-        epistemic_confidence: Optional[float] = None,
+        context: dict[str, Any] | None = None,
+        epistemic_confidence: float | None = None,
     ) -> ConscienceDecision:
         """
         Gate agentic reasoning at reason() entry.
@@ -467,8 +465,8 @@ class AgenticConscienceAdapter:
         step_action: str,
         step_type: StepType,
         step_index: int,
-        parent_decision: Optional[ConscienceDecision] = None,
-        context: Optional[Dict[str, Any]] = None,
+        parent_decision: ConscienceDecision | None = None,
+        context: dict[str, Any] | None = None,
     ) -> ConscienceDecision:
         """
         Gate an individual step within multi-step reasoning.
@@ -558,7 +556,7 @@ class AgenticConscienceAdapter:
     async def witness_step(
         self,
         decision: ConscienceDecision,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         success: bool,
         weight: float = 1.0,
     ) -> str:
@@ -617,7 +615,7 @@ class AgenticConscienceAdapter:
             # Witness through conscience
             if CONSCIENCE_AVAILABLE and hasattr(self._conscience, 'witness'):
                 # Create minimal judgment for witness
-                from hololoom.conscience.judgment import quiet_judgment, Voice
+                from hololoom.conscience.judgment import Voice
 
                 # Reconstruct judgment from decision
                 voice = getattr(Voice, decision.voice, Voice.QUIET)
@@ -647,8 +645,8 @@ class AgenticConscienceAdapter:
 
     async def learn_from_feedback(
         self,
-        feedback: Dict[str, Any],
-        decisions: Optional[List[ConscienceDecision]] = None,
+        feedback: dict[str, Any],
+        decisions: list[ConscienceDecision] | None = None,
     ) -> None:
         """
         Learn from explicit feedback on past decisions.
@@ -715,7 +713,7 @@ class AgenticConscienceAdapter:
     async def is_safe(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> bool:
         """
         Quick check if an action is safe (QUIET or WHISPER).
@@ -737,7 +735,7 @@ class AgenticConscienceAdapter:
         except Exception:
             return self._fail_open
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get conscience and calibration statistics."""
         stats = {
             "status": "available" if self._available else "unavailable",
@@ -774,7 +772,7 @@ class AgenticConscienceAdapter:
 
         return stats
 
-    def get_calibration_statistics(self) -> Dict[str, Any]:
+    def get_calibration_statistics(self) -> dict[str, Any]:
         """Get calibration-specific statistics."""
         if not self.calibration_enabled:
             return {"enabled": False}
@@ -793,7 +791,7 @@ class AgenticConscienceAdapter:
             ],
         }
 
-    def get_drift_alerts(self) -> List[Dict[str, Any]]:
+    def get_drift_alerts(self) -> list[dict[str, Any]]:
         """Get any calibration drift alerts."""
         if not self.calibration_enabled:
             return []
@@ -840,7 +838,7 @@ class AgenticConscienceAdapter:
 # =============================================================================
 
 def create_conscience_adapter(
-    conscience: Optional[ConscienceProtocol] = None,
+    conscience: ConscienceProtocol | None = None,
     preset: str = "standard",
     auto_create: bool = True,
     fail_open: bool = True,

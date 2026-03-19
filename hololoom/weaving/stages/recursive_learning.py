@@ -8,7 +8,7 @@ Side-effect stage — no context writes.
 """
 
 import logging
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -28,10 +28,10 @@ class RecursiveLearningStage:
 
     def __init__(
         self,
-        learning_loop: Optional[Any] = None,
-        semantic_bandit: Optional[Any] = None,
+        learning_loop: Any | None = None,
+        semantic_bandit: Any | None = None,
         success_threshold: float = 0.5,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         self.learning_loop = learning_loop
         self.semantic_bandit = semantic_bandit

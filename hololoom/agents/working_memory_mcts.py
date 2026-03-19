@@ -16,17 +16,16 @@ Actions:
 Reward: Quality of retrieved context (relevance + diversity)
 """
 
-from typing import List, Dict, Optional, Tuple, Any
-import numpy as np
 from dataclasses import dataclass
-import copy
+from typing import Any
 
+import numpy as np
+
+from hololoom.agents.mcts_core import MCTSEngine, MCTSStateSpace
+from hololoom.agents.types import AgentProfile, WorkingMemoryState
 from hololoom.agents.working_memory import AgentWorkingMemory
-from hololoom.agents.mcts_core import MCTSStateSpace, MCTSEngine, MCTSNode
-from hololoom.agents.types import WorkingMemoryState, AgentProfile
 from hololoom.memory.graph import KG
-from hololoom.protocols.types import Query, MemoryShard
-
+from hololoom.protocols.types import MemoryShard, Query
 
 # ============================================================================
 # Working Memory Actions
@@ -36,8 +35,8 @@ from hololoom.protocols.types import Query, MemoryShard
 class WorkingMemoryAction:
     """Action in working memory state space"""
     type: str  # "move_to_node", "move_to_query", "explore", "activate", "tension"
-    target: Optional[str] = None  # Node ID if applicable
-    direction: Optional[np.ndarray] = None  # Direction vector if applicable
+    target: str | None = None  # Node ID if applicable
+    direction: np.ndarray | None = None  # Direction vector if applicable
     magnitude: float = 0.3  # Step size
 
     def __hash__(self):
@@ -88,7 +87,7 @@ class WorkingMemoryStateSpace(MCTSStateSpace):
         # Cache query embedding
         self.query_vector = self.emb.encode_scales([query.text], size=embedding_dim)[0]
 
-    def get_legal_actions(self, state: WorkingMemoryState) -> List[WorkingMemoryAction]:
+    def get_legal_actions(self, state: WorkingMemoryState) -> list[WorkingMemoryAction]:
         """Get legal actions from current state"""
         actions = []
 
@@ -306,9 +305,9 @@ class MCTSWorkingMemory(AgentWorkingMemory):
         profile: AgentProfile,
         yarn_graph: KG,
         embedding_model,
-        matryoshka_scale: Optional[int] = None,
+        matryoshka_scale: int | None = None,
         mcts_simulations: int = 100,
-        mcts_time_budget: Optional[float] = None
+        mcts_time_budget: float | None = None
     ):
         super().__init__(profile, yarn_graph, embedding_model, matryoshka_scale)
 
@@ -328,7 +327,7 @@ class MCTSWorkingMemory(AgentWorkingMemory):
         query: Query,
         use_mcts: bool = True,
         apply_learned_patterns: bool = True
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Attend to query using MCTS exploration.
 
@@ -401,6 +400,6 @@ class MCTSWorkingMemory(AgentWorkingMemory):
         # Continue with standard retrieval
         return await self._unified_retrieval(query)
 
-    def get_mcts_statistics(self) -> Dict[str, Any]:
+    def get_mcts_statistics(self) -> dict[str, Any]:
         """Get MCTS statistics"""
         return self.mcts_stats.copy()

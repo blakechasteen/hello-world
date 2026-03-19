@@ -16,9 +16,10 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Callable
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
+
 import numpy as np
 
 
@@ -40,7 +41,7 @@ class ErasureConfig:
     regularization: float = 1e-6        # Regularization for numerical stability
     max_iterations: int = 100           # For iterative methods
     tolerance: float = 1e-6             # Convergence tolerance
-    target_features: Optional[List[int]] = None  # For surgical erasure
+    target_features: list[int] | None = None  # For surgical erasure
 
 
 @dataclass
@@ -53,9 +54,9 @@ class ErasureResult:
     concept_strength_before: float
     concept_strength_after: float
     variance_preserved: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "concept_strength_before": self.concept_strength_before,
             "concept_strength_after": self.concept_strength_after,
@@ -74,10 +75,10 @@ class ConceptEraser:
     concept-related information while preserving other structure.
     """
 
-    def __init__(self, config: Optional[ErasureConfig] = None):
+    def __init__(self, config: ErasureConfig | None = None):
         self.config = config or ErasureConfig()
-        self._concept_directions: Dict[str, np.ndarray] = {}
-        self._projection_matrices: Dict[str, np.ndarray] = {}
+        self._concept_directions: dict[str, np.ndarray] = {}
+        self._projection_matrices: dict[str, np.ndarray] = {}
 
     def learn_concept_direction(
         self,
@@ -269,8 +270,8 @@ class ConceptEraser:
     def erase(
         self,
         activations: np.ndarray,
-        concept_direction: Optional[np.ndarray] = None,
-        concept_name: Optional[str] = None,
+        concept_direction: np.ndarray | None = None,
+        concept_name: str | None = None,
     ) -> ErasureResult:
         """
         Erase a concept from activations.
@@ -359,7 +360,7 @@ class ConceptEraser:
     def erase_multiple(
         self,
         activations: np.ndarray,
-        concept_names: List[str],
+        concept_names: list[str],
     ) -> ErasureResult:
         """
         Erase multiple concepts from activations.
@@ -430,15 +431,15 @@ class ConceptEraser:
             }
         )
 
-    def get_concept_direction(self, concept_name: str) -> Optional[np.ndarray]:
+    def get_concept_direction(self, concept_name: str) -> np.ndarray | None:
         """Get stored concept direction."""
         return self._concept_directions.get(concept_name)
 
-    def get_projection_matrix(self, concept_name: str) -> Optional[np.ndarray]:
+    def get_projection_matrix(self, concept_name: str) -> np.ndarray | None:
         """Get stored projection matrix."""
         return self._projection_matrices.get(concept_name)
 
-    def list_concepts(self) -> List[str]:
+    def list_concepts(self) -> list[str]:
         """List all learned concepts."""
         return list(self._concept_directions.keys())
 
@@ -458,8 +459,8 @@ class LEACEEraser:
 
     def __init__(self, regularization: float = 1e-6):
         self.regularization = regularization
-        self._projection: Optional[np.ndarray] = None
-        self._concept_mean: Optional[np.ndarray] = None
+        self._projection: np.ndarray | None = None
+        self._concept_mean: np.ndarray | None = None
 
     def fit(
         self,
@@ -551,7 +552,7 @@ class ConceptSurgery:
     """
 
     def __init__(self):
-        self._concept_vectors: Dict[str, np.ndarray] = {}
+        self._concept_vectors: dict[str, np.ndarray] = {}
 
     def register_concept(
         self,
@@ -657,7 +658,7 @@ class ConceptSurgery:
     def blend(
         self,
         activations: np.ndarray,
-        concept_weights: Dict[str, float],
+        concept_weights: dict[str, float],
     ) -> np.ndarray:
         """
         Blend multiple concepts with specified weights.

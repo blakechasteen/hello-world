@@ -9,7 +9,7 @@ Side-effect stage — no context writes.
 """
 
 import logging
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -29,9 +29,9 @@ class JennyCompilationStage:
 
     def __init__(
         self,
-        jenny_runtime: Optional[Any] = None,
+        jenny_runtime: Any | None = None,
         panel_count: int = 4,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         self.jenny_runtime = jenny_runtime
         self.panel_count = panel_count

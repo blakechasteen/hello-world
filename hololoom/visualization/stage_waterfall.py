@@ -10,8 +10,8 @@ Principles: Edward Tufte - "Above all else show the data"
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
 from enum import Enum
+from typing import Any
 
 
 class StageStatus(Enum):
@@ -39,8 +39,8 @@ class WaterfallStage:
     start_ms: float
     duration_ms: float
     status: StageStatus = StageStatus.SUCCESS
-    trend: Optional[List[float]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    trend: list[float] | None = None
+    metadata: dict[str, Any] | None = None
 
     @property
     def end_ms(self) -> float:
@@ -79,9 +79,9 @@ class StageWaterfallRenderer:
 
     def render(
         self,
-        stages: List[WaterfallStage],
+        stages: list[WaterfallStage],
         title: str = "Pipeline Stage Waterfall",
-        total_duration_ms: Optional[float] = None
+        total_duration_ms: float | None = None
     ) -> str:
         """
         Render waterfall chart HTML.
@@ -267,7 +267,7 @@ class StageWaterfallRenderer:
         </div>
         """
 
-    def _generate_sparkline(self, values: List[float], color: str) -> str:
+    def _generate_sparkline(self, values: list[float], color: str) -> str:
         """Generate Tufte-style sparkline for trend."""
         if len(values) < 2:
             return ""
@@ -307,8 +307,8 @@ class StageWaterfallRenderer:
 
 
 def render_pipeline_waterfall(
-    stage_durations: Dict[str, float],
-    stage_trends: Optional[Dict[str, List[float]]] = None,
+    stage_durations: dict[str, float],
+    stage_trends: dict[str, list[float]] | None = None,
     title: str = "Pipeline Stage Waterfall",
     bottleneck_threshold: float = 0.4
 ) -> str:
@@ -359,8 +359,8 @@ def render_pipeline_waterfall(
 
 
 def render_parallel_waterfall(
-    stage_durations: Dict[str, float],
-    parallel_groups: List[List[str]],
+    stage_durations: dict[str, float],
+    parallel_groups: list[list[str]],
     title: str = "Pipeline Stage Waterfall (Parallel Execution)"
 ) -> str:
     """

@@ -21,11 +21,10 @@ Author: HoloLoom Architecture Team
 Date: December 2025
 """
 
-import math
 import logging
+import math
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Tuple, Callable, Set
-from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -49,16 +48,16 @@ class RetrievalMetrics:
         total_queries: Number of queries evaluated
         metadata: Additional evaluation metadata
     """
-    ndcg_at_k: Dict[int, float] = field(default_factory=dict)
+    ndcg_at_k: dict[int, float] = field(default_factory=dict)
     mrr: float = 0.0
     map_score: float = 0.0
-    precision_at_k: Dict[int, float] = field(default_factory=dict)
-    recall_at_k: Dict[int, float] = field(default_factory=dict)
+    precision_at_k: dict[int, float] = field(default_factory=dict)
+    recall_at_k: dict[int, float] = field(default_factory=dict)
     hit_rate: float = 0.0
     total_queries: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "ndcg_at_k": self.ndcg_at_k,
@@ -93,9 +92,9 @@ class RetrievalResult:
     """Single retrieval result with relevance score."""
     doc_id: str
     score: float  # Retrieval score (similarity, etc.)
-    relevance: Optional[float] = None  # Ground truth relevance (0-1 or binary)
-    content: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    relevance: float | None = None  # Ground truth relevance (0-1 or binary)
+    content: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -103,17 +102,17 @@ class RetrievalQuery:
     """A query with its retrieved results and ground truth."""
     query_id: str
     query_text: str
-    retrieved: List[RetrievalResult]
-    relevant_doc_ids: Set[str]  # Ground truth relevant documents
-    relevance_grades: Optional[Dict[str, float]] = None  # Graded relevance (for NDCG)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    retrieved: list[RetrievalResult]
+    relevant_doc_ids: set[str]  # Ground truth relevant documents
+    relevance_grades: dict[str, float] | None = None  # Graded relevance (for NDCG)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # =============================================================================
 # Individual Metric Functions
 # =============================================================================
 
-def dcg_at_k(relevances: List[float], k: int) -> float:
+def dcg_at_k(relevances: list[float], k: int) -> float:
     """
     Discounted Cumulative Gain at k.
 
@@ -138,8 +137,8 @@ def dcg_at_k(relevances: List[float], k: int) -> float:
 
 
 def ndcg_at_k(
-    retrieved: List[RetrievalResult],
-    relevance_grades: Dict[str, float],
+    retrieved: list[RetrievalResult],
+    relevance_grades: dict[str, float],
     k: int
 ) -> float:
     """
@@ -178,7 +177,7 @@ def ndcg_at_k(
     return dcg / idcg
 
 
-def mrr(queries: List[RetrievalQuery]) -> float:
+def mrr(queries: list[RetrievalQuery]) -> float:
     """
     Mean Reciprocal Rank.
 
@@ -210,8 +209,8 @@ def mrr(queries: List[RetrievalQuery]) -> float:
 
 
 def average_precision(
-    retrieved: List[RetrievalResult],
-    relevant_doc_ids: Set[str]
+    retrieved: list[RetrievalResult],
+    relevant_doc_ids: set[str]
 ) -> float:
     """
     Average Precision for a single query.
@@ -246,7 +245,7 @@ def average_precision(
     return precision_sum / num_relevant
 
 
-def map_score(queries: List[RetrievalQuery]) -> float:
+def map_score(queries: list[RetrievalQuery]) -> float:
     """
     Mean Average Precision.
 
@@ -270,8 +269,8 @@ def map_score(queries: List[RetrievalQuery]) -> float:
 
 
 def precision_at_k(
-    retrieved: List[RetrievalResult],
-    relevant_doc_ids: Set[str],
+    retrieved: list[RetrievalResult],
+    relevant_doc_ids: set[str],
     k: int
 ) -> float:
     """
@@ -297,8 +296,8 @@ def precision_at_k(
 
 
 def recall_at_k(
-    retrieved: List[RetrievalResult],
-    relevant_doc_ids: Set[str],
+    retrieved: list[RetrievalResult],
+    relevant_doc_ids: set[str],
     k: int
 ) -> float:
     """
@@ -323,7 +322,7 @@ def recall_at_k(
     return relevant_in_top_k / len(relevant_doc_ids)
 
 
-def hit_rate(queries: List[RetrievalQuery], k: int = 10) -> float:
+def hit_rate(queries: list[RetrievalQuery], k: int = 10) -> float:
     """
     Hit Rate at k.
 
@@ -365,8 +364,8 @@ class RetrievalEvaluator:
 
     def __init__(
         self,
-        k_values: Optional[List[int]] = None,
-        llm_judge: Optional[Any] = None,  # LLMJudge instance for relevance scoring
+        k_values: list[int] | None = None,
+        llm_judge: Any | None = None,  # LLMJudge instance for relevance scoring
         use_graded_relevance: bool = True,
     ):
         """
@@ -383,7 +382,7 @@ class RetrievalEvaluator:
 
     def evaluate(
         self,
-        queries: List[RetrievalQuery],
+        queries: list[RetrievalQuery],
         aggregate: bool = True
     ) -> RetrievalMetrics:
         """
@@ -400,9 +399,9 @@ class RetrievalEvaluator:
             return RetrievalMetrics()
 
         # Compute NDCG@k for each k
-        ndcg_scores: Dict[int, List[float]] = {k: [] for k in self.k_values}
-        precision_scores: Dict[int, List[float]] = {k: [] for k in self.k_values}
-        recall_scores: Dict[int, List[float]] = {k: [] for k in self.k_values}
+        ndcg_scores: dict[int, list[float]] = {k: [] for k in self.k_values}
+        precision_scores: dict[int, list[float]] = {k: [] for k in self.k_values}
+        recall_scores: dict[int, list[float]] = {k: [] for k in self.k_values}
 
         for query in queries:
             # Get relevance grades (graded or binary)
@@ -410,7 +409,7 @@ class RetrievalEvaluator:
                 rel_grades = query.relevance_grades
             else:
                 # Convert to binary relevance
-                rel_grades = {doc_id: 1.0 for doc_id in query.relevant_doc_ids}
+                rel_grades = dict.fromkeys(query.relevant_doc_ids, 1.0)
 
             for k in self.k_values:
                 # NDCG@k
@@ -444,7 +443,7 @@ class RetrievalEvaluator:
 
     async def evaluate_with_llm(
         self,
-        queries: List[Tuple[str, List[str]]],  # (query_text, retrieved_contents)
+        queries: list[tuple[str, list[str]]],  # (query_text, retrieved_contents)
         k: int = 10,
     ) -> RetrievalMetrics:
         """
@@ -529,9 +528,9 @@ class RetrievalEvaluator:
 
     def evaluate_multihop(
         self,
-        queries: List[RetrievalQuery],
-        paths: List[List[str]],  # Retrieval paths (sequences of doc IDs)
-    ) -> Dict[str, Any]:
+        queries: list[RetrievalQuery],
+        paths: list[list[str]],  # Retrieval paths (sequences of doc IDs)
+    ) -> dict[str, Any]:
         """
         Evaluate multi-hop retrieval paths.
 
@@ -567,10 +566,10 @@ class RetrievalEvaluator:
 
     def evaluate_temporal(
         self,
-        queries: List[RetrievalQuery],
-        timestamps: Dict[str, float],  # doc_id -> timestamp
+        queries: list[RetrievalQuery],
+        timestamps: dict[str, float],  # doc_id -> timestamp
         recency_window_days: float = 7.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Evaluate temporal retrieval (recency bias analysis).
 
@@ -629,9 +628,9 @@ class RetrievalEvaluator:
 def create_retrieval_query(
     query_id: str,
     query_text: str,
-    retrieved_doc_ids: List[str],
-    relevant_doc_ids: List[str],
-    relevance_grades: Optional[Dict[str, float]] = None,
+    retrieved_doc_ids: list[str],
+    relevant_doc_ids: list[str],
+    relevance_grades: dict[str, float] | None = None,
 ) -> RetrievalQuery:
     """
     Convenience function to create a RetrievalQuery.
@@ -659,9 +658,9 @@ def create_retrieval_query(
 
 
 def evaluate_simple(
-    retrieved_doc_ids: List[str],
-    relevant_doc_ids: List[str],
-    k_values: Optional[List[int]] = None,
+    retrieved_doc_ids: list[str],
+    relevant_doc_ids: list[str],
+    k_values: list[int] | None = None,
 ) -> RetrievalMetrics:
     """
     Simple evaluation with a single query.

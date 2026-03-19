@@ -35,12 +35,13 @@ Author: HoloLoom Bayesian Optimization Team
 Date: 2025-11-03
 """
 
-from typing import List, Tuple, Optional, Callable, Dict, Any
+import warnings
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import numpy as np
-import warnings
+from typing import Any
 
+import numpy as np
 
 # ============================================================================
 # Kernel Functions
@@ -187,16 +188,16 @@ class GaussianProcess:
 
     kernel: Kernel
     noise_variance: float = 0.01     # Observation noise σ²
-    mean_function: Optional[Callable[[np.ndarray], float]] = None
+    mean_function: Callable[[np.ndarray], float] | None = None
 
     # Data
     X: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
     y: np.ndarray = field(default_factory=lambda: np.zeros(0))
 
     # Cached computations
-    K_inv: Optional[np.ndarray] = None
-    alpha: Optional[np.ndarray] = None  # K_inv @ y
-    L: Optional[np.ndarray] = None      # Cholesky factor
+    K_inv: np.ndarray | None = None
+    alpha: np.ndarray | None = None  # K_inv @ y
+    L: np.ndarray | None = None      # Cholesky factor
 
     def __post_init__(self):
         if self.mean_function is None:
@@ -254,7 +255,7 @@ class GaussianProcess:
         self,
         X_test: np.ndarray,
         return_std: bool = True
-    ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+    ) -> tuple[np.ndarray, np.ndarray | None]:
         """
         Predict at test points.
 
@@ -299,7 +300,7 @@ class GaussianProcess:
         self,
         X_test: np.ndarray,
         n_samples: int = 1,
-        rng: Optional[np.random.Generator] = None
+        rng: np.random.Generator | None = None
     ) -> np.ndarray:
         """
         Sample functions from GP posterior.
@@ -351,7 +352,7 @@ class GPThompsonSampling:
         self.rng = np.random.default_rng()
         self.iteration = 0
 
-    def select_action(self) -> Tuple[np.ndarray, Dict[str, Any]]:
+    def select_action(self) -> tuple[np.ndarray, dict[str, Any]]:
         """
         Select next action via Thompson Sampling.
 
@@ -428,7 +429,7 @@ class GPUpperConfidenceBound:
     def __post_init__(self):
         self.iteration = 0
 
-    def select_action(self) -> Tuple[np.ndarray, Dict[str, Any]]:
+    def select_action(self) -> tuple[np.ndarray, dict[str, Any]]:
         """
         Select next action via GP-UCB.
 
@@ -482,7 +483,7 @@ class GPUpperConfidenceBound:
 
 def create_gp_thompson_sampling(
     candidate_set: np.ndarray,
-    kernel_config: Optional[KernelConfig] = None,
+    kernel_config: KernelConfig | None = None,
     noise_variance: float = 0.01
 ) -> GPThompsonSampling:
     """
@@ -507,7 +508,7 @@ def create_gp_thompson_sampling(
 
 def create_gp_ucb(
     candidate_set: np.ndarray,
-    kernel_config: Optional[KernelConfig] = None,
+    kernel_config: KernelConfig | None = None,
     noise_variance: float = 0.01,
     beta: float = 2.0,
     adaptive_beta: bool = False
@@ -548,10 +549,10 @@ def create_gp_ucb(
 class GaussianProcessBandit:
     """Backwards-compatible wrapper exposing the legacy GP bandit API."""
 
-    kernel_config: Optional[KernelConfig] = None
+    kernel_config: KernelConfig | None = None
     sampler_type: str = "thompson"
     noise_variance: float = 0.01
-    candidate_set: Optional[np.ndarray] = None
+    candidate_set: np.ndarray | None = None
     n_thompson_samples: int = 1
 
     def __post_init__(self):
@@ -565,15 +566,15 @@ class GaussianProcessBandit:
         )
 
         # Observation history for tests/introspection
-        self.X_observed: List[np.ndarray] = []
-        self.y_observed: List[float] = []
+        self.X_observed: list[np.ndarray] = []
+        self.y_observed: list[float] = []
 
         # Candidate set (optional, used for select_action helper)
         self._candidate_set = self._ensure_2d(self.candidate_set)
         self._rng = np.random.default_rng()
 
     @staticmethod
-    def _ensure_2d(points: Optional[np.ndarray]) -> Optional[np.ndarray]:
+    def _ensure_2d(points: np.ndarray | None) -> np.ndarray | None:
         if points is None:
             return None
         arr = np.asarray(points, dtype=float)
@@ -595,7 +596,7 @@ class GaussianProcessBandit:
             if dim > 1:
                 self._candidate_set = np.zeros((50, dim))
 
-    def predict(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def predict(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Predict mean and std for candidate points."""
         X = np.asarray(X, dtype=float)
         if X.ndim == 1:
@@ -604,7 +605,7 @@ class GaussianProcessBandit:
         mean, std = self._gp.predict(X, return_std=True)
         return mean, std if std is not None else np.zeros(len(mean))
 
-    def thompson_sample(self, X: np.ndarray) -> Tuple[np.ndarray, Dict[str, Any]]:
+    def thompson_sample(self, X: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
         """Sample an action via Thompson Sampling on provided candidates."""
         if self.sampler_type != "thompson":
             raise RuntimeError("Thompson sampling requested on non-Thompson bandit")
@@ -624,7 +625,7 @@ class GaussianProcessBandit:
             'sampled_value': float(samples[idx]),
         }
 
-    def select_action(self, candidate_set: Optional[np.ndarray] = None) -> Tuple[np.ndarray, Dict[str, Any]]:
+    def select_action(self, candidate_set: np.ndarray | None = None) -> tuple[np.ndarray, dict[str, Any]]:
         """Convenience helper mirroring the legacy API."""
         points = self._ensure_2d(candidate_set) or self._candidate_set
         if points is None:
@@ -658,7 +659,7 @@ class GaussianProcessUCB(GaussianProcessBandit):
         mean, std = self.predict(X)
         return mean + self._current_beta() * std
 
-    def select_action(self, candidate_set: Optional[np.ndarray] = None) -> Tuple[np.ndarray, Dict[str, Any]]:
+    def select_action(self, candidate_set: np.ndarray | None = None) -> tuple[np.ndarray, dict[str, Any]]:
         points = self._ensure_2d(candidate_set) or self._candidate_set
         if points is None:
             raise ValueError("candidate_set must be provided for select_action")

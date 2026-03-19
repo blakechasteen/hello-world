@@ -5,9 +5,10 @@ These types define the contract between Portal Server, Node Daemon, and Shuttle 
 """
 
 from datetime import datetime
-from typing import Optional, Any, Dict, List
-from pydantic import BaseModel, Field
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class NodeCapabilities(BaseModel):
@@ -70,7 +71,7 @@ class JobRequest(BaseModel):
 
     job_id: str = Field(description="Unique job identifier")
     module_id: str = Field(description="WASM module identifier")
-    wasm_base64: Optional[str] = Field(
+    wasm_base64: str | None = Field(
         default=None,
         description="Base64-encoded WASM bytes (if not using registered module)"
     )
@@ -105,10 +106,10 @@ class JobResult(BaseModel):
 
     job_id: str
     status: JobStatus
-    output_json: Optional[Any] = None
-    error: Optional[str] = None
-    execution_time_ms: Optional[float] = None
-    node_id: Optional[str] = None
+    output_json: Any | None = None
+    error: str | None = None
+    execution_time_ms: float | None = None
+    node_id: str | None = None
 
     class Config:
         json_schema_extra = {
@@ -165,9 +166,9 @@ class ModuleManifest(BaseModel):
     name: str = Field(description="Human-readable name")
     version: str = Field(default="1.0.0")
     entry_function: str = Field(default="run")
-    input_schema: Optional[Dict[str, Any]] = None
-    output_schema: Optional[Dict[str, Any]] = None
-    description: Optional[str] = None
+    input_schema: dict[str, Any] | None = None
+    output_schema: dict[str, Any] | None = None
+    description: str | None = None
 
     class Config:
         json_schema_extra = {

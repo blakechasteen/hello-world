@@ -8,16 +8,16 @@ Extracted from WeavingOrchestrator.__init__() (March 2026 Refactor).
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
     from hololoom.config import Config
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 logger = logging.getLogger(__name__)
 
 
-def initialize_awareness(orch: 'WeavingOrchestrator', awareness_layer: Optional[Any]) -> None:
+def initialize_awareness(orch: WeavingOrchestrator, awareness_layer: Any | None) -> None:
     """Initialize awareness layer (Consciousness Integration - Phase 1)."""
     orch.awareness_layer = awareness_layer
     if orch.awareness_layer is None and hasattr(orch, 'semantic_spectrum'):
@@ -35,9 +35,9 @@ def initialize_awareness(orch: 'WeavingOrchestrator', awareness_layer: Optional[
 
 
 def initialize_conscience(
-    orch: 'WeavingOrchestrator',
+    orch: WeavingOrchestrator,
     enable_conscience: bool,
-    conscience_adapter: Optional[Any],
+    conscience_adapter: Any | None,
     conscience_available: bool,
 ) -> None:
     """Initialize conscience adapter (Phase 2C)."""
@@ -58,10 +58,10 @@ def initialize_conscience(
 
 
 def initialize_jenny_runtime(
-    orch: 'WeavingOrchestrator',
+    orch: WeavingOrchestrator,
     enable_jenny: bool,
     jenny_persist_path: str,
-    cfg: 'Config',
+    cfg: Config,
     jenny_mrf_available: bool,
 ) -> None:
     """Initialize Jenny Generative UI Runtime (December 2025 - MVP Week 4)."""
@@ -75,8 +75,8 @@ def initialize_jenny_runtime(
         return
 
     try:
-        from hololoom.visualization.jenny_runtime import JennyRuntime, JennyConfig
         from hololoom.visualization.jenny_renderer import RenderTarget
+        from hololoom.visualization.jenny_runtime import JennyConfig, JennyRuntime
 
         # Use module-level renderer map
         from hololoom.weaving_orchestrator import _get_jenny_renderer_map
@@ -127,7 +127,7 @@ def initialize_jenny_runtime(
         orch.jenny_learner = None
 
 
-def initialize_semantic_state(orch: 'WeavingOrchestrator') -> None:
+def initialize_semantic_state(orch: WeavingOrchestrator) -> None:
     """Initialize semantic state tracking (Phase 8 - December 2025)."""
     from hololoom.semantic_calculus import SemanticToolSelector
 

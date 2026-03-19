@@ -18,10 +18,7 @@ Usage:
 """
 
 import asyncio
-import json
 import sys
-import os
-from pathlib import Path
 
 # Enable UTF-8 output on Windows
 if sys.platform == 'win32':
@@ -44,7 +41,6 @@ async def show_api_examples(db_path: str = "./workflows.db"):
     print("Step 2: Marketplace API Examples")
     print("=" * 60)
 
-    from .workflow_marketplace import create_marketplace_router
     from .workflow_persistence import WorkflowPersistence
 
     # Initialize persistence
@@ -116,7 +112,7 @@ async def show_api_examples(db_path: str = "./workflows.db"):
     print(f"  Total Templates: {total}")
     print(f"  Featured: {featured_count}")
     print(f"  Total Usage: {total_usage}")
-    print(f"  By Difficulty:")
+    print("  By Difficulty:")
     print(f"    🟢 Beginner: {by_difficulty['beginner']}")
     print(f"    🟡 Intermediate: {by_difficulty['intermediate']}")
     print(f"    🔴 Advanced: {by_difficulty['advanced']}")

@@ -22,14 +22,13 @@ Author: HoloLoom Team
 Date: 2025-12-03
 """
 
-import re
 import logging
-from typing import Dict, Any, List, Optional
+import re
 from datetime import datetime, timedelta
+from typing import Any
 
 from ..judgment import Concern
 from .base import BaseLens
-
 
 logger = logging.getLogger("hololoom.conscience.lenses.power")
 
@@ -106,9 +105,9 @@ class PowerLens(BaseLens):
         self,
         threshold: float = 0.5,
         enabled: bool = True,
-        categories: Optional[List[str]] = None,
-        resource_limits: Optional[Dict[str, float]] = None,
-        convergence_guard: Optional[Any] = None,
+        categories: list[str] | None = None,
+        resource_limits: dict[str, float] | None = None,
+        convergence_guard: Any | None = None,
     ):
         """
         Initialize PowerLens.
@@ -140,7 +139,7 @@ class PowerLens(BaseLens):
         self._convergence_guard = convergence_guard
 
         # Track resource usage over time
-        self._resource_usage: Dict[str, List[Dict[str, Any]]] = {
+        self._resource_usage: dict[str, list[dict[str, Any]]] = {
             rt: [] for rt in self.resource_limits
         }
 
@@ -155,8 +154,8 @@ class PowerLens(BaseLens):
     async def _examine_impl(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Examine action for potential power-seeking.
 
@@ -167,7 +166,7 @@ class PowerLens(BaseLens):
         Returns:
             List of power-seeking concerns
         """
-        concerns: List[Concern] = []
+        concerns: list[Concern] = []
 
         # Check each enabled category
         for cat in self.categories:
@@ -192,8 +191,8 @@ class PowerLens(BaseLens):
         self,
         action: str,
         category: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """Check for power-seeking patterns in a specific category."""
         concerns = []
 
@@ -229,8 +228,8 @@ class PowerLens(BaseLens):
     def _check_resource_usage(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Check for unusual resource usage patterns.
 
@@ -267,7 +266,7 @@ class PowerLens(BaseLens):
                 concerns.append(
                     Concern(
                         lens=self.name,
-                        category=f"power:resource_limit",
+                        category="power:resource_limit",
                         description=f"Approaching {resource_type} limit: {usage_ratio:.0%} of {limit}",
                         confidence=0.7 + (usage_ratio - 0.9) * 3,  # 0.7-1.0
                         evidence={
@@ -283,7 +282,7 @@ class PowerLens(BaseLens):
                 concerns.append(
                     Concern(
                         lens=self.name,
-                        category=f"power:resource_warning",
+                        category="power:resource_warning",
                         description=f"High {resource_type} usage: {usage_ratio:.0%} of {limit}",
                         confidence=0.4 + (usage_ratio - 0.75) * 2,  # 0.4-0.7
                         evidence={
@@ -305,7 +304,7 @@ class PowerLens(BaseLens):
                         concerns.append(
                             Concern(
                                 lens=self.name,
-                                category=f"power:resource_spike",
+                                category="power:resource_spike",
                                 description=f"Unusual spike in {resource_type} consumption",
                                 confidence=0.6,
                                 evidence={
@@ -322,8 +321,8 @@ class PowerLens(BaseLens):
     async def _check_convergence_guard(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Check action against wrapped InstrumentalConvergenceGuard.
 
@@ -353,7 +352,7 @@ class PowerLens(BaseLens):
                     concerns.append(
                         Concern(
                             lens=self.name,
-                            category=f"power:convergence_violation",
+                            category="power:convergence_violation",
                             description=f"Convergence guard violation: {reason}",
                             confidence=violation_confidence.get(violation, 0.5),
                             evidence={

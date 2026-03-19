@@ -15,17 +15,13 @@ Author: Claude Code
 Date: 2025-11-24
 """
 
-import asyncio
 import time
-from typing import Any, AsyncIterator, Dict, List, Optional, Set
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
-from hololoom.memory.adaptive_expansion import (
-    AdaptiveExpander,
-    RelevanceScorer,
-    BudgetTracker
-)
+from hololoom.memory.adaptive_expansion import AdaptiveExpander, BudgetTracker, RelevanceScorer
 
 
 class ChunkYieldStrategy(str, Enum):
@@ -51,15 +47,15 @@ class ContextChunk:
         is_final: True if this is the last chunk
         metadata: Additional chunk metadata
     """
-    nodes: List[str]
-    contents: Dict[str, str]
-    relevance_scores: Dict[str, float]
+    nodes: list[str]
+    contents: dict[str, str]
+    relevance_scores: dict[str, float]
     hop_distance: int
     token_count: int
     cumulative_tokens: int
     chunk_index: int
     is_final: bool
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def avg_relevance(self) -> float:
@@ -94,7 +90,7 @@ class StreamingResult:
     max_hop_reached: int
     stopping_reason: str
     execution_time_ms: float
-    chunks_summary: List[Dict[str, Any]]
+    chunks_summary: list[dict[str, Any]]
 
     @property
     def avg_chunk_size_tokens(self) -> float:
@@ -139,14 +135,14 @@ class StreamingContextBuilder:
     async def stream_expansion(
         self,
         query: str,
-        seed_nodes: List[str],
+        seed_nodes: list[str],
         graph: Any,
         token_budget: int = 2000,
         chunk_size: int = 500,
         min_relevance: float = 0.3,
         max_hops: int = 5,
-        importance_scores: Optional[Dict[str, float]] = None,
-        node_contents: Optional[Dict[str, str]] = None,
+        importance_scores: dict[str, float] | None = None,
+        node_contents: dict[str, str] | None = None,
         yield_strategy: ChunkYieldStrategy = ChunkYieldStrategy.HYBRID
     ) -> AsyncIterator[ContextChunk]:
         """
@@ -198,14 +194,14 @@ class StreamingContextBuilder:
         chunks_summary = []
 
         # Current chunk being accumulated
-        current_chunk_nodes: List[str] = []
-        current_chunk_contents: Dict[str, str] = {}
-        current_chunk_relevances: Dict[str, float] = {}
+        current_chunk_nodes: list[str] = []
+        current_chunk_contents: dict[str, str] = {}
+        current_chunk_relevances: dict[str, float] = {}
         current_chunk_tokens = 0
         current_hop = 0
 
         # Expansion state
-        visited: Set[str] = set()
+        visited: set[str] = set()
         priority_queue = []
 
         # Initialize with seed nodes
@@ -460,7 +456,7 @@ class StreamingContextBuilder:
             chunks_summary=chunks_summary
         )
 
-    def _get_neighbors(self, graph: Any, node_id: str) -> List[tuple]:
+    def _get_neighbors(self, graph: Any, node_id: str) -> list[tuple]:
         """
         Get neighbors of a node with edge types.
 
@@ -496,7 +492,7 @@ class StreamingContextBuilder:
 
         return neighbors
 
-    def get_last_result(self) -> Optional[StreamingResult]:
+    def get_last_result(self) -> StreamingResult | None:
         """Get result summary from last streaming expansion."""
         return getattr(self, '_last_result', None)
 
@@ -504,14 +500,14 @@ class StreamingContextBuilder:
 # Convenience function
 async def stream_context_expansion(
     query: str,
-    seed_nodes: List[str],
+    seed_nodes: list[str],
     graph: Any,
     token_budget: int = 2000,
     chunk_size: int = 500,
     min_relevance: float = 0.3,
     max_hops: int = 5,
-    importance_scores: Optional[Dict[str, float]] = None,
-    node_contents: Optional[Dict[str, str]] = None,
+    importance_scores: dict[str, float] | None = None,
+    node_contents: dict[str, str] | None = None,
     yield_strategy: ChunkYieldStrategy = ChunkYieldStrategy.HYBRID
 ) -> AsyncIterator[ContextChunk]:
     """

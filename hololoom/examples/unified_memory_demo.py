@@ -20,17 +20,11 @@ Simple Query Example:
 
 import asyncio
 import logging
-from datetime import datetime
 
 # Protocol and stores
-from hololoom.memory.protocol import (
-    Memory,
-    Strategy,
-    create_unified_memory
-)
-from hololoom.memory.unified import UnifiedMemory
-
+from hololoom.memory.protocol import Strategy, create_unified_memory
 from hololoom.memory.stores import InMemoryStore
+from hololoom.memory.unified import UnifiedMemory
 
 # Optional: Try to import production backends
 try:
@@ -52,7 +46,7 @@ except ImportError:
     _HAVE_QDRANT = False
 
 try:
-    from hololoom.memory.stores.hybrid_store import HybridMemoryStore, BackendConfig
+    from hololoom.memory.stores.hybrid_store import BackendConfig, HybridMemoryStore
     _HAVE_HYBRID = True
 except ImportError:
     _HAVE_HYBRID = False
@@ -78,11 +72,11 @@ async def example_1_in_memory():
     print("\n" + "="*70)
     print("EXAMPLE 1: In-Memory Store (No External Dependencies)")
     print("="*70 + "\n")
-    
+
     # Create store
     store = InMemoryStore()
     memory = UnifiedMemory(backend=store)
-    
+
     print("1. Storing memories...")
     # Store some memories
     mem1 = await memory.store(
@@ -90,44 +84,44 @@ async def example_1_in_memory():
         context={'place': 'apiary', 'time': 'morning'}
     )
     print(f"   ✓ Stored: {mem1}")
-    
+
     mem2 = await memory.store(
         "Need to prep hives for winter - add insulation",
         context={'place': 'apiary', 'time': 'evening'}
     )
     print(f"   ✓ Stored: {mem2}")
-    
+
     mem3 = await memory.store(
         "Harvested 2 gallons of honey from Hive Matriarch",
         context={'place': 'apiary', 'time': 'afternoon'}
     )
     print(f"   ✓ Stored: {mem3}")
-    
+
     print("\n2. Recalling memories with different strategies...")
-    
+
     # Semantic search
     print("\n   Strategy: SEMANTIC (text similarity)")
     results = await memory.recall("winter preparation", strategy=Strategy.SEMANTIC)
     for i, mem in enumerate(results, 1):
         print(f"     [{i}] Score: {mem.relevance:.3f} | {mem.text[:60]}...")
-    
+
     # Temporal search
     print("\n   Strategy: TEMPORAL (most recent)")
     results = await memory.recall("hive", strategy=Strategy.TEMPORAL)
     for i, mem in enumerate(results, 1):
         print(f"     [{i}] Score: {mem.relevance:.3f} | {mem.text[:60]}...")
-    
+
     # Fused search
     print("\n   Strategy: FUSED (combined)")
     results = await memory.recall("honey bees", strategy=Strategy.FUSED)
     for i, mem in enumerate(results, 1):
         print(f"     [{i}] Score: {mem.relevance:.3f} | {mem.text[:60]}...")
-    
+
     print("\n3. Health check...")
     health = await memory.health_check()
     print(f"   Status: {health['status']}")
     print(f"   Memory count: {health['metrics'].get('total_memories', 'unknown')}")
-    
+
     print("\n✓ Example 1 complete!\n")
 
 
@@ -149,7 +143,7 @@ async def example_2_hybrid():
     print("\n" + "="*70)
     print("EXAMPLE 2: Hybrid Store (Mem0 + Neo4j + Qdrant)")
     print("="*70 + "\n")
-    
+
     # Check dependencies
     available = []
     if _HAVE_MEM0:
@@ -158,19 +152,19 @@ async def example_2_hybrid():
         available.append("Neo4j")
     if _HAVE_QDRANT:
         available.append("Qdrant")
-    
+
     if not available:
         print("❌ No production backends available!")
         print("\nTo run this example, install:")
         print("  pip install mem0ai neo4j qdrant-client sentence-transformers")
         print("\nAnd ensure Neo4j and Qdrant are running.")
         return
-    
+
     print(f"Available backends: {', '.join(available)}\n")
-    
+
     # Build backend list
     backends = []
-    
+
     if _HAVE_MEM0:
         try:
             mem0_store = Mem0MemoryStore(user_id="blake")
@@ -182,7 +176,7 @@ async def example_2_hybrid():
             print("✓ Mem0 backend initialized")
         except Exception as e:
             print(f"⚠ Mem0 initialization failed: {e}")
-    
+
     if _HAVE_NEO4J:
         try:
             neo4j_store = Neo4jMemoryStore(
@@ -198,7 +192,7 @@ async def example_2_hybrid():
             print("✓ Neo4j backend initialized")
         except Exception as e:
             print(f"⚠ Neo4j initialization failed: {e}")
-    
+
     if _HAVE_QDRANT:
         try:
             qdrant_store = QdrantMemoryStore(
@@ -212,17 +206,17 @@ async def example_2_hybrid():
             print("✓ Qdrant backend initialized")
         except Exception as e:
             print(f"⚠ Qdrant initialization failed: {e}")
-    
+
     if not backends:
         print("\n❌ No backends successfully initialized")
         return
-    
+
     # Create hybrid store
     hybrid = HybridMemoryStore(backends=backends, fusion_method="weighted")
     memory = UnifiedMemory(backend=hybrid)
-    
+
     print(f"\n1. Storing memories across {len(backends)} backends...")
-    
+
     mem1 = await memory.store(
         "Inspected Hive Jodi - 8 frames of brood, 3 frames honey, queen active",
         context={
@@ -233,7 +227,7 @@ async def example_2_hybrid():
         }
     )
     print(f"   ✓ Stored: {mem1}")
-    
+
     mem2 = await memory.store(
         "Winter prep checklist: insulation, entrance reducers, mouse guards, candy boards",
         context={
@@ -244,7 +238,7 @@ async def example_2_hybrid():
         }
     )
     print(f"   ✓ Stored: {mem2}")
-    
+
     mem3 = await memory.store(
         "Harvested 2 gallons honey from Hive Matriarch. Excellent flow this year.",
         context={
@@ -255,41 +249,41 @@ async def example_2_hybrid():
         }
     )
     print(f"   ✓ Stored: {mem3}")
-    
+
     # Small delay for backends to index
     await asyncio.sleep(2)
-    
+
     print("\n2. Hybrid recall with weighted fusion...")
     results = await memory.recall(
         "how should I prepare hives for winter?",
         strategy=Strategy.FUSED
     )
-    
+
     print(f"\n   Found {len(results)} memories:")
     # Note: Accessing fusion metadata is not supported in the simplified UnifiedMemory API
     # print(f"   Fusion method: {results.metadata['fusion_method']}")
     # print(f"   Backends used: {results.metadata.get('backends_used', [])}")
-    
+
     for i, mem in enumerate(results, 1):
         try:
             sources = mem.context.get('fusion_sources', ['unknown'])
             # Metadata might be merged into context
         except Exception:
             sources = ['weighted']
-            
+
         print(f"\n   [{i}] Score: {mem.relevance:.3f} | Sources: {sources}")
         print(f"       {mem.text[:80]}...")
-    
+
     print("\n3. Health check across all backends...")
     health = await memory.health_check()
     print(f"\n   Overall status: {health['status']}")
     print("   Components:")
-    
+
     for comp_name, comp_data in health['components'].items():
         available = comp_data.get('available', False)
         status_emoji = "✓" if available else "✗"
         print(f"   {status_emoji} {comp_name}: {comp_data}")
-    
+
     print("\n✓ Example 2 complete!\n")
 
 
@@ -305,27 +299,27 @@ async def example_3_factory():
     print("\n" + "="*70)
     print("EXAMPLE 3: Factory with Graceful Degradation")
     print("="*70 + "\n")
-    
+
     # Factory auto-detects available backends
     memory = await create_unified_memory(user_id="blake")
-    
+
     print("1. Checking what's available...")
     health = await memory.health_check()
     backend_info = health['components'].get('backend', {})
     print(f"   Store backend: {backend_info.get('type', 'unknown')}")
     print(f"   Conductor: {health['components'].get('conductor', {}).get('enabled', False)}")
-    
+
     print("\n2. Storing a test memory...")
     mem_id = await memory.store(
         "Test memory from factory example",
         context={'test': True}
     )
     print(f"   ✓ Stored: {mem_id}")
-    
+
     print("\n3. Recalling...")
     results = await memory.recall("test")
     print(f"   Found {len(results)} memories")
-    
+
     print("\n✓ Example 3 complete!\n")
 
 
@@ -343,18 +337,18 @@ async def main():
     print("  ✓ Graceful degradation (missing backends don't break)")
     print("  ✓ Async-first (non-blocking operations)")
     print("  ✓ Multi-backend fusion (Mem0 + Neo4j + Qdrant)")
-    
+
     # Run examples
     await example_1_in_memory()
-    
+
     try:
         await example_2_hybrid()
     except Exception as e:
         logger.error(f"Example 2 failed: {e}", exc_info=True)
         print("\n⚠ Example 2 skipped (backends not available)")
-    
+
     await example_3_factory()
-    
+
     print("\n" + "="*70)
     print("ALL EXAMPLES COMPLETE")
     print("="*70)

@@ -6,19 +6,18 @@ Terminal dashboard showing system metrics, awareness, and performance.
 Tufte-style data visualization in text format.
 """
 
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Any
-from datetime import datetime
 import time
+from dataclasses import dataclass
+from typing import Any, Optional
 
 try:
-    from rich.console import Console
-    from rich.panel import Panel
-    from rich.table import Table
-    from rich.layout import Layout
-    from rich.text import Text
     from rich.columns import Columns
-    from rich.progress import Progress, BarColumn, TextColumn
+    from rich.console import Console
+    from rich.layout import Layout
+    from rich.panel import Panel
+    from rich.progress import BarColumn, Progress, TextColumn
+    from rich.table import Table
+    from rich.text import Text
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
@@ -30,7 +29,7 @@ class MetricValue:
     name: str
     current: float
     unit: str = ""
-    history: List[float] = None
+    history: list[float] = None
     min_val: float = 0.0
     max_val: float = 1.0
 
@@ -83,7 +82,7 @@ class MetricsPanel:
             raise ImportError("Rich library required")
 
         self.console = console or Console()
-        self.metrics: Dict[str, MetricValue] = {}
+        self.metrics: dict[str, MetricValue] = {}
         self.start_time = time.time()
 
     def set_metric(self, name: str, value: float, unit: str = "",
@@ -228,7 +227,7 @@ class MetricsPanel:
             # Assume 100x speedup for cache hits
             speedup = hit_rate.current * 100
             content.append("\n")
-            content.append(f"Est. Speedup: ", style="dim")
+            content.append("Est. Speedup: ", style="dim")
             content.append(f"[bold green]{speedup:.0f}x[/bold green] avg")
 
         return Panel(content, title="[bold yellow]Cache[/bold yellow]", border_style="yellow")

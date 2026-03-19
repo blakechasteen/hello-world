@@ -7,7 +7,7 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 
 @dataclass
@@ -22,10 +22,10 @@ class GovernanceContext:
     request_metadata: dict = field(default_factory=dict)
 
     # ── Accumulated by middleware ──
-    rbac_decision: Optional[str] = None        # "ALLOW" / "DENY" / …
-    safety_evaluation: Optional[Any] = None     # SafetyResult from guardrails
-    reasoning_result: Optional[Any] = None      # orchestrator.reason() output
-    response: Optional[Any] = None              # final HTTP-ready response
+    rbac_decision: str | None = None        # "ALLOW" / "DENY" / …
+    safety_evaluation: Any | None = None     # SafetyResult from guardrails
+    reasoning_result: Any | None = None      # orchestrator.reason() output
+    response: Any | None = None              # final HTTP-ready response
 
     # ── Open annotations bag (middleware can stash anything) ──
     annotations: dict = field(default_factory=dict)

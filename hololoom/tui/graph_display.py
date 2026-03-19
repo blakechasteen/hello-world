@@ -6,16 +6,16 @@ ASCII visualization of knowledge graph in terminal.
 Renders nodes, edges, and relationships as text art.
 """
 
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Set, Tuple
 import math
+from dataclasses import dataclass
+from typing import Optional
 
 try:
     from rich.console import Console
     from rich.panel import Panel
     from rich.table import Table
-    from rich.tree import Tree
     from rich.text import Text
+    from rich.tree import Tree
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
@@ -80,8 +80,8 @@ class GraphDisplay:
             raise ImportError("Rich library required")
 
         self.console = console or Console()
-        self.nodes: Dict[str, GraphNode] = {}
-        self.edges: List[GraphEdge] = []
+        self.nodes: dict[str, GraphNode] = {}
+        self.edges: list[GraphEdge] = []
 
     def add_node(self, node_id: str, label: str = None,
                  node_type: str = "entity", activation: float = 0.0):
@@ -130,9 +130,9 @@ class GraphDisplay:
         self.nodes.clear()
         self.edges.clear()
 
-    def _get_adjacency(self) -> Dict[str, List[Tuple[str, str]]]:
+    def _get_adjacency(self) -> dict[str, list[tuple[str, str]]]:
         """Build adjacency list."""
-        adj: Dict[str, List[Tuple[str, str]]] = {n: [] for n in self.nodes}
+        adj: dict[str, list[tuple[str, str]]] = {n: [] for n in self.nodes}
         for edge in self.edges:
             if edge.source in adj:
                 adj[edge.source].append((edge.target, edge.edge_type))
@@ -149,7 +149,7 @@ class GraphDisplay:
             root = max(self.nodes.keys(), key=lambda n: len(adj.get(n, [])))
 
         # Build tree recursively
-        visited: Set[str] = set()
+        visited: set[str] = set()
 
         def build_tree(node_id: str, depth: int = 0) -> Tree:
             if depth > max_depth or node_id in visited:
@@ -277,7 +277,7 @@ class GraphDisplay:
         # Convert to string
         return '\n'.join(''.join(row) for row in canvas)
 
-    def _simple_layout(self, width: int, height: int) -> Dict[str, Tuple[int, int]]:
+    def _simple_layout(self, width: int, height: int) -> dict[str, tuple[int, int]]:
         """Simple circular layout for nodes."""
         positions = {}
         n = len(self.nodes)
@@ -295,7 +295,7 @@ class GraphDisplay:
 
         return positions
 
-    def _draw_line(self, canvas: List[List[str]], x1: int, y1: int, x2: int, y2: int):
+    def _draw_line(self, canvas: list[list[str]], x1: int, y1: int, x2: int, y2: int):
         """Draw a line on ASCII canvas using Bresenham's algorithm."""
         dx = abs(x2 - x1)
         dy = abs(y2 - y1)
@@ -383,7 +383,7 @@ class SourceAttributionDisplay:
             raise ImportError("Rich library required")
         self.console = console or Console()
 
-    def render_sources(self, sources: List[Dict]) -> Panel:
+    def render_sources(self, sources: list[dict]) -> Panel:
         """
         Render source attribution.
 
@@ -415,7 +415,7 @@ class SourceAttributionDisplay:
             border_style="green"
         )
 
-    def print_sources(self, sources: List[Dict]):
+    def print_sources(self, sources: list[dict]):
         """Print sources to console."""
         self.console.print(self.render_sources(sources))
 

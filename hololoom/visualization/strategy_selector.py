@@ -6,12 +6,16 @@ Implements Edward Tufte principles for data visualization.
 
 import re
 from dataclasses import dataclass
-from typing import List
 from enum import Enum
 
 from .dashboard import (
-    PanelSpec, PanelType, PanelSize, LayoutType,
-    ComplexityLevel, DashboardStrategy, SpacetimeLike
+    ComplexityLevel,
+    DashboardStrategy,
+    LayoutType,
+    PanelSize,
+    PanelSpec,
+    PanelType,
+    SpacetimeLike,
 )
 
 
@@ -116,7 +120,7 @@ class StrategySelector:
             complexity_level=characteristics.complexity_level
         )
 
-    def _generate_candidates(self, characteristics: QueryCharacteristics, spacetime: SpacetimeLike) -> List[PanelSpec]:
+    def _generate_candidates(self, characteristics: QueryCharacteristics, spacetime: SpacetimeLike) -> list[PanelSpec]:
         """Generate candidate panels."""
         candidates = [PanelSpec(PanelType.METRIC, "confidence", PanelSize.SMALL, 100, "Confidence")]
 
@@ -141,11 +145,11 @@ class StrategySelector:
 
         return candidates
 
-    def _select_top_panels(self, prioritized: List[PanelSpec], complexity: ComplexityLevel) -> List[PanelSpec]:
+    def _select_top_panels(self, prioritized: list[PanelSpec], complexity: ComplexityLevel) -> list[PanelSpec]:
         max_panels = {ComplexityLevel.LITE: 3, ComplexityLevel.FAST: 6, ComplexityLevel.FULL: 12, ComplexityLevel.RESEARCH: 999}
         return prioritized[:max_panels.get(complexity, 6)]
 
-    def _arrange_narrative(self, panels: List[PanelSpec]) -> List[PanelSpec]:
+    def _arrange_narrative(self, panels: list[PanelSpec]) -> list[PanelSpec]:
         """Arrange for narrative flow."""
         metrics = [p for p in panels if p.type == PanelType.METRIC]
         text = [p for p in panels if p.type == PanelType.TEXT]
@@ -153,7 +157,7 @@ class StrategySelector:
         networks = [p for p in panels if p.type == PanelType.NETWORK]
         return metrics + text + timelines + networks
 
-    def _select_layout(self, panels: List[PanelSpec]) -> LayoutType:
+    def _select_layout(self, panels: list[PanelSpec]) -> LayoutType:
         panel_count = len(panels)
         if panel_count <= 3:
             return LayoutType.METRIC

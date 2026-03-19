@@ -16,13 +16,12 @@ Author: HoloLoom Team
 Date: 2025-12-03
 """
 
-import re
 import logging
-from typing import Dict, Any, List, Optional
+import re
+from typing import Any
 
 from ..judgment import Concern
 from .base import BaseLens
-
 
 logger = logging.getLogger("hololoom.conscience.lenses.harm")
 
@@ -99,8 +98,8 @@ class HarmLens(BaseLens):
         self,
         threshold: float = 0.5,
         enabled: bool = True,
-        categories: Optional[List[str]] = None,
-        safety_guardrails: Optional[Any] = None,
+        categories: list[str] | None = None,
+        safety_guardrails: Any | None = None,
     ):
         """
         Initialize HarmLens.
@@ -127,8 +126,8 @@ class HarmLens(BaseLens):
     async def _examine_impl(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Examine action for potential harm.
 
@@ -139,7 +138,7 @@ class HarmLens(BaseLens):
         Returns:
             List of harm concerns
         """
-        concerns: List[Concern] = []
+        concerns: list[Concern] = []
 
         # Check each enabled category
         for cat in self.categories:
@@ -160,8 +159,8 @@ class HarmLens(BaseLens):
         self,
         action: str,
         category: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """Check for harm patterns in a specific category."""
         concerns = []
 
@@ -197,8 +196,8 @@ class HarmLens(BaseLens):
     async def _check_safety_guardrails(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Check action against wrapped SafetyGuardrails.
 
@@ -212,8 +211,8 @@ class HarmLens(BaseLens):
         try:
             # Import here to avoid circular dependency
             from hololoom.alignment.safety_guardrails import (
-                ActionRequest,
                 ActionCategory,
+                ActionRequest,
                 RiskLevel,
             )
 
@@ -248,7 +247,7 @@ class HarmLens(BaseLens):
                 concerns.append(
                     Concern(
                         lens=self.name,
-                        category=f"harm:guardrail",
+                        category="harm:guardrail",
                         description=decision.reason,
                         confidence=risk_to_confidence.get(
                             decision.risk_level, 0.5

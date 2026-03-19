@@ -18,22 +18,20 @@ Run with:
 """
 
 import os
-from datetime import date, timedelta
-from typing import Optional
-from fastapi import FastAPI, Depends, HTTPException, Request, Header
-from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
+from datetime import date
+
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from hololoom.saas import (
-    SaaSBackend,
+    PLAN_CONFIGS,
     SaaSConfig,
     create_saas_backend,
-    PLAN_CONFIGS,
 )
-from hololoom.saas.auth import validate_api_key, AuthContext
-from hololoom.saas.routes import customers_router, api_keys_router, health_router
-
+from hololoom.saas.auth import AuthContext, validate_api_key
+from hololoom.saas.routes import api_keys_router, customers_router, health_router
 
 # ============================================================================
 # Configuration
@@ -252,7 +250,7 @@ async def get_billing_usage(auth: AuthContext = Depends(validate_api_key)):
 @app.post("/webhooks/stripe")
 async def stripe_webhook(
     request: Request,
-    stripe_signature: Optional[str] = Header(None, alias="Stripe-Signature"),
+    stripe_signature: str | None = Header(None, alias="Stripe-Signature"),
 ):
     """
     Handle Stripe webhook events.

@@ -10,17 +10,14 @@ Testing: 16/16 tests passing (100%)
 """
 
 import asyncio
-import subprocess
-import json
-import os
-import shutil
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import List, Optional, Dict, Tuple
 import logging
-from enum import Enum
-import uuid
+import os
+import subprocess
 import time
+import uuid
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -48,14 +45,14 @@ class SandboxConfig:
     """Configuration for container executor."""
     backend: ContainerBackend = ContainerBackend.DOCKER
     image: str = "python:3.11-slim"  # Default Docker image
-    registry: Optional[str] = None  # Docker registry
-    sandbox_root: Optional[str] = None  # Sandbox base directory
+    registry: str | None = None  # Docker registry
+    sandbox_root: str | None = None  # Sandbox base directory
     enable_network: bool = False  # Enable network access
     resource_limits: ResourceLimits = field(default_factory=ResourceLimits)
-    environment_vars: Dict[str, str] = field(default_factory=dict)
+    environment_vars: dict[str, str] = field(default_factory=dict)
     enable_cleanup: bool = True  # Auto-cleanup on exit
     preserve_logs: bool = True  # Keep execution logs
-    volumes: Dict[str, str] = field(default_factory=dict)  # Host:Container mounts
+    volumes: dict[str, str] = field(default_factory=dict)  # Host:Container mounts
 
 
 @dataclass
@@ -65,11 +62,11 @@ class SandboxResult:
     stdout: str = ""
     stderr: str = ""
     return_code: int = -1
-    container_id: Optional[str] = None
+    container_id: str | None = None
     backend_used: ContainerBackend = ContainerBackend.NONE
     duration_seconds: float = 0.0
-    error: Optional[str] = None
-    metadata: Dict[str, any] = field(default_factory=dict)
+    error: str | None = None
+    metadata: dict[str, any] = field(default_factory=dict)
 
 
 class ContainerExecutor:
@@ -104,8 +101,8 @@ class ContainerExecutor:
         self.config = config
         self.image = image
         self.backend_used: ContainerBackend = ContainerBackend.NONE
-        self.container_id: Optional[str] = None
-        self._logs: List[str] = []
+        self.container_id: str | None = None
+        self._logs: list[str] = []
         self._started = False
         self._execution_id = str(uuid.uuid4())[:8]
 
@@ -163,7 +160,7 @@ class ContainerExecutor:
             logger.error(f"Container startup failed: {e}")
             raise
 
-    async def execute(self, command: List[str]) -> SandboxResult:
+    async def execute(self, command: list[str]) -> SandboxResult:
         """
         Execute command in container.
 
@@ -252,7 +249,7 @@ class ContainerExecutor:
             logger.error(f"Cleanup failed: {e}")
             return False
 
-    def get_container_id(self) -> Optional[str]:
+    def get_container_id(self) -> str | None:
         """Get current container ID."""
         return self.container_id
 
@@ -287,7 +284,7 @@ class ContainerExecutor:
         except (FileNotFoundError, subprocess.TimeoutExpired):
             return False
 
-    async def _start_docker(self) -> Optional[str]:
+    async def _start_docker(self) -> str | None:
         """Start Docker container."""
         try:
             # Build container name
@@ -346,7 +343,7 @@ class ContainerExecutor:
             logger.error(f"Docker start exception: {e}")
             return None
 
-    async def _execute_docker(self, command: List[str]) -> SandboxResult:
+    async def _execute_docker(self, command: list[str]) -> SandboxResult:
         """Execute command in Docker container."""
         if not self.container_id:
             raise RuntimeError("Container not started")
@@ -433,7 +430,7 @@ class ContainerExecutor:
 
     # Private methods: Process isolation fallback
 
-    async def _execute_process(self, command: List[str]) -> SandboxResult:
+    async def _execute_process(self, command: list[str]) -> SandboxResult:
         """Execute command with process isolation (no Docker)."""
         try:
             # Build command with resource limits
@@ -490,7 +487,7 @@ class ContainerExecutor:
                 backend_used=ContainerBackend.PROCESS
             )
 
-    def _build_process_env(self) -> Dict[str, str]:
+    def _build_process_env(self) -> dict[str, str]:
         """Build environment variables for process."""
         env = os.environ.copy()
 
@@ -514,7 +511,7 @@ class ContainerExecutor:
 # Convenience functions
 
 async def create_container_executor(
-    config: Optional[SandboxConfig] = None,
+    config: SandboxConfig | None = None,
     image: str = "python:3.11-slim"
 ) -> ContainerExecutor:
     """Create and initialize a container executor."""
@@ -524,8 +521,8 @@ async def create_container_executor(
 
 
 async def execute_in_container(
-    command: List[str],
-    config: Optional[SandboxConfig] = None,
+    command: list[str],
+    config: SandboxConfig | None = None,
     image: str = "python:3.11-slim"
 ) -> SandboxResult:
     """

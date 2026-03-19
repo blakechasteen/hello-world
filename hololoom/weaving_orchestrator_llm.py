@@ -19,10 +19,11 @@ Installation:
 
 import logging
 import re
-from typing import Dict, Optional, Any
-from hololoom.protocols.types import Query, Context
-from hololoom.weaving_orchestrator import WeavingOrchestrator as BaseOrchestrator, ToolExecutor as BaseToolExecutor
+from typing import Any
 
+from hololoom.protocols.types import Context, Query
+from hololoom.weaving_orchestrator import ToolExecutor as BaseToolExecutor
+from hololoom.weaving_orchestrator import WeavingOrchestrator as BaseOrchestrator
 
 # =============================================================================
 # SECURITY: Prompt Injection Protection
@@ -113,7 +114,7 @@ def mask_sensitive(text: str) -> str:
 
 # LLM imports
 try:
-    from hololoom.awareness.llm_integration import OllamaLLM, AnthropicLLM, LLMProvider
+    from hololoom.awareness.llm_integration import AnthropicLLM, LLMProvider, OllamaLLM
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
@@ -129,7 +130,7 @@ class LLMToolExecutor(BaseToolExecutor):
     Extends base ToolExecutor to replace stubs with real LLM generation.
     """
 
-    def __init__(self, llm: Optional[Any] = None, llm_provider: str = "ollama"):
+    def __init__(self, llm: Any | None = None, llm_provider: str = "ollama"):
         """
         Initialize LLM tool executor.
 
@@ -176,7 +177,7 @@ class LLMToolExecutor(BaseToolExecutor):
             logger.error(f"Failed to initialize LLM: {mask_sensitive(str(e))}")
             self.llm = None
 
-    async def _handle_answer(self, query: Query, context: Context) -> Dict:
+    async def _handle_answer(self, query: Query, context: Context) -> dict:
         """
         Generate an answer using actual LLM.
 

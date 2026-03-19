@@ -14,10 +14,10 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Callable, Union
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import json
+from typing import Any
 
 import numpy as np
 
@@ -48,7 +48,7 @@ class AttackConfig:
 
     # Perturbation budget
     epsilon: float = 0.1            # Max perturbation magnitude (L-inf)
-    epsilon_l2: Optional[float] = None  # Optional L2 budget
+    epsilon_l2: float | None = None  # Optional L2 budget
 
     # Optimization parameters
     step_size: float = 0.01
@@ -85,9 +85,9 @@ class AdversarialExample:
     num_iterations: int
     success: bool
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "feature_idx": self.feature_idx,
             "original_activation": self.original_activation,
@@ -105,19 +105,19 @@ class AdversarialExample:
 class DiscoveryResult:
     """Results from adversarial discovery."""
     feature_idx: int
-    examples: List[AdversarialExample]
+    examples: list[AdversarialExample]
 
     success_rate: float
     avg_perturbation_linf: float
     avg_perturbation_l2: float
     avg_activation_change: float
 
-    most_effective: Optional[AdversarialExample]  # Smallest perturbation
-    strongest_effect: Optional[AdversarialExample]  # Largest activation change
+    most_effective: AdversarialExample | None  # Smallest perturbation
+    strongest_effect: AdversarialExample | None  # Largest activation change
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "feature_idx": self.feature_idx,
             "success_rate": self.success_rate,
@@ -139,7 +139,7 @@ class AdversarialAttacker:
     that cause desired changes in feature activations.
     """
 
-    def __init__(self, config: Optional[AttackConfig] = None):
+    def __init__(self, config: AttackConfig | None = None):
         self.config = config or AttackConfig()
 
     def attack(
@@ -147,7 +147,7 @@ class AdversarialAttacker:
         input_data: np.ndarray,
         feature_idx: int,
         activation_fn: Callable[[np.ndarray], np.ndarray],
-        gradient_fn: Optional[Callable[[np.ndarray, int], np.ndarray]] = None,
+        gradient_fn: Callable[[np.ndarray, int], np.ndarray] | None = None,
     ) -> AdversarialExample:
         """
         Find adversarial example for a specific feature.
@@ -261,8 +261,8 @@ class AdversarialAttacker:
         x: np.ndarray,
         feature_idx: int,
         activation_fn: Callable,
-        gradient_fn: Optional[Callable],
-    ) -> Tuple[np.ndarray, int]:
+        gradient_fn: Callable | None,
+    ) -> tuple[np.ndarray, int]:
         """Fast Gradient Sign Method (single step)."""
         # Get gradient
         if gradient_fn is not None:
@@ -287,8 +287,8 @@ class AdversarialAttacker:
         x: np.ndarray,
         feature_idx: int,
         activation_fn: Callable,
-        gradient_fn: Optional[Callable],
-    ) -> Tuple[np.ndarray, int]:
+        gradient_fn: Callable | None,
+    ) -> tuple[np.ndarray, int]:
         """Projected Gradient Descent attack."""
         # Initialize with random start if configured
         if self.config.random_start:
@@ -375,8 +375,8 @@ class AdversarialAttacker:
         x: np.ndarray,
         feature_idx: int,
         activation_fn: Callable,
-        gradient_fn: Optional[Callable],
-    ) -> Tuple[np.ndarray, int]:
+        gradient_fn: Callable | None,
+    ) -> tuple[np.ndarray, int]:
         """
         Feature visualization - maximize activation without epsilon constraint.
 
@@ -414,8 +414,8 @@ class AdversarialAttacker:
         x: np.ndarray,
         feature_idx: int,
         activation_fn: Callable,
-        gradient_fn: Optional[Callable],
-    ) -> Tuple[np.ndarray, int]:
+        gradient_fn: Callable | None,
+    ) -> tuple[np.ndarray, int]:
         """
         Find minimal perturbation to flip feature activation.
 
@@ -466,7 +466,7 @@ class AdversarialAttacker:
         activation_fn: Callable,
         was_active: bool,
         num_steps: int = 10,
-    ) -> Tuple[np.ndarray, int]:
+    ) -> tuple[np.ndarray, int]:
         """Binary search for minimal effective perturbation."""
         lo = 0.0
         hi = 1.0
@@ -504,7 +504,7 @@ class FeatureSensitivityAnalyzer:
     Discovers which input dimensions most strongly affect each feature.
     """
 
-    def __init__(self, config: Optional[AttackConfig] = None):
+    def __init__(self, config: AttackConfig | None = None):
         self.config = config or AttackConfig()
         self.attacker = AdversarialAttacker(config)
 
@@ -513,8 +513,8 @@ class FeatureSensitivityAnalyzer:
         inputs: np.ndarray,
         feature_idx: int,
         activation_fn: Callable[[np.ndarray], np.ndarray],
-        gradient_fn: Optional[Callable] = None,
-    ) -> Dict[str, Any]:
+        gradient_fn: Callable | None = None,
+    ) -> dict[str, Any]:
         """
         Analyze sensitivity of a feature to input perturbations.
 
@@ -586,7 +586,7 @@ class FeatureSensitivityAnalyzer:
         feature_idx: int,
         activation_fn: Callable,
         n_directions: int = 5,
-    ) -> List[np.ndarray]:
+    ) -> list[np.ndarray]:
         """
         Find principal adversarial directions for a feature.
 
@@ -630,18 +630,18 @@ class AdversarialDiscoverer:
     feature robustness and sensitivity.
     """
 
-    def __init__(self, config: Optional[AttackConfig] = None):
+    def __init__(self, config: AttackConfig | None = None):
         self.config = config or AttackConfig()
         self.attacker = AdversarialAttacker(config)
         self.sensitivity_analyzer = FeatureSensitivityAnalyzer(config)
-        self._discovered: Dict[int, DiscoveryResult] = {}
+        self._discovered: dict[int, DiscoveryResult] = {}
 
     def discover_for_feature(
         self,
         inputs: np.ndarray,
         feature_idx: int,
         activation_fn: Callable,
-        gradient_fn: Optional[Callable] = None,
+        gradient_fn: Callable | None = None,
         num_examples: int = 10,
     ) -> DiscoveryResult:
         """
@@ -707,10 +707,10 @@ class AdversarialDiscoverer:
         self,
         inputs: np.ndarray,
         activation_fn: Callable,
-        feature_indices: Optional[List[int]] = None,
-        gradient_fn: Optional[Callable] = None,
+        feature_indices: list[int] | None = None,
+        gradient_fn: Callable | None = None,
         num_examples_per_feature: int = 5,
-    ) -> Dict[int, DiscoveryResult]:
+    ) -> dict[int, DiscoveryResult]:
         """
         Discover adversarial examples for multiple features.
 
@@ -743,7 +743,7 @@ class AdversarialDiscoverer:
     def find_universal_adversarial_perturbation(
         self,
         inputs: np.ndarray,
-        feature_indices: List[int],
+        feature_indices: list[int],
         activation_fn: Callable,
         target_type: TargetType = TargetType.MINIMIZE,
     ) -> np.ndarray:
@@ -808,7 +808,7 @@ class AdversarialDiscoverer:
 
         return inputs[selected_indices]
 
-    def get_robustness_summary(self) -> Dict[str, Any]:
+    def get_robustness_summary(self) -> dict[str, Any]:
         """Summarize robustness across all discovered features."""
         if not self._discovered:
             return {"error": "No features discovered yet"}
@@ -840,7 +840,7 @@ class AdversarialDiscoverer:
             },
         }
 
-    def export_results(self) -> Dict[str, Any]:
+    def export_results(self) -> dict[str, Any]:
         """Export all discovery results."""
         return {
             str(idx): result.to_dict()
@@ -903,9 +903,7 @@ def create_prober_from_discoverer(
         prober = create_prober_from_discoverer(discoverer, preset="balanced")
         report = prober.probe_feature(42, test_inputs, activation_fn, gradient_fn)
     """
-    from hololoom.dark_trace.research.adversarial_prober import (
-        AdversarialProber, ProbeConfig
-    )
+    from hololoom.dark_trace.research.adversarial_prober import AdversarialProber, ProbeConfig
 
     # Create config from preset
     if preset == "quick":
@@ -939,9 +937,9 @@ def probe_feature_with_catalog(
     activation_fn: Callable,
     gradient_fn: Callable,
     model_version: str = "unknown",
-    catalog_path: Optional[str] = None,
+    catalog_path: str | None = None,
     preset: str = "balanced"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Probe a feature and automatically catalog the results.
 
@@ -970,11 +968,10 @@ def probe_feature_with_catalog(
         )
         print(f"Vulnerability: {result['vulnerability_level']}")
     """
+    from hololoom.dark_trace.research.adversarial_catalog import create_catalog
     from hololoom.dark_trace.research.adversarial_prober import (
-        AdversarialProber, ProbeConfig, create_prober
-    )
-    from hololoom.dark_trace.research.adversarial_catalog import (
-        AdversarialCatalog, create_catalog
+        AdversarialProber,
+        ProbeConfig,
     )
 
     # Create prober with mock adapter

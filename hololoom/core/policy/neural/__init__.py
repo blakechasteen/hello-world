@@ -14,30 +14,28 @@ Public API:
     ValueNetwork: Learned value functions
 """
 
-from .twin_networks import (
-    TwinNetwork,
-    CounterfactualQuery,
-    CounterfactualResult,
-    CounterfactualReasoner,
-    InterventionType,
-)
-
 from .meta_learning import (
+    MetaAlgorithm,
     MetaLearner,
     MetaLearningConfig,
-    MetaAlgorithm,
     Task,
-    generate_sinusoid_task,
     generate_linear_task,
+    generate_sinusoid_task,
 )
-
+from .twin_networks import (
+    CounterfactualQuery,
+    CounterfactualReasoner,
+    CounterfactualResult,
+    InterventionType,
+    TwinNetwork,
+)
 from .value_functions import (
-    ValueNetworkPyTorch,
-    QNetworkPyTorch,
     ActorCriticPyTorch,
-    ValueFunctionLearner,
     Experience,
+    QNetworkPyTorch,
     ValueEstimate,
+    ValueFunctionLearner,
+    ValueNetworkPyTorch,
 )
 
 __all__ = [

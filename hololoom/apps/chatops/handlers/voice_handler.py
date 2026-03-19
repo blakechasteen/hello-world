@@ -29,32 +29,32 @@ Date: December 2025
 """
 
 import asyncio
-import tempfile
 import logging
+import tempfile
 from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Optional, Dict, Any, Callable, List, Protocol, runtime_checkable
+from collections.abc import Callable
 from dataclasses import dataclass, field
-import aiofiles
+from pathlib import Path
+from typing import Any, Protocol, runtime_checkable
 
 try:
-    from nio import AsyncClient, MatrixRoom, DownloadResponse
+    from nio import AsyncClient, DownloadResponse, MatrixRoom
     NIO_AVAILABLE = True
 except ImportError:
     NIO_AVAILABLE = False
 
 from hololoom.apps.chatops.handlers.code_voice_grammar import (
-    CodeVoiceGrammar,
     CodeCommandIntent,
-    CodeIntent
+    CodeIntent,
+    CodeVoiceGrammar,
 )
 
 # Try to import WhisperSpinner
 try:
     from hololoom.spinningWheel.whisper_spinner import (
-        WhisperSpinner,
+        WHISPER_AVAILABLE,
         AudioTranscription,
-        WHISPER_AVAILABLE
+        WhisperSpinner,
     )
 except ImportError:
     WHISPER_AVAILABLE = False
@@ -76,7 +76,7 @@ class TranscriptionResult:
     confidence: float
     segments: list  # List of TimecodeSegment
     success: bool
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
@@ -84,13 +84,13 @@ class VoiceCommandResult:
     """Result of processing a voice command"""
     original_text: str
     intent: CodeIntent
-    params: Dict[str, str]
+    params: dict[str, str]
     response: str
     confidence: float
     success: bool
-    error: Optional[str] = None
-    code_block: Optional[str] = None  # Generated/modified code
-    metadata: Dict[str, Any] = None
+    error: str | None = None
+    code_block: str | None = None  # Generated/modified code
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -120,8 +120,8 @@ class IntentHandler(Protocol):
 
     async def handle(
         self,
-        params: Dict[str, str],
-        context: Dict[str, Any]
+        params: dict[str, str],
+        context: dict[str, Any]
     ) -> VoiceCommandResult:
         """Handle an intent with given params and context."""
         ...
@@ -137,8 +137,8 @@ class BaseIntentHandler(ABC):
     @abstractmethod
     async def handle(
         self,
-        params: Dict[str, str],
-        context: Dict[str, Any]
+        params: dict[str, str],
+        context: dict[str, Any]
     ) -> VoiceCommandResult:
         """Handle the intent. Must be implemented by subclasses."""
         pass
@@ -147,12 +147,12 @@ class BaseIntentHandler(ABC):
         self,
         original_text: str,
         intent: CodeIntent,
-        params: Dict[str, str],
+        params: dict[str, str],
         response: str,
         confidence: float = 0.8,
         success: bool = True,
-        code_block: Optional[str] = None,
-        error: Optional[str] = None,
+        code_block: str | None = None,
+        error: str | None = None,
         **metadata
     ) -> VoiceCommandResult:
         """Convenience method to create VoiceCommandResult."""
@@ -208,7 +208,7 @@ class EventEmitter:
     """
 
     def __init__(self):
-        self._listeners: Dict[str, List[Callable]] = {}
+        self._listeners: dict[str, list[Callable]] = {}
 
     def on(self, event_type: str, callback: Callable) -> 'EventEmitter':
         """Register a callback for an event type."""
@@ -260,10 +260,10 @@ class VoiceHandler:
 
     def __init__(
         self,
-        matrix_client: Optional[Any] = None,
+        matrix_client: Any | None = None,
         whisper_model: str = "base",
-        language: Optional[str] = None,
-        code_context: Optional[Dict[str, Any]] = None
+        language: str | None = None,
+        code_context: dict[str, Any] | None = None
     ):
         """
         Initialize VoiceHandler.
@@ -285,17 +285,17 @@ class VoiceHandler:
         self.grammar = CodeVoiceGrammar()
 
         # Initialize Whisper spinner (lazy load)
-        self._whisper: Optional[WhisperSpinner] = None
+        self._whisper: WhisperSpinner | None = None
 
         # Handler callbacks for different intents
-        self._intent_handlers: Dict[CodeIntent, Callable] = {}
+        self._intent_handlers: dict[CodeIntent, Callable] = {}
 
         # Register default handlers
         self._register_default_handlers()
 
         logger.info(f"VoiceHandler initialized (model: {whisper_model})")
 
-    def _get_whisper(self) -> Optional[WhisperSpinner]:
+    def _get_whisper(self) -> WhisperSpinner | None:
         """Lazy-load Whisper spinner."""
         if self._whisper is None and WHISPER_AVAILABLE:
             self._whisper = WhisperSpinner(
@@ -335,8 +335,8 @@ class VoiceHandler:
     async def download_audio(
         self,
         mxc_url: str,
-        room_id: Optional[str] = None
-    ) -> Optional[bytes]:
+        room_id: str | None = None
+    ) -> bytes | None:
         """
         Download audio file from Matrix server.
 
@@ -457,8 +457,8 @@ class VoiceHandler:
 
     async def _handle_generate(
         self,
-        params: Dict[str, str],
-        context: Dict[str, Any]
+        params: dict[str, str],
+        context: dict[str, Any]
     ) -> VoiceCommandResult:
         """Handle code generation requests."""
         request = params.get('request', '')
@@ -484,8 +484,8 @@ class VoiceHandler:
 
     async def _handle_explain(
         self,
-        params: Dict[str, str],
-        context: Dict[str, Any]
+        params: dict[str, str],
+        context: dict[str, Any]
     ) -> VoiceCommandResult:
         """Handle code explanation requests."""
         current_code = context.get('current_code', '')
@@ -502,7 +502,7 @@ class VoiceHandler:
             )
 
         # TODO: Integrate with HoloLoom for actual explanation
-        response = f"Explaining the code...\n\nThe code you shared appears to be..."
+        response = "Explaining the code...\n\nThe code you shared appears to be..."
 
         return VoiceCommandResult(
             original_text=params.get('_original', ''),
@@ -515,8 +515,8 @@ class VoiceHandler:
 
     async def _handle_edit(
         self,
-        params: Dict[str, str],
-        context: Dict[str, Any]
+        params: dict[str, str],
+        context: dict[str, Any]
     ) -> VoiceCommandResult:
         """Handle code editing requests."""
         current_code = context.get('current_code', '')
@@ -549,8 +549,8 @@ class VoiceHandler:
 
     async def _handle_review(
         self,
-        params: Dict[str, str],
-        context: Dict[str, Any]
+        params: dict[str, str],
+        context: dict[str, Any]
     ) -> VoiceCommandResult:
         """Handle code review requests."""
         current_code = context.get('current_code', '')
@@ -580,8 +580,8 @@ class VoiceHandler:
 
     async def _handle_context_set(
         self,
-        params: Dict[str, str],
-        context: Dict[str, Any]
+        params: dict[str, str],
+        context: dict[str, Any]
     ) -> VoiceCommandResult:
         """Handle context setting requests."""
         # Context is set externally when code is shared
@@ -596,8 +596,8 @@ class VoiceHandler:
 
     async def _handle_context_clear(
         self,
-        params: Dict[str, str],
-        context: Dict[str, Any]
+        params: dict[str, str],
+        context: dict[str, Any]
     ) -> VoiceCommandResult:
         """Handle context clearing requests."""
         self.code_context.clear()
@@ -613,8 +613,8 @@ class VoiceHandler:
 
     async def _handle_query(
         self,
-        params: Dict[str, str],
-        context: Dict[str, Any]
+        params: dict[str, str],
+        context: dict[str, Any]
     ) -> VoiceCommandResult:
         """Handle general queries (fallback)."""
         query = params.get('request', '')
@@ -639,7 +639,7 @@ class VoiceHandler:
         self,
         room: Any,  # MatrixRoom
         event: Any,  # RoomMessageAudio
-        code_context: Optional[Dict[str, Any]] = None
+        code_context: dict[str, Any] | None = None
     ) -> VoiceCommandResult:
         """
         Main entry point for processing voice messages.
@@ -727,7 +727,7 @@ class VoiceHandler:
     async def process_text(
         self,
         text: str,
-        code_context: Optional[Dict[str, Any]] = None
+        code_context: dict[str, Any] | None = None
     ) -> VoiceCommandResult:
         """
         Process text directly (for testing or text-based input).
@@ -755,7 +755,7 @@ class VoiceHandler:
 
         return result
 
-    def set_code_context(self, code: str, language: Optional[str] = None):
+    def set_code_context(self, code: str, language: str | None = None):
         """
         Set the current code context for multi-turn conversations.
 
@@ -768,7 +768,7 @@ class VoiceHandler:
             self.code_context['language'] = language
         logger.info(f"Code context set ({len(code)} chars, lang: {language})")
 
-    def get_code_context(self) -> Dict[str, Any]:
+    def get_code_context(self) -> dict[str, Any]:
         """Get current code context."""
         return self.code_context.copy()
 
@@ -778,9 +778,9 @@ class VoiceHandler:
 # =============================================================================
 
 def create_voice_handler(
-    matrix_client: Optional[Any] = None,
+    matrix_client: Any | None = None,
     whisper_model: str = "base",
-    language: Optional[str] = None
+    language: str | None = None
 ) -> VoiceHandler:
     """
     Create a VoiceHandler instance.

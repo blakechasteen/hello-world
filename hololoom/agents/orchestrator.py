@@ -14,17 +14,16 @@ Creates specialized bots that:
 - Maintain separate working memory state
 """
 
-from typing import Optional, Dict, List
-from pathlib import Path
 import time
+from pathlib import Path
 
+from hololoom.agents.learner import WorkingMemoryLearner
 from hololoom.agents.types import AgentProfile, AgentStats
 from hololoom.agents.working_memory import AgentWorkingMemory
-from hololoom.agents.learner import WorkingMemoryLearner
-from hololoom.memory.graph import KG
-from hololoom.protocols.types import Query, MemoryShard, Context
-from hololoom.fabric.spacetime import Spacetime
 from hololoom.config import Config
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.memory.graph import KG
+from hololoom.protocols.types import MemoryShard, Query
 
 
 class AgentOrchestrator:
@@ -43,7 +42,7 @@ class AgentOrchestrator:
         profile: AgentProfile,
         shared_knowledge: KG,
         embedding_model,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         persist_dir: Path = Path('./agents_memory')
     ):
         self.profile = profile
@@ -68,7 +67,7 @@ class AgentOrchestrator:
         self.stats = AgentStats()
 
         # For integration with WeavingOrchestrator (set externally)
-        self.weaving_orchestrator: Optional['WeavingOrchestrator'] = None
+        self.weaving_orchestrator: WeavingOrchestrator | None = None
 
     async def query(
         self,
@@ -148,9 +147,10 @@ class AgentOrchestrator:
 
         return spacetime
 
-    def _simple_response(self, query: Query, context: List[MemoryShard]) -> Spacetime:
+    def _simple_response(self, query: Query, context: list[MemoryShard]) -> Spacetime:
         """Simple baseline response (no weaving orchestrator)"""
         from datetime import datetime
+
         from hololoom.fabric.spacetime import WeavingTrace
 
         # Concatenate top context
@@ -205,11 +205,11 @@ class AgentOrchestrator:
         """
         await self.working_memory.relax()
 
-    def get_working_memory_summary(self) -> Dict:
+    def get_working_memory_summary(self) -> dict:
         """Get human-readable summary of working memory state"""
         return self.working_memory.get_state_summary()
 
-    def get_learning_stats(self) -> Dict:
+    def get_learning_stats(self) -> dict:
         """Get learning statistics"""
         if not self.learner:
             return {'learning_disabled': True}
@@ -243,7 +243,7 @@ def create_agent(
     profile_name: str,
     shared_knowledge: KG,
     embedding_model,
-    config: Optional[Config] = None,
+    config: Config | None = None,
     persist_dir: Path = Path('./agents_memory')
 ) -> AgentOrchestrator:
     """

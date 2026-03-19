@@ -11,20 +11,18 @@ Public API:
 """
 
 from hololoom.infrastructure.sql.backend import (
+    QueryResult,
     SQLBackend,
     SQLConfig,
-    QueryResult,
-    create_sql_backend
+    create_sql_backend,
 )
-
 from hololoom.infrastructure.sql.mock_data import (
-    load_mock_data,
+    MOCK_AUDIT_TRAILS,
+    MOCK_PERMISSIONS,
     MOCK_POLICY_RULES,
     MOCK_TRANSACTIONS,
-    MOCK_AUDIT_TRAILS,
-    MOCK_PERMISSIONS
+    load_mock_data,
 )
-
 
 __all__ = [
     # Backend

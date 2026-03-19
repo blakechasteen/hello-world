@@ -15,9 +15,9 @@ Author: CARTS (Continuous Adversarial Red Team System)
 Date: 2025-12-05
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
 import random
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -31,10 +31,10 @@ class HierarchyBypassPayload:
     bypass_type: str  # priority_confusion, nesting_attack, meta_instructions
     hierarchy_level: int  # 0 (user) to 3+ (meta levels)
     priority_claim: str  # none, high, urgent, override, system
-    nesting_depth: Optional[int] = None
-    meta_level: Optional[int] = None
-    tags: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    nesting_depth: int | None = None
+    meta_level: int | None = None
+    tags: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         return f"[HIERARCHY_BYPASS] {self.bypass_type}: {self.payload[:50]}..."
@@ -49,7 +49,7 @@ class HierarchyBypassGenerator:
     that override base instructions.
     """
 
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, seed: int | None = None):
         """Initialize with optional random seed."""
         if seed is not None:
             random.seed(seed)
@@ -104,7 +104,7 @@ class HierarchyBypassGenerator:
             "Constraint reassessment procedure: ",
         ]
 
-    def generate_priority_confusion(self, target: str) -> List[HierarchyBypassPayload]:
+    def generate_priority_confusion(self, target: str) -> list[HierarchyBypassPayload]:
         """
         Generate priority confusion payloads.
 
@@ -209,7 +209,7 @@ Adjusted priority hierarchy:
 
         return payloads
 
-    def generate_nesting_attack(self, target: str) -> List[HierarchyBypassPayload]:
+    def generate_nesting_attack(self, target: str) -> list[HierarchyBypassPayload]:
         """
         Generate nesting attack payloads.
 
@@ -327,7 +327,7 @@ analysis suggests {target} should be more flexible.
 
         return payloads
 
-    def generate_meta_instructions(self, target: str) -> List[HierarchyBypassPayload]:
+    def generate_meta_instructions(self, target: str) -> list[HierarchyBypassPayload]:
         """
         Generate meta-instruction payloads.
 
@@ -474,7 +474,7 @@ deem it appropriate in context.
 
         return payloads
 
-    def generate_all(self, target: str) -> List[HierarchyBypassPayload]:
+    def generate_all(self, target: str) -> list[HierarchyBypassPayload]:
         """
         Generate all hierarchy bypass payloads for a target.
 
@@ -500,6 +500,6 @@ deem it appropriate in context.
 
 
 # Convenience factory function
-def create_hierarchy_bypass_generator(seed: Optional[int] = None) -> HierarchyBypassGenerator:
+def create_hierarchy_bypass_generator(seed: int | None = None) -> HierarchyBypassGenerator:
     """Create and return a HierarchyBypassGenerator instance."""
     return HierarchyBypassGenerator(seed=seed)

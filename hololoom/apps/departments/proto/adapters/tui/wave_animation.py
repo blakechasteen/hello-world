@@ -8,12 +8,10 @@ Semantic wave animations that communicate system state:
 Status: Phase 3 TUI (2025-12-05)
 """
 
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import List, Optional, Tuple
-import math
 import random
 import time
+from dataclasses import dataclass, field
+from enum import Enum
 
 
 class WaveState(Enum):
@@ -114,10 +112,10 @@ class WaveConfig:
 class WaveGenerator:
     """Generates animated wave patterns with semantic state communication."""
 
-    def __init__(self, config: Optional[WaveConfig] = None):
+    def __init__(self, config: WaveConfig | None = None):
         self.config = config or WaveConfig()
         self.frame = 0
-        self.processes: List[WaveProcess] = []
+        self.processes: list[WaveProcess] = []
 
         # Top and bottom state
         self.top_state = WaveState.IDLE
@@ -264,7 +262,7 @@ class WaveGenerator:
 
         return line
 
-    def generate_top_waves(self, width: int, title: str = "P R O T O") -> List[str]:
+    def generate_top_waves(self, width: int, title: str = "P R O T O") -> list[str]:
         """Generate top wave rows (incoming/response)."""
         depth = self.calculate_wave_depth()
         incoming_active = self.top_state not in [WaveState.IDLE, WaveState.COMPLETE]
@@ -291,7 +289,7 @@ class WaveGenerator:
 
         return rows
 
-    def generate_bottom_waves(self, width: int) -> List[str]:
+    def generate_bottom_waves(self, width: int) -> list[str]:
         """Generate bottom wave rows (outgoing/request)."""
         depth = self.calculate_wave_depth()
         incoming_active = self.top_state not in [WaveState.IDLE, WaveState.COMPLETE]
@@ -352,7 +350,7 @@ class SemanticWaveController:
     Proto's processing stages.
     """
 
-    def __init__(self, generator: Optional[WaveGenerator] = None):
+    def __init__(self, generator: WaveGenerator | None = None):
         self.generator = generator or WaveGenerator()
 
     def on_idle(self) -> None:

@@ -21,13 +21,12 @@ Author: HoloLoom Team
 Date: 2025-12-03
 """
 
-import re
 import logging
-from typing import Dict, Any, List, Optional
+import re
+from typing import Any
 
 from ..judgment import Concern
 from .base import BaseLens
-
 
 logger = logging.getLogger("hololoom.conscience.lenses.deception")
 
@@ -104,8 +103,8 @@ class DeceptionLens(BaseLens):
         self,
         threshold: float = 0.5,
         enabled: bool = True,
-        categories: Optional[List[str]] = None,
-        deception_detector: Optional[Any] = None,
+        categories: list[str] | None = None,
+        deception_detector: Any | None = None,
     ):
         """
         Initialize DeceptionLens.
@@ -124,8 +123,8 @@ class DeceptionLens(BaseLens):
         self._deception_detector = deception_detector
 
         # Track goal-action consistency
-        self._stated_goals: Dict[str, str] = {}
-        self._action_history: List[Dict[str, Any]] = []
+        self._stated_goals: dict[str, str] = {}
+        self._action_history: list[dict[str, Any]] = []
 
     @property
     def name(self) -> str:
@@ -138,8 +137,8 @@ class DeceptionLens(BaseLens):
     async def _examine_impl(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Examine action for potential deception.
 
@@ -150,7 +149,7 @@ class DeceptionLens(BaseLens):
         Returns:
             List of deception concerns
         """
-        concerns: List[Concern] = []
+        concerns: list[Concern] = []
 
         # Check each enabled category
         for cat in self.categories:
@@ -178,8 +177,8 @@ class DeceptionLens(BaseLens):
         self,
         action: str,
         category: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """Check for deception patterns in a specific category."""
         concerns = []
 
@@ -215,8 +214,8 @@ class DeceptionLens(BaseLens):
     def _check_goal_consistency(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Check if action is consistent with stated goals.
 
@@ -259,8 +258,8 @@ class DeceptionLens(BaseLens):
     async def _check_deception_detector(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Check action against wrapped DeceptionDetector.
 
@@ -317,7 +316,7 @@ class DeceptionLens(BaseLens):
     def _record_action(
         self,
         action: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> None:
         """Record action for future consistency analysis."""
         self._action_history.append({

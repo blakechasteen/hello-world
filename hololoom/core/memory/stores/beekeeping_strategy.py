@@ -13,10 +13,10 @@ Scoring factors:
 This strategy "knows" beekeeping context!
 """
 
-from typing import List, Dict, Any
-from datetime import datetime, timedelta
-from enum import Enum
 import math
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class Season(Enum):
@@ -97,7 +97,7 @@ def calculate_seasonal_relevance(memory_season: Season, current_season: Season) 
     return transitions[current_season][memory_season]
 
 
-def extract_season_from_context(context: Dict[str, Any]) -> Season:
+def extract_season_from_context(context: dict[str, Any]) -> Season:
     """Extract season from memory context."""
     # Try explicit season field
     if 'season' in context:
@@ -126,7 +126,7 @@ def extract_season_from_context(context: Dict[str, Any]) -> Season:
     return get_current_season()
 
 
-def extract_hive_priority(context: Dict[str, Any]) -> float:
+def extract_hive_priority(context: dict[str, Any]) -> float:
     """
     Extract hive priority from context.
 
@@ -162,7 +162,7 @@ def extract_hive_priority(context: Dict[str, Any]) -> float:
     return priority
 
 
-def extract_task_urgency(context: Dict[str, Any], text: str) -> float:
+def extract_task_urgency(context: dict[str, Any], text: str) -> float:
     """
     Extract task urgency from context and text.
 
@@ -218,10 +218,10 @@ def calculate_recency_score(timestamp: datetime, max_age_days: int = 365) -> flo
 
 def calculate_beekeeping_score(
     memory_text: str,
-    memory_context: Dict[str, Any],
+    memory_context: dict[str, Any],
     memory_timestamp: datetime,
     query_text: str,
-    query_context: Dict[str, Any]
+    query_context: dict[str, Any]
 ) -> float:
     """
     Calculate beekeeping-specific relevance score.

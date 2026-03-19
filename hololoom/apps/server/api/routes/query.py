@@ -13,15 +13,15 @@ from datetime import datetime
 from time import time
 
 from fastapi import APIRouter, HTTPException
-
-from hololoom.agentic import ReasoningMode, AgenticResult
-from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
-from hololoom.alignment.audit_trail import DecisionType, OutcomeType
 from hololoom.protocols.types import Query
 
-from ..models import QueryRequest, AgenticResponse
+from hololoom.agentic import AgenticResult, ReasoningMode
+from hololoom.alignment.audit_trail import DecisionType, OutcomeType
+from hololoom.alignment.safety_guardrails import ActionCategory, ActionRequest
+
+from ..models import AgenticResponse, QueryRequest
+from ..services import format_steps, format_verification, get_orchestrator
 from ..state import state
-from ..services import get_orchestrator, format_verification, format_steps
 
 logger = logging.getLogger(__name__)
 

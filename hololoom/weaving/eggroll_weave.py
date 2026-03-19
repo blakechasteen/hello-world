@@ -1,4 +1,5 @@
-from typing import List, Dict, Any
+from typing import Any
+
 
 class Weave:
     """
@@ -9,7 +10,7 @@ class Weave:
     * Aggregates Warp scores into composite rewards.
     * Applies safety, stability, and novelty shaping.
     """
-    
+
     def __init__(self):
         # Connect to Reflection Buffer
         try:
@@ -20,7 +21,7 @@ class Weave:
             self.has_reflection = False
             print("Warning: ReflectionBuffer not available, using dummy tasks.")
 
-    def generate_tasks(self, model_id: str) -> List[Any]:
+    def generate_tasks(self, model_id: str) -> list[Any]:
         """
         Generate a batch of tasks for evaluation.
         """
@@ -33,11 +34,11 @@ class Weave:
                     return [ep['spacetime'].query_text for ep in episodes if 'spacetime' in ep]
             except Exception as e:
                 print(f"Failed to fetch from ReflectionBuffer: {e}")
-        
+
         # Fallback to dummy tasks
         return ["Task 1", "Task 2", "Task 3"]
 
-    def compute_reward(self, warp_scores: Dict[str, float], safety_scores: Dict[str, float]) -> float:
+    def compute_reward(self, warp_scores: dict[str, float], safety_scores: dict[str, float]) -> float:
         """
         Compute composite reward from various signals.
         
@@ -46,9 +47,9 @@ class Weave:
         # Coefficients (could be configurable)
         alpha_task = 1.0
         alpha_safety = 1.0
-        
+
         r_task = warp_scores.get('task', 0.0)
         r_safety = safety_scores.get('safety', 0.0)
-        
+
         # Simplified composite reward
         return alpha_task * r_task + alpha_safety * r_safety

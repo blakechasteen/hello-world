@@ -18,21 +18,18 @@ Reference:
 
 from __future__ import annotations
 
-import asyncio
 import logging
-import random
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, FrozenSet, List, Optional, Set
+from typing import Any
 
 from .protocol import (
     ConsensusProtocol,
     ConsensusResult,
     FinalityType,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +70,7 @@ class AppendEntriesRequest:
     leader_id: str
     prev_log_index: int
     prev_log_term: int
-    entries: List[LogEntry]
+    entries: list[LogEntry]
     leader_commit: int
 
 
@@ -122,10 +119,10 @@ class RaftProposal:
     # State
     committed: bool = False
     applied: bool = False
-    result: Optional[ConsensusResult] = None
+    result: ConsensusResult | None = None
 
     # Replication tracking
-    ack_nodes: Set[str] = field(default_factory=set)
+    ack_nodes: set[str] = field(default_factory=set)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -193,21 +190,21 @@ class RaftConsensus(ConsensusProtocol):
 
         # Persistent state (on stable storage in real implementation)
         self._current_term = 0
-        self._voted_for: Optional[str] = None
-        self._log: List[LogEntry] = []
+        self._voted_for: str | None = None
+        self._log: list[LogEntry] = []
 
         # Volatile state (all servers)
         self._commit_index = 0
         self._last_applied = 0
         self._state = RaftState.LEADER if is_leader else RaftState.FOLLOWER
-        self._leader_id: Optional[str] = node_id if is_leader else None
+        self._leader_id: str | None = node_id if is_leader else None
 
         # Volatile state (leaders only)
-        self._next_index: Dict[str, int] = {}
-        self._match_index: Dict[str, int] = {}
+        self._next_index: dict[str, int] = {}
+        self._match_index: dict[str, int] = {}
 
         # Proposal tracking
-        self._proposals: Dict[str, RaftProposal] = {}
+        self._proposals: dict[str, RaftProposal] = {}
 
         if is_leader:
             self._current_term = 1
@@ -377,7 +374,7 @@ class RaftConsensus(ConsensusProtocol):
     def create_append_entries(
         self,
         follower_id: str,
-        entries: Optional[List[LogEntry]] = None,
+        entries: list[LogEntry] | None = None,
     ) -> AppendEntriesRequest:
         """
         Create AppendEntries RPC request for a follower.
@@ -623,7 +620,7 @@ class RaftConsensus(ConsensusProtocol):
     #  STATE ACCESS
     # ───────────────────────────────────────────────────────────────────────────
 
-    async def get_state(self) -> Dict[str, Any]:
+    async def get_state(self) -> dict[str, Any]:
         """Get current protocol state."""
         base = await super().get_state()
         base.update({

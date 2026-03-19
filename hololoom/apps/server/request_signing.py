@@ -10,19 +10,19 @@ Implements HMAC-SHA256 request signing for secure API authentication:
 Created: 2025-11-26
 """
 
-import hmac
+import base64
 import hashlib
-import time
+import hmac
 import json
 import logging
-from typing import Dict, Optional, Set, Tuple, List
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field
-from enum import Enum
-from fastapi import Request, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import base64
 import secrets
+import time
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+
+from fastapi import HTTPException, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +43,13 @@ class APIKey:
     client_name: str
     status: APIKeyStatus = APIKeyStatus.ACTIVE
     created_at: datetime = field(default_factory=datetime.utcnow)
-    expires_at: Optional[datetime] = None
-    allowed_ips: Set[str] = field(default_factory=set)
+    expires_at: datetime | None = None
+    allowed_ips: set[str] = field(default_factory=set)
     rate_limit_qps: float = 100.0
-    permissions: Set[str] = field(default_factory=lambda: {"read", "write"})
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    permissions: set[str] = field(default_factory=lambda: {"read", "write"})
+    metadata: dict[str, Any] = field(default_factory=dict)
     request_count: int = 0
-    last_used: Optional[datetime] = None
+    last_used: datetime | None = None
 
 
 class SignatureValidator:
@@ -71,22 +71,22 @@ class SignatureValidator:
         self.enforce_replay_protection = enforce_replay_protection
 
         # Store used nonces to prevent replay attacks
-        self.used_nonces: Set[str] = set()
-        self.nonce_expiry: Dict[str, float] = {}
+        self.used_nonces: set[str] = set()
+        self.nonce_expiry: dict[str, float] = {}
 
         # API keys storage (in production, use database)
-        self.api_keys: Dict[str, APIKey] = {}
+        self.api_keys: dict[str, APIKey] = {}
 
         logger.info("SignatureValidator initialized")
 
     def generate_api_key(
         self,
         client_name: str,
-        expires_in_days: Optional[int] = None,
-        allowed_ips: Optional[List[str]] = None,
+        expires_in_days: int | None = None,
+        allowed_ips: list[str] | None = None,
         rate_limit_qps: float = 100.0,
-        permissions: Optional[Set[str]] = None
-    ) -> Tuple[str, str]:
+        permissions: set[str] | None = None
+    ) -> tuple[str, str]:
         """Generate a new API key"""
 
         # Generate secure random key ID and secret
@@ -132,7 +132,7 @@ class SignatureValidator:
         url: str,
         timestamp: str,
         body: bytes = b"",
-        nonce: Optional[str] = None
+        nonce: str | None = None
     ) -> str:
         """Calculate HMAC-SHA256 signature for request"""
 
@@ -308,7 +308,7 @@ class SignatureValidator:
 
         return required_permission in api_key.permissions
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get API key statistics"""
 
         active_keys = [k for k in self.api_keys.values() if k.status == APIKeyStatus.ACTIVE]
@@ -348,9 +348,9 @@ class RequestSigningClient:
         self,
         method: str,
         url: str,
-        body: Optional[bytes] = None,
+        body: bytes | None = None,
         include_nonce: bool = True
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate headers for signed request"""
 
         timestamp = str(int(time.time()))
@@ -383,7 +383,7 @@ class RequestSigningClient:
         url: str,
         timestamp: str,
         body: bytes,
-        nonce: Optional[str]
+        nonce: str | None
     ) -> str:
         """Calculate HMAC-SHA256 signature"""
 
@@ -436,7 +436,7 @@ if __name__ == "__main__":
         rate_limit_qps=10.0
     )
 
-    print(f"Generated API Key:")
+    print("Generated API Key:")
     print(f"  Key ID: {key_id}")
     print(f"  Secret: {secret}")
 
@@ -450,6 +450,6 @@ if __name__ == "__main__":
         body=json.dumps({"query": "test"}).encode('utf-8')
     )
 
-    print(f"\nRequest Headers:")
+    print("\nRequest Headers:")
     for name, value in headers.items():
         print(f"  {name}: {value}")

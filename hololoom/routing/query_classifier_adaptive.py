@@ -20,26 +20,23 @@ Phase: 3 - Adaptive Learning (Day 11-12)
 
 import asyncio
 import json
-from pathlib import Path
-from typing import Optional, List, Tuple
-from datetime import datetime, timedelta
 from dataclasses import asdict
+from datetime import datetime
+from pathlib import Path
 
-from .query_classifier_moonshot import (
-    MoonshotQueryClassifier,
-    ClassificationResult,
-    QueryComplexity
-)
 from .learning import (
-    PatternMiner,
-    ContinuousValidator,
     AdaptiveUpdater,
-    PerformanceReporter,
+    ContinuousValidator,
+    DeploymentStrategy,
     Pattern,
+    PatternMiner,
     PatternScore,
-    ValidationQuery,
+    PerformanceReporter,
     create_validation_set,
-    DeploymentStrategy
+)
+from .query_classifier_moonshot import (
+    ClassificationResult,
+    MoonshotQueryClassifier,
 )
 
 
@@ -59,8 +56,8 @@ class AdaptiveMoonshotClassifier:
         self,
         enable_semantic_tier: bool = True,
         enable_adaptive_learning: bool = True,
-        data_dir: Optional[Path] = None,
-        validation_set_path: Optional[Path] = None,
+        data_dir: Path | None = None,
+        validation_set_path: Path | None = None,
         background_learning: bool = True,
         learning_update_interval: float = 3600.0,  # 1 hour
     ):
@@ -96,10 +93,10 @@ class AdaptiveMoonshotClassifier:
 
         # Adaptive learning components
         self.enable_adaptive_learning = enable_adaptive_learning
-        self.pattern_miner: Optional[PatternMiner] = None
-        self.validator: Optional[ContinuousValidator] = None
-        self.updater: Optional[AdaptiveUpdater] = None
-        self.reporter: Optional[PerformanceReporter] = None
+        self.pattern_miner: PatternMiner | None = None
+        self.validator: ContinuousValidator | None = None
+        self.updater: AdaptiveUpdater | None = None
+        self.reporter: PerformanceReporter | None = None
 
         if enable_adaptive_learning:
             self._initialize_adaptive_components(validation_set_path)
@@ -107,10 +104,10 @@ class AdaptiveMoonshotClassifier:
         # Background learning
         self.background_learning = background_learning
         self.learning_update_interval = learning_update_interval
-        self._learning_task: Optional[asyncio.Task] = None
+        self._learning_task: asyncio.Task | None = None
         self._should_stop = False
 
-    def _initialize_adaptive_components(self, validation_set_path: Optional[Path]):
+    def _initialize_adaptive_components(self, validation_set_path: Path | None):
         """Initialize Phase 3 adaptive learning components."""
 
         # 1. PatternMiner - mines patterns from classification logs
@@ -153,7 +150,7 @@ class AdaptiveMoonshotClassifier:
             output_dir=str(self.reports_dir)
         )
 
-    def _create_default_validation_set(self) -> List[Tuple[str, str]]:
+    def _create_default_validation_set(self) -> list[tuple[str, str]]:
         """Create default validation set with known examples."""
         return [
             # TRIVIAL queries (20 examples)
@@ -345,7 +342,7 @@ class AdaptiveMoonshotClassifier:
         print(f"[AdaptiveLearning] Validation accuracy: {validation_result.overall_accuracy:.1%}")
 
         if validation_result.regression_detected:
-            print(f"[AdaptiveLearning] ⚠️  REGRESSION DETECTED!")
+            print("[AdaptiveLearning] ⚠️  REGRESSION DETECTED!")
 
             # Generate alert
             if self.validator.regression_alerts:
@@ -360,7 +357,7 @@ class AdaptiveMoonshotClassifier:
 
         # Step 3: Deploy high-quality patterns (if any)
         if self.patterns_path.exists():
-            with open(self.patterns_path, 'r', encoding='utf-8') as f:
+            with open(self.patterns_path, encoding='utf-8') as f:
                 pattern_data = json.load(f)
 
             if pattern_data:
@@ -401,11 +398,11 @@ class AdaptiveMoonshotClassifier:
             weekly_report = self.reporter.generate_weekly_report()
             print(f"[AdaptiveLearning] Weekly accuracy: {weekly_report.overall_accuracy:.1%}")
             print(f"[AdaptiveLearning] Total queries: {weekly_report.total_queries}")
-            print(f"[AdaptiveLearning] Recommendations:")
+            print("[AdaptiveLearning] Recommendations:")
             for i, rec in enumerate(weekly_report.recommendations[:3], 1):
                 print(f"[AdaptiveLearning]   {i}. {rec}")
 
-        print(f"[AdaptiveLearning] Learning cycle complete\n")
+        print("[AdaptiveLearning] Learning cycle complete\n")
 
     def get_learning_statistics(self) -> dict:
         """Get comprehensive adaptive learning statistics."""
@@ -420,12 +417,12 @@ class AdaptiveMoonshotClassifier:
 
         # Count logged queries
         if self.classification_log_path.exists():
-            with open(self.classification_log_path, 'r', encoding='utf-8') as f:
+            with open(self.classification_log_path, encoding='utf-8') as f:
                 stats['total_queries_logged'] = sum(1 for _ in f)
 
         # Count patterns
         if self.patterns_path.exists():
-            with open(self.patterns_path, 'r', encoding='utf-8') as f:
+            with open(self.patterns_path, encoding='utf-8') as f:
                 pattern_data = json.load(f)
                 stats['patterns_discovered'] = len(pattern_data)
 
@@ -447,7 +444,7 @@ async def create_adaptive_classifier(
     enable_semantic: bool = True,
     enable_learning: bool = True,
     start_background: bool = True,
-    data_dir: Optional[Path] = None
+    data_dir: Path | None = None
 ) -> AdaptiveMoonshotClassifier:
     """
     Create and initialize adaptive classifier.

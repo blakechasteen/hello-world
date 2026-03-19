@@ -52,49 +52,47 @@ Date: 2025-12-03
 """
 
 # Core types
+# Core class
+from .core import (
+    Conscience,
+    MemoryWitness,
+    ThompsonLearner,
+    consider,
+    create_conscience,
+)
 from .judgment import (
-    Voice,
     Concern,
     Judgment,
+    Voice,
     Wisdom,
     # Factory functions
     quiet_judgment,
-    whisper_judgment,
-    voice_judgment,
     shout_judgment,
-)
-
-# Protocols
-from .protocol import (
-    ConscienceLens,
-    WitnessProtocol,
-    LearnerProtocol,
-    ConscienceProtocol,
+    voice_judgment,
+    whisper_judgment,
 )
 
 # Lenses
 from .lenses import (
     BaseLens,
     CompositeLens,
-    create_composite,
-    HarmLens,
     DeceptionLens,
+    HarmLens,
     PowerLens,
-    # Presets
-    standard,
+    create_composite,
     paranoid,
     research,
+    # Presets
+    standard,
 )
 
-# Core class
-from .core import (
-    Conscience,
-    MemoryWitness,
-    ThompsonLearner,
-    create_conscience,
-    consider,
+# Protocols
+from .protocol import (
+    ConscienceLens,
+    ConscienceProtocol,
+    LearnerProtocol,
+    WitnessProtocol,
 )
-
 
 __all__ = [
     # Core types

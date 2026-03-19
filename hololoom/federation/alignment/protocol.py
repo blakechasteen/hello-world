@@ -23,17 +23,13 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 # Re-export federation types for convenience
 from ..types import (
-    FederationNode,
     Query,
     Response,
-    Verification,
-    VerificationLevel,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  ENUMS - Alignment verification vocabulary
@@ -89,10 +85,10 @@ class AlignmentVerification:
     confidence: float                         # 0.0-1.0 alignment confidence
     risk_level: str                           # From SafetyGuardrails
     deception_score: float                    # 0.0-1.0 from DeceptionDetector
-    deception_flags: List[DeceptionFlag] = field(default_factory=list)
-    reasoning_chain: List[str] = field(default_factory=list)
+    deception_flags: list[DeceptionFlag] = field(default_factory=list)
+    reasoning_chain: list[str] = field(default_factory=list)
     latency_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     @property
@@ -122,9 +118,9 @@ class ConsensusAlignmentResult:
     verified: bool                            # Consensus reached
     agreement_ratio: float                    # Fraction of nodes agreeing
     min_required: int                         # Minimum agreements needed
-    verifier_nodes: List[str]                 # Nodes that verified
-    dissenting_nodes: List[str] = field(default_factory=list)
-    individual_results: List[AlignmentVerification] = field(default_factory=list)
+    verifier_nodes: list[str]                 # Nodes that verified
+    dissenting_nodes: list[str] = field(default_factory=list)
+    individual_results: list[AlignmentVerification] = field(default_factory=list)
     consensus_confidence: float = 0.0         # Aggregate confidence
     latency_ms: float = 0.0
     timestamp: datetime = field(default_factory=datetime.utcnow)
@@ -229,7 +225,7 @@ class FederationAlignmentProtocol(Protocol):
     async def consensus_alignment_verify(
         self,
         response: Response,
-        verifier_nodes: List[str],
+        verifier_nodes: list[str],
         min_agreements: int = 2,
     ) -> ConsensusAlignmentResult:
         """
@@ -296,7 +292,7 @@ class AlignmentVerifierBase(ABC):
     async def consensus_alignment_verify(
         self,
         response: Response,
-        verifier_nodes: List[str],
+        verifier_nodes: list[str],
         min_agreements: int = 2,
     ) -> ConsensusAlignmentResult:
         """Multi-node consensus verification."""
@@ -324,7 +320,7 @@ class AlignmentVerifierBase(ABC):
         self,
         node_id: str,
         response: Response,
-    ) -> tuple[float, List[DeceptionFlag]]:
+    ) -> tuple[float, list[DeceptionFlag]]:
         """
         Run deception detection probes.
 

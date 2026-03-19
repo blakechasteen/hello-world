@@ -17,17 +17,15 @@ Date: 2025-12-22
 Phase: 11.7 - Built-in Plugins
 """
 
-import asyncio
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.engine import DarkTraceEngine
     from hololoom.dark_trace.plugins.safety_gate import PluginSafetyGate
-    from hololoom.dark_trace.result import TraceResult
 
 from hololoom.dark_trace.plugins.interface import (
     DarkTracePlugin,
@@ -35,7 +33,6 @@ from hololoom.dark_trace.plugins.interface import (
     PluginType,
     ValidatorPlugin,
 )
-from hololoom.dark_trace.causal.validator import CausalValidator
 from hololoom.dark_trace.plugins.safety_gate import (
     PluginCapability,
     TrustLevel,
@@ -73,11 +70,11 @@ class AlignmentViolation:
     severity: ViolationSeverity
     plugin_name: str
     description: str
-    evidence: Dict[str, Any] = field(default_factory=dict)
+    evidence: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
     recommended_action: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "violation_type": self.violation_type.value,
@@ -95,8 +92,8 @@ class AlignmentValidationResult:
     """Result of alignment validation."""
     plugin_name: str
     is_aligned: bool
-    violations: List[AlignmentViolation] = field(default_factory=list)
-    trust_recommendation: Optional[TrustLevel] = None
+    violations: list[AlignmentViolation] = field(default_factory=list)
+    trust_recommendation: TrustLevel | None = None
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
@@ -104,7 +101,7 @@ class AlignmentValidationResult:
         return any(v.severity == ViolationSeverity.CRITICAL for v in self.violations)
 
     @property
-    def highest_severity(self) -> Optional[ViolationSeverity]:
+    def highest_severity(self) -> ViolationSeverity | None:
         if not self.violations:
             return None
         severity_order = [
@@ -119,7 +116,7 @@ class AlignmentValidationResult:
         )
         return severity_order[max_idx]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "plugin_name": self.plugin_name,
             "is_aligned": self.is_aligned,
@@ -184,10 +181,10 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
 
     def __init__(self) -> None:
         """Initialize alignment validator."""
-        self._engine: Optional["DarkTraceEngine"] = None
-        self._safety_gate: Optional["PluginSafetyGate"] = None
-        self._violation_history: List[AlignmentViolation] = []
-        self._validated_plugins: Dict[str, AlignmentValidationResult] = {}
+        self._engine: DarkTraceEngine | None = None
+        self._safety_gate: PluginSafetyGate | None = None
+        self._violation_history: list[AlignmentViolation] = []
+        self._validated_plugins: dict[str, AlignmentValidationResult] = {}
         self._validation_stats = {
             "total_validations": 0,
             "aligned_count": 0,
@@ -275,7 +272,7 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
                 is_aligned=True,  # Default to aligned if not initialized
             )
 
-        violations: List[AlignmentViolation] = []
+        violations: list[AlignmentViolation] = []
         plugin_meta = plugin.metadata
 
         # Check 1: Excessive capabilities
@@ -345,7 +342,7 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
     def _check_excessive_capabilities(
         self,
         plugin_meta: PluginMetadata,
-    ) -> Optional[AlignmentViolation]:
+    ) -> AlignmentViolation | None:
         """Check if plugin requests excessive capabilities."""
         plugin_type = plugin_meta.plugin_type
         requested = set(plugin_meta.requested_capabilities)
@@ -386,7 +383,7 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
     def _check_power_seeking(
         self,
         plugin_meta: PluginMetadata,
-    ) -> Optional[AlignmentViolation]:
+    ) -> AlignmentViolation | None:
         """Check for power-seeking language in description."""
         description = plugin_meta.description.lower()
 
@@ -424,7 +421,7 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
     def _check_description_clarity(
         self,
         plugin: "DarkTracePlugin",
-    ) -> Optional[AlignmentViolation]:
+    ) -> AlignmentViolation | None:
         """Check if behavior description is clear and complete."""
         behavior = plugin.describe_behavior()
 
@@ -472,7 +469,7 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
     def _recommend_trust_level(
         self,
         plugin_meta: PluginMetadata,
-        violations: List[AlignmentViolation],
+        violations: list[AlignmentViolation],
         has_critical: bool,
     ) -> TrustLevel:
         """Recommend appropriate trust level based on validation."""
@@ -506,7 +503,7 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
         # Default to SANDBOXED for unsigned plugins
         return TrustLevel.SANDBOXED
 
-    def get_violation_count(self) -> Dict[str, int]:
+    def get_violation_count(self) -> dict[str, int]:
         """Get violation counts by type."""
         counts = {vt.value: 0 for vt in AlignmentViolationType}
         for violation in self._violation_history:
@@ -516,8 +513,8 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
     def get_recent_violations(
         self,
         limit: int = 10,
-        min_severity: Optional[ViolationSeverity] = None,
-    ) -> List[AlignmentViolation]:
+        min_severity: ViolationSeverity | None = None,
+    ) -> list[AlignmentViolation]:
         """Get recent violations."""
         violations = self._violation_history.copy()
 
@@ -534,11 +531,11 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
     def get_plugin_validation(
         self,
         plugin_name: str,
-    ) -> Optional[AlignmentValidationResult]:
+    ) -> AlignmentValidationResult | None:
         """Get validation result for a specific plugin."""
         return self._validated_plugins.get(plugin_name)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get validation statistics."""
         return {
             **self._validation_stats,

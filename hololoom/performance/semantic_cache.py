@@ -14,9 +14,8 @@ Memory usage:
 - Total: ~6 MB (negligible compared to model size)
 """
 
-from collections import OrderedDict
-from typing import Dict, List, Optional
 import json
+from collections import OrderedDict
 from pathlib import Path
 
 
@@ -52,11 +51,11 @@ class AdaptiveSemanticCache:
         self.emb = embedder
 
         # Tier 1: Hot cache (never evicted)
-        self.hot: Dict[str, Dict[str, float]] = {}
+        self.hot: dict[str, dict[str, float]] = {}
         self.hot_size = hot_size
 
         # Tier 2: Warm cache (LRU)
-        self.warm: OrderedDict[str, Dict[str, float]] = OrderedDict()
+        self.warm: OrderedDict[str, dict[str, float]] = OrderedDict()
         self.warm_size = warm_size
 
         # Statistics
@@ -66,7 +65,7 @@ class AdaptiveSemanticCache:
         if auto_preload:
             self.preload_hot_tier()
 
-    def preload_hot_tier(self, patterns: Optional[List[str]] = None):
+    def preload_hot_tier(self, patterns: list[str] | None = None):
         """
         Pre-compute 244D scores for high-value patterns.
 
@@ -95,7 +94,7 @@ class AdaptiveSemanticCache:
 
         print(f"  Hot tier loaded: {len(self.hot)} patterns")
 
-    def _get_default_patterns(self) -> List[str]:
+    def _get_default_patterns(self) -> list[str]:
         """
         Default high-value patterns for narrative analysis.
 
@@ -184,7 +183,7 @@ class AdaptiveSemanticCache:
             # (In production, load from corpus analysis)
         ]
 
-    def get_scores(self, text: str) -> Dict[str, float]:
+    def get_scores(self, text: str) -> dict[str, float]:
         """
         Get 244D semantic scores with three-tier lookup.
 
@@ -219,7 +218,7 @@ class AdaptiveSemanticCache:
 
         return scores
 
-    def get_batch_scores(self, texts: List[str]) -> List[Dict[str, float]]:
+    def get_batch_scores(self, texts: list[str]) -> list[dict[str, float]]:
         """
         Batch-optimized version for multiple texts.
 
@@ -273,7 +272,7 @@ class AdaptiveSemanticCache:
         """Reset statistics without clearing cache."""
         self.hits = {"hot": 0, "warm": 0, "cold": 0}
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """
         Get cache performance statistics.
 
@@ -377,7 +376,7 @@ class AdaptiveSemanticCache:
             return False
 
         try:
-            with open(path_obj, 'r') as f:
+            with open(path_obj) as f:
                 data = json.load(f)
 
             self.hot = data.get("hot", {})

@@ -26,9 +26,9 @@ Author: HoloLoom Team
 Date: 2025-12-01 (Jenny MVP Week 1)
 """
 
-from typing import List, Dict, Any, Optional, Protocol, runtime_checkable, AsyncIterator
+from collections.abc import AsyncIterator
 from enum import Enum
-
+from typing import Any, Protocol, runtime_checkable
 
 # ============================================================================
 # Forward Type References (avoid circular imports)
@@ -106,8 +106,8 @@ class JennyCompilerProtocol(Protocol):
         self,
         spacetime: SpacetimeType,
         strategy: CompilationStrategy = CompilationStrategy.AUTO,
-        context: Optional[Dict[str, Any]] = None
-    ) -> List[JennySpecType]:
+        context: dict[str, Any] | None = None
+    ) -> list[JennySpecType]:
         """
         Compile Spacetime into UI specifications.
 
@@ -128,7 +128,7 @@ class JennyCompilerProtocol(Protocol):
         self,
         spacetime: SpacetimeType,
         strategy: CompilationStrategy = CompilationStrategy.AUTO,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> AsyncIterator[JennySpecType]:
         """
         Stream-compile Spacetime for progressive rendering.
@@ -151,7 +151,7 @@ class JennyCompilerProtocol(Protocol):
     def get_panel_strategy(
         self,
         spacetime: SpacetimeType
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze Spacetime and recommend panel strategy (dry run).
 
@@ -214,9 +214,9 @@ class JennyRendererProtocol(Protocol):
 
     async def render(
         self,
-        specs: List[JennySpecType],
+        specs: list[JennySpecType],
         target: RenderTarget = RenderTarget.HTML,
-        options: Optional[Dict[str, Any]] = None
+        options: dict[str, Any] | None = None
     ) -> str:
         """
         Render JennySpecs to output format.
@@ -238,7 +238,7 @@ class JennyRendererProtocol(Protocol):
         self,
         spec: JennySpecType,
         target: RenderTarget = RenderTarget.HTML,
-        options: Optional[Dict[str, Any]] = None
+        options: dict[str, Any] | None = None
     ) -> str:
         """
         Render a single JennySpec panel.
@@ -284,7 +284,7 @@ class JennyRendererProtocol(Protocol):
         ...
 
     @property
-    def supported_targets(self) -> List[RenderTarget]:
+    def supported_targets(self) -> list[RenderTarget]:
         """Return list of supported render targets."""
         ...
 
@@ -436,8 +436,8 @@ class JennyLifecycleProtocol(Protocol):
 
     async def get_active_panels(
         self,
-        session_id: Optional[str] = None
-    ) -> List[JennySpecType]:
+        session_id: str | None = None
+    ) -> list[JennySpecType]:
         """
         Get all active panels (NASCENT or STABLE).
 
@@ -452,7 +452,7 @@ class JennyLifecycleProtocol(Protocol):
     async def get_panel(
         self,
         spec_id: str
-    ) -> Optional[JennySpecType]:
+    ) -> JennySpecType | None:
         """
         Get a panel by ID (any lifecycle stage).
 
@@ -467,7 +467,7 @@ class JennyLifecycleProtocol(Protocol):
     async def cleanup_stale(
         self,
         max_age_seconds: int = 300
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Clean up stale NASCENT panels.
 
@@ -485,7 +485,7 @@ class JennyLifecycleProtocol(Protocol):
     async def handle_memory_pressure(
         self,
         target_panel_count: int
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Handle memory pressure by dissolving low-priority panels.
 
@@ -537,7 +537,7 @@ class SpecLedgerProtocol(Protocol):
         self,
         spec: JennySpecType,
         spacetime_id: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> str:
         """
         Log a spec to the ledger.
@@ -555,7 +555,7 @@ class SpecLedgerProtocol(Protocol):
     async def get_spec(
         self,
         spec_id: str
-    ) -> Optional[JennySpecType]:
+    ) -> JennySpecType | None:
         """
         Retrieve a spec by ID.
 
@@ -570,7 +570,7 @@ class SpecLedgerProtocol(Protocol):
     async def query_by_spacetime(
         self,
         spacetime_id: str
-    ) -> List[JennySpecType]:
+    ) -> list[JennySpecType]:
         """
         Query all specs generated from a Spacetime.
 
@@ -587,7 +587,7 @@ class SpecLedgerProtocol(Protocol):
         start_time: str,
         end_time: str,
         limit: int = 100
-    ) -> List[JennySpecType]:
+    ) -> list[JennySpecType]:
         """
         Query specs within a time range.
 
@@ -605,7 +605,7 @@ class SpecLedgerProtocol(Protocol):
         self,
         panel_type: str,
         limit: int = 100
-    ) -> List[JennySpecType]:
+    ) -> list[JennySpecType]:
         """
         Query specs by panel type.
 
@@ -620,9 +620,9 @@ class SpecLedgerProtocol(Protocol):
 
     async def get_statistics(
         self,
-        start_time: Optional[str] = None,
-        end_time: Optional[str] = None
-    ) -> Dict[str, Any]:
+        start_time: str | None = None,
+        end_time: str | None = None
+    ) -> dict[str, Any]:
         """
         Get ledger statistics.
 
@@ -644,7 +644,7 @@ class SpecLedgerProtocol(Protocol):
     async def replay_session(
         self,
         session_id: str
-    ) -> List[JennySpecType]:
+    ) -> list[JennySpecType]:
         """
         Replay all specs from a session in order.
 

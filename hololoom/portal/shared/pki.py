@@ -40,23 +40,20 @@ Usage:
         print(f"Authenticated: {info.node_id}")
 """
 
-import ssl
 import os
-from pathlib import Path
+import ssl
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List, Tuple
 from datetime import datetime, timedelta
-import hashlib
-import base64
-import json
+from pathlib import Path
+from typing import Any
 
 # Use cryptography library for certificate operations
 try:
     from cryptography import x509
-    from cryptography.x509.oid import NameOID, ExtensionOID
-    from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
     from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
+    from cryptography.x509.oid import ExtensionOID, NameOID
     CRYPTOGRAPHY_AVAILABLE = True
 except ImportError:
     CRYPTOGRAPHY_AVAILABLE = False
@@ -76,12 +73,12 @@ class CertificateInfo:
     issuer: str
     serial_number: int
     is_valid: bool
-    not_valid_before: Optional[datetime] = None
-    fingerprint: Optional[str] = None  # SHA256 fingerprint
-    subject_alt_names: List[str] = field(default_factory=list)
-    error_message: Optional[str] = None
+    not_valid_before: datetime | None = None
+    fingerprint: str | None = None  # SHA256 fingerprint
+    subject_alt_names: list[str] = field(default_factory=list)
+    error_message: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "common_name": self.common_name,
@@ -109,7 +106,7 @@ class CAInfo:
     expires_at: datetime
     fingerprint: str
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "common_name": self.common_name,
@@ -172,7 +169,7 @@ class PKIManager:
         common_name: str = "Portal CA",
         validity_days: int = 3650,
         overwrite: bool = False,
-    ) -> Tuple[Path, Path]:
+    ) -> tuple[Path, Path]:
         """
         Generate Certificate Authority certificate and private key.
 
@@ -260,7 +257,7 @@ class PKIManager:
 
         return self.ca_cert_path, self.ca_key_path
 
-    def _load_ca(self) -> Tuple[Any, Any]:
+    def _load_ca(self) -> tuple[Any, Any]:
         """Load CA certificate and key from disk."""
         if not self.ca_cert_path.exists():
             raise FileNotFoundError(
@@ -289,9 +286,9 @@ class PKIManager:
         self,
         node_id: str,
         validity_days: int = 365,
-        san_dns_names: Optional[List[str]] = None,
-        san_ip_addresses: Optional[List[str]] = None,
-    ) -> Tuple[Path, Path]:
+        san_dns_names: list[str] | None = None,
+        san_ip_addresses: list[str] | None = None,
+    ) -> tuple[Path, Path]:
         """
         Issue a certificate for a node.
 
@@ -398,9 +395,9 @@ class PKIManager:
         self,
         server_name: str = "portal",
         validity_days: int = 365,
-        san_dns_names: Optional[List[str]] = None,
-        san_ip_addresses: Optional[List[str]] = None,
-    ) -> Tuple[Path, Path]:
+        san_dns_names: list[str] | None = None,
+        san_ip_addresses: list[str] | None = None,
+    ) -> tuple[Path, Path]:
         """
         Issue a certificate for the Portal server.
 
@@ -562,7 +559,7 @@ class PKIManager:
 
         return context
 
-    def verify_client_certificate(self, cert_pem: bytes) -> Optional[CertificateInfo]:
+    def verify_client_certificate(self, cert_pem: bytes) -> CertificateInfo | None:
         """
         Verify client certificate and extract information.
 
@@ -643,7 +640,7 @@ class PKIManager:
                 error_message=f"Certificate parse error: {e}",
             )
 
-    def get_ca_info(self) -> Optional[CAInfo]:
+    def get_ca_info(self) -> CAInfo | None:
         """
         Get information about the CA certificate.
 
@@ -679,7 +676,7 @@ class PKIManager:
         except Exception:
             return None
 
-    def list_node_certificates(self) -> List[CertificateInfo]:
+    def list_node_certificates(self) -> list[CertificateInfo]:
         """
         List all issued node certificates.
 
@@ -723,7 +720,7 @@ class PKIManager:
 
         return revoked
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export PKI status as dictionary."""
         ca_info = self.get_ca_info()
         node_certs = self.list_node_certificates()

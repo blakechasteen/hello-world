@@ -20,8 +20,6 @@ Date: December 2025
 """
 
 import asyncio
-from typing import List, Tuple, Optional
-
 
 # Global loom instance
 _loom = None
@@ -75,7 +73,7 @@ def create_app():
     import gradio as gr
 
     # Wrapper functions that handle async
-    def chat(message: str, history: List[Tuple[str, str]], mode: str) -> Tuple[str, List[Tuple[str, str]]]:
+    def chat(message: str, history: list[tuple[str, str]], mode: str) -> tuple[str, list[tuple[str, str]]]:
         """Handle chat message."""
         global _loom
         if _loom is None:

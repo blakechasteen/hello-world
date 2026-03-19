@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Dark Trace Orchestrator Integration
 
@@ -33,11 +34,12 @@ Usage:
     print(f"Safety-relevant: {trace.safety_features}")
 """
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, TYPE_CHECKING
-from enum import Enum
-import numpy as np
 import time
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Optional
+
+import numpy as np
 
 if TYPE_CHECKING:
     from hololoom.config import Config
@@ -58,11 +60,11 @@ class FeatureTrace:
     """Trace of a single feature activation."""
     feature_id: str
     activation: float
-    layer: Optional[str] = None
-    label: Optional[str] = None
+    layer: str | None = None
+    label: str | None = None
     is_safety_relevant: bool = False
-    semantic_dimensions: Optional[Dict[str, float]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    semantic_dimensions: dict[str, float] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -70,10 +72,10 @@ class DecisionTrace:
     """Trace connecting features to a decision."""
     tool_selected: str
     confidence: float
-    top_features: List[FeatureTrace] = field(default_factory=list)
-    feature_contributions: Dict[str, float] = field(default_factory=dict)
-    safety_score: Optional[float] = None
-    explanation: Optional[str] = None
+    top_features: list[FeatureTrace] = field(default_factory=list)
+    feature_contributions: dict[str, float] = field(default_factory=dict)
+    safety_score: float | None = None
+    explanation: str | None = None
 
 
 @dataclass
@@ -84,18 +86,18 @@ class TracedSpacetime:
     response: str
     confidence: float
     tool_used: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Interpretability traces
-    feature_traces: List[FeatureTrace] = field(default_factory=list)
-    decision_trace: Optional[DecisionTrace] = None
-    safety_features: List[FeatureTrace] = field(default_factory=list)
+    feature_traces: list[FeatureTrace] = field(default_factory=list)
+    decision_trace: DecisionTrace | None = None
+    safety_features: list[FeatureTrace] = field(default_factory=list)
 
     # Timing
     trace_time_ms: float = 0.0
 
     @property
-    def active_features(self) -> List[str]:
+    def active_features(self) -> list[str]:
         """Get list of active feature IDs."""
         return [ft.feature_id for ft in self.feature_traces]
 
@@ -130,7 +132,7 @@ class TracedSpacetime:
 
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "response": self.response,
@@ -168,7 +170,7 @@ class OrchestratorConfig:
     enable_decision_tracing: bool = True
 
     # Which trace points to enable
-    trace_points: Set[TracePoint] = field(
+    trace_points: set[TracePoint] = field(
         default_factory=lambda: {
             TracePoint.FEATURE_EXTRACTION,
             TracePoint.DECISION,
@@ -198,7 +200,7 @@ class DarkTraceOrchestrator:
         self,
         orchestrator: Any,
         engine: Optional["DarkTraceEngine"] = None,
-        config: Optional[OrchestratorConfig] = None,
+        config: OrchestratorConfig | None = None,
     ):
         """
         Initialize traced orchestrator.
@@ -213,7 +215,7 @@ class DarkTraceOrchestrator:
         self.config = config or OrchestratorConfig()
 
         # Trace cache
-        self._trace_cache: Dict[str, TracedSpacetime] = {}
+        self._trace_cache: dict[str, TracedSpacetime] = {}
 
     async def weave(
         self,
@@ -289,7 +291,7 @@ class DarkTraceOrchestrator:
 
         return traced
 
-    def _extract_activations(self, spacetime: Any) -> Optional[np.ndarray]:
+    def _extract_activations(self, spacetime: Any) -> np.ndarray | None:
         """Extract activations from spacetime for analysis."""
         # Try different sources
         if hasattr(spacetime, 'activations'):
@@ -313,7 +315,7 @@ class DarkTraceOrchestrator:
     def _create_feature_traces(
         self,
         trace_result: "TraceResult",
-    ) -> List[FeatureTrace]:
+    ) -> list[FeatureTrace]:
         """Create feature traces from trace result."""
         traces = []
 
@@ -343,9 +345,9 @@ class DarkTraceOrchestrator:
 
     def _detect_safety_features(
         self,
-        feature_traces: List[FeatureTrace],
+        feature_traces: list[FeatureTrace],
         trace_result: "TraceResult",
-    ) -> List[FeatureTrace]:
+    ) -> list[FeatureTrace]:
         """Detect safety-relevant features."""
         safety_features = []
 
@@ -375,7 +377,7 @@ class DarkTraceOrchestrator:
     def _create_decision_trace(
         self,
         spacetime: Any,
-        feature_traces: List[FeatureTrace],
+        feature_traces: list[FeatureTrace],
     ) -> DecisionTrace:
         """Create decision trace linking features to tool selection."""
         tool_used = getattr(spacetime, 'tool_used', 'unknown')
@@ -416,7 +418,7 @@ class DarkTraceOrchestrator:
 
     def _generate_explanation(
         self,
-        top_features: List[FeatureTrace],
+        top_features: list[FeatureTrace],
         tool_used: str,
     ) -> str:
         """Generate natural language explanation of decision."""
@@ -431,7 +433,7 @@ class DarkTraceOrchestrator:
         features_str = ", ".join(feature_labels)
         return f"Selected {tool_used} based on features: {features_str}"
 
-    def get_cached_trace(self, query: str) -> Optional[TracedSpacetime]:
+    def get_cached_trace(self, query: str) -> TracedSpacetime | None:
         """Get cached trace for a query."""
         cache_key = query[:100]
         return self._trace_cache.get(cache_key)
@@ -450,7 +452,7 @@ def create_traced_orchestrator(
     config: "Config",
     shards: Any = None,
     dark_trace_engine: Optional["DarkTraceEngine"] = None,
-    orchestrator_config: Optional[OrchestratorConfig] = None,
+    orchestrator_config: OrchestratorConfig | None = None,
 ) -> DarkTraceOrchestrator:
     """
     Create a DarkTrace-enabled orchestrator.

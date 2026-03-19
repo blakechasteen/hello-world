@@ -16,15 +16,15 @@ Author: HoloLoom Architecture Team
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from hololoom.loom.weave_house import WeaveHouse, WeaveResult
-from hololoom.loom.consensus import LoomConsensus, create_loom_consensus
-from hololoom.loom.core_looms.recall_loom import RecallLoom
-from hololoom.loom.core_looms.reason_loom import ReasonLoom
+from hololoom.loom.consensus import create_loom_consensus
 from hololoom.loom.core_looms.reach_loom import ReachLoom
+from hololoom.loom.core_looms.reason_loom import ReasonLoom
+from hololoom.loom.core_looms.recall_loom import RecallLoom
 from hololoom.loom.core_looms.reflect_loom import ReflectLoom
 from hololoom.loom.core_looms.refuse_loom import RefuseLoom
+from hololoom.loom.weave_house import WeaveHouse, WeaveResult
 
 
 @dataclass
@@ -85,7 +85,7 @@ class ResearchHouse(WeaveHouse):
 
     def __init__(
         self,
-        config: Optional[ResearchConfig] = None,
+        config: ResearchConfig | None = None,
         **kwargs
     ):
         """
@@ -114,7 +114,7 @@ class ResearchHouse(WeaveHouse):
             **kwargs
         )
 
-    def _create_research_looms(self) -> List:
+    def _create_research_looms(self) -> list:
         """Create looms configured for research."""
         looms = [
             # RECALL: Find related work and evidence
@@ -164,8 +164,8 @@ class ResearchHouse(WeaveHouse):
     async def research(
         self,
         question: str,
-        context: Optional[Dict[str, Any]] = None,
-        depth: Optional[str] = None
+        context: dict[str, Any] | None = None,
+        depth: str | None = None
     ) -> "ResearchResult":
         """
         Conduct research on a question from multiple perspectives.
@@ -190,8 +190,8 @@ class ResearchHouse(WeaveHouse):
     def _build_research_query(
         self,
         question: str,
-        context: Optional[Dict[str, Any]],
-        depth: Optional[str]
+        context: dict[str, Any] | None,
+        depth: str | None
     ) -> str:
         """Build a query for research."""
         parts = ["Research Question:\n\n", question, "\n"]
@@ -235,7 +235,7 @@ class ResearchHouse(WeaveHouse):
             metadata=result.metadata,
         )
 
-    def _extract_findings(self, result: WeaveResult) -> List[Dict[str, Any]]:
+    def _extract_findings(self, result: WeaveResult) -> list[dict[str, Any]]:
         """Extract findings from research result."""
         findings = []
 
@@ -264,7 +264,7 @@ class ResearchHouse(WeaveHouse):
 
         return findings
 
-    def _extract_novel_insights(self, result: WeaveResult) -> List[str]:
+    def _extract_novel_insights(self, result: WeaveResult) -> list[str]:
         """Extract novel insights from REACH loom."""
         insights = []
 
@@ -278,7 +278,7 @@ class ResearchHouse(WeaveHouse):
 
         return insights
 
-    def _extract_open_questions(self, result: WeaveResult) -> List[str]:
+    def _extract_open_questions(self, result: WeaveResult) -> list[str]:
         """Extract open questions from analysis."""
         open_questions = []
 
@@ -300,7 +300,7 @@ class ResearchHouse(WeaveHouse):
 
         return list(set(open_questions))[:10]  # Dedupe and limit
 
-    def _extract_counterarguments(self, result: WeaveResult) -> List[Dict[str, Any]]:
+    def _extract_counterarguments(self, result: WeaveResult) -> list[dict[str, Any]]:
         """Extract counterarguments from REFUSE loom."""
         counterargs = []
 
@@ -316,7 +316,7 @@ class ResearchHouse(WeaveHouse):
 
         return counterargs
 
-    def _extract_evidence_gaps(self, result: WeaveResult) -> List[str]:
+    def _extract_evidence_gaps(self, result: WeaveResult) -> list[str]:
         """Extract evidence gaps from REFLECT loom."""
         gaps = []
 
@@ -346,14 +346,14 @@ class ResearchResult:
     summary: str
     confidence: float
     epistemic_confidence: float
-    findings: List[Dict[str, Any]] = field(default_factory=list)
-    novel_insights: List[str] = field(default_factory=list)
-    open_questions: List[str] = field(default_factory=list)
-    counterarguments: List[Dict[str, Any]] = field(default_factory=list)
-    evidence_gaps: List[str] = field(default_factory=list)
-    perspectives: Dict[str, str] = field(default_factory=dict)
-    tensions: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    findings: list[dict[str, Any]] = field(default_factory=list)
+    novel_insights: list[str] = field(default_factory=list)
+    open_questions: list[str] = field(default_factory=list)
+    counterarguments: list[dict[str, Any]] = field(default_factory=list)
+    evidence_gaps: list[str] = field(default_factory=list)
+    perspectives: dict[str, str] = field(default_factory=dict)
+    tensions: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def has_novel_insights(self) -> bool:
@@ -370,17 +370,17 @@ class ResearchResult:
         """Check if there are unresolved questions."""
         return len(self.open_questions) > 0
 
-    def findings_by_type(self, finding_type: str) -> List[Dict[str, Any]]:
+    def findings_by_type(self, finding_type: str) -> list[dict[str, Any]]:
         """Get findings by type (prior_work, inference, etc.)."""
         return [f for f in self.findings if f.get("type") == finding_type]
 
-    def high_confidence_findings(self, threshold: float = 0.8) -> List[Dict[str, Any]]:
+    def high_confidence_findings(self, threshold: float = 0.8) -> list[dict[str, Any]]:
         """Get findings above confidence threshold."""
         return [f for f in self.findings if f.get("confidence", 0) >= threshold]
 
 
 def create_research_house(
-    config: Optional[ResearchConfig] = None,
+    config: ResearchConfig | None = None,
     **kwargs
 ) -> ResearchHouse:
     """

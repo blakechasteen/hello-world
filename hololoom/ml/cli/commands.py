@@ -21,8 +21,6 @@ import argparse
 import asyncio
 import json
 import sys
-from pathlib import Path
-from typing import Optional
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -159,7 +157,7 @@ def print_warning(message: str) -> None:
 
 async def cmd_train(args: argparse.Namespace) -> int:
     """Execute train command."""
-    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLOperation, MLTrainerSkill, SkillInput
 
     skill = MLTrainerSkill()
 
@@ -235,7 +233,7 @@ async def cmd_train(args: argparse.Namespace) -> int:
 
 async def cmd_evaluate(args: argparse.Namespace) -> int:
     """Execute evaluate command."""
-    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLOperation, MLTrainerSkill, SkillInput
 
     skill = MLTrainerSkill()
 
@@ -264,12 +262,12 @@ async def cmd_evaluate(args: argparse.Namespace) -> int:
         print_metric("MAE", data.get("mae"))
 
         if data.get("cv_mean") is not None:
-            print(f"\n  Cross-Validation:")
+            print("\n  Cross-Validation:")
             print_metric("    CV Mean", data.get("cv_mean"))
             print_metric("    CV Std", data.get("cv_std"))
 
         if data.get("residuals_stats"):
-            print(f"\n  Residuals:")
+            print("\n  Residuals:")
             stats = data["residuals_stats"]
             print_metric("    Mean", stats.get("mean"))
             print_metric("    Std", stats.get("std"))
@@ -282,7 +280,7 @@ async def cmd_evaluate(args: argparse.Namespace) -> int:
 
 async def cmd_predict(args: argparse.Namespace) -> int:
     """Execute predict command."""
-    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLOperation, MLTrainerSkill, SkillInput
 
     skill = MLTrainerSkill()
 
@@ -316,7 +314,7 @@ async def cmd_predict(args: argparse.Namespace) -> int:
         print(f"\n  Predictions: {data.get('n_predictions')}")
 
         stats = data.get("prediction_stats", {})
-        print(f"\n  Statistics:")
+        print("\n  Statistics:")
         print_metric("    Mean", stats.get("mean"))
         print_metric("    Std", stats.get("std"))
         print_metric("    Min", stats.get("min"))
@@ -339,7 +337,7 @@ async def cmd_predict(args: argparse.Namespace) -> int:
 
 async def cmd_list(args: argparse.Namespace) -> int:
     """Execute list command."""
-    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLOperation, MLTrainerSkill, SkillInput
 
     skill = MLTrainerSkill()
 
@@ -398,7 +396,7 @@ async def cmd_list(args: argparse.Namespace) -> int:
 
 async def cmd_describe(args: argparse.Namespace) -> int:
     """Execute describe command."""
-    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLOperation, MLTrainerSkill, SkillInput
 
     skill = MLTrainerSkill()
 
@@ -427,7 +425,7 @@ async def cmd_describe(args: argparse.Namespace) -> int:
         print(f"  Data Hash: {data.get('data_hash', 'N/A')}")
 
         if data.get("hyperparameters"):
-            print(f"\n  Hyperparameters:")
+            print("\n  Hyperparameters:")
             for key, value in data["hyperparameters"].items():
                 print(f"    {key}: {value}")
 
@@ -439,7 +437,7 @@ async def cmd_describe(args: argparse.Namespace) -> int:
                 print(f"    ... and {len(data['feature_names']) - 10} more")
 
         if data.get("evaluation"):
-            print(f"\n  Evaluation:")
+            print("\n  Evaluation:")
             eval_data = data["evaluation"]
             print_metric("    R² Score", eval_data.get("r2_score"))
             print_metric("    RMSE", eval_data.get("rmse"))
@@ -453,7 +451,7 @@ async def cmd_describe(args: argparse.Namespace) -> int:
 
 async def cmd_delete(args: argparse.Namespace) -> int:
     """Execute delete command."""
-    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLOperation, MLTrainerSkill, SkillInput
 
     if not args.force:
         confirm = input(f"Delete model {args.model_id}? [y/N]: ")
@@ -478,7 +476,7 @@ async def cmd_delete(args: argparse.Namespace) -> int:
 
 async def cmd_validate(args: argparse.Namespace) -> int:
     """Execute validate command."""
-    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLOperation, MLTrainerSkill, SkillInput
 
     skill = MLTrainerSkill()
 
@@ -526,7 +524,7 @@ async def cmd_validate(args: argparse.Namespace) -> int:
 
         recommendations = data.get("recommendations", [])
         if recommendations:
-            print(f"\n  Recommendations:")
+            print("\n  Recommendations:")
             for rec in recommendations:
                 print(f"    → {rec}")
 
@@ -538,7 +536,7 @@ async def cmd_validate(args: argparse.Namespace) -> int:
 
 async def cmd_compare(args: argparse.Namespace) -> int:
     """Execute compare command."""
-    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLOperation, MLTrainerSkill, SkillInput
 
     skill = MLTrainerSkill()
 

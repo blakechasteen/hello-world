@@ -9,11 +9,11 @@ Author: Claude Code with HoloLoom architecture
 Date: October 28, 2025
 """
 
-from typing import Dict, Any, Optional, List
 from datetime import datetime
+from typing import Any
 
-from .dashboard import Dashboard, Panel, PanelSpec, PanelType
-from .strategy import StrategySelector, UserPreferences
+from .dashboard import Dashboard, Panel, PanelSpec
+from .strategy import StrategySelector
 
 
 class DashboardConstructor:
@@ -32,7 +32,7 @@ class DashboardConstructor:
         # dashboard contains panels with data from spacetime
     """
 
-    def __init__(self, strategy_selector: Optional[StrategySelector] = None):
+    def __init__(self, strategy_selector: StrategySelector | None = None):
         """
         Initialize dashboard constructor.
 
@@ -83,7 +83,7 @@ class DashboardConstructor:
             }
         )
 
-    def _create_panel(self, spec: PanelSpec, spacetime) -> Optional[Panel]:
+    def _create_panel(self, spec: PanelSpec, spacetime) -> Panel | None:
         """
         Create panel by extracting data from Spacetime.
 
@@ -116,7 +116,7 @@ class DashboardConstructor:
         self,
         data_source: str,
         spacetime
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Extract data from Spacetime based on data_source path.
 
@@ -181,7 +181,7 @@ class DashboardConstructor:
         self,
         data_source: str,
         spacetime
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Generic data extraction using dot notation.
 
@@ -216,7 +216,7 @@ class DashboardConstructor:
         label: str,
         unit: str = '',
         color: str = 'blue'
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Format single metric value.
 
@@ -233,8 +233,8 @@ class DashboardConstructor:
 
     def _format_timeline(
         self,
-        stage_durations: Dict[str, float]
-    ) -> Dict[str, Any]:
+        stage_durations: dict[str, float]
+    ) -> dict[str, Any]:
         """
         Format timeline data for waterfall chart with bottleneck detection.
 
@@ -361,8 +361,8 @@ class DashboardConstructor:
 
     def _format_network(
         self,
-        threads: List[str]
-    ) -> Dict[str, Any]:
+        threads: list[str]
+    ) -> dict[str, Any]:
         """
         Format network graph data with enhanced structure.
 
@@ -418,7 +418,7 @@ class DashboardConstructor:
             'threads': threads  # Keep original list for fallback
         }
 
-    def _format_errors(self, errors: List) -> Dict[str, Any]:
+    def _format_errors(self, errors: list) -> dict[str, Any]:
         """
         Format error list for display.
 
@@ -432,7 +432,7 @@ class DashboardConstructor:
             'severity': 'high' if errors else 'none'
         }
 
-    def _format_text(self, text: str, label: str) -> Dict[str, Any]:
+    def _format_text(self, text: str, label: str) -> dict[str, Any]:
         """
         Format text content.
 
@@ -448,8 +448,8 @@ class DashboardConstructor:
 
     def _format_semantic_profile(
         self,
-        metadata: Dict
-    ) -> Dict[str, Any]:
+        metadata: dict
+    ) -> dict[str, Any]:
         """
         Format semantic dimension data for heatmap.
 
@@ -511,8 +511,8 @@ class DashboardConstructor:
     def _compute_dimension_projections(
         self,
         query_embedding,
-        dimension_axes: Dict[str, Any]
-    ) -> Dict[str, float]:
+        dimension_axes: dict[str, Any]
+    ) -> dict[str, float]:
         """
         Compute projections of query onto semantic dimension axes.
 
@@ -543,7 +543,7 @@ class DashboardConstructor:
 
         return projections
 
-    def _generate_sample_dimensions(self) -> Dict[str, float]:
+    def _generate_sample_dimensions(self) -> dict[str, float]:
         """
         Generate sample dimension scores for demonstration.
 
@@ -587,8 +587,8 @@ class DashboardConstructor:
 
     def _format_bottleneck(
         self,
-        stage_durations: Dict[str, float]
-    ) -> Dict[str, Any]:
+        stage_durations: dict[str, float]
+    ) -> dict[str, Any]:
         """
         Identify and format bottleneck stage.
 
@@ -640,7 +640,7 @@ class DashboardConstructor:
 
 # Convenience function
 def create_dashboard_constructor(
-    strategy_selector: Optional[StrategySelector] = None
+    strategy_selector: StrategySelector | None = None
 ) -> DashboardConstructor:
     """
     Create a DashboardConstructor instance.

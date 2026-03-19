@@ -17,8 +17,7 @@ No LLM calls. No external dependencies beyond ActivationField.
 """
 
 import logging
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -55,21 +54,21 @@ class ActivationAdapter:
 
     def __init__(
         self,
-        config: Optional[ActivationConfig] = None,
+        config: ActivationConfig | None = None,
         activation_field=None,  # Optional[ActivationField] — avoid hard import
     ):
         self.config = config or ActivationConfig()
         self._field = activation_field  # Optional backing ActivationField
 
         # Lightweight activation levels (always maintained, even without ActivationField)
-        self._levels: Dict[str, float] = {}
+        self._levels: dict[str, float] = {}
 
         # Sync from ActivationField if provided
         if self._field is not None:
             self._levels = self._field.levels
 
     @property
-    def levels(self) -> Dict[str, float]:
+    def levels(self) -> dict[str, float]:
         """Current activation levels for all tracked nodes."""
         if self._field is not None:
             return self._field.levels
@@ -102,7 +101,7 @@ class ActivationAdapter:
 
         return seeds
 
-    def on_retrieval(self, node_ids: List[str]):
+    def on_retrieval(self, node_ids: list[str]):
         """Boost activation of retrieved nodes (ACT-R recency effect).
 
         Every time a node appears in PPR results, its activation increases.
@@ -116,7 +115,7 @@ class ActivationAdapter:
             current = levels.get(nid, 0.0)
             levels[nid] = min(cfg.max_activation, current + cfg.retrieval_boost)
 
-    def on_query_entities(self, entity_ids: List[str]):
+    def on_query_entities(self, entity_ids: list[str]):
         """Boost activation for entities mentioned in the query.
 
         Higher boost than retrieval — explicit mention signals strong relevance.
@@ -140,7 +139,7 @@ class ActivationAdapter:
 
         # Simple multiplicative decay
         factor = 1.0 - self.config.decay_rate
-        pruned: Dict[str, float] = {}
+        pruned: dict[str, float] = {}
         for nid, level in self._levels.items():
             new_level = level * factor
             if new_level > self.config.min_activation:
@@ -160,7 +159,7 @@ class ActivationAdapter:
                 decay_factor=self.config.spread_decay,
             )
 
-    def active_node_ids(self, min_activation: float = 0.1) -> List[str]:
+    def active_node_ids(self, min_activation: float = 0.1) -> list[str]:
         """Get node IDs with activation above threshold, sorted by level."""
         levels = self.levels
         active = [
@@ -181,7 +180,7 @@ class ActivationAdapter:
         else:
             self._levels.clear()
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         """Activation field statistics."""
         levels = self.levels
         active = [v for v in levels.values() if v > self.config.min_activation]

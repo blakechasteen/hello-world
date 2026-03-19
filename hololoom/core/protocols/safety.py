@@ -28,11 +28,10 @@ Author: MRF Swarm (VERIFY + CRITIQUE + ELEGANCE perspectives)
 Date: 2025-12-01 (Safe Integration Phase)
 """
 
-from typing import Protocol, runtime_checkable, Optional, Dict, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-
+from typing import Any, Protocol, runtime_checkable
 
 # ============================================================================
 # Safety Types (Re-exported for convenience)
@@ -60,11 +59,11 @@ class SafetyGateDecision:
     requires_approval: bool = False
 
     # Epistemic context (Consciousness Integration)
-    epistemic_confidence: Optional[float] = None
-    epistemic_warning: Optional[str] = None
+    epistemic_confidence: float | None = None
+    epistemic_warning: str | None = None
 
     # Metadata for audit trail
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
@@ -103,8 +102,8 @@ class SafetyGateProtocol(Protocol):
         self,
         query_text: str,
         reasoning_mode: str,
-        epistemic_confidence: Optional[float] = None,
-        context: Optional[Dict[str, Any]] = None
+        epistemic_confidence: float | None = None,
+        context: dict[str, Any] | None = None
     ) -> SafetyGateDecision:
         """
         Gate agentic reasoning based on safety evaluation.

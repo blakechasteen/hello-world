@@ -17,31 +17,24 @@ All tests verify:
 - Integration with existing systems
 """
 
+
 import pytest
-import asyncio
-from typing import List
 
-from hololoom.agentic.mrf_integration import (
-    create_agentic_mrf_prompt,
-    assess_agentic_quality
-)
 from hololoom.agentic.core import ReasoningMode
-
-from hololoom.rag.mrf_integration import (
-    create_rag_mrf_prompt,
-    assess_rag_quality,
-    RAGMode,
-    enhance_rag_with_mrf
-)
-
-from hololoom.memory.mrf_consolidation import (
-    create_consolidation_mrf_prompt,
-    assess_consolidation_quality,
-    enhance_consolidation_with_mrf
-)
+from hololoom.agentic.mrf_integration import assess_agentic_quality, create_agentic_mrf_prompt
 from hololoom.memory.consolidation import ConsolidationStrategy
+from hololoom.memory.mrf_consolidation import (
+    assess_consolidation_quality,
+    create_consolidation_mrf_prompt,
+    enhance_consolidation_with_mrf,
+)
 from hololoom.protocols.types import MemoryShard
-
+from hololoom.rag.mrf_integration import (
+    RAGMode,
+    assess_rag_quality,
+    create_rag_mrf_prompt,
+    enhance_rag_with_mrf,
+)
 
 # ============================================================================
 # Agentic/Skills System Tests
@@ -246,7 +239,7 @@ class TestRAGMRFIntegration:
 class TestMemoryConsolidationMRFIntegration:
     """Test UnifiedMRF integration in memory consolidation system."""
 
-    def create_test_episodes(self, count: int = 5) -> List[MemoryShard]:
+    def create_test_episodes(self, count: int = 5) -> list[MemoryShard]:
         """Create test episodes for consolidation."""
         return [
             MemoryShard(

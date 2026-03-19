@@ -22,16 +22,10 @@ from enum import Enum
 from pathlib import Path
 from typing import (
     Any,
-    Dict,
-    Generic,
-    List,
-    Optional,
     Protocol,
-    Tuple,
     TypeVar,
     runtime_checkable,
 )
-
 
 # =============================================================================
 # Type Variables
@@ -58,7 +52,7 @@ class LearningResult:
     """
     success: bool
     reward: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
     def __post_init__(self):
@@ -92,7 +86,7 @@ class HeatScore:
     access_count: int = 0
     success_count: int = 0
     avg_severity: float = 0.0
-    last_success: Optional[str] = None
+    last_success: str | None = None
 
     @property
     def is_hot(self) -> bool:
@@ -111,7 +105,7 @@ class HeatScore:
             return 0.0
         return self.success_count / self.access_count
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'element_id': self.element_id,
@@ -157,12 +151,12 @@ class ContextKey:
             self.defense_level == other.defense_level
         )
 
-    def to_tuple(self) -> Tuple[str, str, str]:
+    def to_tuple(self) -> tuple[str, str, str]:
         """Convert to tuple for legacy compatibility."""
         return (self.target_type, self.vuln_class, self.defense_level)
 
     @classmethod
-    def from_tuple(cls, t: Tuple[str, str, str]) -> 'ContextKey':
+    def from_tuple(cls, t: tuple[str, str, str]) -> 'ContextKey':
         """Create from tuple."""
         return cls(target_type=t[0], vuln_class=t[1], defense_level=t[2])
 
@@ -218,7 +212,7 @@ class LearnerProtocol(Protocol):
         """Update learner with new result."""
         ...
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get comprehensive statistics."""
         ...
 
@@ -258,7 +252,7 @@ class BanditProtocol(Protocol[T]):
         """
         ...
 
-    def select_top_k(self, k: int) -> List[T]:
+    def select_top_k(self, k: int) -> list[T]:
         """
         Select top-k arms by Thompson Sampling.
 
@@ -281,7 +275,7 @@ class BanditProtocol(Protocol[T]):
         """
         ...
 
-    def get_expected_rewards(self) -> Dict[T, float]:
+    def get_expected_rewards(self) -> dict[T, float]:
         """Get expected rewards for all arms."""
         ...
 
@@ -289,7 +283,7 @@ class BanditProtocol(Protocol[T]):
         """Get arm with highest expected reward."""
         ...
 
-    def get_exploration_candidates(self, uncertainty_threshold: float = 0.1) -> List[T]:
+    def get_exploration_candidates(self, uncertainty_threshold: float = 0.1) -> list[T]:
         """Get arms with high uncertainty (worth exploring)."""
         ...
 
@@ -318,7 +312,7 @@ class ContextualBanditProtocol(Protocol[T, ContextT]):
         """
         ...
 
-    def select_top_k(self, context: ContextT, k: int) -> List[T]:
+    def select_top_k(self, context: ContextT, k: int) -> list[T]:
         """
         Select top-k arms for given context.
 
@@ -349,11 +343,11 @@ class ContextualBanditProtocol(Protocol[T, ContextT]):
         """
         ...
 
-    def get_context_stats(self, context: ContextT) -> Dict[str, Any]:
+    def get_context_stats(self, context: ContextT) -> dict[str, Any]:
         """Get statistics for a specific context."""
         ...
 
-    def get_all_contexts(self) -> List[ContextT]:
+    def get_all_contexts(self) -> list[ContextT]:
         """Get all known contexts."""
         ...
 
@@ -393,7 +387,7 @@ class HeatTrackerProtocol(Protocol[T]):
         """
         ...
 
-    def get_hot_elements(self, limit: int = 10) -> List[HeatScore]:
+    def get_hot_elements(self, limit: int = 10) -> list[HeatScore]:
         """
         Get hottest elements (heat > 0.7).
 
@@ -405,7 +399,7 @@ class HeatTrackerProtocol(Protocol[T]):
         """
         ...
 
-    def get_cold_elements(self, limit: int = 10) -> List[HeatScore]:
+    def get_cold_elements(self, limit: int = 10) -> list[HeatScore]:
         """
         Get coldest elements (heat < 0.3).
 
@@ -481,7 +475,7 @@ class ABTestProtocol(Protocol):
         """
         ...
 
-    def analyze(self, test_name: str) -> Optional[ABTestResult]:
+    def analyze(self, test_name: str) -> ABTestResult | None:
         """
         Analyze test results.
 
@@ -495,11 +489,11 @@ class ABTestProtocol(Protocol):
         """
         ...
 
-    def get_active_tests(self) -> List[str]:
+    def get_active_tests(self) -> list[str]:
         """Get names of all active tests."""
         ...
 
-    def conclude_test(self, test_name: str) -> Optional[ABTestResult]:
+    def conclude_test(self, test_name: str) -> ABTestResult | None:
         """
         Conclude a test and return final results.
 

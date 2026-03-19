@@ -8,30 +8,30 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Set, Tuple
-from dataclasses import dataclass, field
-from pathlib import Path
-from datetime import datetime
-from enum import Enum
-import json
 import hashlib
+import json
+import logging
 import shutil
 import tempfile
-import logging
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
+from hololoom.dark_trace.plugins.plugin_loader import (
+    LoadedPlugin,
+    PluginLoader,
+)
 from hololoom.dark_trace.plugins.plugin_protocol import (
-    PluginMetadata,
     PluginCategory,
+    PluginMetadata,
     PluginRating,
 )
 from hololoom.dark_trace.plugins.plugin_signing import (
     PluginVerifier,
     SignedManifest,
     create_verifier,
-)
-from hololoom.dark_trace.plugins.plugin_loader import (
-    PluginLoader,
-    LoadedPlugin,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,26 +58,26 @@ class PluginDownloadStats:
 class MarketplacePlugin:
     """A plugin in the marketplace."""
     metadata: PluginMetadata
-    signed_manifest: Optional[SignedManifest] = None
+    signed_manifest: SignedManifest | None = None
 
     # Statistics
     download_stats: PluginDownloadStats = field(default_factory=PluginDownloadStats)
     average_rating: float = 0.0
     rating_count: int = 0
-    ratings: List[PluginRating] = field(default_factory=list)
+    ratings: list[PluginRating] = field(default_factory=list)
 
     # Marketplace metadata
     verified: bool = False
     featured: bool = False
     deprecated: bool = False
-    deprecation_message: Optional[str] = None
+    deprecation_message: str | None = None
 
     # Source
-    source_url: Optional[str] = None
-    package_hash: Optional[str] = None
+    source_url: str | None = None
+    package_hash: str | None = None
     package_size: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "metadata": self.metadata.to_dict(),
             "signed_manifest": self.signed_manifest.to_dict() if self.signed_manifest else None,
@@ -99,7 +99,7 @@ class MarketplacePlugin:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "MarketplacePlugin":
+    def from_dict(cls, data: dict[str, Any]) -> "MarketplacePlugin":
         metadata = PluginMetadata.from_dict(data["metadata"])
         signed_manifest = None
         if data.get("signed_manifest"):
@@ -144,9 +144,9 @@ class PluginMarketplace:
 
     def __init__(
         self,
-        storage_path: Optional[Path] = None,
-        cache_path: Optional[Path] = None,
-        verifier: Optional[PluginVerifier] = None,
+        storage_path: Path | None = None,
+        cache_path: Path | None = None,
+        verifier: PluginVerifier | None = None,
     ):
         self.storage_path = storage_path or Path.home() / ".hololoom" / "marketplace"
         self.cache_path = cache_path or Path.home() / ".hololoom" / "plugin_cache"
@@ -157,8 +157,8 @@ class PluginMarketplace:
         self.cache_path.mkdir(parents=True, exist_ok=True)
 
         # Plugin registry (in-memory, backed by storage)
-        self._plugins: Dict[str, MarketplacePlugin] = {}
-        self._ratings: Dict[str, List[PluginRating]] = {}
+        self._plugins: dict[str, MarketplacePlugin] = {}
+        self._ratings: dict[str, list[PluginRating]] = {}
 
         # Load existing data
         self._load_registry()
@@ -167,8 +167,8 @@ class PluginMarketplace:
         self,
         plugin_dir: Path,
         metadata: PluginMetadata,
-        signed_manifest: Optional[SignedManifest] = None,
-        source_url: Optional[str] = None,
+        signed_manifest: SignedManifest | None = None,
+        source_url: str | None = None,
     ) -> MarketplacePlugin:
         """
         Publish a plugin to the marketplace.
@@ -246,14 +246,14 @@ class PluginMarketplace:
 
     def search(
         self,
-        query: Optional[str] = None,
-        category: Optional[PluginCategory] = None,
-        tags: Optional[List[str]] = None,
+        query: str | None = None,
+        category: PluginCategory | None = None,
+        tags: list[str] | None = None,
         verified_only: bool = False,
         sort_by: SortOrder = SortOrder.RATING,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[MarketplacePlugin]:
+    ) -> list[MarketplacePlugin]:
         """
         Search for plugins in the marketplace.
 
@@ -326,7 +326,7 @@ class PluginMarketplace:
 
         return results[offset:offset + limit]
 
-    def get_plugin(self, name: str, version: Optional[str] = None) -> Optional[MarketplacePlugin]:
+    def get_plugin(self, name: str, version: str | None = None) -> MarketplacePlugin | None:
         """
         Get a specific plugin.
 
@@ -352,7 +352,7 @@ class PluginMarketplace:
         candidates.sort(key=lambda p: p.metadata.version, reverse=True)
         return candidates[0]
 
-    def get_versions(self, name: str) -> List[str]:
+    def get_versions(self, name: str) -> list[str]:
         """Get all available versions of a plugin."""
         versions = []
         for key in self._plugins:
@@ -364,9 +364,9 @@ class PluginMarketplace:
     def download(
         self,
         name: str,
-        version: Optional[str] = None,
-        dest_dir: Optional[Path] = None,
-    ) -> Optional[Path]:
+        version: str | None = None,
+        dest_dir: Path | None = None,
+    ) -> Path | None:
         """
         Download a plugin package.
 
@@ -417,10 +417,10 @@ class PluginMarketplace:
     def install(
         self,
         name: str,
-        version: Optional[str] = None,
-        install_dir: Optional[Path] = None,
-        loader: Optional[PluginLoader] = None,
-    ) -> Optional[LoadedPlugin]:
+        version: str | None = None,
+        install_dir: Path | None = None,
+        loader: PluginLoader | None = None,
+    ) -> LoadedPlugin | None:
         """
         Download and install a plugin.
 
@@ -461,8 +461,8 @@ class PluginMarketplace:
         version: str,
         user_id: str,
         rating: float,
-        review: Optional[str] = None,
-    ) -> Optional[PluginRating]:
+        review: str | None = None,
+    ) -> PluginRating | None:
         """
         Rate a plugin.
 
@@ -519,10 +519,10 @@ class PluginMarketplace:
     def get_ratings(
         self,
         name: str,
-        version: Optional[str] = None,
+        version: str | None = None,
         limit: int = 10,
         sort_by: str = "helpful",  # "helpful", "recent", "rating"
-    ) -> List[PluginRating]:
+    ) -> list[PluginRating]:
         """
         Get ratings for a plugin.
 
@@ -571,17 +571,17 @@ class PluginMarketplace:
         return False
 
     # Featured and trending
-    def get_featured(self, limit: int = 10) -> List[MarketplacePlugin]:
+    def get_featured(self, limit: int = 10) -> list[MarketplacePlugin]:
         """Get featured plugins."""
         featured = [p for p in self._plugins.values() if p.featured and not p.deprecated]
         featured.sort(key=lambda p: p.average_rating, reverse=True)
         return featured[:limit]
 
-    def get_trending(self, limit: int = 10) -> List[MarketplacePlugin]:
+    def get_trending(self, limit: int = 10) -> list[MarketplacePlugin]:
         """Get trending plugins (high recent activity)."""
         return self.search(sort_by=SortOrder.TRENDING, limit=limit)
 
-    def get_new(self, limit: int = 10) -> List[MarketplacePlugin]:
+    def get_new(self, limit: int = 10) -> list[MarketplacePlugin]:
         """Get newly added plugins."""
         new_plugins = [p for p in self._plugins.values() if not p.deprecated]
         new_plugins.sort(
@@ -604,7 +604,7 @@ class PluginMarketplace:
         self,
         name: str,
         version: str,
-        message: Optional[str] = None,
+        message: str | None = None,
     ) -> bool:
         """Mark a plugin as deprecated."""
         mp_plugin = self.get_plugin(name, version)
@@ -617,9 +617,9 @@ class PluginMarketplace:
         return True
 
     # Category browsing
-    def get_categories(self) -> Dict[PluginCategory, int]:
+    def get_categories(self) -> dict[PluginCategory, int]:
         """Get plugin count by category."""
-        counts = {cat: 0 for cat in PluginCategory}
+        counts = dict.fromkeys(PluginCategory, 0)
         for mp_plugin in self._plugins.values():
             if not mp_plugin.deprecated:
                 counts[mp_plugin.metadata.category] += 1
@@ -629,12 +629,12 @@ class PluginMarketplace:
         self,
         category: PluginCategory,
         limit: int = 50,
-    ) -> List[MarketplacePlugin]:
+    ) -> list[MarketplacePlugin]:
         """Get plugins by category."""
         return self.search(category=category, limit=limit)
 
     # Statistics
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get marketplace statistics."""
         total_plugins = len(self._plugins)
         verified_count = sum(1 for p in self._plugins.values() if p.verified)
@@ -683,7 +683,7 @@ class PluginMarketplace:
             return
 
         try:
-            with open(registry_path, 'r') as f:
+            with open(registry_path) as f:
                 data = json.load(f)
 
             for key, plugin_data in data.get("plugins", {}).items():
@@ -733,8 +733,8 @@ class PluginMarketplace:
 
 # Factory functions
 def create_marketplace(
-    storage_path: Optional[Path] = None,
-    cache_path: Optional[Path] = None,
+    storage_path: Path | None = None,
+    cache_path: Path | None = None,
 ) -> PluginMarketplace:
     """Create a plugin marketplace."""
     return PluginMarketplace(storage_path, cache_path)

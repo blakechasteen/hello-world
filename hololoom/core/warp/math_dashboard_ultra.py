@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Ultra-Polished Math Pipeline Dashboard
 =======================================
@@ -16,14 +15,14 @@ Author: HoloLoom Team
 Date: 2025-10-29
 """
 
-from typing import Dict, List, Any
-from pathlib import Path
 import json
+from pathlib import Path
+from typing import Any
 
 
 def generate_ultra_dashboard(
-    stats: Dict[str, Any],
-    history: List[Dict[str, Any]],
+    stats: dict[str, Any],
+    history: list[dict[str, Any]],
     output_path: str = "demos/output/math_pipeline_ultra.html"
 ) -> str:
     """Generate ultra-polished interactive dashboard."""

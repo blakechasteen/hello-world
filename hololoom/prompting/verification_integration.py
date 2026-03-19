@@ -14,21 +14,21 @@ Features:
 Philosophy: "Verify before refining, refine after verifying"
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, Optional, Any, List
-from enum import Enum
-import time
 import logging
+import time
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
 # Graceful imports with fallback
 try:
     from hololoom.verification import (
+        DegradationLevel,
         VerificationChain,
         VerificationResult,
         VerificationStatus,
-        DegradationLevel,
         create_verification_chain,
     )
     VERIFICATION_AVAILABLE = True
@@ -60,7 +60,7 @@ class CoVeEnhancedResult:
     verification_time_ms: float
     claims_extracted: int
     contradictions_found: int
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def summary(self) -> str:
         """Human-readable summary of verification results."""
@@ -82,8 +82,8 @@ class VerificationMRFBridge:
 
     def __init__(
         self,
-        verification_chain: Optional[Any] = None,
-        degradation_level: Optional[Any] = None,
+        verification_chain: Any | None = None,
+        degradation_level: Any | None = None,
     ):
         """
         Initialize verification bridge.
@@ -218,8 +218,8 @@ class VerificationMRFBridge:
 
     def get_quality_signals(
         self,
-        result: Optional[Any],
-    ) -> Dict[str, float]:
+        result: Any | None,
+    ) -> dict[str, float]:
         """
         Extract quality metrics from verification result.
 
@@ -289,8 +289,8 @@ class VerificationMRFBridge:
 
     def _calculate_quality_improvement(
         self,
-        quality_signals: Dict[str, float],
-        result: Optional[Any],
+        quality_signals: dict[str, float],
+        result: Any | None,
     ) -> float:
         """
         Calculate quality improvement percentage.
@@ -332,8 +332,8 @@ class CoVeRefinementStrategy:
 
     def __init__(
         self,
-        bridge: Optional[VerificationMRFBridge] = None,
-        degradation_level: Optional[Any] = None,
+        bridge: VerificationMRFBridge | None = None,
+        degradation_level: Any | None = None,
     ):
         """
         Initialize CoVe refinement strategy.
@@ -355,7 +355,7 @@ class CoVeRefinementStrategy:
         self,
         query: str,
         response: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> str:
         """
         Apply CoVe verification as refinement strategy.
@@ -387,7 +387,7 @@ class CoVeRefinementStrategy:
         # Return verified response
         return result.verified_response
 
-    def can_apply(self, context: Optional[Dict[str, Any]] = None) -> float:
+    def can_apply(self, context: dict[str, Any] | None = None) -> float:
         """
         Return applicability score for this strategy.
 
@@ -416,8 +416,8 @@ class CoVeRefinementStrategy:
 # Factory Functions
 
 def create_cove_strategy(
-    degradation_level: Optional[Any] = None,
-) -> Optional[CoVeRefinementStrategy]:
+    degradation_level: Any | None = None,
+) -> CoVeRefinementStrategy | None:
     """
     Create CoVe refinement strategy.
 
@@ -435,8 +435,8 @@ def create_cove_strategy(
 
 
 def create_verification_bridge(
-    degradation_level: Optional[Any] = None,
-) -> Optional[VerificationMRFBridge]:
+    degradation_level: Any | None = None,
+) -> VerificationMRFBridge | None:
     """
     Create verification bridge.
 
@@ -455,7 +455,7 @@ def create_verification_bridge(
 
 def enable_cove_for_mrf(
     mrf_engine: Any,
-    degradation_level: Optional[Any] = None,
+    degradation_level: Any | None = None,
 ) -> bool:
     """
     Register CoVe strategy with MRF engine.
@@ -496,7 +496,7 @@ async def verify_and_refine(
     query: str,
     response: str,
     confidence: float = 0.5,
-    degradation_level: Optional[Any] = None,
+    degradation_level: Any | None = None,
 ) -> CoVeEnhancedResult:
     """
     Convenience function: verify response and refine using CoVe.

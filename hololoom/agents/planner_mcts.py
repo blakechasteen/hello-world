@@ -15,14 +15,12 @@ Example:
     Micro: [focus=[financial_data], activate=[Q4], ...]
 """
 
-from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
-import numpy as np
+from typing import Any
 
-from hololoom.agents.mcts_core import MCTSStateSpace, MCTSEngine, HierarchicalMCTS
+from hololoom.agents.mcts_core import MCTSEngine, MCTSStateSpace
 from hololoom.agents.orchestrator_mcts import MCTSAgentOrchestrator
 from hololoom.protocols.types import Query
-
 
 # ============================================================================
 # Planning State Representations
@@ -49,7 +47,7 @@ class MesoAction:
 @dataclass(frozen=True)
 class MicroParameters:
     """Low-level parameters (working memory config)"""
-    focus_direction: Optional[tuple] = None  # Tuple for frozen (convert from numpy)
+    focus_direction: tuple | None = None  # Tuple for frozen (convert from numpy)
     activate_nodes: tuple = ()  # Tuple for frozen
     tension_threads: tuple = ()  # Tuple for frozen
     mcts_simulations: int = 100
@@ -59,14 +57,14 @@ class MicroParameters:
 class PlanningState:
     """Complete planning state across all scales"""
     # Current position
-    current_goal: Optional[MacroGoal] = None
-    current_action: Optional[MesoAction] = None
-    current_parameters: Optional[MicroParameters] = None
+    current_goal: MacroGoal | None = None
+    current_action: MesoAction | None = None
+    current_parameters: MicroParameters | None = None
 
     # History
-    completed_goals: List[MacroGoal] = None
-    completed_actions: List[MesoAction] = None
-    results: Dict[str, Any] = None
+    completed_goals: list[MacroGoal] = None
+    completed_actions: list[MesoAction] = None
+    results: dict[str, Any] = None
 
     # Target
     target_goal: str = ""  # Overall objective
@@ -100,7 +98,7 @@ class MacroStateSpace(MCTSStateSpace):
         self.agent = agent
         self.target_goal = target_goal
 
-    def get_legal_actions(self, state: PlanningState) -> List[MacroGoal]:
+    def get_legal_actions(self, state: PlanningState) -> list[MacroGoal]:
         """Get possible next goals"""
         # Domain-specific goal generation
         if "budget" in self.target_goal.lower():
@@ -187,7 +185,7 @@ class MesoStateSpace(MCTSStateSpace):
         self.agent = agent
         self.goal = goal
 
-    def get_legal_actions(self, state: PlanningState) -> List[MesoAction]:
+    def get_legal_actions(self, state: PlanningState) -> list[MesoAction]:
         """Get possible queries for current goal"""
         # Generate queries based on goal
         if self.goal.description == "gather_financial_data":
@@ -270,7 +268,7 @@ class MicroStateSpace(MCTSStateSpace):
         self.agent = agent
         self.action = action
 
-    def get_legal_actions(self, state: PlanningState) -> List[MicroParameters]:
+    def get_legal_actions(self, state: PlanningState) -> list[MicroParameters]:
         """Get possible parameter configurations"""
         params = []
 
@@ -352,7 +350,7 @@ class HierarchicalMCTSPlanner:
         self.meso_budget = meso_budget
         self.micro_budget = micro_budget
 
-    async def plan(self, target_goal: str) -> List[Dict[str, Any]]:
+    async def plan(self, target_goal: str) -> list[dict[str, Any]]:
         """
         Create hierarchical plan for achieving target goal.
 
@@ -414,7 +412,7 @@ class HierarchicalMCTSPlanner:
 
         return complete_plan
 
-    def _extract_goals(self, root) -> List[MacroGoal]:
+    def _extract_goals(self, root) -> list[MacroGoal]:
         """Extract goal sequence from macro tree"""
         goals = []
         node = root
@@ -426,7 +424,7 @@ class HierarchicalMCTSPlanner:
 
         return goals
 
-    def _extract_actions(self, root) -> List[MesoAction]:
+    def _extract_actions(self, root) -> list[MesoAction]:
         """Extract action sequence from meso tree"""
         actions = []
         node = root
@@ -438,7 +436,7 @@ class HierarchicalMCTSPlanner:
 
         return actions
 
-    async def execute_plan(self, plan: List[Dict[str, Any]]) -> List[Any]:
+    async def execute_plan(self, plan: list[dict[str, Any]]) -> list[Any]:
         """
         Execute planned queries with optimized parameters.
 

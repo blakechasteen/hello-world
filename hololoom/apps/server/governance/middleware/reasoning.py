@@ -5,7 +5,8 @@ Extracted from routers/query.py lines 266-291.
 """
 
 import logging
-from typing import Callable, Awaitable, Any
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from ..context import GovernanceContext
 from ..protocol import NextFn

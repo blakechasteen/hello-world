@@ -22,20 +22,25 @@ WebSocket Protocol:
 """
 
 import asyncio
-import json
-from datetime import datetime
-from typing import Optional, Dict, Any, List, Set
-from dataclasses import asdict
 import logging
+from dataclasses import asdict
+from datetime import datetime
+from typing import Any
 
 try:
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-    from fastapi.responses import HTMLResponse, FileResponse
+    from fastapi.responses import FileResponse, HTMLResponse
     from fastapi.staticfiles import StaticFiles
     HAS_FASTAPI = True
 except ImportError:
     HAS_FASTAPI = False
 
+from hololoom.cve.cognitive_extractors import (
+    UnifiedCognitiveExtractor,
+    extract_from_awareness,
+    extract_from_bandit,
+    extract_from_spacetime,
+)
 from hololoom.cve.cognitive_protocol import (
     CognitiveEvent,
     CognitiveFrame,
@@ -43,13 +48,7 @@ from hololoom.cve.cognitive_protocol import (
     create_event,
     create_frame,
 )
-from hololoom.cve.tufte_renderer import TufteRenderer, render_cognitive_event
-from hololoom.cve.cognitive_extractors import (
-    UnifiedCognitiveExtractor,
-    extract_from_awareness,
-    extract_from_bandit,
-    extract_from_spacetime,
-)
+from hololoom.cve.tufte_renderer import TufteRenderer
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +64,8 @@ class CVEWebSocketManager:
     - Rate limiting (optional)
     """
 
-    def __init__(self, renderer: Optional[TufteRenderer] = None):
-        self.active_connections: Set[WebSocket] = set()
+    def __init__(self, renderer: TufteRenderer | None = None):
+        self.active_connections: set[WebSocket] = set()
         self.renderer = renderer or TufteRenderer()
         self.extractor = UnifiedCognitiveExtractor()
         self.frame_count = 0
@@ -180,7 +179,7 @@ class CVEWebSocketManager:
         for ws in disconnected:
             self.disconnect(ws)
 
-    async def broadcast_metrics(self, metrics: Dict[str, Any]):
+    async def broadcast_metrics(self, metrics: dict[str, Any]):
         """Broadcast cognitive metrics update."""
         message = {
             "type": "metrics",
@@ -212,7 +211,7 @@ class CVEWebSocketManager:
             return data.isoformat()
         return data
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get server statistics."""
         return {
             "active_connections": len(self.active_connections),
@@ -247,7 +246,7 @@ class CVEIntegration:
 
     async def on_retrieval_complete(
         self,
-        memories: List[Any],
+        memories: list[Any],
         awareness_graph: Any = None,
     ):
         """Called after memory retrieval."""
@@ -287,7 +286,7 @@ class CVEIntegration:
 
     async def on_decision_complete(
         self,
-        tool_probabilities: Dict[str, float],
+        tool_probabilities: dict[str, float],
         selected_tool: str,
         bandit: Any = None,
     ):
@@ -430,7 +429,7 @@ def create_cve_app() -> 'FastAPI':
         """Serve the consciousness_shell.html."""
         shell_path = os.path.join(os.path.dirname(__file__), "consciousness_shell.html")
         if os.path.exists(shell_path):
-            with open(shell_path, "r", encoding="utf-8") as f:
+            with open(shell_path, encoding="utf-8") as f:
                 return HTMLResponse(content=f.read())
         return HTMLResponse(content="<h1>consciousness_shell.html not found</h1>")
 
@@ -486,8 +485,9 @@ def create_cve_router():
     if not HAS_FASTAPI:
         raise ImportError("FastAPI is required")
 
-    from fastapi import APIRouter
     import os
+
+    from fastapi import APIRouter
 
     router = APIRouter(tags=["CVE"])
     ws_manager = CVEWebSocketManager()
@@ -497,7 +497,7 @@ def create_cve_router():
     async def serve_shell():
         shell_path = os.path.join(os.path.dirname(__file__), "consciousness_shell.html")
         if os.path.exists(shell_path):
-            with open(shell_path, "r", encoding="utf-8") as f:
+            with open(shell_path, encoding="utf-8") as f:
                 return HTMLResponse(content=f.read())
         return HTMLResponse(content="<h1>consciousness_shell.html not found</h1>")
 
@@ -537,11 +537,11 @@ async def run_demo_stream(ws_manager: CVEWebSocketManager):
     """
     from hololoom.cve.cognitive_protocol import (
         ActivationField,
-        ProbabilityManifold,
-        MemoryRetrieval,
-        DecisionCollapse,
-        ToolSelection,
         ConfidenceFlow,
+        DecisionCollapse,
+        MemoryRetrieval,
+        ProbabilityManifold,
+        ToolSelection,
     )
 
     # Demo frame 1: Memory Retrieval

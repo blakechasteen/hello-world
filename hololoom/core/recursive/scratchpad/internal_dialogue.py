@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Internal Dialogue Engine
 ========================
@@ -19,16 +18,14 @@ Dialogue Modes:
 - HOFSTADTER: Strange loop detection and level-crossing
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Dict, Any, Callable
-import asyncio
-import re
 
 from hololoom.recursive.scratchpad.recursive_scratchpad import (
+    DialogueTree,
     Thought,
     ThoughtType,
-    DialogueTree,
 )
 
 
@@ -44,9 +41,9 @@ class DialogueMode(Enum):
 class DialogueStep:
     """Single step in dialogue."""
     thought: Thought
-    question: Optional[str] = None
-    answer: Optional[Thought] = None
-    reflection: Optional[Thought] = None
+    question: str | None = None
+    answer: Thought | None = None
+    reflection: Thought | None = None
 
 
 class InternalDialogue:
@@ -75,7 +72,7 @@ class InternalDialogue:
         self.confidence_threshold = confidence_threshold
 
         # Question generators for each mode
-        self.question_generators: Dict[DialogueMode, Callable] = {
+        self.question_generators: dict[DialogueMode, Callable] = {
             DialogueMode.EXPLORATORY: self._generate_exploratory_questions,
             DialogueMode.VERIFICATION: self._generate_verification_questions,
             DialogueMode.SYNTHESIS: self._generate_synthesis_questions,
@@ -85,7 +82,7 @@ class InternalDialogue:
     async def start_dialogue(
         self,
         initial_thought: Thought,
-        max_depth: Optional[int] = None,
+        max_depth: int | None = None,
         mode: str = "exploratory"
     ) -> DialogueTree:
         """
@@ -190,7 +187,7 @@ class InternalDialogue:
         self,
         thought: Thought,
         mode: DialogueMode
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Generate questions about a thought.
 
@@ -210,30 +207,30 @@ class InternalDialogue:
     async def _generate_exploratory_questions(
         self,
         thought: Thought
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate open-ended exploratory questions."""
         questions = []
 
         # What questions
         if "is" in thought.text.lower() or "are" in thought.text.lower():
-            questions.append(f"What exactly does that mean?")
+            questions.append("What exactly does that mean?")
 
         # Why questions
-        questions.append(f"Why is this the case?")
+        questions.append("Why is this the case?")
 
         # How questions
         if thought.confidence < 0.7:
-            questions.append(f"How can I be more certain about this?")
+            questions.append("How can I be more certain about this?")
 
         # Alternative perspectives
-        questions.append(f"What if the opposite were true?")
+        questions.append("What if the opposite were true?")
 
         return questions[:2]  # Limit to 2 questions per thought
 
     async def _generate_verification_questions(
         self,
         thought: Thought
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate verification questions (DS-STAR)."""
         questions = []
 
@@ -258,7 +255,7 @@ class InternalDialogue:
     async def _generate_synthesis_questions(
         self,
         thought: Thought
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate synthesis questions."""
         questions = []
 
@@ -277,7 +274,7 @@ class InternalDialogue:
     async def _generate_hofstadter_questions(
         self,
         thought: Thought
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate Hofstadter-style strange loop questions."""
         questions = []
 
@@ -370,7 +367,7 @@ class InternalDialogue:
         self,
         answer: Thought,
         tree: DialogueTree
-    ) -> Optional[Thought]:
+    ) -> Thought | None:
         """
         Generate reflection on an answer.
 

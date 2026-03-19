@@ -4,10 +4,10 @@ Thread Branching
 Enables forking conversations to explore ideas without losing context.
 """
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional, Dict, Any
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BranchContext:
     """Context extracted from parent thread for inheritance"""
-    messages: List[Dict[str, Any]]
-    entities: List[str]
+    messages: list[dict[str, Any]]
+    entities: list[str]
     timestamp: float
     lookback_seconds: float
 
@@ -39,9 +39,9 @@ class ThreadBranch:
     parent_thread_name: str
     created_at: float
     context: BranchContext
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
             'branch_id': self.branch_id,
@@ -73,7 +73,7 @@ class ThreadBrancher:
     def __init__(
         self,
         thread_manager: Any,  # elle.ThreadManager
-        yarn_graph: Optional[Any] = None,  # HoloLoom.memory.graph.KG
+        yarn_graph: Any | None = None,  # HoloLoom.memory.graph.KG
         default_lookback_seconds: float = 30.0,
         enable_entity_extraction: bool = True
     ):
@@ -101,8 +101,8 @@ class ThreadBrancher:
         self,
         parent_thread_id: str,
         branch_name: str,
-        custom_context: Optional[BranchContext] = None,
-        lookback_seconds: Optional[float] = None
+        custom_context: BranchContext | None = None,
+        lookback_seconds: float | None = None
     ) -> ThreadBranch:
         """
         Fork a thread into new branch with context inheritance.
@@ -237,8 +237,8 @@ class ThreadBrancher:
 
     async def _extract_entities(
         self,
-        messages: List[Dict[str, Any]]
-    ) -> List[str]:
+        messages: list[dict[str, Any]]
+    ) -> list[str]:
         """
         Extract entities from messages.
 
@@ -298,7 +298,7 @@ class ThreadBrancher:
                 role: str
                 content: str
                 timestamp: float
-                metadata: Dict[str, Any]
+                metadata: dict[str, Any]
 
             msg = Message(
                 role=msg_dict['role'],
@@ -356,7 +356,7 @@ class ThreadBrancher:
         except Exception as e:
             logger.warning(f"Failed to add YarnGraph edge: {e}")
 
-    def get_branch_history(self, thread_id: str) -> List[Dict[str, Any]]:
+    def get_branch_history(self, thread_id: str) -> list[dict[str, Any]]:
         """
         Get branch history for a thread.
 

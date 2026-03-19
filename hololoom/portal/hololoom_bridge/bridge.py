@@ -10,13 +10,12 @@ Connects Portal's distributed compute to HoloLoom's intelligence:
 Graceful fallback if HoloLoom unavailable (returns error responses, never crashes).
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List
+from dataclasses import dataclass
 from datetime import datetime
-import httpx
-import json
-from pydantic import BaseModel, Field
+from typing import Any
 
+import httpx
+from pydantic import BaseModel, Field
 
 # ============================================================================
 # Pydantic Models
@@ -28,7 +27,7 @@ class LoomQuery(BaseModel):
     text: str = Field(description="Query text")
     k: int = Field(default=5, ge=1, le=100, description="Number of results")
     mode: str = Field(default="fast", description="Query mode: fast, balanced, deep")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context")
+    context: dict[str, Any] | None = Field(default=None, description="Additional context")
 
     class Config:
         json_schema_extra = {
@@ -48,7 +47,7 @@ class LoomResult(BaseModel):
     data: Any = Field(description="Response data")
     confidence: float = Field(default=0.0, ge=0.0, le=1.0, description="Confidence 0-1")
     latency_ms: float = Field(default=0.0, description="Query latency")
-    error: Optional[str] = Field(default=None, description="Error message if failed")
+    error: str | None = Field(default=None, description="Error message if failed")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
@@ -78,7 +77,7 @@ class BridgeConfig:
     fallback_on_error: bool = True
     verbose: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "hololoom_url": self.hololoom_url,
@@ -109,10 +108,10 @@ class HoloLoomBridge:
         >>> print(weave.data)
     """
 
-    def __init__(self, config: Optional[BridgeConfig] = None):
+    def __init__(self, config: BridgeConfig | None = None):
         """Initialize bridge with optional config."""
         self.config = config or BridgeConfig()
-        self.client: Optional[httpx.AsyncClient] = None
+        self.client: httpx.AsyncClient | None = None
         self._available = False
 
     async def __aenter__(self):
@@ -155,7 +154,7 @@ class HoloLoomBridge:
         query: str,
         k: int = 5,
         mode: str = "fast",
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> LoomResult:
         """
         Search HoloLoom semantic memory.
@@ -210,7 +209,7 @@ class HoloLoomBridge:
     async def experience(
         self,
         content: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> str:
         """
         Store content to HoloLoom memory.
@@ -304,7 +303,7 @@ class HoloLoomBridge:
                 )
             raise
 
-    async def status(self) -> Dict[str, Any]:
+    async def status(self) -> dict[str, Any]:
         """
         Get HoloLoom system status.
 

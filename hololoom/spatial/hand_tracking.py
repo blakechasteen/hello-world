@@ -6,12 +6,13 @@ WebXR hand tracking for natural interaction with
 spatial knowledge graph.
 """
 
+import json
+import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Callable, Any, Tuple
-import json
-import math
+from typing import Any
 
 
 class HandSide(Enum):
@@ -72,7 +73,7 @@ class JointPosition:
         dz = self.z - other.z
         return math.sqrt(dx*dx + dy*dy + dz*dz)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {"x": self.x, "y": self.y, "z": self.z}
 
 
@@ -109,28 +110,28 @@ class HandJoint(Enum):
 class HandPose:
     """Complete hand pose with all joint positions."""
     side: HandSide
-    joints: Dict[int, JointPosition] = field(default_factory=dict)
+    joints: dict[int, JointPosition] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
     confidence: float = 1.0
 
-    def get_joint(self, joint: HandJoint) -> Optional[JointPosition]:
+    def get_joint(self, joint: HandJoint) -> JointPosition | None:
         """Get position of a specific joint."""
         return self.joints.get(joint.value)
 
     @property
-    def wrist(self) -> Optional[JointPosition]:
+    def wrist(self) -> JointPosition | None:
         return self.get_joint(HandJoint.WRIST)
 
     @property
-    def index_tip(self) -> Optional[JointPosition]:
+    def index_tip(self) -> JointPosition | None:
         return self.get_joint(HandJoint.INDEX_TIP)
 
     @property
-    def thumb_tip(self) -> Optional[JointPosition]:
+    def thumb_tip(self) -> JointPosition | None:
         return self.get_joint(HandJoint.THUMB_TIP)
 
     @property
-    def middle_tip(self) -> Optional[JointPosition]:
+    def middle_tip(self) -> JointPosition | None:
         return self.get_joint(HandJoint.MIDDLE_TIP)
 
     def pinch_distance(self) -> float:
@@ -166,7 +167,7 @@ class HandPose:
         distance = tip.distance_to(base)
         return distance > 0.06  # ~6cm threshold
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "side": self.side.value,
             "joints": {str(k): v.to_dict() for k, v in self.joints.items()},
@@ -184,8 +185,8 @@ class HandGesture:
     position: JointPosition            # World position of gesture
     confidence: float = 1.0
     start_time: datetime = field(default_factory=datetime.now)
-    end_time: Optional[datetime] = None
-    velocity: Optional[JointPosition] = None  # For swipe gestures
+    end_time: datetime | None = None
+    velocity: JointPosition | None = None  # For swipe gestures
     scale: float = 1.0                        # For scale gestures
     rotation: float = 0.0                     # For rotate gestures (radians)
 
@@ -195,7 +196,7 @@ class HandGesture:
         end = self.end_time or datetime.now()
         return (end - self.start_time).total_seconds() * 1000
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "gesture_type": self.gesture_type.value,
             "state": self.state.value,
@@ -218,7 +219,7 @@ class GestureBinding:
     action_name: str
     handler: Callable[[HandGesture], Any]
     description: str = ""
-    side: Optional[HandSide] = None  # None = both hands
+    side: HandSide | None = None  # None = both hands
 
 
 class HandTracker:
@@ -240,30 +241,30 @@ class HandTracker:
     SWIPE_MIN_DISTANCE = 0.1     # 10cm minimum swipe
 
     def __init__(self):
-        self.left_pose: Optional[HandPose] = None
-        self.right_pose: Optional[HandPose] = None
+        self.left_pose: HandPose | None = None
+        self.right_pose: HandPose | None = None
 
         # Current gesture states
-        self.active_gestures: Dict[str, HandGesture] = {}
+        self.active_gestures: dict[str, HandGesture] = {}
 
         # Gesture bindings
-        self.bindings: Dict[GestureType, List[GestureBinding]] = {}
+        self.bindings: dict[GestureType, list[GestureBinding]] = {}
 
         # Gesture history
-        self.history: List[HandGesture] = []
+        self.history: list[HandGesture] = []
         self.max_history = 100
 
         # Position history for motion detection
-        self._left_positions: List[Tuple[datetime, JointPosition]] = []
-        self._right_positions: List[Tuple[datetime, JointPosition]] = []
+        self._left_positions: list[tuple[datetime, JointPosition]] = []
+        self._right_positions: list[tuple[datetime, JointPosition]] = []
         self._max_position_history = 30
 
         # Callbacks
-        self.on_gesture: Optional[Callable[[HandGesture], None]] = None
+        self.on_gesture: Callable[[HandGesture], None] | None = None
 
     # === Hand Pose Updates ===
 
-    def update_hand(self, side: HandSide, joints: Dict[int, JointPosition], confidence: float = 1.0):
+    def update_hand(self, side: HandSide, joints: dict[int, JointPosition], confidence: float = 1.0):
         """
         Update hand pose from WebXR tracking data.
 
@@ -288,14 +289,14 @@ class HandTracker:
         # Detect gestures
         self._detect_gestures(pose)
 
-    def _update_position_history(self, history: List, pose: HandPose):
+    def _update_position_history(self, history: list, pose: HandPose):
         """Track position history for motion detection."""
         if pose.wrist:
             history.append((pose.timestamp, pose.wrist))
             if len(history) > self._max_position_history:
                 history.pop(0)
 
-    def update_from_webxr(self, hand_data: Dict):
+    def update_from_webxr(self, hand_data: dict):
         """
         Update from WebXR hand tracking frame.
 
@@ -382,7 +383,7 @@ class HandTracker:
         )
         return thumb_ext and others_curled
 
-    def _detect_swipe(self, pose: HandPose) -> Optional[HandGesture]:
+    def _detect_swipe(self, pose: HandPose) -> HandGesture | None:
         """Detect swipe gestures from motion history."""
         history = self._left_positions if pose.side == HandSide.LEFT else self._right_positions
 
@@ -469,7 +470,7 @@ class HandTracker:
         action_name: str,
         handler: Callable[[HandGesture], Any],
         description: str = "",
-        side: Optional[HandSide] = None
+        side: HandSide | None = None
     ):
         """
         Bind a gesture to an action.
@@ -518,7 +519,7 @@ class HandTracker:
 
     # === Two-Hand Gestures ===
 
-    def detect_two_hand_gestures(self) -> List[HandGesture]:
+    def detect_two_hand_gestures(self) -> list[HandGesture]:
         """Detect gestures that use both hands."""
         if not self.left_pose or not self.right_pose:
             return []
@@ -532,7 +533,7 @@ class HandTracker:
 
         return gestures
 
-    def _detect_scale_gesture(self) -> Optional[HandGesture]:
+    def _detect_scale_gesture(self) -> HandGesture | None:
         """Detect pinch-to-scale with both hands."""
         left = self.left_pose
         right = self.right_pose
@@ -588,14 +589,14 @@ class HandTracker:
 
     # === Queries ===
 
-    def get_active_gesture(self, side: HandSide) -> Optional[HandGesture]:
+    def get_active_gesture(self, side: HandSide) -> HandGesture | None:
         """Get current active gesture for a hand."""
         for key, gesture in self.active_gestures.items():
             if key.startswith(side.value):
                 return gesture
         return None
 
-    def get_pointing_direction(self, side: HandSide) -> Optional[JointPosition]:
+    def get_pointing_direction(self, side: HandSide) -> JointPosition | None:
         """Get the direction the hand is pointing."""
         pose = self.left_pose if side == HandSide.LEFT else self.right_pose
         if not pose:
@@ -619,7 +620,7 @@ class HandTracker:
 
         return JointPosition(x=dx/length, y=dy/length, z=dz/length)
 
-    def get_grab_position(self, side: HandSide) -> Optional[JointPosition]:
+    def get_grab_position(self, side: HandSide) -> JointPosition | None:
         """Get the position between fingers (for grabbing objects)."""
         pose = self.left_pose if side == HandSide.LEFT else self.right_pose
         if not pose:
@@ -637,13 +638,13 @@ class HandTracker:
             z=(thumb.z + index.z) / 2
         )
 
-    def get_gesture_history(self, gesture_type: Optional[GestureType] = None) -> List[HandGesture]:
+    def get_gesture_history(self, gesture_type: GestureType | None = None) -> list[HandGesture]:
         """Get gesture history, optionally filtered by type."""
         if gesture_type:
             return [g for g in self.history if g.gesture_type == gesture_type]
         return list(self.history)
 
-    def get_bindings_summary(self) -> List[Dict]:
+    def get_bindings_summary(self) -> list[dict]:
         """Get summary of all gesture bindings."""
         summary = []
         for gesture_type, bindings in self.bindings.items():

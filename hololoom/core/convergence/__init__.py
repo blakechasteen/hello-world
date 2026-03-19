@@ -12,11 +12,11 @@ Exports:
 """
 
 from .engine import (
-    ConvergenceEngine,
-    CollapseStrategy,
     CollapseResult,
+    CollapseStrategy,
+    ConvergenceEngine,
     ThompsonBandit,
-    create_convergence_engine
+    create_convergence_engine,
 )
 
 __all__ = [

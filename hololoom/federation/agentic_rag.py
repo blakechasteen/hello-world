@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Federated RAG - Agentic Knowledge Queries
 ==========================================
@@ -26,28 +25,28 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+from hololoom.federation.result_merger import (
+    TRUST_WEIGHTS,
+    MergedRAGResult,
+    NodeRAGResult,
+    RAGResultMerger,
+    create_result_merger,
+)
 from hololoom.federation.types import (
     Capability,
     FederationNode,
     GuildTrustLevel,
-    Query,
-)
-from hololoom.federation.result_merger import (
-    RAGResultMerger,
-    NodeRAGResult,
-    MergedRAGResult,
-    create_result_merger,
-    TRUST_WEIGHTS,
 )
 
 if TYPE_CHECKING:
-    from hololoom.rag.simple_rag import SimpleRAG, RAGResult
-    from hololoom.federation.safety import FederationSafetyGate
     from hololoom.federation.rate_limiter import FederatedRateLimiter
+    from hololoom.federation.safety import FederationSafetyGate
     from hololoom.federation.wire_protocol import JSONRPCBuilder, RPCRequest, RPCResponse
+    from hololoom.rag.simple_rag import RAGResult, SimpleRAG
 
 logger = logging.getLogger(__name__)
 
@@ -145,19 +144,19 @@ class FederatedRAGResult:
     """Result from a federated RAG query."""
 
     response: str
-    sources: List[str]
+    sources: list[str]
     confidence: float
-    epistemic_confidence: Optional[float] = None
+    epistemic_confidence: float | None = None
     reasoning_mode: str = "federated"
-    local_confidence: Optional[float] = None
+    local_confidence: float | None = None
     federation_used: bool = False
-    nodes_queried: List[str] = field(default_factory=list)
-    nodes_responded: List[str] = field(default_factory=list)
-    merge_stats: Optional[Dict[str, Any]] = None
+    nodes_queried: list[str] = field(default_factory=list)
+    nodes_responded: list[str] = field(default_factory=list)
+    merge_stats: dict[str, Any] | None = None
     latency_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_rag_result(self) -> "RAGResult":
+    def to_rag_result(self) -> RAGResult:
         """Convert to standard RAGResult for compatibility."""
         from hololoom.rag.simple_rag import RAGResult
 
@@ -193,7 +192,7 @@ class ConfidenceAggregator:
     Also calculates epistemic confidence based on agreement across nodes.
     """
 
-    def __init__(self, trust_weights: Optional[Dict[GuildTrustLevel, float]] = None):
+    def __init__(self, trust_weights: dict[GuildTrustLevel, float] | None = None):
         """
         Initialize aggregator.
 
@@ -202,7 +201,7 @@ class ConfidenceAggregator:
         """
         self._trust_weights = trust_weights or TRUST_WEIGHTS
 
-    def aggregate(self, results: List[NodeRAGResult]) -> float:
+    def aggregate(self, results: list[NodeRAGResult]) -> float:
         """
         Aggregate confidence scores from multiple nodes.
 
@@ -232,7 +231,7 @@ class ConfidenceAggregator:
 
         return min(1.0, max(0.0, numerator / denominator))
 
-    def calculate_epistemic(self, results: List[NodeRAGResult]) -> float:
+    def calculate_epistemic(self, results: list[NodeRAGResult]) -> float:
         """
         Calculate epistemic confidence based on agreement across nodes.
 
@@ -294,14 +293,14 @@ class FederatedRAG:
 
     def __init__(
         self,
-        local_rag: Optional["SimpleRAG"] = None,
-        safety_gate: Optional["FederationSafetyGate"] = None,
-        rate_limiter: Optional["FederatedRateLimiter"] = None,
-        rpc_builder: Optional["JSONRPCBuilder"] = None,
-        result_merger: Optional[RAGResultMerger] = None,
-        config: Optional[FederatedRAGConfig] = None,
-        get_capable_nodes: Optional[Callable[[], List[FederationNode]]] = None,
-        send_rpc: Optional[Callable[["RPCRequest", str], Coroutine[Any, Any, "RPCResponse"]]] = None,
+        local_rag: SimpleRAG | None = None,
+        safety_gate: FederationSafetyGate | None = None,
+        rate_limiter: FederatedRateLimiter | None = None,
+        rpc_builder: JSONRPCBuilder | None = None,
+        result_merger: RAGResultMerger | None = None,
+        config: FederatedRAGConfig | None = None,
+        get_capable_nodes: Callable[[], list[FederationNode]] | None = None,
+        send_rpc: Callable[[RPCRequest, str], Coroutine[Any, Any, RPCResponse]] | None = None,
     ):
         """
         Initialize federated RAG.
@@ -445,7 +444,7 @@ class FederatedRAG:
         text: str,
         k: int,
         mode: str,
-    ) -> Optional["RAGResult"]:
+    ) -> RAGResult | None:
         """
         Query local RAG instance.
 
@@ -473,7 +472,7 @@ class FederatedRAG:
         k: int,
         mode: str,
         min_confidence: float,
-    ) -> List[NodeRAGResult]:
+    ) -> list[NodeRAGResult]:
         """
         Query federation nodes in parallel.
 
@@ -602,7 +601,7 @@ class FederatedRAG:
                 trust_level=trust_score_to_level(node.trust_score),
             )
 
-    def _select_nodes(self) -> List[FederationNode]:
+    def _select_nodes(self) -> list[FederationNode]:
         """
         Select federation nodes with RAG capability.
 
@@ -641,7 +640,7 @@ class FederatedRAG:
     def _build_response(
         self,
         merged: MergedRAGResult,
-        local_result: Optional["RAGResult"],
+        local_result: RAGResult | None,
     ) -> str:
         """
         Build final response from merged sources.
@@ -667,7 +666,7 @@ class FederatedRAG:
 
         return "No relevant information found across federation."
 
-    def get_capable_nodes(self) -> List[FederationNode]:
+    def get_capable_nodes(self) -> list[FederationNode]:
         """
         Get list of nodes with RAG capability.
 
@@ -682,12 +681,12 @@ class FederatedRAG:
 # ============================================================================
 
 def create_federated_rag(
-    local_rag: Optional["SimpleRAG"] = None,
-    safety_gate: Optional["FederationSafetyGate"] = None,
-    rate_limiter: Optional["FederatedRateLimiter"] = None,
-    config: Optional[FederatedRAGConfig] = None,
-    get_capable_nodes: Optional[Callable[[], List[FederationNode]]] = None,
-    send_rpc: Optional[Callable[["RPCRequest", str], Coroutine[Any, Any, "RPCResponse"]]] = None,
+    local_rag: SimpleRAG | None = None,
+    safety_gate: FederationSafetyGate | None = None,
+    rate_limiter: FederatedRateLimiter | None = None,
+    config: FederatedRAGConfig | None = None,
+    get_capable_nodes: Callable[[], list[FederationNode]] | None = None,
+    send_rpc: Callable[[RPCRequest, str], Coroutine[Any, Any, RPCResponse]] | None = None,
 ) -> FederatedRAG:
     """
     Create a FederatedRAG instance.

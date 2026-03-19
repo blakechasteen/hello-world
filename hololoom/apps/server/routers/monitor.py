@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Monitor Router
 ==============
@@ -15,7 +16,6 @@ Endpoints:
 """
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 
@@ -351,7 +351,7 @@ async def get_monitor_metrics(
 @router.websocket("/ws/monitor")
 async def websocket_monitor(
     websocket: WebSocket,
-    project: Optional[str] = None
+    project: str | None = None
 ):
     """
     WebSocket endpoint for real-time monitoring updates.

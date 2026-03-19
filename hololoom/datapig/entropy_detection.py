@@ -8,11 +8,11 @@ Author: DATAPIG Enhancement
 Date: 2025-11-22
 """
 
-import re
-from typing import List, Dict, Any, Set
-from dataclasses import dataclass
-from collections import Counter
 import math
+import re
+from collections import Counter
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -25,7 +25,7 @@ class EntropyAnalysis:
     entropy_variance: float         # Variance in entropy values
     high_entropy_count: int         # Count of high-entropy values
     low_entropy_count: int          # Count of low-entropy values
-    suspicious_patterns: List[str]  # List of detected suspicious patterns
+    suspicious_patterns: list[str]  # List of detected suspicious patterns
 
 
 def shannon_entropy(text: str) -> float:
@@ -90,11 +90,11 @@ def normalized_entropy(text: str) -> float:
 
 
 def detect_pii_by_entropy(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     high_entropy_threshold: float = 3.5,
     low_entropy_threshold: float = 1.5,
     min_samples: int = 5
-) -> List[EntropyAnalysis]:
+) -> list[EntropyAnalysis]:
     """
     Detect potential PII fields using entropy analysis.
 
@@ -122,8 +122,8 @@ def detect_pii_by_entropy(
         return []
 
     # Collect entropy values per field
-    field_entropies: Dict[str, List[float]] = {}
-    field_values: Dict[str, List[str]] = {}
+    field_entropies: dict[str, list[float]] = {}
+    field_values: dict[str, list[str]] = {}
 
     for row in data:
         for field, value in row.items():
@@ -177,7 +177,7 @@ def detect_pii_by_entropy(
     return results
 
 
-def _detect_patterns(values: List[str], entropies: List[float], threshold: float) -> List[str]:
+def _detect_patterns(values: list[str], entropies: list[float], threshold: float) -> list[str]:
     """
     Detect specific PII patterns using regex and entropy.
 
@@ -221,7 +221,7 @@ def _detect_patterns(values: List[str], entropies: List[float], threshold: float
     return patterns
 
 
-def calculate_field_entropy_profile(data: List[Dict[str, Any]]) -> Dict[str, float]:
+def calculate_field_entropy_profile(data: list[dict[str, Any]]) -> dict[str, float]:
     """
     Calculate average entropy for each field in dataset.
 
@@ -233,7 +233,7 @@ def calculate_field_entropy_profile(data: List[Dict[str, Any]]) -> Dict[str, flo
     Returns:
         Dictionary mapping field names to average entropy
     """
-    field_entropies: Dict[str, List[float]] = {}
+    field_entropies: dict[str, list[float]] = {}
 
     for row in data:
         for field, value in row.items():
@@ -254,10 +254,10 @@ def calculate_field_entropy_profile(data: List[Dict[str, Any]]) -> Dict[str, flo
 
 
 def detect_entropy_anomalies(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     field: str,
     z_threshold: float = 2.0
-) -> List[int]:
+) -> list[int]:
     """
     Detect values with anomalous entropy (z-score based).
 

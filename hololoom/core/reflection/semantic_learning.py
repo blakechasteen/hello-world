@@ -27,16 +27,14 @@ Date: 2025-10-27
 """
 
 import logging
+from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Any
+
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Dict, List, Tuple, Optional, Any
-from dataclasses import dataclass, field
-from collections import defaultdict, deque
-
-from hololoom.fabric.spacetime import Spacetime
-from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
 
 logger = logging.getLogger(__name__)
 
@@ -87,28 +85,28 @@ class SemanticExperience:
     This is the "blob" - packed with learning signals.
     """
     # Standard RL tuple
-    observation: Dict[str, Any]
+    observation: dict[str, Any]
     action: str
     reward: float
-    next_observation: Dict[str, Any]
+    next_observation: dict[str, Any]
     done: bool
 
     # Semantic trajectory
-    semantic_state: Dict[str, float]         # 244D position
-    semantic_velocity: Dict[str, float]      # Rate of change
-    semantic_categories: Dict[str, float]    # 16 categories
+    semantic_state: dict[str, float]         # 244D position
+    semantic_velocity: dict[str, float]      # Rate of change
+    semantic_categories: dict[str, float]    # 16 categories
 
-    next_semantic_state: Dict[str, float]    # After action
-    next_semantic_velocity: Dict[str, float]
-    next_semantic_categories: Dict[str, float]
+    next_semantic_state: dict[str, float]    # After action
+    next_semantic_velocity: dict[str, float]
+    next_semantic_categories: dict[str, float]
 
     # Semantic goal context
-    semantic_goal: Optional[Dict[str, float]] = None  # Target dimensions
+    semantic_goal: dict[str, float] | None = None  # Target dimensions
     goal_alignment_before: float = 0.0
     goal_alignment_after: float = 0.0
 
     # Tool effect signature
-    tool_semantic_delta: Dict[str, float] = field(default_factory=dict)  # Change per dimension
+    tool_semantic_delta: dict[str, float] = field(default_factory=dict)  # Change per dimension
 
     # Metadata
     query_text: str = ""
@@ -117,7 +115,7 @@ class SemanticExperience:
     success: bool = False  # Did user accept/like response?
 
     # Trajectory context (for forecasting)
-    semantic_history: List[Dict[str, float]] = field(default_factory=list)  # Past 5 states
+    semantic_history: list[dict[str, float]] = field(default_factory=list)  # Past 5 states
 
 
 # ============================================================================
@@ -135,23 +133,23 @@ class SemanticTrajectoryAnalyzer:
         self.config = config
 
         # Tool effect statistics: tool -> dimension -> effect
-        self.tool_semantic_effects: Dict[str, Dict[str, List[float]]] = defaultdict(
+        self.tool_semantic_effects: dict[str, dict[str, list[float]]] = defaultdict(
             lambda: defaultdict(list)
         )
 
         # Success patterns: what semantic states lead to success?
-        self.successful_semantic_states: List[Dict[str, float]] = []
-        self.failed_semantic_states: List[Dict[str, float]] = []
+        self.successful_semantic_states: list[dict[str, float]] = []
+        self.failed_semantic_states: list[dict[str, float]] = []
 
         # Goal achievement patterns
-        self.goal_trajectories: List[Dict[str, Any]] = []
+        self.goal_trajectories: list[dict[str, Any]] = []
 
         logger.info("SemanticTrajectoryAnalyzer initialized")
 
     def analyze_experience(
         self,
         experience: SemanticExperience
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze a semantic experience to extract learning signals.
 
@@ -193,7 +191,7 @@ class SemanticTrajectoryAnalyzer:
     def _analyze_tool_effect(
         self,
         experience: SemanticExperience
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Analyze how the tool affected semantic state.
 
@@ -218,7 +216,7 @@ class SemanticTrajectoryAnalyzer:
     def _analyze_goal_progress(
         self,
         experience: SemanticExperience
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze progress toward semantic goal.
 
@@ -251,7 +249,7 @@ class SemanticTrajectoryAnalyzer:
     def _compute_dimension_importance(
         self,
         experience: SemanticExperience
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Compute which dimensions were most important for this interaction.
 
@@ -285,7 +283,7 @@ class SemanticTrajectoryAnalyzer:
     def _detect_semantic_anomalies(
         self,
         experience: SemanticExperience
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Detect unusual semantic patterns that might indicate issues.
 
@@ -318,8 +316,8 @@ class SemanticTrajectoryAnalyzer:
 
     def _check_contradictory_dimensions(
         self,
-        semantic_state: Dict[str, float]
-    ) -> List[str]:
+        semantic_state: dict[str, float]
+    ) -> list[str]:
         """Check for semantically contradictory dimension activations."""
         contradictions = []
 
@@ -344,7 +342,7 @@ class SemanticTrajectoryAnalyzer:
 
         return contradictions
 
-    def get_tool_effect_model(self, tool: str) -> Dict[str, Tuple[float, float]]:
+    def get_tool_effect_model(self, tool: str) -> dict[str, tuple[float, float]]:
         """
         Get learned model of tool's semantic effects.
 
@@ -367,7 +365,7 @@ class SemanticTrajectoryAnalyzer:
     def suggest_contrastive_pairs(
         self,
         min_pairs: int = 10
-    ) -> List[Tuple[Dict[str, float], Dict[str, float]]]:
+    ) -> list[tuple[dict[str, float], dict[str, float]]]:
         """
         Suggest contrastive pairs for contrastive learning.
 
@@ -419,7 +417,7 @@ class SemanticMultiTaskLearner:
         input_dim: int,
         n_dimensions: int = 244,
         n_tools: int = 10,
-        config: Optional[SemanticLearningConfig] = None
+        config: SemanticLearningConfig | None = None
     ):
         self.config = config or SemanticLearningConfig()
 
@@ -466,8 +464,8 @@ class SemanticMultiTaskLearner:
         semantic_state: torch.Tensor,
         next_semantic_state: torch.Tensor,
         tool_onehot: torch.Tensor,
-        semantic_goal: Optional[torch.Tensor] = None
-    ) -> Dict[str, torch.Tensor]:
+        semantic_goal: torch.Tensor | None = None
+    ) -> dict[str, torch.Tensor]:
         """
         Compute auxiliary losses from semantic trajectory.
 
@@ -539,9 +537,9 @@ class SemanticCurriculumDesigner:
 
     def get_stage_goals(
         self,
-        base_goals: Dict[str, float],
-        stage: Optional[int] = None
-    ) -> Dict[str, float]:
+        base_goals: dict[str, float],
+        stage: int | None = None
+    ) -> dict[str, float]:
         """
         Get semantic goals appropriate for current curriculum stage.
 

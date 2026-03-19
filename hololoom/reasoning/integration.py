@@ -18,37 +18,28 @@ Public API:
     explain_failure: Diagnose why plan failed
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Set
 import logging
+from dataclasses import dataclass
+from typing import Any
 
 # Layer 2 imports (Planning)
 try:
-    from hololoom.planning.core import (
-        Goal, State, Action, Plan, HierarchicalPlanner
-    )
+    from hololoom.planning.core import Action, Goal, HierarchicalPlanner, Plan, State
 except ImportError:
     # Graceful degradation if planning not available
     logging.warning("Layer 2 planning not available, using stubs")
-    Goal = Dict
-    State = Dict
-    Action = Dict
-    Plan = Dict
+    Goal = dict
+    State = dict
+    Action = dict
+    Plan = dict
     HierarchicalPlanner = None
 
 # Layer 3 imports (Reasoning)
-from .deductive import (
-    DeductiveReasoner, KnowledgeBase, Fact, Rule,
-    create_fact, create_rule
-)
-from .abductive import (
-    AbductiveReasoner, Observation, CausalRule,
-    create_observation, create_causal_rule
-)
 from .analogical import (
-    AnalogicalReasoner, Domain, Entity, Relation,
-    create_entity, create_relation, create_domain
+    AnalogicalReasoner,
+    Domain,
 )
+from .deductive import DeductiveReasoner, Fact, KnowledgeBase, create_fact, create_rule
 
 logger = logging.getLogger(__name__)
 
@@ -70,10 +61,10 @@ class PlanExplanation:
         reasoning_trace: Detailed reasoning steps
     """
     plan: Any  # Plan object
-    causal_chain: List[str]
-    key_actions: List[str]
-    success_conditions: List[str]
-    reasoning_trace: List[str]
+    causal_chain: list[str]
+    key_actions: list[str]
+    success_conditions: list[str]
+    reasoning_trace: list[str]
 
     def to_string(self) -> str:
         """Generate human-readable explanation."""
@@ -107,10 +98,10 @@ class FailureDiagnosis:
         recommendations: How to fix
     """
     failed_action: str
-    expected_state: Dict[str, Any]
-    actual_state: Dict[str, Any]
-    likely_causes: List[str]
-    recommendations: List[str]
+    expected_state: dict[str, Any]
+    actual_state: dict[str, Any]
+    likely_causes: list[str]
+    recommendations: list[str]
 
     def to_string(self) -> str:
         """Generate human-readable diagnosis."""
@@ -156,8 +147,8 @@ class ReasoningEnhancedPlanner:
     """
 
     def __init__(self,
-                 base_planner: Optional[Any] = None,
-                 knowledge_base: Optional[KnowledgeBase] = None):
+                 base_planner: Any | None = None,
+                 knowledge_base: KnowledgeBase | None = None):
         """
         Initialize reasoning-enhanced planner.
 
@@ -179,7 +170,7 @@ class ReasoningEnhancedPlanner:
     # Precondition Reasoning (Deductive)
     # ========================================================================
 
-    def find_preconditions(self, action_name: str) -> List[Fact]:
+    def find_preconditions(self, action_name: str) -> list[Fact]:
         """
         Find preconditions for action using backward chaining.
 
@@ -209,7 +200,7 @@ class ReasoningEnhancedPlanner:
             logger.warning(f"Could not deduce preconditions for {action_name}")
             return []
 
-    def check_preconditions(self, action_name: str, state: Dict) -> bool:
+    def check_preconditions(self, action_name: str, state: dict) -> bool:
         """
         Check if action preconditions are satisfied in state.
 
@@ -293,7 +284,7 @@ class ReasoningEnhancedPlanner:
     def transfer_plan(self,
                      source_plan: Any,
                      source_domain: Domain,
-                     target_domain: Domain) -> Optional[Any]:
+                     target_domain: Domain) -> Any | None:
         """
         Transfer plan from source domain to target domain.
 
@@ -346,8 +337,8 @@ class ReasoningEnhancedPlanner:
 
     def diagnose_failure(self,
                         failed_action: str,
-                        expected_state: Dict,
-                        actual_state: Dict) -> FailureDiagnosis:
+                        expected_state: dict,
+                        actual_state: dict) -> FailureDiagnosis:
         """
         Diagnose why action failed.
 
@@ -408,7 +399,7 @@ class ReasoningEnhancedPlanner:
     # Integrated Planning
     # ========================================================================
 
-    def plan_with_reasoning(self, goal: Any, initial_state: Dict) -> tuple:
+    def plan_with_reasoning(self, goal: Any, initial_state: dict) -> tuple:
         """
         Plan with integrated reasoning.
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Cluster Handlers for Matrix ChatOps
 ====================================
@@ -29,10 +30,10 @@ Created: 2025-12-09
 """
 
 import logging
-from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,9 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -70,11 +73,7 @@ except ImportError:
 # ============================================================================
 
 try:
-    from hololoom.eggroll.distributed_backend import (
-        DistributedBackend,
-        LocalBackend,
-        RayBackend
-    )
+    from hololoom.eggroll.distributed_backend import DistributedBackend, LocalBackend, RayBackend
     EGGROLL_AVAILABLE = True
 except ImportError:
     EGGROLL_AVAILABLE = False
@@ -109,10 +108,10 @@ class NodeInfo:
     node_id: int
     status: NodeStatus
     model_type: str = "standard"
-    last_health_check: Optional[datetime] = None
+    last_health_check: datetime | None = None
     tasks_completed: int = 0
     current_load: float = 0.0
-    metrics: Dict[str, Any] = field(default_factory=dict)
+    metrics: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -120,10 +119,10 @@ class ClusterInfo:
     """Information about the entire cluster."""
     backend_type: str
     num_workers: int
-    nodes: List[NodeInfo]
+    nodes: list[NodeInfo]
     total_tasks_completed: int = 0
     avg_load: float = 0.0
-    started_at: Optional[datetime] = None
+    started_at: datetime | None = None
 
 
 # ============================================================================
@@ -145,9 +144,9 @@ class ClusterManager:
             backend: DistributedBackend instance (LocalBackend or RayBackend)
         """
         self.backend = backend
-        self._node_info: Dict[int, NodeInfo] = {}
-        self._task_counts: Dict[int, int] = {}
-        self._started_at: Optional[datetime] = None
+        self._node_info: dict[int, NodeInfo] = {}
+        self._task_counts: dict[int, int] = {}
+        self._started_at: datetime | None = None
 
         if backend is not None:
             self._started_at = datetime.now()
@@ -211,7 +210,7 @@ class ClusterManager:
             started_at=self._started_at
         )
 
-    def _get_health_status(self) -> Dict[int, str]:
+    def _get_health_status(self) -> dict[int, str]:
         """Get health status from backend."""
         if not self.backend:
             return {}
@@ -230,7 +229,7 @@ class ClusterManager:
 
 
 # Global cluster manager
-_cluster_manager: Optional[ClusterManager] = None
+_cluster_manager: ClusterManager | None = None
 
 
 def get_cluster_manager() -> ClusterManager:
@@ -397,7 +396,7 @@ async def handle_cluster_nodes(
                 response += f"  Last Check: {int(ago.total_seconds())}s ago\n"
 
             if node.metrics:
-                response += f"  Metrics:\n"
+                response += "  Metrics:\n"
                 for key, value in node.metrics.items():
                     if isinstance(value, float):
                         response += f"    {key}: {value:.4f}\n"
@@ -448,7 +447,7 @@ async def handle_cluster_balance(
             "_No nodes to balance._"
         )
 
-    response = f"## Load Balance\n\n"
+    response = "## Load Balance\n\n"
     response += f"Backend: {cluster.backend_type.upper()}\n"
     response += f"Workers: {cluster.num_workers}\n\n"
 

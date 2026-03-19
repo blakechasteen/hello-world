@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Text Spinner
 =============
@@ -31,8 +30,8 @@ Usage:
 """
 
 import re
-from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
+from typing import Any
 
 from .base import BaseSpinner, SpinnerConfig
 
@@ -47,10 +46,10 @@ except ImportError:
     class MemoryShard:
         id: str
         text: str
-        episode: Optional[str] = None
-        entities: List[str] = field(default_factory=list)
-        motifs: List[str] = field(default_factory=list)
-        metadata: Dict[str, Any] = field(default_factory=dict)
+        episode: str | None = None
+        entities: list[str] = field(default_factory=list)
+        motifs: list[str] = field(default_factory=list)
+        metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -66,7 +65,7 @@ class TextSpinnerConfig(SpinnerConfig):
         extract_entities: Extract basic entities from text
         preserve_structure: Try to preserve markdown/document structure
     """
-    chunk_by: Optional[str] = None  # None = single shard per document
+    chunk_by: str | None = None  # None = single shard per document
     chunk_size: int = 500  # characters
     min_chunk_size: int = 50  # minimum chunk size
     extract_entities: bool = True
@@ -87,7 +86,7 @@ class TextSpinner(BaseSpinner):
         super().__init__(config)
         self.config: TextSpinnerConfig = config
 
-    async def spin(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
+    async def spin(self, raw_data: dict[str, Any]) -> list[MemoryShard]:
         """
         Convert text document → MemoryShards.
 
@@ -129,8 +128,8 @@ class TextSpinner(BaseSpinner):
         text: str,
         source: str,
         episode: str,
-        raw_data: Dict[str, Any]
-    ) -> List[MemoryShard]:
+        raw_data: dict[str, Any]
+    ) -> list[MemoryShard]:
         """Create a single shard for the entire document."""
 
         # Extract basic entities if configured
@@ -166,8 +165,8 @@ class TextSpinner(BaseSpinner):
         text: str,
         source: str,
         episode: str,
-        raw_data: Dict[str, Any]
-    ) -> List[MemoryShard]:
+        raw_data: dict[str, Any]
+    ) -> list[MemoryShard]:
         """Split text into chunks based on configuration."""
 
         # Split text into chunks
@@ -218,7 +217,7 @@ class TextSpinner(BaseSpinner):
 
         return shards
 
-    def _chunk_by_paragraph(self, text: str) -> List[str]:
+    def _chunk_by_paragraph(self, text: str) -> list[str]:
         """Split text into paragraph-based chunks."""
         # Split by double newlines (paragraph breaks)
         paragraphs = re.split(r'\n\s*\n', text)
@@ -257,7 +256,7 @@ class TextSpinner(BaseSpinner):
 
         return chunks
 
-    def _chunk_by_sentence(self, text: str) -> List[str]:
+    def _chunk_by_sentence(self, text: str) -> list[str]:
         """Split text into sentence-based chunks."""
         # Simple sentence splitting (can be improved with spaCy)
         sentences = re.split(r'(?<=[.!?])\s+', text)
@@ -289,7 +288,7 @@ class TextSpinner(BaseSpinner):
 
         return chunks
 
-    def _chunk_by_character(self, text: str) -> List[str]:
+    def _chunk_by_character(self, text: str) -> list[str]:
         """Split text into fixed-size character chunks."""
         chunks = []
         chunk_size = self.config.chunk_size
@@ -300,7 +299,7 @@ class TextSpinner(BaseSpinner):
 
         return chunks
 
-    def _extract_basic_entities(self, text: str) -> List[str]:
+    def _extract_basic_entities(self, text: str) -> list[str]:
         """
         Extract basic entities using simple heuristics.
 
@@ -326,7 +325,7 @@ class TextSpinner(BaseSpinner):
 
         return entities
 
-    async def _enrich_shards(self, shards: List[MemoryShard]) -> List[MemoryShard]:
+    async def _enrich_shards(self, shards: list[MemoryShard]) -> list[MemoryShard]:
         """
         Enrich shards using optional enrichment services.
         Delegates to parent class enrichment infrastructure.
@@ -358,10 +357,10 @@ class TextSpinner(BaseSpinner):
 async def spin_text(
     text: str,
     source: str = 'document',
-    chunk_by: Optional[str] = None,
+    chunk_by: str | None = None,
     chunk_size: int = 500,
     enable_enrichment: bool = False
-) -> List[MemoryShard]:
+) -> list[MemoryShard]:
     """
     Quick function to convert text into MemoryShards.
 

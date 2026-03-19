@@ -6,7 +6,6 @@ timeouts, retries, and local fallback behavior.
 
 import os
 from pathlib import Path
-from typing import Optional
 
 import yaml
 from pydantic import BaseModel, Field
@@ -56,7 +55,7 @@ class BridgeConfig(BaseModel):
         validate_assignment = True
 
 
-def load_bridge_config(path: Optional[str] = None) -> BridgeConfig:
+def load_bridge_config(path: str | None = None) -> BridgeConfig:
     """Load bridge configuration from YAML or environment variables.
 
     Args:

@@ -12,11 +12,10 @@ Tests:
 """
 
 import asyncio
-import websockets
 import json
+
+import websockets
 from rich.console import Console
-from rich.panel import Panel
-from rich.json import JSON
 
 console = Console()
 

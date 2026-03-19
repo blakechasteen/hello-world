@@ -9,17 +9,16 @@ Run with:
     PYTHONPATH=. uvicorn HoloLoom.saas.examples.auth_only_app:app --reload
 """
 
-from fastapi import FastAPI, Depends, HTTPException
 from contextlib import asynccontextmanager
 
+from fastapi import Depends, FastAPI
+
 from hololoom.saas import (
-    SaaSBackend,
     SaaSConfig,
     create_saas_backend,
 )
-from hololoom.saas.auth import validate_api_key, AuthContext
-from hololoom.saas.routes import customers_router, api_keys_router, health_router
-
+from hololoom.saas.auth import AuthContext, validate_api_key
+from hololoom.saas.routes import api_keys_router, customers_router, health_router
 
 # ============================================================================
 # App Setup
@@ -148,7 +147,6 @@ async def root():
 # ============================================================================
 
 if __name__ == "__main__":
-    import asyncio
     import httpx
 
     async def demo():

@@ -14,10 +14,9 @@ Date: 2025-12-05
 """
 
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime
-import math
+from enum import Enum
+from typing import Any
 
 
 class MetricStatus(Enum):
@@ -44,11 +43,11 @@ class LearnerMetricPanel:
 
     metric_name: str  # Display name ("Attack Success Rate", "Thompson Convergence", etc.)
     current_value: float  # Current measurement (0.0-1.0 or 0-100)
-    trend: List[float] = field(default_factory=list)  # Historical values for sparkline
-    target_value: Optional[float] = None  # Optional target (for comparison)
+    trend: list[float] = field(default_factory=list)  # Historical values for sparkline
+    target_value: float | None = None  # Optional target (for comparison)
     status: MetricStatus = MetricStatus.FAIR  # Current status (EXCELLENT/GOOD/FAIR/POOR/CRITICAL)
     unit: str = "%"  # Display unit ("%", "attacks/sec", "rate", etc.)
-    metadata: Dict[str, Any] = field(default_factory=dict)  # Extra context
+    metadata: dict[str, Any] = field(default_factory=dict)  # Extra context
 
     def __post_init__(self):
         """Compute delta and normalize trend."""
@@ -102,7 +101,7 @@ class LearningDashboardRenderer:
         """
         self.width = width
         self.height = height
-        self.panels: List[LearnerMetricPanel] = []
+        self.panels: list[LearnerMetricPanel] = []
         self.rendered_at = datetime.now().isoformat()
 
     def add_metric(self, panel: LearnerMetricPanel) -> None:
@@ -116,7 +115,7 @@ class LearningDashboardRenderer:
     def _compute_status(
         self,
         current: float,
-        target: Optional[float],
+        target: float | None,
         min_val: float = 0.0,
         max_val: float = 1.0
     ) -> MetricStatus:
@@ -167,7 +166,7 @@ class LearningDashboardRenderer:
         }
         return color_map.get(status, self.COLOR_NEUTRAL)
 
-    def _get_trend_color(self, values: List[float]) -> str:
+    def _get_trend_color(self, values: list[float]) -> str:
         """Get color indicating trend direction.
 
         Args:
@@ -192,7 +191,7 @@ class LearningDashboardRenderer:
 
     def _render_sparkline(
         self,
-        values: List[float],
+        values: list[float],
         width: int = SPARKLINE_WIDTH,
         height: int = SPARKLINE_HEIGHT,
         min_val: float = 0.0,
@@ -250,7 +249,7 @@ class LearningDashboardRenderer:
             else self.COLOR_NEUTRAL
         )
         delta_sign = "+" if panel.delta > 0 else ""
-        delta_indicator = f"↑" if panel.delta > 0 else "↓" if panel.delta < 0 else "→"
+        delta_indicator = "↑" if panel.delta > 0 else "↓" if panel.delta < 0 else "→"
 
         sparkline = self._render_sparkline(panel.trend) if panel.trend else ""
 
@@ -538,7 +537,7 @@ class LearningDashboardRenderer:
         grid += "</div>"
         return grid
 
-    def get_recommendations(self) -> List[str]:
+    def get_recommendations(self) -> list[str]:
         """Generate recommendations based on metric performance.
 
         Returns:

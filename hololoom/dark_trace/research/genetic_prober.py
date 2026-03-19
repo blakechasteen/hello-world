@@ -20,12 +20,12 @@ Key Capabilities:
 Created: 2025-12-28
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Callable, Tuple
 from enum import Enum
-import numpy as np
-import random
+from typing import Any
 
+import numpy as np
 
 # =============================================================================
 # Configuration
@@ -86,8 +86,8 @@ class GeneticConfig:
     elite_count: int = 5
     tournament_size: int = 5
     epsilon: float = 0.1
-    l2_bound: Optional[float] = None
-    fitness_weights: Dict[str, float] = field(default_factory=lambda: {
+    l2_bound: float | None = None
+    fitness_weights: dict[str, float] = field(default_factory=lambda: {
         "activation_change": 0.7,
         "perturbation_size": -0.3  # Negative = minimize
     })
@@ -96,8 +96,8 @@ class GeneticConfig:
     mutation_method: MutationMethod = MutationMethod.ADAPTIVE
     adaptive_mutation: bool = True
     early_stopping_patience: int = 10
-    target_fitness: Optional[float] = None
-    seed: Optional[int] = None
+    target_fitness: float | None = None
+    seed: int | None = None
 
     @classmethod
     def fast(cls) -> "GeneticConfig":
@@ -147,7 +147,7 @@ class Individual:
     activation_change: float = 0.0 # How much activation changed
     perturbation_norm: float = 0.0 # L2 norm of perturbation
     generation: int = 0            # Generation when created
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def copy(self) -> "Individual":
         """Create a copy of this individual."""
@@ -165,13 +165,13 @@ class Individual:
 class EvolutionResult:
     """Result of genetic evolution."""
     best_individual: Individual
-    final_population: List[Individual]
+    final_population: list[Individual]
     generations_run: int
-    fitness_history: List[float]     # Best fitness per generation
-    diversity_history: List[float]   # Population diversity per generation
+    fitness_history: list[float]     # Best fitness per generation
+    diversity_history: list[float]   # Population diversity per generation
     converged: bool                  # Whether search converged
     early_stopped: bool              # Whether early stopping triggered
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # =============================================================================
@@ -197,9 +197,9 @@ class GeneticOperators:
 
     def select_parents(
         self,
-        population: List[Individual],
+        population: list[Individual],
         n_parents: int
-    ) -> List[Individual]:
+    ) -> list[Individual]:
         """Select parents for reproduction."""
         if self.config.selection_method == SelectionMethod.TOURNAMENT:
             return self._tournament_selection(population, n_parents)
@@ -214,9 +214,9 @@ class GeneticOperators:
 
     def _tournament_selection(
         self,
-        population: List[Individual],
+        population: list[Individual],
         n_parents: int
-    ) -> List[Individual]:
+    ) -> list[Individual]:
         """Tournament selection."""
         parents = []
         for _ in range(n_parents):
@@ -233,9 +233,9 @@ class GeneticOperators:
 
     def _roulette_selection(
         self,
-        population: List[Individual],
+        population: list[Individual],
         n_parents: int
-    ) -> List[Individual]:
+    ) -> list[Individual]:
         """Roulette wheel selection."""
         # Shift fitness to be positive
         fitnesses = np.array([ind.fitness for ind in population])
@@ -256,9 +256,9 @@ class GeneticOperators:
 
     def _rank_selection(
         self,
-        population: List[Individual],
+        population: list[Individual],
         n_parents: int
-    ) -> List[Individual]:
+    ) -> list[Individual]:
         """Rank-based selection."""
         # Sort by fitness
         sorted_pop = sorted(population, key=lambda ind: ind.fitness)
@@ -273,9 +273,9 @@ class GeneticOperators:
 
     def _elite_selection(
         self,
-        population: List[Individual],
+        population: list[Individual],
         n_parents: int
-    ) -> List[Individual]:
+    ) -> list[Individual]:
         """Elite selection (top individuals only)."""
         sorted_pop = sorted(population, key=lambda ind: ind.fitness, reverse=True)
         elite = sorted_pop[:max(n_parents, self.config.elite_count)]
@@ -289,7 +289,7 @@ class GeneticOperators:
         self,
         parent1: Individual,
         parent2: Individual
-    ) -> Tuple[Individual, Individual]:
+    ) -> tuple[Individual, Individual]:
         """Perform crossover between two parents."""
         if self.rng.random() > self.config.crossover_rate:
             return parent1.copy(), parent2.copy()
@@ -309,7 +309,7 @@ class GeneticOperators:
         self,
         parent1: Individual,
         parent2: Individual
-    ) -> Tuple[Individual, Individual]:
+    ) -> tuple[Individual, Individual]:
         """Uniform crossover - each gene randomly from either parent."""
         mask = self.rng.random(parent1.genes.shape) < 0.5
 
@@ -325,7 +325,7 @@ class GeneticOperators:
         self,
         parent1: Individual,
         parent2: Individual
-    ) -> Tuple[Individual, Individual]:
+    ) -> tuple[Individual, Individual]:
         """Single point crossover."""
         point = self.rng.integers(1, len(parent1.genes.flat))
 
@@ -344,7 +344,7 @@ class GeneticOperators:
         self,
         parent1: Individual,
         parent2: Individual
-    ) -> Tuple[Individual, Individual]:
+    ) -> tuple[Individual, Individual]:
         """Two point crossover."""
         size = len(parent1.genes.flat)
         point1, point2 = sorted(self.rng.choice(size, size=2, replace=False))
@@ -368,7 +368,7 @@ class GeneticOperators:
         parent1: Individual,
         parent2: Individual,
         alpha: float = 0.5
-    ) -> Tuple[Individual, Individual]:
+    ) -> tuple[Individual, Individual]:
         """BLX-alpha blend crossover."""
         diff = np.abs(parent1.genes - parent2.genes)
         low = np.minimum(parent1.genes, parent2.genes) - alpha * diff
@@ -456,7 +456,7 @@ class GeneticOperators:
 
         return mutated
 
-    def update_mutation_rate(self, generation: int, best_fitness_history: List[float]):
+    def update_mutation_rate(self, generation: int, best_fitness_history: list[float]):
         """Update mutation rate adaptively based on progress."""
         if not self.config.adaptive_mutation:
             return
@@ -514,10 +514,10 @@ class GeneticAdversarialSearch:
 
     def evolve(
         self,
-        input_shape: Tuple[int, ...],
+        input_shape: tuple[int, ...],
         fitness_fn: Callable[[np.ndarray], float],
-        target_activation: Optional[float] = None,
-        initial_population: Optional[List[Individual]] = None
+        target_activation: float | None = None,
+        initial_population: list[Individual] | None = None
     ) -> EvolutionResult:
         """
         Run genetic evolution to find adversarial perturbation.
@@ -636,7 +636,7 @@ class GeneticAdversarialSearch:
             }
         )
 
-    def _initialize_population(self, input_shape: Tuple[int, ...]) -> List[Individual]:
+    def _initialize_population(self, input_shape: tuple[int, ...]) -> list[Individual]:
         """Initialize random population."""
         population = []
 
@@ -658,7 +658,7 @@ class GeneticAdversarialSearch:
 
     def _evaluate_population(
         self,
-        population: List[Individual],
+        population: list[Individual],
         fitness_fn: Callable[[np.ndarray], float]
     ):
         """Evaluate fitness for all individuals."""
@@ -682,7 +682,7 @@ class GeneticAdversarialSearch:
                 individual.fitness = float(fitness_result)
                 individual.perturbation_norm = np.linalg.norm(individual.genes)
 
-    def _compute_diversity(self, population: List[Individual]) -> float:
+    def _compute_diversity(self, population: list[Individual]) -> float:
         """Compute population diversity (average pairwise distance)."""
         if len(population) < 2:
             return 0.0

@@ -10,7 +10,7 @@ Created: 2025-12-31
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 
@@ -46,7 +46,7 @@ class DataPigMLAdapter:
             print(result.summary())
     """
 
-    def __init__(self, config: Optional[ValidationConfig] = None):
+    def __init__(self, config: ValidationConfig | None = None):
         """
         Initialize adapter.
 
@@ -59,7 +59,7 @@ class DataPigMLAdapter:
         self,
         X: np.ndarray,
         y: np.ndarray,
-        feature_names: Optional[FeatureNames] = None,
+        feature_names: FeatureNames | None = None,
     ) -> DataValidationResult:
         """
         Validate training data for common issues.
@@ -72,9 +72,9 @@ class DataPigMLAdapter:
         Returns:
             DataValidationResult with issues and recommendations
         """
-        issues: List[DataValidationIssue] = []
-        stats: Dict[str, Any] = {}
-        recommendations: List[str] = []
+        issues: list[DataValidationIssue] = []
+        stats: dict[str, Any] = {}
+        recommendations: list[str] = []
 
         # Ensure numpy arrays
         X = np.asarray(X)
@@ -138,7 +138,7 @@ class DataPigMLAdapter:
         self,
         n_samples: int,
         n_features: int,
-    ) -> List[DataValidationIssue]:
+    ) -> list[DataValidationIssue]:
         """Check if sample count is sufficient."""
         issues = []
 
@@ -172,7 +172,7 @@ class DataPigMLAdapter:
         self,
         X: np.ndarray,
         feature_names: FeatureNames,
-    ) -> List[DataValidationIssue]:
+    ) -> list[DataValidationIssue]:
         """Check for missing values (NaN/None)."""
         issues = []
 
@@ -198,7 +198,7 @@ class DataPigMLAdapter:
         self,
         X: np.ndarray,
         feature_names: FeatureNames,
-    ) -> List[DataValidationIssue]:
+    ) -> list[DataValidationIssue]:
         """Check for infinite values."""
         issues = []
 
@@ -224,7 +224,7 @@ class DataPigMLAdapter:
         self,
         X: np.ndarray,
         feature_names: FeatureNames,
-    ) -> List[DataValidationIssue]:
+    ) -> list[DataValidationIssue]:
         """Check for constant (zero variance) features."""
         issues = []
 
@@ -248,7 +248,7 @@ class DataPigMLAdapter:
 
         return issues
 
-    def _check_target(self, y: np.ndarray) -> List[DataValidationIssue]:
+    def _check_target(self, y: np.ndarray) -> list[DataValidationIssue]:
         """Check target variable for issues."""
         issues = []
 
@@ -298,7 +298,7 @@ class DataPigMLAdapter:
         self,
         X: np.ndarray,
         feature_names: FeatureNames,
-    ) -> List[DataValidationIssue]:
+    ) -> list[DataValidationIssue]:
         """Check for outliers using z-score."""
         issues = []
 
@@ -339,7 +339,7 @@ class DataPigMLAdapter:
         self,
         X: np.ndarray,
         feature_names: FeatureNames,
-    ) -> List[DataValidationIssue]:
+    ) -> list[DataValidationIssue]:
         """Check for high correlation between features."""
         issues = []
 
@@ -377,7 +377,7 @@ class DataPigMLAdapter:
 
         return issues
 
-    def _check_target_distribution(self, y: np.ndarray) -> List[DataValidationIssue]:
+    def _check_target_distribution(self, y: np.ndarray) -> list[DataValidationIssue]:
         """Check target distribution for potential issues."""
         issues = []
 
@@ -406,8 +406,8 @@ class DataPigMLAdapter:
 
     def _generate_recommendations(
         self,
-        issues: List[DataValidationIssue],
-    ) -> List[str]:
+        issues: list[DataValidationIssue],
+    ) -> list[str]:
         """Generate recommendations based on issues found."""
         recommendations = []
 

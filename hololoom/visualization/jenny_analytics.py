@@ -25,15 +25,14 @@ Author: HoloLoom Team
 Date: 2025-12-09 (Jenny Moonshot M5)
 """
 
+import logging
+import statistics
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 from enum import Enum
-import json
-import statistics
-import logging
+from typing import Any
 
-from .jenny_spec import JennySpec, PanelTypeJenny, PanelSizeJenny, LifecycleStage
+from .jenny_spec import PanelTypeJenny
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +70,7 @@ class AnalyticsEvent:
     event_type: MetricType
     value: float
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -88,7 +87,7 @@ class RenderEvent:
         return MetricType.RENDER_LATENCY
 
     @property
-    def metadata(self) -> Dict[str, Any]:
+    def metadata(self) -> dict[str, Any]:
         return {
             'target': self.target,
             'panel_count': self.panel_count,
@@ -111,7 +110,7 @@ class CompileEvent:
         return MetricType.COMPILE_LATENCY
 
     @property
-    def metadata(self) -> Dict[str, Any]:
+    def metadata(self) -> dict[str, Any]:
         return {
             'model': self.model,
             'query_type': self.query_type,
@@ -150,11 +149,11 @@ class JennyAnalyticsCollector:
             max_events: Maximum events to retain
             retention_hours: Hours to retain events
         """
-        self._events: List[AnalyticsEvent] = []
+        self._events: list[AnalyticsEvent] = []
         self._max_events = max_events
         self._retention_hours = retention_hours
-        self._panel_type_counts: Dict[str, int] = {}
-        self._accessibility_usage: Dict[str, int] = {}
+        self._panel_type_counts: dict[str, int] = {}
+        self._accessibility_usage: dict[str, int] = {}
         self._start_time = datetime.now()
 
     # ========================================================================
@@ -222,7 +221,7 @@ class JennyAnalyticsCollector:
     # Metrics Access
     # ========================================================================
 
-    def get_render_metrics(self) -> Dict[str, Any]:
+    def get_render_metrics(self) -> dict[str, Any]:
         """Get render performance metrics."""
         render_events = [e for e in self._events if e.event_type == MetricType.RENDER_LATENCY]
 
@@ -263,7 +262,7 @@ class JennyAnalyticsCollector:
             'by_target': by_target,
         }
 
-    def get_compile_metrics(self) -> Dict[str, Any]:
+    def get_compile_metrics(self) -> dict[str, Any]:
         """Get compilation performance metrics."""
         compile_events = [e for e in self._events if e.event_type == MetricType.COMPILE_LATENCY]
 
@@ -311,7 +310,7 @@ class JennyAnalyticsCollector:
             'by_query_type': by_query_type,
         }
 
-    def get_confidence_metrics(self) -> Dict[str, Any]:
+    def get_confidence_metrics(self) -> dict[str, Any]:
         """Get confidence score metrics."""
         conf_events = [e for e in self._events if e.event_type == MetricType.CONFIDENCE]
 
@@ -334,11 +333,11 @@ class JennyAnalyticsCollector:
             'trajectory': confidences[-100:],  # Last 100 for visualization
         }
 
-    def get_panel_type_distribution(self) -> Dict[str, int]:
+    def get_panel_type_distribution(self) -> dict[str, int]:
         """Get panel type usage distribution."""
         return dict(self._panel_type_counts)
 
-    def get_accessibility_metrics(self) -> Dict[str, Any]:
+    def get_accessibility_metrics(self) -> dict[str, Any]:
         """Get accessibility feature usage metrics."""
         total = sum(self._accessibility_usage.values())
         return {
@@ -347,7 +346,7 @@ class JennyAnalyticsCollector:
             'adoption_rate': round(total / max(len(self._events), 1), 3),
         }
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get complete analytics summary."""
         uptime = (datetime.now() - self._start_time).total_seconds()
 
@@ -389,7 +388,7 @@ class JennyAnalyticsCollector:
 # Singleton Collector Instance
 # ============================================================================
 
-_collector_instance: Optional[JennyAnalyticsCollector] = None
+_collector_instance: JennyAnalyticsCollector | None = None
 
 
 def get_analytics_collector() -> JennyAnalyticsCollector:
@@ -423,7 +422,7 @@ class JennyAnalyticsDashboard:
         html = dashboard.render()
     """
 
-    def __init__(self, collector: Optional[JennyAnalyticsCollector] = None):
+    def __init__(self, collector: JennyAnalyticsCollector | None = None):
         """Initialize dashboard with analytics collector."""
         self.collector = collector or get_analytics_collector()
 
@@ -681,7 +680,7 @@ class JennyAnalyticsDashboard:
             mins = int((seconds % 3600) / 60)
             return f"{hours}h {mins}m"
 
-    def _render_summary_cards(self, metrics: Dict[str, Any]) -> str:
+    def _render_summary_cards(self, metrics: dict[str, Any]) -> str:
         """Render summary cards section."""
         return f"""
     <section class="summary-cards">
@@ -707,7 +706,7 @@ class JennyAnalyticsDashboard:
         </div>
     </section>"""
 
-    def _render_render_metrics(self, render: Dict[str, Any]) -> str:
+    def _render_render_metrics(self, render: dict[str, Any]) -> str:
         """Render render metrics section."""
         by_target_html = ""
         for target, stats in render.get('by_target', {}).items():
@@ -741,7 +740,7 @@ class JennyAnalyticsDashboard:
         </div>
     </section>"""
 
-    def _render_compile_metrics(self, compile_metrics: Dict[str, Any]) -> str:
+    def _render_compile_metrics(self, compile_metrics: dict[str, Any]) -> str:
         """Render compile metrics section."""
         by_model_html = ""
         for model, stats in compile_metrics.get('by_model', {}).items():
@@ -782,7 +781,7 @@ class JennyAnalyticsDashboard:
         <div class="metrics-grid">{by_type_html}</div>
     </section>"""
 
-    def _render_confidence_chart(self, confidence: Dict[str, Any]) -> str:
+    def _render_confidence_chart(self, confidence: dict[str, Any]) -> str:
         """Render confidence trajectory chart."""
         trajectory = confidence.get('trajectory', [])
         if not trajectory:
@@ -821,7 +820,7 @@ class JennyAnalyticsDashboard:
         </div>
     </section>"""
 
-    def _render_panel_distribution(self, panel_types: Dict[str, int]) -> str:
+    def _render_panel_distribution(self, panel_types: dict[str, int]) -> str:
         """Render panel type distribution chart."""
         if not panel_types:
             return """
@@ -862,7 +861,7 @@ class JennyAnalyticsDashboard:
         </div>
     </section>"""
 
-    def _render_accessibility_metrics(self, a11y: Dict[str, Any]) -> str:
+    def _render_accessibility_metrics(self, a11y: dict[str, Any]) -> str:
         """Render accessibility metrics section."""
         by_feature = a11y.get('by_feature', {})
         if not by_feature:
@@ -935,7 +934,7 @@ def record_confidence(confidence: float, query: str = "") -> None:
     get_analytics_collector().record_confidence(confidence, query)
 
 
-def get_analytics_summary() -> Dict[str, Any]:
+def get_analytics_summary() -> dict[str, Any]:
     """Get analytics summary from global collector."""
     return get_analytics_collector().get_summary()
 

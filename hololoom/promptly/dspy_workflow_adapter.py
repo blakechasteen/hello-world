@@ -29,12 +29,12 @@ Usage:
 import asyncio
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Callable
 from pathlib import Path
-import json
+from typing import Any
+
 import yaml
 
-from hololoom.promptly.dspy_bridge import DSPyHoloLoom, DSPySignature, DSPyProgram, create_signature
+from hololoom.promptly.dspy_bridge import DSPyHoloLoom, DSPyProgram, DSPySignature, create_signature
 from hololoom.promptly.workflow_store import WorkflowStore
 
 
@@ -43,11 +43,11 @@ class DSPyWorkflowStep:
     """A single DSPy step in a workflow"""
     step_id: str
     signature_name: str
-    inputs: Dict[str, str]  # Field name → value or reference
-    outputs: List[str]
+    inputs: dict[str, str]  # Field name → value or reference
+    outputs: list[str]
     optimize: bool = False
-    optimization_query: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    optimization_query: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -55,8 +55,8 @@ class DSPyWorkflow:
     """Complete DSPy workflow"""
     name: str
     description: str
-    steps: List[DSPyWorkflowStep]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    steps: list[DSPyWorkflowStep]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class DSPyWorkflowAdapter:
@@ -73,7 +73,7 @@ class DSPyWorkflowAdapter:
     def __init__(
         self,
         bridge: DSPyHoloLoom,
-        workflow_store: Optional[WorkflowStore] = None
+        workflow_store: WorkflowStore | None = None
     ):
         """
         Initialize adapter.
@@ -86,13 +86,13 @@ class DSPyWorkflowAdapter:
         self.workflow_store = workflow_store
 
         # Registry of available signatures
-        self.signatures: Dict[str, DSPySignature] = {}
+        self.signatures: dict[str, DSPySignature] = {}
 
         # Cache of optimized programs
-        self.programs: Dict[str, DSPyProgram] = {}
+        self.programs: dict[str, DSPyProgram] = {}
 
         # Workflow execution history
-        self.execution_history: List[Dict[str, Any]] = []
+        self.execution_history: list[dict[str, Any]] = []
 
         logging.info("DSPyWorkflowAdapter initialized")
 
@@ -105,7 +105,7 @@ class DSPyWorkflowAdapter:
         self,
         name: str,
         description: str,
-        steps: List[Dict[str, Any]]
+        steps: list[dict[str, Any]]
     ) -> DSPyWorkflow:
         """
         Create a DSPy workflow.
@@ -164,9 +164,9 @@ class DSPyWorkflowAdapter:
     async def execute_workflow(
         self,
         workflow: DSPyWorkflow,
-        initial_inputs: Dict[str, Any],
+        initial_inputs: dict[str, Any],
         optimize_on_the_fly: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute a DSPy workflow.
 
@@ -318,9 +318,9 @@ class DSPyWorkflowAdapter:
 
     def _resolve_inputs(
         self,
-        input_spec: Dict[str, str],
-        context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        input_spec: dict[str, str],
+        context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Resolve input values from context.
 
@@ -374,7 +374,7 @@ class DSPyWorkflowAdapter:
 
     async def load_workflow(self, path: Path) -> DSPyWorkflow:
         """Load workflow from YAML"""
-        with open(path, 'r') as f:
+        with open(path) as f:
             workflow_dict = yaml.safe_load(f)
 
         workflow = self.create_workflow(
@@ -424,7 +424,7 @@ class DSPyWorkflowAdapter:
 
         logging.info("Workflow optimization complete")
 
-    def get_execution_statistics(self) -> Dict[str, Any]:
+    def get_execution_statistics(self) -> dict[str, Any]:
         """Get workflow execution statistics"""
         if not self.execution_history:
             return {"total_executions": 0}

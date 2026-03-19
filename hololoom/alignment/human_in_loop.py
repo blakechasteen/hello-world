@@ -25,11 +25,11 @@ Feedback Types:
 """
 
 import logging
-from threading import Lock
-from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from threading import Lock
+from typing import Any
 
 logger = logging.getLogger("hololoom.alignment.human_in_loop")
 
@@ -59,11 +59,11 @@ class Feedback:
     """User feedback on a response."""
     query_id: str
     feedback_type: FeedbackType
-    feedback_data: Dict[str, Any]
+    feedback_data: dict[str, Any]
     timestamp: datetime = field(default_factory=datetime.now)
-    user_id: Optional[str] = None
+    user_id: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "query_id": self.query_id,
@@ -79,13 +79,13 @@ class Intervention:
     """Human intervention record."""
     query_id: str
     intervention_type: InterventionType
-    original_decision: Dict[str, Any]
-    override_decision: Dict[str, Any]
+    original_decision: dict[str, Any]
+    override_decision: dict[str, Any]
     reason: str
     timestamp: datetime = field(default_factory=datetime.now)
-    operator_id: Optional[str] = None
+    operator_id: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "query_id": self.query_id,
@@ -111,8 +111,8 @@ class FeedbackCollector:
 
     def __init__(self):
         """Initialize feedback collector."""
-        self.feedback_history: List[Feedback] = []
-        self.query_feedback: Dict[str, List[Feedback]] = {}
+        self.feedback_history: list[Feedback] = []
+        self.query_feedback: dict[str, list[Feedback]] = {}
         self._lock = Lock()  # Thread-safe access to shared state
 
         self._setup_logging()
@@ -132,8 +132,8 @@ class FeedbackCollector:
         self,
         query_id: str,
         feedback_type: FeedbackType,
-        feedback_data: Optional[Dict[str, Any]] = None,
-        user_id: Optional[str] = None,
+        feedback_data: dict[str, Any] | None = None,
+        user_id: str | None = None,
     ):
         """
         Collect user feedback.
@@ -161,11 +161,11 @@ class FeedbackCollector:
 
         logger.info(f"Feedback collected: {query_id} - {feedback_type.value}")
 
-    def get_feedback_for_query(self, query_id: str) -> List[Feedback]:
+    def get_feedback_for_query(self, query_id: str) -> list[Feedback]:
         """Get all feedback for a specific query."""
         return self.query_feedback.get(query_id, [])
 
-    def get_recent_feedback(self, limit: int = 100) -> List[Feedback]:
+    def get_recent_feedback(self, limit: int = 100) -> list[Feedback]:
         """Get recent feedback."""
         return self.feedback_history[-limit:]
 
@@ -189,7 +189,7 @@ class FeedbackCollector:
         thumbs_up = sum(1 for f in thumbs if f.feedback_type == FeedbackType.THUMBS_UP)
         return thumbs_up / len(thumbs)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get feedback statistics."""
         total = len(self.feedback_history)
 
@@ -219,8 +219,8 @@ class OverrideSystem:
 
     def __init__(self):
         """Initialize override system."""
-        self.interventions: List[Intervention] = []
-        self.pending_approvals: Dict[str, Dict[str, Any]] = {}
+        self.interventions: list[Intervention] = []
+        self.pending_approvals: dict[str, dict[str, Any]] = {}
         self._lock = Lock()  # Thread-safe access to shared state
 
         self._setup_logging()
@@ -239,7 +239,7 @@ class OverrideSystem:
     def request_approval(
         self,
         query_id: str,
-        decision: Dict[str, Any],
+        decision: dict[str, Any],
         reason: str,
     ) -> str:
         """
@@ -270,8 +270,8 @@ class OverrideSystem:
     def approve(
         self,
         approval_id: str,
-        operator_id: Optional[str] = None,
-        modified_decision: Optional[Dict[str, Any]] = None,
+        operator_id: str | None = None,
+        modified_decision: dict[str, Any] | None = None,
     ):
         """
         Approve (and optionally modify) a pending decision.
@@ -304,10 +304,10 @@ class OverrideSystem:
     def override_decision(
         self,
         query_id: str,
-        original_decision: Dict[str, Any],
-        override_decision: Dict[str, Any],
+        original_decision: dict[str, Any],
+        override_decision: dict[str, Any],
         reason: str,
-        operator_id: Optional[str] = None,
+        operator_id: str | None = None,
     ):
         """
         Override a system decision.
@@ -333,19 +333,19 @@ class OverrideSystem:
 
         logger.warning(f"Decision overridden: {query_id} - {reason}")
 
-    def get_pending_approvals(self) -> List[Dict[str, Any]]:
+    def get_pending_approvals(self) -> list[dict[str, Any]]:
         """Get all pending approval requests."""
         return list(self.pending_approvals.values())
 
-    def get_interventions_for_query(self, query_id: str) -> List[Intervention]:
+    def get_interventions_for_query(self, query_id: str) -> list[Intervention]:
         """Get all interventions for a query."""
         return [i for i in self.interventions if i.query_id == query_id]
 
-    def get_recent_interventions(self, limit: int = 100) -> List[Intervention]:
+    def get_recent_interventions(self, limit: int = 100) -> list[Intervention]:
         """Get recent interventions."""
         return self.interventions[-limit:]
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get intervention statistics."""
         total = len(self.interventions)
 
@@ -415,8 +415,8 @@ class HumanInLoopSystem:
         self,
         query_id: str,
         feedback_type: FeedbackType,
-        feedback_data: Optional[Dict[str, Any]] = None,
-        user_id: Optional[str] = None,
+        feedback_data: dict[str, Any] | None = None,
+        user_id: str | None = None,
     ):
         """Collect user feedback."""
         self.feedback_collector.collect_feedback(
@@ -431,7 +431,7 @@ class HumanInLoopSystem:
     def request_approval(
         self,
         query_id: str,
-        decision: Dict[str, Any],
+        decision: dict[str, Any],
         reason: str,
     ) -> str:
         """Request human approval."""
@@ -440,8 +440,8 @@ class HumanInLoopSystem:
     def approve(
         self,
         approval_id: str,
-        operator_id: Optional[str] = None,
-        modified_decision: Optional[Dict[str, Any]] = None,
+        operator_id: str | None = None,
+        modified_decision: dict[str, Any] | None = None,
     ):
         """Approve pending decision."""
         self.override_system.approve(approval_id, operator_id, modified_decision)
@@ -449,10 +449,10 @@ class HumanInLoopSystem:
     def override_decision(
         self,
         query_id: str,
-        original_decision: Dict[str, Any],
-        override_decision: Dict[str, Any],
+        original_decision: dict[str, Any],
+        override_decision: dict[str, Any],
         reason: str,
-        operator_id: Optional[str] = None,
+        operator_id: str | None = None,
     ):
         """Override system decision."""
         self.override_system.override_decision(
@@ -460,11 +460,11 @@ class HumanInLoopSystem:
         )
 
     # Query methods
-    def get_pending_approvals(self) -> List[Dict[str, Any]]:
+    def get_pending_approvals(self) -> list[dict[str, Any]]:
         """Get pending approval requests."""
         return self.override_system.get_pending_approvals()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get comprehensive statistics."""
         return {
             "feedback": self.feedback_collector.get_statistics(),

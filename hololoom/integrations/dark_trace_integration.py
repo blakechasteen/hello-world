@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Dark Trace Integration with HoloLoom Orchestrator
 
@@ -36,12 +37,13 @@ Usage:
     integration.set_steering({"semantic.Warmth": 1.5, "sae.42": -0.5})
 """
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Callable, Union
-from enum import Enum
 import asyncio
 import logging
 import time
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Union
 
 try:
     import torch
@@ -54,25 +56,20 @@ import numpy as np
 
 # Dark Trace imports
 from hololoom.dark_trace.engine import DarkTraceEngine, create_engine
-from hololoom.dark_trace.trace_config import TraceConfig, TraceMode
-from hololoom.dark_trace.result import TraceResult, SteeringResult
-from hololoom.dark_trace.protocol import (
-    Feature,
-    FeatureActivation,
-    SafetyFlag,
-    LensType,
+from hololoom.dark_trace.models.fingerprint import (
+    FeatureFingerprint,
+    FingerprintConfig,
+    ModelComparisonReport,
+    ModelFingerprinter,
+    compare_models,
 )
 from hololoom.dark_trace.models.policy_adapter import (
     PolicyAdapter,
     create_policy_adapter,
 )
-from hololoom.dark_trace.models.fingerprint import (
-    ModelFingerprinter,
-    FeatureFingerprint,
-    FingerprintConfig,
-    compare_fingerprints,
-    compare_models,
-    ModelComparisonReport,
+from hololoom.dark_trace.research.adversarial_catalog import (
+    AdversarialCatalog,
+    create_catalog,
 )
 
 # Phase 2: Adversarial Probing imports
@@ -83,28 +80,21 @@ from hololoom.dark_trace.research.adversarial_prober import (
     VulnerabilityReport,
     create_prober,
 )
-from hololoom.dark_trace.research.adversarial_catalog import (
-    AdversarialCatalog,
-    CatalogedVulnerability,
-    VulnerabilityStatus,
-    create_catalog,
-)
+from hololoom.dark_trace.result import SteeringResult, TraceResult
+from hololoom.dark_trace.trace_config import TraceConfig
 
 # Phase 2: Visualization Dashboard imports
 from hololoom.dark_trace.visualization import (
-    DarkTraceStreamingServer,
-    StreamingConfig,
-    create_streaming_server,
-    create_streaming_config,
     DarkTraceDashboardAPI,
+    DarkTraceOrchestratorHook,
+    DarkTraceStreamingServer,
     DashboardAPIConfig,
     create_dashboard_api,
-    DarkTraceOrchestratorHook,
-    HookConfig,
-    create_orchestrator_hook,
     create_hook_config,
+    create_orchestrator_hook,
+    create_streaming_config,
+    create_streaming_server,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -122,11 +112,11 @@ class IntegrationConfig:
     """Configuration for Dark Trace integration."""
 
     mode: IntegrationMode = IntegrationMode.PASSIVE
-    trace_config: Optional[TraceConfig] = None
+    trace_config: TraceConfig | None = None
 
     # Automatic analysis settings
     auto_analyze: bool = True  # Analyze every weave
-    analyze_layers: List[str] = field(default_factory=lambda: [
+    analyze_layers: list[str] = field(default_factory=lambda: [
         "block.0.mha",
         "block.1.mha",
         "readout",
@@ -134,13 +124,13 @@ class IntegrationConfig:
 
     # Steering settings
     enable_steering: bool = False
-    steering_goals: Dict[str, float] = field(default_factory=dict)
+    steering_goals: dict[str, float] = field(default_factory=dict)
     steering_scale: float = 1.0
 
     # Safety settings
     safety_monitoring: bool = True
     block_on_safety_concern: bool = False  # Block weave if safety issues
-    safety_callback: Optional[Callable[[TraceResult], None]] = None
+    safety_callback: Callable[[TraceResult], None] | None = None
 
     # Fingerprinting
     enable_fingerprinting: bool = False
@@ -152,11 +142,11 @@ class IntegrationConfig:
 
     # Phase 2: Adversarial Safety Probing
     enable_safety_probing: bool = False
-    probe_config: Optional[ProbeConfig] = None
+    probe_config: ProbeConfig | None = None
     vulnerability_threshold: VulnerabilityLevel = VulnerabilityLevel.MEDIUM
     probe_on_safety_concern: bool = True  # Run probes when safety flagged
     probe_every_n: int = 50  # Periodic probing every N weaves
-    catalog_path: Optional[str] = None  # Path for vulnerability catalog
+    catalog_path: str | None = None  # Path for vulnerability catalog
     block_on_vulnerability: bool = False  # Block if HIGH/CRITICAL found
 
     # Phase 2: Real-time Visualization Dashboard
@@ -166,7 +156,7 @@ class IntegrationConfig:
     visualization_port: int = 8765
     visualization_api_port: int = 8766
     visualization_throttle_ms: float = 50.0  # Broadcast throttle
-    visualization_monitored_layers: Optional[List[int]] = None  # None = all
+    visualization_monitored_layers: list[int] | None = None  # None = all
     visualization_activation_threshold: float = 0.01
 
     @classmethod
@@ -199,7 +189,7 @@ class IntegrationConfig:
         )
 
     @classmethod
-    def with_safety_probing(cls, catalog_path: Optional[str] = None) -> "IntegrationConfig":
+    def with_safety_probing(cls, catalog_path: str | None = None) -> "IntegrationConfig":
         """Create config with adversarial safety probing enabled."""
         return cls(
             mode=IntegrationMode.FULL,
@@ -250,13 +240,13 @@ class IntegrationResult:
     """Result of integrated weave with interpretability."""
 
     spacetime: Any  # Original spacetime result
-    trace: Optional[TraceResult] = None
+    trace: TraceResult | None = None
     steering_applied: bool = False
     safety_blocked: bool = False
     analysis_time_ms: float = 0.0
 
     # Phase 2: Vulnerability probing results
-    vulnerability_report: Optional[VulnerabilityReport] = None
+    vulnerability_report: VulnerabilityReport | None = None
     vulnerability_blocked: bool = False
     probing_performed: bool = False
 
@@ -296,8 +286,8 @@ class DarkTraceIntegration:
 
     def __init__(
         self,
-        config: Optional[IntegrationConfig] = None,
-        trace_config: Optional[TraceConfig] = None,
+        config: IntegrationConfig | None = None,
+        trace_config: TraceConfig | None = None,
     ):
         """
         Initialize Dark Trace integration.
@@ -313,34 +303,34 @@ class DarkTraceIntegration:
         self._engine = create_engine(config=self._trace_config)
 
         # Policy adapter (set when attached to orchestrator)
-        self._policy_adapter: Optional[PolicyAdapter] = None
+        self._policy_adapter: PolicyAdapter | None = None
 
         # State tracking
         self._weave_count = 0
-        self._trace_history: List[TraceResult] = []
-        self._last_trace: Optional[TraceResult] = None
-        self._fingerprints: Dict[str, Dict[str, FeatureFingerprint]] = {}
+        self._trace_history: list[TraceResult] = []
+        self._last_trace: TraceResult | None = None
+        self._fingerprints: dict[str, dict[str, FeatureFingerprint]] = {}
 
         # Steering state
-        self._active_steering: Dict[str, float] = {}
+        self._active_steering: dict[str, float] = {}
 
         # Callbacks
-        self._pre_weave_callbacks: List[Callable] = []
-        self._post_weave_callbacks: List[Callable] = []
+        self._pre_weave_callbacks: list[Callable] = []
+        self._post_weave_callbacks: list[Callable] = []
 
         # Phase 2: Adversarial Probing
-        self._prober: Optional[AdversarialProber] = None
-        self._catalog: Optional[AdversarialCatalog] = None
+        self._prober: AdversarialProber | None = None
+        self._catalog: AdversarialCatalog | None = None
         self._probe_count = 0
-        self._vulnerability_history: List[VulnerabilityReport] = []
+        self._vulnerability_history: list[VulnerabilityReport] = []
 
         if self.config.enable_safety_probing:
             self._initialize_probing()
 
         # Phase 2: Real-time Visualization Dashboard
-        self._streaming_server: Optional[DarkTraceStreamingServer] = None
-        self._dashboard_api: Optional[DarkTraceDashboardAPI] = None
-        self._orchestrator_hook: Optional[DarkTraceOrchestratorHook] = None
+        self._streaming_server: DarkTraceStreamingServer | None = None
+        self._dashboard_api: DarkTraceDashboardAPI | None = None
+        self._orchestrator_hook: DarkTraceOrchestratorHook | None = None
         self._visualization_running: bool = False
 
         if self.config.enable_visualization:
@@ -354,7 +344,7 @@ class DarkTraceIntegration:
         return self._engine
 
     @property
-    def adapter(self) -> Optional[PolicyAdapter]:
+    def adapter(self) -> PolicyAdapter | None:
         """Access policy adapter."""
         return self._policy_adapter
 
@@ -403,7 +393,7 @@ class DarkTraceIntegration:
     def analyze(
         self,
         activations: Union[np.ndarray, "torch.Tensor"],
-        layer_name: Optional[str] = None,
+        layer_name: str | None = None,
     ) -> TraceResult:
         """
         Analyze activations through Dark Trace.
@@ -443,8 +433,8 @@ class DarkTraceIntegration:
         mem: Union[np.ndarray, "torch.Tensor"],
         ctrl: Union[np.ndarray, "torch.Tensor"],
         adapter_idx: int = 0,
-        layers: Optional[List[str]] = None,
-    ) -> Dict[str, TraceResult]:
+        layers: list[str] | None = None,
+    ) -> dict[str, TraceResult]:
         """
         Analyze policy network activations across multiple layers.
 
@@ -485,11 +475,11 @@ class DarkTraceIntegration:
 
         return results
 
-    def get_last_trace(self) -> Optional[TraceResult]:
+    def get_last_trace(self) -> TraceResult | None:
         """Get the most recent trace result."""
         return self._last_trace
 
-    def get_trace_history(self, limit: int = 10) -> List[TraceResult]:
+    def get_trace_history(self, limit: int = 10) -> list[TraceResult]:
         """Get recent trace history."""
         return self._trace_history[-limit:]
 
@@ -499,7 +489,7 @@ class DarkTraceIntegration:
 
     def set_steering(
         self,
-        goals: Dict[str, float],
+        goals: dict[str, float],
         validate_safety: bool = True,
     ) -> SteeringResult:
         """
@@ -549,7 +539,7 @@ class DarkTraceIntegration:
 
         return 0
 
-    def _feature_to_layer(self, feature_id: str) -> Optional[str]:
+    def _feature_to_layer(self, feature_id: str) -> str | None:
         """Map feature ID to policy layer (heuristic)."""
         if feature_id.startswith("sae."):
             return "block.1.mha"  # Default to later attention
@@ -563,10 +553,10 @@ class DarkTraceIntegration:
 
     def fingerprint_policy(
         self,
-        probe_inputs: List[Dict[str, Any]],
+        probe_inputs: list[dict[str, Any]],
         model_id: str = "policy",
-        layers: Optional[List[str]] = None,
-    ) -> Dict[str, FeatureFingerprint]:
+        layers: list[str] | None = None,
+    ) -> dict[str, FeatureFingerprint]:
         """
         Generate fingerprints for policy network.
 
@@ -605,7 +595,7 @@ class DarkTraceIntegration:
 
     def compare_with_model(
         self,
-        other_fingerprints: Dict[str, FeatureFingerprint],
+        other_fingerprints: dict[str, FeatureFingerprint],
         other_model_id: str,
     ) -> ModelComparisonReport:
         """
@@ -776,7 +766,7 @@ class DarkTraceIntegration:
     def probe_for_vulnerabilities(
         self,
         activations: Union[np.ndarray, "torch.Tensor"],
-        feature_indices: Optional[List[int]] = None,
+        feature_indices: list[int] | None = None,
         model_version: str = "current",
     ) -> VulnerabilityReport:
         """
@@ -827,8 +817,8 @@ class DarkTraceIntegration:
 
     def get_vulnerability_report(
         self,
-        model_version: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        model_version: str | None = None,
+    ) -> dict[str, Any]:
         """
         Get vulnerability report from catalog.
 
@@ -870,7 +860,7 @@ class DarkTraceIntegration:
         self,
         version1: str,
         version2: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compare vulnerabilities between two model versions.
 
@@ -1027,17 +1017,17 @@ class DarkTraceIntegration:
         logger.info("Visualization dashboard stopped")
 
     @property
-    def orchestrator_hook(self) -> Optional[DarkTraceOrchestratorHook]:
+    def orchestrator_hook(self) -> DarkTraceOrchestratorHook | None:
         """Access the orchestrator hook for weaving integration."""
         return self._orchestrator_hook
 
     @property
-    def streaming_server(self) -> Optional[DarkTraceStreamingServer]:
+    def streaming_server(self) -> DarkTraceStreamingServer | None:
         """Access the streaming server."""
         return self._streaming_server
 
     @property
-    def dashboard_api(self) -> Optional[DarkTraceDashboardAPI]:
+    def dashboard_api(self) -> DarkTraceDashboardAPI | None:
         """Access the dashboard API."""
         return self._dashboard_api
 
@@ -1049,9 +1039,9 @@ class DarkTraceIntegration:
     async def broadcast_activations(
         self,
         layer: int,
-        feature_indices: List[int],
-        activation_values: List[float],
-        metadata: Optional[Dict[str, Any]] = None,
+        feature_indices: list[int],
+        activation_values: list[float],
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Broadcast activations to connected visualization clients.
@@ -1073,7 +1063,7 @@ class DarkTraceIntegration:
                 metadata=metadata,
             )
 
-    def get_visualization_statistics(self) -> Dict[str, Any]:
+    def get_visualization_statistics(self) -> dict[str, Any]:
         """Get visualization system statistics."""
         stats = {
             "enabled": self.config.enable_visualization,
@@ -1145,7 +1135,7 @@ class DarkTraceIntegration:
     # Statistics & State
     # =========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get integration statistics."""
         stats = self._engine.get_statistics()
         stats.update({
@@ -1275,7 +1265,7 @@ class DarkTraceIntegration:
         import json
         fp_path = os.path.join(path, "fingerprints.json")
         if os.path.exists(fp_path):
-            with open(fp_path, 'r') as f:
+            with open(fp_path) as f:
                 fp_data = json.load(f)
 
             self._fingerprints = {
@@ -1294,9 +1284,9 @@ class DarkTraceIntegration:
 # =============================================================================
 
 def create_integration(
-    orchestrator: Optional[Any] = None,
-    config: Optional[IntegrationConfig] = None,
-    trace_config: Optional[TraceConfig] = None,
+    orchestrator: Any | None = None,
+    config: IntegrationConfig | None = None,
+    trace_config: TraceConfig | None = None,
 ) -> DarkTraceIntegration:
     """
     Create Dark Trace integration with optional orchestrator attachment.
@@ -1322,7 +1312,7 @@ def create_integration(
 
 def enable_dark_trace(
     orchestrator: Any,
-    integration: Optional[DarkTraceIntegration] = None,
+    integration: DarkTraceIntegration | None = None,
     mode: IntegrationMode = IntegrationMode.PASSIVE,
 ) -> DarkTraceIntegration:
     """
@@ -1348,7 +1338,7 @@ def enable_dark_trace(
     return integration
 
 
-def get_dark_trace(orchestrator: Any) -> Optional[DarkTraceIntegration]:
+def get_dark_trace(orchestrator: Any) -> DarkTraceIntegration | None:
     """Get Dark Trace integration from orchestrator if attached."""
     return getattr(orchestrator, '_dark_trace', None)
 

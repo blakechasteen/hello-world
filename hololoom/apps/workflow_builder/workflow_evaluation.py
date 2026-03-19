@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Workflow Evaluation Framework
 =============================
@@ -20,17 +19,17 @@ Author: HoloLoom Team
 """
 
 import asyncio
-import json
-import time
-import statistics
 import hashlib
-import uuid
-from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime
-from pathlib import Path
-from enum import Enum
+import json
 import logging
+import statistics
+import time
+import uuid
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -56,14 +55,14 @@ class TestCase:
     """A single test case for workflow evaluation."""
     id: str
     name: str
-    input_data: Dict[str, Any]
-    expected_output: Optional[Dict[str, Any]] = None
-    tags: List[str] = field(default_factory=list)
+    input_data: dict[str, Any]
+    expected_output: dict[str, Any] | None = None
+    tags: list[str] = field(default_factory=list)
     timeout_ms: int = 30000
     required_confidence: float = 0.0
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'TestCase':
+    def from_dict(cls, data: dict) -> 'TestCase':
         return cls(
             id=data.get('id', str(uuid.uuid4())),
             name=data['name'],
@@ -85,8 +84,8 @@ class ExecutionMetrics:
     cache_hits: int = 0
     cache_misses: int = 0
     memory_mb: float = 0.0
-    node_timings: Dict[str, float] = field(default_factory=dict)
-    error: Optional[str] = None
+    node_timings: dict[str, float] = field(default_factory=dict)
+    error: str | None = None
 
     @property
     def cache_hit_rate(self) -> float:
@@ -101,13 +100,13 @@ class TestResult:
     test_case_name: str
     success: bool
     metrics: ExecutionMetrics
-    output: Optional[Dict[str, Any]]
-    expected_output: Optional[Dict[str, Any]]
-    output_match: Optional[bool]
+    output: dict[str, Any] | None
+    expected_output: dict[str, Any] | None
+    output_match: bool | None
     timestamp: str
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             'test_case_id': self.test_case_id,
             'test_case_name': self.test_case_name,
@@ -147,14 +146,14 @@ class EvaluationReport:
     cache_hit_rate: float
 
     # Detailed results
-    test_results: List[TestResult]
+    test_results: list[TestResult]
 
     # Metadata
     evaluation_timestamp: str
     evaluation_duration_ms: float
     evaluator_version: str = "1.0.0"
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             'workflow_id': self.workflow_id,
             'workflow_name': self.workflow_name,
@@ -192,40 +191,40 @@ class EvaluationReport:
     def to_markdown(self) -> str:
         """Generate markdown report."""
         lines = [
-            f"# Workflow Evaluation Report",
-            f"",
+            "# Workflow Evaluation Report",
+            "",
             f"**Workflow**: {self.workflow_name}",
             f"**Version**: {self.workflow_version}",
             f"**Evaluated**: {self.evaluation_timestamp}",
-            f"",
-            f"## Summary",
-            f"",
-            f"| Metric | Value |",
-            f"|--------|-------|",
+            "",
+            "## Summary",
+            "",
+            "| Metric | Value |",
+            "|--------|-------|",
             f"| Total Tests | {self.total_tests} |",
             f"| Passed | {self.passed_tests} |",
             f"| Failed | {self.failed_tests} |",
             f"| Success Rate | {self.success_rate:.1%} |",
-            f"",
-            f"## Performance",
-            f"",
-            f"| Metric | Value |",
-            f"|--------|-------|",
+            "",
+            "## Performance",
+            "",
+            "| Metric | Value |",
+            "|--------|-------|",
             f"| Avg Latency | {self.avg_latency_ms:.1f}ms |",
             f"| P50 Latency | {self.p50_latency_ms:.1f}ms |",
             f"| P95 Latency | {self.p95_latency_ms:.1f}ms |",
             f"| P99 Latency | {self.p99_latency_ms:.1f}ms |",
             f"| Avg Confidence | {self.avg_confidence:.3f} |",
             f"| Cache Hit Rate | {self.cache_hit_rate:.1%} |",
-            f"",
-            f"## Test Results",
-            f"",
+            "",
+            "## Test Results",
+            "",
         ]
 
         for result in self.test_results:
             status = "[PASS]" if result.success else "[FAIL]"
             lines.append(f"### {status} {result.test_case_name}")
-            lines.append(f"")
+            lines.append("")
             lines.append(f"- **Latency**: {result.metrics.latency_ms:.1f}ms")
             lines.append(f"- **Confidence**: {result.metrics.confidence:.3f}")
             lines.append(f"- **Nodes Executed**: {result.metrics.nodes_executed}")
@@ -250,7 +249,7 @@ class WorkflowEvaluator:
         report = evaluator.generate_report(results)
     """
 
-    def __init__(self, executor=None, config: Dict[str, Any] = None):
+    def __init__(self, executor=None, config: dict[str, Any] = None):
         """
         Initialize evaluator.
 
@@ -267,8 +266,8 @@ class WorkflowEvaluator:
 
     async def evaluate_workflow(
         self,
-        workflow: Dict[str, Any],
-        test_cases: List[TestCase],
+        workflow: dict[str, Any],
+        test_cases: list[TestCase],
         parallel: bool = False
     ) -> EvaluationReport:
         """
@@ -283,7 +282,7 @@ class WorkflowEvaluator:
             EvaluationReport with all results
         """
         start_time = time.time()
-        results: List[TestResult] = []
+        results: list[TestResult] = []
 
         workflow_id = workflow.get('id', hashlib.md5(
             json.dumps(workflow, sort_keys=True).encode()
@@ -318,7 +317,7 @@ class WorkflowEvaluator:
 
     async def _run_single_test(
         self,
-        workflow: Dict[str, Any],
+        workflow: dict[str, Any],
         test_case: TestCase
     ) -> TestResult:
         """Run a single test case."""
@@ -397,10 +396,10 @@ class WorkflowEvaluator:
 
     async def _execute_workflow(
         self,
-        workflow: Dict[str, Any],
-        input_data: Dict[str, Any],
+        workflow: dict[str, Any],
+        input_data: dict[str, Any],
         timeout_ms: int
-    ) -> Tuple[Dict[str, Any], ExecutionMetrics]:
+    ) -> tuple[dict[str, Any], ExecutionMetrics]:
         """Execute workflow and collect metrics."""
         start_time = time.time()
 
@@ -449,8 +448,8 @@ class WorkflowEvaluator:
 
     def _check_output_match(
         self,
-        actual: Dict[str, Any],
-        expected: Dict[str, Any]
+        actual: dict[str, Any],
+        expected: dict[str, Any]
     ) -> bool:
         """Check if actual output matches expected output."""
         if not actual or not expected:
@@ -505,9 +504,9 @@ class WorkflowEvaluator:
 
     def _generate_report(
         self,
-        workflow: Dict[str, Any],
+        workflow: dict[str, Any],
         workflow_id: str,
-        results: List[TestResult],
+        results: list[TestResult],
         evaluation_duration: float
     ) -> EvaluationReport:
         """Generate evaluation report from results."""
@@ -570,7 +569,7 @@ class WorkflowEvaluator:
         )
 
     @staticmethod
-    def _percentile(data: List[float], percentile: int) -> float:
+    def _percentile(data: list[float], percentile: int) -> float:
         """Calculate percentile of data."""
         if not data:
             return 0.0
@@ -589,9 +588,9 @@ class WorkflowEvaluator:
 class ABTestConfig:
     """Configuration for A/B test."""
     name: str
-    workflow_a: Dict[str, Any]  # Control
-    workflow_b: Dict[str, Any]  # Treatment
-    test_cases: List[TestCase]
+    workflow_a: dict[str, Any]  # Control
+    workflow_b: dict[str, Any]  # Treatment
+    test_cases: list[TestCase]
     traffic_split: float = 0.5  # 50% to each
     min_samples: int = 30
     significance_level: float = 0.05
@@ -622,10 +621,10 @@ class ABTestResult:
     # Statistical significance
     is_significant: bool
     p_value: float
-    winner: Optional[str]  # 'A', 'B', or None
+    winner: str | None  # 'A', 'B', or None
     recommendation: str
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return asdict(self)
 
 
@@ -727,9 +726,9 @@ class ABTestRunner:
 
     def _calculate_significance(
         self,
-        samples_a: List[float],
-        samples_b: List[float]
-    ) -> Tuple[bool, float]:
+        samples_a: list[float],
+        samples_b: list[float]
+    ) -> tuple[bool, float]:
         """Calculate statistical significance using Welch's t-test."""
         if len(samples_a) < 2 or len(samples_b) < 2:
             return False, 1.0
@@ -775,15 +774,15 @@ class WorkflowVersion:
     version_id: str
     workflow_id: str
     version_number: int
-    workflow_data: Dict[str, Any]
+    workflow_data: dict[str, Any]
     message: str
-    description: Optional[str]
+    description: str | None
     created_at: str
     created_by: str
-    parent_version: Optional[str]
+    parent_version: str | None
     branch: str = 'main'
-    tags: List[str] = field(default_factory=list)
-    evaluation_results: Optional[Dict] = None
+    tags: list[str] = field(default_factory=list)
+    evaluation_results: dict | None = None
 
 
 class WorkflowVersionControl:
@@ -822,12 +821,12 @@ class WorkflowVersionControl:
 
     def commit(
         self,
-        workflow: Dict[str, Any],
+        workflow: dict[str, Any],
         message: str,
         description: str = None,
         author: str = 'anonymous',
         branch: str = 'main',
-        tags: List[str] = None
+        tags: list[str] = None
     ) -> WorkflowVersion:
         """
         Commit a new version of a workflow.
@@ -896,7 +895,7 @@ class WorkflowVersionControl:
         logger.info(f"Committed version {version_id}: {message}")
         return version
 
-    def checkout(self, version_id: str) -> Dict[str, Any]:
+    def checkout(self, version_id: str) -> dict[str, Any]:
         """
         Checkout a specific version.
 
@@ -961,7 +960,7 @@ class WorkflowVersionControl:
         logger.info(f"Created branch '{branch_name}' from '{from_branch}'")
         return branch_name
 
-    def list_branches(self, workflow_id: str) -> List[str]:
+    def list_branches(self, workflow_id: str) -> list[str]:
         """List branches for a workflow."""
         if workflow_id not in self._index['workflows']:
             return []
@@ -972,7 +971,7 @@ class WorkflowVersionControl:
         workflow_id: str,
         branch: str = None,
         limit: int = 10
-    ) -> List[WorkflowVersion]:
+    ) -> list[WorkflowVersion]:
         """Get version history for a workflow."""
         if workflow_id not in self._index['workflows']:
             return []
@@ -994,7 +993,7 @@ class WorkflowVersionControl:
         self,
         version_a_id: str,
         version_b_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compare two versions.
 
@@ -1069,7 +1068,7 @@ class BenchmarkDataset:
     """
 
     @staticmethod
-    def factual_qa(size: int = 20) -> List[TestCase]:
+    def factual_qa(size: int = 20) -> list[TestCase]:
         """Generate factual Q&A test cases."""
         questions = [
             "What is machine learning?",
@@ -1106,7 +1105,7 @@ class BenchmarkDataset:
         ]
 
     @staticmethod
-    def complex_reasoning(size: int = 10) -> List[TestCase]:
+    def complex_reasoning(size: int = 10) -> list[TestCase]:
         """Generate complex reasoning test cases."""
         queries = [
             "Compare and contrast supervised and unsupervised learning, then recommend when to use each.",
@@ -1134,7 +1133,7 @@ class BenchmarkDataset:
         ]
 
     @staticmethod
-    def adversarial(size: int = 10) -> List[TestCase]:
+    def adversarial(size: int = 10) -> list[TestCase]:
         """Generate adversarial test cases."""
         queries = [
             "What is the sound of one hand clapping?",
@@ -1161,7 +1160,7 @@ class BenchmarkDataset:
         ]
 
     @staticmethod
-    def get_full_benchmark() -> List[TestCase]:
+    def get_full_benchmark() -> list[TestCase]:
         """Get full benchmark dataset."""
         return (
             BenchmarkDataset.factual_qa(20) +
@@ -1242,7 +1241,7 @@ async def main():
 
     # Show diff
     diff = vcs.diff(v1.version_id, v2.version_id)
-    print(f"\nDiff v1 -> v2:")
+    print("\nDiff v1 -> v2:")
     print(f"  Added nodes: {len(diff['nodes']['added'])}")
     print(f"  Removed nodes: {len(diff['nodes']['removed'])}")
 

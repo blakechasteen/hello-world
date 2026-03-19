@@ -23,10 +23,8 @@ Inspired by HippoRAG v2's PPR-based retrieval.
 """
 
 import logging
-import math
-from collections import defaultdict
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Protocol, Set, Tuple
+from dataclasses import dataclass
+from typing import Any, Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +36,15 @@ logger = logging.getLogger(__name__)
 class GraphBackend(Protocol):
     """Minimal interface for PPR traversal."""
 
-    def nodes(self) -> List[str]:
+    def nodes(self) -> list[str]:
         """Return all node IDs."""
         ...
 
-    def neighbors(self, node_id: str) -> List[Tuple[str, str, float]]:
+    def neighbors(self, node_id: str) -> list[tuple[str, str, float]]:
         """Return [(neighbor_id, rel_type, weight)] for a node."""
         ...
 
-    def node_data(self, node_id: str) -> Dict[str, Any]:
+    def node_data(self, node_id: str) -> dict[str, Any]:
         """Return metadata dict for a node."""
         ...
 
@@ -65,10 +63,10 @@ class LiteBusGraph:
     def __init__(self, bus: Any):
         self._bus = bus
 
-    def nodes(self) -> List[str]:
+    def nodes(self) -> list[str]:
         return list(self._bus._items.keys())
 
-    def neighbors(self, node_id: str) -> List[Tuple[str, str, float]]:
+    def neighbors(self, node_id: str) -> list[tuple[str, str, float]]:
         edges = self._bus._edges.get(node_id, [])
         result = []
         for target_id, rel_type in edges:
@@ -77,7 +75,7 @@ class LiteBusGraph:
                 result.append((target_id, rel_type, weight))
         return result
 
-    def node_data(self, node_id: str) -> Dict[str, Any]:
+    def node_data(self, node_id: str) -> dict[str, Any]:
         if node_id in self._bus._items:
             return self._bus._items[node_id].to_dict()
         return {}
@@ -92,10 +90,10 @@ class NetworkXGraph:
     def __init__(self, kg: Any):
         self._kg = kg
 
-    def nodes(self) -> List[str]:
+    def nodes(self) -> list[str]:
         return list(self._kg.G.nodes())
 
-    def neighbors(self, node_id: str) -> List[Tuple[str, str, float]]:
+    def neighbors(self, node_id: str) -> list[tuple[str, str, float]]:
         if node_id not in self._kg.G:
             return []
         result = []
@@ -107,7 +105,7 @@ class NetworkXGraph:
             result.append((src, data.get("type", "RELATED"), data.get("weight", 1.0)))
         return result
 
-    def node_data(self, node_id: str) -> Dict[str, Any]:
+    def node_data(self, node_id: str) -> dict[str, Any]:
         if node_id not in self._kg.G:
             return {}
         return dict(self._kg.G.nodes[node_id])
@@ -131,9 +129,9 @@ class SeedNode:
 async def extract_seeds(
     query: str,
     graph: GraphBackend,
-    alias_table: Optional[Dict[str, str]] = None,
+    alias_table: dict[str, str] | None = None,
     max_seeds: int = 10,
-) -> List[SeedNode]:
+) -> list[SeedNode]:
     """Extract seed nodes from a query string.
 
     Strategy (in priority order):
@@ -151,7 +149,7 @@ async def extract_seeds(
     Returns:
         List of SeedNode objects, sorted by weight descending
     """
-    seeds: Dict[str, SeedNode] = {}  # node_id → SeedNode (dedup by node_id)
+    seeds: dict[str, SeedNode] = {}  # node_id → SeedNode (dedup by node_id)
     query_lower = query.lower()
     query_words = set(query_lower.split())
 
@@ -239,18 +237,18 @@ class PPRConfig:
 @dataclass
 class NavigatorResult:
     """Output of the PPR navigator."""
-    ranked_nodes: List[Tuple[str, float]]  # [(node_id, ppr_score)]
-    seed_nodes: List[SeedNode]
+    ranked_nodes: list[tuple[str, float]]  # [(node_id, ppr_score)]
+    seed_nodes: list[SeedNode]
     iterations: int
     converged: bool
-    node_data: Dict[str, Dict[str, Any]]   # Cached metadata for ranked nodes
+    node_data: dict[str, dict[str, Any]]   # Cached metadata for ranked nodes
 
     @property
-    def node_ids(self) -> List[str]:
+    def node_ids(self) -> list[str]:
         return [nid for nid, _ in self.ranked_nodes]
 
     @property
-    def top_content(self) -> List[str]:
+    def top_content(self) -> list[str]:
         """Get content strings for ranked nodes."""
         return [
             self.node_data.get(nid, {}).get("content", "")
@@ -260,7 +258,7 @@ class NavigatorResult:
 
 def personalized_pagerank(
     graph: GraphBackend,
-    seeds: List[SeedNode],
+    seeds: list[SeedNode],
     config: PPRConfig = PPRConfig(),
 ) -> NavigatorResult:
     """Run Personalized PageRank from seed nodes.
@@ -303,8 +301,8 @@ def personalized_pagerank(
         personalization = [1.0 / n] * n
 
     # Build adjacency: for each node, its outgoing edges with weights
-    adjacency: List[List[Tuple[int, float]]] = [[] for _ in range(n)]
-    out_weight: List[float] = [0.0] * n
+    adjacency: list[list[tuple[int, float]]] = [[] for _ in range(n)]
+    out_weight: list[float] = [0.0] * n
 
     for i, nid in enumerate(all_nodes):
         neighbors = graph.neighbors(nid)
@@ -346,8 +344,8 @@ def personalized_pagerank(
             break
 
     # Collect results
-    scored_nodes: List[Tuple[str, float]] = []
-    node_data_cache: Dict[str, Dict[str, Any]] = {}
+    scored_nodes: list[tuple[str, float]] = []
+    node_data_cache: dict[str, dict[str, Any]] = {}
 
     for i, nid in enumerate(all_nodes):
         if scores[i] >= config.min_score:
@@ -387,8 +385,8 @@ class Navigator:
     def __init__(
         self,
         graph: GraphBackend,
-        alias_table: Optional[Dict[str, str]] = None,
-        config: Optional[PPRConfig] = None,
+        alias_table: dict[str, str] | None = None,
+        config: PPRConfig | None = None,
     ):
         self.graph = graph
         self.alias_table = alias_table or {}
@@ -398,7 +396,7 @@ class Navigator:
         self,
         query: str,
         max_seeds: int = 10,
-        override_config: Optional[PPRConfig] = None,
+        override_config: PPRConfig | None = None,
         activation_adapter=None,
     ) -> NavigatorResult:
         """Full navigation pipeline: extract seeds → [activation boost] → PPR → ranked context.
@@ -457,7 +455,7 @@ class Navigator:
         return result
 
     @classmethod
-    def from_lite_bus(cls, bus: Any, config: Optional[PPRConfig] = None) -> "Navigator":
+    def from_lite_bus(cls, bus: Any, config: PPRConfig | None = None) -> "Navigator":
         """Create a Navigator from a LiteMemoryBus instance."""
         return cls(
             graph=LiteBusGraph(bus),
@@ -466,7 +464,7 @@ class Navigator:
         )
 
     @classmethod
-    def from_kg(cls, kg: Any, alias_table: Optional[Dict[str, str]] = None, config: Optional[PPRConfig] = None) -> "Navigator":
+    def from_kg(cls, kg: Any, alias_table: dict[str, str] | None = None, config: PPRConfig | None = None) -> "Navigator":
         """Create a Navigator from a KG (NetworkX) instance."""
         return cls(
             graph=NetworkXGraph(kg),

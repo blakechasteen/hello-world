@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 TTS Cache - Production-Ready Audio Caching for HoloLoom VoiceAgent
 ===================================================================
@@ -25,9 +26,8 @@ import hashlib
 import re
 import time
 from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any, Tuple
-from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any
 
 # Redis client
 try:
@@ -66,7 +66,7 @@ class CacheConfig:
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_db: int = 0
-    redis_password: Optional[str] = None
+    redis_password: str | None = None
 
     # Caching behavior
     enable_cache: bool = True
@@ -87,7 +87,7 @@ class CacheConfig:
 
     # Warmup
     enable_warmup: bool = True
-    warmup_phrases_file: Optional[str] = "HoloLoom/voice/common_phrases.yaml"
+    warmup_phrases_file: str | None = "HoloLoom/voice/common_phrases.yaml"
 
 
 # ============================================================================
@@ -106,8 +106,8 @@ class CacheStats:
     evictions: int = 0
 
     # Latency tracking
-    _hit_latencies: List[float] = field(default_factory=list)
-    _miss_latencies: List[float] = field(default_factory=list)
+    _hit_latencies: list[float] = field(default_factory=list)
+    _miss_latencies: list[float] = field(default_factory=list)
 
     @property
     def hit_rate(self) -> float:
@@ -173,7 +173,7 @@ class CacheStats:
         self.total_requests += 1
         self._miss_latencies.append(latency_ms)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export stats as dictionary"""
         return {
             'hit_rate': self.hit_rate,
@@ -310,8 +310,8 @@ class TTSCache:
         self.stats = CacheStats()
 
         # Initialize Redis client
-        self._redis_client: Optional[aioredis.Redis] = None
-        self._init_task: Optional[asyncio.Task] = None
+        self._redis_client: aioredis.Redis | None = None
+        self._init_task: asyncio.Task | None = None
 
         # Prometheus metrics
         self._init_prometheus_metrics()
@@ -423,7 +423,7 @@ class TTSCache:
         else:
             return self.config.dynamic_phrase_ttl
 
-    async def get(self, text: str, voice: str, language: str = "en") -> Optional[bytes]:
+    async def get(self, text: str, voice: str, language: str = "en") -> bytes | None:
         """
         Retrieve cached audio.
 
@@ -531,7 +531,7 @@ class TTSCache:
                         exc_info=True)
             self.stats.cache_errors += 1
 
-    async def warmup(self, phrases: List[str], voice: str = "nova", language: str = "en"):
+    async def warmup(self, phrases: list[str], voice: str = "nova", language: str = "en"):
         """
         Warmup cache with common phrases.
 
@@ -561,8 +561,9 @@ class TTSCache:
             return
 
         try:
-            import yaml
             from pathlib import Path
+
+            import yaml
 
             phrases_path = Path(self.config.warmup_phrases_file)
             if not phrases_path.exists():
@@ -570,7 +571,7 @@ class TTSCache:
                              path=str(phrases_path))
                 return
 
-            with open(phrases_path, 'r') as f:
+            with open(phrases_path) as f:
                 data = yaml.safe_load(f)
 
             phrases = data.get('common_phrases', [])
@@ -586,7 +587,7 @@ class TTSCache:
                         error=str(e),
                         exc_info=True)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics"""
         return self.stats.to_dict()
 

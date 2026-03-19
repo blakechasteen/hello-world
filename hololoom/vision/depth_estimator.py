@@ -18,10 +18,10 @@ Use Cases:
 Created: 2025-11-22 (Phase 4)
 """
 
-from typing import Optional, Tuple
 import logging
-import numpy as np
 from dataclasses import dataclass
+
+import numpy as np
 
 from hololoom.vision.protocol import DepthEstimatorProtocol, DepthMap
 
@@ -38,7 +38,7 @@ class DepthEstimatorConfig:
     model: str = "midas_small"  # midas_small, midas_v2_1, zoedepth
     device: str = "auto"  # auto, cpu, cuda
     normalize: bool = True  # Normalize depth to 0-1 range
-    colormap: Optional[str] = None  # Visualization colormap (viridis, plasma, etc.)
+    colormap: str | None = None  # Visualization colormap (viridis, plasma, etc.)
 
 
 class DepthEstimator(DepthEstimatorProtocol):
@@ -248,7 +248,7 @@ class DepthEstimator(DepthEstimatorProtocol):
 # Helper Functions
 # ============================================================================
 
-def get_depth_at_point(depth_map: DepthMap, x: int, y: int) -> Optional[float]:
+def get_depth_at_point(depth_map: DepthMap, x: int, y: int) -> float | None:
     """
     Get depth value at specific pixel coordinates.
 
@@ -272,7 +272,7 @@ def depth_to_3d_point(
     fy: float,
     cx: float,
     cy: float,
-) -> Optional[Tuple[float, float, float]]:
+) -> tuple[float, float, float] | None:
     """
     Convert 2D pixel + depth to 3D point using camera intrinsics.
 

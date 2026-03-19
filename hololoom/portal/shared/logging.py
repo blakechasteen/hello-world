@@ -4,11 +4,10 @@ Structured logging for Portal components.
 Provides JSON-formatted logs suitable for production monitoring.
 """
 
-import logging
 import json
+import logging
 import sys
 from datetime import datetime
-from typing import Optional
 
 
 class JSONFormatter(logging.Formatter):
@@ -42,7 +41,7 @@ class JSONFormatter(logging.Formatter):
 def configure_logging(
     level: str = "INFO",
     json_format: bool = True,
-    component: Optional[str] = None
+    component: str | None = None
 ) -> None:
     """
     Configure logging for a Portal component.
@@ -73,7 +72,7 @@ def configure_logging(
     root_logger.addHandler(handler)
 
 
-def get_logger(name: str, component: Optional[str] = None) -> logging.Logger:
+def get_logger(name: str, component: str | None = None) -> logging.Logger:
     """
     Get a logger with optional component context.
 

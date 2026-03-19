@@ -30,11 +30,11 @@ Usage:
 
 import asyncio
 import logging
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 try:
     from promptly_integration import PromptlyEnhancedBot, UltrapromptConfig
@@ -58,8 +58,8 @@ class AgentRole(Enum):
 class AgentCapability:
     """Agent capability definition"""
     role: AgentRole
-    expertise_areas: List[str]
-    supported_tasks: List[str]
+    expertise_areas: list[str]
+    supported_tasks: list[str]
     quality_threshold: float = 0.75
     max_concurrent_tasks: int = 5
 
@@ -78,10 +78,10 @@ class Agent:
     bot: Any  # PromptlyEnhancedBot instance
 
     # Configuration
-    ultraprompt_config: Dict[str, Any] = field(default_factory=dict)
+    ultraprompt_config: dict[str, Any] = field(default_factory=dict)
 
     # State
-    active_tasks: List[str] = field(default_factory=list)
+    active_tasks: list[str] = field(default_factory=list)
     available: bool = True
 
     # Statistics
@@ -96,21 +96,21 @@ class CollaborationTask:
     task_id: str
     description: str
     task_type: str
-    required_agents: List[str]
+    required_agents: list[str]
 
     # Execution
     status: str = "pending"  # pending, in_progress, completed, failed
-    assigned_agents: List[str] = field(default_factory=list)
-    subtasks: List[Dict[str, Any]] = field(default_factory=list)
+    assigned_agents: list[str] = field(default_factory=list)
+    subtasks: list[dict[str, Any]] = field(default_factory=list)
 
     # Results
-    agent_responses: Dict[str, Any] = field(default_factory=dict)
-    consensus: Optional[str] = None
-    final_response: Optional[str] = None
+    agent_responses: dict[str, Any] = field(default_factory=dict)
+    consensus: str | None = None
+    final_response: str | None = None
 
     # Metadata
     created_at: datetime = field(default_factory=datetime.now)
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
 
 class MultiAgentSystem:
@@ -125,7 +125,7 @@ class MultiAgentSystem:
     - Knowledge sharing
     """
 
-    def __init__(self, storage_path: Optional[Path] = None):
+    def __init__(self, storage_path: Path | None = None):
         if not PROMPTLY_AVAILABLE:
             raise ImportError("Promptly integration required")
 
@@ -133,16 +133,16 @@ class MultiAgentSystem:
         self.storage_path.mkdir(parents=True, exist_ok=True)
 
         # Agents
-        self.agents: Dict[str, Agent] = {}
+        self.agents: dict[str, Agent] = {}
 
         # Active collaborations
-        self.collaborations: Dict[str, CollaborationTask] = {}
+        self.collaborations: dict[str, CollaborationTask] = {}
 
         # Routing rules
-        self.routing_rules: Dict[str, str] = {}  # pattern -> agent_id
+        self.routing_rules: dict[str, str] = {}  # pattern -> agent_id
 
         # Knowledge sharing
-        self.shared_knowledge: Dict[str, Any] = {}
+        self.shared_knowledge: dict[str, Any] = {}
 
         # Statistics
         self.stats = {
@@ -228,9 +228,9 @@ class MultiAgentSystem:
         agent_id: str,
         name: str,
         role: AgentRole,
-        expertise: List[str],
-        supported_tasks: Optional[List[str]] = None,
-        ultraprompt_config: Optional[Dict] = None
+        expertise: list[str],
+        supported_tasks: list[str] | None = None,
+        ultraprompt_config: dict | None = None
     ):
         """
         Register a new specialized agent.
@@ -272,9 +272,9 @@ class MultiAgentSystem:
     async def route(
         self,
         query: str,
-        context: Optional[Dict] = None,
-        preferred_agent: Optional[str] = None
-    ) -> Dict[str, Any]:
+        context: dict | None = None,
+        preferred_agent: str | None = None
+    ) -> dict[str, Any]:
         """
         Route query to best agent.
 
@@ -336,7 +336,7 @@ class MultiAgentSystem:
     def _select_best_agent(
         self,
         query: str,
-        context: Optional[Dict]
+        context: dict | None
     ) -> str:
         """Select best agent for query"""
 
@@ -358,9 +358,9 @@ class MultiAgentSystem:
         self,
         task_description: str,
         task_type: str,
-        required_roles: Optional[List[AgentRole]] = None,
-        agent_ids: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        required_roles: list[AgentRole] | None = None,
+        agent_ids: list[str] | None = None
+    ) -> dict[str, Any]:
         """
         Execute collaborative task with multiple agents.
 
@@ -450,10 +450,10 @@ class MultiAgentSystem:
 
     async def _gather_agent_responses(
         self,
-        agents: List[Agent],
+        agents: list[Agent],
         task: str,
         task_type: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Gather responses from multiple agents"""
 
         # Execute agents in parallel
@@ -488,7 +488,7 @@ class MultiAgentSystem:
 
     async def _build_consensus(
         self,
-        agent_responses: Dict[str, Any],
+        agent_responses: dict[str, Any],
         task_type: str
     ) -> str:
         """Build consensus from agent responses"""
@@ -537,7 +537,7 @@ class MultiAgentSystem:
     async def _generate_final_response(
         self,
         task: str,
-        agent_responses: Dict[str, Any],
+        agent_responses: dict[str, Any],
         consensus: str
     ) -> str:
         """Generate final synthesized response"""
@@ -565,7 +565,7 @@ Synthesize a final response that:
 
         return result.get("answer", consensus)
 
-    def _format_agent_responses(self, responses: Dict[str, Any]) -> str:
+    def _format_agent_responses(self, responses: dict[str, Any]) -> str:
         """Format agent responses for synthesis"""
 
         formatted = []
@@ -579,7 +579,7 @@ Synthesize a final response that:
 
         return "\n".join(formatted)
 
-    def _auto_select_agents(self, task_type: str) -> List[Agent]:
+    def _auto_select_agents(self, task_type: str) -> list[Agent]:
         """Auto-select agents based on task type"""
 
         if task_type == "security_incident":
@@ -600,7 +600,7 @@ Synthesize a final response that:
         else:
             return [self.agents["general_assistant"]]
 
-    def get_agent_status(self, agent_id: str) -> Optional[Dict[str, Any]]:
+    def get_agent_status(self, agent_id: str) -> dict[str, Any] | None:
         """Get agent status"""
 
         agent = self.agents.get(agent_id)
@@ -619,11 +619,11 @@ Synthesize a final response that:
             "expertise": agent.capability.expertise_areas
         }
 
-    def list_agents(self) -> List[Dict[str, Any]]:
+    def list_agents(self) -> list[dict[str, Any]]:
         """List all agents"""
         return [self.get_agent_status(aid) for aid in self.agents.keys()]
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get system statistics"""
         stats = self.stats.copy()
 

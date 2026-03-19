@@ -41,32 +41,29 @@ Available Profiles:
     - general: General-purpose assistant
 """
 
-from hololoom.agents.types import (
-    AgentProfile,
-    AgentDomain,
-    AgentStats,
-    WorkingMemoryState,
-    WorkingMemorySnapshot,
-    LearnedPattern
-)
-
-from hololoom.agents.profiles import (
-    BUDGET_ADVISOR,
-    ARCHITECTURE_REVIEWER,
-    CODE_REVIEWER,
-    RESEARCH_ASSISTANT,
-    PLANNING_AGENT,
-    GENERAL_AGENT,
-    AGENT_PROFILES,
-    PROFILES,
-    get_profile,
-    list_profiles
-)
-
-from hololoom.agents.working_memory import AgentWorkingMemory
 from hololoom.agents.learner import WorkingMemoryLearner
 from hololoom.agents.orchestrator import AgentOrchestrator, create_agent
-
+from hololoom.agents.profiles import (
+    AGENT_PROFILES,
+    ARCHITECTURE_REVIEWER,
+    BUDGET_ADVISOR,
+    CODE_REVIEWER,
+    GENERAL_AGENT,
+    PLANNING_AGENT,
+    PROFILES,
+    RESEARCH_ASSISTANT,
+    get_profile,
+    list_profiles,
+)
+from hololoom.agents.types import (
+    AgentDomain,
+    AgentProfile,
+    AgentStats,
+    LearnedPattern,
+    WorkingMemorySnapshot,
+    WorkingMemoryState,
+)
+from hololoom.agents.working_memory import AgentWorkingMemory
 
 __all__ = [
     # Types

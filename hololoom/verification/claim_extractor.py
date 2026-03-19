@@ -12,10 +12,9 @@ Supports multiple extraction strategies:
 Created: 2025-12-05
 """
 
-import re
 import logging
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+import re
+from typing import Any
 
 from hololoom.verification.protocol import (
     ClaimExtractorProtocol,
@@ -84,7 +83,7 @@ TEMPORAL_PATTERNS = [
 SENTENCE_PATTERN = re.compile(r'(?<=[.!?])\s+(?=[A-Z])')
 
 
-def split_sentences(text: str) -> List[str]:
+def split_sentences(text: str) -> list[str]:
     """Split text into sentences."""
     # Handle edge cases
     if not text.strip():
@@ -177,7 +176,7 @@ def calculate_importance(text: str, position: int, total_length: int) -> float:
     return max(0.0, min(1.0, score))
 
 
-def extract_entities(text: str) -> List[str]:
+def extract_entities(text: str) -> list[str]:
     """Extract named entities from text (simple pattern-based)."""
     entities = []
 
@@ -207,14 +206,14 @@ class RuleBasedClaimExtractor:
     Fast and dependency-free, suitable for HEURISTIC degradation level.
     """
 
-    def __init__(self, config: Optional[VerificationConfig] = None):
+    def __init__(self, config: VerificationConfig | None = None):
         self.config = config or VerificationConfig()
 
     async def extract(
         self,
         text: str,
-        context: Dict[str, Any]
-    ) -> List[VerifiableClaim]:
+        context: dict[str, Any]
+    ) -> list[VerifiableClaim]:
         """Extract claims using rule-based patterns."""
         claims = []
 
@@ -330,8 +329,8 @@ class LLMClaimExtractor:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.llm_client = llm_client
@@ -340,8 +339,8 @@ class LLMClaimExtractor:
     async def extract(
         self,
         text: str,
-        context: Dict[str, Any]
-    ) -> List[VerifiableClaim]:
+        context: dict[str, Any]
+    ) -> list[VerifiableClaim]:
         """Extract claims using LLM."""
         if self.llm_client is None:
             logger.warning("No LLM client available, falling back to rule-based extraction")
@@ -391,7 +390,7 @@ class LLMClaimExtractor:
         self,
         response: str,
         original_text: str
-    ) -> List[VerifiableClaim]:
+    ) -> list[VerifiableClaim]:
         """Parse LLM response into claims."""
         import json
 
@@ -465,8 +464,8 @@ class HybridClaimExtractor:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.llm_extractor = LLMClaimExtractor(config, llm_client)
@@ -475,8 +474,8 @@ class HybridClaimExtractor:
     async def extract(
         self,
         text: str,
-        context: Dict[str, Any]
-    ) -> List[VerifiableClaim]:
+        context: dict[str, Any]
+    ) -> list[VerifiableClaim]:
         """Extract claims using hybrid approach."""
         level = self.config.preferred_level
 
@@ -505,9 +504,9 @@ class HybridClaimExtractor:
 
     def _merge_claims(
         self,
-        llm_claims: List[VerifiableClaim],
-        rule_claims: List[VerifiableClaim]
-    ) -> List[VerifiableClaim]:
+        llm_claims: list[VerifiableClaim],
+        rule_claims: list[VerifiableClaim]
+    ) -> list[VerifiableClaim]:
         """Merge claims from LLM and rule-based extraction."""
         # Use LLM claims as base
         merged = list(llm_claims)
@@ -535,8 +534,8 @@ class HybridClaimExtractor:
 # =============================================================================
 
 def create_claim_extractor(
-    config: Optional[VerificationConfig] = None,
-    llm_client: Optional[Any] = None,
+    config: VerificationConfig | None = None,
+    llm_client: Any | None = None,
 ) -> ClaimExtractorProtocol:
     """
     Create appropriate claim extractor based on configuration.

@@ -18,8 +18,9 @@ Warp Space is TEMPORARY - it only exists during active computation.
 """
 
 import logging
-from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 
 from hololoom.alignment.safety_guardrails import (
@@ -48,7 +49,7 @@ class TensionedThread:
     entity: str
     embedding: np.ndarray  # Continuous representation
     tension: float = 1.0  # Activation strength (0-1)
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -78,9 +79,9 @@ class WarpSpace:
     def __init__(
         self,
         embedder,
-        scales: List[int] = [96, 192, 384],
+        scales: list[int] = [96, 192, 384],
         spectral_fusion=None,
-        guardrails: Optional[SafetyGuardrails] = None,
+        guardrails: SafetyGuardrails | None = None,
     ):
         """
         Initialize Warp Space.
@@ -95,7 +96,7 @@ class WarpSpace:
         self.spectral_fusion = spectral_fusion
         self.guardrails = guardrails or create_guardrails()
         self.guardrails_enabled = self.guardrails is not None
-        self._guardrail_decisions: Dict[str, Optional[SafetyDecision]] = {
+        self._guardrail_decisions: dict[str, SafetyDecision | None] = {
             "tension": None,
             "spectral": None,
             "attention": None,
@@ -105,8 +106,8 @@ class WarpSpace:
         self._last_text_sample: str = ""
 
         # Tensioned threads
-        self.threads: List[TensionedThread] = []
-        self.thread_index: Dict[str, TensionedThread] = {}
+        self.threads: list[TensionedThread] = []
+        self.thread_index: dict[str, TensionedThread] = {}
 
         # Tensor field state
         self.is_tensioned = False
@@ -118,7 +119,7 @@ class WarpSpace:
         logger.info(f"WarpSpace initialized (scales={scales})")
 
     @staticmethod
-    def _decision_to_dict(decision: Optional[SafetyDecision]) -> Optional[Dict[str, Any]]:
+    def _decision_to_dict(decision: SafetyDecision | None) -> dict[str, Any] | None:
         return decision.to_dict() if decision else None
 
     def _evaluate_guardrails(
@@ -127,9 +128,9 @@ class WarpSpace:
         *,
         action: str,
         category: ActionCategory,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         text_input: str = "",
-    ) -> Optional[SafetyDecision]:
+    ) -> SafetyDecision | None:
         if not self.guardrails_enabled:
             return None
 
@@ -153,9 +154,9 @@ class WarpSpace:
 
     async def tension(
         self,
-        thread_texts: List[str],
-        thread_ids: Optional[List[str]] = None,
-        tension_weights: Optional[List[float]] = None,
+        thread_texts: list[str],
+        thread_ids: list[str] | None = None,
+        tension_weights: list[float] | None = None,
         sparsity: float = 0.0,
     ) -> None:
         """
@@ -253,7 +254,7 @@ class WarpSpace:
             f"Warp Space tensioned: {len(self.threads)} threads, field shape={self.tensor_field.shape}"
         )
 
-    def get_field(self, scale: Optional[int] = None) -> np.ndarray:
+    def get_field(self, scale: int | None = None) -> np.ndarray:
         """
         Get tensor field at specified scale.
 
@@ -281,7 +282,7 @@ class WarpSpace:
 
         return np.stack(embeddings)
 
-    def compute_spectral_features(self) -> Dict[str, Any]:
+    def compute_spectral_features(self) -> dict[str, Any]:
         """
         Compute spectral features from tensor field.
 
@@ -391,7 +392,7 @@ class WarpSpace:
 
         return context
 
-    def compute(self, query_embedding: np.ndarray, compute_spectral: bool = True) -> Dict[str, Any]:
+    def compute(self, query_embedding: np.ndarray, compute_spectral: bool = True) -> dict[str, Any]:
         """
         Perform complete tensor operations in Warp Space.
 
@@ -467,7 +468,7 @@ class WarpSpace:
 
         return results
 
-    def collapse(self) -> Dict[str, Any]:
+    def collapse(self) -> dict[str, Any]:
         """
         Collapse Warp Space back to discrete representation.
 
@@ -533,7 +534,7 @@ class WarpSpace:
 
         return updates
 
-    def get_trace(self) -> Dict[str, Any]:
+    def get_trace(self) -> dict[str, Any]:
         """
         Get computational trace without collapsing.
 
@@ -554,6 +555,7 @@ class WarpSpace:
 
 if __name__ == "__main__":
     import asyncio
+
     from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     async def demo():

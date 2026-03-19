@@ -10,7 +10,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 from .agreement_tracker import AgreementStats
 
@@ -47,7 +46,7 @@ class GraduationPolicy:
     def __init__(self, criteria: GraduationCriteria) -> None:
         self.criteria = criteria
 
-    def evaluate(self, stats: Optional[AgreementStats]) -> GraduationVerdict:
+    def evaluate(self, stats: AgreementStats | None) -> GraduationVerdict:
         """Evaluate graduation readiness from agreement statistics."""
         if stats is None:
             logger.debug("GraduationPolicy: no stats available → HOLD")
@@ -94,7 +93,7 @@ class GraduationPolicy:
         return GraduationVerdict.READY
 
     @classmethod
-    def from_config(cls, config: dict) -> "GraduationPolicy":
+    def from_config(cls, config: dict) -> GraduationPolicy:
         """Build from a config dict (e.g., from YAML)."""
         return cls(GraduationCriteria(
             min_samples=config.get("min_samples", 500),

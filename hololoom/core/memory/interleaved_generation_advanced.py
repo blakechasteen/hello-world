@@ -25,23 +25,21 @@ Date: 2025-11-25
 import asyncio
 import logging
 import re
-from dataclasses import dataclass, field
+from collections.abc import AsyncIterator
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, AsyncIterator, Dict, List, Optional, Set, Tuple, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 from hololoom.memory.interleaved_generation import (
     ContextChunk,
     GenerationToken,
-    InterleavedResult,
     LLMProtocol,
     StreamItem,
     StreamMetadata,
-    StreamMode
 )
 from hololoom.memory.streaming_expansion import stream_context_expansion
-
 
 # ============================================================================
 # Feature 1: Adaptive Context Feeding
@@ -142,7 +140,7 @@ class AgenticGraphNavigator:
         NodeRequestType.BY_QUERY: re.compile(r'<request_query>(.*?)</request_query>')
     }
 
-    def __init__(self, graph: Any, node_contents: Dict[str, str]):
+    def __init__(self, graph: Any, node_contents: dict[str, str]):
         """
         Initialize navigator.
 
@@ -152,9 +150,9 @@ class AgenticGraphNavigator:
         """
         self.graph = graph
         self.node_contents = node_contents
-        self.fulfilled_requests: Set[str] = set()  # Avoid duplicate fetches
+        self.fulfilled_requests: set[str] = set()  # Avoid duplicate fetches
 
-    def detect_requests(self, cumulative_text: str) -> List[NodeRequest]:
+    def detect_requests(self, cumulative_text: str) -> list[NodeRequest]:
         """
         Detect node requests in generated text.
 
@@ -183,7 +181,7 @@ class AgenticGraphNavigator:
 
         return requests
 
-    def fulfill_request(self, request: NodeRequest) -> Optional[ContextChunk]:
+    def fulfill_request(self, request: NodeRequest) -> ContextChunk | None:
         """
         Fulfill a node request by fetching from graph.
 
@@ -201,7 +199,7 @@ class AgenticGraphNavigator:
             return self._fetch_by_query(request.target)
         return None
 
-    def _fetch_by_name(self, node_id: str) -> Optional[ContextChunk]:
+    def _fetch_by_name(self, node_id: str) -> ContextChunk | None:
         """Fetch a specific node by ID."""
         if node_id not in self.graph.nodes:
             logger.warning(f"Requested node '{node_id}' not found in graph")
@@ -223,13 +221,13 @@ class AgenticGraphNavigator:
             is_final=False
         )
 
-    def _fetch_by_relationship(self, relationship_type: str) -> Optional[ContextChunk]:
+    def _fetch_by_relationship(self, relationship_type: str) -> ContextChunk | None:
         """Fetch nodes connected by a specific relationship."""
         # Not implemented yet - would need current node context
         logger.warning(f"Relationship-based requests not yet implemented: {relationship_type}")
         return None
 
-    def _fetch_by_query(self, query: str) -> Optional[ContextChunk]:
+    def _fetch_by_query(self, query: str) -> ContextChunk | None:
         """Fetch nodes matching a natural language query."""
         # Not implemented yet - would need semantic search
         logger.warning(f"Query-based requests not yet implemented: {query}")
@@ -268,7 +266,7 @@ class ContextSummarizer:
     3. Generates LLM-based summary (quality)
     """
 
-    def __init__(self, config: Optional[SummarizationConfig] = None):
+    def __init__(self, config: SummarizationConfig | None = None):
         """
         Initialize summarizer.
 
@@ -277,7 +275,7 @@ class ContextSummarizer:
         """
         self.config = config or SummarizationConfig()
 
-    def should_summarize(self, chunks: List[ContextChunk]) -> bool:
+    def should_summarize(self, chunks: list[ContextChunk]) -> bool:
         """
         Determine if summarization is needed.
 
@@ -309,7 +307,7 @@ class ContextSummarizer:
                 total_tokens > self.config.token_threshold
             )
 
-    def summarize(self, chunks: List[ContextChunk]) -> Tuple[List[ContextChunk], ContextChunk]:
+    def summarize(self, chunks: list[ContextChunk]) -> tuple[list[ContextChunk], ContextChunk]:
         """
         Summarize low-importance chunks into a single compressed chunk.
 
@@ -394,8 +392,8 @@ class AdvancedInterleavedManager:
     def __init__(
         self,
         llm: AdaptiveLLMProtocol,
-        navigator: Optional[AgenticGraphNavigator] = None,
-        summarizer: Optional[ContextSummarizer] = None,
+        navigator: AgenticGraphNavigator | None = None,
+        summarizer: ContextSummarizer | None = None,
         enable_adaptive_feeding: bool = True,
         enable_agentic_navigation: bool = True,
         enable_summarization: bool = True
@@ -422,15 +420,15 @@ class AdvancedInterleavedManager:
     async def stream_advanced(
         self,
         query: str,
-        seed_nodes: List[str],
+        seed_nodes: list[str],
         graph: Any,
         token_budget: int = 2000,
         max_generation_tokens: int = 500,
         chunk_size: int = 500,
         min_relevance: float = 0.3,
         max_hops: int = 5,
-        importance_scores: Optional[Dict[str, float]] = None,
-        node_contents: Optional[Dict[str, str]] = None,
+        importance_scores: dict[str, float] | None = None,
+        node_contents: dict[str, str] | None = None,
         emit_metadata: bool = False
     ) -> AsyncIterator[StreamItem]:
         import time
@@ -450,9 +448,9 @@ class AdvancedInterleavedManager:
 
         context_updates: asyncio.Queue = asyncio.Queue()
         output_queue: asyncio.Queue = asyncio.Queue()
-        all_chunks: List[ContextChunk] = []
+        all_chunks: list[ContextChunk] = []
         cumulative_context = ""
-        generation_tokens: List[str] = []
+        generation_tokens: list[str] = []
         generation_started = False
 
         async def run_expansion():
@@ -570,9 +568,9 @@ class AdvancedInterleavedManager:
 
 async def stream_advanced_generation(
     query: str,
-    seed_nodes: List[str],
+    seed_nodes: list[str],
     graph: Any,
-    llm: Optional[AdaptiveLLMProtocol] = None,
+    llm: AdaptiveLLMProtocol | None = None,
     token_budget: int = 2000,
     max_generation_tokens: int = 500,
     enable_adaptive_feeding: bool = True,
@@ -630,7 +628,7 @@ class MockAdaptiveLLM(AdaptiveLLMProtocol):
     Simulates adaptive context feeding and node request generation.
     """
 
-    def __init__(self, response_template: Optional[str] = None, tokens_per_second: int = 30):
+    def __init__(self, response_template: str | None = None, tokens_per_second: int = 30):
         self.response_template = response_template
         self.tokens_per_second = tokens_per_second
 
@@ -726,7 +724,7 @@ class OllamaAdaptiveLLM(AdaptiveLLMProtocol):
     Current implementation acknowledges updates but uses initial context.
     """
 
-    def __init__(self, model: str = "llama3.2:3b", base_url: Optional[str] = None):
+    def __init__(self, model: str = "llama3.2:3b", base_url: str | None = None):
         self.model = model
         self.base_url = base_url
         self._ollama_llm = None
@@ -838,7 +836,7 @@ class AnthropicAdaptiveLLM(AdaptiveLLMProtocol):
     Wraps AnthropicLLM.stream_generate() with context update awareness.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "claude-3-5-sonnet-20241022"):
+    def __init__(self, api_key: str | None = None, model: str = "claude-3-5-sonnet-20241022"):
         import os
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
         self.model = model
@@ -941,7 +939,7 @@ class OpenAIAdaptiveLLM(AdaptiveLLMProtocol):
     Wraps OpenAILLM.stream_generate() with context update awareness.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4"):
+    def __init__(self, api_key: str | None = None, model: str = "gpt-4"):
         import os
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self.model = model
@@ -1039,7 +1037,7 @@ you can request nodes using <request_node>node_id</request_node>."""
 
 def create_adaptive_llm(
     provider: str = "ollama",
-    model: Optional[str] = None,
+    model: str | None = None,
     **kwargs
 ) -> AdaptiveLLMProtocol:
     """

@@ -25,18 +25,17 @@ Date: 2025-11-22
 import asyncio
 import logging
 import time
-from typing import List, Dict, Any, Optional, Set
-from collections import defaultdict
+from typing import Any
 
 from .protocol import (
-    MemoryQuery,
-    MemoryResult,
+    CoordinationPlan,
     MemoryCoordinationResult,
     MemoryPerformanceMetrics,
+    MemoryQuery,
+    MemoryResult,
     MemoryStrategy,
     MemorySystem,
     StrategySelectionCriteria,
-    CoordinationPlan,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,10 +61,10 @@ class MemoryConductor:
         default_strategy: MemoryStrategy = MemoryStrategy.AUTO,
         verbose: bool = False,
         # Optional memory system instances for integration
-        hot_tracker: Optional[Any] = None,
-        awareness_graph: Optional[Any] = None,
-        spring_dynamics: Optional[Any] = None,
-        multi_wave_engine: Optional[Any] = None,
+        hot_tracker: Any | None = None,
+        awareness_graph: Any | None = None,
+        spring_dynamics: Any | None = None,
+        multi_wave_engine: Any | None = None,
     ):
         """
         Initialize Memory Conductor.
@@ -101,10 +100,10 @@ class MemoryConductor:
 
         # Performance tracking
         self._metrics = MemoryPerformanceMetrics()
-        self._query_history: List[MemoryCoordinationResult] = []
+        self._query_history: list[MemoryCoordinationResult] = []
 
         # Cache for repeated queries
-        self._cache: Dict[str, MemoryCoordinationResult] = {}
+        self._cache: dict[str, MemoryCoordinationResult] = {}
         self._cache_max_size = 1000
         self._cache_ttl = 3600.0  # 1 hour
 
@@ -341,7 +340,7 @@ class MemoryConductor:
         self,
         query: MemoryQuery,
         plan: CoordinationPlan
-    ) -> List[List[MemoryResult]]:
+    ) -> list[list[MemoryResult]]:
         """Execute coordination plan across multiple systems."""
         tasks = []
 
@@ -377,7 +376,7 @@ class MemoryConductor:
         self,
         system: MemorySystem,
         query: MemoryQuery
-    ) -> List[MemoryResult]:
+    ) -> list[MemoryResult]:
         """Query individual memory system."""
         try:
             if system == MemorySystem.VECTOR_MEMORY:
@@ -400,11 +399,11 @@ class MemoryConductor:
             logger.error(f"Error querying {system.value}: {e}")
             return []
 
-    async def _query_vector_memory(self, query: MemoryQuery) -> List[MemoryResult]:
+    async def _query_vector_memory(self, query: MemoryQuery) -> list[MemoryResult]:
         """Query vector memory (semantic similarity)."""
         # Adapt to backend capabilities
         memories = []
-        
+
         try:
             # Try high-level recall first (UnifiedMemory)
             if hasattr(self.memory_backend, 'recall'):
@@ -417,37 +416,36 @@ class MemoryConductor:
                 else:
                     # Generic recall(text, k)
                     memories = await self.memory_backend.recall(query.text, k=query.k)
-            
+
             # Try lower-level retrieve (InMemoryStore / Protocol)
             elif hasattr(self.memory_backend, 'retrieve'):
-                from .protocol import MemoryStrategy as MS
                 # Need to construct protocol MemoryQuery if not already one
                 # but here 'query' is memory_symphony.protocol.MemoryQuery
-                
+
                 # Check if backend expects a different Query object
                 # For InMemoryStore: retrieve(query: protocol.MemoryQuery, strategy)
-                
+
                 # We need to bridge the types or use a compatible object
                 # Attempt to pass our query object or create a compatible one
-                
+
                 # Create a simple object that mimics the expected interface if needed
                 # or just pass attributes
-                
+
                 # For this specific integration, let's try direct call assuming compatible duck typing
                 # or construct a simple object
-                
+
                 class SimpleQuery:
                     def __init__(self, text, user_id, limit):
                         self.text = text
                         self.user_id = "user" # Default
                         self.limit = limit
-                        
+
                 backend_query = SimpleQuery(query.text, "user", query.k)
-                
+
                 # Strategy enum might mismatch, pass string or value if possible
                 # InMemoryStore expects protocol.Strategy enum
                 # We'll rely on default or try to pass semantic strategy
-                
+
                 # Quick fix for demo: just call retrieve with what we have
                 result = await self.memory_backend.retrieve(backend_query)
                 memories = result.memories if hasattr(result, 'memories') else []
@@ -474,7 +472,7 @@ class MemoryConductor:
 
         return results
 
-    async def _query_knowledge_graph(self, query: MemoryQuery) -> List[MemoryResult]:
+    async def _query_knowledge_graph(self, query: MemoryQuery) -> list[MemoryResult]:
         """Query knowledge graph (graph traversal)."""
         # Use memory backend's graph
         if not hasattr(self.memory_backend, 'graph'):
@@ -536,13 +534,13 @@ class MemoryConductor:
                 node = self.memory_backend.get_node(node_id)
                 if node:
                     return str(getattr(node, 'content', node_id))
-            
+
             # Try get_by_id (InMemoryStore)
             if hasattr(self.memory_backend, 'get_by_id'):
                 # Check if it's async
                 if asyncio.iscoroutinefunction(self.memory_backend.get_by_id):
                     # We are not in an async function here, this is a limitation
-                    # _get_memory_content is sync. 
+                    # _get_memory_content is sync.
                     # For now, return node_id and let the system handle async retrieval elsewhere
                     # OR we can try to hack it if we knew we were in async context, but we are not guaranteed.
                     pass
@@ -558,7 +556,7 @@ class MemoryConductor:
         # Fallback to node_id itself
         return str(node_id)
 
-    async def _query_hot_patterns(self, query: MemoryQuery) -> List[MemoryResult]:
+    async def _query_hot_patterns(self, query: MemoryQuery) -> list[MemoryResult]:
         """
         Query hot patterns (usage-based boosting).
 
@@ -604,7 +602,7 @@ class MemoryConductor:
                 logger.warning(f"Hot patterns query failed: {e}")
             return []
 
-    async def _query_awareness_graph(self, query: MemoryQuery) -> List[MemoryResult]:
+    async def _query_awareness_graph(self, query: MemoryQuery) -> list[MemoryResult]:
         """
         Query awareness graph (spreading activation).
 
@@ -662,7 +660,7 @@ class MemoryConductor:
                 logger.warning(f"Awareness graph query failed: {e}")
             return []
 
-    async def _query_spring_dynamics(self, query: MemoryQuery) -> List[MemoryResult]:
+    async def _query_spring_dynamics(self, query: MemoryQuery) -> list[MemoryResult]:
         """
         Query spring dynamics (physics-based connectivity).
 
@@ -727,7 +725,7 @@ class MemoryConductor:
                 logger.warning(f"Spring dynamics query failed: {e}")
             return []
 
-    async def _query_multi_wave(self, query: MemoryQuery) -> List[MemoryResult]:
+    async def _query_multi_wave(self, query: MemoryQuery) -> list[MemoryResult]:
         """
         Query multi-wave engine (temporal propagation).
 
@@ -803,9 +801,9 @@ class MemoryConductor:
 
     def _merge_results(
         self,
-        all_results: List[List[MemoryResult]],
+        all_results: list[list[MemoryResult]],
         k: int
-    ) -> List[MemoryResult]:
+    ) -> list[MemoryResult]:
         """
         Merge results from multiple systems.
 
@@ -817,7 +815,7 @@ class MemoryConductor:
         5. Return top k
         """
         # Combine all results
-        combined: Dict[str, MemoryResult] = {}
+        combined: dict[str, MemoryResult] = {}
 
         for system_results in all_results:
             for result in system_results:
@@ -851,7 +849,7 @@ class MemoryConductor:
         self,
         result: MemoryCoordinationResult,
         strategy: MemoryStrategy,
-        systems: List[MemorySystem]
+        systems: list[MemorySystem]
     ):
         """Update performance metrics."""
         self._metrics.total_queries += 1
@@ -886,7 +884,7 @@ class MemoryConductor:
         """Get current performance metrics."""
         return self._metrics
 
-    def get_query_history(self, limit: int = 10) -> List[MemoryCoordinationResult]:
+    def get_query_history(self, limit: int = 10) -> list[MemoryCoordinationResult]:
         """Get recent query history."""
         return self._query_history[-limit:]
 

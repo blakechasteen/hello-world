@@ -42,58 +42,34 @@ Quick Start:
 """
 
 # Core data types
+# Chat integration
+from hololoom.thirdeye.chat_bridge import (
+    ChatBridge,
+    ChatMessage,
+    ConceptExtraction,
+    ConceptExtractor,
+    MessageRole,
+    create_chat_bridge,
+)
 from hololoom.thirdeye.concept import (
     Concept,
     ConceptType,
     ConceptWorld,
     SemanticPosition,
     VisualStyle,
-    create_entity_concept,
     create_comparison_concept,
+    create_entity_concept,
     create_process_concept,
-)
-
-# Transitions
-from hololoom.thirdeye.transition import (
-    Transition,
-    TransitionType,
-    TransitionConfig,
-    TransitionCalculator,
-    calculate_transition,
-    create_emphasis_transition,
-    create_branch_transition,
-    create_merge_transition,
-)
-
-# Chat integration
-from hololoom.thirdeye.chat_bridge import (
-    ChatBridge,
-    ChatMessage,
-    MessageRole,
-    ConceptExtraction,
-    ConceptExtractor,
-    create_chat_bridge,
-)
-
-# Thoughtspace
-from hololoom.thirdeye.thoughtspace import (
-    Thoughtspace,
-    ThoughtspaceMode,
-    ThoughtspaceState,
-    CameraState,
-    CameraMode,
-    SemanticPositioner,
-    create_thoughtspace,
 )
 
 # Renderer protocol
 from hololoom.thirdeye.renderer_protocol import (
-    ConceptRenderer,
     BaseConceptRenderer,
+    ConceptRenderer,
     RenderCommand,
-    RenderFrame,
     RenderConfig,
     RenderDimension,
+    RenderFrame,
     RenderQuality,
 )
 
@@ -103,6 +79,28 @@ from hololoom.thirdeye.renderers.webgl import (
     create_webgl_renderer,
 )
 
+# Thoughtspace
+from hololoom.thirdeye.thoughtspace import (
+    CameraMode,
+    CameraState,
+    SemanticPositioner,
+    Thoughtspace,
+    ThoughtspaceMode,
+    ThoughtspaceState,
+    create_thoughtspace,
+)
+
+# Transitions
+from hololoom.thirdeye.transition import (
+    Transition,
+    TransitionCalculator,
+    TransitionConfig,
+    TransitionType,
+    calculate_transition,
+    create_branch_transition,
+    create_emphasis_transition,
+    create_merge_transition,
+)
 
 __all__ = [
     # Concepts

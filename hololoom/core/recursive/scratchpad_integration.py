@@ -19,27 +19,22 @@ Author: Claude Code
 Date: 2025-10-29 (Phase 1 Implementation)
 """
 
-import asyncio
 import logging
-from typing import Optional, Dict, Any, List, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
+from typing import Any
 
-# HoloLoom components
-from hololoom.weaving_orchestrator import WeavingOrchestrator
-from hololoom.fabric.spacetime import Spacetime, WeavingTrace
-from hololoom.protocols.types import Query, MemoryShard
 from hololoom.config import Config
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.protocols.types import MemoryShard, Query
 
 # Scratchpad components (standalone, was from Promptly)
 from hololoom.recursive.scratchpad import (
     Scratchpad,
     ScratchpadEntry,
-    RecursiveEngine,
-    LoopConfig,
-    LoopType,
-    LoopResult,
 )
+
+# HoloLoom components
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +57,7 @@ class ProvenanceTracker:
     def extract_provenance(
         self,
         spacetime: Spacetime,
-        iteration: Optional[int] = None
+        iteration: int | None = None
     ) -> ScratchpadEntry:
         """
         Extract provenance from Spacetime into ScratchpadEntry.
@@ -178,7 +173,7 @@ class ScratchpadConfig:
     refinement_threshold: float = 0.75
     max_refinement_iterations: int = 3
     persist_scratchpad: bool = False
-    persist_path: Optional[str] = None
+    persist_path: str | None = None
 
 
 class ScratchpadOrchestrator:
@@ -212,9 +207,9 @@ class ScratchpadOrchestrator:
     def __init__(
         self,
         cfg: Config,
-        shards: Optional[List[MemoryShard]] = None,
-        memory: Optional[Any] = None,
-        scratchpad_config: Optional[ScratchpadConfig] = None
+        shards: list[MemoryShard] | None = None,
+        memory: Any | None = None,
+        scratchpad_config: ScratchpadConfig | None = None
     ):
         """
         Initialize scratchpad orchestrator.
@@ -231,12 +226,12 @@ class ScratchpadOrchestrator:
         self.scratchpad_config = scratchpad_config or ScratchpadConfig()
 
         # Create components
-        self.orchestrator: Optional[WeavingOrchestrator] = None
+        self.orchestrator: WeavingOrchestrator | None = None
         self.scratchpad = Scratchpad() if self.scratchpad_config.enable_scratchpad else None
         self.provenance_tracker = ProvenanceTracker()
 
         # Refinement engine (lazy initialized)
-        self._refiner: Optional['RecursiveRefiner'] = None
+        self._refiner: RecursiveRefiner | None = None
 
         # Statistics
         self.queries_processed = 0
@@ -288,7 +283,7 @@ class ScratchpadOrchestrator:
     async def weave_with_provenance(
         self,
         query: Query
-    ) -> Tuple[Spacetime, Optional[Scratchpad]]:
+    ) -> tuple[Spacetime, Scratchpad | None]:
         """
         Process query with full provenance tracking.
 
@@ -412,7 +407,7 @@ class ScratchpadOrchestrator:
         except Exception as e:
             self.logger.error(f"Failed to persist scratchpad: {e}")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get orchestrator statistics"""
         stats = {
             "queries_processed": self.queries_processed,
@@ -445,7 +440,7 @@ class RecursiveRefiner:
     def __init__(
         self,
         orchestrator: WeavingOrchestrator,
-        scratchpad: Optional[Scratchpad] = None
+        scratchpad: Scratchpad | None = None
     ):
         """
         Initialize recursive refiner.
@@ -641,9 +636,9 @@ class RecursiveRefiner:
 async def weave_with_scratchpad(
     query: Query,
     cfg: Config,
-    shards: Optional[List[MemoryShard]] = None,
+    shards: list[MemoryShard] | None = None,
     enable_refinement: bool = True
-) -> Tuple[Spacetime, Scratchpad]:
+) -> tuple[Spacetime, Scratchpad]:
     """
     Convenience function for one-off weaving with scratchpad.
 

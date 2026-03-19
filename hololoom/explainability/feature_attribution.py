@@ -10,10 +10,11 @@ Research:
 - Shapley (1953): A value for n-person games (Nobel Prize foundation)
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Callable, Tuple
-from enum import Enum
 import itertools
+from collections.abc import Callable
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 try:
     import torch
@@ -48,8 +49,8 @@ class FeatureImportance:
     method: AttributionMethod
 
     # Additional metadata
-    rank: Optional[int] = None  # Rank among all features
-    percentile: Optional[float] = None  # Percentile importance
+    rank: int | None = None  # Rank among all features
+    percentile: float | None = None  # Percentile importance
     is_positive: bool = True  # Positive or negative contribution
 
     def __repr__(self) -> str:
@@ -66,7 +67,7 @@ class FeatureAttributor:
 
     def __init__(
         self,
-        model: Optional[Callable] = None,
+        model: Callable | None = None,
         method: AttributionMethod = AttributionMethod.KERNEL_SHAP,
         num_samples: int = 100,
     ):
@@ -82,10 +83,10 @@ class FeatureAttributor:
 
     def attribute(
         self,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         prediction: Any,
-        baseline: Optional[Dict[str, Any]] = None,
-    ) -> List[FeatureImportance]:
+        baseline: dict[str, Any] | None = None,
+    ) -> list[FeatureImportance]:
         """
         Attribute prediction to input features.
 
@@ -113,9 +114,9 @@ class FeatureAttributor:
 
     def _shapley_values(
         self,
-        features: Dict[str, Any],
-        baseline: Optional[Dict[str, Any]] = None
-    ) -> List[FeatureImportance]:
+        features: dict[str, Any],
+        baseline: dict[str, Any] | None = None
+    ) -> list[FeatureImportance]:
         """
         Exact Shapley values (exponential complexity).
 
@@ -128,9 +129,9 @@ class FeatureAttributor:
 
         feature_names = list(features.keys())
         n = len(feature_names)
-        shapley_values = {name: 0.0 for name in feature_names}
+        shapley_values = dict.fromkeys(feature_names, 0.0)
 
-        baseline = baseline or {name: 0 for name in feature_names}
+        baseline = baseline or dict.fromkeys(feature_names, 0)
 
         # Iterate over all subsets (2^n - exponential!)
         for subset_size in range(n + 1):
@@ -172,9 +173,9 @@ class FeatureAttributor:
 
     def _kernel_shap(
         self,
-        features: Dict[str, Any],
-        baseline: Optional[Dict[str, Any]] = None
-    ) -> List[FeatureImportance]:
+        features: dict[str, Any],
+        baseline: dict[str, Any] | None = None
+    ) -> list[FeatureImportance]:
         """
         Kernel SHAP - approximate Shapley values (polynomial complexity).
 
@@ -186,7 +187,7 @@ class FeatureAttributor:
 
         feature_names = list(features.keys())
         n = len(feature_names)
-        baseline = baseline or {name: 0 for name in feature_names}
+        baseline = baseline or dict.fromkeys(feature_names, 0)
 
         # Sample random subsets
         import random
@@ -259,8 +260,8 @@ class FeatureAttributor:
 
     def _lime_approximation(
         self,
-        features: Dict[str, Any]
-    ) -> List[FeatureImportance]:
+        features: dict[str, Any]
+    ) -> list[FeatureImportance]:
         """
         LIME - Local Interpretable Model-Agnostic Explanations.
 
@@ -338,9 +339,9 @@ class FeatureAttributor:
 
     def _ablation_analysis(
         self,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         prediction: Any
-    ) -> List[FeatureImportance]:
+    ) -> list[FeatureImportance]:
         """
         Ablation analysis: Remove each feature and measure impact.
 
@@ -379,8 +380,8 @@ class FeatureAttributor:
 
     def _attention_weights(
         self,
-        features: Dict[str, Any]
-    ) -> List[FeatureImportance]:
+        features: dict[str, Any]
+    ) -> list[FeatureImportance]:
         """
         Use attention weights as feature importance (if available).
 
@@ -407,8 +408,8 @@ class FeatureAttributor:
 
     def _simple_attribution(
         self,
-        features: Dict[str, Any]
-    ) -> List[FeatureImportance]:
+        features: dict[str, Any]
+    ) -> list[FeatureImportance]:
         """
         Simple heuristic attribution based on feature magnitudes.
 
@@ -443,7 +444,7 @@ class FeatureAttributor:
 
         return importances
 
-    def _evaluate_model(self, features: Dict[str, Any]) -> float:
+    def _evaluate_model(self, features: dict[str, Any]) -> float:
         """Evaluate model on features, return scalar prediction"""
         if self.model is None:
             return 0.0
@@ -477,9 +478,9 @@ class ShapleyValues:
     @staticmethod
     def compute(
         model: Callable,
-        features: Dict[str, Any],
-        baseline: Optional[Dict[str, Any]] = None
-    ) -> List[FeatureImportance]:
+        features: dict[str, Any],
+        baseline: dict[str, Any] | None = None
+    ) -> list[FeatureImportance]:
         """Compute exact Shapley values"""
         attributor = FeatureAttributor(model=model, method=AttributionMethod.SHAPLEY)
         return attributor.attribute(features, prediction=None, baseline=baseline)
@@ -491,9 +492,9 @@ class LimeExplainer:
     @staticmethod
     def explain(
         model: Callable,
-        features: Dict[str, Any],
+        features: dict[str, Any],
         num_samples: int = 100
-    ) -> List[FeatureImportance]:
+    ) -> list[FeatureImportance]:
         """Generate LIME explanation"""
         attributor = FeatureAttributor(model=model, method=AttributionMethod.LIME, num_samples=num_samples)
         return attributor.attribute(features, prediction=None)

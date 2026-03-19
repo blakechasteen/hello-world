@@ -8,9 +8,9 @@ Status: ✅ Production Ready (November 2025)
 """
 
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Dict, List, Optional, Protocol, Any
 from datetime import datetime
+from enum import Enum
+from typing import Any, Protocol
 
 
 class TestType(Enum):
@@ -39,19 +39,19 @@ class PromptTestCase:
     prompt_template: str
     """Prompt template with optional placeholders."""
 
-    test_inputs: List[Dict[str, Any]]
+    test_inputs: list[dict[str, Any]]
     """List of input dicts for testing (replaces placeholders)."""
 
-    expected_qualities: Dict[str, float]
+    expected_qualities: dict[str, float]
     """Expected quality scores by dimension (e.g., {'accuracy': 0.9, 'clarity': 0.8})."""
 
-    golden_outputs: Optional[List[str]] = None
+    golden_outputs: list[str] | None = None
     """Golden/reference outputs for comparison (optional)."""
 
     test_type: TestType = TestType.QUALITY
     """Type of test this case represents."""
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Additional metadata (domain, model, version, etc)."""
 
 
@@ -64,7 +64,7 @@ class PromptTestResult:
     passed: bool
     """Whether test passed all quality thresholds."""
 
-    quality_scores: Dict[str, float]
+    quality_scores: dict[str, float]
     """Actual quality scores by dimension."""
 
     latency_ms: float
@@ -73,10 +73,10 @@ class PromptTestResult:
     token_count: int
     """Tokens used in LLM response."""
 
-    regressions_detected: List[str] = field(default_factory=list)
+    regressions_detected: list[str] = field(default_factory=list)
     """Regression issues detected (quality drops, etc)."""
 
-    error_message: Optional[str] = None
+    error_message: str | None = None
     """Error message if test failed."""
 
     timestamp: datetime = field(default_factory=datetime.now)
@@ -89,7 +89,7 @@ class PromptTestResult:
 @dataclass
 class PromptTestReport:
     """Aggregated results from test suite execution."""
-    test_results: List[PromptTestResult]
+    test_results: list[PromptTestResult]
     """All individual test results."""
 
     total_tests: int
@@ -113,13 +113,13 @@ class PromptTestReport:
     avg_quality_score: float
     """Average quality score across all dimensions."""
 
-    regressions: List[str] = field(default_factory=list)
+    regressions: list[str] = field(default_factory=list)
     """All detected regressions."""
 
     timestamp: datetime = field(default_factory=datetime.now)
     """When report was generated."""
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Report metadata (model versions, configs, etc)."""
 
 
@@ -160,7 +160,7 @@ class PromptTestConfig:
     llm_model: str = "llama3.2:3b"
     """LLM model for evaluation."""
 
-    llm_criteria: List[str] = field(default_factory=lambda: [
+    llm_criteria: list[str] = field(default_factory=lambda: [
         "quality", "relevance", "coherence", "completeness"
     ])
     """Quality criteria to evaluate (maps to JudgeCriteria enum)."""
@@ -195,7 +195,7 @@ class PromptTesterProtocol(Protocol):
 class GoldenDatasetProtocol(Protocol):
     """Protocol for managing golden dataset (ground truth)."""
 
-    def get_test_cases(self) -> List[PromptTestCase]:
+    def get_test_cases(self) -> list[PromptTestCase]:
         """Retrieve all golden test cases.
 
         Returns:
@@ -216,7 +216,7 @@ class GoldenDatasetProtocol(Protocol):
 class MutationTesterProtocol(Protocol):
     """Protocol for testing prompt robustness via mutations."""
 
-    def mutate(self, prompt: str) -> List[str]:
+    def mutate(self, prompt: str) -> list[str]:
         """Generate prompt mutations for robustness testing.
 
         Args:
@@ -229,7 +229,7 @@ class MutationTesterProtocol(Protocol):
 
     async def test_mutations(
         self, prompt: str, baseline_quality: float
-    ) -> List[PromptTestResult]:
+    ) -> list[PromptTestResult]:
         """Test prompt mutations and compare to baseline.
 
         Args:
@@ -246,9 +246,9 @@ class RegressionDetectorProtocol(Protocol):
     """Protocol for detecting quality regressions."""
 
     async def detect_regressions(
-        self, current_results: List[PromptTestResult],
-        baseline_results: List[PromptTestResult]
-    ) -> List[str]:
+        self, current_results: list[PromptTestResult],
+        baseline_results: list[PromptTestResult]
+    ) -> list[str]:
         """Detect quality regressions between baseline and current results.
 
         Args:
@@ -273,7 +273,7 @@ class MetricsCollectorProtocol(Protocol):
         """
         ...
 
-    def get_metrics(self) -> Dict[str, float]:
+    def get_metrics(self) -> dict[str, float]:
         """Get all recorded metrics.
 
         Returns:

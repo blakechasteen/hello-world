@@ -1,15 +1,12 @@
 """Skill Execution Engine - Parallel execution with intelligent caching"""
 
 import asyncio
-import time
 import logging
-from typing import Dict, Any, List, Optional, Union
-from dataclasses import dataclass, field
+import time
+from dataclasses import dataclass
+from typing import Any
 
-from hololoom.skills.base import (
-    BaseSkill, SkillInput, SkillOutput, SkillStatus,
-    get_registry
-)
+from hololoom.skills.base import SkillInput, SkillOutput, SkillStatus, get_registry
 from hololoom.skills.cache import SkillCache
 
 logger = logging.getLogger(__name__)
@@ -28,17 +25,17 @@ class ExecutionResult:
 @dataclass
 class BatchResult:
     """Result from batch execution."""
-    results: List[ExecutionResult]
+    results: list[ExecutionResult]
     total_time_ms: float
     cache_hit_rate: float
     success_count: int
     failure_count: int
 
-    def successful_results(self) -> List[ExecutionResult]:
+    def successful_results(self) -> list[ExecutionResult]:
         """Get only successful results."""
         return [r for r in self.results if r.output.status == SkillStatus.SUCCESS]
 
-    def failed_results(self) -> List[ExecutionResult]:
+    def failed_results(self) -> list[ExecutionResult]:
         """Get only failed results."""
         return [r for r in self.results if r.output.status != SkillStatus.SUCCESS]
 
@@ -58,7 +55,7 @@ class SkillExecutor:
 
     def __init__(
         self,
-        cache: Optional[SkillCache] = None,
+        cache: SkillCache | None = None,
         default_timeout: float = 30.0,
         max_parallel: int = 10
     ):
@@ -85,9 +82,9 @@ class SkillExecutor:
         self,
         skill_name: str,
         operation: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         use_cache: bool = True,
-        timeout: Optional[float] = None
+        timeout: float | None = None
     ) -> ExecutionResult:
         """
         Execute a single skill operation.
@@ -208,7 +205,7 @@ class SkillExecutor:
 
     async def execute_parallel(
         self,
-        executions: List[Dict[str, Any]],
+        executions: list[dict[str, Any]],
         use_cache: bool = True,
         fail_fast: bool = False
     ) -> BatchResult:
@@ -305,7 +302,7 @@ class SkillExecutor:
 
     async def execute_sequential(
         self,
-        executions: List[Dict[str, Any]],
+        executions: list[dict[str, Any]],
         use_cache: bool = True,
         stop_on_failure: bool = False
     ) -> BatchResult:
@@ -354,7 +351,7 @@ class SkillExecutor:
             failure_count=failure_count
         )
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get executor statistics.
 

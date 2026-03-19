@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Skills Bridge Module
 ====================
@@ -23,10 +22,10 @@ Date: 2025-11-25
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from hololoom.protocols.types import Query, Context
-from hololoom.skills.base import get_registry, SkillInput, SkillStatus
+from hololoom.protocols.types import Context, Query
+from hololoom.skills.base import SkillStatus, get_registry
 from hololoom.skills.executor import SkillExecutor
 from hololoom.skills.metrics import SkillMetricsTracker
 
@@ -86,7 +85,7 @@ class SkillsBridge:
             f"metrics={enable_metrics})"
         )
 
-    def get_registered_skills(self) -> Dict[str, 'BaseSkill']:
+    def get_registered_skills(self) -> dict[str, BaseSkill]:
         """
         Get all registered skills.
 
@@ -102,7 +101,7 @@ class SkillsBridge:
 
         return self._skills_cache
 
-    def get_skill_tools(self) -> List[str]:
+    def get_skill_tools(self) -> list[str]:
         """
         Get list of available skill tool names.
 
@@ -115,7 +114,7 @@ class SkillsBridge:
         skills = self.get_registered_skills()
         return list(skills.keys())
 
-    def get_skill_operations(self, skill_name: str) -> List[str]:
+    def get_skill_operations(self, skill_name: str) -> list[str]:
         """
         Get available operations for a skill.
 
@@ -147,12 +146,12 @@ class SkillsBridge:
         self,
         skill_name: str,
         operation: str,
-        parameters: Dict,
-        query: Optional[Query] = None,
-        context: Optional[Context] = None,
+        parameters: dict,
+        query: Query | None = None,
+        context: Context | None = None,
         use_cache: bool = True,
-        timeout: Optional[float] = None
-    ) -> Dict:
+        timeout: float | None = None
+    ) -> dict:
         """
         Execute a skill as an orchestrator tool.
 
@@ -247,7 +246,7 @@ class SkillsBridge:
         else:
             return 0.5
 
-    def get_metrics_summary(self) -> Dict:
+    def get_metrics_summary(self) -> dict:
         """
         Get performance metrics summary.
 
@@ -259,7 +258,7 @@ class SkillsBridge:
 
         return self.tracker.get_summary()
 
-    def get_skill_info(self, skill_name: str) -> Dict:
+    def get_skill_info(self, skill_name: str) -> dict:
         """
         Get information about a skill.
 
@@ -299,7 +298,7 @@ class SkillsBridge:
             "token_usage": metadata.token_usage
         }
 
-    def list_skills_by_category(self) -> Dict[str, List[str]]:
+    def list_skills_by_category(self) -> dict[str, list[str]]:
         """
         List skills grouped by category.
 

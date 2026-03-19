@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Simple RAG - Clean wrapper around HoloLoom's memory + LLM integration.
 
@@ -10,15 +11,15 @@ All complexity is hidden behind a simple API:
     result = await rag.query("question")
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, AsyncGenerator, TYPE_CHECKING
 import logging
 import time
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Optional
 
-from hololoom.hololoom import HoloLoom
 from hololoom.config import Config
+from hololoom.hololoom import HoloLoom
 from hololoom.protocols.types import Query
-from hololoom.rag.reranking import create_reranker, Reranker
+from hololoom.rag.reranking import Reranker, create_reranker
 
 # Custom embedding plugins (graceful degradation if unavailable)
 try:
@@ -76,11 +77,11 @@ class RAGResult:
         metadata: Additional info (latency_ms, cache_hit, tool_used, rerank_latency, awareness, etc.)
     """
     response: str
-    sources: List[str]
+    sources: list[str]
     confidence: float
-    epistemic_confidence: Optional[float] = None  # Consciousness Integration - Phase 1 (Nov 2025)
+    epistemic_confidence: float | None = None  # Consciousness Integration - Phase 1 (Nov 2025)
     reasoning_mode: str = "direct"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         """Human-readable representation."""
@@ -124,9 +125,9 @@ class SimpleRAG(StreamingRAGMixin):
 
     def __init__(
         self,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         llm_provider: str = "ollama",
-        llm_model: Optional[str] = None,
+        llm_model: str | None = None,
         enable_caching: bool = True,
         enable_reranking: bool = False,
         reranker: str = "cross-encoder",
@@ -168,17 +169,17 @@ class SimpleRAG(StreamingRAGMixin):
         # Reranking configuration
         self.enable_reranking = enable_reranking
         self.rerank_top_k = rerank_top_k
-        self.reranker: Optional[Reranker] = None
+        self.reranker: Reranker | None = None
 
         # Setup embedding provider
         self._setup_embedding_provider(embedding_provider)
 
         # Will be initialized in __aenter__
-        self.loom: Optional[HoloLoom] = None
-        self.orchestrator: Optional[Any] = None
+        self.loom: HoloLoom | None = None
+        self.orchestrator: Any | None = None
 
         # Query cache
-        self._cache: Dict[str, RAGResult] = {}
+        self._cache: dict[str, RAGResult] = {}
 
         # Reranking stats
         self._rerank_stats = {
@@ -515,10 +516,10 @@ class SimpleRAG(StreamingRAGMixin):
 
     async def batch_query(
         self,
-        questions: List[str],
+        questions: list[str],
         mode: str = "verify",
         max_sources: int = 5,
-    ) -> List[RAGResult]:
+    ) -> list[RAGResult]:
         """
         Query multiple questions in batch.
 
@@ -552,7 +553,7 @@ class SimpleRAG(StreamingRAGMixin):
         logger.info(f"✓ Batch complete: {len(results)} results")
         return results
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """
         Get system metrics for monitoring.
 

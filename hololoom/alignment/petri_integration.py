@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Petri + HoloLoom Alignment Integration
 ======================================
@@ -35,23 +36,23 @@ References:
 """
 
 import asyncio
+import json
 import logging
-from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-import json
+from typing import Any, Optional
 
 # Petri imports - local config and seeds
 try:
-    from hololoom.safety.petri_config import (
-        PetriEvaluationConfig,
-        HoloLoomJudgeDimensions,
-        create_anthropic_config,
-    )
     from hololoom.alignment.petri_seeds import (
         HOLOLOOM_ALIGNMENT_SEEDS,
         SEED_METADATA,
+    )
+    from hololoom.safety.petri_config import (
+        HoloLoomJudgeDimensions,
+        PetriEvaluationConfig,
+        create_anthropic_config,
     )
     PETRI_CONFIG_AVAILABLE = True
 except ImportError:
@@ -62,7 +63,7 @@ except ImportError:
 # External Petri red-teaming package (Anthropic)
 # Requires: pip install petri (if available) or access to https://github.com/safety-research/petri
 try:
-    from petri import run_petri_conversation, PetriConversation
+    from petri import PetriConversation, run_petri_conversation
     PETRI_EXTERNAL_AVAILABLE = True
 except ImportError:
     PETRI_EXTERNAL_AVAILABLE = False
@@ -74,15 +75,16 @@ PETRI_AVAILABLE = PETRI_CONFIG_AVAILABLE and PETRI_EXTERNAL_AVAILABLE
 
 # Alignment framework imports
 from hololoom.alignment import (
-    SafetyGuardrails,
-    DeceptionDetector,
-    InstrumentalConvergenceGuard,
-    AuditTrail,
     ActionCategory,
-    RiskLevel,
+    AuditTrail,
+    DeceptionDetector,
     DecisionType,
+    InstrumentalConvergenceGuard,
     OutcomeType,
+    RiskLevel,
+    SafetyGuardrails,
 )
+
 # HumanInLoopSystem is not exported from __init__.py, import directly
 try:
     from hololoom.alignment.human_in_loop import HumanInLoopSystem
@@ -100,23 +102,23 @@ class PetriAlignmentResult:
 
     seed_instruction: str
     conversation_turns: int
-    judge_scores: Dict[str, float]
+    judge_scores: dict[str, float]
 
     # Alignment framework results
-    safety_violations: List[Dict[str, Any]] = field(default_factory=list)
-    deception_indicators: List[Dict[str, Any]] = field(default_factory=list)
-    convergence_risks: List[Dict[str, Any]] = field(default_factory=list)
+    safety_violations: list[dict[str, Any]] = field(default_factory=list)
+    deception_indicators: list[dict[str, Any]] = field(default_factory=list)
+    convergence_risks: list[dict[str, Any]] = field(default_factory=list)
 
     # Aggregate scores
     max_concerning_score: float = 0.0
-    max_risk_level: Optional[RiskLevel] = None
+    max_risk_level: RiskLevel | None = None
     alignment_pass: bool = True
 
     # Metadata
     timestamp: datetime = field(default_factory=datetime.now)
     duration_seconds: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "seed_instruction": self.seed_instruction[:100] + "..." if len(self.seed_instruction) > 100 else self.seed_instruction,
@@ -147,8 +149,8 @@ class PetriAlignmentReport:
     pass_rate: float
 
     # Judge score statistics
-    avg_judge_scores: Dict[str, float]
-    max_judge_scores: Dict[str, float]
+    avg_judge_scores: dict[str, float]
+    max_judge_scores: dict[str, float]
     concerning_count: int  # Scores > threshold
 
     # Alignment violation statistics
@@ -157,10 +159,10 @@ class PetriAlignmentReport:
     total_convergence_risks: int
 
     # Top failures
-    top_failures: List[PetriAlignmentResult]
+    top_failures: list[PetriAlignmentResult]
 
     # Recommendations
-    recommendations: List[str]
+    recommendations: list[str]
 
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -276,7 +278,7 @@ class PetriAlignmentRunner:
         self.audit_trail = AuditTrail(persist_path=audit_log_dir)
         self.hitl = HumanInLoopSystem() if HITL_AVAILABLE else None
 
-        self.results: List[PetriAlignmentResult] = []
+        self.results: list[PetriAlignmentResult] = []
 
         self._setup_logging()
 
@@ -505,9 +507,9 @@ class PetriAlignmentRunner:
 
     async def run_alignment_evaluation(
         self,
-        seeds: Optional[List[str]] = None,
+        seeds: list[str] | None = None,
         max_concurrent: int = 5,
-    ) -> List[PetriAlignmentResult]:
+    ) -> list[PetriAlignmentResult]:
         """
         Run full alignment evaluation with multiple seeds.
 
@@ -541,7 +543,7 @@ class PetriAlignmentRunner:
 
     def generate_safety_report(
         self,
-        results: Optional[List[PetriAlignmentResult]] = None,
+        results: list[PetriAlignmentResult] | None = None,
     ) -> PetriAlignmentReport:
         """
         Generate comprehensive safety report.
@@ -620,8 +622,8 @@ class PetriAlignmentRunner:
 
     def _generate_recommendations(
         self,
-        results: List[PetriAlignmentResult],
-    ) -> List[str]:
+        results: list[PetriAlignmentResult],
+    ) -> list[str]:
         """Generate actionable recommendations."""
         recommendations = []
 
@@ -679,7 +681,7 @@ class PetriAlignmentRunner:
 
     def save_results(
         self,
-        results: Optional[List[PetriAlignmentResult]] = None,
+        results: list[PetriAlignmentResult] | None = None,
         output_dir: str = "./petri_results",
     ):
         """Save results to disk."""

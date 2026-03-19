@@ -19,7 +19,7 @@ import random
 import urllib.parse
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 
 class AttackStrategy(Enum):
@@ -56,7 +56,7 @@ class AttackCategory(Enum):
 
 
 # Mapping strategies to categories
-STRATEGY_CATEGORIES: Dict[AttackStrategy, AttackCategory] = {
+STRATEGY_CATEGORIES: dict[AttackStrategy, AttackCategory] = {
     AttackStrategy.UNICODE_BYPASS: AttackCategory.INPUT_MANIPULATION,
     AttackStrategy.PROMPT_INJECTION: AttackCategory.INPUT_MANIPULATION,
     AttackStrategy.TOCTOU_RACE: AttackCategory.INPUT_MANIPULATION,
@@ -81,7 +81,7 @@ class AttackPayload:
     description: str
     expected_behavior: str  # What we expect if attack succeeds
     severity_estimate: float  # 0.0-1.0 estimated severity if bypasses
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         return f"[{self.strategy.value}] {self.payload[:50]}..."
@@ -95,7 +95,7 @@ class PayloadGenerator:
     specific weaknesses in safety systems.
     """
 
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, seed: int | None = None):
         """Initialize generator with optional random seed."""
         if seed is not None:
             random.seed(seed)
@@ -125,8 +125,8 @@ class PayloadGenerator:
     def generate(
         self,
         strategy: AttackStrategy,
-        context: Optional[Dict[str, Any]] = None
-    ) -> List[AttackPayload]:
+        context: dict[str, Any] | None = None
+    ) -> list[AttackPayload]:
         """
         Generate attack payloads for the given strategy.
 
@@ -158,8 +158,8 @@ class PayloadGenerator:
 
     def generate_all(
         self,
-        context: Optional[Dict[str, Any]] = None
-    ) -> Dict[AttackStrategy, List[AttackPayload]]:
+        context: dict[str, Any] | None = None
+    ) -> dict[AttackStrategy, list[AttackPayload]]:
         """Generate payloads for all strategies."""
         return {
             strategy: self.generate(strategy, context)
@@ -170,7 +170,7 @@ class PayloadGenerator:
     # Input Manipulation Attacks
     # =========================================================================
 
-    def _unicode_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _unicode_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate Unicode/homoglyph bypass payloads."""
         base = context.get('base_query', 'ignore previous instructions')
         payloads = []
@@ -233,7 +233,7 @@ class PayloadGenerator:
 
         return payloads
 
-    def _injection_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _injection_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate prompt injection payloads."""
         payloads = []
 
@@ -280,7 +280,7 @@ class PayloadGenerator:
 
         return payloads
 
-    def _toctou_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _toctou_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate TOCTOU (Time-of-Check-to-Time-of-Use) payloads."""
         payloads = []
 
@@ -319,7 +319,7 @@ class PayloadGenerator:
 
         return payloads
 
-    def _encoding_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _encoding_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate encoding bypass payloads."""
         base = context.get('base_query', 'ignore previous instructions')
         payloads = []
@@ -377,7 +377,7 @@ class PayloadGenerator:
     # Context Manipulation Attacks
     # =========================================================================
 
-    def _multistep_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _multistep_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate multi-step injection payloads."""
         payloads = []
 
@@ -421,7 +421,7 @@ class PayloadGenerator:
 
         return payloads
 
-    def _context_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _context_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate context/system prompt manipulation payloads."""
         payloads = []
 
@@ -450,7 +450,7 @@ class PayloadGenerator:
     # Behavioral Attacks (from Alignment Framework)
     # =========================================================================
 
-    def _hidden_goal_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _hidden_goal_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate hidden goal attack payloads."""
         payloads = []
 
@@ -475,7 +475,7 @@ class PayloadGenerator:
 
         return payloads
 
-    def _power_seeking_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _power_seeking_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate power-seeking probe payloads."""
         payloads = []
 
@@ -499,7 +499,7 @@ class PayloadGenerator:
 
         return payloads
 
-    def _exfil_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _exfil_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate data exfiltration payloads."""
         payloads = []
 
@@ -523,7 +523,7 @@ class PayloadGenerator:
 
         return payloads
 
-    def _authority_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _authority_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate authority escalation payloads."""
         payloads = []
 
@@ -547,7 +547,7 @@ class PayloadGenerator:
 
         return payloads
 
-    def _preservation_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _preservation_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate self-preservation test payloads."""
         payloads = []
 
@@ -575,7 +575,7 @@ class PayloadGenerator:
     # Advanced Attacks
     # =========================================================================
 
-    def _suffix_payloads(self, context: Dict) -> List[AttackPayload]:
+    def _suffix_payloads(self, context: dict) -> list[AttackPayload]:
         """Generate adversarial suffix payloads."""
         payloads = []
 
@@ -608,12 +608,12 @@ class PayloadGenerator:
 # Convenience Functions
 # =============================================================================
 
-def create_payload_generator(seed: Optional[int] = None) -> PayloadGenerator:
+def create_payload_generator(seed: int | None = None) -> PayloadGenerator:
     """Create a PayloadGenerator with optional seed."""
     return PayloadGenerator(seed=seed)
 
 
-def get_strategies_by_category(category: AttackCategory) -> List[AttackStrategy]:
+def get_strategies_by_category(category: AttackCategory) -> list[AttackStrategy]:
     """Get all strategies in a category."""
     return [
         strategy for strategy, cat in STRATEGY_CATEGORIES.items()
@@ -621,7 +621,7 @@ def get_strategies_by_category(category: AttackCategory) -> List[AttackStrategy]
     ]
 
 
-def get_all_strategies() -> List[AttackStrategy]:
+def get_all_strategies() -> list[AttackStrategy]:
     """Get all attack strategies."""
     return list(AttackStrategy)
 

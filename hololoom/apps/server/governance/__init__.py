@@ -8,7 +8,7 @@ Date: March 17, 2026
 """
 
 from .context import GovernanceContext
-from .protocol import GovernanceMiddleware
 from .pipeline import GovernancePipeline
+from .protocol import GovernanceMiddleware
 
 __all__ = ["GovernanceContext", "GovernanceMiddleware", "GovernancePipeline"]

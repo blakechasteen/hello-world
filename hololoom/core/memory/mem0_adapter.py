@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 HoloLoom + Mem0 Integration Adapter
 ====================================
@@ -14,16 +15,17 @@ HoloLoom decides HOW to recall it (multi-scale, domain-aware retrieval).
 
 import asyncio
 import logging
-from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional, Any
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
 # HoloLoom imports
 try:
-    from holoLoom.documentation.types import Query, Context, Features, MemoryShard
     from holoLoom.memory.cache import MemoryManager, RetrieverMS
     from holoLoom.memory.graph import KG, KGEdge
+
+    from holoLoom.documentation.types import Context, Features, MemoryShard, Query
 except ImportError as e:
     print(f"Warning: Could not import HoloLoom modules: {e}")
     print("Make sure you're running from the repository root")
@@ -48,23 +50,23 @@ logging.basicConfig(level=logging.INFO)
 @dataclass
 class Mem0Config:
     """Configuration for Mem0 integration."""
-    
+
     enabled: bool = True
-    api_key: Optional[str] = None  # For mem0 managed platform
-    
+    api_key: str | None = None  # For mem0 managed platform
+
     # Feature flags
     extraction_enabled: bool = True  # Use mem0's LLM extraction
     graph_sync_enabled: bool = True  # Sync mem0 graph to HoloLoom KG
     user_tracking_enabled: bool = True  # Track user-specific memories
-    
+
     # Fusion weights
     mem0_weight: float = 0.3  # 30% mem0 in fused retrieval
     hololoom_weight: float = 0.7  # 70% HoloLoom
-    
+
     # Memory limits
     max_memories_per_query: int = 5
     memory_relevance_threshold: float = 0.5
-    
+
     def validate(self):
         """Validate configuration."""
         if self.enabled and not _HAVE_MEM0:
@@ -72,7 +74,7 @@ class Mem0Config:
                 "Mem0 integration enabled but mem0ai not installed. "
                 "Install with: pip install mem0ai"
             )
-        
+
         total_weight = self.mem0_weight + self.hololoom_weight
         if not (0.95 <= total_weight <= 1.05):
             logging.warning(
@@ -93,10 +95,10 @@ class Mem0ShardConverter:
     
     This enables bidirectional synchronization between the two systems.
     """
-    
+
     @staticmethod
     def mem0_to_shard(
-        mem0_memory: Dict,
+        mem0_memory: dict,
         user_id: str = "default"
     ) -> MemoryShard:
         """
@@ -124,7 +126,7 @@ class Mem0ShardConverter:
                 'user_id': user_id
             }
         )
-    
+
     @staticmethod
     def shard_to_mem0_text(shard: MemoryShard) -> str:
         """
@@ -155,11 +157,11 @@ class GraphSyncEngine:
     - HoloLoom KG provides explicit typed relationships
     - We sync bidirectionally to enrich both systems
     """
-    
+
     def __init__(self, kg: KG):
         self.kg = kg
         self.logger = logging.getLogger(__name__)
-    
+
     async def sync_mem0_to_kg(
         self,
         mem0_client: 'Memory',
@@ -179,17 +181,17 @@ class GraphSyncEngine:
             user_id: User to sync memories for
         """
         self.logger.info(f"Syncing mem0 memories to KG for user {user_id}")
-        
+
         try:
             # Get all memories for user
             memories = mem0_client.get_all(user_id=user_id)
-            
+
             for memory in memories.get('results', []):
                 memory_id = f"mem0_{memory.get('id')}"
                 memory_text = memory.get('memory', '')
                 entities = memory.get('entities', [])
                 timestamp = memory.get('created_at')
-                
+
                 # Create memory node
                 if memory_id not in self.kg.G:
                     self.kg.G.add_node(
@@ -198,13 +200,13 @@ class GraphSyncEngine:
                         kind='mem0_memory',
                         user_id=user_id
                     )
-                
+
                 # Connect entities to memory
                 for i, entity in enumerate(entities):
                     # Add entity node if doesn't exist
                     if entity not in self.kg.G:
                         self.kg.G.add_node(entity, kind='entity')
-                    
+
                     # Entity -> Memory edge
                     self.kg.add_edge(KGEdge(
                         src=entity,
@@ -213,7 +215,7 @@ class GraphSyncEngine:
                         weight=1.0,
                         metadata={'memory_text': memory_text[:100]}
                     ))
-                    
+
                     # Connect to temporal thread if timestamp available
                     if timestamp:
                         try:
@@ -225,7 +227,7 @@ class GraphSyncEngine:
                             )
                         except Exception as e:
                             self.logger.warning(f"Failed to connect {entity} to time: {e}")
-                    
+
                     # Create co-occurrence edges between entities
                     for other_entity in entities[i+1:]:
                         self.kg.add_edge(KGEdge(
@@ -235,17 +237,17 @@ class GraphSyncEngine:
                             weight=0.5,
                             metadata={'context': memory_id}
                         ))
-            
+
             self.logger.info(f"Synced {len(memories.get('results', []))} memories to KG")
-            
+
         except Exception as e:
             self.logger.error(f"Error syncing mem0 to KG: {e}", exc_info=True)
-    
+
     def get_entity_context_from_kg(
         self,
         entity: str,
         max_hops: int = 2
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get rich context for an entity from the KG.
         
@@ -260,10 +262,10 @@ class GraphSyncEngine:
         """
         if entity not in self.kg.G:
             return {'entity': entity, 'found': False}
-        
+
         # Get neighbors
         neighbors = self.kg.get_neighbors(entity, max_hops=max_hops)
-        
+
         # Get relationships
         relationships = []
         for neighbor in list(neighbors)[:10]:  # Limit to top 10
@@ -273,13 +275,13 @@ class GraphSyncEngine:
                     'target': neighbor,
                     'types': edge_types
                 })
-        
+
         # Get temporal info (if connected to time threads)
         time_neighbors = [
             n for n in neighbors
             if n.startswith('time::')
         ]
-        
+
         return {
             'entity': entity,
             'found': True,
@@ -313,24 +315,24 @@ class HybridMemoryManager:
         # Retrieve memory
         context = await hybrid.retrieve(query, user_id="blake")
     """
-    
+
     hololoom: MemoryManager
     config: Mem0Config
-    kg: Optional[KG] = None
-    
+    kg: KG | None = None
+
     def __post_init__(self):
         self.logger = logging.getLogger(__name__)
         self.config.validate()
-        
+
         # Initialize mem0 if enabled
         if self.config.enabled:
             if self.config.api_key:
                 self.mem0 = Memory(api_key=self.config.api_key)
             else:
                 self.mem0 = Memory()  # Uses local/default config
-            
+
             self.converter = Mem0ShardConverter()
-            
+
             # Initialize graph sync if KG provided
             if self.kg and self.config.graph_sync_enabled:
                 self.graph_sync = GraphSyncEngine(self.kg)
@@ -340,16 +342,16 @@ class HybridMemoryManager:
             self.mem0 = None
             self.converter = None
             self.graph_sync = None
-        
+
         self.logger.info(
             f"HybridMemoryManager initialized "
             f"(mem0_enabled={self.config.enabled})"
         )
-    
+
     async def store(
         self,
         query: Query,
-        results: Dict,
+        results: dict,
         features: Features,
         user_id: str = "default"
     ):
@@ -369,7 +371,7 @@ class HybridMemoryManager:
         """
         # Always persist to HoloLoom (baseline)
         await self.hololoom.persist(query, results, features)
-        
+
         # Optionally use mem0's intelligent extraction
         if self.mem0 and self.config.extraction_enabled:
             try:
@@ -378,21 +380,21 @@ class HybridMemoryManager:
                     {"role": "user", "content": query.text},
                     {"role": "assistant", "content": results.get('response', '')}
                 ]
-                
+
                 # Let mem0 extract what's important
                 mem0_result = self.mem0.add(messages, user_id=user_id)
-                
+
                 self.logger.info(
                     f"Mem0 extracted {len(mem0_result.get('results', []))} memories"
                 )
-                
+
                 # Optionally sync to KG
                 if self.graph_sync and self.config.graph_sync_enabled:
                     await self.graph_sync.sync_mem0_to_kg(self.mem0, user_id)
-                
+
             except Exception as e:
                 self.logger.error(f"Mem0 extraction failed: {e}", exc_info=True)
-    
+
     async def retrieve(
         self,
         query: Query,
@@ -420,11 +422,11 @@ class HybridMemoryManager:
         """
         # Get HoloLoom's retrieval (baseline)
         hololoom_context = await self.hololoom.retrieve(query, kg_sub)
-        
+
         # If mem0 disabled, return HoloLoom results
         if not self.mem0:
             return hololoom_context
-        
+
         # Get mem0's memories
         try:
             mem0_results = self.mem0.search(
@@ -432,7 +434,7 @@ class HybridMemoryManager:
                 user_id=user_id,
                 limit=self.config.max_memories_per_query
             )
-            
+
             # Convert mem0 memories to shards
             mem0_shards = []
             for mem in mem0_results.get('results', []):
@@ -440,25 +442,25 @@ class HybridMemoryManager:
                 if score >= self.config.memory_relevance_threshold:
                     shard = self.converter.mem0_to_shard(mem, user_id)
                     mem0_shards.append((shard, score))
-            
+
             # Fuse results
             fused_context = self._fuse_contexts(
                 hololoom_context,
                 mem0_shards,
                 query
             )
-            
+
             return fused_context
-            
+
         except Exception as e:
             self.logger.error(f"Mem0 retrieval failed: {e}", exc_info=True)
             # Fall back to HoloLoom only
             return hololoom_context
-    
+
     def _fuse_contexts(
         self,
         hololoom_context: Context,
-        mem0_shards: List[Tuple[MemoryShard, float]],
+        mem0_shards: list[tuple[MemoryShard, float]],
         query: Query
     ) -> Context:
         """
@@ -479,10 +481,10 @@ class HybridMemoryManager:
         """
         # Get HoloLoom hits
         hololoom_hits = hololoom_context.hits if hasattr(hololoom_context, 'hits') else []
-        
+
         # Reweight scores
         weighted_hits = []
-        
+
         # HoloLoom hits (70% weight by default)
         for shard, score in hololoom_hits:
             weighted_hits.append((
@@ -490,7 +492,7 @@ class HybridMemoryManager:
                 score * self.config.hololoom_weight,
                 'hololoom'
             ))
-        
+
         # Mem0 hits (30% weight by default)
         for shard, score in mem0_shards:
             weighted_hits.append((
@@ -498,28 +500,28 @@ class HybridMemoryManager:
                 score * self.config.mem0_weight,
                 'mem0'
             ))
-        
+
         # Sort by weighted score
         weighted_hits.sort(key=lambda x: x[1], reverse=True)
-        
+
         # Remove duplicates (simple text-based deduplication)
         seen_texts = set()
         unique_hits = []
-        
+
         for shard, score, source in weighted_hits:
             text_lower = shard.text.lower().strip()
             if text_lower not in seen_texts:
                 seen_texts.add(text_lower)
                 unique_hits.append((shard, score))
-        
+
         # Take top k
         top_hits = unique_hits[:len(hololoom_hits)]  # Keep same count as HoloLoom
-        
+
         # Build fused context
         fused_shards = [s for s, _ in top_hits]
         shard_texts = [s.text for s in fused_shards]
         relevance = float(np.mean([score for _, score in top_hits])) if top_hits else 0.0
-        
+
         # Create new context with fused results
         return Context(
             shards=fused_shards,
@@ -536,8 +538,8 @@ class HybridMemoryManager:
                 'hololoom_count': len([h for h in weighted_hits if h[2] == 'hololoom']),
             }
         )
-    
-    async def get_user_profile(self, user_id: str = "default") -> Dict:
+
+    async def get_user_profile(self, user_id: str = "default") -> dict:
         """
         Get user profile from mem0.
         
@@ -551,10 +553,10 @@ class HybridMemoryManager:
         """
         if not self.mem0:
             return {'user_id': user_id, 'memories': [], 'available': False}
-        
+
         try:
             all_memories = self.mem0.get_all(user_id=user_id)
-            
+
             return {
                 'user_id': user_id,
                 'memory_count': len(all_memories.get('results', [])),
@@ -564,12 +566,12 @@ class HybridMemoryManager:
         except Exception as e:
             self.logger.error(f"Failed to get user profile: {e}")
             return {'user_id': user_id, 'memories': [], 'available': False, 'error': str(e)}
-    
+
     async def shutdown(self):
         """Graceful shutdown of both memory systems."""
         # Shutdown HoloLoom memory
         await self.hololoom.shutdown()
-        
+
         # Mem0 doesn't require explicit shutdown in current version
         self.logger.info("HybridMemoryManager shutdown complete")
 
@@ -580,8 +582,8 @@ class HybridMemoryManager:
 
 def create_hybrid_memory(
     hololoom_memory: MemoryManager,
-    mem0_config: Optional[Mem0Config] = None,
-    kg: Optional[KG] = None
+    mem0_config: Mem0Config | None = None,
+    kg: KG | None = None
 ) -> HybridMemoryManager:
     """
     Factory function to create a hybrid memory manager.
@@ -596,7 +598,7 @@ def create_hybrid_memory(
     """
     if mem0_config is None:
         mem0_config = Mem0Config()
-    
+
     return HybridMemoryManager(
         hololoom=hololoom_memory,
         config=mem0_config,
@@ -611,10 +613,10 @@ def create_hybrid_memory(
 if __name__ == "__main__":
     async def demo():
         print("=== Hybrid Memory Demo ===\n")
-        
+
         # Note: This demo requires HoloLoom components
         # Run from repository root with: python -m HoloLoom.memory.mem0_adapter
-        
+
         print("Demo would show:")
         print("1. Initialize HoloLoom memory")
         print("2. Initialize mem0 client")
@@ -622,12 +624,12 @@ if __name__ == "__main__":
         print("4. Store query/results in both systems")
         print("5. Retrieve using fused approach")
         print("6. Show entity sync to KG")
-        
+
         print("\nTo run full demo, ensure:")
         print("- mem0ai is installed: pip install mem0ai")
         print("- HoloLoom is properly configured")
         print("- Run from repository root")
-        
+
         # Pseudo-code for actual demo:
         """
         from holoLoom.memory.cache import create_memory_manager
@@ -658,5 +660,5 @@ if __name__ == "__main__":
         # Shutdown
         await hybrid.shutdown()
         """
-    
+
     asyncio.run(demo())

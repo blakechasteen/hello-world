@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-import time
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols.stage import GateExecutor
 
@@ -22,7 +21,7 @@ class AwarenessExecutor(GateExecutor):
         super().__init__(**kwargs)
         self.awareness_layer = awareness_layer
 
-    async def evaluate(self, ctx: 'WeavingContext') -> Optional[Any]:
+    async def evaluate(self, ctx: WeavingContext) -> Any | None:
         if not self.awareness_layer:
             return None
 

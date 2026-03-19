@@ -13,9 +13,9 @@ Research:
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Set
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class ProvenanceEvent(Enum):
@@ -35,11 +35,11 @@ class ComputationalTrace:
     event_type: ProvenanceEvent
     timestamp: datetime
     stage: str  # Which stage of pipeline (e.g., "extraction", "decision")
-    inputs: Dict[str, Any]  # Inputs to this step
-    outputs: Dict[str, Any]  # Outputs from this step
-    metadata: Dict[str, Any] = field(default_factory=dict)  # Additional context
+    inputs: dict[str, Any]  # Inputs to this step
+    outputs: dict[str, Any]  # Outputs from this step
+    metadata: dict[str, Any] = field(default_factory=dict)  # Additional context
     duration_ms: float = 0.0  # Duration of this step
-    dependencies: List[str] = field(default_factory=list)  # IDs of preceding steps
+    dependencies: list[str] = field(default_factory=list)  # IDs of preceding steps
 
     def __repr__(self) -> str:
         return f"{self.event_type.value.upper()} @ {self.stage} ({self.duration_ms:.1f}ms)"
@@ -48,17 +48,17 @@ class ComputationalTrace:
 @dataclass
 class LineageGraph:
     """Directed acyclic graph of computational lineage"""
-    traces: List[ComputationalTrace] = field(default_factory=list)
-    root_id: Optional[str] = None
-    final_output: Optional[Any] = None
+    traces: list[ComputationalTrace] = field(default_factory=list)
+    root_id: str | None = None
+    final_output: Any | None = None
 
-    def add_trace(self, trace: ComputationalTrace, trace_id: Optional[str] = None):
+    def add_trace(self, trace: ComputationalTrace, trace_id: str | None = None):
         """Add a trace to the lineage"""
         self.traces.append(trace)
         if not self.root_id and trace.event_type == ProvenanceEvent.INPUT:
             self.root_id = trace_id or f"trace_{len(self.traces)}"
 
-    def get_critical_path(self) -> List[ComputationalTrace]:
+    def get_critical_path(self) -> list[ComputationalTrace]:
         """
         Get critical path (longest path from input to output).
 
@@ -82,7 +82,7 @@ class LineageGraph:
         """Total duration of all steps"""
         return sum(t.duration_ms for t in self.traces)
 
-    def bottleneck_stages(self, threshold: float = 0.3) -> List[ComputationalTrace]:
+    def bottleneck_stages(self, threshold: float = 0.3) -> list[ComputationalTrace]:
         """
         Find bottleneck stages (taking >threshold of total time).
 
@@ -122,11 +122,11 @@ class ProvenanceTracker:
         self.track_intermediate = track_intermediate
         self.track_timing = track_timing
         self.lineage = LineageGraph()
-        self._start_times: Dict[str, float] = {}  # Track step start times
+        self._start_times: dict[str, float] = {}  # Track step start times
 
     def record_input(
         self,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
         stage: str = "input"
     ):
         """Record input to system"""
@@ -142,10 +142,10 @@ class ProvenanceTracker:
     def record_transform(
         self,
         stage: str,
-        inputs: Dict[str, Any],
-        outputs: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None,
-        dependencies: Optional[List[str]] = None
+        inputs: dict[str, Any],
+        outputs: dict[str, Any],
+        metadata: dict[str, Any] | None = None,
+        dependencies: list[str] | None = None
     ):
         """Record data transformation"""
         if not self.track_intermediate:
@@ -165,9 +165,9 @@ class ProvenanceTracker:
     def record_retrieval(
         self,
         stage: str,
-        query: Dict[str, Any],
-        retrieved: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None
+        query: dict[str, Any],
+        retrieved: dict[str, Any],
+        metadata: dict[str, Any] | None = None
     ):
         """Record memory retrieval"""
         trace = ComputationalTrace(
@@ -183,10 +183,10 @@ class ProvenanceTracker:
     def record_computation(
         self,
         stage: str,
-        inputs: Dict[str, Any],
-        outputs: Dict[str, Any],
+        inputs: dict[str, Any],
+        outputs: dict[str, Any],
         duration_ms: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ):
         """Record computation step"""
         if not self.track_intermediate:
@@ -206,10 +206,10 @@ class ProvenanceTracker:
     def record_decision(
         self,
         stage: str,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
         decision: Any,
         confidence: float = 1.0,
-        alternatives: Optional[List[Any]] = None
+        alternatives: list[Any] | None = None
     ):
         """Record decision made"""
         metadata = {
@@ -229,7 +229,7 @@ class ProvenanceTracker:
 
     def record_output(
         self,
-        outputs: Dict[str, Any],
+        outputs: dict[str, Any],
         stage: str = "output"
     ):
         """Record final output"""
@@ -247,7 +247,7 @@ class ProvenanceTracker:
         self,
         stage: str,
         error: Exception,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ):
         """Record error"""
         metadata = {
@@ -317,7 +317,7 @@ class ProvenanceTracker:
 
         return "\n".join(lines)
 
-    def export_to_spacetime(self) -> Dict[str, Any]:
+    def export_to_spacetime(self) -> dict[str, Any]:
         """
         Export to HoloLoom Spacetime format.
 
@@ -348,7 +348,7 @@ class ProvenanceTracker:
 
 
 def trace_decision(
-    inputs: Dict[str, Any],
+    inputs: dict[str, Any],
     decision_function: callable,
     track_intermediate: bool = True
 ) -> tuple:

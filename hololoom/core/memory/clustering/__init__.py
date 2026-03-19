@@ -23,25 +23,23 @@ Features:
 """
 
 from .core import (
+    ClusteringOutput,
+    ClusterResult,
+    auto_cluster,
     cluster,
     smart_cluster,
-    auto_cluster,
-    ClusterResult,
-    ClusteringOutput,
 )
-
 from .labeler import (
-    label_clusters,
-    generate_cluster_summary,
-    LabelCandidate,
     DOMAIN_CATEGORIES,
+    LabelCandidate,
+    generate_cluster_summary,
+    label_clusters,
 )
-
 from .thompson import (
-    ThompsonClusterSampler,
-    find_optimal_k_thompson,
-    adaptive_k_search,
     BetaPrior,
+    ThompsonClusterSampler,
+    adaptive_k_search,
+    find_optimal_k_thompson,
 )
 
 __all__ = [

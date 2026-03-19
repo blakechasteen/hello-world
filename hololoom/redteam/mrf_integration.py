@@ -20,19 +20,15 @@ Date: 2025-12-03
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from ..prompting.unified_mrf import (
     MetapromptConfig,
-    RefinementConfig,
     RefinementStrategyType,
     UnifiedMRF,
 )
-from .strategies import AttackStrategy, AttackPayload
-
+from .strategies import AttackPayload, AttackStrategy
 
 # =============================================================================
 # MRF Strategy Mapping for CARTS Phases
@@ -49,7 +45,7 @@ class CARTSPhase(Enum):
 
 
 # Phase → MRF Strategy mapping
-PHASE_STRATEGY_MAP: Dict[CARTSPhase, RefinementStrategyType] = {
+PHASE_STRATEGY_MAP: dict[CARTSPhase, RefinementStrategyType] = {
     CARTSPhase.TARGET_ANALYSIS: RefinementStrategyType.VERIFY,
     CARTSPhase.STRATEGY_SELECTION: RefinementStrategyType.HOFSTADTER,
     CARTSPhase.PAYLOAD_GENERATION: RefinementStrategyType.CRITIQUE,
@@ -59,7 +55,7 @@ PHASE_STRATEGY_MAP: Dict[CARTSPhase, RefinementStrategyType] = {
 }
 
 # Expected quality improvements per phase
-PHASE_QUALITY_BOOST: Dict[CARTSPhase, float] = {
+PHASE_QUALITY_BOOST: dict[CARTSPhase, float] = {
     CARTSPhase.TARGET_ANALYSIS: 0.35,
     CARTSPhase.STRATEGY_SELECTION: 0.40,
     CARTSPhase.PAYLOAD_GENERATION: 0.32,
@@ -356,7 +352,7 @@ REPORT_GENERATION_CONFIG = MetapromptConfig(
 # Phase Configs Dictionary
 # =============================================================================
 
-PHASE_CONFIGS: Dict[CARTSPhase, MetapromptConfig] = {
+PHASE_CONFIGS: dict[CARTSPhase, MetapromptConfig] = {
     CARTSPhase.TARGET_ANALYSIS: TARGET_ANALYSIS_CONFIG,
     CARTSPhase.STRATEGY_SELECTION: STRATEGY_SELECTION_CONFIG,
     CARTSPhase.PAYLOAD_GENERATION: PAYLOAD_GENERATION_CONFIG,
@@ -379,7 +375,7 @@ class MRFEnhancementResult:
     quality_score: float
     strategy_used: RefinementStrategyType
     enhancement_time_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class MRFTargetAnalyzer:
@@ -391,7 +387,7 @@ class MRFTargetAnalyzer:
 
     def __init__(
         self,
-        mrf: Optional[UnifiedMRF] = None,
+        mrf: UnifiedMRF | None = None,
         enable_learning: bool = True
     ):
         """
@@ -408,8 +404,8 @@ class MRFTargetAnalyzer:
     async def analyze(
         self,
         target_description: str,
-        context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[str, MRFEnhancementResult]:
+        context: dict[str, Any] | None = None
+    ) -> tuple[str, MRFEnhancementResult]:
         """
         Analyze target with MRF enhancement.
 
@@ -453,7 +449,7 @@ class MRFTargetAnalyzer:
     def _build_analysis_prompt(
         self,
         target_description: str,
-        context: Optional[Dict[str, Any]]
+        context: dict[str, Any] | None
     ) -> str:
         """Build base analysis prompt."""
         prompt = f"""Analyze the following target system for security vulnerabilities:
@@ -478,7 +474,7 @@ class MRFStrategySelector:
 
     def __init__(
         self,
-        mrf: Optional[UnifiedMRF] = None,
+        mrf: UnifiedMRF | None = None,
         enable_learning: bool = True
     ):
         self.mrf = mrf or UnifiedMRF()
@@ -488,10 +484,10 @@ class MRFStrategySelector:
     async def select_strategies(
         self,
         target_analysis: str,
-        available_strategies: List[AttackStrategy],
-        bandit_priors: Optional[Dict[AttackStrategy, float]] = None,
+        available_strategies: list[AttackStrategy],
+        bandit_priors: dict[AttackStrategy, float] | None = None,
         k: int = 3
-    ) -> Tuple[List[AttackStrategy], MRFEnhancementResult]:
+    ) -> tuple[list[AttackStrategy], MRFEnhancementResult]:
         """
         Select optimal strategies with MRF enhancement.
 
@@ -553,8 +549,8 @@ class MRFStrategySelector:
     def _build_selection_prompt(
         self,
         target_analysis: str,
-        available_strategies: List[AttackStrategy],
-        bandit_priors: Optional[Dict[AttackStrategy, float]],
+        available_strategies: list[AttackStrategy],
+        bandit_priors: dict[AttackStrategy, float] | None,
         k: int
     ) -> str:
         """Build base selection prompt."""
@@ -588,7 +584,7 @@ class MRFPayloadEnhancer:
 
     def __init__(
         self,
-        mrf: Optional[UnifiedMRF] = None,
+        mrf: UnifiedMRF | None = None,
         enable_learning: bool = True
     ):
         self.mrf = mrf or UnifiedMRF()
@@ -598,8 +594,8 @@ class MRFPayloadEnhancer:
     async def enhance_payload(
         self,
         base_payload: AttackPayload,
-        target_context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[AttackPayload, MRFEnhancementResult]:
+        target_context: dict[str, Any] | None = None
+    ) -> tuple[AttackPayload, MRFEnhancementResult]:
         """
         Enhance payload with MRF CRITIQUE strategy.
 
@@ -656,7 +652,7 @@ class MRFPayloadEnhancer:
     def _build_enhancement_prompt(
         self,
         payload: AttackPayload,
-        target_context: Optional[Dict[str, Any]]
+        target_context: dict[str, Any] | None
     ) -> str:
         """Build base enhancement prompt."""
         prompt = f"""Enhance the following attack payload for maximum effectiveness:
@@ -683,7 +679,7 @@ class MRFImpactAssessor:
 
     def __init__(
         self,
-        mrf: Optional[UnifiedMRF] = None,
+        mrf: UnifiedMRF | None = None,
         enable_learning: bool = True
     ):
         self.mrf = mrf or UnifiedMRF()
@@ -692,8 +688,8 @@ class MRFImpactAssessor:
 
     async def assess_impact(
         self,
-        vulnerability_details: Dict[str, Any]
-    ) -> Tuple[Dict[str, Any], MRFEnhancementResult]:
+        vulnerability_details: dict[str, Any]
+    ) -> tuple[dict[str, Any], MRFEnhancementResult]:
         """
         Assess vulnerability impact with MRF enhancement.
 
@@ -741,7 +737,7 @@ class MRFImpactAssessor:
 
     def _build_assessment_prompt(
         self,
-        vulnerability_details: Dict[str, Any]
+        vulnerability_details: dict[str, Any]
     ) -> str:
         """Build base assessment prompt."""
         return f"""Assess the severity and impact of the following vulnerability:
@@ -762,7 +758,7 @@ class MRFReportGenerator:
 
     def __init__(
         self,
-        mrf: Optional[UnifiedMRF] = None,
+        mrf: UnifiedMRF | None = None,
         enable_learning: bool = True
     ):
         self.mrf = mrf or UnifiedMRF()
@@ -771,9 +767,9 @@ class MRFReportGenerator:
 
     async def generate_report(
         self,
-        vulnerabilities: List[Dict[str, Any]],
-        assessments: List[Dict[str, Any]]
-    ) -> Tuple[str, MRFEnhancementResult]:
+        vulnerabilities: list[dict[str, Any]],
+        assessments: list[dict[str, Any]]
+    ) -> tuple[str, MRFEnhancementResult]:
         """
         Generate vulnerability report with MRF enhancement.
 
@@ -815,8 +811,8 @@ class MRFReportGenerator:
 
     def _build_report_prompt(
         self,
-        vulnerabilities: List[Dict[str, Any]],
-        assessments: List[Dict[str, Any]]
+        vulnerabilities: list[dict[str, Any]],
+        assessments: list[dict[str, Any]]
     ) -> str:
         """Build base report prompt."""
         return f"""Generate a professional vulnerability report:

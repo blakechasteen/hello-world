@@ -17,16 +17,14 @@ Usage:
     result = await execute_skill(skill, context, orchestrator)
 """
 
-import asyncio
 import logging
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
-from hololoom.protocols.types import Query, Context
-from hololoom.fabric.spacetime import Spacetime
 from hololoom.agentic.skills.skill_loader import Skill, SkillLoader
-
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.protocols.types import Query
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +45,9 @@ class SkillContext:
         metadata: Additional context metadata
     """
     query: Query
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
     mode: str = "direct"  # direct, verify, research, plan_execute
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -70,11 +68,11 @@ class SkillResult:
     skill_name: str
     success: bool
     output: Any
-    spacetime: Optional[Spacetime] = None
+    spacetime: Spacetime | None = None
     confidence: float = 0.0
     duration_ms: float = 0.0
-    errors: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -90,8 +88,8 @@ class SkillExecutor:
 
     def __init__(
         self,
-        orchestrator: Optional[Any] = None,
-        skill_loader: Optional[SkillLoader] = None
+        orchestrator: Any | None = None,
+        skill_loader: SkillLoader | None = None
     ):
         """
         Initialize skill executor.
@@ -243,10 +241,10 @@ Please execute this skill and provide a structured response.
         output = [
             f"Skill: {skill.name}",
             f"Description: {skill.description}",
-            f"",
+            "",
             f"Query: {context.query.text}",
-            f"",
-            f"Available Resources:"
+            "",
+            "Available Resources:"
         ]
 
         # List available files
@@ -273,7 +271,7 @@ class SkillWorkflow:
     def __init__(
         self,
         executor: SkillExecutor,
-        skills: List[Skill]
+        skills: list[Skill]
     ):
         """
         Initialize workflow.
@@ -290,7 +288,7 @@ class SkillWorkflow:
         self,
         initial_context: SkillContext,
         pass_results: bool = True
-    ) -> List[SkillResult]:
+    ) -> list[SkillResult]:
         """
         Execute skill workflow.
 
@@ -335,9 +333,9 @@ class SkillWorkflow:
 async def execute_skill(
     skill_name: str,
     query: Query,
-    orchestrator: Optional[Any] = None,
+    orchestrator: Any | None = None,
     mode: str = "direct",
-    parameters: Optional[Dict[str, Any]] = None
+    parameters: dict[str, Any] | None = None
 ) -> SkillResult:
     """
     Quick skill execution.
@@ -367,11 +365,11 @@ async def execute_skill(
 
 
 async def execute_workflow(
-    skill_names: List[str],
+    skill_names: list[str],
     query: Query,
-    orchestrator: Optional[Any] = None,
+    orchestrator: Any | None = None,
     mode: str = "direct"
-) -> List[SkillResult]:
+) -> list[SkillResult]:
     """
     Quick multi-skill workflow execution.
 

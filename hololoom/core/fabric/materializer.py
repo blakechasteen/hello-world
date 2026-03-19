@@ -15,29 +15,26 @@ Security Level: FRONTIER
 Component of: HoloLoom "Maker" Capability
 """
 
-import os
-import logging
-import base64
-import json
-import math
-import ast
 import hashlib
-import unicodedata
+import json
+import logging
+import math
 import re
+import unicodedata
+from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Union, Tuple
 from enum import Enum
-from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
-from hololoom.fabric.spacetime import Spacetime, Artifact, ArtifactType
+from hololoom.fabric.spacetime import Artifact, ArtifactType, Spacetime
 
 logger = logging.getLogger(__name__)
 
 # --- Frontier Security Constants ---
 
 BLOCKED_EXTENSIONS = {
-    '.exe', '.dll', '.bin', '.sh', '.bat', '.cmd', '.ps1', '.vbs', '.js', 
+    '.exe', '.dll', '.bin', '.sh', '.bat', '.cmd', '.ps1', '.vbs', '.js',
     '.jar', '.msi', '.com', '.scr', '.pif'
 }
 
@@ -68,7 +65,7 @@ class RiskLevel(Enum):
 class RiskAssessment:
     level: RiskLevel
     score: int
-    signals: List[str]
+    signals: list[str]
 
 # --- Risk Engine ---
 
@@ -76,12 +73,12 @@ class RiskEngine:
     """
     intelligent security gateway that assesses the intent and risk of artifacts.
     """
-    
+
     @staticmethod
     def assess(artifact: Artifact, content_bytes: bytes) -> RiskAssessment:
         score = 0
         signals = []
-        
+
         # 1. Extension Risk
         ext = Path(artifact.name).suffix.lower()
         if ext in BLOCKED_EXTENSIONS:
@@ -90,14 +87,14 @@ class RiskEngine:
         elif ext == '.py':
             score += 10
             signals.append("Executable Script (.py)")
-            
+
         # 2. Magic Number Risk
         for magic, name in MAGIC_NUMBERS.items():
             if content_bytes.startswith(magic):
                 score += 80
                 signals.append(f"Magic Number Detected: {name}")
                 break
-                
+
         # 3. Size Risk
         if len(content_bytes) > MAX_FILE_SIZE:
             score += 100
@@ -108,40 +105,40 @@ class RiskEngine:
         if entropy > 7.5:
             score += 60 # Increased from 50 to ensure quarantine
             signals.append(f"High Entropy ({entropy:.2f}): Potential Malware/Packed")
-            
+
         # 5. Content Risk (Text only)
         try:
             text_content = content_bytes.decode('utf-8')
-            
+
             # Secret Scanning
             for pattern in SENSITIVE_PATTERNS:
                 if pattern.search(text_content):
                     score += 60
                     signals.append("Sensitive Pattern Detected")
                     break
-            
+
             # SAST - Keyword Risk
             if 'eval(' in text_content or 'exec(' in text_content:
                 score += 20
                 signals.append("Dangerous Function: eval/exec")
-                
+
             if 'subprocess' in text_content and 'socket' in text_content:
                 score += 60 # Increased from 40 to ensure quarantine (10+60=70 > 50)
                 signals.append("Behavioral: socket+subprocess (Reverse Shell Signature)")
-                
+
         except UnicodeDecodeError:
             # Binary content that isn't magic-blocked
             if artifact.type == ArtifactType.CODE:
                 # Code should be text
                 score += 30
                 signals.append("Binary content in Code artifact")
-                
+
         # Determine Level
         if score <= 20: level = RiskLevel.SAFE
         elif score <= 50: level = RiskLevel.WARN
         elif score <= 80: level = RiskLevel.QUARANTINE
         else: level = RiskLevel.BLOCK
-        
+
         return RiskAssessment(level, score, signals)
 
     @staticmethod
@@ -158,7 +155,7 @@ class RiskEngine:
 
 class ProvenanceManager:
     @staticmethod
-    def generate_provenance(artifact: Artifact, assessment: RiskAssessment, target_path: Path) -> Dict[str, Any]:
+    def generate_provenance(artifact: Artifact, assessment: RiskAssessment, target_path: Path) -> dict[str, Any]:
         """Generate provenance metadata."""
         return {
             "schema_version": "1.0",
@@ -177,7 +174,7 @@ class ProvenanceManager:
 class AuditLogger:
     def __init__(self, root_dir: Path):
         self.log_path = root_dir / ".holo_audit.jsonl"
-        
+
     def log(self, action: str, artifact: str, result: str, details: str):
         entry = {
             "timestamp": datetime.now().isoformat(),
@@ -195,21 +192,21 @@ class Materializer:
     """
     Handles the physical realization of artifacts with Frontier Safety.
     """
-    
-    def __init__(self, root_dir: Union[str, Path]):
+
+    def __init__(self, root_dir: str | Path):
         self.root_dir = Path(root_dir)
         self.logger = logging.getLogger(__name__)
         self.audit = AuditLogger(self.root_dir)
-        
-    def materialize(self, fabric: Spacetime, dry_run: bool = False, force_overwrite: bool = False) -> Dict[str, List[str]]:
+
+    def materialize(self, fabric: Spacetime, dry_run: bool = False, force_overwrite: bool = False) -> dict[str, list[str]]:
         results = {t.value: [] for t in ArtifactType}
-        
+
         if not fabric.artifacts:
             self.logger.info("No artifacts to materialize.")
             return results
-            
+
         self.logger.info(f"Materializing {len(fabric.artifacts)} artifacts... (Frontier Safety Active)")
-        
+
         for artifact in fabric.artifacts:
             try:
                 path = self._process_artifact(artifact, dry_run, force_overwrite)
@@ -218,32 +215,32 @@ class Materializer:
             except Exception as e:
                 self.logger.error(f"Failed to materialize '{artifact.name}': {e}")
                 self.audit.log("materialize", artifact.name, "error", str(e))
-                
+
         return results
-        
-    def _process_artifact(self, artifact: Artifact, dry_run: bool, force_overwrite: bool) -> Optional[Path]:
+
+    def _process_artifact(self, artifact: Artifact, dry_run: bool, force_overwrite: bool) -> Path | None:
         if not artifact.content:
             return None
-            
+
         # 0. Prepare Content Bytes
         content_bytes = artifact.content
         if isinstance(content_bytes, str):
             content_bytes = content_bytes.encode('utf-8')
-            
+
         # 1. RISK ASSESSMENT
         assessment = RiskEngine.assess(artifact, content_bytes)
         self.logger.info(f"Risk Assessment for {artifact.name}: {assessment.level.value} (Score: {assessment.score})")
-        
+
         if assessment.level == RiskLevel.BLOCK:
             self.logger.error(f"FRONTIER BLOCK: {artifact.name} (Risk: {assessment.score}) - {assessment.signals}")
             self.audit.log("write", artifact.name, "blocked", str(assessment.signals))
             return None
-            
+
         # 2. Path Resolution
         # Unicode Normalization (NFKC) to prevent homograph attacks
         clean_name = unicodedata.normalize('NFKC', artifact.name)
         clean_dest = unicodedata.normalize('NFKC', artifact.destination_path) if artifact.destination_path else clean_name
-        
+
         rel_path = Path(clean_dest)
         if rel_path.is_absolute() or '..' in rel_path.parts:
              self.logger.error(f"Security Block: Path traversal detected '{clean_dest}'.")
@@ -252,11 +249,11 @@ class Materializer:
 
         # Resolve
         final_path = (self.root_dir / rel_path).resolve()
-        
+
         # Determine effective write path (Quarantine or Target)
         write_path = final_path
         quarantined = False
-        
+
         if assessment.level == RiskLevel.QUARANTINE:
             quarantine_dir = self.root_dir / ".quarantine"
             quarantine_dir.mkdir(exist_ok=True)
@@ -293,14 +290,14 @@ class Materializer:
             mode = 'wb'
             with open(write_path, mode) as f:
                 f.write(content_bytes)
-                
+
             # 6. Provenance Sidecar (If not quarantined)
             if not quarantined:
                 prov = ProvenanceManager.generate_provenance(artifact, assessment, write_path)
                 prov_path = write_path.with_suffix(write_path.suffix + ".provenance")
                 with open(prov_path, 'w') as f:
                     json.dump(prov, f, indent=2)
-                    
+
             # 7. Warning File (If Check was WARN)
             if assessment.level == RiskLevel.WARN and not quarantined:
                 warn_path = write_path.with_suffix(write_path.suffix + ".WARNING.txt")
@@ -309,7 +306,7 @@ class Materializer:
 
             action_res = "quarantined" if quarantined else "written"
             self.audit.log("write", artifact.name, action_res, f"Score: {assessment.score}")
-            
+
             return write_path
 
         except Exception as e:

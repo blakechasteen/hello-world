@@ -22,13 +22,11 @@ Author: HoloLoom Spectral Theory Team
 Date: 2025-11-03
 """
 
-from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass, field
-import numpy as np
-import networkx as nx
 import warnings
+from dataclasses import dataclass, field
 
-from hololoom.protocols.types import Vector
+import networkx as nx
+import numpy as np
 
 try:
     from scipy.sparse import csr_matrix
@@ -59,8 +57,8 @@ class MultiScaleSpectralAnalyzer:
     - Small embeddings (96d) ↔ Coarse spectral features
     """
 
-    scales: List[int] = field(default_factory=lambda: [96, 192, 384])
-    wavelet_scales: List[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])
+    scales: list[int] = field(default_factory=lambda: [96, 192, 384])
+    wavelet_scales: list[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])
 
     def __post_init__(self):
         """Validate scales are in ascending order."""
@@ -69,8 +67,8 @@ class MultiScaleSpectralAnalyzer:
     def analyze_multiscale(
         self,
         kg: 'KG',
-        query_entities: List[str]
-    ) -> Dict[int, Dict[str, np.ndarray]]:
+        query_entities: list[str]
+    ) -> dict[int, dict[str, np.ndarray]]:
         """
         Perform multi-scale spectral analysis.
 
@@ -126,7 +124,7 @@ class MultiScaleSpectralAnalyzer:
         subgraph: nx.MultiDiGraph,
         n_clusters: int,
         wavelet_scale: float
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """
         Analyze a single subgraph at one scale.
 
@@ -150,11 +148,11 @@ class MultiScaleSpectralAnalyzer:
 
         try:
             from hololoom.warp.spectral_methods import (
-                GraphLaplacian,
-                SpectralWavelet,
                 DiffusionMap,
+                GraphLaplacian,
+                LaplacianType,
+                SpectralWavelet,
                 spectral_clustering,
-                LaplacianType
             )
 
             # Wrap subgraph for spectral methods
@@ -219,8 +217,8 @@ class MultiScaleSpectralAnalyzer:
 
     def fuse_multiscale_features(
         self,
-        multiscale_results: Dict[int, Dict[str, np.ndarray]],
-        fusion_weights: Optional[Dict[int, float]] = None
+        multiscale_results: dict[int, dict[str, np.ndarray]],
+        fusion_weights: dict[int, float] | None = None
     ) -> np.ndarray:
         """
         Fuse multi-scale spectral features into a single vector.
@@ -301,7 +299,7 @@ class HierarchicalSpectralClusterer:
     def cluster_hierarchical(
         self,
         kg: 'KG'
-    ) -> Dict[str, List[int]]:
+    ) -> dict[str, list[int]]:
         """
         Perform hierarchical spectral clustering.
 
@@ -334,8 +332,8 @@ class HierarchicalSpectralClusterer:
     def _recursive_bisect(
         self,
         kg: 'KG',
-        nodes: List[str],
-        cluster_paths: Dict[str, List[int]],
+        nodes: list[str],
+        cluster_paths: dict[str, list[int]],
         depth: int,
         parent_cluster_id: int
     ):
@@ -412,8 +410,8 @@ class HierarchicalSpectralClusterer:
 # ============================================================================
 
 def create_multiscale_analyzer(
-    scales: List[int] = [96, 192, 384],
-    wavelet_scales: List[float] = [0.1, 1.0, 10.0]
+    scales: list[int] = [96, 192, 384],
+    wavelet_scales: list[float] = [0.1, 1.0, 10.0]
 ) -> MultiScaleSpectralAnalyzer:
     """
     Factory function to create multi-scale spectral analyzer.
@@ -457,6 +455,7 @@ def create_hierarchical_clusterer(
 
 if __name__ == "__main__":
     import asyncio
+
     from hololoom.memory.graph import KG, KGEdge
 
     async def demo():

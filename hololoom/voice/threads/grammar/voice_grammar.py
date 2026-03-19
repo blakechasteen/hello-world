@@ -17,11 +17,11 @@ Examples:
     >>> print(intent.params)        # {'topic': 'planning'}
 """
 
-import re
-from enum import Enum, auto
-from typing import Optional, Dict, List, Pattern
-from dataclasses import dataclass
 import logging
+import re
+from dataclasses import dataclass
+from enum import Enum, auto
+from re import Pattern
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class CommandIntent:
         original_text: Original voice input
     """
     command_type: CommandType
-    params: Dict[str, str]
+    params: dict[str, str]
     confidence: float
     original_text: str
 
@@ -81,7 +81,7 @@ class VoiceGrammar:
         """Initialize grammar patterns."""
         self.patterns = self._build_patterns()
 
-    def _build_patterns(self) -> Dict[CommandType, List[tuple[Pattern, float]]]:
+    def _build_patterns(self) -> dict[CommandType, list[tuple[Pattern, float]]]:
         """
         Build regex patterns for each command type.
 
@@ -210,7 +210,7 @@ class VoiceGrammar:
         logger.debug(f"Classified: '{text}' → {intent.command_type.name} (confidence: {intent.confidence:.2f})")
         return intent
 
-    def get_command_examples(self, command_type: CommandType) -> List[str]:
+    def get_command_examples(self, command_type: CommandType) -> list[str]:
         """
         Get example phrases for a command type.
 
@@ -263,7 +263,7 @@ class VoiceGrammar:
         }
         return examples.get(command_type, [])
 
-    def get_all_examples(self) -> Dict[str, List[str]]:
+    def get_all_examples(self) -> dict[str, list[str]]:
         """Get all command examples organized by category."""
         return {
             command_type.name: self.get_command_examples(command_type)

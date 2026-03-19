@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Config and Memory Initialization
 =================================
@@ -24,27 +23,26 @@ Date: 2025-11-22
 
 from __future__ import annotations
 
-import logging
 import asyncio
+import logging
 import os
 import warnings
-from typing import Dict, List, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
 
+from hololoom.alignment import create_guardrails
+from hololoom.alignment.audit_trail import AuditTrail
 from hololoom.config import ExecutionMode
 from hololoom.loom.command import PatternCard
 from hololoom.protocols import ComplexityLevel
-from hololoom.alignment import create_guardrails
-from hololoom.alignment.audit_trail import AuditTrail
-
 
 logger = logging.getLogger(__name__)
 
 
 def initialize_config_and_memory(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     memory,
     yarn_graph,
     shards,
@@ -114,7 +112,7 @@ def initialize_config_and_memory(
 
     # mythRL Protocol-based architecture
     orchestrator.enable_complexity_auto_detect = enable_complexity_auto_detect
-    orchestrator._protocols: Dict[str, Any] = {}  # Registered protocol implementations
+    orchestrator._protocols: dict[str, Any] = {}  # Registered protocol implementations
     orchestrator._complexity_thresholds = {
         # Word count thresholds
         'lite_max_words': 2,      # Up to 2 words = LITE (greetings, simple commands)
@@ -199,6 +197,6 @@ def initialize_config_and_memory(
     logger.info(f"Initializing WeavingOrchestrator with pattern: {orchestrator.default_pattern.value}")
 
     # Lifecycle management
-    orchestrator._background_tasks: List[asyncio.Task] = []
+    orchestrator._background_tasks: list[asyncio.Task] = []
     orchestrator._bg_lock = asyncio.Lock()  # Protect concurrent access to _background_tasks
     orchestrator._closed = False

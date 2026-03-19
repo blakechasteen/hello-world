@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Tuple, Optional
 
 import numpy as np
 
@@ -43,11 +42,19 @@ _RUST_VERSION = None
 
 try:
     from hololoom_rust import (
-        cosine_similarity_batch as _rust_cosine_similarity,
-        normalize_batch as _rust_normalize,
-        kmeans as _rust_kmeans,
-        silhouette_score as _rust_silhouette,
         __version__ as _rust_version,
+    )
+    from hololoom_rust import (
+        cosine_similarity_batch as _rust_cosine_similarity,
+    )
+    from hololoom_rust import (
+        kmeans as _rust_kmeans,
+    )
+    from hololoom_rust import (
+        normalize_batch as _rust_normalize,
+    )
+    from hololoom_rust import (
+        silhouette_score as _rust_silhouette,
     )
     RUST_AVAILABLE = True
     _RUST_VERSION = _rust_version
@@ -127,7 +134,7 @@ def _numpy_kmeans(
     tolerance: float = 1e-4,
     n_init: int = 10,
     seed: int = 42,
-) -> Tuple[np.ndarray, np.ndarray, float, int]:
+) -> tuple[np.ndarray, np.ndarray, float, int]:
     """NumPy fallback for k-means clustering.
 
     Uses k-means++ initialization and Lloyd's algorithm.

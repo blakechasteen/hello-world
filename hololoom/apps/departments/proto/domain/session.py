@@ -9,8 +9,8 @@ Status: Production ready
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 from datetime import datetime
+from typing import Any
 from uuid import UUID, uuid4
 
 from hololoom.apps.departments.proto.domain.entities import (
@@ -38,8 +38,8 @@ class ConversationTurn:
     turn_id: UUID = field(default_factory=uuid4)
     role: str = "user"
     content: str = ""
-    intent: Optional[ProtoIntent] = None
-    response: Optional[ProtoResponse] = None
+    intent: ProtoIntent | None = None
+    response: ProtoResponse | None = None
     timestamp: datetime = field(default_factory=datetime.now)
 
     def is_user_turn(self) -> bool:
@@ -75,9 +75,9 @@ class ProtoSession:
         last_activity: Timestamp of last activity
     """
     session_id: UUID = field(default_factory=uuid4)
-    turns: List[ConversationTurn] = field(default_factory=list)
-    code_context: Optional[CodeContext] = None
-    preferences: Dict[str, Any] = field(default_factory=dict)
+    turns: list[ConversationTurn] = field(default_factory=list)
+    code_context: CodeContext | None = None
+    preferences: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.now)
     last_activity: datetime = field(default_factory=datetime.now)
 
@@ -85,8 +85,8 @@ class ProtoSession:
         self,
         role: str,
         content: str,
-        intent: Optional[ProtoIntent] = None,
-        response: Optional[ProtoResponse] = None,
+        intent: ProtoIntent | None = None,
+        response: ProtoResponse | None = None,
     ) -> ConversationTurn:
         """Add a turn to the conversation.
 
@@ -109,7 +109,7 @@ class ProtoSession:
         self.last_activity = datetime.now()
         return turn
 
-    def get_recent_turns(self, n: int = 5) -> List[ConversationTurn]:
+    def get_recent_turns(self, n: int = 5) -> list[ConversationTurn]:
         """Get N most recent turns.
 
         Args:
@@ -120,7 +120,7 @@ class ProtoSession:
         """
         return self.turns[-n:] if len(self.turns) > 0 else []
 
-    def get_user_turns(self) -> List[ConversationTurn]:
+    def get_user_turns(self) -> list[ConversationTurn]:
         """Get all user turns in session.
 
         Returns:
@@ -128,7 +128,7 @@ class ProtoSession:
         """
         return [t for t in self.turns if t.is_user_turn()]
 
-    def get_proto_turns(self) -> List[ConversationTurn]:
+    def get_proto_turns(self) -> list[ConversationTurn]:
         """Get all Proto response turns in session.
 
         Returns:
@@ -161,7 +161,7 @@ class ProtoSession:
         """
         return (self.last_activity - self.created_at).total_seconds()
 
-    def get_session_summary(self) -> Dict[str, Any]:
+    def get_session_summary(self) -> dict[str, Any]:
         """Get summary statistics about the session.
 
         Returns:

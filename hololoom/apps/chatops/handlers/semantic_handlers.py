@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 Semantic State Matrix Bot Handlers
 ===================================
@@ -19,9 +20,9 @@ Updated: 2025-12-25 - Added compare, replay, suggest commands
 """
 
 import logging
-from typing import Optional, Dict, Any, List
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -33,12 +34,14 @@ import numpy as np
 # Import semantic calculus components
 try:
     from hololoom.semantic_calculus import (
-        PolicySemanticState as SemanticState,
-        SemanticToolSelector,
-        SemanticAwareBandit,
         SEMANTIC_CATEGORIES,
-        TOPIC_SHIFT_THRESHOLD,
         SIGNIFICANT_SHIFT_THRESHOLD,
+        TOPIC_SHIFT_THRESHOLD,
+        SemanticAwareBandit,
+        SemanticToolSelector,
+    )
+    from hololoom.semantic_calculus import (
+        PolicySemanticState as SemanticState,
     )
     SEMANTIC_AVAILABLE = True
 except ImportError:
@@ -50,14 +53,16 @@ except ImportError:
 
 # Handler registry
 from hololoom.apps.chatops.handlers.handler_registry import (
-    HandlerRegistry, HandlerCategory, chatops_handler
+    HandlerCategory,
+    HandlerRegistry,
+    chatops_handler,
 )
 
 # Multi-agent integration (Phase 7)
 try:
     from hololoom.apps.chatops.handlers.multi_agent_semantic import (
+        get_semantic_registry,
         notify_semantic_update,
-        get_semantic_registry
     )
     MULTI_AGENT_AVAILABLE = True
 except ImportError:
@@ -68,7 +73,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def _format_error_with_recovery(error_type: str, details: str, recovery_steps: List[str]) -> str:
+def _format_error_with_recovery(error_type: str, details: str, recovery_steps: list[str]) -> str:
     """Format error message with actionable recovery steps."""
     steps_text = "\n".join(f"  {i+1}. {step}" for i, step in enumerate(recovery_steps))
     return f"**{error_type}**\n\n{details}\n\n**Recovery Steps:**\n{steps_text}"
@@ -78,9 +83,9 @@ def _format_error_with_recovery(error_type: str, details: str, recovery_steps: L
 class ConversationSemanticContext:
     """Tracks semantic state across conversation turns."""
     room_id: str
-    states: List[Any] = field(default_factory=list)
-    queries: List[str] = field(default_factory=list)
-    topic_shifts: List[Dict[str, Any]] = field(default_factory=list)
+    states: list[Any] = field(default_factory=list)
+    queries: list[str] = field(default_factory=list)
+    topic_shifts: list[dict[str, Any]] = field(default_factory=list)
     last_update: datetime = field(default_factory=datetime.now)
 
 
@@ -108,7 +113,7 @@ class SemanticMatrixHandlers:
         self.embedder = embedder
 
         # Track conversation semantic context per room
-        self._room_contexts: Dict[str, ConversationSemanticContext] = {}
+        self._room_contexts: dict[str, ConversationSemanticContext] = {}
 
         # Initialize semantic components
         if SEMANTIC_AVAILABLE:
@@ -500,7 +505,7 @@ Use `!semantic <query>` to analyze queries and detect shifts.
             for tool, boost in sorted(affinities.items(), key=lambda x: x[1], reverse=True):
                 response += f"• {tool}: {boost:.1f}x\n"
 
-            response += f"\n**Adjusted Priors (α, β):**\n"
+            response += "\n**Adjusted Priors (α, β):**\n"
             for tool, (alpha, beta) in adjusted.items():
                 exp = expected[tool]
                 bar = "█" * int(exp * 20)
@@ -759,15 +764,15 @@ Use `!semantic <query>` to analyze queries and detect shifts.
 # Global Handler Instance
 # ============================================================================
 
-_semantic_handlers: Optional[SemanticMatrixHandlers] = None
+_semantic_handlers: SemanticMatrixHandlers | None = None
 
 
-def get_semantic_handlers() -> Optional[SemanticMatrixHandlers]:
+def get_semantic_handlers() -> SemanticMatrixHandlers | None:
     """Get the global semantic handlers instance."""
     return _semantic_handlers
 
 
-def set_semantic_handlers(handlers: Optional[SemanticMatrixHandlers]) -> None:
+def set_semantic_handlers(handlers: SemanticMatrixHandlers | None) -> None:
     """Set the global semantic handlers instance."""
     global _semantic_handlers
     _semantic_handlers = handlers

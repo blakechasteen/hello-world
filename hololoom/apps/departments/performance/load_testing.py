@@ -13,11 +13,10 @@ Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
-from enum import Enum
 import asyncio
 import time
+from dataclasses import dataclass
+from enum import Enum
 from statistics import mean
 
 
@@ -37,7 +36,7 @@ class LoadTestConfig:
     max_concurrent: int
     duration_seconds: float
     ramp_up_duration: float = 0.0
-    test_queries: List[str] = None
+    test_queries: list[str] = None
 
 
 @dataclass

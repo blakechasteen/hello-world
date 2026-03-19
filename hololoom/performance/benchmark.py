@@ -9,22 +9,21 @@ Usage:
     python -m HoloLoom.performance.benchmark --mode all --queries 100
 """
 
-import asyncio
 import argparse
+import asyncio
 import sys
 import time
-from typing import List, Dict, Any, Optional
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from dataclasses import dataclass, asdict
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.config import Config, ExecutionMode
-from hololoom.weaving_shuttle import WeavingShuttle
-from hololoom.performance.profiler import Profiler, ProfilerRegistry
+from hololoom.config import Config
 from hololoom.performance.metrics import MetricsCollector
+from hololoom.performance.profiler import Profiler, ProfilerRegistry
+from hololoom.protocols.types import MemoryShard, Query
+from hololoom.weaving_shuttle import WeavingShuttle
 
 
 @dataclass
@@ -43,7 +42,7 @@ class BenchmarkResult:
     success_rate: float
 
 
-def create_test_queries(count: int) -> List[Query]:
+def create_test_queries(count: int) -> list[Query]:
     """Create test queries for benchmarking."""
     templates = [
         "What is the best way to implement {topic}?",
@@ -76,7 +75,7 @@ def create_test_queries(count: int) -> List[Query]:
     return queries
 
 
-def create_test_shards() -> List[MemoryShard]:
+def create_test_shards() -> list[MemoryShard]:
     """Create test memory shards for context."""
     return [
         MemoryShard(
@@ -120,8 +119,8 @@ def create_test_shards() -> List[MemoryShard]:
 async def benchmark_orchestrator(
     name: str,
     config: Config,
-    queries: List[Query],
-    shards: List[MemoryShard],
+    queries: list[Query],
+    shards: list[MemoryShard],
     metrics: MetricsCollector
 ) -> BenchmarkResult:
     """
@@ -210,7 +209,7 @@ async def benchmark_orchestrator(
     return result
 
 
-def print_results(results: List[BenchmarkResult]):
+def print_results(results: list[BenchmarkResult]):
     """Print benchmark results in a formatted table."""
     print("\n" + "="*80)
     print("BENCHMARK RESULTS")
@@ -247,7 +246,7 @@ def print_results(results: List[BenchmarkResult]):
         print()
 
 
-async def run_benchmarks(query_count: int, modes: List[str]) -> List[BenchmarkResult]:
+async def run_benchmarks(query_count: int, modes: list[str]) -> list[BenchmarkResult]:
     """
     Run benchmarks for specified execution modes.
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Pattern Extractor
 =================
@@ -13,9 +12,9 @@ Extracts:
 - Decision patterns (when A, choose B)
 """
 
-from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 try:
     from .enriched_memory import EnrichedMemory, ReasoningType
@@ -44,12 +43,12 @@ class Pattern:
     Represents a learnable unit (Q&A, reasoning, etc.)
     """
     pattern_type: PatternType
-    content: Dict[str, Any]  # Pattern-specific structure
-    source_memories: List[str] = field(default_factory=list)  # Memory IDs
+    content: dict[str, Any]  # Pattern-specific structure
+    source_memories: list[str] = field(default_factory=list)  # Memory IDs
     confidence: float = 1.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'pattern_type': self.pattern_type.value,
@@ -77,7 +76,7 @@ class PatternExtractor:
         """
         self.min_confidence = min_confidence
 
-    def extract_patterns(self, memories: List[EnrichedMemory]) -> List[Pattern]:
+    def extract_patterns(self, memories: list[EnrichedMemory]) -> list[Pattern]:
         """
         Extract all patterns from a collection of memories.
 
@@ -125,7 +124,7 @@ class PatternExtractor:
 
         return patterns
 
-    def _extract_qa_pairs(self, memory: EnrichedMemory) -> List[Pattern]:
+    def _extract_qa_pairs(self, memory: EnrichedMemory) -> list[Pattern]:
         """Extract question-answer pairs."""
         patterns = []
 
@@ -148,7 +147,7 @@ class PatternExtractor:
 
         return patterns
 
-    def _extract_reasoning_chains(self, memory: EnrichedMemory) -> List[Pattern]:
+    def _extract_reasoning_chains(self, memory: EnrichedMemory) -> list[Pattern]:
         """Extract multi-step reasoning chains."""
         patterns = []
 
@@ -190,7 +189,7 @@ class PatternExtractor:
 
         return patterns
 
-    def _extract_causal(self, memory: EnrichedMemory) -> List[Pattern]:
+    def _extract_causal(self, memory: EnrichedMemory) -> list[Pattern]:
         """Extract causal relationships (X causes Y)."""
         patterns = []
 
@@ -228,7 +227,7 @@ class PatternExtractor:
 
         return patterns
 
-    def _extract_decisions(self, memory: EnrichedMemory) -> List[Pattern]:
+    def _extract_decisions(self, memory: EnrichedMemory) -> list[Pattern]:
         """Extract decision patterns."""
         patterns = []
 
@@ -264,7 +263,7 @@ class PatternExtractor:
 
         return patterns
 
-    def _extract_comparisons(self, memory: EnrichedMemory) -> List[Pattern]:
+    def _extract_comparisons(self, memory: EnrichedMemory) -> list[Pattern]:
         """Extract comparisons (X vs Y)."""
         patterns = []
 
@@ -302,7 +301,7 @@ class PatternExtractor:
 
         return patterns
 
-    def _extract_procedures(self, memory: EnrichedMemory) -> List[Pattern]:
+    def _extract_procedures(self, memory: EnrichedMemory) -> list[Pattern]:
         """Extract step-by-step procedures."""
         patterns = []
 
@@ -346,7 +345,7 @@ class PatternExtractor:
 
         return patterns
 
-    def _extract_definitions(self, memory: EnrichedMemory) -> List[Pattern]:
+    def _extract_definitions(self, memory: EnrichedMemory) -> list[Pattern]:
         """Extract definitions (X is defined as Y)."""
         patterns = []
 
@@ -387,8 +386,8 @@ class PatternExtractor:
 
         return patterns
 
-    def cluster_patterns(self, patterns: List[Pattern],
-                        by: str = 'pattern_type') -> Dict[str, List[Pattern]]:
+    def cluster_patterns(self, patterns: list[Pattern],
+                        by: str = 'pattern_type') -> dict[str, list[Pattern]]:
         """
         Cluster patterns by type, topic, or other criteria.
 

@@ -8,15 +8,9 @@ Philosophy: Accuracy and completeness over style.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any
 
-from ..core.protocol import (
-    ModeWriterProtocol,
-    WritingContext,
-    WritingMode,
-    StyleGuide,
-    MemoryShard
-)
+from ..core.protocol import MemoryShard, StyleGuide, WritingContext, WritingMode
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +56,7 @@ class TechnicalWriter:
 
         return doc
 
-    def _analyze_technical_content(self, memories: List[MemoryShard]) -> Dict[str, Any]:
+    def _analyze_technical_content(self, memories: list[MemoryShard]) -> dict[str, Any]:
         """
         Analyze memories for technical content.
 
@@ -105,8 +99,8 @@ class TechnicalWriter:
     def _generate_technical_structure(
         self,
         query: str,
-        memories: List[MemoryShard],
-        analysis: Dict[str, Any],
+        memories: list[MemoryShard],
+        analysis: dict[str, Any],
         style: StyleGuide
     ) -> str:
         """
@@ -152,7 +146,7 @@ class TechnicalWriter:
 
         return '\n'.join(sections)
 
-    def _generate_purpose(self, query: str, memories: List[MemoryShard]) -> str:
+    def _generate_purpose(self, query: str, memories: list[MemoryShard]) -> str:
         """Generate purpose/overview section."""
         # Use highest relevance memory for purpose
         if not memories:
@@ -169,8 +163,8 @@ class TechnicalWriter:
 
     def _generate_implementation(
         self,
-        memories: List[MemoryShard],
-        analysis: Dict[str, Any]
+        memories: list[MemoryShard],
+        analysis: dict[str, Any]
     ) -> str:
         """Generate implementation details section."""
         parts = []
@@ -189,7 +183,7 @@ class TechnicalWriter:
 
         return '\n\n'.join(parts)
 
-    def _generate_usage(self, code_samples: List[str]) -> str:
+    def _generate_usage(self, code_samples: list[str]) -> str:
         """Generate usage/examples section."""
         parts = []
 
@@ -198,7 +192,7 @@ class TechnicalWriter:
 
         return '\n\n'.join(parts)
 
-    def _generate_parameters(self, parameters: List[Any]) -> str:
+    def _generate_parameters(self, parameters: list[Any]) -> str:
         """Generate parameters section."""
         if not parameters:
             return ""
@@ -217,8 +211,8 @@ class TechnicalWriter:
 
     def _generate_notes(
         self,
-        memories: List[MemoryShard],
-        analysis: Dict[str, Any]
+        memories: list[MemoryShard],
+        analysis: dict[str, Any]
     ) -> str:
         """Generate notes/additional info section."""
         # Collect lower-relevance memories as notes

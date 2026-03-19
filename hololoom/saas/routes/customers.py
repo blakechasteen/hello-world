@@ -11,22 +11,20 @@ Endpoints:
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import EmailStr
 
+from ..auth import AuthContext, validate_api_key
 from ..models import (
-    SignupRequest,
-    SignupResponse,
-    LoginRequest,
-    LoginResponse,
     CustomerProfile,
     CustomerUpdateRequest,
     ErrorResponse,
+    LoginRequest,
+    LoginResponse,
+    SignupRequest,
+    SignupResponse,
     get_plan_config,
 )
-from ..auth import AuthContext, validate_api_key
 
 logger = logging.getLogger(__name__)
 

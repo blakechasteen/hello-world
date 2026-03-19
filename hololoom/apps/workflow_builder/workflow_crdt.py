@@ -13,9 +13,8 @@ Part of HoloLoom Workflow Builder production integration.
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Set, Tuple
 from enum import Enum
-from copy import deepcopy
+from typing import Any
 
 
 class OperationType(Enum):
@@ -36,7 +35,7 @@ class VectorClock:
     Each replica maintains a logical clock. The vector contains
     the latest known clock value for each replica.
     """
-    clocks: Dict[str, int] = field(default_factory=dict)
+    clocks: dict[str, int] = field(default_factory=dict)
 
     def increment(self, replica_id: str) -> 'VectorClock':
         """Increment clock for a replica and return new VectorClock."""
@@ -89,12 +88,12 @@ class VectorClock:
     def __hash__(self) -> int:
         return hash(tuple(sorted(self.clocks.items())))
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> dict[str, int]:
         """Convert to dictionary for serialization."""
         return self.clocks.copy()
 
     @classmethod
-    def from_dict(cls, d: Dict[str, int]) -> 'VectorClock':
+    def from_dict(cls, d: dict[str, int]) -> 'VectorClock':
         """Create from dictionary."""
         return cls(clocks=d.copy())
 
@@ -110,7 +109,7 @@ class Operation:
     id: str
     type: OperationType
     target_id: str  # Node or connection ID
-    data: Dict[str, Any]
+    data: dict[str, Any]
     timestamp: float  # Wall clock for tie-breaking
     replica_id: str
     vector_clock: VectorClock
@@ -150,7 +149,7 @@ class ConflictResolver:
     """
 
     @staticmethod
-    def resolve_concurrent_updates(ops: List[Operation]) -> Operation:
+    def resolve_concurrent_updates(ops: list[Operation]) -> Operation:
         """Resolve concurrent updates using Last-Writer-Wins.
 
         Uses (timestamp, replica_id) for total ordering.
@@ -176,7 +175,7 @@ class ConflictResolver:
         return delete_op
 
     @staticmethod
-    def merge_node_data(existing: Dict, updates: Dict) -> Dict:
+    def merge_node_data(existing: dict, updates: dict) -> dict:
         """Merge node data with field-level LWW.
 
         For concurrent field updates, use timestamp.
@@ -189,7 +188,7 @@ class ConflictResolver:
 @dataclass
 class NodeState:
     """Internal state for a node."""
-    data: Dict[str, Any]
+    data: dict[str, Any]
     created_at: float
     updated_at: float
     created_by: str
@@ -198,7 +197,7 @@ class NodeState:
 @dataclass
 class ConnectionState:
     """Internal state for a connection."""
-    data: Dict[str, Any]
+    data: dict[str, Any]
     created_at: float
     created_by: str
 
@@ -229,27 +228,27 @@ class WorkflowCRDTState:
         self.vector_clock = VectorClock()
 
         # Current state
-        self.nodes: Dict[str, NodeState] = {}
-        self.connections: Dict[str, ConnectionState] = {}
-        self.metadata: Dict[str, Any] = {}
+        self.nodes: dict[str, NodeState] = {}
+        self.connections: dict[str, ConnectionState] = {}
+        self.metadata: dict[str, Any] = {}
 
         # Tombstones (deleted items - never removed)
-        self.deleted_nodes: Set[str] = set()
-        self.deleted_connections: Set[str] = set()
+        self.deleted_nodes: set[str] = set()
+        self.deleted_connections: set[str] = set()
 
         # Operation log
-        self.operations: List[Operation] = []
-        self.operation_ids: Set[str] = set()  # For fast duplicate check
-        self.pending_ops: List[Operation] = []  # Unsynced operations
+        self.operations: list[Operation] = []
+        self.operation_ids: set[str] = set()  # For fast duplicate check
+        self.pending_ops: list[Operation] = []  # Unsynced operations
 
         # Buffered operations (waiting for causal dependencies)
-        self.buffered_ops: List[Operation] = []
+        self.buffered_ops: list[Operation] = []
 
     def create_operation(
         self,
         op_type: OperationType,
         target_id: str,
-        data: Dict[str, Any]
+        data: dict[str, Any]
     ) -> Operation:
         """Create and apply a new operation from this replica.
 
@@ -405,7 +404,7 @@ class WorkflowCRDTState:
         elif op.type == OperationType.UPDATE_METADATA:
             self.metadata.update(op.data)
 
-    def merge_remote(self, remote_ops: List[Operation]) -> List[str]:
+    def merge_remote(self, remote_ops: list[Operation]) -> list[str]:
         """Merge operations from remote replica.
 
         Args:
@@ -428,7 +427,7 @@ class WorkflowCRDTState:
 
         return applied
 
-    def get_pending_ops(self) -> List[Operation]:
+    def get_pending_ops(self) -> list[Operation]:
         """Get operations that need to be synced to other replicas.
 
         Returns and clears the pending operations list.
@@ -437,7 +436,7 @@ class WorkflowCRDTState:
         self.pending_ops.clear()
         return pending
 
-    def get_ops_since(self, since_clock: VectorClock) -> List[Operation]:
+    def get_ops_since(self, since_clock: VectorClock) -> list[Operation]:
         """Get all operations since a given vector clock.
 
         Useful for sync: "give me everything I don't have".
@@ -449,11 +448,11 @@ class WorkflowCRDTState:
 
     # ==================== Convenience Methods ====================
 
-    def add_node(self, node_id: str, node_data: Dict[str, Any]) -> Operation:
+    def add_node(self, node_id: str, node_data: dict[str, Any]) -> Operation:
         """Add a new node."""
         return self.create_operation(OperationType.ADD_NODE, node_id, node_data)
 
-    def update_node(self, node_id: str, updates: Dict[str, Any]) -> Operation:
+    def update_node(self, node_id: str, updates: dict[str, Any]) -> Operation:
         """Update an existing node."""
         return self.create_operation(OperationType.UPDATE_NODE, node_id, updates)
 
@@ -484,7 +483,7 @@ class WorkflowCRDTState:
         """Delete a connection."""
         return self.create_operation(OperationType.DELETE_CONNECTION, conn_id, {})
 
-    def update_metadata(self, updates: Dict[str, Any]) -> Operation:
+    def update_metadata(self, updates: dict[str, Any]) -> Operation:
         """Update workflow metadata."""
         return self.create_operation(OperationType.UPDATE_METADATA, "", updates)
 
@@ -556,7 +555,7 @@ class CRDTStateManager:
             server_replica_id: Replica ID for server-side states
         """
         self.server_replica_id = server_replica_id
-        self._states: Dict[str, WorkflowCRDTState] = {}
+        self._states: dict[str, WorkflowCRDTState] = {}
 
     def get_or_create(self, workflow_id: str) -> WorkflowCRDTState:
         """Get or create CRDT state for a workflow."""
@@ -567,7 +566,7 @@ class CRDTStateManager:
             )
         return self._states[workflow_id]
 
-    def get(self, workflow_id: str) -> Optional[WorkflowCRDTState]:
+    def get(self, workflow_id: str) -> WorkflowCRDTState | None:
         """Get CRDT state for a workflow if it exists."""
         return self._states.get(workflow_id)
 
@@ -578,11 +577,11 @@ class CRDTStateManager:
             return True
         return False
 
-    def list_workflows(self) -> List[str]:
+    def list_workflows(self) -> list[str]:
         """List all workflow IDs with active CRDT states."""
         return list(self._states.keys())
 
-    def get_all_stats(self) -> Dict[str, dict]:
+    def get_all_stats(self) -> dict[str, dict]:
         """Get stats for all managed workflows."""
         return {
             wid: state.get_stats()

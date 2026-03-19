@@ -29,14 +29,14 @@ Usage:
 """
 
 import asyncio
+import hashlib
 import json
 import logging
-from typing import Dict, List, Optional, Any, Tuple
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from collections import defaultdict
-import hashlib
+from typing import Any
 
 
 @dataclass
@@ -48,12 +48,12 @@ class WorkflowMetadata:
     author: str
     description: str
     category: str
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
     # Requirements
-    dependencies: List[str] = field(default_factory=list)
-    min_hololoom_version: Optional[str] = None
-    required_skills: List[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
+    min_hololoom_version: str | None = None
+    required_skills: list[str] = field(default_factory=list)
 
     # Usage stats
     downloads: int = 0
@@ -64,11 +64,11 @@ class WorkflowMetadata:
     # Timestamps
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
-    published_at: Optional[datetime] = None
+    published_at: datetime | None = None
 
     # Verification
     verified: bool = False
-    verified_by: Optional[str] = None
+    verified_by: str | None = None
 
 
 @dataclass
@@ -76,11 +76,11 @@ class WorkflowTemplate:
     """Complete workflow template"""
     metadata: WorkflowMetadata
     dsl: str  # Workflow DSL definition
-    examples: List[Dict[str, Any]] = field(default_factory=list)
+    examples: list[dict[str, Any]] = field(default_factory=list)
     documentation: str = ""
 
     # Files
-    files: Dict[str, str] = field(default_factory=dict)  # filename -> content
+    files: dict[str, str] = field(default_factory=dict)  # filename -> content
 
     # Checksum for integrity
     checksum: str = ""
@@ -107,7 +107,7 @@ class WorkflowInstallation:
     installed_at: datetime
     installed_by: str
     auto_update: bool = False
-    customizations: Dict[str, Any] = field(default_factory=dict)
+    customizations: dict[str, Any] = field(default_factory=dict)
 
 
 class WorkflowMarketplace:
@@ -124,9 +124,9 @@ class WorkflowMarketplace:
 
     def __init__(
         self,
-        storage_path: Optional[Path] = None,
+        storage_path: Path | None = None,
         enable_remote: bool = False,
-        remote_url: Optional[str] = None
+        remote_url: str | None = None
     ):
         self.storage_path = storage_path or Path("./chatops_data/marketplace")
         self.storage_path.mkdir(parents=True, exist_ok=True)
@@ -135,9 +135,9 @@ class WorkflowMarketplace:
         self.remote_url = remote_url
 
         # Local storage
-        self.templates: Dict[str, WorkflowTemplate] = {}
-        self.reviews: Dict[str, List[WorkflowReview]] = defaultdict(list)
-        self.installations: Dict[str, WorkflowInstallation] = {}
+        self.templates: dict[str, WorkflowTemplate] = {}
+        self.reviews: dict[str, list[WorkflowReview]] = defaultdict(list)
+        self.installations: dict[str, WorkflowInstallation] = {}
 
         # Categories
         self.categories = [
@@ -167,12 +167,12 @@ class WorkflowMarketplace:
 
     def search(
         self,
-        query: Optional[str] = None,
-        category: Optional[str] = None,
-        tags: Optional[List[str]] = None,
+        query: str | None = None,
+        category: str | None = None,
+        tags: list[str] | None = None,
         min_rating: float = 0.0,
         verified_only: bool = False
-    ) -> List[WorkflowTemplate]:
+    ) -> list[WorkflowTemplate]:
         """
         Search for workflows.
 
@@ -229,10 +229,10 @@ class WorkflowMarketplace:
     async def install(
         self,
         workflow_id: str,
-        version: Optional[str] = None,
+        version: str | None = None,
         auto_update: bool = False,
-        user_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        user_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Install a workflow.
 
@@ -297,10 +297,10 @@ class WorkflowMarketplace:
     async def publish(
         self,
         dsl: str,
-        metadata: Dict[str, Any],
-        examples: Optional[List[Dict]] = None,
+        metadata: dict[str, Any],
+        examples: list[dict] | None = None,
         documentation: str = "",
-        files: Optional[Dict[str, str]] = None
+        files: dict[str, str] | None = None
     ) -> str:
         """
         Publish a workflow to marketplace.
@@ -411,15 +411,15 @@ class WorkflowMarketplace:
 
         return review.review_id
 
-    def get_workflow(self, workflow_id: str) -> Optional[WorkflowTemplate]:
+    def get_workflow(self, workflow_id: str) -> WorkflowTemplate | None:
         """Get workflow template by ID"""
         return self.templates.get(workflow_id)
 
-    def get_reviews(self, workflow_id: str) -> List[WorkflowReview]:
+    def get_reviews(self, workflow_id: str) -> list[WorkflowReview]:
         """Get reviews for workflow"""
         return self.reviews.get(workflow_id, [])
 
-    def list_installed(self) -> List[WorkflowInstallation]:
+    def list_installed(self) -> list[WorkflowInstallation]:
         """List installed workflows"""
         return list(self.installations.values())
 
@@ -434,8 +434,8 @@ class WorkflowMarketplace:
     async def update(
         self,
         workflow_id: str,
-        to_version: Optional[str] = None
-    ) -> Dict[str, Any]:
+        to_version: str | None = None
+    ) -> dict[str, Any]:
         """
         Update an installed workflow.
 
@@ -481,7 +481,7 @@ class WorkflowMarketplace:
             "success": result["success"]
         }
 
-    async def check_updates(self) -> List[Dict[str, Any]]:
+    async def check_updates(self) -> list[dict[str, Any]]:
         """Check for workflow updates"""
         updates = []
 
@@ -539,7 +539,7 @@ class WorkflowMarketplace:
 
     def import_workflow(self, bundle_path: Path) -> str:
         """Import workflow from JSON bundle"""
-        with open(bundle_path, 'r') as f:
+        with open(bundle_path) as f:
             bundle = json.load(f)
 
         # Verify checksum
@@ -562,7 +562,7 @@ class WorkflowMarketplace:
 
         return template.metadata.workflow_id
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get marketplace statistics"""
         stats = self.stats.copy()
 
@@ -607,7 +607,7 @@ class WorkflowMarketplace:
 
         return stats
 
-    async def _resolve_dependencies(self, template: WorkflowTemplate) -> List[str]:
+    async def _resolve_dependencies(self, template: WorkflowTemplate) -> list[str]:
         """Resolve and install dependencies"""
         installed = []
 
@@ -635,8 +635,8 @@ class WorkflowMarketplace:
     async def _fetch_remote_workflow(
         self,
         workflow_id: str,
-        version: Optional[str]
-    ) -> Optional[WorkflowTemplate]:
+        version: str | None
+    ) -> WorkflowTemplate | None:
         """Fetch workflow from remote marketplace"""
         # Stub - would implement HTTP fetch
         return None
@@ -708,7 +708,7 @@ class WorkflowMarketplace:
         try:
             templates_file = self.storage_path / "templates.json"
             if templates_file.exists():
-                with open(templates_file, 'r') as f:
+                with open(templates_file) as f:
                     templates_data = json.load(f)
                     self.stats["total_workflows"] = len(templates_data)
 

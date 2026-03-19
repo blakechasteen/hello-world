@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Prompt Mutation Testing for robustness evaluation.
 
 Implements systematic prompt mutations to test robustness and quality degradation
@@ -10,17 +11,19 @@ Updated: December 2025 - LLMJudge integration
 """
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Any
+from typing import Any
+
 from hololoom.prompting.testing.protocol import PromptTestConfig, PromptTestResult
 
 # LLM Judge integration (December 2025)
 try:
     from hololoom.chaining.evaluation import (
-        LLMJudge,
-        JudgeCriteria,
         JudgeConfig,
+        JudgeCriteria,
+        LLMJudge,
         create_judge,
     )
     LLM_JUDGE_AVAILABLE = True
@@ -59,7 +62,7 @@ class Mutation:
 class PromptMutator:
     """Applies systematic mutations to prompts for robustness testing."""
 
-    def __init__(self, enabled_mutations: Optional[List[MutationType]] = None):
+    def __init__(self, enabled_mutations: list[MutationType] | None = None):
         """Initialize mutator with optional mutation filter.
 
         Args:
@@ -69,7 +72,7 @@ class PromptMutator:
             enabled_mutations if enabled_mutations else list(MutationType)
         )
 
-    def mutate(self, prompt: str) -> List[Mutation]:
+    def mutate(self, prompt: str) -> list[Mutation]:
         """Apply all enabled mutations to a prompt.
 
         Args:
@@ -87,7 +90,7 @@ class PromptMutator:
 
     def _apply_mutation(
         self, prompt: str, mutation_type: MutationType
-    ) -> Optional[Mutation]:
+    ) -> Mutation | None:
         """Apply a specific mutation to a prompt.
 
         Args:
@@ -255,10 +258,10 @@ class MutationTester:
 
     def __init__(
         self,
-        mutator: Optional[PromptMutator] = None,
-        quality_evaluator: Optional[Callable] = None,
-        config: Optional[PromptTestConfig] = None,
-        llm_judge: Optional[Any] = None,
+        mutator: PromptMutator | None = None,
+        quality_evaluator: Callable | None = None,
+        config: PromptTestConfig | None = None,
+        llm_judge: Any | None = None,
     ):
         """Initialize mutation tester.
 
@@ -363,13 +366,13 @@ class MutationTester:
                 return total / len(result.scores)
             return 0.5
 
-        except Exception as e:
+        except Exception:
             # Fallback to heuristic on error
             if self.config.fallback_to_heuristic:
                 return await self._heuristic_evaluator(prompt)
             raise
 
-    def mutate(self, prompt: str) -> List[Mutation]:
+    def mutate(self, prompt: str) -> list[Mutation]:
         """Apply mutations to a prompt.
 
         Convenience method that delegates to internal mutator.
@@ -384,7 +387,7 @@ class MutationTester:
 
     async def test_mutations(
         self, prompt: str, baseline_quality: float
-    ) -> List[PromptTestResult]:
+    ) -> list[PromptTestResult]:
         """Test mutations against baseline quality.
 
         Args:
@@ -438,7 +441,7 @@ class MutationTester:
         return results
 
     def calculate_robustness_score(
-        self, results: List[PromptTestResult], baseline: float
+        self, results: list[PromptTestResult], baseline: float
     ) -> float:
         """Calculate overall robustness score from mutation test results.
 
@@ -459,9 +462,9 @@ class MutationTester:
 
 
 def create_mutation_tester(
-    config: Optional[PromptTestConfig] = None,
-    llm_judge: Optional[Any] = None,
-    enabled_mutations: Optional[List[MutationType]] = None,
+    config: PromptTestConfig | None = None,
+    llm_judge: Any | None = None,
+    enabled_mutations: list[MutationType] | None = None,
 ) -> MutationTester:
     """Factory function to create a mutation tester.
 
@@ -499,8 +502,8 @@ def create_mutation_tester(
 
 
 async def create_mutation_tester_async(
-    config: Optional[PromptTestConfig] = None,
-    enabled_mutations: Optional[List[MutationType]] = None,
+    config: PromptTestConfig | None = None,
+    enabled_mutations: list[MutationType] | None = None,
 ) -> MutationTester:
     """Async factory function to create a mutation tester.
 

@@ -12,7 +12,7 @@ Created: 2025-01-20
 """
 
 import logging
-from typing import Optional
+
 from hololoom.llm.unified_client import LLMConfig, LLMResponse
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class GeminiProvider:
             self.client = genai
             self.model = genai.GenerativeModel(config.model)
             self._available = True
-            logger.info(f"✓ Gemini client initialized")
+            logger.info("✓ Gemini client initialized")
         except ImportError:
             logger.warning(
                 "⚠ Google Generative AI not installed. "
@@ -66,7 +66,7 @@ class GeminiProvider:
         prompt: str,
         max_tokens: int = 500,
         temperature: float = 0.7,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         **kwargs
     ) -> LLMResponse:
         """

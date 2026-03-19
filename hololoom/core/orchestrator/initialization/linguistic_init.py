@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Linguistic Gate Initialization
 ===============================
@@ -36,7 +35,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def initialize_linguistic_gate(orchestrator: 'WeavingOrchestrator') -> None:
+def initialize_linguistic_gate(orchestrator: WeavingOrchestrator) -> None:
     """
     Initialize Phase 5 Linguistic Matryoshka Gate.
 
@@ -70,9 +69,9 @@ def initialize_linguistic_gate(orchestrator: 'WeavingOrchestrator') -> None:
     """
     try:
         from hololoom.embedding.linguistic_matryoshka_gate import (
-            LinguisticMatryoshkaGate,
+            LinguisticFilterMode,
             LinguisticGateConfig,
-            LinguisticFilterMode
+            LinguisticMatryoshkaGate,
         )
 
         logger.info("Initializing Phase 5 Linguistic Matryoshka Gate...")

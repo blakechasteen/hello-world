@@ -16,11 +16,12 @@ Features:
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any, Callable, Tuple
-from enum import Enum
-from datetime import datetime
 import math
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class HapticDevice(Enum):
@@ -105,10 +106,10 @@ class HapticPulse:
     duration: float   # Seconds
     frequency: float = 150.0  # Hz (typical range 50-300Hz)
     waveform: HapticWaveform = HapticWaveform.CONSTANT
-    envelope: Optional[HapticEnvelope] = None
+    envelope: HapticEnvelope | None = None
     delay: float = 0.0  # Delay before starting
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "device": self.device.value,
             "intensity": self.intensity,
@@ -130,10 +131,10 @@ class HapticPattern:
     """A sequence of haptic pulses forming a pattern."""
     pattern_id: str
     name: str
-    pulses: List[HapticPulse] = field(default_factory=list)
+    pulses: list[HapticPulse] = field(default_factory=list)
     loop: bool = False
     loop_count: int = 0  # 0 = infinite
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def get_total_duration(self) -> float:
         """Get total duration of pattern."""
@@ -161,7 +162,7 @@ class HapticPattern:
         ))
         return self
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.pattern_id,
             "name": self.name,
@@ -176,7 +177,7 @@ class HapticPattern:
 class SpatialHapticZone:
     """A zone in 3D space that triggers haptics when entered/touched."""
     zone_id: str
-    position: Tuple[float, float, float]
+    position: tuple[float, float, float]
     radius: float
     pattern: HapticPattern
     trigger_on_enter: bool = True
@@ -379,30 +380,28 @@ class HapticFeedbackManager:
         self.enable_spatial = enable_spatial
 
         # Pattern library
-        self.patterns: Dict[str, HapticPattern] = {}
+        self.patterns: dict[str, HapticPattern] = {}
         self._load_preset_patterns()
 
         # Spatial zones
-        self.spatial_zones: Dict[str, SpatialHapticZone] = {}
+        self.spatial_zones: dict[str, SpatialHapticZone] = {}
 
         # Active haptics
-        self.active_pulses: List[Dict[str, Any]] = []
+        self.active_pulses: list[dict[str, Any]] = []
 
         # Collision configuration
         self.collision_config = CollisionHaptic()
 
         # Device availability
-        self.available_devices: Dict[HapticDevice, bool] = {
-            device: True for device in HapticDevice
-        }
+        self.available_devices: dict[HapticDevice, bool] = dict.fromkeys(HapticDevice, True)
 
         # Haptic history for analytics
-        self.haptic_history: List[Dict[str, Any]] = []
+        self.haptic_history: list[dict[str, Any]] = []
         self.max_history = 1000
 
         # Callbacks
-        self.on_haptic_start: List[Callable[[str, HapticDevice], None]] = []
-        self.on_haptic_complete: List[Callable[[str], None]] = []
+        self.on_haptic_start: list[Callable[[str, HapticDevice], None]] = []
+        self.on_haptic_complete: list[Callable[[str], None]] = []
 
     def _load_preset_patterns(self):
         """Load preset haptic patterns."""
@@ -437,7 +436,7 @@ class HapticFeedbackManager:
     def play_pattern(
         self,
         pattern_id: str,
-        device: Optional[HapticDevice] = None,
+        device: HapticDevice | None = None,
         intensity_scale: float = 1.0
     ) -> bool:
         """Play a registered haptic pattern."""
@@ -470,7 +469,7 @@ class HapticFeedbackManager:
         self,
         intensity: float,
         duration: float,
-        device: Optional[HapticDevice] = None,
+        device: HapticDevice | None = None,
         frequency: float = 150.0,
         waveform: HapticWaveform = HapticWaveform.CONSTANT
     ) -> bool:
@@ -493,30 +492,30 @@ class HapticFeedbackManager:
 
         return True
 
-    def play_click(self, device: Optional[HapticDevice] = None) -> bool:
+    def play_click(self, device: HapticDevice | None = None) -> bool:
         """Convenience: Play click haptic."""
         return self.play_pattern("click", device)
 
-    def play_success(self, device: Optional[HapticDevice] = None) -> bool:
+    def play_success(self, device: HapticDevice | None = None) -> bool:
         """Convenience: Play success haptic."""
         return self.play_pattern("success", device)
 
-    def play_error(self, device: Optional[HapticDevice] = None) -> bool:
+    def play_error(self, device: HapticDevice | None = None) -> bool:
         """Convenience: Play error haptic."""
         return self.play_pattern("error", device)
 
-    def play_grab(self, device: Optional[HapticDevice] = None) -> bool:
+    def play_grab(self, device: HapticDevice | None = None) -> bool:
         """Convenience: Play grab haptic."""
         return self.play_pattern("grab", device)
 
-    def play_release(self, device: Optional[HapticDevice] = None) -> bool:
+    def play_release(self, device: HapticDevice | None = None) -> bool:
         """Convenience: Play release haptic."""
         return self.play_pattern("release", device)
 
     def play_collision(
         self,
         velocity: float,
-        device: Optional[HapticDevice] = None
+        device: HapticDevice | None = None
     ) -> bool:
         """Play collision haptic based on velocity."""
         cfg = self.collision_config
@@ -552,7 +551,7 @@ class HapticFeedbackManager:
     def add_spatial_zone(
         self,
         zone_id: str,
-        position: Tuple[float, float, float],
+        position: tuple[float, float, float],
         radius: float,
         pattern_id: str,
         trigger_on_enter: bool = True,
@@ -578,9 +577,9 @@ class HapticFeedbackManager:
 
     def check_spatial_zones(
         self,
-        hand_position: Tuple[float, float, float],
+        hand_position: tuple[float, float, float],
         device: HapticDevice = HapticDevice.RIGHT_CONTROLLER
-    ) -> List[str]:
+    ) -> list[str]:
         """Check if position triggers any spatial zones."""
         if not self.enable_spatial:
             return []
@@ -672,10 +671,10 @@ class HapticFeedbackManager:
         if len(self.haptic_history) > self.max_history:
             self.haptic_history = self.haptic_history[-self.max_history:]
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get haptic usage statistics."""
-        pattern_counts: Dict[str, int] = {}
-        device_counts: Dict[str, int] = {}
+        pattern_counts: dict[str, int] = {}
+        device_counts: dict[str, int] = {}
         total_duration = 0.0
 
         for record in self.haptic_history:
@@ -697,7 +696,7 @@ class HapticFeedbackManager:
             "master_intensity": self.master_intensity
         }
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export state for WebXR client."""
         return {
             "type": "haptic_state",

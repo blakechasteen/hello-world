@@ -34,12 +34,11 @@ Author: HoloLoom Differential Geometry Team
 Date: 2025-11-03
 """
 
-from typing import Tuple, Optional, List
+import warnings
 from dataclasses import dataclass
 from enum import Enum
-import numpy as np
-import warnings
 
+import numpy as np
 
 # ============================================================================
 # Manifold Types
@@ -430,7 +429,7 @@ class ProductManifold:
         self.s_dim = config.spherical_dim
         self.e_dim = config.euclidean_dim
 
-    def split(self, x: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def split(self, x: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Split vector into component subspaces."""
         h_end = self.h_dim
         s_end = h_end + self.s_dim

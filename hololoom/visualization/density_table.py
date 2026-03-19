@@ -12,8 +12,8 @@ Date: October 29, 2025
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
 from enum import Enum
+from typing import Any
 
 
 class ColumnType(Enum):
@@ -40,14 +40,14 @@ class Column:
     name: str
     type: ColumnType
     align: ColumnAlign = ColumnAlign.LEFT
-    unit: Optional[str] = None  # 'ms', '%', etc.
-    width: Optional[int] = None  # px or None for auto
+    unit: str | None = None  # 'ms', '%', etc.
+    width: int | None = None  # px or None for auto
 
 
 @dataclass
 class Row:
     """Table row data."""
-    cells: Dict[str, Any]  # column_name -> value
+    cells: dict[str, Any]  # column_name -> value
     highlight: bool = False  # Highlight this row (bottleneck, error, etc.)
     highlight_color: str = '#fef2f2'  # Light red background
 
@@ -75,10 +75,10 @@ class DensityTableRenderer:
 
     def render(
         self,
-        columns: List[Column],
-        rows: List[Row],
-        footer: Optional[Dict[str, Any]] = None,
-        title: Optional[str] = None
+        columns: list[Column],
+        rows: list[Row],
+        footer: dict[str, Any] | None = None,
+        title: str | None = None
     ) -> str:
         """
         Render data density table HTML.
@@ -136,7 +136,7 @@ class DensityTableRenderer:
 
         return table_html
 
-    def _render_header(self, columns: List[Column]) -> str:
+    def _render_header(self, columns: list[Column]) -> str:
         """Render table header."""
         cells = []
         for col in columns:
@@ -165,7 +165,7 @@ class DensityTableRenderer:
 
         return header_html
 
-    def _render_row(self, row: Row, columns: List[Column]) -> str:
+    def _render_row(self, row: Row, columns: list[Column]) -> str:
         """Render single table row."""
         cells = []
         for col in columns:
@@ -241,7 +241,7 @@ class DensityTableRenderer:
 
         return cell_html
 
-    def _render_footer(self, footer: Dict[str, Any], columns: List[Column]) -> str:
+    def _render_footer(self, footer: dict[str, Any], columns: list[Column]) -> str:
         """Render footer row (totals, etc.)."""
         cells = []
         for col in columns:
@@ -266,7 +266,7 @@ class DensityTableRenderer:
 
         return footer_html
 
-    def _get_grid_template(self, columns: List[Column]) -> str:
+    def _get_grid_template(self, columns: list[Column]) -> str:
         """Generate CSS grid-template-columns value."""
         template_parts = []
         for col in columns:
@@ -304,7 +304,7 @@ class DensityTableRenderer:
         else:
             return str(value)
 
-    def _render_sparkline(self, values: List[float]) -> str:
+    def _render_sparkline(self, values: list[float]) -> str:
         """Render inline sparkline SVG."""
         if not values or len(values) < 2:
             return '<div>—</div>'
@@ -351,7 +351,7 @@ class DensityTableRenderer:
 
 # Helper function for common use case: stage timing table
 def render_stage_timing_table(
-    stages: List[Dict[str, Any]],
+    stages: list[dict[str, Any]],
     total_duration: float,
     bottleneck_threshold: float = 0.4
 ) -> str:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Visual Compression for Context Window Expansion
 ================================================
@@ -30,11 +29,11 @@ Usage:
     data = await decompress_visual(visual_token)
 """
 
-import io
-import numpy as np
-from typing import Any, Dict, Optional, Union, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Union
+
+import numpy as np
 
 # Optional dependencies (graceful degradation)
 try:
@@ -273,7 +272,7 @@ class TableRenderer(VisualRenderer):
     - Type-appropriate formatting
     """
 
-    def render(self, data: Union[List[List], Dict, 'pd.DataFrame']) -> np.ndarray:
+    def render(self, data: Union[list[list], dict, 'pd.DataFrame']) -> np.ndarray:
         """
         Render table data as image.
 
@@ -456,7 +455,7 @@ class CodeRenderer(VisualRenderer):
         return len(code) // 3
 
 
-def calculate_optimal_dimensions(estimated_tokens: int, target_ratio: float = 3.0) -> Tuple[int, int]:
+def calculate_optimal_dimensions(estimated_tokens: int, target_ratio: float = 3.0) -> tuple[int, int]:
     """
     Calculate optimal image dimensions for target compression ratio.
 
@@ -501,12 +500,12 @@ def calculate_optimal_dimensions(estimated_tokens: int, target_ratio: float = 3.
 
 def compress_to_visual(
     data: Any,
-    compression_type: Union[CompressionType, str] = CompressionType.AUTO,
+    compression_type: CompressionType | str = CompressionType.AUTO,
     width: int = None,
     height: int = None,
     adaptive_sizing: bool = True,
     target_ratio: float = 3.0
-) -> Tuple[np.ndarray, CompressionMetrics]:
+) -> tuple[np.ndarray, CompressionMetrics]:
     """
     Compress data into visual representation.
 
@@ -614,17 +613,17 @@ def compress_to_visual(
 
 
 # Convenience functions for common use cases
-def compress_knowledge_graph(graph: 'nx.Graph', **kwargs) -> Tuple[np.ndarray, CompressionMetrics]:
+def compress_knowledge_graph(graph: 'nx.Graph', **kwargs) -> tuple[np.ndarray, CompressionMetrics]:
     """Compress NetworkX graph to visual diagram."""
     return compress_to_visual(graph, CompressionType.KNOWLEDGE_GRAPH, **kwargs)
 
 
-def compress_table(data: Union[List, Dict, 'pd.DataFrame'], **kwargs) -> Tuple[np.ndarray, CompressionMetrics]:
+def compress_table(data: Union[list, dict, 'pd.DataFrame'], **kwargs) -> tuple[np.ndarray, CompressionMetrics]:
     """Compress table/dataframe to visual representation."""
     return compress_to_visual(data, CompressionType.TABLE, **kwargs)
 
 
-def compress_code(code: str, **kwargs) -> Tuple[np.ndarray, CompressionMetrics]:
+def compress_code(code: str, **kwargs) -> tuple[np.ndarray, CompressionMetrics]:
     """Compress source code to syntax-highlighted image."""
     return compress_to_visual(code, CompressionType.CODE, **kwargs)
 

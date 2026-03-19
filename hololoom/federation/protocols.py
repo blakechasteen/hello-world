@@ -10,14 +10,11 @@ All protocols in one place. Implementations come later.
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import AsyncIterator
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncIterator,
-    List,
-    Optional,
     Protocol,
-    Set,
     runtime_checkable,
 )
 
@@ -26,7 +23,6 @@ if TYPE_CHECKING:
         Capability,
         FederationNode,
         Guild,
-        NodeStatus,
         Query,
         Response,
         Verification,
@@ -69,8 +65,8 @@ class FederationProtocol(Protocol):
         text: str,
         *,
         verify: bool = True,
-        level: Optional[VerificationLevel] = None,
-        guild: Optional[str] = None,
+        level: VerificationLevel | None = None,
+        guild: str | None = None,
         timeout_ms: int = 5000,
     ) -> Response:
         """
@@ -93,7 +89,7 @@ class FederationProtocol(Protocol):
         self,
         text: str,
         *,
-        level: Optional[VerificationLevel] = None,
+        level: VerificationLevel | None = None,
     ) -> Verification:
         """Request verification only (no response generation)."""
         ...
@@ -188,7 +184,7 @@ class MembershipProtocol(Protocol):
     """SWIM-style membership with failure detection."""
 
     @abstractmethod
-    async def join(self, bootstrap_nodes: List[str]) -> bool:
+    async def join(self, bootstrap_nodes: list[str]) -> bool:
         """Join network via bootstrap nodes."""
         ...
 
@@ -206,7 +202,7 @@ class MembershipProtocol(Protocol):
     async def ping_req(
         self,
         target: str,
-        intermediaries: List[str],
+        intermediaries: list[str],
     ) -> bool:
         """Indirect probe via intermediaries."""
         ...
@@ -222,12 +218,12 @@ class MembershipProtocol(Protocol):
         ...
 
     @abstractmethod
-    def get_members(self) -> List[FederationNode]:
+    def get_members(self) -> list[FederationNode]:
         """Get current membership list."""
         ...
 
     @abstractmethod
-    def get_random_members(self, k: int) -> List[FederationNode]:
+    def get_random_members(self, k: int) -> list[FederationNode]:
         """Get k random members for gossip."""
         ...
 
@@ -244,12 +240,12 @@ class RoutingProtocol(Protocol):
     @abstractmethod
     async def find_nodes(
         self,
-        capabilities: Set[Capability],
+        capabilities: set[Capability],
         *,
         min_trust: float = 0.7,
-        guild: Optional[str] = None,
+        guild: str | None = None,
         limit: int = 10,
-    ) -> List[FederationNode]:
+    ) -> list[FederationNode]:
         """
         Find nodes with required capabilities.
 
@@ -268,8 +264,8 @@ class RoutingProtocol(Protocol):
     async def route(
         self,
         query: Query,
-        nodes: List[FederationNode],
-    ) -> List[Response]:
+        nodes: list[FederationNode],
+    ) -> list[Response]:
         """Route query to nodes and collect responses."""
         ...
 
@@ -282,7 +278,7 @@ class RoutingProtocol(Protocol):
         ...
 
     @abstractmethod
-    async def lookup(self, node_id: str) -> Optional[FederationNode]:
+    async def lookup(self, node_id: str) -> FederationNode | None:
         """Lookup node by ID."""
         ...
 
@@ -300,7 +296,7 @@ class VerificationProtocol(Protocol):
     async def verify(
         self,
         query: Query,
-        responses: List[Response],
+        responses: list[Response],
         *,
         level: VerificationLevel,
         quorum: int,
@@ -336,7 +332,7 @@ class VerificationProtocol(Protocol):
     @abstractmethod
     async def check_agreement(
         self,
-        responses: List[Response],
+        responses: list[Response],
         threshold: float = 0.66,
     ) -> bool:
         """Check if responses agree above threshold."""
@@ -374,7 +370,7 @@ class GuildProtocol(Protocol):
         ...
 
     @abstractmethod
-    async def get_members(self, guild_id: str) -> List[FederationNode]:
+    async def get_members(self, guild_id: str) -> list[FederationNode]:
         """Get guild members."""
         ...
 

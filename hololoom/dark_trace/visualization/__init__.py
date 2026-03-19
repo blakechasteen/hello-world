@@ -18,64 +18,59 @@ Created: December 2025
 """
 
 from .circuit_explorer import (
+    CircuitEdge,
     CircuitExplorer,
     CircuitNode,
-    CircuitEdge,
     render_circuit_graph,
 )
-
-from .feature_heatmap import (
-    FeatureHeatmap,
-    render_activation_heatmap,
-    render_layer_heatmap,
-)
-
-from .drift_monitor import (
-    DriftMonitor,
-    DriftEvent,
-    DriftType,
-    render_drift_timeline,
-)
-
 from .dashboard import (
     DarkTraceDashboard,
     DashboardConfig,
     create_dashboard,
 )
-
-# Phase 2: Real-time Streaming and Dashboard API
-from .streaming_server import (
-    DarkTraceStreamingServer,
-    StreamingConfig,
-    StreamMessage,
-    MessageType,
-    SubscriptionType,
-    ClientSubscription,
-    ActivationSnapshot,
-    ActivationStreamHandler,
-    create_streaming_server,
-    create_streaming_config,
-)
-
 from .dashboard_api import (
+    ActivationEntry,
     DarkTraceDashboardAPI,
     DashboardAPIConfig,
     FeatureInfo,
     LayerInfo,
-    ActivationEntry,
+    StatusResponse,
     SteeringRequest,
     SteeringResponse,
-    StatusResponse,
     create_dashboard_api,
     create_dashboard_router,
 )
-
+from .drift_monitor import (
+    DriftEvent,
+    DriftMonitor,
+    DriftType,
+    render_drift_timeline,
+)
+from .feature_heatmap import (
+    FeatureHeatmap,
+    render_activation_heatmap,
+    render_layer_heatmap,
+)
 from .orchestrator_hook import (
     DarkTraceOrchestratorHook,
     HookConfig,
     HookState,
-    create_orchestrator_hook,
     create_hook_config,
+    create_orchestrator_hook,
+)
+
+# Phase 2: Real-time Streaming and Dashboard API
+from .streaming_server import (
+    ActivationSnapshot,
+    ActivationStreamHandler,
+    ClientSubscription,
+    DarkTraceStreamingServer,
+    MessageType,
+    StreamingConfig,
+    StreamMessage,
+    SubscriptionType,
+    create_streaming_config,
+    create_streaming_server,
 )
 
 __all__ = [

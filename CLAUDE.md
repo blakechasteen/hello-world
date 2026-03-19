@@ -4,18 +4,30 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Project Overview
 
-HoloLoom is a unified memory system for AI agents. The core API is two imports:
+HoloLoom is a unified memory system for AI agents. One class, one import:
 
 ```python
-from hololoom import HoloLoom, Memory
+from hololoom import HoloLoom
 
 loom = HoloLoom()
+
+# Memory (AwarenessGraph — always available)
 memory = await loom.experience("content")
 memories = await loom.recall("query")
 await loom.reflect(memories, feedback={...})
+
+# Weaving (lazy WeavingOrchestrator, shares AwarenessGraph)
+result = await loom.query("What is Thompson Sampling?")
+response = await loom.chat("Tell me more")
+
+# Ingestion (any SpinnerProtocol)
+await loom.ingest_text("knowledge base content...")
+await loom.ingest_web("https://example.com")
 ```
 
 Package name: `hololoom` (lowercase, PEP 8). Class name: `HoloLoom` (PascalCase).
+
+Simplified version: `from hololoom import HoloLoomLite` (fewer deps, same core API).
 
 ## Repository Structure
 
@@ -112,7 +124,7 @@ pip install hololoom[all]         # everything
 
 ## Testing Baseline
 
-20 pre-existing collection errors in test suite (referencing non-existent modules like EduVerse, xterminator). These are known and not regressions.
+Stale test files removed. Test collection should show 0 errors (~4896 tests).
 
 ## Detailed Documentation
 

@@ -38,10 +38,8 @@ Environment Variables:
     MATRIX_ROOM_ID: Default room ID for alerts
 """
 
-import os
-import json
 import logging
-from typing import Optional, Dict, List
+import os
 from datetime import datetime
 from enum import Enum
 
@@ -75,7 +73,7 @@ def format_alert_message(
     alert: Alert,
     format_type: MessageFormat = MessageFormat.HTML,
     include_metrics: bool = True
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """
     Format alert as Matrix message.
 
@@ -195,10 +193,10 @@ class MatrixBot:
 
     def __init__(
         self,
-        homeserver: Optional[str] = None,
-        user_id: Optional[str] = None,
-        access_token: Optional[str] = None,
-        default_room_id: Optional[str] = None
+        homeserver: str | None = None,
+        user_id: str | None = None,
+        access_token: str | None = None,
+        default_room_id: str | None = None
     ):
         """
         Initialize Matrix bot.
@@ -235,7 +233,7 @@ class MatrixBot:
     async def send_alert(
         self,
         alert: Alert,
-        room_id: Optional[str] = None
+        room_id: str | None = None
     ) -> bool:
         """
         Send alert to Matrix room.
@@ -282,8 +280,8 @@ class MatrixBot:
 
     async def send_metrics_summary(
         self,
-        stats: Dict,
-        room_id: Optional[str] = None
+        stats: dict,
+        room_id: str | None = None
     ) -> bool:
         """
         Send metrics summary to Matrix room.
@@ -318,13 +316,13 @@ class MatrixBot:
 
             for component, metrics in stats.items():
                 if metrics["count"] > 0:
-                    html += f"<tr>"
+                    html += "<tr>"
                     html += f"<td><strong>{component}</strong></td>"
                     html += f"<td>{metrics['p50']:.3f}ms</td>"
                     html += f"<td>{metrics['p95']:.3f}ms</td>"
                     html += f"<td>{metrics['p99']:.3f}ms</td>"
                     html += f"<td>{metrics['count']}</td>"
-                    html += f"</tr>"
+                    html += "</tr>"
 
             html += "</table>"
 
@@ -354,8 +352,8 @@ class MatrixBot:
 # Convenience function for quick integration
 def setup_matrix_alerting(
     monitor,
-    webhook_url: Optional[str] = None,
-    bot_config: Optional[Dict] = None,
+    webhook_url: str | None = None,
+    bot_config: dict | None = None,
     check_interval: int = 60
 ):
     """
@@ -446,8 +444,9 @@ if __name__ == '__main__':
         python HoloLoom/alignment/matrix_chatops.py
     """
     import asyncio
-    from hololoom.alignment.monitoring import Alert, AlertLevel
     from datetime import datetime
+
+    from hololoom.alignment.monitoring import Alert, AlertLevel
 
     # Create test alert
     test_alert = Alert(

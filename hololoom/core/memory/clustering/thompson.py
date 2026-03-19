@@ -11,9 +11,9 @@ This is HoloLoom's "magic sauce" for clustering:
 - Handles uncertainty naturally
 """
 
-import numpy as np
-from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass, field
+
+import numpy as np
 
 
 @dataclass
@@ -58,8 +58,8 @@ class ThompsonClusterSampler:
 
     min_k: int = 2
     max_k: int = 10
-    priors: Dict[int, BetaPrior] = field(default_factory=dict)
-    history: List[Tuple[int, float]] = field(default_factory=list)
+    priors: dict[int, BetaPrior] = field(default_factory=dict)
+    history: list[tuple[int, float]] = field(default_factory=list)
 
     def __post_init__(self):
         # Initialize priors for each k
@@ -91,7 +91,7 @@ class ThompsonClusterSampler:
             self.priors[k].update(reward)
             self.history.append((k, silhouette))
 
-    def get_best_k(self) -> Tuple[int, float]:
+    def get_best_k(self) -> tuple[int, float]:
         """
         Get the current best k based on prior means.
 
@@ -130,7 +130,7 @@ class ThompsonClusterSampler:
         confidence = self.get_confidence(best_k)
         return confidence < threshold
 
-    def get_statistics(self) -> Dict[str, any]:
+    def get_statistics(self) -> dict[str, any]:
         """Get summary statistics for all k values."""
         return {
             k: {
@@ -151,7 +151,7 @@ def find_optimal_k_thompson(
     max_k: int = 10,
     max_iterations: int = 20,
     confidence_threshold: float = 0.8
-) -> Tuple[int, float, ThompsonClusterSampler]:
+) -> tuple[int, float, ThompsonClusterSampler]:
     """
     Find optimal k using Thompson Sampling.
 
@@ -199,7 +199,7 @@ def adaptive_k_search(
     min_k: int = 2,
     max_k: int = 10,
     budget: int = 10
-) -> Tuple[int, float]:
+) -> tuple[int, float]:
     """
     Adaptive k search with limited budget.
 

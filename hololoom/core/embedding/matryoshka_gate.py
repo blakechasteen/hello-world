@@ -20,10 +20,10 @@ Benefits:
 """
 
 import logging
-import numpy as np
-from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +43,9 @@ class GateStrategy(Enum):
 @dataclass
 class GateConfig:
     """Configuration for matryoshka gating."""
-    scales: List[int] = None  # Embedding dimensions [96, 192, 384]
-    thresholds: List[float] = None  # Importance thresholds per scale
-    topk_ratios: List[float] = None  # Keep ratio per scale [0.3, 0.5, 1.0]
+    scales: list[int] = None  # Embedding dimensions [96, 192, 384]
+    thresholds: list[float] = None  # Importance thresholds per scale
+    topk_ratios: list[float] = None  # Keep ratio per scale [0.3, 0.5, 1.0]
     strategy: GateStrategy = GateStrategy.PROGRESSIVE
     min_candidates: int = 5  # Minimum candidates to keep at each stage
 
@@ -74,7 +74,7 @@ class GateResult:
     candidates_out: int
     threshold_used: float
     scores: np.ndarray
-    kept_indices: List[int]
+    kept_indices: list[int]
 
 
 class MatryoshkaGate:
@@ -94,7 +94,7 @@ class MatryoshkaGate:
     def __init__(
         self,
         embedder,
-        config: Optional[GateConfig] = None
+        config: GateConfig | None = None
     ):
         """
         Initialize matryoshka gate.
@@ -116,9 +116,9 @@ class MatryoshkaGate:
     def gate(
         self,
         query: str,
-        candidates: List[str],
+        candidates: list[str],
         final_k: int = 10
-    ) -> Tuple[List[int], List[GateResult]]:
+    ) -> tuple[list[int], list[GateResult]]:
         """
         Gate candidates through multi-scale filtering.
 
@@ -197,14 +197,14 @@ class MatryoshkaGate:
 
         return active_indices, gate_results
 
-    def _encode_at_scales(self, text: str) -> Dict[int, np.ndarray]:
+    def _encode_at_scales(self, text: str) -> dict[int, np.ndarray]:
         """Encode text at all scales."""
         embeds = {}
         for scale in self.config.scales:
             embeds[scale] = self._encode_at_scale([text], scale)[0]
         return embeds
 
-    def _encode_at_scale(self, texts: List[str], scale: int) -> np.ndarray:
+    def _encode_at_scale(self, texts: list[str], scale: int) -> np.ndarray:
         """
         Encode texts at specific scale.
 
@@ -312,7 +312,7 @@ class MatryoshkaGate:
         mask[topk_indices] = True
         return mask
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get gating statistics."""
         return {
             "total_gates": self.total_gates,
@@ -327,8 +327,8 @@ class MatryoshkaGate:
 # ============================================================================
 
 if __name__ == "__main__":
-    import sys
     import os
+    import sys
     # Add repository root to path
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     sys.path.insert(0, repo_root)
@@ -392,7 +392,7 @@ if __name__ == "__main__":
         print(f"  Filtered: {result.candidates_in - result.candidates_out}")
 
         if result.candidates_out <= 10:
-            print(f"  Survivors:")
+            print("  Survivors:")
             for idx in result.kept_indices:
                 score = result.scores[result.kept_indices.index(idx)] if idx in result.kept_indices else 0
                 print(f"    [{idx}] {score:.3f}: {candidates[idx][:60]}...")

@@ -10,17 +10,17 @@ Research Basis:
 - Composition: simple features combine into complex ones
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple, Set, TYPE_CHECKING
-from enum import Enum
-import numpy as np
-import torch
 from collections import defaultdict
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import TYPE_CHECKING, Any
+
+import torch
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.multilayer.correlation_tracker import (
-        CorrelationTracker,
         CorrelationPair,
+        CorrelationTracker,
     )
     from hololoom.dark_trace.multilayer.propagation_analyzer import (
         PropagationAnalyzer,
@@ -62,17 +62,17 @@ class FeatureEvolution:
     # Evolution tracking
     emergence_layer: int = 0  # First layer where feature is active
     peak_layer: int = 0  # Layer with maximum activation
-    disappearance_layer: Optional[int] = None  # Where feature stops
+    disappearance_layer: int | None = None  # Where feature stops
 
     # Layer-by-layer activations
-    layer_activations: Dict[int, float] = field(default_factory=dict)
+    layer_activations: dict[int, float] = field(default_factory=dict)
 
     # Relationships to features in other layers
-    predecessors: List[Tuple[str, float]] = field(default_factory=list)  # Features that lead to this
-    successors: List[Tuple[str, float]] = field(default_factory=list)  # Features this leads to
+    predecessors: list[tuple[str, float]] = field(default_factory=list)  # Features that lead to this
+    successors: list[tuple[str, float]] = field(default_factory=list)  # Features this leads to
 
     # Abstraction progression
-    abstraction_trajectory: List[AbstractionLevel] = field(default_factory=list)
+    abstraction_trajectory: list[AbstractionLevel] = field(default_factory=list)
 
     # Semantic drift (how much meaning changes)
     semantic_drift: float = 0.0  # 0 = stable, 1 = completely different
@@ -109,11 +109,11 @@ class HierarchyNode:
     importance: float = 0.0  # Based on downstream impact
 
     # Semantic label (if available)
-    label: Optional[str] = None
+    label: str | None = None
     label_confidence: float = 0.0
 
     # Grouping
-    cluster_id: Optional[int] = None
+    cluster_id: int | None = None
 
 
 @dataclass
@@ -144,10 +144,10 @@ class AbstractionLadder:
     """
 
     # Nodes at each abstraction level
-    levels: Dict[AbstractionLevel, List[HierarchyNode]] = field(default_factory=dict)
+    levels: dict[AbstractionLevel, list[HierarchyNode]] = field(default_factory=dict)
 
     # Edges connecting levels
-    edges: List[HierarchyEdge] = field(default_factory=list)
+    edges: list[HierarchyEdge] = field(default_factory=list)
 
     # Summary statistics
     n_features: int = 0
@@ -155,9 +155,9 @@ class AbstractionLadder:
     avg_abstraction_increase: float = 0.0
 
     # Key paths (most important abstraction chains)
-    key_paths: List[List[str]] = field(default_factory=list)
+    key_paths: list[list[str]] = field(default_factory=list)
 
-    def get_level(self, level: AbstractionLevel) -> List[HierarchyNode]:
+    def get_level(self, level: AbstractionLevel) -> list[HierarchyNode]:
         """Get all nodes at an abstraction level."""
         return self.levels.get(level, [])
 
@@ -165,7 +165,7 @@ class AbstractionLadder:
         self,
         source_level: AbstractionLevel,
         target_level: AbstractionLevel,
-    ) -> List[HierarchyEdge]:
+    ) -> list[HierarchyEdge]:
         """Get edges connecting two abstraction levels."""
         source_features = {n.feature_id for n in self.get_level(source_level)}
         target_features = {n.feature_id for n in self.get_level(target_level)}
@@ -206,16 +206,16 @@ class FeatureHierarchyAnalyzer:
         self.abstraction_method = abstraction_method
 
         # Cached analysis results
-        self._feature_correlations: Dict[Tuple[int, int], torch.Tensor] = {}
-        self._hierarchy_nodes: Dict[str, HierarchyNode] = {}
-        self._hierarchy_edges: List[HierarchyEdge] = []
-        self._feature_evolutions: Dict[str, FeatureEvolution] = {}
+        self._feature_correlations: dict[tuple[int, int], torch.Tensor] = {}
+        self._hierarchy_nodes: dict[str, HierarchyNode] = {}
+        self._hierarchy_edges: list[HierarchyEdge] = []
+        self._feature_evolutions: dict[str, FeatureEvolution] = {}
 
     def analyze_cross_layer_correlations(
         self,
-        test_inputs: List[Any],
-        layer_pairs: Optional[List[Tuple[int, int]]] = None,
-    ) -> Dict[Tuple[int, int], torch.Tensor]:
+        test_inputs: list[Any],
+        layer_pairs: list[tuple[int, int]] | None = None,
+    ) -> dict[tuple[int, int], torch.Tensor]:
         """
         Compute feature correlations between layer pairs.
 
@@ -274,7 +274,7 @@ class FeatureHierarchyAnalyzer:
     def track_feature_evolution(
         self,
         feature_id: str,
-        test_inputs: List[Any],
+        test_inputs: list[Any],
     ) -> FeatureEvolution:
         """
         Track how a specific feature evolves across layers.
@@ -379,9 +379,9 @@ class FeatureHierarchyAnalyzer:
 
     def build_hierarchy_graph(
         self,
-        test_inputs: List[Any],
+        test_inputs: list[Any],
         top_k_per_layer: int = 50,
-    ) -> Tuple[List[HierarchyNode], List[HierarchyEdge]]:
+    ) -> tuple[list[HierarchyNode], list[HierarchyEdge]]:
         """
         Build complete hierarchy graph across all layers.
 
@@ -476,7 +476,7 @@ class FeatureHierarchyAnalyzer:
 
     def build_abstraction_ladder(
         self,
-        test_inputs: List[Any],
+        test_inputs: list[Any],
     ) -> AbstractionLadder:
         """
         Build complete abstraction ladder.
@@ -491,7 +491,7 @@ class FeatureHierarchyAnalyzer:
         nodes, edges = self.build_hierarchy_graph(test_inputs)
 
         # Organize nodes by abstraction level
-        levels: Dict[AbstractionLevel, List[HierarchyNode]] = defaultdict(list)
+        levels: dict[AbstractionLevel, list[HierarchyNode]] = defaultdict(list)
         for node in nodes:
             levels[node.abstraction].append(node)
 
@@ -566,13 +566,13 @@ class FeatureHierarchyAnalyzer:
 
     def _find_key_paths(
         self,
-        nodes: List[HierarchyNode],
-        edges: List[HierarchyEdge],
+        nodes: list[HierarchyNode],
+        edges: list[HierarchyEdge],
         n_paths: int = 5,
-    ) -> List[List[str]]:
+    ) -> list[list[str]]:
         """Find most important paths through the hierarchy."""
         # Build adjacency list
-        adjacency: Dict[str, List[Tuple[str, float]]] = defaultdict(list)
+        adjacency: dict[str, list[tuple[str, float]]] = defaultdict(list)
         for edge in edges:
             adjacency[edge.source].append((edge.target, edge.weight))
 
@@ -585,7 +585,7 @@ class FeatureHierarchyAnalyzer:
         # Simple path finding (DFS with pruning)
         paths = []
 
-        def dfs(current: str, path: List[str], score: float):
+        def dfs(current: str, path: list[str], score: float):
             if current in end_nodes:
                 paths.append((path.copy(), score))
                 return
@@ -609,7 +609,7 @@ class FeatureHierarchyAnalyzer:
         self,
         feature_id: str,
         target_layer: int,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Find the corresponding feature at a different layer.
 
@@ -647,7 +647,7 @@ class FeatureHierarchyAnalyzer:
 
         return current
 
-    def get_hierarchy_summary(self) -> Dict[str, Any]:
+    def get_hierarchy_summary(self) -> dict[str, Any]:
         """Get summary of hierarchy analysis."""
         return {
             "n_nodes": len(self._hierarchy_nodes),
@@ -670,7 +670,7 @@ class FeatureHierarchyAnalyzer:
     def integrate_correlation_tracker(
         self,
         correlation_tracker: "CorrelationTracker",
-    ) -> Dict[Tuple[int, int], List["CorrelationPair"]]:
+    ) -> dict[tuple[int, int], list["CorrelationPair"]]:
         """
         Integrate with CorrelationTracker for streaming correlation updates.
 
@@ -684,11 +684,10 @@ class FeatureHierarchyAnalyzer:
             Dictionary mapping layer pairs to their top correlation pairs
         """
         from hololoom.dark_trace.multilayer.correlation_tracker import (
-            CorrelationTracker,
             CorrelationPair,
         )
 
-        results: Dict[Tuple[int, int], List[CorrelationPair]] = {}
+        results: dict[tuple[int, int], list[CorrelationPair]] = {}
 
         # Get tracked layer pairs from correlation tracker
         for layer_pair in correlation_tracker.get_tracked_layer_pairs():
@@ -736,7 +735,7 @@ class FeatureHierarchyAnalyzer:
         feature_id: str,
         direction: str = "forward",
         max_hops: int = 5,
-    ) -> List["PropagationPath"]:
+    ) -> list["PropagationPath"]:
         """
         Trace feature propagation using PropagationAnalyzer.
 
@@ -752,9 +751,6 @@ class FeatureHierarchyAnalyzer:
         Returns:
             List of PropagationPath objects showing feature paths
         """
-        from hololoom.dark_trace.multilayer.propagation_analyzer import (
-            PropagationPath,
-        )
 
         # Parse feature ID
         parts = feature_id.split(".")
@@ -805,7 +801,7 @@ class FeatureHierarchyAnalyzer:
         propagation_analyzer: "PropagationAnalyzer",
         min_features: int = 3,
         min_strength: float = 0.3,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """
         Discover circuits (connected feature subgraphs) using propagation analyzer.
 
@@ -855,7 +851,7 @@ class FeatureHierarchyAnalyzer:
         activations_b: torch.Tensor,
         layer_a: int,
         layer_b: int,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get a single streaming correlation update for incremental learning.
 
@@ -878,7 +874,7 @@ class FeatureHierarchyAnalyzer:
         # Create or get Welford correlator for this layer pair
         key = (layer_a, layer_b)
         if not hasattr(self, "_welford_correlators"):
-            self._welford_correlators: Dict[Tuple[int, int], WelfordCorrelator] = {}
+            self._welford_correlators: dict[tuple[int, int], WelfordCorrelator] = {}
 
         if key not in self._welford_correlators:
             n_features_a = activations_a.shape[-1]

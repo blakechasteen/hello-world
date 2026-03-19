@@ -11,17 +11,15 @@ Provides standardized metrics for:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 
 from hololoom.telemetry.metrics.prometheus import (
-    PrometheusRegistry,
     Counter,
     Gauge,
     Histogram,
+    PrometheusRegistry,
     Summary,
     get_registry,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  HOLOLOOM COLLECTOR
@@ -281,11 +279,11 @@ class HoloLoomCollector:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-_global_collector: Optional[HoloLoomCollector] = None
+_global_collector: HoloLoomCollector | None = None
 
 
 def create_default_collector(
-    registry: Optional[PrometheusRegistry] = None,
+    registry: PrometheusRegistry | None = None,
 ) -> HoloLoomCollector:
     """Create and set the global HoloLoom collector."""
     global _global_collector

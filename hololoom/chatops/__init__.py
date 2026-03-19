@@ -6,8 +6,8 @@ Import from ``HoloLoom.apps.chatops`` instead.
 """
 
 import importlib
-import warnings
 import sys
+import warnings
 
 
 class _DeprecatedFinder:

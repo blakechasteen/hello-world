@@ -11,10 +11,9 @@ Run:
 """
 
 import asyncio
-from datetime import datetime
 from dataclasses import dataclass
-from typing import List, Dict, Any
-
+from datetime import datetime
+from typing import Any
 
 # ============================================================================
 # Mock Components
@@ -26,7 +25,7 @@ class Message:
     role: str
     content: str
     timestamp: float
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -34,15 +33,15 @@ class Thread:
     """Conversation thread"""
     thread_id: str
     name: str
-    messages: List[Message]
-    metadata: Dict[str, Any]
+    messages: list[Message]
+    metadata: dict[str, Any]
 
 
 class SimpleThreadManager:
     """Simplified ThreadManager for demo"""
 
     def __init__(self):
-        self.threads: Dict[str, Thread] = {}
+        self.threads: dict[str, Thread] = {}
         self.active_thread_id: str = None
         self._next_id = 1
 
@@ -81,7 +80,7 @@ class SimpleYarnGraph:
     """Simplified YarnGraph for demo"""
 
     def __init__(self):
-        self.edges: List[Dict[str, Any]] = []
+        self.edges: list[dict[str, Any]] = []
 
     def add_edge(self, edge):
         """Add edge to graph"""
@@ -137,10 +136,10 @@ async def run_demo():
     3. Merge using 3 different strategies
     4. Show results and YarnGraph relationships
     """
-    from hololoom.voice.threads.thread import ThreadMerger, MergeStrategy
-
     # Set UTF-8 encoding for Windows console
     import sys
+
+    from hololoom.voice.threads.thread import MergeStrategy, ThreadMerger
     if sys.platform == 'win32':
         import codecs
         sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
@@ -202,7 +201,7 @@ async def run_demo():
 
     # Create target for APPEND demo
     append_target_id = thread_manager.create_thread("farming knowledge (APPEND)")
-    print(f"\n👤 User: 'merge orchard and biochar threads (APPEND strategy)'")
+    print("\n👤 User: 'merge orchard and biochar threads (APPEND strategy)'")
 
     result_append = await merger.merge_threads(
         target_thread_id=append_target_id,
@@ -213,7 +212,7 @@ async def run_demo():
     print(f"\n✨ Merged {len(result_append.source_thread_ids)} threads")
     print(f"   Strategy: {result_append.strategy.name}")
     print(f"   Messages merged: {result_append.messages_merged}")
-    print(f"   Result: All messages in chronological order")
+    print("   Result: All messages in chronological order")
 
     # Show sample
     target = thread_manager.get_thread(append_target_id)
@@ -231,7 +230,7 @@ async def run_demo():
 
     # Create target for SYNTHESIZE demo
     synth_target_id = thread_manager.create_thread("farming knowledge (SYNTHESIZE)")
-    print(f"\n👤 User: 'merge all 3 farming threads with synthesis'")
+    print("\n👤 User: 'merge all 3 farming threads with synthesis'")
     print("🤖 Generating LLM synthesis...")
 
     result_synth = await merger.merge_threads(
@@ -243,10 +242,10 @@ async def run_demo():
     print(f"\n✨ Merged {len(result_synth.source_thread_ids)} threads")
     print(f"   Strategy: {result_synth.strategy.name}")
     print(f"   Messages merged: {result_synth.messages_merged}")
-    print(f"   Result: LLM synthesis of all insights")
+    print("   Result: LLM synthesis of all insights")
 
     # Show synthesis
-    print(f"\n📝 LLM Synthesis:")
+    print("\n📝 LLM Synthesis:")
     print("-" * 60)
     if result_synth.synthesis:
         # Show first 500 chars of synthesis
@@ -264,7 +263,7 @@ async def run_demo():
 
     # Create target for PRESERVE_ALL demo
     preserve_target_id = thread_manager.create_thread("farming knowledge (PRESERVE_ALL)")
-    print(f"\n👤 User: 'merge threads but keep clear markers'")
+    print("\n👤 User: 'merge threads but keep clear markers'")
 
     result_preserve = await merger.merge_threads(
         target_thread_id=preserve_target_id,
@@ -275,11 +274,11 @@ async def run_demo():
     print(f"\n✨ Merged {len(result_preserve.source_thread_ids)} threads")
     print(f"   Strategy: {result_preserve.strategy.name}")
     print(f"   Messages merged: {result_preserve.messages_merged}")
-    print(f"   Result: All messages with [thread] markers")
+    print("   Result: All messages with [thread] markers")
 
     # Show sample with markers
     target = thread_manager.get_thread(preserve_target_id)
-    print(f"\n📊 Result Preview (with thread markers):")
+    print("\n📊 Result Preview (with thread markers):")
     for i, msg in enumerate(target.messages[:4]):
         role_icon = "👤" if msg.role == "user" else "🤖"
         # Show the thread marker
@@ -304,7 +303,7 @@ async def run_demo():
         print(f"   Sources: {len(result.source_thread_ids)} threads")
         print(f"   Messages: {result.messages_merged}")
         if result.synthesis:
-            print(f"   Synthesis: ✅ Generated")
+            print("   Synthesis: ✅ Generated")
 
     # Show YarnGraph relationships
     yarn_graph.show_merges()

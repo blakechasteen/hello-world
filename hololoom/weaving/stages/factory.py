@@ -10,33 +10,33 @@ Created in PR 8 (A-8).
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from hololoom.weaving.stages import (
-    # Core (11)
-    PatternSelectionStage,
-    TemporalControlStage,
-    ThreadSelectionStage,
-    FeatureExtractionStage,
-    WarpTensioningStage,
-    WarpComputeStage,
-    MemoryRetrievalStage,
     BetaWavePackingStage,
+    ConscienceGatingStage,
+    ConsciousnessPerceptionStage,
     DecisionCollapseStage,
-    ToolExecutionStage,
     FabricWeavingStage,
-    # Lightweight (3)
-    QuickDecisionStage,
     FastExecutionStage,
-    ReflectionStage,
+    FeatureExtractionStage,
+    JennyCompilationStage,
+    MemoryRetrievalStage,
     # Optional (7)
     MetaPromptEnhancementStage,
-    SmartRoutingStage,
-    ConsciousnessPerceptionStage,
-    ConscienceGatingStage,
-    JennyCompilationStage,
-    RecursiveLearningStage,
+    # Core (11)
+    PatternSelectionStage,
     ProductionMetricsStage,
+    # Lightweight (3)
+    QuickDecisionStage,
+    RecursiveLearningStage,
+    ReflectionStage,
+    SmartRoutingStage,
+    TemporalControlStage,
+    ThreadSelectionStage,
+    ToolExecutionStage,
+    WarpComputeStage,
+    WarpTensioningStage,
 )
 
 logger = logging.getLogger(__name__)
@@ -49,9 +49,9 @@ def _get(components: dict, key: str, default=None):
 
 def build_stages(
     config: Any,
-    components: Dict[str, Any],
-    log: Optional[logging.Logger] = None,
-) -> Dict[str, Any]:
+    components: dict[str, Any],
+    log: logging.Logger | None = None,
+) -> dict[str, Any]:
     """Build all stage instances whose dependencies are available.
 
     Args:
@@ -91,7 +91,7 @@ def build_stages(
         whose required dependencies are satisfied.
     """
     log = log or logger
-    stages: Dict[str, Any] = {}
+    stages: dict[str, Any] = {}
 
     # =====================================================================
     # Stage builders: each tries to construct its stage.

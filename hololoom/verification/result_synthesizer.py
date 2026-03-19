@@ -12,7 +12,7 @@ Created: 2025-12-05
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from hololoom.verification.protocol import (
     Contradiction,
@@ -33,10 +33,10 @@ logger = logging.getLogger(__name__)
 
 def determine_claim_status(
     claim: VerifiableClaim,
-    answers: List[VerificationAnswer],
-    contradictions: List[Contradiction],
+    answers: list[VerificationAnswer],
+    contradictions: list[Contradiction],
     config: VerificationConfig,
-) -> Tuple[VerificationStatus, float]:
+) -> tuple[VerificationStatus, float]:
     """
     Determine the verification status of a claim.
 
@@ -73,11 +73,11 @@ def determine_claim_status(
 
 
 def aggregate_claim_statuses(
-    claims: List[VerifiableClaim],
-    answers: List[VerificationAnswer],
-    contradictions: List[Contradiction],
+    claims: list[VerifiableClaim],
+    answers: list[VerificationAnswer],
+    contradictions: list[Contradiction],
     config: VerificationConfig,
-) -> Dict[str, Tuple[VerificationStatus, float]]:
+) -> dict[str, tuple[VerificationStatus, float]]:
     """Aggregate statuses for all claims."""
     statuses = {}
     for claim in claims:
@@ -89,7 +89,7 @@ def aggregate_claim_statuses(
 
 
 def calculate_overall_status(
-    claim_statuses: Dict[str, Tuple[VerificationStatus, float]],
+    claim_statuses: dict[str, tuple[VerificationStatus, float]],
 ) -> VerificationStatus:
     """Calculate overall verification status."""
     if not claim_statuses:
@@ -115,7 +115,7 @@ def calculate_overall_status(
 
 def calculate_new_confidence(
     original_confidence: float,
-    claim_statuses: Dict[str, Tuple[VerificationStatus, float]],
+    claim_statuses: dict[str, tuple[VerificationStatus, float]],
 ) -> float:
     """Calculate new confidence based on verification results."""
     if not claim_statuses:
@@ -147,17 +147,17 @@ class RuleBasedResultSynthesizer:
     - Keep them unchanged
     """
 
-    def __init__(self, config: Optional[VerificationConfig] = None):
+    def __init__(self, config: VerificationConfig | None = None):
         self.config = config or VerificationConfig()
 
     async def synthesize(
         self,
         original_response: str,
-        claims: List[VerifiableClaim],
-        answers: List[VerificationAnswer],
-        contradictions: List[Contradiction],
-        context: Dict[str, Any]
-    ) -> Tuple[str, float]:
+        claims: list[VerifiableClaim],
+        answers: list[VerificationAnswer],
+        contradictions: list[Contradiction],
+        context: dict[str, Any]
+    ) -> tuple[str, float]:
         """Synthesize refined response."""
         # Determine status for each claim
         claim_statuses = aggregate_claim_statuses(
@@ -178,10 +178,10 @@ class RuleBasedResultSynthesizer:
     def _refine_response(
         self,
         original: str,
-        claims: List[VerifiableClaim],
-        answers: List[VerificationAnswer],
-        contradictions: List[Contradiction],
-        claim_statuses: Dict[str, Tuple[VerificationStatus, float]],
+        claims: list[VerifiableClaim],
+        answers: list[VerificationAnswer],
+        contradictions: list[Contradiction],
+        claim_statuses: dict[str, tuple[VerificationStatus, float]],
     ) -> str:
         """Refine the response by correcting contradicted claims."""
         refined = original
@@ -201,9 +201,9 @@ class RuleBasedResultSynthesizer:
     def _find_correction(
         self,
         claim: VerifiableClaim,
-        contradictions: List[Contradiction],
-        answers: List[VerificationAnswer],
-    ) -> Optional[str]:
+        contradictions: list[Contradiction],
+        answers: list[VerificationAnswer],
+    ) -> str | None:
         """Find correction for a contradicted claim."""
         # Find the contradiction
         for contradiction in contradictions:
@@ -278,8 +278,8 @@ class LLMResultSynthesizer:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.llm_client = llm_client
@@ -288,11 +288,11 @@ class LLMResultSynthesizer:
     async def synthesize(
         self,
         original_response: str,
-        claims: List[VerifiableClaim],
-        answers: List[VerificationAnswer],
-        contradictions: List[Contradiction],
-        context: Dict[str, Any]
-    ) -> Tuple[str, float]:
+        claims: list[VerifiableClaim],
+        answers: list[VerificationAnswer],
+        contradictions: list[Contradiction],
+        context: dict[str, Any]
+    ) -> tuple[str, float]:
         """Synthesize refined response using LLM."""
         if self.llm_client is None:
             logger.warning("No LLM client available, falling back to rule-based synthesis")
@@ -341,9 +341,9 @@ class LLMResultSynthesizer:
 
     def _build_verification_summary(
         self,
-        claims: List[VerifiableClaim],
-        answers: List[VerificationAnswer],
-        statuses: Dict[str, Tuple[VerificationStatus, float]],
+        claims: list[VerifiableClaim],
+        answers: list[VerificationAnswer],
+        statuses: dict[str, tuple[VerificationStatus, float]],
     ) -> str:
         """Build summary of verification results."""
         lines = []
@@ -369,7 +369,7 @@ class LLMResultSynthesizer:
 
     def _build_contradictions_summary(
         self,
-        contradictions: List[Contradiction],
+        contradictions: list[Contradiction],
     ) -> str:
         """Build summary of contradictions."""
         if not contradictions:
@@ -415,16 +415,16 @@ class ConfidenceRecalibrator:
     - Historical accuracy (if available)
     """
 
-    def __init__(self, config: Optional[VerificationConfig] = None):
+    def __init__(self, config: VerificationConfig | None = None):
         self.config = config or VerificationConfig()
-        self._history: List[Dict[str, float]] = []
+        self._history: list[dict[str, float]] = []
 
     def recalibrate(
         self,
         original_confidence: float,
-        claims: List[VerifiableClaim],
-        answers: List[VerificationAnswer],
-        contradictions: List[Contradiction],
+        claims: list[VerifiableClaim],
+        answers: list[VerificationAnswer],
+        contradictions: list[Contradiction],
     ) -> float:
         """Recalibrate confidence using Bayesian approach."""
         if not claims:
@@ -488,8 +488,8 @@ class ConfidenceRecalibrator:
 # =============================================================================
 
 def create_result_synthesizer(
-    config: Optional[VerificationConfig] = None,
-    llm_client: Optional[Any] = None,
+    config: VerificationConfig | None = None,
+    llm_client: Any | None = None,
 ) -> ResultSynthesizerProtocol:
     """
     Create appropriate result synthesizer based on configuration.

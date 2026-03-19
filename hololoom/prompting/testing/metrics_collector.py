@@ -11,16 +11,17 @@ Tracks performance metrics across test runs with support for:
 - Tapestry/FabricInspector signal integration
 """
 
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
-from enum import Enum
-from typing import Dict, List, Optional, Any, Callable, TYPE_CHECKING
 import json
 from collections import defaultdict
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
-    from .statistical_analysis import StatisticalSummary, StatisticalAnalyzer
     from .alerting import Alert, AlertingSystem
+    from .statistical_analysis import StatisticalAnalyzer, StatisticalSummary
 
 
 class MetricType(Enum):
@@ -55,8 +56,8 @@ class Metric:
     value: float
     metric_type: MetricType
     timestamp: datetime = field(default_factory=datetime.now)
-    tags: Dict[str, str] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tags: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_prometheus(self) -> str:
         """Convert to Prometheus format."""
@@ -64,7 +65,7 @@ class Metric:
         labels = f"{{{label_str}}}" if label_str else ""
         return f"prompt_test_{self.metric_type.value}{labels} {self.value}"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "name": self.name,
@@ -99,12 +100,12 @@ class MetricsCollector:
             enable_statistics: Enable statistical analysis (default: False)
         """
         self.retention_hours = retention_hours
-        self.metrics: List[Metric] = []
+        self.metrics: list[Metric] = []
         self.created_at = datetime.now()
 
         # Initialize optional features
-        self._alerting: Optional["AlertingSystem"] = None
-        self._statistics: Optional["StatisticalAnalyzer"] = None
+        self._alerting: AlertingSystem | None = None
+        self._statistics: StatisticalAnalyzer | None = None
 
         if enable_alerting:
             from .alerting import create_alerting_system
@@ -119,8 +120,8 @@ class MetricsCollector:
         name: str,
         value: float,
         metric_type: MetricType,
-        tags: Optional[Dict[str, str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        tags: dict[str, str] | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> Optional["Alert"]:
         """Record a metric.
 
@@ -154,9 +155,9 @@ class MetricsCollector:
 
     def get_metrics(
         self,
-        metric_type: Optional[MetricType] = None,
-        since: Optional[datetime] = None
-    ) -> List[Metric]:
+        metric_type: MetricType | None = None,
+        since: datetime | None = None
+    ) -> list[Metric]:
         """Get metrics, optionally filtered.
 
         Args:
@@ -176,13 +177,13 @@ class MetricsCollector:
 
         return result
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get aggregated statistics per metric type.
 
         Returns:
             Summary with min, max, avg, count per type
         """
-        summary: Dict[str, Any] = {}
+        summary: dict[str, Any] = {}
 
         for metric_type in MetricType:
             metrics = self.get_metrics(metric_type=metric_type)
@@ -251,7 +252,7 @@ class MetricsCollector:
     def get_statistics(
         self,
         metric_type: MetricType,
-        since: Optional[datetime] = None
+        since: datetime | None = None
     ) -> Optional["StatisticalSummary"]:
         """Get extended statistics for a metric type.
 
@@ -279,7 +280,7 @@ class MetricsCollector:
         self,
         type_x: MetricType,
         type_y: MetricType,
-        since: Optional[datetime] = None
+        since: datetime | None = None
     ) -> float:
         """Get Pearson correlation between two metric types.
 
@@ -318,8 +319,8 @@ class MetricsCollector:
         self,
         metric_type: MetricType,
         window_size: int = 10,
-        since: Optional[datetime] = None
-    ) -> List[Dict[str, float]]:
+        since: datetime | None = None
+    ) -> list[dict[str, float]]:
         """Get rolling statistics for a metric type.
 
         Requires enable_statistics=True in constructor.
@@ -346,7 +347,7 @@ class MetricsCollector:
     # Alerting Methods (require enable_alerting=True)
     # ─────────────────────────────────────────────────────────────────
 
-    def get_active_alerts(self) -> List["Alert"]:
+    def get_active_alerts(self) -> list["Alert"]:
         """Get unacknowledged alerts.
 
         Requires enable_alerting=True in constructor.
@@ -378,7 +379,7 @@ class MetricsCollector:
         threshold: float,
         comparison: str,
         severity: str = "warning",
-        message_template: Optional[str] = None,
+        message_template: str | None = None,
         cooldown_seconds: int = 300
     ) -> None:
         """Add a custom alert rule.
@@ -396,7 +397,7 @@ class MetricsCollector:
         if not self._alerting:
             return
 
-        from .alerting import ThresholdRule, AlertSeverity
+        from .alerting import AlertSeverity, ThresholdRule
 
         severity_enum = AlertSeverity(severity)
         rule = ThresholdRule(
@@ -404,7 +405,7 @@ class MetricsCollector:
             threshold=threshold,
             comparison=comparison,
             severity=severity_enum,
-            message_template=message_template or f"{{metric}} {{comparison}} {{threshold}}",
+            message_template=message_template or "{metric} {comparison} {threshold}",
             cooldown_seconds=cooldown_seconds
         )
         self._alerting.add_rule(rule)
@@ -432,7 +433,7 @@ class MetricsCollector:
     # Enhanced Summary
     # ─────────────────────────────────────────────────────────────────
 
-    def get_enhanced_summary(self) -> Dict[str, Any]:
+    def get_enhanced_summary(self) -> dict[str, Any]:
         """Get summary with statistics and alerts.
 
         Returns basic summary plus:
@@ -476,8 +477,8 @@ class MetricsAggregator:
 
     @staticmethod
     def aggregate_test_results(
-        results: List[Dict[str, Any]]
-    ) -> Dict[str, Metric]:
+        results: list[dict[str, Any]]
+    ) -> dict[str, Metric]:
         """Aggregate metrics from test results.
 
         Args:
@@ -489,7 +490,7 @@ class MetricsAggregator:
         aggregated = {}
 
         # Group by metric type
-        by_type: Dict[str, List[float]] = defaultdict(list)
+        by_type: dict[str, list[float]] = defaultdict(list)
 
         for result in results:
             for key, value in result.items():
@@ -520,9 +521,9 @@ class MetricsAggregator:
 
     @staticmethod
     def calculate_percentiles(
-        values: List[float],
-        percentiles: Optional[List[int]] = None
-    ) -> Dict[int, float]:
+        values: list[float],
+        percentiles: list[int] | None = None
+    ) -> dict[int, float]:
         """Calculate percentiles from values.
 
         Args:

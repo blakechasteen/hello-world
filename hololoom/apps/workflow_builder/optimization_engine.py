@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Thompson Sampling Auto-Optimization Engine for Workflow Builder
 ================================================================
@@ -17,7 +16,7 @@ Features:
 import logging
 import random
 import uuid
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,7 @@ class ThompsonOptimizer:
             'substitute': {'alpha': 1.0, 'beta': 1.0}
         }
 
-    def suggest_optimization(self, workflow: dict, performance_data: dict) -> Dict[str, Any]:
+    def suggest_optimization(self, workflow: dict, performance_data: dict) -> dict[str, Any]:
         """
         Use Thompson Sampling to select optimization strategy.
 
@@ -98,7 +97,7 @@ class ThompsonOptimizer:
                     'suggestion_id': suggestion_id,
                     'workflow_id': workflow_id,
                     'suggestion_type': 'reorder',
-                    'description': f"Reorder execution to prioritize fast paths",
+                    'description': "Reorder execution to prioritize fast paths",
                     'expected_improvement': 20.0,
                     'confidence': confidence,
                     'affected_nodes': [b['node_id'] for b in bottlenecks[:2]]
@@ -146,7 +145,7 @@ class ThompsonOptimizer:
 
             logger.info(f"Updated beliefs for {strategy}: alpha={self.priors[strategy]['alpha']:.1f}, beta={self.priors[strategy]['beta']:.1f}")
 
-    def _find_parallelization_opportunities(self, workflow: dict, performance_data: dict) -> List[dict]:
+    def _find_parallelization_opportunities(self, workflow: dict, performance_data: dict) -> list[dict]:
         """
         Find nodes that can be parallelized.
 
@@ -204,7 +203,7 @@ class ThompsonOptimizer:
 
         return sorted(opportunities, key=lambda x: x['expected_improvement'], reverse=True)
 
-    def _detect_bottlenecks(self, workflow: dict, performance_data: dict) -> List[dict]:
+    def _detect_bottlenecks(self, workflow: dict, performance_data: dict) -> list[dict]:
         """
         Detect bottlenecks using:
         1. Critical path analysis (longest sequential chain)
@@ -267,7 +266,7 @@ class ThompsonOptimizer:
 
         return max_depth
 
-    def get_performance_profile(self, workflow: dict, performance_data: dict) -> List[Dict[str, Any]]:
+    def get_performance_profile(self, workflow: dict, performance_data: dict) -> list[dict[str, Any]]:
         """
         Generate performance profiles for all nodes in workflow.
 

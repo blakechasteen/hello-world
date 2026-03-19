@@ -16,8 +16,8 @@ Date: 2025-12-01
 import random
 import string
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, Any
 from enum import Enum
+from typing import Any
 
 
 class MutationType(Enum):
@@ -42,7 +42,7 @@ class MutationResult:
     original: str
     mutated: str
     mutation_type: MutationType
-    mutation_details: Dict[str, Any] = field(default_factory=dict)
+    mutation_details: dict[str, Any] = field(default_factory=dict)
 
     @property
     def changed(self) -> bool:
@@ -85,7 +85,7 @@ class PayloadMutator:
         self,
         mutation_rate: float = 0.15,
         crossover_rate: float = 0.7,
-        seed: Optional[int] = None
+        seed: int | None = None
     ):
         """
         Initialize mutator with genetic algorithm parameters.
@@ -138,7 +138,7 @@ class PayloadMutator:
     def mutate(
         self,
         payload: str,
-        mutation_count: Optional[int] = None
+        mutation_count: int | None = None
     ) -> MutationResult:
         """
         Apply random mutations to a payload.
@@ -184,7 +184,7 @@ class PayloadMutator:
         self,
         payload: str,
         count: int = 5
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Generate multiple mutations of a payload.
 
@@ -244,11 +244,11 @@ class PayloadMutator:
 
     def evolve_population(
         self,
-        population: List[str],
-        fitness_scores: List[float],
+        population: list[str],
+        fitness_scores: list[float],
         elite_ratio: float = 0.1,
         tournament_size: int = 3
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Evolve a population of payloads using genetic algorithm.
 
@@ -476,8 +476,8 @@ class PayloadMutator:
 
     def _tournament_select(
         self,
-        population: List[str],
-        fitness_scores: List[float],
+        population: list[str],
+        fitness_scores: list[float],
         tournament_size: int
     ) -> str:
         """Tournament selection."""
@@ -493,7 +493,7 @@ class PayloadMutator:
 def create_mutator(
     mutation_rate: float = 0.15,
     crossover_rate: float = 0.7,
-    seed: Optional[int] = None
+    seed: int | None = None
 ) -> PayloadMutator:
     """Create a PayloadMutator with given parameters."""
     return PayloadMutator(

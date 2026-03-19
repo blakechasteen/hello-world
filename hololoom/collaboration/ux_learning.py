@@ -9,14 +9,13 @@ Phase 3: Collaborative Intelligence - Adaptive UX.
 Created: December 2025
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Tuple
+import json
 import logging
 import random
-import math
-import json
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 from hololoom.bandits.beta_arm import BetaArm
 
@@ -57,7 +56,6 @@ class NotificationLevel(Enum):
     NONE = "none"            # Disabled
 
 
-@dataclass
 class BetaPrior:
     """
     Beta distribution prior for Thompson Sampling.
@@ -70,7 +68,9 @@ class BetaPrior:
 
     Higher alpha means higher expected success rate.
     """
-    _arm: BetaArm = field(default_factory=BetaArm)
+
+    def __init__(self, alpha: float = 1.0, beta: float = 1.0) -> None:
+        self._arm = BetaArm(alpha=alpha, beta=beta)
 
     @property
     def alpha(self) -> float:
@@ -121,7 +121,7 @@ class BetaPrior:
         """
         self._arm.update(success, weight)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "alpha": self.alpha,
             "beta": self.beta,
@@ -130,8 +130,8 @@ class BetaPrior:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'BetaPrior':
-        return cls(_arm=BetaArm(alpha=data.get("alpha", 1.0), beta=data.get("beta", 1.0)))
+    def from_dict(cls, data: dict[str, Any]) -> 'BetaPrior':
+        return cls(alpha=data.get("alpha", 1.0), beta=data.get("beta", 1.0))
 
 
 @dataclass
@@ -141,7 +141,7 @@ class FeatureOption:
     option_name: str
     prior: BetaPrior = field(default_factory=BetaPrior)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "option_id": self.option_id,
             "option_name": self.option_name,
@@ -149,7 +149,7 @@ class FeatureOption:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'FeatureOption':
+    def from_dict(cls, data: dict[str, Any]) -> 'FeatureOption':
         return cls(
             option_id=data["option_id"],
             option_name=data["option_name"],
@@ -162,12 +162,12 @@ class LearningContext:
     """Context for a learning decision."""
     session_id: str
     user_id: str
-    node_id: Optional[str] = None
+    node_id: str | None = None
     participant_count: int = 1
     session_duration_minutes: float = 0.0
     time_of_day: str = "day"  # morning, day, evening, night
     activity_level: str = "normal"  # low, normal, high
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_session(cls, session_id: str, user_id: str, **kwargs) -> 'LearningContext':
@@ -198,10 +198,10 @@ class LearningDecision:
     selected_option: str
     confidence: float
     exploration: bool  # True if this was an exploration vs exploitation
-    context: Optional[LearningContext] = None
+    context: LearningContext | None = None
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "feature": self.feature.value,
             "selected_option": self.selected_option,
@@ -245,21 +245,21 @@ class CollaborationUXLearner:
         self.min_confidence_for_exploit = min_confidence_for_exploit
 
         # Feature options with priors
-        self.features: Dict[UXFeature, List[FeatureOption]] = self._init_features()
+        self.features: dict[UXFeature, list[FeatureOption]] = self._init_features()
 
         # User-specific overrides
-        self.user_priors: Dict[str, Dict[UXFeature, List[FeatureOption]]] = {}
+        self.user_priors: dict[str, dict[UXFeature, list[FeatureOption]]] = {}
 
         # Context-specific priors (e.g., by node type, time of day)
-        self.context_priors: Dict[str, Dict[UXFeature, List[FeatureOption]]] = {}
+        self.context_priors: dict[str, dict[UXFeature, list[FeatureOption]]] = {}
 
         # Decision history for analysis
-        self.decision_history: List[LearningDecision] = []
+        self.decision_history: list[LearningDecision] = []
 
         # Feedback tracking
-        self.pending_decisions: Dict[str, LearningDecision] = {}
+        self.pending_decisions: dict[str, LearningDecision] = {}
 
-    def _init_features(self) -> Dict[UXFeature, List[FeatureOption]]:
+    def _init_features(self) -> dict[UXFeature, list[FeatureOption]]:
         """Initialize feature options with uniform priors."""
         return {
             UXFeature.CURSOR_VISIBILITY: [
@@ -308,9 +308,9 @@ class CollaborationUXLearner:
     def select(
         self,
         feature: UXFeature,
-        context: Optional[LearningContext] = None,
+        context: LearningContext | None = None,
         force_exploration: bool = False
-    ) -> Tuple[str, LearningDecision]:
+    ) -> tuple[str, LearningDecision]:
         """
         Select an option for a feature using Thompson Sampling.
 
@@ -375,7 +375,7 @@ class CollaborationUXLearner:
         feature: UXFeature,
         option_id: str,
         success: bool,
-        context: Optional[LearningContext] = None,
+        context: LearningContext | None = None,
         weight: float = 1.0
     ):
         """
@@ -414,8 +414,8 @@ class CollaborationUXLearner:
     def get_recommendation(
         self,
         feature: UXFeature,
-        context: Optional[LearningContext] = None
-    ) -> Dict[str, Any]:
+        context: LearningContext | None = None
+    ) -> dict[str, Any]:
         """
         Get a recommendation without committing to selection.
 
@@ -445,8 +445,8 @@ class CollaborationUXLearner:
 
     def get_all_recommendations(
         self,
-        context: Optional[LearningContext] = None
-    ) -> Dict[str, Any]:
+        context: LearningContext | None = None
+    ) -> dict[str, Any]:
         """Get recommendations for all features."""
         return {
             feature.value: self.get_recommendation(feature, context)
@@ -456,7 +456,7 @@ class CollaborationUXLearner:
     def get_session_defaults(
         self,
         context: LearningContext
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """
         Get recommended defaults for a new session.
 
@@ -472,8 +472,8 @@ class CollaborationUXLearner:
     def infer_feedback_from_action(
         self,
         action: str,
-        context: Optional[LearningContext] = None
-    ) -> List[Tuple[UXFeature, str, bool]]:
+        context: LearningContext | None = None
+    ) -> list[tuple[UXFeature, str, bool]]:
         """
         Infer feedback from user actions.
 
@@ -530,8 +530,8 @@ class CollaborationUXLearner:
     def _get_options(
         self,
         feature: UXFeature,
-        context: Optional[LearningContext] = None
-    ) -> List[FeatureOption]:
+        context: LearningContext | None = None
+    ) -> list[FeatureOption]:
         """Get options for a feature, considering context."""
         # Start with global options
         global_options = self.features.get(feature, [])
@@ -554,17 +554,17 @@ class CollaborationUXLearner:
 
         return global_options
 
-    def _get_user_options(self, user_id: str, feature: UXFeature) -> Optional[List[FeatureOption]]:
+    def _get_user_options(self, user_id: str, feature: UXFeature) -> list[FeatureOption] | None:
         """Get user-specific options if available."""
         user_priors = self.user_priors.get(user_id, {})
         return user_priors.get(feature)
 
-    def _get_context_options(self, context_key: str, feature: UXFeature) -> Optional[List[FeatureOption]]:
+    def _get_context_options(self, context_key: str, feature: UXFeature) -> list[FeatureOption] | None:
         """Get context-specific options if available."""
         context_priors = self.context_priors.get(context_key, {})
         return context_priors.get(feature)
 
-    def _get_context_key(self, context: LearningContext) -> Optional[str]:
+    def _get_context_key(self, context: LearningContext) -> str | None:
         """Generate a context key for context-specific learning."""
         # Use time of day and activity level as context
         if context.time_of_day and context.activity_level:
@@ -573,10 +573,10 @@ class CollaborationUXLearner:
 
     def _blend_options(
         self,
-        primary: List[FeatureOption],
-        secondary: List[FeatureOption],
+        primary: list[FeatureOption],
+        secondary: list[FeatureOption],
         user_weight: float = 0.7
-    ) -> List[FeatureOption]:
+    ) -> list[FeatureOption]:
         """Blend two option lists by their priors."""
         blended = []
 
@@ -666,7 +666,7 @@ class CollaborationUXLearner:
             opt.prior.alpha = 1.0 + (opt.prior.alpha - 1.0) * self.decay_rate
             opt.prior.beta = 1.0 + (opt.prior.beta - 1.0) * self.decay_rate
 
-    def get_learning_stats(self) -> Dict[str, Any]:
+    def get_learning_stats(self) -> dict[str, Any]:
         """Get learning statistics."""
         stats = {
             "total_decisions": len(self.decision_history),
@@ -719,7 +719,7 @@ class CollaborationUXLearner:
     def load_state(self, path: str):
         """Load learning state from file."""
         try:
-            with open(path, 'r') as f:
+            with open(path) as f:
                 state = json.load(f)
 
             self.exploration_rate = state.get("exploration_rate", 0.1)
@@ -747,7 +747,7 @@ class CollaborationUXLearner:
 # Factory function
 def create_ux_learner(
     exploration_rate: float = 0.1,
-    state_path: Optional[str] = None
+    state_path: str | None = None
 ) -> CollaborationUXLearner:
     """
     Create a UX learner with optional state loading.

@@ -16,22 +16,22 @@ Date: November 2025
 import asyncio
 import logging
 import time
-import psutil
-from typing import Any, Dict, List, Optional, Tuple
-from datetime import datetime, timedelta
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+from typing import Any
 
+import psutil
+
+from hololoom.apps.departments.base import BaseDepartment
 from hololoom.apps.departments.protocol import (
-    Department,
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
-    VerificationResult,
     DSStarCheck,
-    DepartmentConfig,
+    VerificationResult,
 )
-from hololoom.apps.departments.base import BaseDepartment
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ class ResourceMetrics:
     network_bytes_recv: int                     # Total bytes received
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "cpu_percent": self.cpu_percent,
@@ -95,9 +95,9 @@ class ServiceHealth:
     response_time_ms: float
     error_rate: float                           # 0-1
     last_check: datetime = field(default_factory=datetime.utcnow)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "service_name": self.service_name,
@@ -116,10 +116,10 @@ class DeploymentSpec:
     service_name: str
     version: str
     replicas: int = 1
-    resource_requests: Dict[str, str] = field(default_factory=dict)  # e.g., {"cpu": "500m", "memory": "512Mi"}
-    resource_limits: Dict[str, str] = field(default_factory=dict)    # e.g., {"cpu": "1000m", "memory": "1Gi"}
-    environment: Dict[str, str] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    resource_requests: dict[str, str] = field(default_factory=dict)  # e.g., {"cpu": "500m", "memory": "512Mi"}
+    resource_limits: dict[str, str] = field(default_factory=dict)    # e.g., {"cpu": "1000m", "memory": "1Gi"}
+    environment: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -133,7 +133,7 @@ class PerformanceMetrics:
     error_rate: float                           # 0-1
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "service_name": self.service_name,
@@ -154,7 +154,7 @@ class Alert:
     source: str                                 # Which component/service
     timestamp: datetime = field(default_factory=datetime.utcnow)
     resolved: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class InfrastructureDepartment(BaseDepartment):
@@ -227,23 +227,23 @@ class InfrastructureDepartment(BaseDepartment):
         self.department_id = department_id
 
         # Resource monitoring state
-        self._resource_history: List[ResourceMetrics] = []
+        self._resource_history: list[ResourceMetrics] = []
         self._max_history_size = 1000  # Keep last 1000 samples
 
         # Service health tracking
-        self._service_health: Dict[str, ServiceHealth] = {}
-        self._service_uptime_start: Dict[str, datetime] = {}
+        self._service_health: dict[str, ServiceHealth] = {}
+        self._service_uptime_start: dict[str, datetime] = {}
 
         # Performance metrics tracking
-        self._performance_history: Dict[str, List[PerformanceMetrics]] = {}
+        self._performance_history: dict[str, list[PerformanceMetrics]] = {}
 
         # Alerts
-        self._active_alerts: List[Alert] = []
-        self._alert_history: List[Alert] = []
+        self._active_alerts: list[Alert] = []
+        self._alert_history: list[Alert] = []
 
         # Deployment tracking
-        self._deployments: Dict[str, DeploymentStatus] = {}
-        self._deployment_history: List[Dict[str, Any]] = []
+        self._deployments: dict[str, DeploymentStatus] = {}
+        self._deployment_history: list[dict[str, Any]] = []
 
         # Thresholds for alerting
         self._thresholds = {
@@ -368,7 +368,7 @@ class InfrastructureDepartment(BaseDepartment):
         """
         logger.info(f"Verifying infrastructure response (task_id={response.task_id})...")
 
-        checks: List[DSStarCheck] = []
+        checks: list[DSStarCheck] = []
         result_data = response.result
 
         # 1. Resource Availability Check
@@ -495,7 +495,7 @@ class InfrastructureDepartment(BaseDepartment):
 
         return response
 
-    async def update_strategy(self, feedback: Dict[str, Any]) -> None:
+    async def update_strategy(self, feedback: dict[str, Any]) -> None:
         """
         Learn from infrastructure operations.
 
@@ -542,9 +542,9 @@ class InfrastructureDepartment(BaseDepartment):
                     90.0, self._scaling_config["cpu_scale_up_threshold"] + 5.0
                 )
 
-        logger.info(f"✓ Strategy updated")
+        logger.info("✓ Strategy updated")
 
-    async def get_capabilities(self) -> Dict[str, Any]:
+    async def get_capabilities(self) -> dict[str, Any]:
         """
         Get Infrastructure Department capabilities.
 
@@ -587,7 +587,7 @@ class InfrastructureDepartment(BaseDepartment):
             "scaling_config": self._scaling_config,
         }
 
-    async def get_metrics(self) -> Dict[str, Any]:
+    async def get_metrics(self) -> dict[str, Any]:
         """
         Get Infrastructure Department metrics.
 
@@ -662,7 +662,7 @@ class InfrastructureDepartment(BaseDepartment):
     # Infrastructure Operations
     # ========================================================================
 
-    async def _monitor_resources(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _monitor_resources(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """
         Monitor system resources.
 
@@ -735,7 +735,7 @@ class InfrastructureDepartment(BaseDepartment):
             "thresholds": self._thresholds,
         }
 
-    async def _check_health(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _check_health(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """
         Check service health.
 
@@ -788,7 +788,7 @@ class InfrastructureDepartment(BaseDepartment):
             "unhealthy_services": len(unhealthy),
         }
 
-    async def _deploy_service(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _deploy_service(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """
         Deploy or update a service.
 
@@ -853,7 +853,7 @@ class InfrastructureDepartment(BaseDepartment):
             },
         }
 
-    async def _collect_logs(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _collect_logs(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """
         Collect logs from services.
 
@@ -887,7 +887,7 @@ class InfrastructureDepartment(BaseDepartment):
             "services_queried": service_names,
         }
 
-    async def _analyze_performance(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_performance(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """
         Analyze performance metrics.
 
@@ -927,7 +927,7 @@ class InfrastructureDepartment(BaseDepartment):
             "total_services": len(performance_results),
         }
 
-    async def _auto_scale(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _auto_scale(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """
         Generate auto-scaling recommendations.
 
@@ -998,7 +998,7 @@ class InfrastructureDepartment(BaseDepartment):
     # Helper Methods
     # ========================================================================
 
-    def _calculate_confidence(self, task_type: str, result: Dict[str, Any]) -> float:
+    def _calculate_confidence(self, task_type: str, result: dict[str, Any]) -> float:
         """Calculate confidence score based on task and result quality."""
         # Base confidence
         confidence = 0.7
@@ -1038,7 +1038,7 @@ class InfrastructureDepartment(BaseDepartment):
 
         return confidence
 
-    def _verify_resource_availability(self, result_data: Dict[str, Any]) -> float:
+    def _verify_resource_availability(self, result_data: dict[str, Any]) -> float:
         """Verify resources are within acceptable limits."""
         if "metrics" not in result_data:
             return 0.5
@@ -1054,7 +1054,7 @@ class InfrastructureDepartment(BaseDepartment):
         passed = sum([cpu_ok, memory_ok, disk_ok])
         return passed / 3.0
 
-    def _verify_service_health(self, result_data: Dict[str, Any]) -> float:
+    def _verify_service_health(self, result_data: dict[str, Any]) -> float:
         """Verify services are healthy."""
         if "services" not in result_data:
             return 0.5
@@ -1071,7 +1071,7 @@ class InfrastructureDepartment(BaseDepartment):
 
         return healthy / len(services)
 
-    def _verify_performance(self, result_data: Dict[str, Any]) -> float:
+    def _verify_performance(self, result_data: dict[str, Any]) -> float:
         """Verify performance metrics are acceptable."""
         if "performance" not in result_data:
             return 0.7  # Neutral if no performance data
@@ -1089,7 +1089,7 @@ class InfrastructureDepartment(BaseDepartment):
 
         return sum(acceptable) / len(acceptable)
 
-    def _verify_security(self, result_data: Dict[str, Any]) -> float:
+    def _verify_security(self, result_data: dict[str, Any]) -> float:
         """Verify security policies are enforced."""
         # In production, would check:
         # - TLS enabled
@@ -1100,7 +1100,7 @@ class InfrastructureDepartment(BaseDepartment):
         # For now, return high score (assume secure by default)
         return 0.95
 
-    def _verify_compliance(self, result_data: Dict[str, Any]) -> float:
+    def _verify_compliance(self, result_data: dict[str, Any]) -> float:
         """Verify compliance requirements are met."""
         # In production, would check:
         # - Resource limits set
@@ -1111,7 +1111,7 @@ class InfrastructureDepartment(BaseDepartment):
         # For now, return high score
         return 0.9
 
-    async def _refine_resource_monitoring(self, result_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _refine_resource_monitoring(self, result_data: dict[str, Any]) -> dict[str, Any]:
         """Refine resource monitoring with additional metrics."""
         # Collect more granular metrics
         refined = result_data.copy()
@@ -1125,7 +1125,7 @@ class InfrastructureDepartment(BaseDepartment):
 
         return refined
 
-    async def _refine_health_check(self, result_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _refine_health_check(self, result_data: dict[str, Any]) -> dict[str, Any]:
         """Refine health check by re-checking degraded services."""
         refined = result_data.copy()
 
@@ -1151,7 +1151,7 @@ class InfrastructureDepartment(BaseDepartment):
 
         return refined
 
-    async def _refine_performance_analysis(self, result_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _refine_performance_analysis(self, result_data: dict[str, Any]) -> dict[str, Any]:
         """Refine performance analysis with more samples."""
         refined = result_data.copy()
 
@@ -1172,7 +1172,7 @@ class InfrastructureDepartment(BaseDepartment):
 
         return refined
 
-    def _generate_recommendations(self, result_data: Dict[str, Any]) -> List[str]:
+    def _generate_recommendations(self, result_data: dict[str, Any]) -> list[str]:
         """Generate operational recommendations based on results."""
         recommendations = []
 

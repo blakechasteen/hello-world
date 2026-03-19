@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Federation Safety Layer
 ========================
@@ -33,16 +32,12 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, FrozenSet, List, Optional, Set, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from hololoom.federation.types import (
     FederationNode,
     GuildTrustLevel,
-    Query,
-    Response,
-    FederationError,
 )
-from hololoom.federation.identity import Identity, SignedMessage
 
 # Import cryptography for direct signature verification
 try:
@@ -52,8 +47,8 @@ except ImportError:
     HAS_CRYPTOGRAPHY = False
 
 if TYPE_CHECKING:
-    from hololoom.alignment.safety_guardrails import SafetyGuardrails, SafetyDecision
     from hololoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
 
 # ============================================================================
@@ -92,7 +87,7 @@ class FederationPermission(Enum):
 
 
 # Trust level to permissions mapping
-TRUST_PERMISSIONS: Dict[GuildTrustLevel, FrozenSet[FederationPermission]] = {
+TRUST_PERMISSIONS: dict[GuildTrustLevel, frozenset[FederationPermission]] = {
     GuildTrustLevel.STARTER: frozenset({
         FederationPermission.RECALL,
         FederationPermission.CAPABILITIES,
@@ -116,7 +111,7 @@ TRUST_PERMISSIONS: Dict[GuildTrustLevel, FrozenSet[FederationPermission]] = {
 }
 
 # Method to permission mapping
-METHOD_PERMISSIONS: Dict[str, FederationPermission] = {
+METHOD_PERMISSIONS: dict[str, FederationPermission] = {
     # RAG methods
     "hololoom.rag.recall": FederationPermission.RECALL,
     "hololoom.rag.store": FederationPermission.STORE,
@@ -179,7 +174,7 @@ class SignedRequest:
     """
 
     method: str
-    params: Dict[str, Any]
+    params: dict[str, Any]
     sender_id: str
     timestamp: float
     nonce: str
@@ -202,7 +197,7 @@ class SafetyCheckResult:
     allowed: bool
     reason: str
     check_type: str  # "signature", "trust", "rate_limit", "safety"
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     @property
@@ -215,21 +210,21 @@ class FederationSafetyResult:
     """Complete result of all federation safety checks."""
 
     allowed: bool
-    checks: List[SafetyCheckResult]
+    checks: list[SafetyCheckResult]
     sender_id: str
     method: str
     request_id: str
     total_check_time_ms: float = 0.0
 
     @property
-    def denied_reason(self) -> Optional[str]:
+    def denied_reason(self) -> str | None:
         """Get the reason for denial if denied."""
         for check in self.checks:
             if check.denied:
                 return f"{check.check_type}: {check.reason}"
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for logging/serialization."""
         return {
             "allowed": self.allowed,
@@ -274,7 +269,7 @@ class SignatureVerifier:
     ):
         self._nonce_expiry = nonce_expiry_seconds
         self._max_drift = max_timestamp_drift_seconds
-        self._seen_nonces: Dict[str, float] = {}  # nonce -> timestamp
+        self._seen_nonces: dict[str, float] = {}  # nonce -> timestamp
         self._last_cleanup = time.time()
 
     def verify(
@@ -395,7 +390,7 @@ class GuildTrustChecker:
 
     def __init__(
         self,
-        custom_permissions: Optional[Dict[GuildTrustLevel, FrozenSet[FederationPermission]]] = None,
+        custom_permissions: dict[GuildTrustLevel, frozenset[FederationPermission]] | None = None,
     ):
         self._permissions = custom_permissions or TRUST_PERMISSIONS
 
@@ -403,7 +398,7 @@ class GuildTrustChecker:
         self,
         node: FederationNode,
         method: str,
-        guild_trust_level: Optional[GuildTrustLevel] = None,
+        guild_trust_level: GuildTrustLevel | None = None,
     ) -> SafetyCheckResult:
         """
         Check if a node has permission to call a method.
@@ -458,7 +453,7 @@ class GuildTrustChecker:
             },
         )
 
-    def get_allowed_methods(self, trust_level: GuildTrustLevel) -> List[str]:
+    def get_allowed_methods(self, trust_level: GuildTrustLevel) -> list[str]:
         """Get all methods allowed for a trust level."""
         allowed_permissions = self._permissions.get(trust_level, frozenset())
         return [
@@ -497,10 +492,10 @@ class FederationSafetyGate:
 
     def __init__(
         self,
-        guardrails: Optional['SafetyGuardrails'] = None,
-        audit_trail: Optional['AuditTrail'] = None,
-        signature_verifier: Optional[SignatureVerifier] = None,
-        trust_checker: Optional[GuildTrustChecker] = None,
+        guardrails: SafetyGuardrails | None = None,
+        audit_trail: AuditTrail | None = None,
+        signature_verifier: SignatureVerifier | None = None,
+        trust_checker: GuildTrustChecker | None = None,
         enable_signature_check: bool = True,
         enable_trust_check: bool = True,
         enable_safety_check: bool = True,
@@ -520,8 +515,8 @@ class FederationSafetyGate:
         self,
         request: SignedRequest,
         node: FederationNode,
-        guild_trust_level: Optional[GuildTrustLevel] = None,
-        rate_limit_result: Optional[SafetyCheckResult] = None,
+        guild_trust_level: GuildTrustLevel | None = None,
+        rate_limit_result: SafetyCheckResult | None = None,
     ) -> FederationSafetyResult:
         """
         Run all safety checks on a federation request.
@@ -536,7 +531,7 @@ class FederationSafetyGate:
             FederationSafetyResult with all check outcomes
         """
         start_time = time.time()
-        checks: List[SafetyCheckResult] = []
+        checks: list[SafetyCheckResult] = []
         allowed = True
 
         # 1. Signature verification
@@ -588,7 +583,7 @@ class FederationSafetyGate:
         """Run safety guardrails on request."""
         try:
             # Import here to avoid circular imports
-            from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+            from hololoom.alignment.safety_guardrails import ActionRequest
 
             # Map method to action category
             category = self._method_to_category(request.method)
@@ -628,7 +623,7 @@ class FederationSafetyGate:
                 check_type="safety",
             )
 
-    def _method_to_category(self, method: str) -> 'ActionCategory':
+    def _method_to_category(self, method: str) -> ActionCategory:
         """Map JSON-RPC method to action category."""
         from hololoom.alignment.safety_guardrails import ActionCategory
 
@@ -677,8 +672,8 @@ class FederationSafetyGate:
 # ============================================================================
 
 def create_federation_safety_gate(
-    guardrails: Optional['SafetyGuardrails'] = None,
-    audit_trail: Optional['AuditTrail'] = None,
+    guardrails: SafetyGuardrails | None = None,
+    audit_trail: AuditTrail | None = None,
     **kwargs,
 ) -> FederationSafetyGate:
     """
@@ -714,7 +709,7 @@ def create_federation_safety_gate(
     )
 
 
-def parse_signed_request(data: Dict[str, Any]) -> SignedRequest:
+def parse_signed_request(data: dict[str, Any]) -> SignedRequest:
     """
     Parse a JSON-RPC request with signed metadata into SignedRequest.
 

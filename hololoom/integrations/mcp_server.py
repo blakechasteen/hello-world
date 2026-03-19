@@ -39,18 +39,17 @@ Integration: Phases 1-3 → Claude Desktop
 """
 
 import asyncio
-import logging
 import json
+import logging
 import sys
-from typing import Any, Dict, List, Optional
-from pathlib import Path
 from datetime import datetime
+from typing import Any
 
 # MCP imports
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
-    from mcp.types import Tool, TextContent, ImageContent, EmbeddedResource
+    from mcp.types import EmbeddedResource, ImageContent, TextContent, Tool
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
@@ -58,17 +57,12 @@ except ImportError:
     sys.exit(1)
 
 # HoloLoom imports
-from hololoom import HoloLoom, __version__
+from hololoom.agentic.skill_agents import SkillRegistry
 from hololoom.config import Config
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
-from hololoom.protocols.recursive_reasoning import ReasoningStrategy
-from hololoom.agentic.skill_agents import (
-    SkillRegistry,
-    SkillExecutor,
-    list_available_skills
-)
 from hololoom.prompting.metaprompt import create_metaprompt_auto, enhance_request
+from hololoom.protocols.recursive_reasoning import ReasoningStrategy
+from hololoom.protocols.types import Query
+from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
 
 # Initialize logging
 logging.basicConfig(
@@ -81,9 +75,9 @@ logger = logging.getLogger(__name__)
 server = Server("hololoom-promptly")
 
 # Global state
-skill_registry: Optional[SkillRegistry] = None
-orchestrator: Optional[RecursiveWeavingOrchestrator] = None
-config: Optional[Config] = None
+skill_registry: SkillRegistry | None = None
+orchestrator: RecursiveWeavingOrchestrator | None = None
+config: Config | None = None
 
 
 # ============================================================================
@@ -114,7 +108,7 @@ async def initialize_hololoom():
 # ============================================================================
 
 @server.list_tools()
-async def list_tools() -> List[Tool]:
+async def list_tools() -> list[Tool]:
     """List all available MCP tools."""
     tools = []
 
@@ -412,7 +406,7 @@ async def list_tools() -> List[Tool]:
 # ============================================================================
 
 @server.call_tool()
-async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     """Handle tool calls."""
     logger.info(f"Tool called: {name} with args: {list(arguments.keys())}")
 
@@ -448,7 +442,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
         )]
 
 
-async def handle_experience(args: Dict[str, Any]) -> List[TextContent]:
+async def handle_experience(args: dict[str, Any]) -> list[TextContent]:
     """Handle hololoom_experience tool."""
     from hololoom.hololoom import HoloLoom
 
@@ -471,7 +465,7 @@ async def handle_experience(args: Dict[str, Any]) -> List[TextContent]:
         )]
 
 
-async def handle_recall(args: Dict[str, Any]) -> List[TextContent]:
+async def handle_recall(args: dict[str, Any]) -> list[TextContent]:
     """Handle hololoom_recall tool."""
     from hololoom.hololoom import HoloLoom
 
@@ -500,7 +494,7 @@ async def handle_recall(args: Dict[str, Any]) -> List[TextContent]:
         )]
 
 
-async def handle_weave(args: Dict[str, Any]) -> List[TextContent]:
+async def handle_weave(args: dict[str, Any]) -> list[TextContent]:
     """Handle hololoom_weave tool with recursive reasoning."""
     query_text = args["query"]
     strategy_name = args.get("strategy", "adaptive")
@@ -555,7 +549,7 @@ async def handle_weave(args: Dict[str, Any]) -> List[TextContent]:
         )]
 
 
-async def handle_analytics_summary(args: Dict[str, Any]) -> List[TextContent]:
+async def handle_analytics_summary(args: dict[str, Any]) -> list[TextContent]:
     """Handle hololoom_analytics_summary tool."""
     # Create temporary orchestrator to access analytics
     async with RecursiveWeavingOrchestrator(
@@ -572,7 +566,7 @@ async def handle_analytics_summary(args: Dict[str, Any]) -> List[TextContent]:
         )]
 
 
-async def handle_refine_prompt(args: Dict[str, Any]) -> List[TextContent]:
+async def handle_refine_prompt(args: dict[str, Any]) -> list[TextContent]:
     """
     Handle refine_prompt tool.
 
@@ -660,7 +654,7 @@ async def handle_refine_prompt(args: Dict[str, Any]) -> List[TextContent]:
         )]
 
 
-async def handle_skill_execution(skill_name: str, args: Dict[str, Any]) -> List[TextContent]:
+async def handle_skill_execution(skill_name: str, args: dict[str, Any]) -> list[TextContent]:
     """Handle professional skill execution."""
     from hololoom.agentic.skill_agents import execute_skill
 

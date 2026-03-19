@@ -30,22 +30,22 @@ Plugin Abilities (Tier 2):
 Status: Production ready (2025-12-04)
 """
 
-from .skill_wrapper import (
-    SkillWrapperAbility,
-    SKILL_MAP,
-    create_skill_abilities,
-    get_available_skills,
-    get_skill_description,
-    get_skill_tags,
-)
-from .git_operations import GitOperationsAbility
 from .code_execution import (
     CodeExecutionAbility,
     CodeExecutionConfig,
     create_code_execution_ability,
 )
-from .test_runner import TestRunnerAbility
+from .git_operations import GitOperationsAbility
 from .security_scan import SecurityScanAbility
+from .skill_wrapper import (
+    SKILL_MAP,
+    SkillWrapperAbility,
+    create_skill_abilities,
+    get_available_skills,
+    get_skill_description,
+    get_skill_tags,
+)
+from .test_runner import TestRunnerAbility
 
 __all__ = [
     # Tier 1: Skill wrappers

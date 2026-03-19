@@ -27,7 +27,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 
@@ -82,12 +82,12 @@ class ReportConfig:
     include_recommendations: bool = True
     include_history: bool = True
     regression_threshold: float = 0.05
-    output_path: Optional[str] = None
+    output_path: str | None = None
     title: str = "SAE Evaluation Report"
     author: str = "Dark Trace"
 
     @classmethod
-    def publication(cls) -> "ReportConfig":
+    def publication(cls) -> ReportConfig:
         """Configuration for publication-ready report."""
         return cls(
             format=ReportFormat.LATEX,
@@ -99,7 +99,7 @@ class ReportConfig:
         )
 
     @classmethod
-    def dashboard(cls) -> "ReportConfig":
+    def dashboard(cls) -> ReportConfig:
         """Configuration for interactive dashboard."""
         return cls(
             format=ReportFormat.HTML,
@@ -109,7 +109,7 @@ class ReportConfig:
         )
 
     @classmethod
-    def quick(cls) -> "ReportConfig":
+    def quick(cls) -> ReportConfig:
         """Configuration for quick summary."""
         return cls(
             format=ReportFormat.TEXT,
@@ -139,7 +139,7 @@ class RegressionAlert:
     severity: AlertLevel
     recommendation: str
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "metric_name": self.metric_name,
@@ -165,13 +165,13 @@ class MetricTrend:
     """
 
     metric_name: str
-    values: List[float]
-    timestamps: List[float]
+    values: list[float]
+    timestamps: list[float]
     direction: str  # "up", "down", "stable"
     slope: float
     volatility: float
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "metric_name": self.metric_name,
@@ -201,13 +201,13 @@ class EvaluationReport:
 
     timestamp: datetime
     config: ReportConfig
-    metrics: Dict[str, float]
-    benchmark_results: Optional[Dict[str, Any]] = None
-    baseline_comparison: Optional[Dict[str, Any]] = None
-    regressions: List[RegressionAlert] = field(default_factory=list)
-    trends: List[MetricTrend] = field(default_factory=list)
-    recommendations: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metrics: dict[str, float]
+    benchmark_results: dict[str, Any] | None = None
+    baseline_comparison: dict[str, Any] | None = None
+    regressions: list[RegressionAlert] = field(default_factory=list)
+    trends: list[MetricTrend] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def summary(self) -> str:
         """Generate text summary."""
@@ -261,7 +261,7 @@ class EvaluationReport:
         lines.append("=" * 60)
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "timestamp": self.timestamp.isoformat(),
@@ -280,7 +280,7 @@ class EvaluationReport:
             "metadata": self.metadata,
         }
 
-    def save(self, path: Union[str, Path]) -> None:
+    def save(self, path: str | Path) -> None:
         """Save report to file.
 
         Args:
@@ -482,10 +482,10 @@ class RegressionDetector:
         """
         self.threshold = threshold
         self.history_size = history_size
-        self._baseline: Dict[str, float] = {}
-        self._history: Dict[str, List[Tuple[float, float]]] = {}  # metric -> [(timestamp, value)]
+        self._baseline: dict[str, float] = {}
+        self._history: dict[str, list[tuple[float, float]]] = {}  # metric -> [(timestamp, value)]
 
-    def set_baseline(self, metrics: Dict[str, float]) -> None:
+    def set_baseline(self, metrics: dict[str, float]) -> None:
         """Set baseline metrics for comparison.
 
         Args:
@@ -495,8 +495,8 @@ class RegressionDetector:
 
     def add_to_history(
         self,
-        metrics: Dict[str, float],
-        timestamp: Optional[float] = None,
+        metrics: dict[str, float],
+        timestamp: float | None = None,
     ) -> None:
         """Add metrics to history.
 
@@ -517,9 +517,9 @@ class RegressionDetector:
 
     def detect(
         self,
-        current_metrics: Dict[str, float],
-        custom_thresholds: Optional[Dict[str, float]] = None,
-    ) -> List[RegressionAlert]:
+        current_metrics: dict[str, float],
+        custom_thresholds: dict[str, float] | None = None,
+    ) -> list[RegressionAlert]:
         """Detect regressions in current metrics.
 
         Args:
@@ -628,7 +628,7 @@ class RegressionDetector:
 
         return f"Investigate {metric_name} degradation"
 
-    def get_trends(self) -> List[MetricTrend]:
+    def get_trends(self) -> list[MetricTrend]:
         """Analyze trends in historical metrics.
 
         Returns:
@@ -688,7 +688,7 @@ class MetricsDashboard:
         html = dashboard.render(metrics, alerts, trends)
     """
 
-    def __init__(self, config: Optional[ReportConfig] = None):
+    def __init__(self, config: ReportConfig | None = None):
         """Initialize dashboard.
 
         Args:
@@ -698,10 +698,10 @@ class MetricsDashboard:
 
     def render(
         self,
-        metrics: Dict[str, float],
-        alerts: Optional[List[RegressionAlert]] = None,
-        trends: Optional[List[MetricTrend]] = None,
-        title: Optional[str] = None,
+        metrics: dict[str, float],
+        alerts: list[RegressionAlert] | None = None,
+        trends: list[MetricTrend] | None = None,
+        title: str | None = None,
     ) -> str:
         """Render dashboard HTML.
 
@@ -814,8 +814,8 @@ class MetricsDashboard:
 
     def _render_metric_cards(
         self,
-        metrics: Dict[str, float],
-        trends: List[MetricTrend],
+        metrics: dict[str, float],
+        trends: list[MetricTrend],
     ) -> str:
         """Render metric cards."""
         trend_map = {t.metric_name: t for t in trends}
@@ -849,7 +849,7 @@ class MetricsDashboard:
 
         return "\n".join(cards)
 
-    def _render_alerts(self, alerts: List[RegressionAlert]) -> str:
+    def _render_alerts(self, alerts: list[RegressionAlert]) -> str:
         """Render alert panel."""
         if not alerts:
             return ""
@@ -871,7 +871,7 @@ class MetricsDashboard:
         </div>
         """
 
-    def _render_trends(self, trends: List[MetricTrend]) -> str:
+    def _render_trends(self, trends: list[MetricTrend]) -> str:
         """Render trend section."""
         if not trends:
             return ""
@@ -913,7 +913,7 @@ class EvaluationReporter:
         report.save("evaluation_report.html")
     """
 
-    def __init__(self, config: Optional[ReportConfig] = None):
+    def __init__(self, config: ReportConfig | None = None):
         """Initialize reporter.
 
         Args:
@@ -924,9 +924,9 @@ class EvaluationReporter:
             threshold=self.config.regression_threshold
         )
         self._dashboard = MetricsDashboard(self.config)
-        self._history: List[Dict[str, float]] = []
+        self._history: list[dict[str, float]] = []
 
-    def set_baseline(self, metrics: Dict[str, float]) -> None:
+    def set_baseline(self, metrics: dict[str, float]) -> None:
         """Set baseline metrics for regression detection.
 
         Args:
@@ -934,7 +934,7 @@ class EvaluationReporter:
         """
         self._regression_detector.set_baseline(metrics)
 
-    def add_to_history(self, metrics: Dict[str, float]) -> None:
+    def add_to_history(self, metrics: dict[str, float]) -> None:
         """Add metrics to history.
 
         Args:
@@ -945,9 +945,9 @@ class EvaluationReporter:
 
     def generate(
         self,
-        metrics: Dict[str, float],
-        benchmark_results: Optional[Dict[str, Any]] = None,
-        baseline_comparison: Optional[Dict[str, Any]] = None,
+        metrics: dict[str, float],
+        benchmark_results: dict[str, Any] | None = None,
+        baseline_comparison: dict[str, Any] | None = None,
     ) -> EvaluationReport:
         """Generate evaluation report.
 
@@ -990,11 +990,11 @@ class EvaluationReporter:
 
     def _generate_recommendations(
         self,
-        metrics: Dict[str, float],
-        regressions: List[RegressionAlert],
-        benchmark_results: Optional[Dict[str, Any]],
-        baseline_comparison: Optional[Dict[str, Any]],
-    ) -> List[str]:
+        metrics: dict[str, float],
+        regressions: list[RegressionAlert],
+        benchmark_results: dict[str, Any] | None,
+        baseline_comparison: dict[str, Any] | None,
+    ) -> list[str]:
         """Generate recommendations based on analysis.
 
         Args:
@@ -1062,8 +1062,8 @@ class EvaluationReporter:
 
     def render_dashboard(
         self,
-        metrics: Dict[str, float],
-        alerts: Optional[List[RegressionAlert]] = None,
+        metrics: dict[str, float],
+        alerts: list[RegressionAlert] | None = None,
     ) -> str:
         """Render interactive dashboard.
 
@@ -1081,8 +1081,8 @@ class EvaluationReporter:
 # Convenience functions
 
 def create_reporter(
-    config: Optional[ReportConfig] = None,
-    baseline_metrics: Optional[Dict[str, float]] = None,
+    config: ReportConfig | None = None,
+    baseline_metrics: dict[str, float] | None = None,
 ) -> EvaluationReporter:
     """Create configured evaluation reporter.
 
@@ -1100,8 +1100,8 @@ def create_reporter(
 
 
 def quick_report(
-    metrics: Dict[str, float],
-    output_path: Optional[str] = None,
+    metrics: dict[str, float],
+    output_path: str | None = None,
 ) -> EvaluationReport:
     """Generate quick summary report.
 
@@ -1126,9 +1126,9 @@ def quick_report(
 
 
 def generate_publication_report(
-    metrics: Dict[str, float],
-    benchmark_results: Dict[str, Any],
-    baseline_comparison: Dict[str, Any],
+    metrics: dict[str, float],
+    benchmark_results: dict[str, Any],
+    baseline_comparison: dict[str, Any],
     output_path: str,
 ) -> EvaluationReport:
     """Generate publication-quality report.

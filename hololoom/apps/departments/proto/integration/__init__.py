@@ -21,10 +21,9 @@ Status: Production ready (2025-12-02)
 
 from hololoom.apps.departments.proto.integration.agentic_bridge import (
     AgenticBridge,
-    ProtoReasoningMode,
     AgenticBridgeResult,
+    ProtoReasoningMode,
 )
-
 from hololoom.apps.departments.proto.integration.department_bridge import (
     ProtoDepartment,
 )

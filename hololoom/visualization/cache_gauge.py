@@ -34,10 +34,9 @@ API Documentation:
         - HTML size: ~6-8 KB
 """
 
-from dataclasses import dataclass
-from typing import Optional, Dict, Any, List
-from enum import Enum
 import math
+from dataclasses import dataclass
+from enum import Enum
 
 
 class CacheEffectiveness(Enum):
@@ -138,7 +137,7 @@ class CacheGaugeRenderer:
         self,
         metrics: CacheMetrics,
         title: str = "Cache Effectiveness",
-        subtitle: Optional[str] = None
+        subtitle: str | None = None
     ) -> str:
         """
         Render cache gauge HTML.
@@ -206,7 +205,7 @@ class CacheGaugeRenderer:
         if metrics.avg_cached_latency_ms < 0 or metrics.avg_uncached_latency_ms < 0:
             raise ValueError("Latencies must be non-negative")
 
-    def _render_header(self, title: str, subtitle: Optional[str], metrics: CacheMetrics) -> str:
+    def _render_header(self, title: str, subtitle: str | None, metrics: CacheMetrics) -> str:
         """Render gauge header with title and effectiveness rating."""
         subtitle_html = ""
         if subtitle:
@@ -408,8 +407,8 @@ class CacheGaugeRenderer:
 def calculate_cache_metrics(
     total_queries: int,
     cache_hits: int,
-    cached_latencies_ms: List[float],
-    uncached_latencies_ms: List[float]
+    cached_latencies_ms: list[float],
+    uncached_latencies_ms: list[float]
 ) -> CacheMetrics:
     """
     Calculate cache performance metrics from raw data.
@@ -539,7 +538,7 @@ def render_cache_gauge(
     avg_cached_latency_ms: float = 15.0,
     avg_uncached_latency_ms: float = 120.0,
     title: str = "Cache Effectiveness",
-    subtitle: Optional[str] = None,
+    subtitle: str | None = None,
     show_details: bool = True,
     show_recommendations: bool = True
 ) -> str:

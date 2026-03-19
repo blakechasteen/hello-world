@@ -5,8 +5,8 @@ HoloLoom SaaS API Routes
 Exports all route routers for mounting in FastAPI application.
 """
 
-from .customers import router as customers_router
 from .api_keys import router as api_keys_router
+from .customers import router as customers_router
 from .health import router as health_router
 
 # Future imports:

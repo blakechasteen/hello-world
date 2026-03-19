@@ -16,22 +16,17 @@ Research Foundation:
 - Unified: TraceLens protocol from Dark Trace
 """
 
-from typing import Dict, List, Optional, Any, Union
 import torch
-import torch.nn.functional as F
 
 from hololoom.dark_trace.protocol import (
-    TraceLens,
     BaseLens,
-    LensType,
     Feature,
-    FeatureSource,
     FeatureActivation,
+    FeatureSource,
+    LensType,
     SteeringVector,
-    SafetyFlag,
 )
-
-from hololoom.dark_trace.sae.labeler import FeatureLabeler, FeatureLabel
+from hololoom.dark_trace.sae.labeler import FeatureLabel, FeatureLabeler
 
 
 class SAELens(BaseLens):
@@ -63,8 +58,8 @@ class SAELens(BaseLens):
     def __init__(
         self,
         sae: torch.nn.Module,
-        labeler: Optional[FeatureLabeler] = None,
-        labels: Optional[Dict[int, FeatureLabel]] = None,
+        labeler: FeatureLabeler | None = None,
+        labels: dict[int, FeatureLabel] | None = None,
         name: str = "SAELens",
         register_features: bool = True,
     ):
@@ -135,7 +130,7 @@ class SAELens(BaseLens):
 
             self.register_feature(feature)
 
-    def set_labels(self, labels: Dict[int, FeatureLabel]) -> None:
+    def set_labels(self, labels: dict[int, FeatureLabel]) -> None:
         """
         Set feature labels and update registry.
 
@@ -192,8 +187,8 @@ class SAELens(BaseLens):
         self,
         activations: torch.Tensor,
         threshold: float = 0.0,
-        top_k: Optional[int] = None,
-    ) -> List[FeatureActivation]:
+        top_k: int | None = None,
+    ) -> list[FeatureActivation]:
         """
         Get active features above threshold.
 
@@ -245,8 +240,8 @@ class SAELens(BaseLens):
 
     def steer(
         self,
-        goals: Dict[str, float],
-        input_dim: Optional[int] = None,
+        goals: dict[str, float],
+        input_dim: int | None = None,
     ) -> SteeringVector:
         """
         Generate steering vector from feature goals.
@@ -295,7 +290,7 @@ class SAELens(BaseLens):
         self,
         activations: torch.Tensor,
         verbosity: int = 1,
-        include_features: Optional[List[str]] = None,
+        include_features: list[str] | None = None,
     ) -> str:
         """
         Generate human-readable explanation of activations.
@@ -358,7 +353,7 @@ class SAELens(BaseLens):
     def ablate(
         self,
         activations: torch.Tensor,
-        feature_ids: List[str],
+        feature_ids: list[str],
     ) -> torch.Tensor:
         """
         Ablate (remove) specific features from activations.
@@ -405,7 +400,7 @@ class SAELens(BaseLens):
     def inject(
         self,
         activations: torch.Tensor,
-        feature_values: Dict[str, float],
+        feature_values: dict[str, float],
     ) -> torch.Tensor:
         """
         Inject specific feature values into activations.
@@ -425,7 +420,7 @@ class SAELens(BaseLens):
         self,
         source_activations: torch.Tensor,
         target_activations: torch.Tensor,
-        feature_ids: List[str],
+        feature_ids: list[str],
     ) -> torch.Tensor:
         """
         Patch features from source to target activations.
@@ -473,7 +468,7 @@ class SAELens(BaseLens):
 
     def get_decoder_directions(
         self,
-        feature_ids: List[str],
+        feature_ids: list[str],
     ) -> torch.Tensor:
         """
         Get decoder directions for specified features.

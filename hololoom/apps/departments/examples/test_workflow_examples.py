@@ -7,18 +7,16 @@ Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
+
 import pytest
-import asyncio
-from typing import Dict, Any
 
 from hololoom.apps.departments.examples.workflow_examples import (
-    research_workflow_example,
+    customer_onboarding_workflow_example,
     deployment_workflow_example,
     intelligent_routing_workflow_example,
     monitoring_scaling_workflow_example,
-    customer_onboarding_workflow_example,
+    research_workflow_example,
 )
-
 
 # ===== Test Research Workflow =====
 

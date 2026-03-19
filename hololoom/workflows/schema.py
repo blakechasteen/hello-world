@@ -15,11 +15,12 @@ Date: November 2025
 """
 
 import json
-import yaml
-from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Any, Optional
-from enum import Enum
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any
+
+import yaml
 
 
 class NodeType(Enum):
@@ -71,7 +72,7 @@ class RetryPolicy:
     max_retries: int = 3
     retry_delay_seconds: float = 1.0
     exponential_backoff: bool = True
-    retry_on_errors: List[str] = field(default_factory=lambda: ["timeout", "connection_error"])
+    retry_on_errors: list[str] = field(default_factory=lambda: ["timeout", "connection_error"])
 
 
 @dataclass
@@ -93,14 +94,14 @@ class WorkflowNode:
     id: str
     type: NodeType
     name: str
-    params: Dict[str, Any] = field(default_factory=dict)
-    next: Optional[List[str]] = None
-    on_error: Optional[str] = None
-    retry_policy: Optional[RetryPolicy] = None
-    timeout_seconds: Optional[int] = None
+    params: dict[str, Any] = field(default_factory=dict)
+    next: list[str] | None = None
+    on_error: str | None = None
+    retry_policy: RetryPolicy | None = None
+    timeout_seconds: int | None = None
     description: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         data = {
             "id": self.id,
@@ -123,7 +124,7 @@ class WorkflowNode:
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'WorkflowNode':
+    def from_dict(cls, data: dict[str, Any]) -> 'WorkflowNode':
         """Create from dictionary."""
         node_type = NodeType(data["type"])
 
@@ -158,9 +159,9 @@ class WorkflowDefinition:
     """
     name: str
     version: str
-    nodes: Dict[str, WorkflowNode]
+    nodes: dict[str, WorkflowNode]
     entry_point: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_json(cls, json_str: str) -> 'WorkflowDefinition':
@@ -175,7 +176,7 @@ class WorkflowDefinition:
         return cls.from_dict(data)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'WorkflowDefinition':
+    def from_dict(cls, data: dict[str, Any]) -> 'WorkflowDefinition':
         """Create from dictionary."""
         nodes = {
             node_id: WorkflowNode.from_dict(node_data)
@@ -200,7 +201,7 @@ class WorkflowDefinition:
         data = self.to_dict()
         return yaml.dump(data, default_flow_style=False, sort_keys=False)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "name": self.name,
@@ -213,7 +214,7 @@ class WorkflowDefinition:
             "metadata": self.metadata,
         }
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """
         Validate workflow structure.
 
@@ -318,12 +319,12 @@ class ExecutionTrace:
     end_time: datetime
     duration_ms: float
     status: str
-    inputs: Dict[str, Any] = field(default_factory=dict)
+    inputs: dict[str, Any] = field(default_factory=dict)
     outputs: Any = None
-    error: Optional[str] = None
+    error: str | None = None
     retry_count: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "node_id": self.node_id,
@@ -357,14 +358,14 @@ class WorkflowResult:
     execution_id: str
     workflow_name: str
     status: str
-    outputs: Dict[str, Any]
+    outputs: dict[str, Any]
     execution_time_ms: float
     nodes_executed: int
-    errors: List[Dict[str, Any]] = field(default_factory=list)
-    trace: List[ExecutionTrace] = field(default_factory=list)
-    checkpoint_id: Optional[str] = None
+    errors: list[dict[str, Any]] = field(default_factory=list)
+    trace: list[ExecutionTrace] = field(default_factory=list)
+    checkpoint_id: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "execution_id": self.execution_id,

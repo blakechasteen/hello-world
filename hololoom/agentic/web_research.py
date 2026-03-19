@@ -30,23 +30,17 @@ Usage:
     # - Complete reasoning trace
 """
 
-import os
 import logging
-from typing import List, Dict, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
-from hololoom.protocols.types import Query, MemoryShard
+from hololoom.agentic.core import AgenticIntent, AgenticOrchestrator, AgenticResult, ReasoningMode
+from hololoom.alignment.audit_trail import AuditTrail
 from hololoom.config import Config
-from hololoom.search import MatryoshkaWebSearch, SearchConfig, WebSearchResult
-from hololoom.agentic.core import (
-    AgenticOrchestrator,
-    AgenticResult,
-    AgenticIntent,
-    ReasoningMode
-)
+from hololoom.protocols.types import MemoryShard, Query
 from hololoom.recursive import FullLearningEngine
-from hololoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
+from hololoom.search import MatryoshkaWebSearch, SearchConfig, WebSearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -65,12 +59,12 @@ class WebResearchResult(AgenticResult):
     - Memory shards created
     - Web search statistics
     """
-    search_results: List[WebSearchResult] = field(default_factory=list)
-    memory_shards: List[MemoryShard] = field(default_factory=list)
+    search_results: list[WebSearchResult] = field(default_factory=list)
+    memory_shards: list[MemoryShard] = field(default_factory=list)
     cited_response: str = ""
     web_search_time_ms: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "response": self.cited_response or self.spacetime.response,
@@ -137,7 +131,7 @@ class WebResearchOrchestrator:
     def __init__(
         self,
         agentic_orchestrator: AgenticOrchestrator,
-        web_search: Optional[MatryoshkaWebSearch] = None,
+        web_search: MatryoshkaWebSearch | None = None,
         enable_web_search: bool = True
     ):
         self.agentic = agentic_orchestrator
@@ -150,13 +144,13 @@ class WebResearchOrchestrator:
     async def create(
         cls,
         config: Config,
-        shards: List[MemoryShard],
+        shards: list[MemoryShard],
         enable_web_search: bool = True,
         search_provider: str = "serpapi",
-        search_api_key: Optional[str] = None,
+        search_api_key: str | None = None,
         enable_verification: bool = True,
         enable_goal_tracking: bool = True,
-        audit_trail: Optional[AuditTrail] = None
+        audit_trail: AuditTrail | None = None
     ) -> "WebResearchOrchestrator":
         """
         Factory method to create web-enabled agentic orchestrator.
@@ -370,7 +364,7 @@ class WebResearchOrchestrator:
     def _create_web_synthesis_query(
         self,
         original_query: str,
-        search_results: List[WebSearchResult]
+        search_results: list[WebSearchResult]
     ) -> str:
         """
         Create synthesis query from web search results.
@@ -394,7 +388,7 @@ Web Sources:
 
             synthesis += "\n"
 
-        synthesis += f"\nPlease synthesize these sources into a clear, comprehensive answer."
+        synthesis += "\nPlease synthesize these sources into a clear, comprehensive answer."
 
         return synthesis
 

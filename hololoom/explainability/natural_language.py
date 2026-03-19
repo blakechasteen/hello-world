@@ -11,8 +11,8 @@ Research:
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
 from enum import Enum
+from typing import Any
 
 
 class ExplanationType(Enum):
@@ -31,7 +31,7 @@ class NaturalLanguageExplanation:
     """A natural language explanation"""
     explanation_type: ExplanationType
     text: str  # Natural language explanation
-    supporting_data: Optional[Dict[str, Any]] = None  # Technical data
+    supporting_data: dict[str, Any] | None = None  # Technical data
     confidence: float = 1.0
 
     def __repr__(self) -> str:
@@ -62,9 +62,9 @@ class NaturalLanguageExplainer:
     def explain(
         self,
         decision: Any,
-        feature_importances: Optional[List[Any]] = None,
-        attention_weights: Optional[Dict[str, float]] = None,
-        counterfactuals: Optional[List[Any]] = None,
+        feature_importances: list[Any] | None = None,
+        attention_weights: dict[str, float] | None = None,
+        counterfactuals: list[Any] | None = None,
         confidence: float = 1.0,
         explanation_type: ExplanationType = ExplanationType.WHY
     ) -> NaturalLanguageExplanation:
@@ -110,7 +110,7 @@ class NaturalLanguageExplainer:
     def _explain_why(
         self,
         decision: Any,
-        feature_importances: Optional[List[Any]],
+        feature_importances: list[Any] | None,
         confidence: float
     ) -> str:
         """Generate 'why' explanation"""
@@ -182,8 +182,8 @@ class NaturalLanguageExplainer:
     def _explain_how(
         self,
         decision: Any,
-        feature_importances: Optional[List[Any]],
-        attention_weights: Optional[Dict[str, float]]
+        feature_importances: list[Any] | None,
+        attention_weights: dict[str, float] | None
     ) -> str:
         """Generate 'how' explanation (process)"""
         parts = []
@@ -231,7 +231,7 @@ class NaturalLanguageExplainer:
     def _explain_what_if(
         self,
         decision: Any,
-        counterfactuals: Optional[List[Any]]
+        counterfactuals: list[Any] | None
     ) -> str:
         """Generate 'what if' explanation"""
         if not counterfactuals or len(counterfactuals) == 0:
@@ -267,7 +267,7 @@ class NaturalLanguageExplainer:
     def _explain_why_not(
         self,
         decision: Any,
-        counterfactuals: Optional[List[Any]]
+        counterfactuals: list[Any] | None
     ) -> str:
         """Generate 'why not' explanation (why not choose alternative)"""
         if not counterfactuals or len(counterfactuals) == 0:
@@ -298,7 +298,7 @@ class NaturalLanguageExplainer:
     def _explain_evidence(
         self,
         decision: Any,
-        feature_importances: Optional[List[Any]]
+        feature_importances: list[Any] | None
     ) -> str:
         """Generate 'evidence' explanation"""
         parts = []
@@ -360,9 +360,9 @@ class NaturalLanguageExplainer:
 def generate_explanation(
     decision: Any,
     explanation_type: ExplanationType = ExplanationType.WHY,
-    feature_importances: Optional[List[Any]] = None,
-    attention_weights: Optional[Dict[str, float]] = None,
-    counterfactuals: Optional[List[Any]] = None,
+    feature_importances: list[Any] | None = None,
+    attention_weights: dict[str, float] | None = None,
+    counterfactuals: list[Any] | None = None,
     confidence: float = 1.0,
     persona: str = "expert"
 ) -> str:
@@ -395,7 +395,7 @@ def generate_explanation(
 
 def explain_decision(
     decision: Any,
-    feature_importances: Optional[List[Any]] = None,
+    feature_importances: list[Any] | None = None,
     confidence: float = 1.0
 ) -> str:
     """

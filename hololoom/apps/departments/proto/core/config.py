@@ -7,8 +7,8 @@ Status: Production ready (2025-12-01)
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
 from enum import Enum
+from typing import Any
 
 
 class ProtoMode(Enum):
@@ -101,7 +101,7 @@ class ProtoConfig:
     reasoning_mode: str = "verify"  # direct, verify, research, plan_execute
 
     # Abilities
-    abilities_path: Optional[str] = None  # ~/.proto/abilities/
+    abilities_path: str | None = None  # ~/.proto/abilities/
     enable_sideloading: bool = True
 
     # Limits
@@ -120,7 +120,7 @@ class ProtoConfig:
     _version: str = "1.0"
     _created_at_timestamp: float = field(default_factory=lambda: __import__('time').time())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert config to dictionary."""
         return {
             "mode": self.mode.value,
@@ -197,7 +197,7 @@ class ProtoConfig:
         )
         return not dangerous_enabled
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """Validate configuration, return list of warnings."""
         warnings = []
 

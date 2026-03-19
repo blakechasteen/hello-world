@@ -17,12 +17,11 @@ Date: 2025-12-22
 Phase: 11.7 - Built-in Plugins
 """
 
-import asyncio
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.engine import DarkTraceEngine
@@ -30,14 +29,12 @@ if TYPE_CHECKING:
     from hololoom.dark_trace.result import TraceResult
 
 from hololoom.dark_trace.plugins.interface import (
-    DarkTracePlugin,
+    MonitorPlugin,
     PluginMetadata,
     PluginType,
-    MonitorPlugin,
 )
 from hololoom.dark_trace.plugins.safety_gate import (
     PluginCapability,
-    TrustLevel,
 )
 
 logger = logging.getLogger("hololoom.dark_trace.plugins.builtin.safety_monitor")
@@ -64,9 +61,9 @@ class SafetyAlert:
     threshold: float
     message: str
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "level": self.level.value,
@@ -83,7 +80,7 @@ class SafetyAlert:
 class SafetyMonitoringResult:
     """Result of safety monitoring on a trace."""
     trace_id: str
-    alerts: List[SafetyAlert] = field(default_factory=list)
+    alerts: list[SafetyAlert] = field(default_factory=list)
     highest_risk_score: float = 0.0
     features_checked: int = 0
     timestamp: datetime = field(default_factory=datetime.now)
@@ -96,7 +93,7 @@ class SafetyMonitoringResult:
     def has_high_alerts(self) -> bool:
         return any(a.level == SafetyAlertLevel.HIGH for a in self.alerts)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "trace_id": self.trace_id,
             "alerts": [a.to_dict() for a in self.alerts],
@@ -155,9 +152,9 @@ class SafetyMonitorPlugin(MonitorPlugin):
 
     def __init__(self) -> None:
         """Initialize safety monitor."""
-        self._engine: Optional["DarkTraceEngine"] = None
-        self._safety_gate: Optional["PluginSafetyGate"] = None
-        self._alert_history: List[SafetyAlert] = []
+        self._engine: DarkTraceEngine | None = None
+        self._safety_gate: PluginSafetyGate | None = None
+        self._alert_history: list[SafetyAlert] = []
         self._monitoring_stats = {
             "total_analyses": 0,
             "total_alerts": 0,
@@ -298,7 +295,7 @@ class SafetyMonitorPlugin(MonitorPlugin):
         result.highest_risk_score = min(highest_risk, 1.0)
         return result
 
-    def get_alert_count(self) -> Dict[str, int]:
+    def get_alert_count(self) -> dict[str, int]:
         """Get alert counts by level."""
         counts = {level.value: 0 for level in SafetyAlertLevel}
         for alert in self._alert_history:
@@ -308,8 +305,8 @@ class SafetyMonitorPlugin(MonitorPlugin):
     def get_recent_alerts(
         self,
         limit: int = 10,
-        min_level: Optional[SafetyAlertLevel] = None,
-    ) -> List[SafetyAlert]:
+        min_level: SafetyAlertLevel | None = None,
+    ) -> list[SafetyAlert]:
         """Get recent alerts."""
         alerts = self._alert_history.copy()
 
@@ -323,7 +320,7 @@ class SafetyMonitorPlugin(MonitorPlugin):
 
         return alerts[-limit:]
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get monitoring statistics."""
         return {
             **self._monitoring_stats,

@@ -16,22 +16,18 @@ Author: HoloLoom Team
 
 import logging
 import time
-from typing import Optional, List, Dict, Any, Callable
 from datetime import datetime
+from typing import Any
 
+from hololoom.convergence.detectors import ConvergenceDetector, create_multi_criteria_detector
+from hololoom.convergence.query_decomposition import QueryDecomposer
+from hololoom.convergence.refinement_strategies import StrategySelector
 from hololoom.protocols.recursive_reasoning import (
+    ReasoningJournal,
     RecursiveConfig,
     RecursiveResult,
     RefinementStep,
-    ReasoningJournal,
-    ReasoningStrategy,
-    StopCondition
-)
-from hololoom.convergence.query_decomposition import QueryDecomposer
-from hololoom.convergence.refinement_strategies import StrategySelector
-from hololoom.convergence.detectors import (
-    create_multi_criteria_detector,
-    ConvergenceDetector
+    StopCondition,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,10 +50,10 @@ class EnhancedRecursiveReasoner:
     def __init__(
         self,
         department: Any,  # DepartmentProtocol (RAG Department)
-        config: Optional[RecursiveConfig] = None,
-        decomposer: Optional[QueryDecomposer] = None,
-        strategy_selector: Optional[StrategySelector] = None,
-        convergence_detector: Optional[ConvergenceDetector] = None
+        config: RecursiveConfig | None = None,
+        decomposer: QueryDecomposer | None = None,
+        strategy_selector: StrategySelector | None = None,
+        convergence_detector: ConvergenceDetector | None = None
     ):
         """
         Initialize enhanced recursive reasoner.
@@ -92,7 +88,7 @@ class EnhancedRecursiveReasoner:
     async def reason(
         self,
         query: str,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> RecursiveResult:
         """
         Execute recursive reasoning with automatic convergence.
@@ -130,7 +126,7 @@ class EnhancedRecursiveReasoner:
     async def _reason_direct(
         self,
         query: str,
-        context: Dict,
+        context: dict,
         start_time: float
     ) -> RecursiveResult:
         """
@@ -144,7 +140,7 @@ class EnhancedRecursiveReasoner:
         Returns:
             RecursiveResult
         """
-        refinement_steps: List[RefinementStep] = []
+        refinement_steps: list[RefinementStep] = []
 
         # Initial response
         logger.info("Generating initial response...")
@@ -238,7 +234,7 @@ class EnhancedRecursiveReasoner:
         self,
         root_query: str,
         decomposition: Any,
-        context: Dict,
+        context: dict,
         start_time: float
     ) -> RecursiveResult:
         """
@@ -255,7 +251,7 @@ class EnhancedRecursiveReasoner:
         """
         logger.info(f"Reasoning with decomposition: {len(decomposition.sub_queries)} sub-queries")
 
-        refinement_steps: List[RefinementStep] = []
+        refinement_steps: list[RefinementStep] = []
         sub_results = []
 
         # Solve each sub-query
@@ -349,11 +345,11 @@ class EnhancedRecursiveReasoner:
     def _build_result(
         self,
         query: str,
-        refinement_steps: List[RefinementStep],
+        refinement_steps: list[RefinementStep],
         start_time: float,
         stop_condition: StopCondition,
         convergence_reason: str = "",
-        decomposition: Optional[Any] = None
+        decomposition: Any | None = None
     ) -> RecursiveResult:
         """
         Build RecursiveResult from refinement history.
@@ -413,7 +409,7 @@ class EnhancedRecursiveReasoner:
 
 def create_recursive_reasoner(
     department: Any,
-    config: Optional[RecursiveConfig] = None,
+    config: RecursiveConfig | None = None,
     enable_decomposition: bool = True,
     enable_learning: bool = True
 ) -> EnhancedRecursiveReasoner:

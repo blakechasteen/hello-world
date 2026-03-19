@@ -17,25 +17,24 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Set
-from datetime import datetime
-import asyncio
-import json
-import uuid
 import logging
+import uuid
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum, auto
+from typing import Any, Optional
 
 # ThirdEye imports
-from hololoom.thirdeye.visualizers import VisualScene, VisualElement
+from hololoom.thirdeye.visualizers import VisualElement, VisualScene
 
 # Role enforcement imports (graceful fallback if not available)
 try:
     from .scene_roles import (
-        SceneRole,
-        RoleEnforcer,
         RoleEnforcementError,
+        RoleEnforcer,
         RolePermissions,
+        SceneRole,
         create_role_enforcer,
     )
     ROLES_AVAILABLE = True
@@ -44,20 +43,20 @@ except ImportError:
 
 # Collaboration imports (graceful fallback if not available)
 try:
-    from hololoom.collaboration.sync import (
-        StateSynchronizer,
-        Operation,
-        OperationType,
-        SyncState,
-        Conflict,
-        ConflictResolution,
-        create_state_synchronizer,
-    )
     from hololoom.collaboration.attribution import (
         AttributionManager,
         Contribution,
         ContributionType,
         create_attribution_manager,
+    )
+    from hololoom.collaboration.sync import (
+        Conflict,
+        ConflictResolution,
+        Operation,
+        OperationType,
+        StateSynchronizer,
+        SyncState,
+        create_state_synchronizer,
     )
     COLLAB_AVAILABLE = True
 except ImportError:
@@ -96,7 +95,7 @@ class SceneOperation:
     type: SceneOperationType = SceneOperationType.UPDATE_ELEMENT
 
     # Target
-    element_id: Optional[str] = None
+    element_id: str | None = None
     path: str = ""  # Dot-notation path like "elements.btn_1.position.x"
 
     # Value
@@ -109,9 +108,9 @@ class SceneOperation:
     session_id: str = ""
 
     # Conflict resolution
-    vector_clock: Dict[str, int] = field(default_factory=dict)
+    vector_clock: dict[str, int] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to serializable dict."""
         return {
             'id': self.id,
@@ -127,7 +126,7 @@ class SceneOperation:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'SceneOperation':
+    def from_dict(cls, data: dict[str, Any]) -> 'SceneOperation':
         """Create from serialized dict."""
         return cls(
             id=data.get('id', str(uuid.uuid4())[:8]),
@@ -156,9 +155,9 @@ class SceneState:
     modified_by: str = ""
 
     # Tracking
-    active_users: Set[str] = field(default_factory=set)
-    pending_operations: List[SceneOperation] = field(default_factory=list)
-    operation_history: List[SceneOperation] = field(default_factory=list)
+    active_users: set[str] = field(default_factory=set)
+    pending_operations: list[SceneOperation] = field(default_factory=list)
+    operation_history: list[SceneOperation] = field(default_factory=list)
 
     # Metadata
     created_at: datetime = field(default_factory=datetime.now)
@@ -194,7 +193,7 @@ class CollaborativeScene:
         self,
         scene: VisualScene,
         session_id: str,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
         enable_sync: bool = True,
         enable_attribution: bool = True,
         enable_role_enforcement: bool = True,
@@ -217,21 +216,21 @@ class CollaborativeScene:
         self._state.active_users.add(self.user_id)
 
         # Element index for fast lookup
-        self._elements: Dict[str, VisualElement] = {
+        self._elements: dict[str, VisualElement] = {
             e.id: e for e in scene.elements
         }
 
         # Vector clock for ordering
-        self._vector_clock: Dict[str, int] = {self.user_id: 0}
+        self._vector_clock: dict[str, int] = {self.user_id: 0}
 
         # Synchronizer (if available)
-        self._sync: Optional['StateSynchronizer'] = None
-        self._attribution: Optional['AttributionManager'] = None
-        self._role_enforcer: Optional['RoleEnforcer'] = None
+        self._sync: StateSynchronizer | None = None
+        self._attribution: AttributionManager | None = None
+        self._role_enforcer: RoleEnforcer | None = None
 
         # Event handlers
-        self._change_handlers: List[Callable[[SceneOperation], None]] = []
-        self._conflict_handlers: List[Callable[[SceneOperation, SceneOperation], None]] = []
+        self._change_handlers: list[Callable[[SceneOperation], None]] = []
+        self._conflict_handlers: list[Callable[[SceneOperation, SceneOperation], None]] = []
 
         # Initialize collaboration if available
         if self.enable_sync:
@@ -298,7 +297,7 @@ class CollaborativeScene:
         self,
         user_id: str,
         operation: SceneOperationType,
-        element_id: Optional[str] = None,
+        element_id: str | None = None,
     ):
         """
         Check if user can perform operation.
@@ -318,7 +317,7 @@ class CollaborativeScene:
         self,
         user_id: str,
         role: 'SceneRole',
-        assigned_by: Optional[str] = None,
+        assigned_by: str | None = None,
     ):
         """
         Assign a role to a user.
@@ -345,7 +344,7 @@ class CollaborativeScene:
     def revoke_role(
         self,
         user_id: str,
-        revoked_by: Optional[str] = None,
+        revoked_by: str | None = None,
     ):
         """
         Revoke a user's role.
@@ -379,7 +378,7 @@ class CollaborativeScene:
         self,
         user_id: str,
         operation: SceneOperationType,
-        element_id: Optional[str] = None,
+        element_id: str | None = None,
     ) -> bool:
         """Check if user can perform an operation (without raising)."""
         if not self._role_enforcer:
@@ -393,7 +392,7 @@ class CollaborativeScene:
     async def add_element(
         self,
         element: VisualElement,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
     ) -> SceneOperation:
         """
         Add an element to the scene and broadcast to all users.
@@ -445,8 +444,8 @@ class CollaborativeScene:
     async def update_element(
         self,
         element_id: str,
-        changes: Dict[str, Any],
-        user_id: Optional[str] = None,
+        changes: dict[str, Any],
+        user_id: str | None = None,
     ) -> SceneOperation:
         """
         Update an element's properties.
@@ -505,7 +504,7 @@ class CollaborativeScene:
     async def remove_element(
         self,
         element_id: str,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
     ) -> SceneOperation:
         """
         Remove an element from the scene.
@@ -562,8 +561,8 @@ class CollaborativeScene:
     async def move_element(
         self,
         element_id: str,
-        position: Dict[str, float],
-        user_id: Optional[str] = None,
+        position: dict[str, float],
+        user_id: str | None = None,
     ) -> SceneOperation:
         """
         Move an element to a new position.
@@ -587,7 +586,7 @@ class CollaborativeScene:
         self,
         from_id: str,
         to_id: str,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
     ) -> SceneOperation:
         """
         Add a connection between two elements.
@@ -631,8 +630,8 @@ class CollaborativeScene:
 
     async def update_camera(
         self,
-        camera: Dict[str, Any],
-        user_id: Optional[str] = None,
+        camera: dict[str, Any],
+        user_id: str | None = None,
     ) -> SceneOperation:
         """
         Update scene camera settings.
@@ -664,7 +663,7 @@ class CollaborativeScene:
     async def update_lighting(
         self,
         lighting: str,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
     ) -> SceneOperation:
         """
         Update scene lighting.
@@ -860,7 +859,7 @@ class CollaborativeScene:
         if len(self._state.operation_history) > self.max_history:
             self._state.operation_history = self._state.operation_history[-self.max_history:]
 
-    async def undo(self, user_id: Optional[str] = None) -> Optional[SceneOperation]:
+    async def undo(self, user_id: str | None = None) -> SceneOperation | None:
         """
         Undo the last operation by this user.
 
@@ -892,12 +891,12 @@ class CollaborativeScene:
     # Vector Clock Operations
     # -------------------------------------------------------------------------
 
-    def _increment_clock(self, user_id: str) -> Dict[str, int]:
+    def _increment_clock(self, user_id: str) -> dict[str, int]:
         """Increment and return vector clock."""
         self._vector_clock[user_id] = self._vector_clock.get(user_id, 0) + 1
         return dict(self._vector_clock)
 
-    def _merge_clock(self, other: Dict[str, int]):
+    def _merge_clock(self, other: dict[str, int]):
         """Merge remote clock with local."""
         for user_id, count in other.items():
             self._vector_clock[user_id] = max(
@@ -905,7 +904,7 @@ class CollaborativeScene:
                 count
             )
 
-    def _detect_conflicts(self, op: SceneOperation) -> List[SceneOperation]:
+    def _detect_conflicts(self, op: SceneOperation) -> list[SceneOperation]:
         """Detect conflicting operations."""
         conflicts = []
         for pending in self._state.pending_operations:
@@ -913,7 +912,7 @@ class CollaborativeScene:
                 conflicts.append(pending)
         return conflicts
 
-    def _should_apply(self, op: SceneOperation, conflicts: List[SceneOperation]) -> bool:
+    def _should_apply(self, op: SceneOperation, conflicts: list[SceneOperation]) -> bool:
         """Determine if operation should be applied based on vector clock."""
         # Simple last-writer-wins with user_id as tiebreaker
         for conflict in conflicts:
@@ -935,7 +934,7 @@ class CollaborativeScene:
         self._elements[element.id] = element
         self.scene.elements.append(element)
 
-    def _apply_update_element(self, element_id: str, changes: Dict[str, Any]):
+    def _apply_update_element(self, element_id: str, changes: dict[str, Any]):
         """Apply update element locally."""
         element = self._elements.get(element_id)
         if not element:
@@ -954,7 +953,7 @@ class CollaborativeScene:
     # Utility Methods
     # -------------------------------------------------------------------------
 
-    def _element_to_dict(self, element: VisualElement) -> Dict[str, Any]:
+    def _element_to_dict(self, element: VisualElement) -> dict[str, Any]:
         """Convert element to dict."""
         return {
             'id': element.id,
@@ -969,7 +968,7 @@ class CollaborativeScene:
             'metadata': element.metadata,
         }
 
-    def _dict_to_element(self, data: Dict[str, Any]) -> VisualElement:
+    def _dict_to_element(self, data: dict[str, Any]) -> VisualElement:
         """Create element from dict."""
         return VisualElement(
             id=data['id'],
@@ -1016,7 +1015,7 @@ class CollaborativeScene:
     # -------------------------------------------------------------------------
 
     @property
-    def elements(self) -> List[VisualElement]:
+    def elements(self) -> list[VisualElement]:
         """Get all elements."""
         return list(self._elements.values())
 
@@ -1026,11 +1025,11 @@ class CollaborativeScene:
         return self._state.version
 
     @property
-    def active_users(self) -> Set[str]:
+    def active_users(self) -> set[str]:
         """Get active users."""
         return self._state.active_users
 
-    def get_element(self, element_id: str) -> Optional[VisualElement]:
+    def get_element(self, element_id: str) -> VisualElement | None:
         """Get element by ID."""
         return self._elements.get(element_id)
 
@@ -1038,7 +1037,7 @@ class CollaborativeScene:
         """Get full scene state."""
         return self._state
 
-    def get_history(self, limit: int = 20) -> List[SceneOperation]:
+    def get_history(self, limit: int = 20) -> list[SceneOperation]:
         """Get recent operation history."""
         return self._state.operation_history[-limit:]
 
@@ -1060,7 +1059,7 @@ class CollaborativeScene:
 def create_collaborative_scene(
     scene: VisualScene,
     session_id: str,
-    user_id: Optional[str] = None,
+    user_id: str | None = None,
     **kwargs,
 ) -> CollaborativeScene:
     """
@@ -1097,4 +1096,4 @@ __all__ = [
 
 # Conditionally re-export role types
 if ROLES_AVAILABLE:
-    from .scene_roles import SceneRole, RoleEnforcementError
+    from .scene_roles import RoleEnforcementError, SceneRole

@@ -18,11 +18,9 @@ Rules:
 Default: Thompson Sampling (0.50)
 """
 
+import logging
 import re
 from dataclasses import dataclass
-from typing import List, Optional
-import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -55,13 +53,13 @@ class BackendSelection:
     confidence: float
     rule_matched: str
     query: str
-    secondary_backend: Optional[str] = None
+    secondary_backend: str | None = None
 
     def is_hybrid(self) -> bool:
         """Check if this is a hybrid query requiring multiple backends"""
         return self.secondary_backend is not None
 
-    def get_backends(self) -> List[str]:
+    def get_backends(self) -> list[str]:
         """Get list of backends (primary + secondary if hybrid)"""
         backends = [self.backend]
         if self.secondary_backend:
@@ -221,7 +219,7 @@ class QueryClassifier:
     def reset_stats(self):
         """Reset statistics (for testing)"""
         self.classification_count = 0
-        self.rule_usage = {rule: 0 for rule in self.rule_usage.keys()}
+        self.rule_usage = dict.fromkeys(self.rule_usage.keys(), 0)
 
 
 # ============================================================================

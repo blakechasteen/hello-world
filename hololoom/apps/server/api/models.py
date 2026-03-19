@@ -13,24 +13,24 @@ Classes:
     AgenticResponse: Main response for agentic queries
 """
 
-from typing import Optional, List, Dict
+
 from pydantic import BaseModel, Field, validator
 
 
 class CodeContext(BaseModel):
     """Code context from VS Code editor (matches TypeScript interface)."""
-    currentFile: Optional[str] = None
-    fileName: Optional[str] = None
-    languageId: Optional[str] = None
-    selection: Optional[str] = None
-    workspace: Optional[str] = None
-    diagnostics: Optional[List[Dict]] = None
+    currentFile: str | None = None
+    fileName: str | None = None
+    languageId: str | None = None
+    selection: str | None = None
+    workspace: str | None = None
+    diagnostics: list[dict] | None = None
 
 
 class QueryRequest(BaseModel):
     """Query request from VS Code extension."""
     text: str = Field(..., description="Query text")
-    context: Optional[CodeContext] = Field(None, description="Code context from editor")
+    context: CodeContext | None = Field(None, description="Code context from editor")
     mode: str = Field("verify", description="Reasoning mode: direct, verify, research, plan_execute")
     max_steps: int = Field(5, description="Maximum reasoning steps")
 
@@ -53,19 +53,19 @@ class VerificationResponse(BaseModel):
     """Verification result (matches TypeScript interface)."""
     verified: bool
     confidence: float
-    contradictions: List[str]
-    supporting_evidence: List[str]
-    suggested_refinements: List[str]
+    contradictions: list[str]
+    supporting_evidence: list[str]
+    suggested_refinements: list[str]
 
 
 class ReasoningStepResponse(BaseModel):
     """Single reasoning step (matches TypeScript interface)."""
     type: str
-    query: Optional[str] = None
-    confidence: Optional[float] = None
-    finding: Optional[str] = None
-    completed: Optional[bool] = None
-    tool: Optional[str] = None
+    query: str | None = None
+    confidence: float | None = None
+    finding: str | None = None
+    completed: bool | None = None
+    tool: str | None = None
 
 
 class AgenticResponse(BaseModel):
@@ -77,10 +77,10 @@ class AgenticResponse(BaseModel):
     response: str
     confidence: float
     reasoning_mode: str
-    steps_taken: List[ReasoningStepResponse]
+    steps_taken: list[ReasoningStepResponse]
     total_queries: int
     total_duration_ms: float
-    verification: Optional[VerificationResponse] = None
+    verification: VerificationResponse | None = None
 
     # Additional metadata
     timestamp: str

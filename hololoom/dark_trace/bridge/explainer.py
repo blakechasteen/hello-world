@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Dark Trace Bridge: Bridged Explanations
 
@@ -17,17 +18,17 @@ Research Basis:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
+from typing import Any, Optional
+
 import numpy as np
 import torch
 
-from hololoom.dark_trace.protocol import TraceLens, FeatureActivation, LensType
 from hololoom.dark_trace.bridge.mapper import (
     FeatureSemanticMapper,
-    FeatureMapping,
     SemanticMeaning,
 )
+from hololoom.dark_trace.protocol import TraceLens
 
 # Optional: FeatureRegistry for autolabel integration
 try:
@@ -61,10 +62,10 @@ class FeatureExplanation:
 
     # Semantic interpretation
     semantic_signature: str  # e.g., "Warmth(+0.85) + Formality(-0.62)"
-    top_meanings: List[SemanticMeaning] = field(default_factory=list)
+    top_meanings: list[SemanticMeaning] = field(default_factory=list)
 
     # Human label if available
-    human_label: Optional[str] = None
+    human_label: str | None = None
 
     # Confidence in interpretation
     interpretation_confidence: float = 0.0
@@ -121,10 +122,10 @@ class BridgedExplanation:
     """
 
     # Feature-level explanations
-    feature_explanations: List[FeatureExplanation] = field(default_factory=list)
+    feature_explanations: list[FeatureExplanation] = field(default_factory=list)
 
     # Aggregate semantic profile
-    semantic_profile: Dict[str, float] = field(default_factory=dict)
+    semantic_profile: dict[str, float] = field(default_factory=dict)
 
     # Summary statistics
     n_active_features: int = 0
@@ -133,13 +134,13 @@ class BridgedExplanation:
     mean_activation: float = 0.0
 
     # Overall interpretation
-    dominant_dimensions: List[Tuple[str, float]] = field(default_factory=list)
+    dominant_dimensions: list[tuple[str, float]] = field(default_factory=list)
     interpretation_summary: str = ""
 
     # Metadata
     verbosity: ExplanationVerbosity = ExplanationVerbosity.MODERATE
 
-    def to_string(self, verbosity: Optional[ExplanationVerbosity] = None) -> str:
+    def to_string(self, verbosity: ExplanationVerbosity | None = None) -> str:
         """
         Generate explanation string at specified verbosity.
 
@@ -315,8 +316,8 @@ class BridgedExplainer:
         self,
         activations: torch.Tensor,
         threshold: float = 0.0,
-        top_k: Optional[int] = 10,
-        verbosity: Optional[ExplanationVerbosity] = None,
+        top_k: int | None = 10,
+        verbosity: ExplanationVerbosity | None = None,
     ) -> BridgedExplanation:
         """
         Generate bridged explanation for activations.
@@ -438,8 +439,8 @@ class BridgedExplainer:
 
     def _generate_summary(
         self,
-        features: List[FeatureExplanation],
-        dominant: List[Tuple[str, float]],
+        features: list[FeatureExplanation],
+        dominant: list[tuple[str, float]],
     ) -> str:
         """Generate one-line interpretation summary."""
         if not features:
@@ -464,7 +465,7 @@ class BridgedExplainer:
     def _get_autolabel_from_registry(
         self,
         feature_id: str,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get autolabel information from registry for a feature.
 
@@ -502,7 +503,7 @@ class BridgedExplainer:
         self,
         activations1: torch.Tensor,
         activations2: torch.Tensor,
-        labels: Tuple[str, str] = ("Response A", "Response B"),
+        labels: tuple[str, str] = ("Response A", "Response B"),
     ) -> str:
         """
         Compare two sets of activations and explain differences.
@@ -555,8 +556,8 @@ class BridgedExplainer:
     def recommend_steering(
         self,
         current: torch.Tensor,
-        goal: Dict[str, float],
-    ) -> Dict[str, Any]:
+        goal: dict[str, float],
+    ) -> dict[str, Any]:
         """
         Recommend steering adjustments to move toward semantic goal.
 

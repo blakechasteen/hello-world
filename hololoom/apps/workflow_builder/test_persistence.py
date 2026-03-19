@@ -9,9 +9,10 @@ This test:
 """
 
 import asyncio
-import websockets
 import json
 import sys
+
+import websockets
 
 # Distinctive message that we can search for
 TEST_MESSAGE = "PERSISTENCE_TEST_UNIQUE_12345: Tell me about the semantic calculus system in HoloLoom"
@@ -55,11 +56,11 @@ async def send_test_message():
                     print(f"[AWARENESS] Confidence: {patterns.get('confidence', 0):.2f}")
 
                 print("\n[SUCCESS] Message sent and stored!")
-                print(f"\nTo verify persistence:")
-                print(f"1. Kill the server")
-                print(f"2. Restart the server")
-                print(f"3. Run: python test_retrieve.py")
-                print(f"4. Should find this message in memory")
+                print("\nTo verify persistence:")
+                print("1. Kill the server")
+                print("2. Restart the server")
+                print("3. Run: python test_retrieve.py")
+                print("4. Should find this message in memory")
 
                 return data['thread_id']
 

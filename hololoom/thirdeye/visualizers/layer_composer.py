@@ -16,10 +16,10 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, List, Optional, Any, Tuple
+import copy
 from dataclasses import dataclass, field
 from enum import Enum
-import copy
+from typing import Any
 
 
 class LayerType(Enum):
@@ -49,7 +49,7 @@ class LayerConfig:
 
 
 # Default layer configurations
-DEFAULT_LAYER_CONFIGS: Dict[LayerType, LayerConfig] = {
+DEFAULT_LAYER_CONFIGS: dict[LayerType, LayerConfig] = {
     LayerType.BACKGROUND: LayerConfig(
         layer_type=LayerType.BACKGROUND,
         z_offset=-50.0,
@@ -100,7 +100,7 @@ DEFAULT_LAYER_CONFIGS: Dict[LayerType, LayerConfig] = {
 @dataclass
 class LayeredElement:
     """An element assigned to a layer."""
-    element: Dict[str, Any]
+    element: dict[str, Any]
     layer: LayerType
     priority: int = 0  # Within-layer ordering
 
@@ -108,14 +108,14 @@ class LayeredElement:
 @dataclass
 class ComposedScene:
     """A scene composed of multiple layers."""
-    layers: Dict[LayerType, List[Dict[str, Any]]]
-    layer_configs: Dict[LayerType, LayerConfig]
-    camera: Dict[str, Any]
-    lighting: Dict[str, Any]
-    background: Dict[str, Any]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    layers: dict[LayerType, list[dict[str, Any]]]
+    layer_configs: dict[LayerType, LayerConfig]
+    camera: dict[str, Any]
+    lighting: dict[str, Any]
+    background: dict[str, Any]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def get_flat_elements(self) -> List[Dict[str, Any]]:
+    def get_flat_elements(self) -> list[dict[str, Any]]:
         """Get all elements flattened with layer info applied."""
         elements = []
 
@@ -137,9 +137,9 @@ class ComposedScene:
 
     def _apply_layer_transform(
         self,
-        element: Dict[str, Any],
+        element: dict[str, Any],
         config: LayerConfig
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Apply layer configuration to element."""
         result = copy.deepcopy(element)
 
@@ -172,7 +172,7 @@ class ComposedScene:
 
         return result
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'mode': 'layered',
@@ -204,8 +204,8 @@ class LayerComposer:
 
     def compose(
         self,
-        scenes: List[Dict[str, Any]],
-        focus_mode: Optional[str] = None,
+        scenes: list[dict[str, Any]],
+        focus_mode: str | None = None,
     ) -> ComposedScene:
         """
         Compose multiple scenes into layers.
@@ -217,7 +217,7 @@ class LayerComposer:
         Returns:
             ComposedScene with all elements layered
         """
-        layers: Dict[LayerType, List[Dict[str, Any]]] = {lt: [] for lt in LayerType}
+        layers: dict[LayerType, list[dict[str, Any]]] = {lt: [] for lt in LayerType}
 
         # Process each scene
         for scene in scenes:
@@ -253,9 +253,9 @@ class LayerComposer:
 
     def _determine_layer(
         self,
-        element: Dict[str, Any],
+        element: dict[str, Any],
         mode: str,
-        focus_mode: Optional[str]
+        focus_mode: str | None
     ) -> LayerType:
         """Determine which layer an element belongs to."""
         element_type = element.get('type', 'unknown')
@@ -332,8 +332,8 @@ class LayerComposer:
 
     def _compose_background(
         self,
-        scenes: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        scenes: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """Compose background from multiple scenes."""
         # Find the most "environmental" scene for background
         for scene in scenes:
@@ -347,7 +347,7 @@ class LayerComposer:
 
         return {'type': 'gradient', 'colors': ['#1a1a2e', '#16213e']}
 
-    def _normalize_lighting(self, lighting: Any) -> Dict[str, Any]:
+    def _normalize_lighting(self, lighting: Any) -> dict[str, Any]:
         """Normalize lighting to dict format."""
         if isinstance(lighting, str):
             presets = {
@@ -372,7 +372,7 @@ class LayerComposer:
 
         return lighting if isinstance(lighting, dict) else {'preset': 'neutral'}
 
-    def _default_camera(self) -> Dict[str, Any]:
+    def _default_camera(self) -> dict[str, Any]:
         """Get default camera configuration."""
         return {
             'position': {'x': 0, 'y': 5, 'z': 15},
@@ -410,9 +410,9 @@ class LayerComposer:
 
 
 def compose_layered_scene(
-    scenes: List[Dict[str, Any]],
-    focus_mode: Optional[str] = None,
-) -> Dict[str, Any]:
+    scenes: list[dict[str, Any]],
+    focus_mode: str | None = None,
+) -> dict[str, Any]:
     """
     Convenience function to compose scenes into layers.
 

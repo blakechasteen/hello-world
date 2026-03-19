@@ -32,20 +32,18 @@ Usage:
 """
 
 import asyncio
-from typing import Dict, List, Optional, Any
+import json
+import time
+from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-import time
-import json
-from collections import defaultdict
+from typing import Any
 
-from hololoom.agents.orchestrator_mcts import MCTSAgentOrchestrator, create_mcts_agent
-from hololoom.agents.types import AgentProfile
 from hololoom.agents import PROFILES
-from hololoom.memory.graph import KG
+from hololoom.agents.orchestrator_mcts import MCTSAgentOrchestrator, create_mcts_agent
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.memory.graph import KG
 from hololoom.protocols.types import Query
-
 
 # ============================================================================
 # Learning Queue
@@ -57,7 +55,7 @@ class Experience:
     agent_name: str
     query_text: str
     outcome: Any  # Spacetime result
-    feedback: Optional[Dict[str, Any]] = None
+    feedback: dict[str, Any] | None = None
     timestamp: float = field(default_factory=time.time)
 
 
@@ -84,7 +82,7 @@ class LearningQueue:
         """Current queue size"""
         return self.queue.qsize()
 
-    def stats(self) -> Dict[str, int]:
+    def stats(self) -> dict[str, int]:
         """Queue statistics"""
         return {
             'queue_size': self.qsize(),
@@ -106,10 +104,10 @@ class PatternStore:
         self.base_path.mkdir(parents=True, exist_ok=True)
 
         # In-memory cache
-        self.patterns: Dict[str, List[Dict]] = defaultdict(list)
-        self.stats: Dict[str, Dict] = {}
+        self.patterns: dict[str, list[dict]] = defaultdict(list)
+        self.stats: dict[str, dict] = {}
 
-    def save_patterns(self, agent_name: str, patterns: List[Dict]):
+    def save_patterns(self, agent_name: str, patterns: list[dict]):
         """Save patterns for agent"""
         self.patterns[agent_name] = patterns
 
@@ -117,19 +115,19 @@ class PatternStore:
         with open(path, 'w') as f:
             json.dump(patterns, f, indent=2, default=str)
 
-    def load_patterns(self, agent_name: str) -> List[Dict]:
+    def load_patterns(self, agent_name: str) -> list[dict]:
         """Load patterns for agent"""
         path = self.base_path / f"{agent_name}_patterns.json"
 
         if path.exists():
-            with open(path, 'r') as f:
+            with open(path) as f:
                 patterns = json.load(f)
                 self.patterns[agent_name] = patterns
                 return patterns
 
         return []
 
-    def save_stats(self, agent_name: str, stats: Dict):
+    def save_stats(self, agent_name: str, stats: dict):
         """Save learning statistics"""
         self.stats[agent_name] = stats
 
@@ -137,23 +135,23 @@ class PatternStore:
         with open(path, 'w') as f:
             json.dump(stats, f, indent=2, default=str)
 
-    def load_stats(self, agent_name: str) -> Dict:
+    def load_stats(self, agent_name: str) -> dict:
         """Load learning statistics"""
         path = self.base_path / f"{agent_name}_stats.json"
 
         if path.exists():
-            with open(path, 'r') as f:
+            with open(path) as f:
                 stats = json.load(f)
                 self.stats[agent_name] = stats
                 return stats
 
         return {}
 
-    def get_all_patterns(self) -> Dict[str, List[Dict]]:
+    def get_all_patterns(self) -> dict[str, list[dict]]:
         """Get all patterns (all agents)"""
         return dict(self.patterns)
 
-    def get_all_stats(self) -> Dict[str, Dict]:
+    def get_all_stats(self) -> dict[str, dict]:
         """Get all statistics (all agents)"""
         return dict(self.stats)
 
@@ -189,7 +187,7 @@ class BackgroundLearner:
         self.learn_interval = learn_interval
 
         self.running = False
-        self.task: Optional[asyncio.Task] = None
+        self.task: asyncio.Task | None = None
 
         # Stats
         self.learning_cycles = 0
@@ -293,7 +291,7 @@ class BackgroundLearner:
         # For now, just wait - could implement random exploration here
         await asyncio.sleep(self.learn_interval)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Learning statistics"""
         return {
             'running': self.running,
@@ -338,7 +336,7 @@ class AgentPool:
         self.mcts_simulations = mcts_simulations
 
         # Components
-        self.agents: Dict[str, MCTSAgentOrchestrator] = {}
+        self.agents: dict[str, MCTSAgentOrchestrator] = {}
         self.learning_queue = LearningQueue()
         self.pattern_store = PatternStore(self.persist_path)
         self.background_learner = BackgroundLearner(
@@ -349,7 +347,7 @@ class AgentPool:
         )
 
         # Stats
-        self.query_count: Dict[str, int] = defaultdict(int)
+        self.query_count: dict[str, int] = defaultdict(int)
         self.total_queries = 0
 
     async def __aenter__(self):
@@ -421,7 +419,7 @@ class AgentPool:
         agent_name: str,
         query: Query,
         outcome: Any,
-        feedback: Dict[str, Any]
+        feedback: dict[str, Any]
     ):
         """Provide feedback on query outcome (goes to learning queue)"""
         experience = Experience(
@@ -450,7 +448,7 @@ class AgentPool:
 
         print(f"[AgentPool] Closed ({self.total_queries} queries)")
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Pool statistics"""
         return {
             'total_queries': self.total_queries,

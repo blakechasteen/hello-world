@@ -40,13 +40,12 @@ Usage:
 """
 
 import ast
-import re
 import logging
-from typing import List, Dict, Optional, Set, Tuple, Any
+import re
+from collections import defaultdict, deque
 from dataclasses import dataclass
 from enum import Enum
-from collections import defaultdict, deque
-
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -91,8 +90,8 @@ class LogicError:
     description: str
     context: str
     confidence: float  # 0.0-1.0 (ML confidence)
-    fix_suggestion: Optional[str] = None
-    proof: Optional[str] = None  # Symbolic execution proof
+    fix_suggestion: str | None = None
+    proof: str | None = None  # Symbolic execution proof
 
 
 class ControlFlowGraph:
@@ -107,9 +106,9 @@ class ControlFlowGraph:
     """
 
     def __init__(self):
-        self.nodes: Dict[int, Dict[str, Any]] = {}
-        self.edges: Dict[int, List[int]] = defaultdict(list)
-        self.dominators: Dict[int, Set[int]] = {}
+        self.nodes: dict[int, dict[str, Any]] = {}
+        self.edges: dict[int, list[int]] = defaultdict(list)
+        self.dominators: dict[int, set[int]] = {}
 
     def add_node(self, node_id: int, node_type: str, line: int, data: Any = None):
         """Add a node to the CFG."""
@@ -119,11 +118,11 @@ class ControlFlowGraph:
             'data': data
         }
 
-    def add_edge(self, from_node: int, to_node: int, condition: Optional[str] = None):
+    def add_edge(self, from_node: int, to_node: int, condition: str | None = None):
         """Add an edge between nodes."""
         self.edges[from_node].append(to_node)
 
-    def find_infinite_loops(self) -> List[int]:
+    def find_infinite_loops(self) -> list[int]:
         """
         Find infinite loops using cycle detection + termination analysis.
 
@@ -153,7 +152,7 @@ class ControlFlowGraph:
 
         return infinite_loops
 
-    def find_unreachable_code(self) -> List[int]:
+    def find_unreachable_code(self) -> list[int]:
         """
         Find unreachable code using reachability analysis.
 
@@ -183,7 +182,7 @@ class ControlFlowGraph:
 
         return sorted(set(unreachable))
 
-    def _find_sccs(self) -> List[Set[int]]:
+    def _find_sccs(self) -> list[set[int]]:
         """Find strongly connected components using Tarjan's algorithm."""
         index_counter = [0]
         stack = []
@@ -226,10 +225,10 @@ class ControlFlowGraph:
 class AbstractValue:
     """Abstract value for abstract interpretation."""
 
-    def __init__(self, value_type: str, constraint: Optional[str] = None):
+    def __init__(self, value_type: str, constraint: str | None = None):
         self.value_type = value_type  # "int", "str", "bool", "null", "unknown"
         self.constraint = constraint  # e.g., ">0", "!=null", "len>0"
-        self.range: Optional[Tuple[float, float]] = None  # For numeric types
+        self.range: tuple[float, float] | None = None  # For numeric types
 
     def is_null(self) -> bool:
         """Check if value is definitely null."""
@@ -264,14 +263,14 @@ class MLLogicDetector:
 
     def __init__(self):
         self.cfg = ControlFlowGraph()
-        self.abstract_state: Dict[str, AbstractValue] = {}
+        self.abstract_state: dict[str, AbstractValue] = {}
 
     async def detect(
         self,
         code: str,
         language: Language,
         file_path: str = "temp"
-    ) -> List[LogicError]:
+    ) -> list[LogicError]:
         """
         Detect logic errors in code.
 
@@ -292,7 +291,7 @@ class MLLogicDetector:
 
         return errors
 
-    async def _detect_python_logic_errors(self, code: str) -> List[LogicError]:
+    async def _detect_python_logic_errors(self, code: str) -> list[LogicError]:
         """Detect logic errors in Python code."""
         errors = []
 
@@ -361,7 +360,7 @@ class MLLogicDetector:
         """Build control flow graph from Python AST."""
         node_id = [0]
 
-        def visit_node(node, parent_id: Optional[int] = None):
+        def visit_node(node, parent_id: int | None = None):
             current_id = node_id[0]
             node_id[0] += 1
 
@@ -434,7 +433,7 @@ class MLLogicDetector:
 
         visit_node(tree)
 
-    def _detect_division_by_zero(self, tree: ast.AST, code: str) -> List[LogicError]:
+    def _detect_division_by_zero(self, tree: ast.AST, code: str) -> list[LogicError]:
         """Detect potential division by zero."""
         errors = []
 
@@ -473,7 +472,7 @@ class MLLogicDetector:
 
         return errors
 
-    def _detect_null_dereference(self, tree: ast.AST, code: str) -> List[LogicError]:
+    def _detect_null_dereference(self, tree: ast.AST, code: str) -> list[LogicError]:
         """Detect potential null/None dereference."""
         errors = []
 
@@ -504,7 +503,7 @@ class MLLogicDetector:
 
         return errors
 
-    def _detect_logic_contradictions(self, tree: ast.AST, code: str) -> List[LogicError]:
+    def _detect_logic_contradictions(self, tree: ast.AST, code: str) -> list[LogicError]:
         """Detect logic contradictions (if x and not x)."""
         errors = []
 
@@ -535,7 +534,7 @@ class MLLogicDetector:
 
         return errors
 
-    def _detect_missing_returns(self, tree: ast.AST, code: str) -> List[LogicError]:
+    def _detect_missing_returns(self, tree: ast.AST, code: str) -> list[LogicError]:
         """Detect functions that might not return."""
         errors = []
 
@@ -558,7 +557,7 @@ class MLLogicDetector:
 
         return errors
 
-    def _detect_wrong_operators(self, tree: ast.AST, code: str) -> List[LogicError]:
+    def _detect_wrong_operators(self, tree: ast.AST, code: str) -> list[LogicError]:
         """Detect wrong operators (= instead of == in conditions)."""
         errors = []
 
@@ -576,7 +575,7 @@ class MLLogicDetector:
 
         return errors
 
-    def _detect_constant_conditions(self, tree: ast.AST, code: str) -> List[LogicError]:
+    def _detect_constant_conditions(self, tree: ast.AST, code: str) -> list[LogicError]:
         """Detect conditions that are always true or false."""
         errors = []
 
@@ -600,12 +599,12 @@ class MLLogicDetector:
 
         return errors
 
-    def _detect_array_bounds(self, tree: ast.AST, code: str) -> List[LogicError]:
+    def _detect_array_bounds(self, tree: ast.AST, code: str) -> list[LogicError]:
         """Detect potential array index out of bounds."""
         errors = []
 
         # Track array lengths
-        array_lengths: Dict[str, int] = {}
+        array_lengths: dict[str, int] = {}
 
         for node in ast.walk(tree):
             # Track list/array creations
@@ -637,7 +636,7 @@ class MLLogicDetector:
 
         return errors
 
-    async def _detect_js_logic_errors(self, code: str) -> List[LogicError]:
+    async def _detect_js_logic_errors(self, code: str) -> list[LogicError]:
         """Detect logic errors in JavaScript/TypeScript."""
         errors = []
 
@@ -649,7 +648,7 @@ class MLLogicDetector:
                 error_type=LogicErrorType.WRONG_OPERATOR,
                 line_number=line_num,
                 column=match.start() - code.rfind('\n', 0, match.start()),
-                description=f"Assignment (=) in condition - did you mean == or ===?",
+                description="Assignment (=) in condition - did you mean == or ===?",
                 context=self._get_context(code, line_num),
                 confidence=0.9,
                 fix_suggestion="Use === for comparison instead of =",
@@ -693,7 +692,7 @@ class MLLogicDetector:
         end = min(len(lines), line_number + window)
         return '\n'.join(lines[start:end])
 
-    async def get_summary(self, errors: List[LogicError]) -> Dict[str, Any]:
+    async def get_summary(self, errors: list[LogicError]) -> dict[str, Any]:
         """Generate summary of logic errors."""
         summary = {
             "total_errors": len(errors),

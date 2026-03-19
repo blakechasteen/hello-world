@@ -33,19 +33,15 @@ Launch UIs:
 Date: December 2025
 """
 
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
 import warnings
+from dataclasses import dataclass
 
 # Type checking imports (no runtime cost)
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from hololoom.config import Config
     from hololoom.memory.protocol import Memory
-    from hololoom.agentic.core import AgenticResult
-    from hololoom.rag.simple_rag import RAGResult
-    from hololoom.alignment.safety_guardrails import SafetyResult
 
 
 @dataclass
@@ -57,8 +53,8 @@ class LiteResult:
     """
     text: str
     confidence: float = 0.0
-    sources: List[str] = None
-    metadata: Dict[str, Any] = None
+    sources: list[str] = None
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         if self.sources is None:
@@ -153,8 +149,9 @@ class HoloLoomLite:
 
         # Import core dependencies
         import networkx as nx
-        from hololoom.memory.awareness_graph import AwarenessGraph
+
         from hololoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.memory.awareness_graph import AwarenessGraph
         from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
         # Create embedder
@@ -219,7 +216,7 @@ class HoloLoomLite:
     async def experience(
         self,
         content: str,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> 'Memory':
         """
         Store content in memory.
@@ -259,7 +256,7 @@ class HoloLoomLite:
         self,
         query: str,
         limit: int = 5
-    ) -> List['Memory']:
+    ) -> list['Memory']:
         """
         Retrieve memories related to query.
 
@@ -292,8 +289,8 @@ class HoloLoomLite:
 
     async def reflect(
         self,
-        memories: List['Memory'],
-        feedback: Optional[Dict] = None
+        memories: list['Memory'],
+        feedback: dict | None = None
     ) -> None:
         """
         Learn from feedback on recalled memories.
@@ -325,7 +322,7 @@ class HoloLoomLite:
         memory_id: str,
         hops: int = 1,
         direction: str = "both"
-    ) -> List['Memory']:
+    ) -> list['Memory']:
         """
         Get memories related to a given memory via graph traversal.
 
@@ -515,7 +512,7 @@ class HoloLoomLite:
     async def check_safety(
         self,
         action: str,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> LiteResult:
         """
         Check if an action is safe (lazy loaded on first use).
@@ -640,7 +637,7 @@ class HoloLoomLite:
     # Convenience Methods
     # =========================================================================
 
-    def get_metrics(self) -> Dict:
+    def get_metrics(self) -> dict:
         """
         Get system metrics.
 

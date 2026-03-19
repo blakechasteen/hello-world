@@ -8,9 +8,10 @@ service boundaries using W3C Trace Context standard.
 from __future__ import annotations
 
 import contextvars
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional, TypeVar
+from typing import Any, TypeVar
 
 from hololoom.telemetry.protocol import SpanContext, SpanData
 
@@ -22,17 +23,17 @@ T = TypeVar("T")
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Context variable for current span (async-safe)
-_current_span: contextvars.ContextVar[Optional[SpanData]] = contextvars.ContextVar(
+_current_span: contextvars.ContextVar[SpanData | None] = contextvars.ContextVar(
     "current_span", default=None
 )
 
 # Context variable for current context (async-safe)
-_current_context: contextvars.ContextVar[Optional[SpanContext]] = contextvars.ContextVar(
+_current_context: contextvars.ContextVar[SpanContext | None] = contextvars.ContextVar(
     "current_context", default=None
 )
 
 # Baggage items (key-value pairs propagated across boundaries)
-_baggage: contextvars.ContextVar[Dict[str, str]] = contextvars.ContextVar(
+_baggage: contextvars.ContextVar[dict[str, str]] = contextvars.ContextVar(
     "baggage", default={}
 )
 
@@ -47,12 +48,12 @@ class TraceContextManager:
     """Manages trace context propagation."""
 
     @staticmethod
-    def get_current_span() -> Optional[SpanData]:
+    def get_current_span() -> SpanData | None:
         """Get the current span from async-safe context."""
         return _current_span.get()
 
     @staticmethod
-    def set_current_span(span: Optional[SpanData]) -> contextvars.Token:
+    def set_current_span(span: SpanData | None) -> contextvars.Token:
         """Set the current span, returning a token for restoration."""
         return _current_span.set(span)
 
@@ -62,7 +63,7 @@ class TraceContextManager:
         _current_span.reset(token)
 
     @staticmethod
-    def get_current_context() -> Optional[SpanContext]:
+    def get_current_context() -> SpanContext | None:
         """Get the current span context."""
         span = _current_span.get()
         if span is not None:
@@ -70,7 +71,7 @@ class TraceContextManager:
         return _current_context.get()
 
     @staticmethod
-    def set_current_context(context: Optional[SpanContext]) -> contextvars.Token:
+    def set_current_context(context: SpanContext | None) -> contextvars.Token:
         """Set the current context, returning a token for restoration."""
         return _current_context.set(context)
 
@@ -105,7 +106,7 @@ class TraceContextManager:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def get_baggage(key: str) -> Optional[str]:
+def get_baggage(key: str) -> str | None:
     """Get a baggage item."""
     baggage = _baggage.get()
     return baggage.get(key)
@@ -118,7 +119,7 @@ def set_baggage(key: str, value: str) -> None:
     _baggage.set(baggage)
 
 
-def get_all_baggage() -> Dict[str, str]:
+def get_all_baggage() -> dict[str, str]:
     """Get all baggage items."""
     return _baggage.get().copy()
 
@@ -141,7 +142,7 @@ class W3CTraceContext:
     BAGGAGE_HEADER = "baggage"
 
     @classmethod
-    def inject(cls, carrier: Dict[str, str]) -> None:
+    def inject(cls, carrier: dict[str, str]) -> None:
         """Inject trace context into HTTP headers."""
         context = get_current_context()
         if context is None:
@@ -163,7 +164,7 @@ class W3CTraceContext:
             )
 
     @classmethod
-    def extract(cls, carrier: Dict[str, str]) -> Optional[SpanContext]:
+    def extract(cls, carrier: dict[str, str]) -> SpanContext | None:
         """Extract trace context from HTTP headers."""
         traceparent = carrier.get(cls.TRACEPARENT_HEADER)
         if not traceparent:
@@ -206,7 +207,7 @@ class W3CTraceContext:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def get_current_context() -> Optional[SpanContext]:
+def get_current_context() -> SpanContext | None:
     """Get the current span context."""
     return TraceContextManager.get_current_context()
 

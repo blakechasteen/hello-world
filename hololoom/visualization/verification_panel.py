@@ -17,8 +17,8 @@ Created: 2025-12-09
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 from enum import Enum
+from typing import Any
 
 
 class SeverityLevel(Enum):
@@ -44,7 +44,7 @@ class Contradiction:
     contradiction_type: str      # Type: logical, temporal, reference, etc.
     severity: SeverityLevel      # MINOR, MAJOR
     description: str             # Human-readable description
-    claim_ids: List[int] = field(default_factory=list)  # Conflicting claim indices
+    claim_ids: list[int] = field(default_factory=list)  # Conflicting claim indices
     confidence: float = 0.0      # Contradiction confidence (0.0-1.0)
 
 
@@ -52,18 +52,18 @@ class Contradiction:
 class VerificationPanelData:
     """Data structure for verification panel visualization."""
     claims_count: int                              # Total claims extracted
-    claim_types: Dict[str, int]                    # Type -> count mapping
+    claim_types: dict[str, int]                    # Type -> count mapping
     questions_generated: int                       # Number of verification questions
-    contradictions: List[Contradiction]            # Detected contradictions
+    contradictions: list[Contradiction]            # Detected contradictions
     quality_before: float                          # Quality before verification (0.0-1.0)
     quality_after: float                           # Quality after verification (0.0-1.0)
     verification_time_ms: float                    # Time spent verifying (milliseconds)
-    trend_data: Optional[List[float]] = None       # Historical verification times
-    metadata: Dict[str, Any] = field(default_factory=dict)  # Additional metadata
+    trend_data: list[float] | None = None       # Historical verification times
+    metadata: dict[str, Any] = field(default_factory=dict)  # Additional metadata
 
 
 def _render_sparkline(
-    values: List[float],
+    values: list[float],
     width: int = 100,
     height: int = 30,
     color: str = "#6366F1"
@@ -108,7 +108,7 @@ def _render_sparkline(
     </svg>'''
 
 
-def _determine_severity(contradictions: List[Contradiction]) -> SeverityLevel:
+def _determine_severity(contradictions: list[Contradiction]) -> SeverityLevel:
     """
     Determine overall severity from contradictions list.
 
@@ -153,7 +153,7 @@ def _get_severity_emoji(severity: SeverityLevel) -> str:
     return emoji_map.get(severity, "?")
 
 
-def _render_claims_section(claim_types: Dict[str, int]) -> str:
+def _render_claims_section(claim_types: dict[str, int]) -> str:
     """
     Render claims extraction mini-visualization.
 
@@ -198,7 +198,7 @@ def _render_claims_section(claim_types: Dict[str, int]) -> str:
     '''
 
 
-def _render_contradictions_section(contradictions: List[Contradiction]) -> str:
+def _render_contradictions_section(contradictions: list[Contradiction]) -> str:
     """
     Render contradictions detection section.
 
@@ -257,7 +257,7 @@ def _render_quality_section(
     quality_before: float,
     quality_after: float,
     verification_time_ms: float,
-    trend_data: Optional[List[float]] = None
+    trend_data: list[float] | None = None
 ) -> str:
     """
     Render quality improvement section.
@@ -352,7 +352,7 @@ def _render_questions_section(questions_generated: int) -> str:
 def render_verification_panel(
     data: VerificationPanelData,
     title: str = "Verification Analysis",
-    subtitle: Optional[str] = None,
+    subtitle: str | None = None,
     show_timestamp: bool = False
 ) -> str:
     """
@@ -459,7 +459,7 @@ def render_verification_panel(
 
 
 def create_verification_panel_from_dict(
-    result: Dict[str, Any],
+    result: dict[str, Any],
     title: str = "Verification Analysis"
 ) -> str:
     """
@@ -579,4 +579,4 @@ if __name__ == "__main__":
         ''')
 
     print("✓ Verification panel created successfully")
-    print(f"  Example saved to: verification_panel_example.html")
+    print("  Example saved to: verification_panel_example.html")

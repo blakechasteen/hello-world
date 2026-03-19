@@ -40,12 +40,12 @@ Usage:
 
 import json
 import logging
-from typing import Any, Dict, List, Optional, Tuple
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from collections import defaultdict
 import random
 import time
+from collections import defaultdict
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +86,7 @@ class QueryTypeProfile:
     """Learning profile for a query type."""
     query_type: str
     system: str
-    strategies: Dict[str, StrategyStats] = field(default_factory=dict)
+    strategies: dict[str, StrategyStats] = field(default_factory=dict)
     query_count: int = 0
     last_updated: float = 0.0
 
@@ -107,7 +107,7 @@ class ThompsonLearner:
 
     def __init__(
         self,
-        persist_path: Optional[Path] = None,
+        persist_path: Path | None = None,
         quality_threshold: float = 0.15,
         exploration_bonus: float = 0.1
     ):
@@ -126,10 +126,10 @@ class ThompsonLearner:
         self.exploration_bonus = exploration_bonus
 
         # Learning profiles: (query_type, system) -> QueryTypeProfile
-        self.profiles: Dict[Tuple[str, str], QueryTypeProfile] = {}
+        self.profiles: dict[tuple[str, str], QueryTypeProfile] = {}
 
         # Selection history
-        self.selection_history: List[Dict] = []
+        self.selection_history: list[dict] = []
 
         # Load existing state
         self._load_state()
@@ -138,7 +138,7 @@ class ThompsonLearner:
         self,
         query_type: str,
         system: str,
-        available_strategies: Optional[List[str]] = None
+        available_strategies: list[str] | None = None
     ) -> str:
         """
         Select best strategy using Thompson Sampling.
@@ -212,7 +212,7 @@ class ThompsonLearner:
         system: str,
         strategy: str,
         quality_improvement: float,
-        execution_time_ms: Optional[float] = None
+        execution_time_ms: float | None = None
     ):
         """
         Update Thompson Sampling statistics from outcome.
@@ -271,9 +271,9 @@ class ThompsonLearner:
 
     def get_learning_stats(
         self,
-        system: Optional[str] = None,
-        query_type: Optional[str] = None
-    ) -> Dict:
+        system: str | None = None,
+        query_type: str | None = None
+    ) -> dict:
         """
         Get learning statistics.
 
@@ -359,7 +359,7 @@ class ThompsonLearner:
         self,
         query_type: str,
         system: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get strategy recommendation with confidence.
 
@@ -419,7 +419,7 @@ class ThompsonLearner:
             ]
         }
 
-    def reset_learning(self, system: Optional[str] = None, query_type: Optional[str] = None):
+    def reset_learning(self, system: str | None = None, query_type: str | None = None):
         """
         Reset learning state (use with caution!).
 
@@ -481,7 +481,7 @@ class ThompsonLearner:
             return
 
         try:
-            with open(state_file, "r", encoding="utf-8") as f:
+            with open(state_file, encoding="utf-8") as f:
                 state = json.load(f)
 
             # Restore profiles
@@ -514,7 +514,7 @@ class ThompsonLearner:
 
 
 # Convenience functions
-def create_learner(persist_path: Optional[Path] = None) -> ThompsonLearner:
+def create_learner(persist_path: Path | None = None) -> ThompsonLearner:
     """
     Create Thompson Sampling learner.
 

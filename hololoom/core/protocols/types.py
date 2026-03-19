@@ -13,11 +13,10 @@ Author: mythRL Team
 Date: 2025-10-27 (Phase 1 Protocol Standardization)
 """
 
-from typing import Dict, List, Optional, Any
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-import time
-
+from typing import Any
 
 # ============================================================================
 # Complexity Levels
@@ -115,18 +114,18 @@ class ProvenanceTrace:
     operation_id: str
     complexity_level: ComplexityLevel
     start_time: float
-    modules_invoked: List[str] = field(default_factory=list)
-    protocol_calls: List[Dict] = field(default_factory=list)
-    shuttle_events: List[Dict] = field(default_factory=list)
-    performance_metrics: Dict = field(default_factory=dict)
-    synthesis_chain: List[Dict] = field(default_factory=list)
-    temporal_contexts: List[Dict] = field(default_factory=list)
-    
+    modules_invoked: list[str] = field(default_factory=list)
+    protocol_calls: list[dict] = field(default_factory=list)
+    shuttle_events: list[dict] = field(default_factory=list)
+    performance_metrics: dict = field(default_factory=dict)
+    synthesis_chain: list[dict] = field(default_factory=list)
+    temporal_contexts: list[dict] = field(default_factory=list)
+
     def add_protocol_call(
-        self, 
-        protocol: str, 
-        method: str, 
-        duration_ms: float, 
+        self,
+        protocol: str,
+        method: str,
+        duration_ms: float,
         result_summary: str
     ):
         """
@@ -153,12 +152,12 @@ class ProvenanceTrace:
             'duration_ms': duration_ms,
             'result_summary': result_summary
         })
-    
+
     def add_shuttle_event(
-        self, 
-        event_type: str, 
-        description: str, 
-        data: Optional[Dict] = None
+        self,
+        event_type: str,
+        description: str,
+        data: dict | None = None
     ):
         """
         Record shuttle internal events.
@@ -181,11 +180,11 @@ class ProvenanceTrace:
             'description': description,
             'data': data or {}
         })
-    
+
     def add_synthesis_step(
         self,
         step_name: str,
-        inputs: List[str],
+        inputs: list[str],
         output: str,
         duration_ms: float
     ):
@@ -205,13 +204,13 @@ class ProvenanceTrace:
             'output': output,
             'duration_ms': duration_ms
         })
-    
+
     def add_temporal_context(
         self,
         window_start: float,
         window_end: float,
         context_type: str,
-        metadata: Optional[Dict] = None
+        metadata: dict | None = None
     ):
         """
         Record temporal window activation.
@@ -228,12 +227,12 @@ class ProvenanceTrace:
             'context_type': context_type,
             'metadata': metadata or {}
         })
-    
+
     def get_total_duration_ms(self) -> float:
         """Get total operation duration in milliseconds."""
         return (time.perf_counter() - self.start_time) * 1000
-    
-    def get_protocol_summary(self) -> Dict[str, int]:
+
+    def get_protocol_summary(self) -> dict[str, int]:
         """Get summary of protocol usage."""
         summary = {}
         for call in self.protocol_calls:
@@ -246,7 +245,7 @@ class ProvenanceTrace:
 # Result Types
 # ============================================================================
 
-@dataclass 
+@dataclass
 class MythRLResult:
     """
     Result object with full provenance.
@@ -283,9 +282,9 @@ class MythRLResult:
     confidence: float
     complexity_level: ComplexityLevel
     provenance: ProvenanceTrace
-    spacetime_coordinates: Dict
-    
-    def get_performance_summary(self) -> Dict:
+    spacetime_coordinates: dict
+
+    def get_performance_summary(self) -> dict:
         """
         Get performance summary.
         
@@ -305,8 +304,8 @@ class MythRLResult:
             'protocol_calls': len(self.provenance.protocol_calls),
             'shuttle_events': len(self.provenance.shuttle_events)
         }
-    
-    def get_confidence_breakdown(self) -> Dict:
+
+    def get_confidence_breakdown(self) -> dict:
         """
         Get breakdown of confidence sources.
         
@@ -325,30 +324,30 @@ class MythRLResult:
 # Legacy HoloLoom Types (from Documentation.types)
 # ============================================================================
 
-Vector = List[float]  # Embedding vector
+Vector = list[float]  # Embedding vector
 
 
 @dataclass
 class Query:
     """Simple query type for HoloLoom."""
     text: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class Context:
     """Context for query processing."""
-    memories: List[Any] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    memories: list[Any] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class Features:
     """Extracted features from query."""
-    motifs: List[str] = field(default_factory=list)
-    embeddings: Optional[Vector] = None
-    spectral: Optional[Vector] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    motifs: list[str] = field(default_factory=list)
+    embeddings: Vector | None = None
+    spectral: Vector | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -356,11 +355,11 @@ class MemoryShard:
     """Memory shard from SpinningWheel."""
     id: str
     text: str
-    entities: List[str] = field(default_factory=list)
-    motifs: List[str] = field(default_factory=list)
-    episode: Optional[str] = None
-    timestamp: Optional[float] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    entities: list[str] = field(default_factory=list)
+    motifs: list[str] = field(default_factory=list)
+    episode: str | None = None
+    timestamp: float | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -368,17 +367,17 @@ class PolicyAction:
     """Action selected by policy."""
     tool: str
     confidence: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ActionPlan:
     """Plan of actions to execute."""
-    actions: List[PolicyAction] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    tool: Optional[str] = None
+    actions: list[PolicyAction] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    tool: str | None = None
     confidence: float = 0.0
-    tool_probs: Dict[str, float] = field(default_factory=dict)
+    tool_probs: dict[str, float] = field(default_factory=dict)
     adapter: str = "general"
 
     def __post_init__(self):
@@ -393,8 +392,8 @@ class ActionPlan:
 class ToolCall:
     """Tool invocation."""
     tool: str
-    args: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    args: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -402,7 +401,7 @@ class ToolResult:
     """Result from tool execution."""
     success: bool
     output: Any
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -410,16 +409,16 @@ class Response:
     """Response from hololoom."""
     text: str
     confidence: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class Motif:
     """Detected pattern or motif in text."""
     pattern: str
-    span: Optional[tuple[int, int]] = None
+    span: tuple[int, int] | None = None
     score: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================

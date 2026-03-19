@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Semantic Cache Initialization
 ==============================
@@ -33,7 +32,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def initialize_semantic_cache(orchestrator: 'WeavingOrchestrator') -> None:
+def initialize_semantic_cache(orchestrator: WeavingOrchestrator) -> None:
     """
     Initialize three-tier semantic cache for 244D projections.
 
@@ -61,8 +60,8 @@ def initialize_semantic_cache(orchestrator: 'WeavingOrchestrator') -> None:
         This is expected behavior when semantic_calculus module is unavailable.
     """
     try:
-        from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
         from hololoom.performance.semantic_cache import AdaptiveSemanticCache
+        from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
 
         logger.info("Initializing semantic cache...")
 

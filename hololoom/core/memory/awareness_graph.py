@@ -10,23 +10,23 @@ Key design:
 6. Simple policy interface (memories + metrics)
 """
 
-from typing import List, Dict, Optional, Set, Any, Union
+import uuid
 from collections import deque
 from datetime import datetime
-import numpy as np
-import networkx as nx
-import uuid
+from typing import Any, Union
 
-from hololoom.memory.protocol import Memory
+import networkx as nx
+import numpy as np
+
+from hololoom.memory.activation_field import ActivationField
 from hololoom.memory.awareness_types import (
-    SemanticPerception,
-    ActivationStrategy,
     ActivationBudget,
+    ActivationStrategy,
     AwarenessMetrics,
     EdgeType,
-    EdgeMetadata
+    SemanticPerception,
 )
-from hololoom.memory.activation_field import ActivationField
+from hololoom.memory.protocol import Memory
 
 # Multi-modal input support (graceful degradation if not available)
 try:
@@ -52,7 +52,7 @@ class AwarenessGraph:
         self,
         graph_backend: nx.MultiDiGraph,  # Can be Neo4j or NetworkX
         semantic_calculus,                # MatryoshkaSemanticCalculus
-        vector_store: Optional[Any] = None  # Optional Qdrant/FAISS
+        vector_store: Any | None = None  # Optional Qdrant/FAISS
     ):
         """
         Initialize awareness graph.
@@ -68,12 +68,12 @@ class AwarenessGraph:
         self.vectors = vector_store
 
         # Semantic index (lightweight: node_id → position)
-        self.semantic_positions: Dict[str, np.ndarray] = {}
+        self.semantic_positions: dict[str, np.ndarray] = {}
 
         # Raw embeddings for CONTENT-BASED retrieval (not style-based)
         # The semantic_positions are projected onto style dimensions (warmth, valence, etc.)
         # but retrieval needs TOPICAL similarity, which is in the raw embeddings
-        self.raw_embeddings: Dict[str, np.ndarray] = {}
+        self.raw_embeddings: dict[str, np.ndarray] = {}
 
         # Activation field (dynamic process)
         self.activation_field = ActivationField()
@@ -82,7 +82,7 @@ class AwarenessGraph:
         self.trajectory: deque = deque(maxlen=100)
 
         # Resonance cache (for metrics)
-        self.resonance_cache: Dict[tuple, float] = {}
+        self.resonance_cache: dict[tuple, float] = {}
 
     # =========================================================================
     # Core Operations: Perceive, Remember, Activate
@@ -214,7 +214,7 @@ class AwarenessGraph:
         self,
         content: Union[str, 'ProcessedInput'],
         perception: SemanticPerception,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> str:
         """
         Store memory with semantic integration.
@@ -291,9 +291,9 @@ class AwarenessGraph:
     async def activate(
         self,
         perception: SemanticPerception,
-        budget: Optional[ActivationBudget] = None,
+        budget: ActivationBudget | None = None,
         strategy: ActivationStrategy = ActivationStrategy.BALANCED
-    ) -> List[Memory]:
+    ) -> list[Memory]:
         """
         Activate relevant memories based on semantic proximity.
 
@@ -498,9 +498,9 @@ class AwarenessGraph:
         query_pos: np.ndarray,
         radius: float,
         k: int,
-        query_raw_embedding: Optional[np.ndarray] = None,
+        query_raw_embedding: np.ndarray | None = None,
         return_scores: bool = False
-    ) -> Union[List[str], Dict[str, float]]:
+    ) -> list[str] | dict[str, float]:
         """
         Brute force semantic search.
 

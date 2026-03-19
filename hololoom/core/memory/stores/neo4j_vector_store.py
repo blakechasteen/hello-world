@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Neo4j Vector Store - Symbolic Vectors in Hyperspace
 ====================================================
@@ -21,10 +22,10 @@ Requires:
 - pip install neo4j
 """
 
-from typing import List, Optional, Dict, Any
-from datetime import datetime
 import hashlib
 import json
+from datetime import datetime
+from typing import Any
 
 try:
     from neo4j import GraphDatabase
@@ -41,10 +42,11 @@ except ImportError:
     EMBEDDINGS_AVAILABLE = False
 
 # Import protocol
-import sys
 from pathlib import Path
+
 protocol_path = Path(__file__).parent.parent / 'protocol.py'
 import importlib.util
+
 spec = importlib.util.spec_from_file_location("protocol", protocol_path)
 protocol = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(protocol)
@@ -276,7 +278,7 @@ class Neo4jVectorStore:
 
             return memory_id
 
-    async def store_many(self, memories: List[Memory]) -> List[str]:
+    async def store_many(self, memories: list[Memory]) -> list[str]:
         """Store multiple memories."""
         ids = []
         for memory in memories:
@@ -284,7 +286,7 @@ class Neo4jVectorStore:
             ids.append(mem_id)
         return ids
 
-    async def get_by_id(self, memory_id: str) -> Optional[Memory]:
+    async def get_by_id(self, memory_id: str) -> Memory | None:
         """Get memory by ID."""
         with self.driver.session(database=self.database) as session:
             result = session.run("""
@@ -471,7 +473,7 @@ class Neo4jVectorStore:
 
             return result.single()["deleted"] > 0
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Check store health."""
         with self.driver.session(database=self.database) as session:
             result = session.run("MATCH (m:Memory) RETURN count(m) AS total")

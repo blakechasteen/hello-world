@@ -10,6 +10,7 @@ Replaces the voice CSS section with enhanced animations:
 
 from pathlib import Path
 
+
 def update_animations():
     """Update voice CSS with enhanced animations"""
 

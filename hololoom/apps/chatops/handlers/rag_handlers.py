@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 RAG Handlers for Matrix ChatOps
 ================================
@@ -20,7 +21,7 @@ Created: 2025-12-05
 """
 
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hololoom.rag.simple_rag import SimpleRAG
@@ -34,7 +35,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -84,7 +87,7 @@ async def handle_rag_query(
         result = await rag.query(question, mode=mode)
 
         # Format response
-        response = f"🔍 **RAG Query**\n\n"
+        response = "🔍 **RAG Query**\n\n"
         response += f"**Answer:** {result.response}\n\n"
         response += f"**Confidence:** {result.confidence:.2f}"
 
@@ -256,7 +259,7 @@ async def handle_rag_stats(
         # Reranking stats
         if metrics.get('reranking_enabled'):
             response += "\n**Reranking:**\n"
-            response += f"  Enabled: ✓\n"
+            response += "  Enabled: ✓\n"
             response += f"  Total reranks: {metrics.get('total_reranks', 0)}\n"
             response += f"  Avg latency: {metrics.get('avg_rerank_latency_ms', 0):.1f}ms\n"
         else:
@@ -264,7 +267,7 @@ async def handle_rag_stats(
 
         # Embedding stats
         if metrics.get('embedding_provider'):
-            response += f"\n**Embeddings:**\n"
+            response += "\n**Embeddings:**\n"
             response += f"  Provider: {metrics.get('embedding_provider')}\n"
             response += f"  Dimension: {metrics.get('embedding_dimension', 'N/A')}\n"
 

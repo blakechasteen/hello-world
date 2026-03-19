@@ -28,15 +28,16 @@ Date: 2025-10-26
 import json
 import logging
 import time
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from collections import defaultdict, deque
+from pathlib import Path
+from typing import Any
+
 import numpy as np
 
 from hololoom.fabric.spacetime import Spacetime, WeavingTrace
-from hololoom.reflection.rewards import RewardExtractor, RewardConfig
+from hololoom.reflection.rewards import RewardConfig, RewardExtractor
 
 logging.basicConfig(level=logging.INFO)
 
@@ -58,23 +59,23 @@ class ReflectionMetrics:
     failed_cycles: int = 0
 
     # Tool performance
-    tool_success_rates: Dict[str, float] = field(default_factory=dict)
-    tool_avg_confidence: Dict[str, float] = field(default_factory=dict)
-    tool_usage_counts: Dict[str, int] = field(default_factory=dict)
+    tool_success_rates: dict[str, float] = field(default_factory=dict)
+    tool_avg_confidence: dict[str, float] = field(default_factory=dict)
+    tool_usage_counts: dict[str, int] = field(default_factory=dict)
 
     # Pattern card performance
-    pattern_success_rates: Dict[str, float] = field(default_factory=dict)
-    pattern_avg_duration: Dict[str, float] = field(default_factory=dict)
-    pattern_usage_counts: Dict[str, int] = field(default_factory=dict)
+    pattern_success_rates: dict[str, float] = field(default_factory=dict)
+    pattern_avg_duration: dict[str, float] = field(default_factory=dict)
+    pattern_usage_counts: dict[str, int] = field(default_factory=dict)
 
     # Query complexity patterns
-    successful_query_lengths: List[int] = field(default_factory=list)
-    failed_query_lengths: List[int] = field(default_factory=list)
+    successful_query_lengths: list[int] = field(default_factory=list)
+    failed_query_lengths: list[int] = field(default_factory=list)
 
     # Temporal patterns
     last_updated: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize metrics for storage."""
         return {
             'total_cycles': self.total_cycles,
@@ -100,12 +101,12 @@ class LearningSignal:
     Signals are actionable insights that can be used to improve the system.
     """
     signal_type: str  # "bandit_update", "pattern_preference", "threshold_adjustment"
-    tool: Optional[str] = None
-    pattern: Optional[str] = None
-    reward: Optional[float] = None
-    confidence_threshold: Optional[float] = None
+    tool: str | None = None
+    pattern: str | None = None
+    reward: float | None = None
+    confidence_threshold: float | None = None
     recommendation: str = ""
-    evidence: Dict[str, Any] = field(default_factory=dict)
+    evidence: dict[str, Any] = field(default_factory=dict)
     priority: float = 0.5  # 0-1, higher = more important
 
 
@@ -141,10 +142,10 @@ class ReflectionBuffer:
     def __init__(
         self,
         capacity: int = 1000,
-        persist_path: Optional[str] = None,
+        persist_path: str | None = None,
         learning_window: int = 100,  # How many recent cycles to analyze
         success_threshold: float = 0.6,  # Confidence threshold for success
-        reward_config: Optional[RewardConfig] = None  # Reward computation config
+        reward_config: RewardConfig | None = None  # Reward computation config
     ):
         """
         Initialize Reflection Buffer.
@@ -185,8 +186,8 @@ class ReflectionBuffer:
     async def store(
         self,
         spacetime: Spacetime,
-        feedback: Optional[Dict[str, Any]] = None,
-        reward: Optional[float] = None
+        feedback: dict[str, Any] | None = None,
+        reward: float | None = None
     ) -> None:
         """
         Store a Spacetime artifact with optional feedback.
@@ -227,7 +228,7 @@ class ReflectionBuffer:
     def _derive_reward(
         self,
         spacetime: Spacetime,
-        feedback: Optional[Dict[str, Any]]
+        feedback: dict[str, Any] | None
     ) -> float:
         """
         Derive reward signal from Spacetime and feedback using RewardExtractor.
@@ -255,7 +256,7 @@ class ReflectionBuffer:
 
         return np.clip(normalized_reward, 0.0, 1.0)
 
-    def _update_metrics(self, episode: Dict[str, Any]) -> None:
+    def _update_metrics(self, episode: dict[str, Any]) -> None:
         """Update aggregated metrics with new episode."""
         spacetime = episode['spacetime']
         success = episode['success']
@@ -323,7 +324,7 @@ class ReflectionBuffer:
 
         self.metrics.last_updated = datetime.now()
 
-    async def analyze_and_learn(self, force: bool = False) -> List[LearningSignal]:
+    async def analyze_and_learn(self, force: bool = False) -> list[LearningSignal]:
         """
         Analyze recent episodes and generate learning signals.
 
@@ -376,7 +377,7 @@ class ReflectionBuffer:
         self.logger.info(f"Generated {len(signals)} learning signals")
         return signals
 
-    def _analyze_tool_performance(self, episodes: List[Dict]) -> List[LearningSignal]:
+    def _analyze_tool_performance(self, episodes: list[dict]) -> list[LearningSignal]:
         """Analyze tool performance and generate bandit update signals."""
         signals = []
 
@@ -414,7 +415,7 @@ class ReflectionBuffer:
 
         return signals
 
-    def _analyze_pattern_performance(self, episodes: List[Dict]) -> List[LearningSignal]:
+    def _analyze_pattern_performance(self, episodes: list[dict]) -> list[LearningSignal]:
         """Analyze pattern card performance and suggest preferences."""
         signals = []
 
@@ -461,7 +462,7 @@ class ReflectionBuffer:
 
         return signals
 
-    def _analyze_failures(self, episodes: List[Dict]) -> List[LearningSignal]:
+    def _analyze_failures(self, episodes: list[dict]) -> list[LearningSignal]:
         """Analyze failure patterns and suggest mitigations."""
         signals = []
 
@@ -501,7 +502,7 @@ class ReflectionBuffer:
 
         return signals
 
-    def _analyze_exploration_balance(self, episodes: List[Dict]) -> List[LearningSignal]:
+    def _analyze_exploration_balance(self, episodes: list[dict]) -> list[LearningSignal]:
         """Analyze exploration vs exploitation balance."""
         signals = []
 
@@ -540,7 +541,7 @@ class ReflectionBuffer:
 
         return signals
 
-    async def _persist_episode(self, episode: Dict[str, Any]) -> None:
+    async def _persist_episode(self, episode: dict[str, Any]) -> None:
         """Persist episode to disk."""
         if not self.persist_path:
             return
@@ -571,7 +572,7 @@ class ReflectionBuffer:
         """Get current reflection metrics."""
         return self.metrics
 
-    def get_recent_episodes(self, n: int = 10) -> List[Dict[str, Any]]:
+    def get_recent_episodes(self, n: int = 10) -> list[dict[str, Any]]:
         """Get N most recent episodes."""
         return list(self.episodes)[-n:]
 
@@ -581,7 +582,7 @@ class ReflectionBuffer:
             return 0.0
         return self.metrics.successful_cycles / self.metrics.total_cycles
 
-    def get_tool_recommendations(self) -> Dict[str, float]:
+    def get_tool_recommendations(self) -> dict[str, float]:
         """
         Get tool recommendations based on historical performance.
 
@@ -605,9 +606,9 @@ class ReflectionBuffer:
 
     def get_ppo_batch(
         self,
-        batch_size: Optional[int] = None,
+        batch_size: int | None = None,
         recent_only: bool = True
-    ) -> Dict[str, List]:
+    ) -> dict[str, list]:
         """
         Extract batched experience for PPO training.
 
@@ -678,7 +679,7 @@ class ReflectionBuffer:
             'infos': infos
         }
 
-    async def consolidate(self) -> Dict[str, Any]:
+    async def consolidate(self) -> dict[str, Any]:
         """
         Deep consolidation phase - like REM sleep for the memory system.
 
@@ -725,7 +726,7 @@ class ReflectionBuffer:
 
         return metrics
 
-    async def _compress_episodes(self) -> Dict[str, Any]:
+    async def _compress_episodes(self) -> dict[str, Any]:
         """
         Compress redundant episodes with similar outcomes.
 
@@ -760,7 +761,7 @@ class ReflectionBuffer:
             "potential_savings": f"{mergeable_count / len(self.episodes) * 100:.1f}%"
         }
 
-    async def _extract_meta_patterns(self) -> Dict[str, Any]:
+    async def _extract_meta_patterns(self) -> dict[str, Any]:
         """
         Extract meta-patterns across episodes.
 
@@ -799,7 +800,7 @@ class ReflectionBuffer:
 
         return patterns
 
-    async def _prune_redundant(self) -> Dict[str, Any]:
+    async def _prune_redundant(self) -> dict[str, Any]:
         """
         Prune low-value memories.
 
@@ -941,7 +942,7 @@ async def demo():
     print(f"Buffer initialized: {buffer}\n")
 
     # Simulate some weaving cycles
-    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.fabric.spacetime import Spacetime
 
     tools = ["answer", "search", "calc", "notion_write"]
     patterns = ["bare", "fast", "fused"]
@@ -993,13 +994,13 @@ async def demo():
     metrics = buffer.get_metrics()
     print(f"Total cycles: {metrics.total_cycles}")
     print(f"Success rate: {buffer.get_success_rate():.1%}")
-    print(f"\nTool Performance:")
+    print("\nTool Performance:")
     for tool, rate in metrics.tool_success_rates.items():
         conf = metrics.tool_avg_confidence[tool]
         count = metrics.tool_usage_counts[tool]
         print(f"  {tool:15s}: {rate:.1%} success, {conf:.2f} avg confidence ({count} uses)")
 
-    print(f"\nTool Recommendations:")
+    print("\nTool Recommendations:")
     recommendations = buffer.get_tool_recommendations()
     for tool, score in sorted(recommendations.items(), key=lambda x: x[1], reverse=True):
         print(f"  {tool:15s}: {score:.2f}")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 GraphRAG API
 ============
@@ -16,20 +16,25 @@ Features:
 Created: 2025-01-20
 """
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
 import logging
 import re
+from typing import Any
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/graph", tags=["graph"])
 logger = logging.getLogger(__name__)
 
 # Import HoloLoom components
 try:
-    from hololoom.memory.graph import KG, KGEdge
-    from hololoom.visualization.knowledge_graph import render_knowledge_graph_from_kg, render_knowledge_graph_from_networkx
     import networkx as nx
+
+    from hololoom.memory.graph import KG, KGEdge
+    from hololoom.visualization.knowledge_graph import (
+        render_knowledge_graph_from_kg,
+        render_knowledge_graph_from_networkx,
+    )
     GRAPH_AVAILABLE = True
     logger.info("✓ GraphRAG components loaded successfully")
 except ImportError as e:
@@ -39,7 +44,7 @@ except ImportError as e:
     nx = None
 
 # Global knowledge graph instance
-kg_instance: Optional[Any] = None
+kg_instance: Any | None = None
 
 
 def get_kg():
@@ -54,16 +59,16 @@ def get_kg():
 
 class GraphQueryRequest(BaseModel):
     start_entity: str
-    target_entity: Optional[str] = None
+    target_entity: str | None = None
     max_hops: int = 3
-    relationship_types: Optional[List[str]] = None
+    relationship_types: list[str] | None = None
 
 
 class GraphQueryResponse(BaseModel):
-    paths: List[List[str]]
-    entities: List[Dict[str, Any]]
-    relationships: List[Dict[str, Any]]
-    visualization_html: Optional[str] = None
+    paths: list[list[str]]
+    entities: list[dict[str, Any]]
+    relationships: list[dict[str, Any]]
+    visualization_html: str | None = None
 
 
 class ExtractEntitiesRequest(BaseModel):
@@ -72,12 +77,12 @@ class ExtractEntitiesRequest(BaseModel):
 
 
 class ExtractEntitiesResponse(BaseModel):
-    entities: List[Dict[str, Any]]
-    relationships: List[Dict[str, Any]]
+    entities: list[dict[str, Any]]
+    relationships: list[dict[str, Any]]
 
 
 class VisualizeGraphRequest(BaseModel):
-    entities: List[str]
+    entities: list[str]
     include_related: bool = True
     max_depth: int = 2
 
@@ -399,7 +404,7 @@ async def get_entity_relationships(entity: str, max_depth: int = 1):
 class AddEntityRequest(BaseModel):
     entity_id: str
     entity_type: str = "generic"
-    properties: Optional[Dict[str, Any]] = None
+    properties: dict[str, Any] | None = None
 
 
 class AddRelationshipRequest(BaseModel):

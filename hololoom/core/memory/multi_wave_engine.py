@@ -15,21 +15,17 @@ Author: HoloLoom Memory Team
 Date: October 30, 2025
 """
 
-from typing import Dict, List, Optional, Set, Callable, AsyncIterator
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from enum import Enum
 import asyncio
-import numpy as np
-import random
 import logging
+import random
+from collections.abc import AsyncIterator, Callable
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
 
-from .spring_dynamics_engine import (
-    SpringDynamicsEngine,
-    SpringEngineConfig,
-    MemoryNode,
-    BetaWaveRecallResult
-)
+import numpy as np
+
+from .spring_dynamics_engine import BetaWaveRecallResult, SpringDynamicsEngine, SpringEngineConfig
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +50,7 @@ class BrainWaveMode(Enum):
 @dataclass
 class ActivationPattern:
     """Record of which nodes were active together."""
-    nodes: List[str]
+    nodes: list[str]
     timestamp: datetime
     source: str  # 'query' or 'ingestion'
 
@@ -69,13 +65,13 @@ class ThetaWaveConsolidator:
 
     def __init__(self, engine: 'MultiWaveMemoryEngine'):
         self.engine = engine
-        self.co_activation_history: List[ActivationPattern] = []
+        self.co_activation_history: list[ActivationPattern] = []
         self.consolidation_threshold = 3  # Co-occur at least 3 times
         self.max_history = 100
 
     def record_activation_pattern(
         self,
-        activations: Dict[str, float],
+        activations: dict[str, float],
         source: str = 'query',
         threshold: float = 0.3
     ):
@@ -112,7 +108,7 @@ class ThetaWaveConsolidator:
         This creates PERMANENT changes to the graph structure.
         """
         # Find node pairs that frequently appear together
-        co_occurrence_counts: Dict[tuple, int] = {}
+        co_occurrence_counts: dict[tuple, int] = {}
 
         for pattern in self.co_activation_history[-50:]:  # Last 50 patterns
             nodes = pattern.nodes
@@ -285,7 +281,7 @@ class REMDreamer:
             )
 
             # 2. Activate with random intensities
-            activations = {node_id: 0.0 for node_id in self.engine.nodes.keys()}
+            activations = dict.fromkeys(self.engine.nodes.keys(), 0.0)
             for seed_id in seed_nodes:
                 activations[seed_id] = random.uniform(0.5, 1.0) * self.dream_intensity
 
@@ -365,7 +361,7 @@ class MultiWaveMemoryEngine(SpringDynamicsEngine):
     Accepts streaming data from SpinningWheel sources.
     """
 
-    def __init__(self, config: Optional[SpringEngineConfig] = None):
+    def __init__(self, config: SpringEngineConfig | None = None):
         super().__init__(config)
 
         # Current brain wave mode
@@ -595,7 +591,7 @@ class MultiWaveMemoryEngine(SpringDynamicsEngine):
     # Statistics
     # ========================================================================
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get enhanced statistics with mode info."""
         base_stats = super().get_statistics()
 

@@ -12,9 +12,10 @@ Date: 2025-11-12
 """
 
 import time
-from typing import Dict, Optional
-from hololoom.protocols.types import Query
+from typing import Optional
+
 from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.protocols.types import Query
 
 
 class FastPathCache:
@@ -50,7 +51,7 @@ class FastPathCache:
         "help": "I can answer questions, search knowledge, and assist with tasks. What would you like to know?",
     }
 
-    def get(self, query_text: str) -> Optional[str]:
+    def get(self, query_text: str) -> str | None:
         """
         Get cached response for trivial query.
 
@@ -249,7 +250,7 @@ class FastPathRouter:
             else:
                 raise ValueError("Orchestrator required for complex queries")
 
-    def get_stats(self) -> Dict[str, int]:
+    def get_stats(self) -> dict[str, int]:
         """
         Get routing statistics.
 

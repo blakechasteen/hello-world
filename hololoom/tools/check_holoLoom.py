@@ -1,7 +1,11 @@
 # check_hololoom.py
 # Extended HoloLoom Health Check: imports, pipeline smoke test, and math integrity tests.
-import importlib, traceback, time, math, random
+import importlib
+import math
+import time
+import traceback
 from types import SimpleNamespace
+
 
 def hr(title):
     print("\n" + "="*10 + f" {title} " + "="*10)

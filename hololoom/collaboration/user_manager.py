@@ -6,13 +6,12 @@ User identification, authentication, and profile management
 for multi-user collaboration.
 """
 
+import hashlib
+import json
+import secrets
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set
-import hashlib
-import secrets
-import json
 
 
 class UserRole(Enum):
@@ -33,19 +32,19 @@ class User:
     """User profile."""
     user_id: str
     username: str
-    email: Optional[str] = None
-    display_name: Optional[str] = None
+    email: str | None = None
+    display_name: str | None = None
     role: UserRole = UserRole.CONTRIBUTOR
-    teams: Set[str] = field(default_factory=set)
+    teams: set[str] = field(default_factory=set)
     created_at: datetime = field(default_factory=datetime.now)
     last_active: datetime = field(default_factory=datetime.now)
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
     # Stats
     contributions_count: int = 0
     queries_count: int = 0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "user_id": self.user_id,
@@ -62,7 +61,7 @@ class User:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'User':
+    def from_dict(cls, data: dict) -> 'User':
         """Deserialize from dictionary."""
         return cls(
             user_id=data["user_id"],
@@ -91,10 +90,10 @@ class Team:
     team_id: str
     name: str
     owner_id: str
-    members: Dict[str, UserRole] = field(default_factory=dict)  # user_id -> role
+    members: dict[str, UserRole] = field(default_factory=dict)  # user_id -> role
     created_at: datetime = field(default_factory=datetime.now)
     description: str = ""
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
     def add_member(self, user_id: str, role: UserRole = UserRole.CONTRIBUTOR):
         """Add member to team."""
@@ -105,11 +104,11 @@ class Team:
         if user_id in self.members and user_id != self.owner_id:
             del self.members[user_id]
 
-    def get_member_role(self, user_id: str) -> Optional[UserRole]:
+    def get_member_role(self, user_id: str) -> UserRole | None:
         """Get member's role in team."""
         return self.members.get(user_id)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "team_id": self.team_id,
@@ -133,7 +132,7 @@ class UserManager:
     - Activity tracking
     """
 
-    def __init__(self, storage_path: Optional[str] = None):
+    def __init__(self, storage_path: str | None = None):
         """
         Initialize user manager.
 
@@ -141,10 +140,10 @@ class UserManager:
             storage_path: Path to persist user data (None for in-memory)
         """
         self.storage_path = storage_path
-        self.users: Dict[str, User] = {}
-        self.teams: Dict[str, Team] = {}
-        self.sessions: Dict[str, str] = {}  # session_token -> user_id
-        self._username_to_id: Dict[str, str] = {}
+        self.users: dict[str, User] = {}
+        self.teams: dict[str, Team] = {}
+        self.sessions: dict[str, str] = {}  # session_token -> user_id
+        self._username_to_id: dict[str, str] = {}
 
         # Load persisted data
         if storage_path:
@@ -164,8 +163,8 @@ class UserManager:
 
     # === User Operations ===
 
-    def create_user(self, username: str, email: Optional[str] = None,
-                    display_name: Optional[str] = None,
+    def create_user(self, username: str, email: str | None = None,
+                    display_name: str | None = None,
                     role: UserRole = UserRole.CONTRIBUTOR) -> User:
         """Create a new user."""
         if username in self._username_to_id:
@@ -186,18 +185,18 @@ class UserManager:
         self._save()
         return user
 
-    def get_user(self, user_id: str) -> Optional[User]:
+    def get_user(self, user_id: str) -> User | None:
         """Get user by ID."""
         return self.users.get(user_id)
 
-    def get_user_by_username(self, username: str) -> Optional[User]:
+    def get_user_by_username(self, username: str) -> User | None:
         """Get user by username."""
         user_id = self._username_to_id.get(username)
         if user_id:
             return self.users.get(user_id)
         return None
 
-    def update_user(self, user_id: str, **updates) -> Optional[User]:
+    def update_user(self, user_id: str, **updates) -> User | None:
         """Update user profile."""
         user = self.users.get(user_id)
         if not user:
@@ -227,7 +226,7 @@ class UserManager:
         self._save()
         return True
 
-    def list_users(self, team_id: Optional[str] = None) -> List[User]:
+    def list_users(self, team_id: str | None = None) -> list[User]:
         """List users, optionally filtered by team."""
         if team_id:
             team = self.teams.get(team_id)
@@ -238,7 +237,7 @@ class UserManager:
 
     # === Session Operations ===
 
-    def login(self, username: str) -> Optional[str]:
+    def login(self, username: str) -> str | None:
         """
         Login user and return session token.
 
@@ -265,7 +264,7 @@ class UserManager:
             return True
         return False
 
-    def get_current_user(self, session_token: str) -> Optional[User]:
+    def get_current_user(self, session_token: str) -> User | None:
         """Get user from session token."""
         user_id = self.sessions.get(session_token)
         if user_id:
@@ -301,7 +300,7 @@ class UserManager:
         self._save()
         return team
 
-    def get_team(self, team_id: str) -> Optional[Team]:
+    def get_team(self, team_id: str) -> Team | None:
         """Get team by ID."""
         return self.teams.get(team_id)
 
@@ -337,7 +336,7 @@ class UserManager:
         self._save()
         return True
 
-    def list_teams(self, user_id: Optional[str] = None) -> List[Team]:
+    def list_teams(self, user_id: str | None = None) -> list[Team]:
         """List teams, optionally filtered by user membership."""
         if user_id:
             user = self.users.get(user_id)
@@ -383,7 +382,7 @@ class UserManager:
             return
 
         try:
-            with open(self.storage_path, 'r') as f:
+            with open(self.storage_path) as f:
                 data = json.load(f)
 
             for uid, udata in data.get("users", {}).items():

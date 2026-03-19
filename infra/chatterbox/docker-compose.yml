@@ -1,0 +1,32 @@
+## Chatterbox TTS — OpenAI-compatible voice server
+## Shares cuda:2 with AirLLM synthesizer (low contention — TTS is bursty)
+## Port: 8004 on the rig
+##
+## Start:  docker compose up -d
+## Test:   curl http://localhost:8004/health
+## Logs:   docker compose logs -f
+
+services:
+  chatterbox:
+    image: travisvn/chatterbox-tts-api:latest
+    container_name: chatterbox-tts
+    restart: unless-stopped
+    ports:
+      - "8004:8000"
+    environment:
+      - DEVICE=cuda
+      - DEFAULT_VOICE=predefined/male_1
+      - MAX_TEXT_LENGTH=2000
+    volumes:
+      - chatterbox-cache:/app/cache
+      - ./voices:/app/voices
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["2"]
+              capabilities: [gpu]
+
+volumes:
+  chatterbox-cache:

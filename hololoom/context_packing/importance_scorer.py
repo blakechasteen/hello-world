@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Multi-Signal Importance Scoring
 ================================
@@ -16,11 +17,10 @@ Author: Claude Code
 Date: 2025-11-22
 """
 
+import logging
 import math
 import time
-from typing import Dict, List, Any, Optional
-from collections import defaultdict
-import logging
+from typing import Any
 
 try:
     import networkx as nx
@@ -37,7 +37,10 @@ except ImportError:
 # Phase 5: Information Theory imports
 try:
     from hololoom.warp.math.information import (
-        entropy, mutual_information, DistributionPair, InformationMetrics
+        DistributionPair,
+        InformationMetrics,
+        entropy,
+        mutual_information,
     )
     INFORMATION_THEORY_AVAILABLE = True
 except ImportError:
@@ -47,10 +50,10 @@ except ImportError:
     DistributionPair = None
     InformationMetrics = None
 
-from .protocol import ImportanceSignal, ActivationState, ImportanceMap
-from .config import ImportanceScorerConfig
 from collections import Counter
-from typing import Tuple
+
+from .config import ImportanceScorerConfig
+from .protocol import ActivationState, ImportanceMap, ImportanceSignal
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +68,8 @@ class ImportanceScorer:
 
     def __init__(
         self,
-        config: Optional[ImportanceScorerConfig] = None,
-        embedder: Optional[Any] = None
+        config: ImportanceScorerConfig | None = None,
+        embedder: Any | None = None
     ):
         """
         Initialize importance scorer.
@@ -81,14 +84,14 @@ class ImportanceScorer:
         self.embedder = embedder
 
         # Caches for expensive computations
-        self._centrality_cache: Optional[Dict[str, float]] = None
+        self._centrality_cache: dict[str, float] | None = None
         self._centrality_cache_time: float = 0.0
         self._centrality_cache_ttl: float = 300.0  # 5 minutes
 
         # Phase 5: MI caching for performance (<5ms overhead target)
-        self._mi_cache: Dict[Tuple[str, str], float] = {}
+        self._mi_cache: dict[tuple[str, str], float] = {}
         self._mi_cache_size: int = 1000  # Max cache entries
-        self._entropy_cache: Dict[str, float] = {}  # Node entropy cache
+        self._entropy_cache: dict[str, float] = {}  # Node entropy cache
 
         # Stats
         self._stats = {
@@ -104,11 +107,11 @@ class ImportanceScorer:
         node_id: str,
         query: str,
         graph: Any,
-        activation_state: Optional[ActivationState] = None,
-        node_content: Optional[str] = None,
-        node_embedding: Optional[Any] = None,  # Phase 5
-        query_embedding: Optional[Any] = None  # Phase 5
-    ) -> Dict[ImportanceSignal, float]:
+        activation_state: ActivationState | None = None,
+        node_content: str | None = None,
+        node_embedding: Any | None = None,  # Phase 5
+        query_embedding: Any | None = None  # Phase 5
+    ) -> dict[ImportanceSignal, float]:
         """
         Compute multi-signal importance scores for a node.
 
@@ -170,8 +173,8 @@ class ImportanceScorer:
 
     def aggregate_scores(
         self,
-        scores: Dict[ImportanceSignal, float],
-        weights: Optional[Dict[ImportanceSignal, float]] = None
+        scores: dict[ImportanceSignal, float],
+        weights: dict[ImportanceSignal, float] | None = None
     ) -> float:
         """
         Aggregate multi-signal scores into single importance value.
@@ -202,12 +205,12 @@ class ImportanceScorer:
 
     def score_batch(
         self,
-        node_ids: List[str],
+        node_ids: list[str],
         query: str,
         graph: Any,
-        activation_states: Optional[Dict[str, ActivationState]] = None,
-        node_contents: Optional[Dict[str, str]] = None
-    ) -> Dict[str, float]:
+        activation_states: dict[str, ActivationState] | None = None,
+        node_contents: dict[str, str] | None = None
+    ) -> dict[str, float]:
         """
         Score importance for batch of nodes.
 
@@ -246,7 +249,7 @@ class ImportanceScorer:
     def _score_recency(
         self,
         node_id: str,
-        activation_state: Optional[ActivationState]
+        activation_state: ActivationState | None
     ) -> float:
         """
         Score based on recency of access.
@@ -269,7 +272,7 @@ class ImportanceScorer:
         self,
         node_id: str,
         query: str,
-        node_content: Optional[str]
+        node_content: str | None
     ) -> float:
         """
         Score based on semantic relevance to query.
@@ -325,7 +328,7 @@ class ImportanceScorer:
     def _score_frequency(
         self,
         node_id: str,
-        activation_state: Optional[ActivationState]
+        activation_state: ActivationState | None
     ) -> float:
         """
         Score based on access frequency.
@@ -350,7 +353,7 @@ class ImportanceScorer:
     def _score_confidence(
         self,
         node_id: str,
-        activation_state: Optional[ActivationState]
+        activation_state: ActivationState | None
     ) -> float:
         """
         Score based on historical confidence.
@@ -372,7 +375,7 @@ class ImportanceScorer:
     def _score_heat(
         self,
         node_id: str,
-        activation_state: Optional[ActivationState]
+        activation_state: ActivationState | None
     ) -> float:
         """
         Score based on hot pattern heat.
@@ -398,9 +401,9 @@ class ImportanceScorer:
         self,
         node_id: str,
         query: str,
-        node_content: Optional[str],
-        node_embedding: Optional[Any] = None,
-        query_embedding: Optional[Any] = None
+        node_content: str | None,
+        node_embedding: Any | None = None,
+        query_embedding: Any | None = None
     ) -> float:
         """
         Score based on mutual information I(Node; Query).
@@ -592,7 +595,7 @@ class ImportanceScorer:
         except Exception:
             return 0.5
 
-    def _get_cached_mi(self, node_id: str, query_hash: str) -> Optional[float]:
+    def _get_cached_mi(self, node_id: str, query_hash: str) -> float | None:
         """Get cached MI score if available."""
         key = (node_id, query_hash)
         if key in self._mi_cache:
@@ -617,9 +620,9 @@ class ImportanceScorer:
 
     def aggregate_scores_entropy_aware(
         self,
-        scores: Dict[ImportanceSignal, float],
-        node_content: Optional[str] = None,
-        weights: Optional[Dict[ImportanceSignal, float]] = None
+        scores: dict[ImportanceSignal, float],
+        node_content: str | None = None,
+        weights: dict[ImportanceSignal, float] | None = None
     ) -> float:
         """
         Entropy-aware score aggregation.
@@ -663,12 +666,12 @@ class ImportanceScorer:
 
     def batch_compute_mi_scores(
         self,
-        node_ids: List[str],
+        node_ids: list[str],
         query: str,
-        node_contents: Dict[str, str],
-        query_embedding: Optional[Any] = None,
-        node_embeddings: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, float]:
+        node_contents: dict[str, str],
+        query_embedding: Any | None = None,
+        node_embeddings: dict[str, Any] | None = None
+    ) -> dict[str, float]:
         """
         Batch compute MI scores for multiple nodes efficiently.
 
@@ -685,7 +688,7 @@ class ImportanceScorer:
             Dict mapping node_id -> MI score
         """
         if not INFORMATION_THEORY_AVAILABLE:
-            return {n: 0.5 for n in node_ids}
+            return dict.fromkeys(node_ids, 0.5)
 
         mi_scores = {}
         query_hash = str(hash(query))
@@ -715,7 +718,7 @@ class ImportanceScorer:
 
     # Helper methods
 
-    def _compute_centrality(self, graph: Any) -> Dict[str, float]:
+    def _compute_centrality(self, graph: Any) -> dict[str, float]:
         """Compute centrality scores for all nodes in graph."""
         algorithm = self.config.centrality_algorithm
 
@@ -749,7 +752,7 @@ class ImportanceScorer:
         # Fallback: degree centrality (simple)
         return self._compute_degree_centrality(graph)
 
-    def _compute_degree_centrality(self, graph: Any) -> Dict[str, float]:
+    def _compute_degree_centrality(self, graph: Any) -> dict[str, float]:
         """Fallback: simple degree-based centrality."""
         degree_scores = {}
 
@@ -822,7 +825,7 @@ class ImportanceScorer:
         self._centrality_cache = None
         self._centrality_cache_time = 0.0
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get scoring statistics."""
         return self._stats.copy()
 
@@ -840,10 +843,10 @@ class ImportanceScorer:
 # Convenience functions
 
 def score_nodes(
-    node_ids: List[str],
+    node_ids: list[str],
     query: str,
     graph: Any,
-    config: Optional[ImportanceScorerConfig] = None
+    config: ImportanceScorerConfig | None = None
 ) -> ImportanceMap:
     """
     Quick importance scoring for list of nodes.

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Alignment Handlers for Matrix ChatOps
 ======================================
@@ -24,11 +25,11 @@ Created: 2025-12-11
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from hololoom.alignment.safety_guardrails import SafetyGuardrails
     from hololoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -41,11 +42,11 @@ except ImportError:
 # Alignment imports with graceful degradation
 try:
     from hololoom.alignment.safety_guardrails import (
-        SafetyGuardrails,
-        ActionRequest,
         ActionCategory,
+        ActionRequest,
         RiskLevel,
-        SafetyDecision
+        SafetyDecision,
+        SafetyGuardrails,
     )
     GUARDRAILS_AVAILABLE = True
 except ImportError:
@@ -57,12 +58,7 @@ except ImportError:
     SafetyDecision = None
 
 try:
-    from hololoom.alignment.audit_trail import (
-        AuditTrail,
-        DecisionLog,
-        DecisionType,
-        OutcomeType
-    )
+    from hololoom.alignment.audit_trail import AuditTrail, DecisionLog, DecisionType, OutcomeType
     AUDIT_AVAILABLE = True
 except ImportError:
     AUDIT_AVAILABLE = False
@@ -74,7 +70,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -201,12 +199,12 @@ async def handle_safety_check(
             response += f"**Reason:** {decision.reason}\n"
 
         if hasattr(decision, 'mitigations') and decision.mitigations:
-            response += f"\n**Mitigations:**\n"
+            response += "\n**Mitigations:**\n"
             for m in decision.mitigations[:5]:
                 response += f"  - {m}\n"
 
         if hasattr(decision, 'requires_approval') and decision.requires_approval:
-            response += f"\n**Note:** This action requires human approval.\n"
+            response += "\n**Note:** This action requires human approval.\n"
 
         return response
 

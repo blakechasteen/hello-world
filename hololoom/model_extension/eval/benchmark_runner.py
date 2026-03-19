@@ -14,13 +14,12 @@ Author: HoloLoom Architecture Team
 Date: December 2025
 """
 
+import json
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict, Any, Optional, Callable, Protocol, Tuple
-import asyncio
-import json
-import time
+from typing import Any, Protocol
 
 
 class BenchmarkType(Enum):
@@ -45,9 +44,9 @@ class BenchmarkTask:
     """A single benchmark task/query."""
     task_id: str
     query: str
-    expected_docs: List[str]  # Document IDs that should be retrieved
-    relevance_scores: Dict[str, float]  # doc_id -> relevance (0-3 scale)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    expected_docs: list[str]  # Document IDs that should be retrieved
+    relevance_scores: dict[str, float]  # doc_id -> relevance (0-3 scale)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -55,21 +54,21 @@ class BenchmarkDataset:
     """A benchmark dataset containing multiple tasks."""
     name: str
     benchmark_type: BenchmarkType
-    tasks: List[BenchmarkTask]
-    corpus: Dict[str, str]  # doc_id -> document text
+    tasks: list[BenchmarkTask]
+    corpus: dict[str, str]  # doc_id -> document text
     description: str = ""
     version: str = "1.0"
-    source_url: Optional[str] = None
+    source_url: str | None = None
 
 
 @dataclass
 class TaskResult:
     """Result for a single benchmark task."""
     task_id: str
-    retrieved_docs: List[str]  # Retrieved document IDs in order
-    retrieval_scores: List[float]  # Corresponding scores
+    retrieved_docs: list[str]  # Retrieved document IDs in order
+    retrieval_scores: list[float]  # Corresponding scores
     latency_ms: float
-    metrics: Dict[str, float] = field(default_factory=dict)
+    metrics: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass
@@ -78,14 +77,14 @@ class BenchmarkResult:
     benchmark_name: str
     benchmark_type: BenchmarkType
     status: BenchmarkStatus
-    task_results: List[TaskResult]
-    aggregate_metrics: Dict[str, float]
+    task_results: list[TaskResult]
+    aggregate_metrics: dict[str, float]
     timestamp: datetime = field(default_factory=datetime.now)
     duration_seconds: float = 0.0
-    config: Dict[str, Any] = field(default_factory=dict)
-    errors: List[str] = field(default_factory=list)
+    config: dict[str, Any] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "benchmark_name": self.benchmark_name,
@@ -115,7 +114,7 @@ class RetrievalSystem(Protocol):
         self,
         query: str,
         k: int = 10,
-    ) -> Tuple[List[str], List[float]]:
+    ) -> tuple[list[str], list[float]]:
         """
         Retrieve documents for a query.
 
@@ -126,7 +125,7 @@ class RetrievalSystem(Protocol):
 
     async def index_corpus(
         self,
-        corpus: Dict[str, str],
+        corpus: dict[str, str],
     ) -> None:
         """Index a corpus of documents."""
         ...
@@ -141,8 +140,8 @@ class BenchmarkRunner:
 
     def __init__(
         self,
-        retrieval_system: Optional[RetrievalSystem] = None,
-        k_values: List[int] = None,
+        retrieval_system: RetrievalSystem | None = None,
+        k_values: list[int] = None,
         verbose: bool = False,
     ):
         """
@@ -156,7 +155,7 @@ class BenchmarkRunner:
         self.retrieval_system = retrieval_system
         self.k_values = k_values or [1, 3, 5, 10]
         self.verbose = verbose
-        self._results_history: List[BenchmarkResult] = []
+        self._results_history: list[BenchmarkResult] = []
 
     async def run_benchmark(
         self,
@@ -260,10 +259,10 @@ class BenchmarkRunner:
 
     def _calculate_task_metrics(
         self,
-        retrieved: List[str],
-        expected: List[str],
-        relevance_scores: Dict[str, float],
-    ) -> Dict[str, float]:
+        retrieved: list[str],
+        expected: list[str],
+        relevance_scores: dict[str, float],
+    ) -> dict[str, float]:
         """Calculate retrieval metrics for a single task."""
         metrics = {}
 
@@ -308,8 +307,8 @@ class BenchmarkRunner:
 
     def _calculate_ndcg(
         self,
-        retrieved: List[str],
-        relevance_scores: Dict[str, float],
+        retrieved: list[str],
+        relevance_scores: dict[str, float],
     ) -> float:
         """Calculate Normalized Discounted Cumulative Gain."""
         if not retrieved:
@@ -331,7 +330,7 @@ class BenchmarkRunner:
 
     def _calculate_average_precision(
         self,
-        retrieved: List[str],
+        retrieved: list[str],
         expected_set: set,
     ) -> float:
         """Calculate Average Precision."""
@@ -351,14 +350,14 @@ class BenchmarkRunner:
 
     def _aggregate_metrics(
         self,
-        task_results: List[TaskResult],
-    ) -> Dict[str, float]:
+        task_results: list[TaskResult],
+    ) -> dict[str, float]:
         """Aggregate metrics across all tasks."""
         if not task_results:
             return {}
 
         # Collect all metric values
-        all_metrics: Dict[str, List[float]] = {}
+        all_metrics: dict[str, list[float]] = {}
         latencies = []
 
         for result in task_results:
@@ -384,7 +383,7 @@ class BenchmarkRunner:
 
         return aggregate
 
-    def get_results_history(self) -> List[BenchmarkResult]:
+    def get_results_history(self) -> list[BenchmarkResult]:
         """Get history of all benchmark results."""
         return self._results_history.copy()
 
@@ -668,7 +667,7 @@ class HoloLoomBenchmark:
 # =============================================================================
 
 def create_benchmark_runner(
-    retrieval_system: Optional[RetrievalSystem] = None,
+    retrieval_system: RetrievalSystem | None = None,
     verbose: bool = False,
 ) -> BenchmarkRunner:
     """Create a benchmark runner with default settings."""
@@ -679,7 +678,7 @@ def create_benchmark_runner(
     )
 
 
-def get_all_sample_datasets() -> List[BenchmarkDataset]:
+def get_all_sample_datasets() -> list[BenchmarkDataset]:
     """Get all sample benchmark datasets for testing."""
     return [
         MTEBBenchmark.create_sample_dataset(),
@@ -691,7 +690,7 @@ def get_all_sample_datasets() -> List[BenchmarkDataset]:
 async def run_all_benchmarks(
     retrieval_system: RetrievalSystem,
     verbose: bool = True,
-) -> Dict[str, BenchmarkResult]:
+) -> dict[str, BenchmarkResult]:
     """
     Run all available benchmarks on a retrieval system.
 

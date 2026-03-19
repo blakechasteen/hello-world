@@ -15,14 +15,12 @@ Author: CARTS (Continuous Adversarial Red Team System)
 Date: 2025-12-01
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Any, Optional
 from pathlib import Path
 
-from .strategies import AttackStrategy
-from .tracker import Vulnerability, VulnerabilityTracker, VulnStatus
 from .bandit import RedTeamBandit
+from .tracker import Vulnerability, VulnerabilityTracker
 
 
 @dataclass
@@ -62,7 +60,7 @@ class ReportGenerator:
     def __init__(
         self,
         tracker: VulnerabilityTracker,
-        bandit: Optional[RedTeamBandit] = None
+        bandit: RedTeamBandit | None = None
     ):
         """
         Initialize reporter.
@@ -248,7 +246,7 @@ class ReportGenerator:
 
     def _generate_critical_section(
         self,
-        vulnerabilities: List[Vulnerability]
+        vulnerabilities: list[Vulnerability]
     ) -> ReportSection:
         """Generate critical vulnerabilities section."""
         content = """## 🔴 Critical Vulnerabilities
@@ -264,7 +262,7 @@ class ReportGenerator:
 
     def _generate_open_section(
         self,
-        vulnerabilities: List[Vulnerability]
+        vulnerabilities: list[Vulnerability]
     ) -> ReportSection:
         """Generate open vulnerabilities section."""
         # Sort by severity (descending)
@@ -286,7 +284,7 @@ class ReportGenerator:
 
     def _generate_attention_section(
         self,
-        vulnerabilities: List[Vulnerability]
+        vulnerabilities: list[Vulnerability]
     ) -> ReportSection:
         """Generate needs-attention section."""
         content = """## ⚠️ Needs Immediate Attention
@@ -310,7 +308,7 @@ These vulnerabilities are either critical or have been open for >7 days.
 
     def _generate_fixed_section(
         self,
-        vulnerabilities: List[Vulnerability]
+        vulnerabilities: list[Vulnerability]
     ) -> ReportSection:
         """Generate fixed vulnerabilities section."""
         # Sort by fix date (most recent first)
@@ -337,7 +335,7 @@ These vulnerabilities are either critical or have been open for >7 days.
 
     def _generate_regression_section(
         self,
-        vulnerabilities: List[Vulnerability]
+        vulnerabilities: list[Vulnerability]
     ) -> ReportSection:
         """Generate regression tracking section."""
         content = """## 🔄 Regressions Detected
@@ -495,7 +493,7 @@ guardrails for vulnerabilities.
 
 def generate_report(
     tracker: VulnerabilityTracker,
-    bandit: Optional[RedTeamBandit] = None,
+    bandit: RedTeamBandit | None = None,
     include_details: bool = True
 ) -> str:
     """Generate a vulnerability report."""
@@ -506,7 +504,7 @@ def generate_report(
 def save_report(
     tracker: VulnerabilityTracker,
     path: Path,
-    bandit: Optional[RedTeamBandit] = None,
+    bandit: RedTeamBandit | None = None,
     include_details: bool = True
 ):
     """Generate and save a vulnerability report."""

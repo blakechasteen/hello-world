@@ -24,10 +24,9 @@ Author: Claude Code
 Date: October 29, 2025
 """
 
-from typing import Dict, List, Any, Optional, Union
 from dataclasses import dataclass
 from pathlib import Path
-
+from typing import Any
 
 # ============================================================================
 # Spacetime Data Extraction
@@ -42,7 +41,7 @@ class SpacetimeExtractor:
     """
 
     @staticmethod
-    def extract(spacetime: Any) -> Optional[Dict[str, List[Any]]]:
+    def extract(spacetime: Any) -> dict[str, list[Any]] | None:
         """
         Extract data from Spacetime for visualization.
 
@@ -84,7 +83,7 @@ class SpacetimeExtractor:
         return None
 
     @staticmethod
-    def _extract_cache_stats(cache_data: Dict) -> Dict[str, List]:
+    def _extract_cache_stats(cache_data: dict) -> dict[str, list]:
         """Extract cache performance data."""
         return {
             'metric': ['Hits', 'Misses', 'Total', 'Hit Rate'],
@@ -97,7 +96,7 @@ class SpacetimeExtractor:
         }
 
     @staticmethod
-    def _extract_timeline(trace: Any) -> Optional[Dict[str, List]]:
+    def _extract_timeline(trace: Any) -> dict[str, list] | None:
         """Extract execution timeline from trace."""
         if not hasattr(trace, 'stages'):
             return None
@@ -125,7 +124,7 @@ class MemoryExtractor:
     """
 
     @staticmethod
-    def extract(memory_backend: Any) -> Optional[Dict[str, Any]]:
+    def extract(memory_backend: Any) -> dict[str, Any] | None:
         """
         Extract network data from memory backend.
 
@@ -147,7 +146,7 @@ class MemoryExtractor:
         return None
 
     @staticmethod
-    def _extract_networkx(graph) -> Dict[str, Any]:
+    def _extract_networkx(graph) -> dict[str, Any]:
         """Extract from NetworkX graph."""
         nodes = []
         edges = []
@@ -173,7 +172,7 @@ class MemoryExtractor:
         return {'network': {'nodes': nodes, 'edges': edges}}
 
     @staticmethod
-    def _extract_neo4j(backend) -> Dict[str, Any]:
+    def _extract_neo4j(backend) -> dict[str, Any]:
         """Extract from Neo4j backend."""
         # Placeholder - would query Neo4j
         nodes = backend.get_all_nodes()[:50]  # Limit for viz
@@ -187,9 +186,9 @@ class MemoryExtractor:
 # ============================================================================
 
 def auto(
-    source: Union[Any, Dict, str, Path],
-    title: Optional[str] = None,
-    save_path: Optional[str] = None,
+    source: Any | dict | str | Path,
+    title: str | None = None,
+    save_path: str | None = None,
     open_browser: bool = False
 ) -> 'Dashboard':
     """
@@ -227,10 +226,10 @@ def auto(
         # Save and open
         >>> dashboard = auto(data, save_path='report.html', open_browser=True)
     """
-    from .widget_builder import WidgetBuilder
-    from .dashboard import Dashboard
-    from .html_renderer import HTMLRenderer
     import webbrowser
+
+    from .html_renderer import HTMLRenderer
+    from .widget_builder import WidgetBuilder
 
     # Step 1: Extract data from source
     data = None
@@ -298,12 +297,13 @@ def auto(
     return dashboard
 
 
-def _build_network_dashboard(network_data: Dict, title: Optional[str]) -> 'Dashboard':
+def _build_network_dashboard(network_data: dict, title: str | None) -> 'Dashboard':
     """Build dashboard with network visualization."""
-    from .dashboard import Panel, Dashboard, PanelType, PanelSize, LayoutType
-    from dataclasses import dataclass, field
-    from typing import Dict, Any
+    from dataclasses import field
     from datetime import datetime
+    from typing import Any
+
+    from .dashboard import Dashboard, LayoutType, Panel, PanelSize, PanelType
 
     # Mock spacetime
     @dataclass
@@ -313,7 +313,7 @@ def _build_network_dashboard(network_data: Dict, title: Optional[str]) -> 'Dashb
         tool_used: str = "memory_graph"
         confidence: float = 1.0
         trace: Any = None
-        metadata: Dict[str, Any] = field(default_factory=dict)
+        metadata: dict[str, Any] = field(default_factory=dict)
 
         def to_dict(self):
             return {'query': self.query_text}

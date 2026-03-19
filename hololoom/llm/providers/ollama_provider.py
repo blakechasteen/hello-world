@@ -11,7 +11,7 @@ Created: 2025-01-20
 """
 
 import logging
-from typing import Optional
+
 from hololoom.llm.unified_client import LLMConfig, LLMResponse
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ class OllamaProvider:
             import ollama
             self.client = ollama
             self._available = True
-            logger.info(f"✓ Ollama client loaded")
+            logger.info("✓ Ollama client loaded")
         except ImportError:
             logger.warning("⚠ Ollama not installed. Install with: pip install ollama")
 
@@ -65,7 +65,7 @@ class OllamaProvider:
         prompt: str,
         max_tokens: int = 500,
         temperature: float = 0.7,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         **kwargs
     ) -> LLMResponse:
         """

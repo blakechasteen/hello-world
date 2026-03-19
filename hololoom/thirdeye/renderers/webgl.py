@@ -8,17 +8,16 @@ Created: 2025-11-30
 Author: HoloLoom Team
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 from hololoom.thirdeye.concept import Concept, ConceptType
-from hololoom.thirdeye.transition import Transition, TransitionType
 from hololoom.thirdeye.renderer_protocol import (
     BaseConceptRenderer,
     RenderCommand,
     RenderConfig,
     RenderQuality,
 )
-
+from hololoom.thirdeye.transition import Transition, TransitionType
 
 # Color palette - soft, elegant colors on cream background
 CONCEPT_COLORS = {
@@ -56,12 +55,12 @@ class WebGLRenderer(BaseConceptRenderer):
     to create Three.js scene objects.
     """
 
-    def __init__(self, config: Optional[RenderConfig] = None):
+    def __init__(self, config: RenderConfig | None = None):
         """Initialize the WebGL renderer."""
         super().__init__(config)
         self._quality_settings = self._get_quality_settings()
 
-    def _get_quality_settings(self) -> Dict[str, Any]:
+    def _get_quality_settings(self) -> dict[str, Any]:
         """Get quality-dependent settings."""
         quality = self._config.quality
 
@@ -204,15 +203,15 @@ class WebGLRenderer(BaseConceptRenderer):
     def render_transition(
         self,
         transition: Transition,
-        from_concept: Optional[Concept],
+        from_concept: Concept | None,
         to_concept: Concept,
-    ) -> List[RenderCommand]:
+    ) -> list[RenderCommand]:
         """
         Generate animation commands for a concept transition.
 
         Returns multiple commands that the client executes in sequence.
         """
-        commands: List[RenderCommand] = []
+        commands: list[RenderCommand] = []
         duration = transition.config.duration_ms
         easing = transition.config.easing
 
@@ -452,6 +451,6 @@ class WebGLRenderer(BaseConceptRenderer):
 
 
 # Factory function
-def create_webgl_renderer(config: Optional[RenderConfig] = None) -> WebGLRenderer:
+def create_webgl_renderer(config: RenderConfig | None = None) -> WebGLRenderer:
     """Create a WebGL renderer instance."""
     return WebGLRenderer(config)

@@ -6,7 +6,8 @@ protocol, enabling seamless swapping between algorithms.
 """
 
 from dataclasses import dataclass, field
-from typing import Protocol, Any, Literal
+from typing import Any, Literal, Protocol
+
 import numpy as np
 import numpy.typing as npt
 

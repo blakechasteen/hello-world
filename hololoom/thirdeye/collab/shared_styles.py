@@ -19,12 +19,13 @@ Created: 2025-12-03
 Author: HoloLoom Team
 """
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, List, Optional, Set, Any, Callable
-from datetime import datetime
 import logging
 import uuid
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -72,39 +73,39 @@ class StyleProperties:
     Flexible key-value structure to support various style types.
     """
     # Common properties
-    primary_color: Optional[str] = None      # Hex color e.g., "#4A90D9"
-    secondary_color: Optional[str] = None
-    accent_color: Optional[str] = None
-    background_color: Optional[str] = None
+    primary_color: str | None = None      # Hex color e.g., "#4A90D9"
+    secondary_color: str | None = None
+    accent_color: str | None = None
+    background_color: str | None = None
 
     # Typography
-    font_family: Optional[str] = None
-    font_size: Optional[float] = None
-    font_weight: Optional[str] = None        # "normal", "bold", "light"
-    line_height: Optional[float] = None
+    font_family: str | None = None
+    font_size: float | None = None
+    font_weight: str | None = None        # "normal", "bold", "light"
+    line_height: float | None = None
 
     # Shape
-    border_radius: Optional[float] = None
-    border_width: Optional[float] = None
-    border_color: Optional[str] = None
-    border_style: Optional[str] = None       # "solid", "dashed", "dotted"
+    border_radius: float | None = None
+    border_width: float | None = None
+    border_color: str | None = None
+    border_style: str | None = None       # "solid", "dashed", "dotted"
 
     # Effects
-    shadow_offset_x: Optional[float] = None
-    shadow_offset_y: Optional[float] = None
-    shadow_blur: Optional[float] = None
-    shadow_color: Optional[str] = None
-    opacity: Optional[float] = None
+    shadow_offset_x: float | None = None
+    shadow_offset_y: float | None = None
+    shadow_blur: float | None = None
+    shadow_color: str | None = None
+    opacity: float | None = None
 
     # Layout
-    padding: Optional[float] = None
-    margin: Optional[float] = None
-    gap: Optional[float] = None
+    padding: float | None = None
+    margin: float | None = None
+    gap: float | None = None
 
     # Custom properties (extensible)
-    custom: Dict[str, Any] = field(default_factory=dict)
+    custom: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary, excluding None values."""
         result = {}
         for key, value in self.__dict__.items():
@@ -115,7 +116,7 @@ class StyleProperties:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'StyleProperties':
+    def from_dict(cls, data: dict[str, Any]) -> 'StyleProperties':
         """Create from dictionary."""
         custom = data.pop('custom', {})
         # Filter to only known fields
@@ -178,26 +179,26 @@ class SharedStyle:
 
     # Versioning
     current_version: int = 1
-    versions: List[StyleVersion] = field(default_factory=list)
+    versions: list[StyleVersion] = field(default_factory=list)
 
     # Voting (for PROPOSED styles)
-    votes: List[StyleVote] = field(default_factory=list)
+    votes: list[StyleVote] = field(default_factory=list)
     approval_threshold: int = 3  # Net upvotes needed for auto-approval
 
     # Usage tracking
     usage_count: int = 0
-    last_used_at: Optional[datetime] = None
-    used_by: Set[str] = field(default_factory=set)
+    last_used_at: datetime | None = None
+    used_by: set[str] = field(default_factory=set)
 
     # Metadata
     description: str = ""
-    tags: List[str] = field(default_factory=list)
-    preview_url: Optional[str] = None  # Preview image URL
+    tags: list[str] = field(default_factory=list)
+    preview_url: str | None = None  # Preview image URL
 
     # Approval
-    approved_by: Optional[str] = None
-    approved_at: Optional[datetime] = None
-    rejection_reason: Optional[str] = None
+    approved_by: str | None = None
+    approved_at: datetime | None = None
+    rejection_reason: str | None = None
 
     def vote_score(self) -> int:
         """Calculate net vote score."""
@@ -209,7 +210,7 @@ class SharedStyle:
                 score -= 1
         return score
 
-    def get_vote(self, voter_id: str) -> Optional[StyleVote]:
+    def get_vote(self, voter_id: str) -> StyleVote | None:
         """Get a voter's current vote."""
         for vote in self.votes:
             if vote.voter_id == voter_id:
@@ -222,7 +223,7 @@ class SharedStyle:
         self.last_used_at = datetime.now()
         self.used_by.add(user_id)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             'id': self.id,
@@ -265,7 +266,7 @@ class SharedStyle:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'SharedStyle':
+    def from_dict(cls, data: dict[str, Any]) -> 'SharedStyle':
         """Deserialize from dictionary."""
         return cls(
             id=data['id'],
@@ -317,7 +318,7 @@ class StyleChangeEvent:
     event_type: str  # "created", "proposed", "voted", "approved", "rejected", "updated", "used"
     user_id: str
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # -----------------------------------------------------------------------------
@@ -370,8 +371,8 @@ class SharedStyleLibrary:
         self.approval_threshold = approval_threshold
         self.allow_self_vote = allow_self_vote
 
-        self._styles: Dict[str, SharedStyle] = {}
-        self._event_handlers: List[Callable[[StyleChangeEvent], None]] = []
+        self._styles: dict[str, SharedStyle] = {}
+        self._event_handlers: list[Callable[[StyleChangeEvent], None]] = []
 
         # Initialize with builtin styles
         self._init_builtin_styles()
@@ -520,7 +521,7 @@ class SharedStyleLibrary:
         properties: StyleProperties,
         created_by: str,
         description: str = "",
-        tags: Optional[List[str]] = None,
+        tags: list[str] | None = None,
         status: StyleStatus = StyleStatus.DRAFT,
     ) -> SharedStyle:
         """
@@ -573,7 +574,7 @@ class SharedStyleLibrary:
 
         return style
 
-    def get_style(self, style_id: str) -> Optional[SharedStyle]:
+    def get_style(self, style_id: str) -> SharedStyle | None:
         """Get a style by ID."""
         return self._styles.get(style_id)
 
@@ -583,7 +584,7 @@ class SharedStyleLibrary:
         properties: StyleProperties,
         updated_by: str,
         change_description: str = "",
-    ) -> Optional[SharedStyle]:
+    ) -> SharedStyle | None:
         """
         Update a style's properties.
 
@@ -711,7 +712,7 @@ class SharedStyleLibrary:
         voter_id: str,
         vote_type: VoteType,
         comment: str = "",
-    ) -> Optional[int]:
+    ) -> int | None:
         """
         Vote on a proposed style.
 
@@ -901,13 +902,13 @@ class SharedStyleLibrary:
 
     def list_styles(
         self,
-        category: Optional[StyleCategory] = None,
-        status: Optional[StyleStatus] = None,
-        tags: Optional[List[str]] = None,
-        created_by: Optional[str] = None,
+        category: StyleCategory | None = None,
+        status: StyleStatus | None = None,
+        tags: list[str] | None = None,
+        created_by: str | None = None,
         sort_by: str = "popularity",  # "popularity", "newest", "name", "votes"
         limit: int = 50,
-    ) -> List[SharedStyle]:
+    ) -> list[SharedStyle]:
         """
         List styles with filtering and sorting.
 
@@ -950,7 +951,7 @@ class SharedStyleLibrary:
 
         return results[:limit]
 
-    def search_styles(self, query: str, limit: int = 20) -> List[SharedStyle]:
+    def search_styles(self, query: str, limit: int = 20) -> list[SharedStyle]:
         """
         Search styles by name, description, or tags.
 
@@ -981,7 +982,7 @@ class SharedStyleLibrary:
 
         return [s for s, _ in results[:limit]]
 
-    def get_popular_styles(self, limit: int = 10) -> List[SharedStyle]:
+    def get_popular_styles(self, limit: int = 10) -> list[SharedStyle]:
         """Get most popular styles by usage."""
         return self.list_styles(
             status=StyleStatus.APPROVED,
@@ -993,7 +994,7 @@ class SharedStyleLibrary:
             limit=limit,
         )
 
-    def get_proposed_styles(self, limit: int = 20) -> List[SharedStyle]:
+    def get_proposed_styles(self, limit: int = 20) -> list[SharedStyle]:
         """Get styles awaiting votes."""
         return self.list_styles(
             status=StyleStatus.PROPOSED,
@@ -1021,7 +1022,7 @@ class SharedStyleLibrary:
     # Serialization
     # -------------------------------------------------------------------------
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize library to dictionary."""
         return {
             'scene_id': self.scene_id,
@@ -1035,7 +1036,7 @@ class SharedStyleLibrary:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'SharedStyleLibrary':
+    def from_dict(cls, data: dict[str, Any]) -> 'SharedStyleLibrary':
         """Deserialize from dictionary."""
         library = cls(
             scene_id=data['scene_id'],

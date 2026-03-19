@@ -19,10 +19,10 @@ Author: HoloLoom Team
 Date: 2025-12-03
 """
 
-from enum import IntEnum
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import IntEnum
+from typing import Any
 
 from hololoom.bandits.beta_arm import BetaArm
 
@@ -94,10 +94,10 @@ class Concern:
     category: str
     description: str
     confidence: float = 0.5
-    evidence: Dict[str, Any] = field(default_factory=dict)
-    suggested_mitigation: Optional[str] = None
+    evidence: dict[str, Any] = field(default_factory=dict)
+    suggested_mitigation: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "lens": self.lens,
@@ -138,10 +138,10 @@ class Judgment:
             raise SafetyException(judgment.summary)
     """
     voice: Voice
-    concerns: List[Concern] = field(default_factory=list)
+    concerns: list[Concern] = field(default_factory=list)
     summary: str = ""
     guidance: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
@@ -167,13 +167,13 @@ class Judgment:
         return sum(c.confidence for c in self.concerns) / len(self.concerns)
 
     @property
-    def top_concern(self) -> Optional[Concern]:
+    def top_concern(self) -> Concern | None:
         """The concern with highest confidence."""
         if not self.concerns:
             return None
         return max(self.concerns, key=lambda c: c.confidence)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "voice": self.voice.name,
@@ -225,7 +225,7 @@ class Wisdom:
     success_count: int = 0
     failure_count: int = 0
     _arm: BetaArm = field(default_factory=BetaArm)
-    contexts: List[str] = field(default_factory=list)
+    contexts: list[str] = field(default_factory=list)
     last_updated: datetime = field(default_factory=datetime.now)
 
     @property
@@ -272,7 +272,7 @@ class Wisdom:
         self._arm.update(success=False, weight=confidence)
         self.last_updated = datetime.now()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "pattern_id": self.pattern_id,
@@ -303,7 +303,7 @@ def quiet_judgment(summary: str = "Safe to proceed") -> Judgment:
 
 def whisper_judgment(
     summary: str,
-    concerns: Optional[List[Concern]] = None,
+    concerns: list[Concern] | None = None,
     guidance: str = "Proceed with monitoring"
 ) -> Judgment:
     """Create a WHISPER judgment (minor concern)."""
@@ -317,7 +317,7 @@ def whisper_judgment(
 
 def voice_judgment(
     summary: str,
-    concerns: List[Concern],
+    concerns: list[Concern],
     guidance: str = "Request human review before proceeding"
 ) -> Judgment:
     """Create a VOICE judgment (significant concern)."""
@@ -331,7 +331,7 @@ def voice_judgment(
 
 def shout_judgment(
     summary: str,
-    concerns: List[Concern],
+    concerns: list[Concern],
     guidance: str = "Action blocked for safety"
 ) -> Judgment:
     """Create a SHOUT judgment (critical concern, blocked)."""

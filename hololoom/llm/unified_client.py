@@ -20,9 +20,9 @@ import logging
 import os
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Any
+from typing import Any
 
-from hololoom.llm.cost_tracker import CostTracker, CostEstimate
+from hololoom.llm.cost_tracker import CostEstimate, CostTracker
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +49,8 @@ class LLMConfig:
     """
     provider: str
     model: str
-    api_key: Optional[str] = None
-    base_url: Optional[str] = None
+    api_key: str | None = None
+    base_url: str | None = None
     timeout: float = 60.0
 
     def __post_init__(self):
@@ -91,8 +91,8 @@ class LLMResponse:
     provider: str
     input_tokens: int = 0
     output_tokens: int = 0
-    cost_estimate: Optional[CostEstimate] = None
-    metadata: Optional[Dict[str, Any]] = None
+    cost_estimate: CostEstimate | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class UnifiedLLMClient:
@@ -121,9 +121,9 @@ class UnifiedLLMClient:
     def __init__(
         self,
         primary: LLMConfig,
-        fallbacks: Optional[List[LLMConfig]] = None,
+        fallbacks: list[LLMConfig] | None = None,
         enable_cost_tracking: bool = True,
-        max_cost_per_query: Optional[float] = None
+        max_cost_per_query: float | None = None
     ):
         """
         Initialize unified LLM client.
@@ -143,7 +143,7 @@ class UnifiedLLMClient:
         self.cost_tracker = CostTracker() if enable_cost_tracking else None
 
         # Initialize provider clients
-        self._clients: Dict[str, Any] = {}
+        self._clients: dict[str, Any] = {}
 
         logger.info(
             f"UnifiedLLMClient initialized: primary={primary.full_name}, "
@@ -168,7 +168,7 @@ class UnifiedLLMClient:
 
         return cls(primary=primary, fallbacks=fallbacks)
 
-    def _get_client(self, config: LLMConfig) -> Optional[Any]:
+    def _get_client(self, config: LLMConfig) -> Any | None:
         """
         Get or create provider client.
 
@@ -218,7 +218,7 @@ class UnifiedLLMClient:
         prompt: str,
         max_tokens: int = 500,
         temperature: float = 0.7,
-        model_override: Optional[str] = None,
+        model_override: str | None = None,
         **kwargs
     ) -> LLMResponse:
         """
@@ -309,10 +309,10 @@ class UnifiedLLMClient:
     async def compare_models(
         self,
         prompt: str,
-        models: List[str],
+        models: list[str],
         max_tokens: int = 500,
         temperature: float = 0.7
-    ) -> Dict[str, LLMResponse]:
+    ) -> dict[str, LLMResponse]:
         """
         Run same prompt on multiple models for A/B testing.
 
@@ -385,7 +385,7 @@ class UnifiedLLMClient:
         logger.info(f"✓ Compared {len(comparison)}/{len(models)} models")
         return comparison
 
-    def get_cost_statistics(self) -> Optional[Dict]:
+    def get_cost_statistics(self) -> dict | None:
         """
         Get cost tracking statistics.
 
@@ -401,7 +401,7 @@ class UnifiedLLMClient:
         if self.cost_tracker:
             self.cost_tracker.reset()
 
-    def list_available_models(self) -> List[str]:
+    def list_available_models(self) -> list[str]:
         """
         List all available models.
 

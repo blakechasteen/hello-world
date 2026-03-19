@@ -36,65 +36,62 @@ Together, they weave a fabric richer than any single perspective."
 """
 
 # Pattern Card Selector (existing)
+# Base Implementation (December 2025)
+from .base_loom import (
+    BaseLoom,
+    DreamingMixin,
+)
 from .command import (
-    LoomCommand,
-    PatternCard,
-    PatternSpec,
     BARE_PATTERN,
     FAST_PATTERN,
     FUSED_PATTERN,
-    create_loom_command
-)
-
-# Multi-Loom Protocol (December 2025)
-from .protocol import (
-    # Core Protocol
-    Loom,
-
-    # Insight Types
-    InsightType,
-    DreamInsight,
-    MathInsight,
-    PatternInsight,
-    CorrectionInsight,
-    DiscoveryInsight,
-
-    # Perspective Constants
-    RECALL,
-    REASON,
-    REACH,
-    REFLECT,
-    REFUSE,
-)
-
-# Base Implementation (December 2025)
-from .base_loom import (
-    DreamingMixin,
-    BaseLoom,
+    LoomCommand,
+    PatternCard,
+    PatternSpec,
+    create_loom_command,
 )
 
 # Consensus Engine (December 2025)
 from .consensus import (
-    LoomConsensus,
-    Claim,
     Agreement,
+    Claim,
+    LoomConsensus,
     create_loom_consensus,
-)
-
-# WeaveHouse - Composite Loom (December 2025)
-from .weave_house import (
-    WeaveHouse,
-    WeaveResult,
-    ExplorationResult,
-    create_weave_house,
 )
 
 # Dreaming - Collective Consolidation (December 2025)
 from .dreaming import (
     DreamCycleStats,
-    DreamOrchestratorMetrics,
     DreamOrchestrator,
+    DreamOrchestratorMetrics,
     create_dream_orchestrator,
+)
+
+# Multi-Loom Protocol (December 2025)
+from .protocol import (
+    REACH,
+    REASON,
+    # Perspective Constants
+    RECALL,
+    REFLECT,
+    REFUSE,
+    CorrectionInsight,
+    DiscoveryInsight,
+    DreamInsight,
+    # Insight Types
+    InsightType,
+    # Core Protocol
+    Loom,
+    MathInsight,
+    PatternInsight,
+)
+
+# WeaveHouse - Composite Loom (December 2025)
+from .weave_house import (
+    ExplorationResult,
+    WeaveHouse,
+    WeaveResult,
+    create_weave_house,
 )
 
 __all__ = [

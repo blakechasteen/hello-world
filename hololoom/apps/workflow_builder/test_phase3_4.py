@@ -12,8 +12,8 @@ Usage:
 
 import asyncio
 import sys
+
 import aiohttp
-from typing import List, Dict
 
 
 class Phase34Tester:
@@ -23,7 +23,7 @@ class Phase34Tester:
         self.base_url = base_url
         self.tests_passed = 0
         self.tests_failed = 0
-        self.query_results: List[Dict] = []
+        self.query_results: list[dict] = []
 
     async def test_health(self):
         """Test server health."""
@@ -188,12 +188,12 @@ class Phase34Tester:
         max_latency = max(latencies)
         min_latency = min(latencies)
 
-        print(f"Latency stats:")
+        print("Latency stats:")
         print(f"  Average: {avg_latency:.1f}ms")
         print(f"  Min: {min_latency:.1f}ms")
         print(f"  Max: {max_latency:.1f}ms")
 
-        print(f"\nConfidence stats:")
+        print("\nConfidence stats:")
         print(f"  Average: {avg_confidence:.3f}")
         print(f"  Min: {min(confidences):.3f}")
         print(f"  Max: {max(confidences):.3f}")

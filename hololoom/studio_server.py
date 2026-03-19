@@ -6,19 +6,20 @@ The unified entry point for the HoloLoom Studio standalone application.
 Hosts the Agentic API, Agent Manager API, and the React Dashboard.
 """
 
-import os
 import logging
 import webbrowser
-import uvicorn
 from pathlib import Path
+
+import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+from hololoom.apps.server.agent_manager_api import app as manager_app
 
 # Import existing APIs
 from hololoom.apps.server.agentic_api import app as agentic_app
-from hololoom.apps.server.agent_manager_api import app as manager_app
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -57,7 +58,7 @@ async def health():
 if STATIC_DIR.exists():
     logger.info(f"Serving static files from {STATIC_DIR}")
     app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
-    
+
     # Catch-all for React Router
     @app.exception_handler(404)
     async def not_found_handler(request: Request, exc):
@@ -82,15 +83,15 @@ def start_studio(host: str = "127.0.0.1", port: int = 8000, open_browser: bool =
         # Give the server a moment to start before opening browser
         import threading
         import time
-        
+
         def open_url():
             time.sleep(1.5)
             url = f"http://{host}:{port}"
             logger.info(f"Opening Studio in browser: {url}")
             webbrowser.open(url)
-            
+
         threading.Thread(target=open_url, daemon=True).start()
-    
+
     uvicorn.run(app, host=host, port=port)
 
 if __name__ == "__main__":

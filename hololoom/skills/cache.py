@@ -3,8 +3,9 @@
 import hashlib
 import json
 import time
-from typing import Dict, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
+from typing import Any
+
 from hololoom.skills.base import SkillOutput
 
 
@@ -39,7 +40,7 @@ class SkillCache:
         """
         self.max_size = max_size
         self.default_ttl = default_ttl
-        self._cache: Dict[str, CacheEntry] = {}
+        self._cache: dict[str, CacheEntry] = {}
         self._access_order: list = []  # For LRU tracking
 
         # Metrics
@@ -47,7 +48,7 @@ class SkillCache:
         self.misses = 0
         self.evictions = 0
 
-    def _compute_key(self, skill_name: str, operation: str, parameters: Dict[str, Any]) -> str:
+    def _compute_key(self, skill_name: str, operation: str, parameters: dict[str, Any]) -> str:
         """
         Compute cache key from skill invocation.
 
@@ -63,9 +64,9 @@ class SkillCache:
         self,
         skill_name: str,
         operation: str,
-        parameters: Dict[str, Any],
-        ttl: Optional[float] = None
-    ) -> Optional[SkillOutput]:
+        parameters: dict[str, Any],
+        ttl: float | None = None
+    ) -> SkillOutput | None:
         """
         Get cached result if available and not expired.
 
@@ -111,7 +112,7 @@ class SkillCache:
         self,
         skill_name: str,
         operation: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         result: SkillOutput
     ) -> None:
         """
@@ -146,7 +147,7 @@ class SkillCache:
             self._access_order.remove(key)
         self._access_order.append(key)
 
-    def invalidate(self, skill_name: str, operation: str, parameters: Dict[str, Any]) -> bool:
+    def invalidate(self, skill_name: str, operation: str, parameters: dict[str, Any]) -> bool:
         """
         Invalidate specific cache entry.
 
@@ -168,7 +169,7 @@ class SkillCache:
         self._cache.clear()
         self._access_order.clear()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get cache statistics.
 

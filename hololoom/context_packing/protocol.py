@@ -8,9 +8,9 @@ Author: Claude Code
 Date: 2025-11-22
 """
 
-from typing import Protocol, List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Protocol
 
 
 class ImportanceSignal(str, Enum):
@@ -42,7 +42,7 @@ class ActivationState:
     last_accessed: float = 0.0
     access_count: int = 0
     heat: float = 0.0
-    importance_scores: Dict[ImportanceSignal, float] = None
+    importance_scores: dict[ImportanceSignal, float] = None
 
     def __post_init__(self):
         if self.importance_scores is None:
@@ -62,7 +62,7 @@ class CompressionResult:
         token_savings: Estimated token count saved
         importance_threshold: Threshold used for compression
     """
-    compressed_nodes: List[str]
+    compressed_nodes: list[str]
     original_count: int
     compressed_count: int
     compression_ratio: float
@@ -89,7 +89,7 @@ class BetaWave:
     amplitude: float = 1.0
     decay_rate: float = 0.7  # 30% loss per hop
     max_hops: int = 3
-    source_nodes: List[str] = None
+    source_nodes: list[str] = None
 
     def __post_init__(self):
         if self.source_nodes is None:
@@ -101,12 +101,12 @@ class ActivationSpreaderProtocol(Protocol):
 
     def spread_activation(
         self,
-        source_nodes: List[str],
+        source_nodes: list[str],
         graph: Any,  # KG or NetworkX MultiDiGraph
         initial_activation: float = 1.0,
         max_hops: int = 3,
         decay_rate: float = 0.7
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Spread activation from source nodes across graph.
 
@@ -126,7 +126,7 @@ class ActivationSpreaderProtocol(Protocol):
         self,
         wave: BetaWave,
         graph: Any
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Generate activation pattern from beta wave.
 
@@ -148,8 +148,8 @@ class ImportanceScorerProtocol(Protocol):
         node_id: str,
         query: str,
         graph: Any,
-        activation_state: Optional[ActivationState] = None
-    ) -> Dict[ImportanceSignal, float]:
+        activation_state: ActivationState | None = None
+    ) -> dict[ImportanceSignal, float]:
         """
         Compute multi-signal importance scores for a node.
 
@@ -166,8 +166,8 @@ class ImportanceScorerProtocol(Protocol):
 
     def aggregate_scores(
         self,
-        scores: Dict[ImportanceSignal, float],
-        weights: Optional[Dict[ImportanceSignal, float]] = None
+        scores: dict[ImportanceSignal, float],
+        weights: dict[ImportanceSignal, float] | None = None
     ) -> float:
         """
         Aggregate multi-signal scores into single importance value.
@@ -187,10 +187,10 @@ class ContextCompressorProtocol(Protocol):
 
     def compress(
         self,
-        nodes: List[str],
-        importance_scores: Dict[str, float],
+        nodes: list[str],
+        importance_scores: dict[str, float],
         target_ratio: float = 0.5,
-        preserve_top_k: Optional[int] = None
+        preserve_top_k: int | None = None
     ) -> CompressionResult:
         """
         Compress context by selecting most important nodes.
@@ -208,10 +208,10 @@ class ContextCompressorProtocol(Protocol):
 
     def matryoshka_compress(
         self,
-        nodes: List[str],
-        embeddings: Dict[str, Any],  # node_id -> embedding tensor
-        scales: List[int] = [128, 256, 384]
-    ) -> Tuple[List[str], Dict[str, int]]:
+        nodes: list[str],
+        embeddings: dict[str, Any],  # node_id -> embedding tensor
+        scales: list[int] = [128, 256, 384]
+    ) -> tuple[list[str], dict[str, int]]:
         """
         Multi-scale compression using Matryoshka embeddings.
 
@@ -237,7 +237,7 @@ class ContextPackerProtocol(Protocol):
     def pack(
         self,
         query: str,
-        candidate_nodes: List[str],
+        candidate_nodes: list[str],
         graph: Any,
         target_tokens: int = 2000
     ) -> CompressionResult:
@@ -263,7 +263,7 @@ class ContextPackerProtocol(Protocol):
     def adaptive_pack(
         self,
         query: str,
-        candidate_nodes: List[str],
+        candidate_nodes: list[str],
         graph: Any,
         min_tokens: int = 500,
         max_tokens: int = 4000
@@ -288,7 +288,7 @@ class ContextPackerProtocol(Protocol):
 
 
 # Type aliases for convenience
-ActivationMap = Dict[str, float]
-ImportanceMap = Dict[str, float]
-NodeEmbeddings = Dict[str, Any]
-ScaleAssignments = Dict[str, int]
+ActivationMap = dict[str, float]
+ImportanceMap = dict[str, float]
+NodeEmbeddings = dict[str, Any]
+ScaleAssignments = dict[str, int]

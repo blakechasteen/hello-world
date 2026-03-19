@@ -7,13 +7,14 @@ Provides:
 - SafeParameter: Parameter with bounded ranges
 """
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional, Tuple
-from collections import deque
-import numpy as np
 import logging
 import time
+from abc import ABC, abstractmethod
+from collections import deque
+from dataclasses import dataclass, field
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ class ThompsonBandit:
         """Get expected reward for each arm (mean of Beta distribution)."""
         return self.alpha / (self.alpha + self.beta)
 
-    def get_stats(self) -> Dict[int, Dict[str, float]]:
+    def get_stats(self) -> dict[int, dict[str, float]]:
         """Get statistics for all arms."""
         expected = self.get_expected_rewards()
 
@@ -95,7 +96,7 @@ class ThompsonBandit:
 
         return stats
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """Serialize bandit state for persistence."""
         return {
             'n_arms': self.n_arms,
@@ -106,7 +107,7 @@ class ThompsonBandit:
         }
 
     @classmethod
-    def from_state(cls, state: Dict[str, Any]) -> 'ThompsonBandit':
+    def from_state(cls, state: dict[str, Any]) -> 'ThompsonBandit':
         """Restore bandit from serialized state."""
         return cls(
             n_arms=state['n_arms'],
@@ -189,7 +190,7 @@ class TuningAgent(ABC):
         self.metrics_history = deque(maxlen=1000)
 
     @abstractmethod
-    async def measure_performance(self) -> Dict[str, float]:
+    async def measure_performance(self) -> dict[str, float]:
         """
         Measure current system performance.
 
@@ -199,7 +200,7 @@ class TuningAgent(ABC):
         pass
 
     @abstractmethod
-    async def tune_parameters(self) -> Dict[str, Any]:
+    async def tune_parameters(self) -> dict[str, Any]:
         """
         Tune parameters based on current performance.
 
@@ -209,16 +210,16 @@ class TuningAgent(ABC):
         pass
 
     @abstractmethod
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """Serialize agent state for persistence."""
         pass
 
     @abstractmethod
-    def load_state(self, state: Dict[str, Any]):
+    def load_state(self, state: dict[str, Any]):
         """Restore agent from serialized state."""
         pass
 
-    async def run_tuning_cycle(self) -> Dict[str, Any]:
+    async def run_tuning_cycle(self) -> dict[str, Any]:
         """
         Run one complete tuning cycle.
 
@@ -266,7 +267,7 @@ class TuningAgent(ABC):
 
         return result
 
-    def _calculate_impact(self, baseline: Dict[str, float], new: Dict[str, float]) -> float:
+    def _calculate_impact(self, baseline: dict[str, float], new: dict[str, float]) -> float:
         """
         Calculate tuning impact score.
 

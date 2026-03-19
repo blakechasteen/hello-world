@@ -15,28 +15,18 @@ Benchmarks:
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import asyncio
-import time
 import statistics
-from typing import List, Dict, Any
+import time
 from dataclasses import dataclass
+from typing import Any
 
-from hololoom.memory.routing import (
-    RuleBasedRouter,
-    LearnedRouter,
-    BackendType
-)
-from hololoom.memory.routing.execution_patterns import (
-    ExecutionPattern,
-    FeedForwardEngine
-)
-from hololoom.memory.routing.orchestrator import (
-    RoutingOrchestrator,
-    create_test_orchestrator
-)
 from hololoom.memory.protocol import MemoryQuery
+from hololoom.memory.routing import BackendType, LearnedRouter, RuleBasedRouter
+from hololoom.memory.routing.execution_patterns import ExecutionPattern, FeedForwardEngine
 
 
 @dataclass
@@ -52,7 +42,7 @@ class BenchmarkResult:
     p99_latency_ms: float
     min_latency_ms: float
     max_latency_ms: float
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
     def print_summary(self):
         """Print benchmark summary."""
@@ -86,7 +76,7 @@ class RoutingBenchmark:
     def __init__(self):
         self.test_queries = self._generate_test_queries()
 
-    def _generate_test_queries(self) -> List[str]:
+    def _generate_test_queries(self) -> list[str]:
         """Generate diverse test queries."""
         return [
             # Relationship queries
@@ -163,7 +153,7 @@ class RoutingBenchmark:
     async def benchmark_learned_vs_rule_based(
         self,
         iterations: int = 100
-    ) -> Dict[str, BenchmarkResult]:
+    ) -> dict[str, BenchmarkResult]:
         """Compare learned vs rule-based routing speed."""
         available = list(BackendType)
 
@@ -227,7 +217,7 @@ class RoutingBenchmark:
 
         return results
 
-    async def benchmark_execution_patterns(self) -> Dict[str, BenchmarkResult]:
+    async def benchmark_execution_patterns(self) -> dict[str, BenchmarkResult]:
         """Benchmark different execution patterns."""
         # Mock backend
         class MockBackend:
@@ -248,10 +238,9 @@ class RoutingBenchmark:
 
         # Test feed-forward
         from hololoom.memory.routing.execution_patterns import (
-            FeedForwardEngine,
-            RecursiveEngine,
+            ExecutionPlan,
             ParallelEngine,
-            ExecutionPlan
+            RecursiveEngine,
         )
 
         patterns = [
@@ -296,8 +285,8 @@ class RoutingBenchmark:
 
     async def benchmark_scale(
         self,
-        scales: List[int] = [100, 1000, 10000]
-    ) -> Dict[int, BenchmarkResult]:
+        scales: list[int] = [100, 1000, 10000]
+    ) -> dict[int, BenchmarkResult]:
         """Benchmark at different scales."""
         router = RuleBasedRouter()
         available = list(BackendType)
@@ -332,7 +321,7 @@ class RoutingBenchmark:
 
         return results
 
-    async def run_all(self) -> Dict[str, Any]:
+    async def run_all(self) -> dict[str, Any]:
         """Run all benchmarks."""
         print("\n" + "="*70)
         print("ROUTING PERFORMANCE BENCHMARKS")

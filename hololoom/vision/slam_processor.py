@@ -15,11 +15,13 @@ Created: 2025-11-22 (Phase 5)
 """
 
 from __future__ import annotations
-from typing import Optional, List, Dict, Any, Tuple, TYPE_CHECKING
-import numpy as np
-from datetime import datetime
-from dataclasses import dataclass, field
+
 import logging
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
+
+import numpy as np
 
 try:
     import cv2
@@ -28,9 +30,9 @@ except ImportError:
     CV2_AVAILABLE = False
 
 from hololoom.vision.protocol import (
-    VisionProcessor,
-    SLAMPose,
     MapPoint,
+    SLAMPose,
+    VisionProcessor,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,19 +46,19 @@ logger = logging.getLogger(__name__)
 class SLAMState:
     """Internal SLAM system state"""
     # Current camera pose
-    current_pose: Optional[SLAMPose] = None
+    current_pose: SLAMPose | None = None
 
     # 3D map points
-    map_points: List[MapPoint] = field(default_factory=list)
+    map_points: list[MapPoint] = field(default_factory=list)
 
     # Previous frame data
-    prev_frame: Optional[np.ndarray] = None
-    prev_keypoints: Optional[List[cv2.KeyPoint]] = None
-    prev_descriptors: Optional[np.ndarray] = None
+    prev_frame: np.ndarray | None = None
+    prev_keypoints: list[cv2.KeyPoint] | None = None
+    prev_descriptors: np.ndarray | None = None
 
     # Camera intrinsics
-    camera_matrix: Optional[np.ndarray] = None
-    dist_coeffs: Optional[np.ndarray] = None
+    camera_matrix: np.ndarray | None = None
+    dist_coeffs: np.ndarray | None = None
 
     # Tracking statistics
     num_frames_processed: int = 0
@@ -141,7 +143,7 @@ class SLAMProcessor(VisionProcessor):
     def set_camera_calibration(
         self,
         camera_matrix: np.ndarray,
-        dist_coeffs: Optional[np.ndarray] = None
+        dist_coeffs: np.ndarray | None = None
     ) -> None:
         """
         Set camera calibration parameters.
@@ -292,7 +294,7 @@ class SLAMProcessor(VisionProcessor):
         self,
         frame: np.ndarray,
         return_visualization: bool = False
-    ) -> Tuple[SLAMPose, Optional[np.ndarray]]:
+    ) -> tuple[SLAMPose, np.ndarray | None]:
         """
         Track camera and optionally return feature visualization.
 
@@ -315,7 +317,7 @@ class SLAMProcessor(VisionProcessor):
 
         return pose, None
 
-    def get_map_points(self, min_observations: int = 5) -> List[MapPoint]:
+    def get_map_points(self, min_observations: int = 5) -> list[MapPoint]:
         """
         Get stable map points.
 
@@ -349,7 +351,7 @@ class SLAMProcessor(VisionProcessor):
         self.initialized = False
         logger.info("🧹 SLAM cleaned up")
 
-    def get_capabilities(self) -> Dict[str, bool]:
+    def get_capabilities(self) -> dict[str, bool]:
         """Get processor capabilities"""
         return {
             "slam": True,
@@ -360,7 +362,7 @@ class SLAMProcessor(VisionProcessor):
             "feature_based": True,
         }
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get SLAM statistics"""
         success_rate = (
             self.state.num_successful_tracks / self.state.num_frames_processed
@@ -405,7 +407,7 @@ class SLAMProcessor(VisionProcessor):
 # Helper Functions
 # ============================================================================
 
-def rotation_matrix_to_quaternion(R: np.ndarray) -> Tuple[float, float, float, float]:
+def rotation_matrix_to_quaternion(R: np.ndarray) -> tuple[float, float, float, float]:
     """
     Convert rotation matrix to quaternion (x, y, z, w).
 
@@ -445,7 +447,7 @@ def rotation_matrix_to_quaternion(R: np.ndarray) -> Tuple[float, float, float, f
     return (float(x), float(y), float(z), float(w))
 
 
-def quaternion_to_rotation_matrix(q: Tuple[float, float, float, float]) -> np.ndarray:
+def quaternion_to_rotation_matrix(q: tuple[float, float, float, float]) -> np.ndarray:
     """
     Convert quaternion to rotation matrix.
 
@@ -468,7 +470,7 @@ def quaternion_to_rotation_matrix(q: Tuple[float, float, float, float]) -> np.nd
 
 def visualize_slam_tracking(
     frame: np.ndarray,
-    keypoints: List[cv2.KeyPoint],
+    keypoints: list[cv2.KeyPoint],
     pose: SLAMPose,
     max_features: int = 100,
 ) -> np.ndarray:
@@ -581,7 +583,7 @@ def create_slam_processor(
 
 
 # Singleton instance
-_slam_processor_instance: Optional[SLAMProcessor] = None
+_slam_processor_instance: SLAMProcessor | None = None
 
 
 def get_slam_processor(max_features: int = 500) -> SLAMProcessor:

@@ -16,20 +16,24 @@ Ruthlessly Elegant API:
 
 # Ruthlessly Elegant Primary API
 from .auto import (
-    spin,             # THE function - ingest anything
-    spin_batch,       # Bulk ingestion
-    spin_url,         # Web crawling
-    spin_directory,   # Directory ingestion
-    spin_from_query   # Query -> memory learning
+    spin,  # THE function - ingest anything
+    spin_batch,  # Bulk ingestion
+    spin_directory,  # Directory ingestion
+    spin_from_query,  # Query -> memory learning
+    spin_url,  # Web crawling
 )
 
-# Advanced API (for custom pipelines)
-from .multimodal_spinner import MultiModalSpinner
-from .chat_history import (
-    ChatHistorySpinner,
-    ChatHistoryAutoCapture,
-    ingest_chat_history
-)
+# Browser and web spinners (NEW - December 2025)
+from .browser_history import BrowserHistorySpinner
+from .chat_history import ChatHistoryAutoCapture, ChatHistorySpinner, ingest_chat_history
+
+# OCR spinners (NEW - January 2025)
+from .deepseek_ocr_spinner import DeepSeekOCRSpinner
+
+# Git and repository spinners
+from .git_spinner import GitSpinner
+from .handwritten_spinner import HandwrittenSpinner
+from .matrix_spinner import MatrixSpinner
 
 # Modality-specific spinners (for custom pipelines)
 from .modalities.audio import AudioSpinner
@@ -39,44 +43,27 @@ from .modalities.text import TextSpinner, TextSpinnerConfig
 from .modalities.website import WebsiteSpinner
 from .modalities.youtube import YouTubeSpinner
 
-# Git and repository spinners
-from .git_spinner import GitSpinner
-from .matrix_spinner import MatrixSpinner
-
-# Browser and web spinners (NEW - December 2025)
-from .browser_history import BrowserHistorySpinner
-from .website import WebsiteSpinner as MultimodalWebsiteSpinner  # Multimodal version
-from .recursive_crawler import RecursiveCrawlerSpinner, CrawlConfig, crawl_website
-
-# OCR spinners (NEW - January 2025)
-from .deepseek_ocr_spinner import DeepSeekOCRSpinner
-from .handwritten_spinner import HandwrittenSpinner
-from .receipt_spinner import ReceiptSpinner
-from .schema_aware_receipt_spinner import SchemaAwareReceiptSpinner, process_receipt_to_graph
-from .ocr_protocol import (
-    OCRProtocol,
-    OCRBackendChain,
-    OCRResult,
-    OCROutputFormat,
-    OCRQuality
-)
+# Advanced API (for custom pipelines)
+from .multimodal_spinner import MultiModalSpinner
 
 # OCR backends (protocol-based)
-from .ocr_backends import (
-    get_best_available_backend,
-    get_all_available_backends
-)
+from .ocr_backends import get_all_available_backends, get_best_available_backend
+from .ocr_protocol import OCRBackendChain, OCROutputFormat, OCRProtocol, OCRQuality, OCRResult
+from .receipt_spinner import ReceiptSpinner
+from .recursive_crawler import CrawlConfig, RecursiveCrawlerSpinner, crawl_website
+from .schema_aware_receipt_spinner import SchemaAwareReceiptSpinner, process_receipt_to_graph
 
 # Schema system (wool → yarn transformation)
 from .schema_registry import (
-    SchemaRegistry,
-    SchemaDefinition,
-    SchemaType,
     FieldMapping,
+    SchemaDefinition,
+    SchemaRegistry,
+    SchemaType,
     ValidationResult,
     create_expense_schema,
-    create_task_schema
+    create_task_schema,
 )
+from .website import WebsiteSpinner as MultimodalWebsiteSpinner  # Multimodal version
 
 __all__ = [
     # Primary API (ruthlessly simple)

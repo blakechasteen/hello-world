@@ -15,9 +15,9 @@ Author: mythRL Team
 Date: 2025-10-27 (Phase 1 - Task 1.1: Protocol Standardization)
 """
 
-from typing import Protocol, runtime_checkable, List, Dict, Any, Optional
-from hololoom.protocols.types import ComplexityLevel
+from typing import Any, Protocol, runtime_checkable
 
+from hololoom.protocols.types import ComplexityLevel
 
 # ============================================================================
 # Pattern Selection Protocol
@@ -41,9 +41,9 @@ class PatternSelectionProtocol(Protocol):
     async def select_pattern(
         self,
         query: str,
-        context: Dict,
+        context: dict,
         complexity: ComplexityLevel
-    ) -> Dict:
+    ) -> dict:
         """
         Select processing pattern based on query complexity.
 
@@ -76,9 +76,9 @@ class PatternSelectionProtocol(Protocol):
 
     async def synthesize_patterns(
         self,
-        primary: Dict,
-        secondary: Dict
-    ) -> Dict:
+        primary: dict,
+        secondary: dict
+    ) -> dict:
         """
         Synthesize multiple patterns (FULL+ only).
 
@@ -114,8 +114,8 @@ class FeatureExtractionProtocol(Protocol):
     async def extract_features(
         self,
         data: Any,
-        scales: List[int]
-    ) -> Dict:
+        scales: list[int]
+    ) -> dict:
         """
         Extract features at specified embedding scales.
 
@@ -138,7 +138,7 @@ class FeatureExtractionProtocol(Protocol):
         self,
         data: Any,
         complexity: ComplexityLevel
-    ) -> Dict:
+    ) -> dict:
         """
         Extract recurring patterns/motifs.
 
@@ -151,7 +151,7 @@ class FeatureExtractionProtocol(Protocol):
         """
         ...
 
-    async def assess_extraction_needs(self, data: Any) -> List[int]:
+    async def assess_extraction_needs(self, data: Any) -> list[int]:
         """
         Recommend embedding scales needed for this data.
 
@@ -186,9 +186,9 @@ class WarpSpaceProtocol(Protocol):
 
     async def create_manifold(
         self,
-        features: Dict,
+        features: dict,
         complexity: ComplexityLevel
-    ) -> Dict:
+    ) -> dict:
         """
         Create tensor manifold for computation.
 
@@ -209,9 +209,9 @@ class WarpSpaceProtocol(Protocol):
 
     async def tension_threads(
         self,
-        manifold: Dict,
-        threads: List[Dict]
-    ) -> Dict:
+        manifold: dict,
+        threads: list[dict]
+    ) -> dict:
         """
         Apply tension to threads in manifold space.
 
@@ -226,9 +226,9 @@ class WarpSpaceProtocol(Protocol):
 
     async def compute_trajectories(
         self,
-        manifold: Dict,
-        start_points: List[Dict]
-    ) -> Dict:
+        manifold: dict,
+        start_points: list[dict]
+    ) -> dict:
         """
         Compute trajectories through manifold (FULL+).
 
@@ -243,9 +243,9 @@ class WarpSpaceProtocol(Protocol):
 
     async def experimental_operations(
         self,
-        manifold: Dict,
-        experiments: List[str]
-    ) -> Dict:
+        manifold: dict,
+        experiments: list[str]
+    ) -> dict:
         """
         Experimental manifold operations (RESEARCH only).
 
@@ -280,10 +280,10 @@ class DecisionEngineProtocol(Protocol):
 
     async def make_decision(
         self,
-        features: Dict,
-        context: Dict,
-        options: List[Dict]
-    ) -> Dict:
+        features: dict,
+        context: dict,
+        options: list[dict]
+    ) -> dict:
         """
         Make decision based on extracted features and available options.
 
@@ -303,7 +303,7 @@ class DecisionEngineProtocol(Protocol):
         """
         ...
 
-    async def assess_decision_complexity(self, features: Dict) -> float:
+    async def assess_decision_complexity(self, features: dict) -> float:
         """
         Assess decision complexity needed (0.0-1.0).
 
@@ -317,9 +317,9 @@ class DecisionEngineProtocol(Protocol):
 
     async def optimize_multi_criteria(
         self,
-        criteria: List[Dict],
-        constraints: Dict
-    ) -> Dict:
+        criteria: list[dict],
+        constraints: dict
+    ) -> dict:
         """
         Multi-criteria optimization (RESEARCH only).
 
@@ -349,9 +349,9 @@ class ToolExecutor(Protocol):
     async def execute_tool(
         self,
         tool_name: str,
-        parameters: Dict,
-        context: Dict
-    ) -> Dict:
+        parameters: dict,
+        context: dict
+    ) -> dict:
         """
         Execute a tool with given parameters.
 
@@ -371,7 +371,7 @@ class ToolExecutor(Protocol):
         """
         ...
 
-    async def list_available_tools(self, context: Dict) -> List[Dict]:
+    async def list_available_tools(self, context: dict) -> list[dict]:
         """
         List available tools for current context.
 
@@ -386,8 +386,8 @@ class ToolExecutor(Protocol):
     async def assess_tool_necessity(
         self,
         query: str,
-        context: Dict
-    ) -> Dict:
+        context: dict
+    ) -> dict:
         """
         Assess which tools are needed for query.
 

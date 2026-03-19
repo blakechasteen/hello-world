@@ -8,22 +8,21 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Union
-from dataclasses import dataclass, field
-from enum import Enum
-from pathlib import Path
+import base64
 import hashlib
 import json
-import base64
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-import os
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 # Try to import cryptography library
 try:
-    from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
-    from cryptography.hazmat.backends import default_backend
     from cryptography.exceptions import InvalidSignature
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
     from cryptography.x509 import load_pem_x509_certificate
     HAS_CRYPTOGRAPHY = True
 except ImportError:
@@ -44,10 +43,10 @@ class KeyPair:
     """A public/private key pair for signing."""
     key_id: str
     algorithm: SigningAlgorithm
-    private_key_pem: Optional[bytes] = None  # None if only public key available
+    private_key_pem: bytes | None = None  # None if only public key available
     public_key_pem: bytes = b""
     created_at: datetime = field(default_factory=datetime.now)
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
     def is_expired(self) -> bool:
         if self.expires_at is None:
@@ -64,7 +63,7 @@ class PluginManifest:
     name: str
     version: str
     author: str
-    files: Dict[str, str]  # filename -> SHA256 hash
+    files: dict[str, str]  # filename -> SHA256 hash
     metadata_hash: str
     created_at: datetime = field(default_factory=datetime.now)
 
@@ -102,14 +101,14 @@ class SignedManifest:
     algorithm: SigningAlgorithm
     key_id: str
     signed_at: datetime = field(default_factory=datetime.now)
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
     def is_expired(self) -> bool:
         if self.expires_at is None:
             return False
         return datetime.now() > self.expires_at
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "manifest": {
                 "name": self.manifest.name,
@@ -127,7 +126,7 @@ class SignedManifest:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "SignedManifest":
+    def from_dict(cls, data: dict[str, Any]) -> "SignedManifest":
         manifest_data = data["manifest"]
         manifest = PluginManifest(
             name=manifest_data["name"],
@@ -157,7 +156,7 @@ class PluginSigner:
 
     def __init__(
         self,
-        key_pair: Optional[KeyPair] = None,
+        key_pair: KeyPair | None = None,
         default_algorithm: SigningAlgorithm = SigningAlgorithm.RSA_SHA256,
     ):
         self.key_pair = key_pair
@@ -172,9 +171,9 @@ class PluginSigner:
     def generate_key_pair(
         self,
         key_id: str,
-        algorithm: Optional[SigningAlgorithm] = None,
+        algorithm: SigningAlgorithm | None = None,
         key_size: int = 2048,
-        expires_in_days: Optional[int] = 365,
+        expires_in_days: int | None = 365,
     ) -> KeyPair:
         """
         Generate a new key pair for signing.
@@ -228,7 +227,7 @@ class PluginSigner:
 
     def create_manifest(
         self,
-        plugin_dir: Union[str, Path],
+        plugin_dir: str | Path,
         name: str,
         version: str,
         author: str,
@@ -283,7 +282,7 @@ class PluginSigner:
     def sign_manifest(
         self,
         manifest: PluginManifest,
-        expires_in_days: Optional[int] = 365,
+        expires_in_days: int | None = 365,
     ) -> SignedManifest:
         """
         Sign a plugin manifest.
@@ -338,11 +337,11 @@ class PluginSigner:
 
     def sign_plugin(
         self,
-        plugin_dir: Union[str, Path],
+        plugin_dir: str | Path,
         name: str,
         version: str,
         author: str,
-        expires_in_days: Optional[int] = 365,
+        expires_in_days: int | None = 365,
     ) -> SignedManifest:
         """
         Create and sign a manifest for a plugin.
@@ -379,8 +378,8 @@ class PluginVerifier:
     """
 
     def __init__(self):
-        self.trusted_keys: Dict[str, KeyPair] = {}
-        self._verification_cache: Dict[str, Tuple[bool, datetime]] = {}
+        self.trusted_keys: dict[str, KeyPair] = {}
+        self._verification_cache: dict[str, tuple[bool, datetime]] = {}
         self._cache_ttl = timedelta(hours=1)
 
     def add_trusted_key(self, key_pair: KeyPair) -> None:
@@ -397,7 +396,7 @@ class PluginVerifier:
             if not k.startswith(f"{key_id}:")
         }
 
-    def load_trusted_key(self, key_id: str, public_key_path: Union[str, Path]) -> KeyPair:
+    def load_trusted_key(self, key_id: str, public_key_path: str | Path) -> KeyPair:
         """Load a public key from file and add to trust store."""
         path = Path(public_key_path)
         with open(path, 'rb') as f:
@@ -425,7 +424,7 @@ class PluginVerifier:
         self,
         signed_manifest: SignedManifest,
         check_expiry: bool = True,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """
         Verify a signed manifest.
 
@@ -501,9 +500,9 @@ class PluginVerifier:
 
     def verify_plugin_files(
         self,
-        plugin_dir: Union[str, Path],
+        plugin_dir: str | Path,
         signed_manifest: SignedManifest,
-    ) -> Tuple[bool, List[str]]:
+    ) -> tuple[bool, list[str]]:
         """
         Verify that plugin files match the manifest hashes.
 
@@ -534,9 +533,9 @@ class PluginVerifier:
 
     def full_verify(
         self,
-        plugin_dir: Union[str, Path],
+        plugin_dir: str | Path,
         signed_manifest: SignedManifest,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """
         Perform full verification: signature + file hashes.
 
@@ -571,7 +570,7 @@ class PluginVerifier:
 
 # Factory functions
 def create_signer(
-    key_pair: Optional[KeyPair] = None,
+    key_pair: KeyPair | None = None,
     algorithm: SigningAlgorithm = SigningAlgorithm.RSA_SHA256,
 ) -> PluginSigner:
     """Create a plugin signer."""
@@ -587,7 +586,7 @@ def generate_key_pair(
     key_id: str,
     algorithm: SigningAlgorithm = SigningAlgorithm.RSA_SHA256,
     key_size: int = 2048,
-    expires_in_days: Optional[int] = 365,
+    expires_in_days: int | None = 365,
 ) -> KeyPair:
     """Generate a new key pair for signing."""
     signer = PluginSigner()

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Reasoning Department - Advanced multi-hop reasoning and causal inference.
 
@@ -19,21 +18,21 @@ Supported Tasks:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional, Tuple, Set
-from datetime import datetime
-from dataclasses import dataclass, field
-from enum import Enum
+
 import logging
-import asyncio
 from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 from ..base import BaseDepartment
 from ..protocol import (
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
     VerificationResult,
-    ConfidenceMetadata,
-    DepartmentConfig
 )
 
 logger = logging.getLogger(__name__)
@@ -54,8 +53,8 @@ class CausalDirection(Enum):
 class ReasoningChain:
     """A chain of reasoning steps."""
     query: str
-    steps: List[Dict[str, Any]]
-    final_answer: Optional[str] = None
+    steps: list[dict[str, Any]]
+    final_answer: str | None = None
     confidence: float = 0.0
     total_hops: int = 0
 
@@ -77,7 +76,7 @@ class CausalRelation:
     effect: str
     direction: CausalDirection
     strength: float  # 0.0 to 1.0
-    evidence: List[str] = field(default_factory=list)
+    evidence: list[str] = field(default_factory=list)
     confidence: float = 0.0
 
 
@@ -88,8 +87,8 @@ class CounterfactualScenario:
     modified_condition: str
     predicted_outcome: str
     confidence: float = 0.0
-    affected_entities: List[str] = field(default_factory=list)
-    reasoning: List[str] = field(default_factory=list)
+    affected_entities: list[str] = field(default_factory=list)
+    reasoning: list[str] = field(default_factory=list)
 
 
 # ============================================================================
@@ -128,7 +127,7 @@ class MultiHopReasoner:
         self.min_confidence = min_confidence
 
         # Path cache for performance
-        self._path_cache: Dict[Tuple[str, str], List[ReasoningChain]] = {}
+        self._path_cache: dict[tuple[str, str], list[ReasoningChain]] = {}
 
         logger.info(f"MultiHopReasoner initialized (max_hops={max_hops})")
 
@@ -137,8 +136,8 @@ class MultiHopReasoner:
         knowledge_graph: Any,  # KG instance
         start_entity: str,
         end_entity: str,
-        max_hops: Optional[int] = None
-    ) -> List[ReasoningChain]:
+        max_hops: int | None = None
+    ) -> list[ReasoningChain]:
         """
         Find all paths between two entities.
 
@@ -200,9 +199,9 @@ class MultiHopReasoner:
     def find_common_connections(
         self,
         knowledge_graph: Any,
-        entities: List[str],
+        entities: list[str],
         max_hops: int = 3
-    ) -> List[ReasoningChain]:
+    ) -> list[ReasoningChain]:
         """
         Find entities that connect all given entities.
 
@@ -255,7 +254,7 @@ class MultiHopReasoner:
 
         return chains
 
-    def _get_neighbors(self, knowledge_graph: Any, entity: str) -> List[Tuple[str, str]]:
+    def _get_neighbors(self, knowledge_graph: Any, entity: str) -> list[tuple[str, str]]:
         """Get neighboring entities and their relations."""
         neighbors = []
 
@@ -280,7 +279,7 @@ class MultiHopReasoner:
         knowledge_graph: Any,
         start_entity: str,
         max_hops: int
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """Find all entities reachable within max_hops."""
         reachable = {start_entity: 0}
         queue = [(start_entity, 0)]
@@ -308,7 +307,7 @@ class MultiHopReasoner:
     def _path_to_chain(
         self,
         knowledge_graph: Any,
-        path: List[str],
+        path: list[str],
         start: str,
         end: str
     ) -> ReasoningChain:
@@ -376,7 +375,7 @@ class CausalInferenceEngine:
             min_strength: Minimum causal strength threshold
         """
         self.min_strength = min_strength
-        self._causal_cache: Dict[Tuple[str, str], CausalRelation] = {}
+        self._causal_cache: dict[tuple[str, str], CausalRelation] = {}
 
         logger.info(f"CausalInferenceEngine initialized (min_strength={min_strength})")
 
@@ -385,7 +384,7 @@ class CausalInferenceEngine:
         knowledge_graph: Any,
         entity_a: str,
         entity_b: str
-    ) -> Optional[CausalRelation]:
+    ) -> CausalRelation | None:
         """
         Infer causal relationship between two entities.
 
@@ -421,7 +420,7 @@ class CausalInferenceEngine:
         knowledge_graph: Any,
         entity: str,
         max_depth: int = 2
-    ) -> Dict[str, List[CausalRelation]]:
+    ) -> dict[str, list[CausalRelation]]:
         """
         Find all causal relations involving an entity.
 
@@ -490,7 +489,7 @@ class CausalInferenceEngine:
         knowledge_graph: Any,
         entity_a: str,
         entity_b: str
-    ) -> Optional[CausalRelation]:
+    ) -> CausalRelation | None:
         """Check for direct causal edge between entities."""
         if hasattr(knowledge_graph, 'graph'):
             graph = knowledge_graph.graph
@@ -520,7 +519,7 @@ class CausalInferenceEngine:
         entity_a: str,
         entity_b: str,
         max_hops: int = 3
-    ) -> Optional[CausalRelation]:
+    ) -> CausalRelation | None:
         """Check for indirect causal chain between entities."""
         # Use multi-hop reasoner to find paths
         reasoner = MultiHopReasoner(max_hops=max_hops)
@@ -663,8 +662,8 @@ class CounterfactualAnalyzer:
 
     def compare_scenarios(
         self,
-        scenarios: List[CounterfactualScenario]
-    ) -> Dict[str, Any]:
+        scenarios: list[CounterfactualScenario]
+    ) -> dict[str, Any]:
         """
         Compare multiple counterfactual scenarios.
 
@@ -753,10 +752,10 @@ class ReasoningDepartment(BaseDepartment):
 
     def __init__(
         self,
-        registry: Optional[Any] = None,
+        registry: Any | None = None,
         max_hops: int = 5,
         min_causal_strength: float = 0.5,
-        dept_config: Optional[DepartmentConfig] = None
+        dept_config: DepartmentConfig | None = None
     ):
         """
         Initialize Reasoning Department.
@@ -945,7 +944,7 @@ class ReasoningDepartment(BaseDepartment):
         self,
         request: DepartmentRequest,
         kg: Any
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Execute multi-hop reasoning query."""
         start_entity = request.parameters.get("start_entity")
         end_entity = request.parameters.get("end_entity")
@@ -991,7 +990,7 @@ class ReasoningDepartment(BaseDepartment):
         self,
         request: DepartmentRequest,
         kg: Any
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Infer causal relationships."""
         entity_a = request.parameters.get("entity_a")
         entity_b = request.parameters.get("entity_b")
@@ -1060,7 +1059,7 @@ class ReasoningDepartment(BaseDepartment):
         self,
         request: DepartmentRequest,
         kg: Any
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Analyze counterfactual scenario."""
         modification = request.parameters.get("modification", "remove")
         entity = request.parameters.get("entity")
@@ -1094,7 +1093,7 @@ class ReasoningDepartment(BaseDepartment):
         self,
         request: DepartmentRequest,
         kg: Any
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Explain reasoning for a conclusion."""
         conclusion = request.parameters.get("conclusion")
         entity = request.parameters.get("entity")
@@ -1150,9 +1149,9 @@ class ReasoningDepartment(BaseDepartment):
 
     def _build_reasoning(
         self,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         request: DepartmentRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Build reasoning dict for response."""
         return {
             "task_type": request.task_type,
@@ -1161,9 +1160,9 @@ class ReasoningDepartment(BaseDepartment):
 
     async def _build_session_state(
         self,
-        session_id: Optional[str],
-        result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        session_id: str | None,
+        result: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Build session state update."""
         if not session_id:
             return None

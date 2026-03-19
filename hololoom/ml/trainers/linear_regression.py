@@ -10,7 +10,7 @@ Created: 2025-12-31
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -20,7 +20,7 @@ from hololoom.ml.protocol import (
     ModelType,
     TaskType,
 )
-from hololoom.ml.trainers.base_trainer import BaseTrainer, SKLEARN_AVAILABLE
+from hololoom.ml.trainers.base_trainer import SKLEARN_AVAILABLE, BaseTrainer
 
 if SKLEARN_AVAILABLE:
     from sklearn.linear_model import LinearRegression
@@ -44,7 +44,7 @@ class LinearRegressionTrainer(BaseTrainer):
 
     def __init__(
         self,
-        config: Optional[LinearRegressionConfig] = None,
+        config: LinearRegressionConfig | None = None,
         n_workers: int = 4,
     ):
         """
@@ -72,7 +72,7 @@ class LinearRegressionTrainer(BaseTrainer):
         self,
         data: DataSplit,
         **kwargs: Any,
-    ) -> Tuple[Any, Dict[str, float], Dict[str, Any]]:
+    ) -> tuple[Any, dict[str, float], dict[str, Any]]:
         """
         Synchronous training implementation.
 
@@ -120,7 +120,7 @@ class LinearRegressionTrainer(BaseTrainer):
 
         return model, metrics, params
 
-    def get_hyperparameter_space(self) -> Dict[str, Any]:
+    def get_hyperparameter_space(self) -> dict[str, Any]:
         """
         Get hyperparameter search space for tuning.
 
@@ -152,8 +152,8 @@ class LinearRegressionTrainer(BaseTrainer):
     def get_coefficients(
         self,
         model_bytes: bytes,
-        feature_names: Optional[list] = None,
-    ) -> Dict[str, float]:
+        feature_names: list | None = None,
+    ) -> dict[str, float]:
         """
         Get model coefficients.
 
@@ -175,7 +175,7 @@ class LinearRegressionTrainer(BaseTrainer):
         else:
             return {f"feature_{i}": float(v) for i, v in enumerate(coef)}
 
-    def get_intercept(self, model_bytes: bytes) -> Optional[float]:
+    def get_intercept(self, model_bytes: bytes) -> float | None:
         """
         Get model intercept.
 
@@ -196,7 +196,7 @@ class LinearRegressionTrainer(BaseTrainer):
     def get_equation(
         self,
         model_bytes: bytes,
-        feature_names: Optional[list] = None,
+        feature_names: list | None = None,
         precision: int = 4,
     ) -> str:
         """
@@ -243,7 +243,7 @@ class LinearRegressionTrainer(BaseTrainer):
     def summary(
         self,
         model_bytes: bytes,
-        feature_names: Optional[list] = None,
+        feature_names: list | None = None,
     ) -> str:
         """
         Get human-readable model summary.

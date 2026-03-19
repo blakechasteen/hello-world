@@ -11,11 +11,12 @@ These metrics help assess whether an SAE has successfully learned
 monosemantic, interpretable features.
 """
 
+import math
+from dataclasses import dataclass, field
+from typing import Any
+
 import torch
 import torch.nn.functional as F
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple
-import math
 
 from hololoom.dark_trace.sae.core import ResearchSAE
 
@@ -35,7 +36,7 @@ class ReconstructionMetrics:
     relative_error: float = 0.0          # ||x - x_hat|| / ||x||
     n_samples: int = 0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {
             "mse": self.mse,
             "rmse": self.rmse,
@@ -63,7 +64,7 @@ class SparsityMetrics:
     activation_std: float = 0.0           # Std of activations (when active)
     n_samples: int = 0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {
             "l0_sparsity": self.l0_sparsity,
             "l0_count": self.l0_count,
@@ -95,7 +96,7 @@ class HealthMetrics:
     polysemanticity_score: float = 0.0     # Co-activation measure (lower = better)
     feature_orthogonality: float = 0.0     # Decoder column orthogonality
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {
             "n_features": self.n_features,
             "n_dead": self.n_dead,
@@ -128,9 +129,9 @@ class SAEEvaluationReport:
     # Metadata
     n_samples_evaluated: int = 0
     evaluation_time_ms: float = 0.0
-    model_config: Dict[str, Any] = field(default_factory=dict)
+    model_config: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "reconstruction": self.reconstruction.to_dict(),
             "sparsity": self.sparsity.to_dict(),

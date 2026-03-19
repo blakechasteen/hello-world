@@ -17,27 +17,22 @@ Key Features:
 - Interactive tooltips
 """
 
+import json
+import math
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import (
     Any,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Set,
 )
-import math
-import json
-from datetime import datetime
 
 from hololoom.dark_trace.circuits.graph import (
+    CircuitEdge,
     CircuitGraph,
     CircuitNode,
-    CircuitEdge,
     CircuitPath,
-    NodeType,
     EdgeType,
+    NodeType,
 )
 
 
@@ -182,12 +177,12 @@ class RenderedEdge:
     width: float
     color: str
     is_curved: bool = False
-    control_x: Optional[float] = None
-    control_y: Optional[float] = None
-    label: Optional[str] = None
+    control_x: float | None = None
+    control_y: float | None = None
+    label: str | None = None
     is_highlighted: bool = False
     opacity: float = 1.0
-    dash_array: Optional[str] = None
+    dash_array: str | None = None
 
 
 @dataclass
@@ -198,13 +193,13 @@ class CircuitDiagram:
     to various formats.
     """
 
-    nodes: List[RenderedNode]
-    edges: List[RenderedEdge]
+    nodes: list[RenderedNode]
+    edges: list[RenderedEdge]
     width: int
     height: int
     title: str = "Circuit Diagram"
     description: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def save(self, path: str) -> None:
         """Save diagram to file.
@@ -531,7 +526,7 @@ class CircuitDiagram:
             path = f'M {edge.source_x} {edge.source_y} L {edge.target_x} {edge.target_y}'
 
         parts = [
-            f'<g class="edge">',
+            '<g class="edge">',
             f'  <path d="{path}" fill="none" stroke="{edge.color}" '
             f'stroke-width="{edge.width}" opacity="{edge.opacity}" '
             f'marker-end="url(#{marker})" {dash}/>',
@@ -585,7 +580,7 @@ class CircuitVisualizer:
     """
 
     # Color palettes for different node types
-    NODE_COLORS: Dict[NodeType, str] = {
+    NODE_COLORS: dict[NodeType, str] = {
         NodeType.INPUT: "#4ecdc4",
         NodeType.OUTPUT: "#ff6b6b",
         NodeType.EMBEDDING: "#a29bfe",
@@ -601,7 +596,7 @@ class CircuitVisualizer:
     }
 
     # Colors for edge types
-    EDGE_COLORS: Dict[EdgeType, str] = {
+    EDGE_COLORS: dict[EdgeType, str] = {
         EdgeType.CAUSAL_STRONG: "#00d4ff",
         EdgeType.CAUSAL_WEAK: "#74b9ff",
         EdgeType.CORRELATIONAL: "#a29bfe",
@@ -618,7 +613,7 @@ class CircuitVisualizer:
     def __init__(
         self,
         graph: CircuitGraph,
-        config: Optional[CircuitVisualizationConfig] = None,
+        config: CircuitVisualizationConfig | None = None,
     ):
         """Initialize visualizer.
 
@@ -628,17 +623,17 @@ class CircuitVisualizer:
         """
         self.graph = graph
         self.config = config or CircuitVisualizationConfig()
-        self._positions: Dict[str, NodePosition] = {}
-        self._highlighted_nodes: Set[str] = set()
-        self._highlighted_edges: Set[Tuple[str, str]] = set()
-        self._vulnerable_nodes: Set[str] = set()
+        self._positions: dict[str, NodePosition] = {}
+        self._highlighted_nodes: set[str] = set()
+        self._highlighted_edges: set[tuple[str, str]] = set()
+        self._vulnerable_nodes: set[str] = set()
 
     def create_diagram(
         self,
         title: str = "Circuit Diagram",
         description: str = "",
-        safety_paths: Optional[List[CircuitPath]] = None,
-        vulnerable_nodes: Optional[List[str]] = None,
+        safety_paths: list[CircuitPath] | None = None,
+        vulnerable_nodes: list[str] | None = None,
     ) -> CircuitDiagram:
         """Create a circuit diagram.
 
@@ -691,7 +686,7 @@ class CircuitVisualizer:
         for edge in path.edges:
             self._highlighted_edges.add((edge.source_id, edge.target_id))
 
-    def mark_vulnerable(self, node_ids: List[str]) -> None:
+    def mark_vulnerable(self, node_ids: list[str]) -> None:
         """Mark nodes as vulnerable."""
         self._vulnerable_nodes.update(node_ids)
 
@@ -709,7 +704,7 @@ class CircuitVisualizer:
     def _hierarchical_layout(self) -> None:
         """Calculate hierarchical layer-based layout."""
         # Group nodes by layer
-        layers: Dict[int, List[CircuitNode]] = {}
+        layers: dict[int, list[CircuitNode]] = {}
         for node in self.graph._nodes.values():
             layer = node.layer_idx
             if layer not in layers:
@@ -758,7 +753,7 @@ class CircuitVisualizer:
         import random
         random.seed(42)
 
-        positions: Dict[str, Tuple[float, float]] = {}
+        positions: dict[str, tuple[float, float]] = {}
         for node in nodes:
             positions[node.node_id] = (
                 random.uniform(100, self.config.width - 100),
@@ -766,7 +761,7 @@ class CircuitVisualizer:
             )
 
         # Build adjacency for attraction forces
-        adjacency: Dict[str, Set[str]] = {n.node_id: set() for n in nodes}
+        adjacency: dict[str, set[str]] = {n.node_id: set() for n in nodes}
         for edge in self.graph._edges:
             adjacency[edge.source_id].add(edge.target_id)
             adjacency[edge.target_id].add(edge.source_id)
@@ -777,12 +772,12 @@ class CircuitVisualizer:
         attraction = 0.01
         damping = 0.9
 
-        velocities: Dict[str, Tuple[float, float]] = {
+        velocities: dict[str, tuple[float, float]] = {
             n.node_id: (0.0, 0.0) for n in nodes
         }
 
         for _ in range(iterations):
-            forces: Dict[str, Tuple[float, float]] = {
+            forces: dict[str, tuple[float, float]] = {
                 n.node_id: (0.0, 0.0) for n in nodes
             }
 
@@ -839,7 +834,7 @@ class CircuitVisualizer:
     def _radial_layout(self) -> None:
         """Calculate radial layout with layers as concentric rings."""
         # Group nodes by layer
-        layers: Dict[int, List[CircuitNode]] = {}
+        layers: dict[int, list[CircuitNode]] = {}
         for node in self.graph._nodes.values():
             layer = node.layer_idx
             if layer not in layers:
@@ -876,7 +871,7 @@ class CircuitVisualizer:
                     node_id=node.node_id,
                 )
 
-    def _render_nodes(self) -> List[RenderedNode]:
+    def _render_nodes(self) -> list[RenderedNode]:
         """Render all nodes."""
         rendered = []
 
@@ -916,7 +911,7 @@ class CircuitVisualizer:
 
         return rendered
 
-    def _render_edges(self) -> List[RenderedEdge]:
+    def _render_edges(self) -> list[RenderedEdge]:
         """Render all edges."""
         rendered = []
 

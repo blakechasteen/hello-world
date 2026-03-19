@@ -17,14 +17,10 @@ Created: December 2025
 """
 
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Any
 
-from hololoom.tapestry.protocol import (
-    Tapestry,
-    TapestryBackend,
-    TapestryError
-)
 from hololoom.tapestry.git import GitIntegration
+from hololoom.tapestry.protocol import Tapestry, TapestryBackend, TapestryError
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +42,7 @@ class Warper:
     def __init__(
         self,
         backend: TapestryBackend,
-        git: Optional[GitIntegration] = None,
+        git: GitIntegration | None = None,
         use_llm_planning: bool = True
     ):
         """
@@ -79,9 +75,9 @@ class Warper:
     async def setup(
         self,
         goal: str,
-        threads: Optional[List[str]] = None,
-        dependencies: Optional[Dict[str, List[str]]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        threads: list[str] | None = None,
+        dependencies: dict[str, list[str]] | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> Tapestry:
         """
         Create tapestry with threads for goal.
@@ -142,7 +138,7 @@ class Warper:
 
         return tapestry
 
-    async def _decompose_goal(self, goal: str) -> List[str]:
+    async def _decompose_goal(self, goal: str) -> list[str]:
         """
         Decompose a goal into discrete threads.
 
@@ -165,7 +161,7 @@ class Warper:
         # Fallback: basic heuristic decomposition
         return self._basic_decompose(goal)
 
-    async def _llm_decompose(self, goal: str) -> List[str]:
+    async def _llm_decompose(self, goal: str) -> list[str]:
         """Use PlanningDepartment for goal decomposition."""
         from hololoom.apps.departments.planning_department import PlanningDepartment
 
@@ -184,7 +180,7 @@ class Warper:
         # Fallback if planning returns empty
         return self._basic_decompose(goal)
 
-    def _basic_decompose(self, goal: str) -> List[str]:
+    def _basic_decompose(self, goal: str) -> list[str]:
         """
         Basic heuristic decomposition.
 
@@ -236,7 +232,7 @@ class Warper:
 
         return threads if threads else [goal]
 
-    async def resume(self) -> Optional[Tapestry]:
+    async def resume(self) -> Tapestry | None:
         """
         Resume existing tapestry from backend.
 
@@ -269,7 +265,7 @@ class Warper:
 
 async def quick_setup(
     goal: str,
-    threads: Optional[List[str]] = None,
+    threads: list[str] | None = None,
     path: str = ".hololoom/tapestry.json"
 ) -> Tapestry:
     """

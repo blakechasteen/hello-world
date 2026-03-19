@@ -10,25 +10,25 @@ Created: 2025-12-17
 """
 
 import asyncio
+import hashlib
 import re
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
-from urllib.parse import urljoin, urlparse
 from datetime import datetime
-import hashlib
+from typing import Any
+from urllib.parse import urljoin, urlparse
 
+from hololoom.documentation.types import MemoryShard
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities,
-    ImportanceSignals,
     ImportanceScore,
+    ImportanceSignals,
+    SpinnerCapabilities,
+    SpinResult,
 )
-from hololoom.documentation.types import MemoryShard
 
 # Import WebsiteSpinner for page fetching
 try:
-    from hololoom.spinningWheel.website import WebsiteSpinner, WebPageContent
+    from hololoom.spinningWheel.website import WebPageContent, WebsiteSpinner
     WEBSITE_SPINNER_AVAILABLE = True
 except ImportError:
     WEBSITE_SPINNER_AVAILABLE = False
@@ -66,8 +66,8 @@ class CrawlConfig:
 
     # Filtering
     same_domain_only: bool = False
-    allowed_domains: Optional[List[str]] = None
-    blocked_patterns: List[str] = field(default_factory=lambda: [
+    allowed_domains: list[str] | None = None
+    blocked_patterns: list[str] = field(default_factory=lambda: [
         r'login', r'signup', r'register', r'cart', r'checkout',
         r'privacy', r'terms', r'cookie', r'gdpr',
         r'\.pdf$', r'\.zip$', r'\.exe$', r'\.dmg$',
@@ -85,10 +85,10 @@ class CrawlConfig:
 @dataclass
 class CrawlState:
     """State tracking for crawl session."""
-    visited_urls: Set[str] = field(default_factory=set)
-    url_queue: List[LinkInfo] = field(default_factory=list)
+    visited_urls: set[str] = field(default_factory=set)
+    url_queue: list[LinkInfo] = field(default_factory=list)
     pages_crawled: int = 0
-    pages_per_domain: Dict[str, int] = field(default_factory=dict)
+    pages_per_domain: dict[str, int] = field(default_factory=dict)
     discovered_links: int = 0
     filtered_links: int = 0
     shards_created: int = 0
@@ -245,7 +245,7 @@ class MatryoshkaImportanceGate:
 
         return 0.7
 
-    def should_crawl(self, link: LinkInfo, state: CrawlState) -> Tuple[bool, str]:
+    def should_crawl(self, link: LinkInfo, state: CrawlState) -> tuple[bool, str]:
         """
         Determine if a link should be crawled (matryoshka gating).
 
@@ -337,7 +337,7 @@ class RecursiveCrawlerSpinner(BaseSpinner):
         ```
     """
 
-    def __init__(self, config: Optional[CrawlConfig] = None):
+    def __init__(self, config: CrawlConfig | None = None):
         super().__init__(name="recursive_crawler")
         self.config = config or CrawlConfig()
         self.gate = MatryoshkaImportanceGate(self.config)
@@ -360,7 +360,7 @@ class RecursiveCrawlerSpinner(BaseSpinner):
     def is_available(self) -> bool:
         return WEBSITE_SPINNER_AVAILABLE
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Recursively crawl starting from seed URL(s).
 
@@ -408,10 +408,10 @@ class RecursiveCrawlerSpinner(BaseSpinner):
             self.config.max_depth = original_depth
             self.config.max_pages = original_pages
 
-    async def _crawl(self, seed_urls: List[str]) -> List[MemoryShard]:
+    async def _crawl(self, seed_urls: list[str]) -> list[MemoryShard]:
         """Execute the recursive crawl."""
         state = CrawlState()
-        all_shards: List[MemoryShard] = []
+        all_shards: list[MemoryShard] = []
 
         # Initialize queue with seed URLs (depth 0, high importance)
         for url in seed_urls:
@@ -492,7 +492,7 @@ class RecursiveCrawlerSpinner(BaseSpinner):
         self,
         link: LinkInfo,
         state: CrawlState
-    ) -> Tuple[List[MemoryShard], List[LinkInfo]]:
+    ) -> tuple[list[MemoryShard], list[LinkInfo]]:
         """
         Process a single page: extract content and discover links.
 
@@ -523,8 +523,8 @@ class RecursiveCrawlerSpinner(BaseSpinner):
     async def _extract_links(
         self,
         source_link: LinkInfo,
-        page_shards: List[MemoryShard]
-    ) -> List[LinkInfo]:
+        page_shards: list[MemoryShard]
+    ) -> list[LinkInfo]:
         """Extract links from page content for potential crawling."""
         discovered = []
 
@@ -645,7 +645,7 @@ class RecursiveCrawlerSpinner(BaseSpinner):
         self,
         source_link: LinkInfo,
         text: str
-    ) -> List[LinkInfo]:
+    ) -> list[LinkInfo]:
         """Fallback link extraction using regex."""
         discovered = []
 
@@ -676,7 +676,7 @@ class RecursiveCrawlerSpinner(BaseSpinner):
     def _create_summary_shard(
         self,
         state: CrawlState,
-        seed_urls: List[str]
+        seed_urls: list[str]
     ) -> MemoryShard:
         """Create a summary shard for the entire crawl."""
         summary_text = f"""Web Crawl Summary
@@ -789,7 +789,7 @@ async def crawl_website(
 
 
 async def crawl_multiple(
-    urls: List[str],
+    urls: list[str],
     topic: str = "",
     max_depth: int = 2,
     max_pages: int = 50

@@ -5,15 +5,9 @@ Allows multiple strategies to be composed into a pipeline.
 Example: verify+challenge chains verification with adversarial testing.
 """
 
-from typing import List
 import logging
 
-from .strategy import (
-    PromptingStrategy,
-    StrategyContext,
-    StrategyResult,
-    StrategyCategory
-)
+from .strategy import PromptingStrategy, StrategyCategory, StrategyContext, StrategyResult
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +31,7 @@ class CompositeStrategy(PromptingStrategy):
         >>> combined = verify + challenge
     """
 
-    def __init__(self, strategies: List[PromptingStrategy]):
+    def __init__(self, strategies: list[PromptingStrategy]):
         """
         Initialize composite strategy.
 
@@ -217,7 +211,7 @@ class CompositeStrategy(PromptingStrategy):
         return f"CompositeStrategy({self.name})"
 
 
-def create_pipeline(strategy_names: List[str]) -> CompositeStrategy:
+def create_pipeline(strategy_names: list[str]) -> CompositeStrategy:
     """
     Create composite pipeline from strategy names.
 

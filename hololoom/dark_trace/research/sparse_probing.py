@@ -12,10 +12,9 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import json
+from typing import Any
 
 import numpy as np
 
@@ -38,7 +37,7 @@ class ProbeConfig:
     tolerance: float = 1e-4
     batch_size: int = 32
     learning_rate: float = 0.01
-    class_weight: Optional[str] = "balanced"  # Handle class imbalance
+    class_weight: str | None = "balanced"  # Handle class imbalance
 
 
 @dataclass
@@ -52,12 +51,12 @@ class ProbeResult:
     f1_score: float
     coefficients: np.ndarray
     intercept: float
-    top_positive_tokens: List[Tuple[str, float]]    # Tokens that activate
-    top_negative_tokens: List[Tuple[str, float]]    # Tokens that suppress
+    top_positive_tokens: list[tuple[str, float]]    # Tokens that activate
+    top_negative_tokens: list[tuple[str, float]]    # Tokens that suppress
     interpretation: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "feature_idx": self.feature_idx,
             "probe_type": self.probe_type.value,
@@ -79,8 +78,8 @@ class ActivationDataset:
     """Dataset of activations for probing."""
     activations: np.ndarray         # Shape: (n_samples, n_features)
     labels: np.ndarray              # Shape: (n_samples,) or (n_samples, n_classes)
-    tokens: List[str]               # Token strings for interpretation
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tokens: list[str]               # Token strings for interpretation
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def n_samples(self) -> int:
@@ -99,9 +98,9 @@ class SparseProbe:
     from features to concepts.
     """
 
-    def __init__(self, config: Optional[ProbeConfig] = None):
+    def __init__(self, config: ProbeConfig | None = None):
         self.config = config or ProbeConfig()
-        self.weights: Optional[np.ndarray] = None
+        self.weights: np.ndarray | None = None
         self.bias: float = 0.0
         self._is_fitted = False
 
@@ -109,7 +108,7 @@ class SparseProbe:
         self,
         X: np.ndarray,
         y: np.ndarray,
-        sample_weight: Optional[np.ndarray] = None
+        sample_weight: np.ndarray | None = None
     ) -> "SparseProbe":
         """
         Fit the sparse probe to data.
@@ -197,9 +196,9 @@ class SparseProbe:
 
     def get_top_features(
         self,
-        feature_names: Optional[List[str]] = None,
+        feature_names: list[str] | None = None,
         k: int = 10
-    ) -> Tuple[List[Tuple[str, float]], List[Tuple[str, float]]]:
+    ) -> tuple[list[tuple[str, float]], list[tuple[str, float]]]:
         """Get top positive and negative features."""
         if not self._is_fitted:
             raise ValueError("Probe not fitted")
@@ -231,10 +230,10 @@ class FeatureProber:
     interpretations of feature functions.
     """
 
-    def __init__(self, config: Optional[ProbeConfig] = None):
+    def __init__(self, config: ProbeConfig | None = None):
         self.config = config or ProbeConfig()
-        self._probes: Dict[int, SparseProbe] = {}
-        self._results: Dict[int, ProbeResult] = {}
+        self._probes: dict[int, SparseProbe] = {}
+        self._results: dict[int, ProbeResult] = {}
 
     def probe_feature(
         self,
@@ -332,7 +331,7 @@ class FeatureProber:
         concept_labels: np.ndarray,
         concept_name: str = "concept",
         min_activation: float = 0.1,
-    ) -> List[ProbeResult]:
+    ) -> list[ProbeResult]:
         """
         Probe all features for a concept.
 
@@ -373,7 +372,7 @@ class FeatureProber:
         concept_name: str = "concept",
         min_f1: float = 0.5,
         max_features: int = 20,
-    ) -> List[ProbeResult]:
+    ) -> list[ProbeResult]:
         """
         Find features that represent a specific concept.
 
@@ -404,7 +403,7 @@ class FeatureProber:
         concept_name: str,
         accuracy: float,
         f1: float,
-        top_tokens: List[Tuple[str, float]],
+        top_tokens: list[tuple[str, float]],
         weight: float
     ) -> str:
         """Generate human-readable interpretation."""
@@ -425,11 +424,11 @@ class FeatureProber:
             f"Highest activations on: {tokens_str}."
         )
 
-    def get_result(self, feature_idx: int) -> Optional[ProbeResult]:
+    def get_result(self, feature_idx: int) -> ProbeResult | None:
         """Get cached probe result for a feature."""
         return self._results.get(feature_idx)
 
-    def export_results(self) -> Dict[int, Dict]:
+    def export_results(self) -> dict[int, dict]:
         """Export all probe results as dictionary."""
         return {
             idx: result.to_dict()
@@ -444,15 +443,15 @@ class ContrastiveProber:
     Compares positive and negative examples to find discriminative patterns.
     """
 
-    def __init__(self, config: Optional[ProbeConfig] = None):
+    def __init__(self, config: ProbeConfig | None = None):
         self.config = config or ProbeConfig(probe_type=ProbeType.CONTRAST)
 
     def probe_contrast(
         self,
         positive_acts: np.ndarray,
         negative_acts: np.ndarray,
-        feature_names: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        feature_names: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Find what distinguishes positive from negative examples.
 

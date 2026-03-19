@@ -19,18 +19,13 @@ Key Classes (Attack Refinement - Wave 2):
 - AttackRefinementResult: Complete result container with provenance
 """
 
-from .quality_trajectory import (
-    QualityTrajectoryTracker,
-    StrategyTrajectory,
-    RefinementPattern
-)
-
 from .attack_refinement import (
-    AttackRefiner,
-    AttackRefinementStrategy,
     AttackQualityMetrics,
-    AttackRefinementResult
+    AttackRefinementResult,
+    AttackRefinementStrategy,
+    AttackRefiner,
 )
+from .quality_trajectory import QualityTrajectoryTracker, RefinementPattern, StrategyTrajectory
 
 __all__ = [
     # Quality Trajectory

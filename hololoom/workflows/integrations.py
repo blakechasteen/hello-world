@@ -11,7 +11,7 @@ Date: November 2025
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any
 
 from hololoom.config import Config
 
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class ChainExecutor:
     """Execute prompt chains within workflows."""
 
-    def __init__(self, config: Optional[Config] = None):
+    def __init__(self, config: Config | None = None):
         self.config = config or Config.fast()
         self.chains = {}
         logger.info("ChainExecutor initialized")
@@ -32,7 +32,7 @@ class ChainExecutor:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    async def execute(self, chain_name: str, input_data: Any) -> Dict[str, Any]:
+    async def execute(self, chain_name: str, input_data: Any) -> dict[str, Any]:
         """Execute named chain."""
         logger.info(f"Executing chain: {chain_name}")
 
@@ -47,7 +47,7 @@ class ChainExecutor:
 class RecursiveExecutor:
     """Execute recursive reasoning within workflows."""
 
-    def __init__(self, config: Optional[Config] = None):
+    def __init__(self, config: Config | None = None):
         self.config = config or Config.fast()
         logger.info("RecursiveExecutor initialized")
 
@@ -57,7 +57,7 @@ class RecursiveExecutor:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    async def reason(self, query: str, max_depth: int = 5) -> Dict[str, Any]:
+    async def reason(self, query: str, max_depth: int = 5) -> dict[str, Any]:
         """Perform recursive reasoning."""
         logger.info(f"Recursive reasoning: {query[:50]}... (max_depth={max_depth})")
 
@@ -72,10 +72,10 @@ class RecursiveExecutor:
     async def refine(
         self,
         query: str,
-        initial_result: Dict[str, Any],
+        initial_result: dict[str, Any],
         strategy: str = "refine",
         max_iterations: int = 3
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Refine result using recursive refinement."""
         logger.info(f"Refining with strategy: {strategy}")
 

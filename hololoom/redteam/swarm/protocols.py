@@ -18,9 +18,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, Set
-from datetime import datetime
-
+from typing import Any, Protocol
 
 # ============================================================================
 # Enums
@@ -92,19 +90,19 @@ class AgentMessage:
     sender: str
     recipient: str
     message_type: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     priority: MessagePriority = MessagePriority.NORMAL
     timestamp: float = field(default_factory=time.time)
     requires_ack: bool = False
-    correlation_id: Optional[str] = None
+    correlation_id: str | None = None
 
     @property
     def age_seconds(self) -> float:
         """Time elapsed since message creation."""
         return time.time() - self.timestamp
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize message to dict."""
         return {
             "id": self.id,
@@ -142,11 +140,11 @@ class AgentTask:
 
     task_type: str
     target: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
     task_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     priority: MessagePriority = MessagePriority.NORMAL
     timeout_seconds: float = 30.0
-    assigned_agent: Optional[str] = None
+    assigned_agent: str | None = None
     created_at: float = field(default_factory=time.time)
 
     @property
@@ -154,7 +152,7 @@ class AgentTask:
         """Time elapsed since task creation."""
         return time.time() - self.created_at
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize task to dict."""
         return {
             "task_id": self.task_id,
@@ -193,12 +191,12 @@ class AgentResult:
     agent_id: str
     success: bool
     result: Any
-    error: Optional[str] = None
+    error: str | None = None
     execution_time_ms: float = 0.0
-    discoveries: List[Dict[str, Any]] = field(default_factory=list)
+    discoveries: list[dict[str, Any]] = field(default_factory=list)
     completed_at: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize result to dict."""
         return {
             "task_id": self.task_id,
@@ -274,7 +272,7 @@ class AgentProtocol(Protocol):
         """
         ...
 
-    async def handle_message(self, message: AgentMessage) -> Optional[AgentMessage]:
+    async def handle_message(self, message: AgentMessage) -> AgentMessage | None:
         """Process incoming message from bus.
 
         Called by message bus when a message arrives. Should:
@@ -342,7 +340,7 @@ class CoordinatorProtocol(Protocol):
         """
         ...
 
-    async def aggregate_results(self, task_id: str) -> List[AgentResult]:
+    async def aggregate_results(self, task_id: str) -> list[AgentResult]:
         """Collect results from agents for a task.
 
         For tasks that may be executed by multiple agents (reconnaissance),
@@ -369,7 +367,7 @@ class CoordinatorProtocol(Protocol):
         """
         ...
 
-    def get_agent_states(self) -> Dict[str, AgentState]:
+    def get_agent_states(self) -> dict[str, AgentState]:
         """Get current state of all agents.
 
         Returns:

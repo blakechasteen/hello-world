@@ -14,22 +14,22 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Set
-from datetime import datetime
 import asyncio
 import logging
-import uuid
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 # Try to import collaboration presence (graceful fallback)
 try:
     from hololoom.collaboration.presence import (
-        UserPresence,
-        PresenceManager,
         ActivityStatus,
-        FocusType,
         CursorPosition,
+        FocusType,
+        PresenceManager,
+        UserPresence,
         create_presence_manager,
     )
     PRESENCE_AVAILABLE = True
@@ -95,9 +95,9 @@ class SceneCursor:
     # Cursor state
     mode: CursorMode = CursorMode.SELECT
     is_pressed: bool = False
-    drag_start: Optional[Dict[str, float]] = None
+    drag_start: dict[str, float] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'x': self.x,
             'y': self.y,
@@ -110,7 +110,7 @@ class SceneCursor:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'SceneCursor':
+    def from_dict(cls, data: dict[str, Any]) -> 'SceneCursor':
         return cls(
             x=data.get('x', 0.0),
             y=data.get('y', 0.0),
@@ -133,18 +133,18 @@ class SceneFocus:
 
     # Focus target
     target_type: FocusTarget = FocusTarget.NONE
-    element_id: Optional[str] = None  # If focused on element
-    connection_id: Optional[str] = None  # If focused on connection
+    element_id: str | None = None  # If focused on element
+    connection_id: str | None = None  # If focused on connection
 
     # Cursor
     cursor: SceneCursor = field(default_factory=SceneCursor)
 
     # Visual identity
-    color: Dict[str, Any] = field(default_factory=lambda: USER_COLORS[0])
-    avatar_url: Optional[str] = None
+    color: dict[str, Any] = field(default_factory=lambda: USER_COLORS[0])
+    avatar_url: str | None = None
 
     # Selection
-    selected_elements: Set[str] = field(default_factory=set)
+    selected_elements: set[str] = field(default_factory=set)
 
     # Activity
     is_active: bool = True
@@ -153,9 +153,9 @@ class SceneFocus:
 
     # Typing/editing indicator
     is_typing: bool = False
-    typing_in_element: Optional[str] = None
+    typing_in_element: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'user_id': self.user_id,
             'user_name': self.user_name,
@@ -174,7 +174,7 @@ class SceneFocus:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'SceneFocus':
+    def from_dict(cls, data: dict[str, Any]) -> 'SceneFocus':
         return cls(
             user_id=data['user_id'],
             user_name=data.get('user_name', ''),
@@ -246,22 +246,22 @@ class ScenePresenceTracker:
         )
 
         # All users' focus states
-        self._focus_states: Dict[str, SceneFocus] = {
+        self._focus_states: dict[str, SceneFocus] = {
             user_id: self._my_focus
         }
 
         # Presence manager (if available)
-        self._presence: Optional['PresenceManager'] = None
+        self._presence: PresenceManager | None = None
         if PRESENCE_AVAILABLE:
             self._init_presence()
 
         # Event handlers
-        self._focus_handlers: List[Callable[[str, SceneFocus], None]] = []
-        self._cursor_handlers: List[Callable[[str, SceneCursor], None]] = []
+        self._focus_handlers: list[Callable[[str, SceneFocus], None]] = []
+        self._cursor_handlers: list[Callable[[str, SceneCursor], None]] = []
 
         # Background tasks
-        self._broadcast_task: Optional[asyncio.Task] = None
-        self._idle_check_task: Optional[asyncio.Task] = None
+        self._broadcast_task: asyncio.Task | None = None
+        self._idle_check_task: asyncio.Task | None = None
 
         # Cursor throttling
         self._cursor_dirty = False
@@ -287,9 +287,9 @@ class ScenePresenceTracker:
         x: float,
         y: float,
         z: float = 0.0,
-        screen_x: Optional[float] = None,
-        screen_y: Optional[float] = None,
-        mode: Optional[CursorMode] = None,
+        screen_x: float | None = None,
+        screen_y: float | None = None,
+        mode: CursorMode | None = None,
         is_pressed: bool = False,
     ):
         """
@@ -381,7 +381,7 @@ class ScenePresenceTracker:
     # Selection
     # -------------------------------------------------------------------------
 
-    async def select_elements(self, element_ids: List[str], add: bool = False):
+    async def select_elements(self, element_ids: list[str], add: bool = False):
         """
         Select elements.
 
@@ -398,7 +398,7 @@ class ScenePresenceTracker:
         await self._broadcast_focus()
         self._notify_focus_change()
 
-    async def deselect_elements(self, element_ids: List[str]):
+    async def deselect_elements(self, element_ids: list[str]):
         """Remove elements from selection."""
         self._my_focus.selected_elements -= set(element_ids)
         await self._broadcast_focus()
@@ -414,7 +414,7 @@ class ScenePresenceTracker:
     # Typing Indicator
     # -------------------------------------------------------------------------
 
-    async def start_typing(self, element_id: Optional[str] = None):
+    async def start_typing(self, element_id: str | None = None):
         """Mark user as typing."""
         self._my_focus.is_typing = True
         self._my_focus.typing_in_element = element_id
@@ -440,7 +440,7 @@ class ScenePresenceTracker:
     # Remote Updates
     # -------------------------------------------------------------------------
 
-    async def apply_remote_focus(self, user_id: str, focus_data: Dict[str, Any]):
+    async def apply_remote_focus(self, user_id: str, focus_data: dict[str, Any]):
         """Apply focus update from remote user."""
         if user_id == self.user_id:
             return  # Ignore own updates
@@ -455,7 +455,7 @@ class ScenePresenceTracker:
             except Exception as e:
                 logger.error(f"Focus handler error: {e}")
 
-    async def apply_remote_cursor(self, user_id: str, cursor_data: Dict[str, Any]):
+    async def apply_remote_cursor(self, user_id: str, cursor_data: dict[str, Any]):
         """Apply cursor update from remote user."""
         if user_id == self.user_id:
             return
@@ -576,36 +576,36 @@ class ScenePresenceTracker:
         """Get local user's focus state."""
         return self._my_focus
 
-    def get_focus(self, user_id: str) -> Optional[SceneFocus]:
+    def get_focus(self, user_id: str) -> SceneFocus | None:
         """Get specific user's focus state."""
         return self._focus_states.get(user_id)
 
-    def get_all_focus(self) -> Dict[str, SceneFocus]:
+    def get_all_focus(self) -> dict[str, SceneFocus]:
         """Get all users' focus states."""
         return dict(self._focus_states)
 
-    def get_active_users(self) -> List[str]:
+    def get_active_users(self) -> list[str]:
         """Get list of active user IDs."""
         return [
             user_id for user_id, focus in self._focus_states.items()
             if focus.is_active
         ]
 
-    def get_users_on_element(self, element_id: str) -> List[str]:
+    def get_users_on_element(self, element_id: str) -> list[str]:
         """Get users focused on specific element."""
         return [
             user_id for user_id, focus in self._focus_states.items()
             if focus.element_id == element_id
         ]
 
-    def get_users_selecting_element(self, element_id: str) -> List[str]:
+    def get_users_selecting_element(self, element_id: str) -> list[str]:
         """Get users who have element selected."""
         return [
             user_id for user_id, focus in self._focus_states.items()
             if element_id in focus.selected_elements
         ]
 
-    def is_element_locked(self, element_id: str) -> Optional[str]:
+    def is_element_locked(self, element_id: str) -> str | None:
         """
         Check if element is being edited by another user.
 
@@ -626,7 +626,7 @@ class ScenePresenceTracker:
         return None
 
     @property
-    def my_color(self) -> Dict[str, Any]:
+    def my_color(self) -> dict[str, Any]:
         """Get local user's assigned color."""
         return self._my_color
 

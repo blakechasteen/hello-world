@@ -6,7 +6,6 @@ Export content to formatted Markdown.
 """
 
 import logging
-from typing import Dict, Any
 
 from ..core.protocol import WritingResult
 

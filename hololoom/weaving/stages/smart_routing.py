@@ -8,7 +8,7 @@ for dynamic pipeline adaptation.
 """
 
 import logging
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -29,9 +29,9 @@ class SmartRoutingStage:
 
     def __init__(
         self,
-        classifier: Optional[Any] = None,
-        fast_path_recipes: Optional[dict] = None,
-        logger: Optional[logging.Logger] = None,
+        classifier: Any | None = None,
+        fast_path_recipes: dict | None = None,
+        logger: logging.Logger | None = None,
     ):
         self.classifier = classifier
         self.fast_path_recipes = fast_path_recipes or {}

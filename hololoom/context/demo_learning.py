@@ -13,9 +13,10 @@ repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
 import asyncio
-from hololoom.infrastructure.sql import SQLConfig, create_sql_backend, load_mock_data
-from hololoom.infrastructure.mcp import create_mcp_server, generate_session_id
+
 from hololoom.context import create_query_router
+from hololoom.infrastructure.mcp import create_mcp_server, generate_session_id
+from hololoom.infrastructure.sql import SQLConfig, load_mock_data
 
 
 async def main():
@@ -71,7 +72,7 @@ async def main():
 
     # Overall stats
     overall = router.learning_tracker.get_overall_performance(window=100)
-    print(f"\nOverall Performance:")
+    print("\nOverall Performance:")
     print(f"  Total queries: {router.learning_tracker.total_events}")
     print(f"  Avg confidence: {overall['avg_confidence']:.2f}")
     print(f"  Avg latency: {overall['avg_latency_ms']:.1f}ms")
@@ -79,7 +80,7 @@ async def main():
     print(f"  Cache hit rate: {overall['cache_hit_rate']*100:.1f}%")
 
     # Per-backend stats
-    print(f"\nPer-Backend Performance:")
+    print("\nPer-Backend Performance:")
     backend_stats = router.learning_tracker.get_backend_comparison(window=100)
     for backend, metrics in backend_stats.items():
         if metrics.count > 0:
@@ -90,7 +91,7 @@ async def main():
 
     # Calibration stats
     if router.calibrator:
-        print(f"\nCalibration:")
+        print("\nCalibration:")
         print(f"  Observations: {router.calibrator.observation_count}")
         curve = router.calibrator.get_calibration_curve()
         if curve.calibrated:
@@ -100,7 +101,7 @@ async def main():
 
     # Strategy updates
     if router.strategy_updater:
-        print(f"\nStrategy Updates:")
+        print("\nStrategy Updates:")
         print(f"  Updates applied: {router.strategy_updater.update_count}")
         print(f"  Rollbacks: {router.strategy_updater.rollback_count}")
 

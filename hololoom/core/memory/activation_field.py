@@ -5,10 +5,8 @@ Key insight: Activation is a PROCESS (field that spreads/decays),
 not a PROPERTY (static value stored per node).
 """
 
-from typing import Dict, List, Set, Tuple, Optional
-import numpy as np
 import networkx as nx
-from collections import defaultdict
+import numpy as np
 
 
 class ActivationField:
@@ -24,20 +22,20 @@ class ActivationField:
 
     def __init__(self):
         # Current activation levels (node_id → activation)
-        self.levels: Dict[str, float] = {}
+        self.levels: dict[str, float] = {}
 
         # Previous levels (for decay calculation)
-        self.prev_levels: Dict[str, float] = {}
+        self.prev_levels: dict[str, float] = {}
 
         # Spatial index (position → node_ids for fast lookup)
-        self.spatial_index: Dict[str, np.ndarray] = {}
+        self.spatial_index: dict[str, np.ndarray] = {}
 
     def activate_region(
         self,
         center: np.ndarray,
         radius: float,
-        node_ids: List[str]
-    ) -> Set[str]:
+        node_ids: list[str]
+    ) -> set[str]:
         """
         Activate nodes within semantic radius of center point.
 
@@ -129,7 +127,7 @@ class ActivationField:
                             spread_activation
                         )
 
-    def above_threshold(self, threshold: float = 0.3) -> List[str]:
+    def above_threshold(self, threshold: float = 0.3) -> list[str]:
         """
         Get node IDs with activation above threshold.
 
@@ -146,7 +144,7 @@ class ActivationField:
 
         return [node_id for node_id, _ in filtered]
 
-    def top_k(self, k: int = 10) -> List[Tuple[str, float]]:
+    def top_k(self, k: int = 10) -> list[tuple[str, float]]:
         """
         Get top K most activated nodes.
 
@@ -224,7 +222,7 @@ class ActivationField:
         """Sum of all activation levels."""
         return sum(self.levels.values())
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Get activation field statistics."""
         active_levels = [v for v in self.levels.values() if v > 0.1]
 

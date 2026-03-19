@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Department Handlers for Matrix ChatOps
 =======================================
@@ -21,9 +22,9 @@ Usage:
 Created: 2025-12-06
 """
 
-import logging
 import json
-from typing import Optional, Dict, Any, TYPE_CHECKING
+import logging
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hololoom.apps.departments.registry import DepartmentRegistry
@@ -37,16 +38,16 @@ except ImportError:
 # Department imports
 try:
     from hololoom.apps.departments.registry import (
-        DepartmentRegistry,
         DepartmentInstance,
+        DepartmentRegistry,
+        create_registry,
         get_global_registry,
-        create_registry
     )
     from hololoom.protocols.department import (
+        ConfidenceLevel,
+        ConfidenceMetadata,
         DepartmentRequest,
         DepartmentResponse,
-        ConfidenceLevel,
-        ConfidenceMetadata
     )
     DEPARTMENTS_AVAILABLE = True
 except ImportError:
@@ -61,7 +62,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -188,11 +191,11 @@ async def handle_dept_status(
         # Health status
         health_status = getattr(dept, 'health_status', 'unknown')
         if health_status == 'healthy':
-            response += f"**Health:** [OK] Healthy\n"
+            response += "**Health:** [OK] Healthy\n"
         elif health_status == 'degraded':
-            response += f"**Health:** [!] Degraded\n"
+            response += "**Health:** [!] Degraded\n"
         elif health_status == 'unhealthy':
-            response += f"**Health:** [X] Unhealthy\n"
+            response += "**Health:** [X] Unhealthy\n"
         else:
             response += f"**Health:** [?] {health_status}\n"
 
@@ -200,7 +203,7 @@ async def handle_dept_status(
         request_count = getattr(instance, 'request_count', 0) if instance else 0
         active_requests = getattr(instance, 'active_requests', 0) if instance else 0
         if request_count > 0 or active_requests > 0:
-            response += f"\n**Metrics:**\n"
+            response += "\n**Metrics:**\n"
             response += f"  Total requests: {request_count}\n"
             response += f"  Active requests: {active_requests}\n"
 
@@ -392,7 +395,7 @@ async def handle_dept_capabilities(
         # Task types if available
         task_types = getattr(dept, 'supported_task_types', [])
         if task_types:
-            response += f"\n**Supported Task Types:**\n"
+            response += "\n**Supported Task Types:**\n"
             for task in task_types[:10]:
                 response += f"- `{task}`\n"
             if len(task_types) > 10:
@@ -401,7 +404,7 @@ async def handle_dept_capabilities(
         # Input/output schemas if available
         input_schema = getattr(dept, 'input_schema', None)
         if input_schema:
-            response += f"\n**Input Schema:** Available (use API for details)\n"
+            response += "\n**Input Schema:** Available (use API for details)\n"
 
         response += f"\n_Use `!dept process {dept_name} <task>` to execute_"
         return response

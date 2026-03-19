@@ -25,21 +25,17 @@ Date: 2025-12-03
 """
 
 import json
-import random
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple, Set
+from typing import Any
 
 from hololoom.bandits.beta_arm import BetaArm
+
 from ..strategies import AttackStrategy
 from .learning_protocols import (
-    ContextualBanditProtocol,
     ContextKey,
-    LearningResult,
-    HeatScore,
 )
-
 
 # =============================================================================
 # Data Classes
@@ -59,7 +55,7 @@ class ContextualArm:
     _arm: BetaArm = field(default_factory=BetaArm)
     total_pulls: int = 0
     total_rewards: float = 0.0
-    last_updated: Optional[str] = None
+    last_updated: str | None = None
 
     @property
     def alpha(self) -> float:
@@ -116,7 +112,7 @@ class ContextualArm:
         """Uncertainty (variance of Beta distribution)."""
         return self._arm.variance()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'strategy': self.strategy.value,
@@ -136,7 +132,7 @@ class ContextualArm:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ContextualArm':
+    def from_dict(cls, data: dict[str, Any]) -> 'ContextualArm':
         """Create from dictionary."""
         context_data = data.get('context', {})
         return cls(
@@ -160,7 +156,7 @@ class ContextualSelectionResult:
     context: ContextKey
     strategy: AttackStrategy
     sampled_value: float
-    all_samples: Dict[AttackStrategy, float]
+    all_samples: dict[AttackStrategy, float]
     arm: ContextualArm
     used_global_fallback: bool = False  # True if context had no data
 
@@ -231,17 +227,17 @@ class ContextualRedTeamBandit:
         self.min_context_samples = min_context_samples
 
         # Context → Strategy → Arm mapping
-        self.context_arms: Dict[ContextKey, Dict[AttackStrategy, ContextualArm]] = {}
+        self.context_arms: dict[ContextKey, dict[AttackStrategy, ContextualArm]] = {}
 
         # Global arms (aggregated across all contexts)
-        self.global_arms: Dict[AttackStrategy, ContextualArm] = {}
+        self.global_arms: dict[AttackStrategy, ContextualArm] = {}
         self._init_global_arms()
 
         # Selection history
-        self.selection_history: List[ContextualSelectionResult] = []
+        self.selection_history: list[ContextualSelectionResult] = []
 
         # Tracked contexts
-        self._known_contexts: Set[ContextKey] = set()
+        self._known_contexts: set[ContextKey] = set()
 
     def _init_global_arms(self):
         """Initialize global arms for fallback."""
@@ -261,7 +257,7 @@ class ContextualRedTeamBandit:
     def _get_or_create_context_arms(
         self,
         context: ContextKey
-    ) -> Dict[AttackStrategy, ContextualArm]:
+    ) -> dict[AttackStrategy, ContextualArm]:
         """Get or create arms for a context."""
         if context not in self.context_arms:
             self.context_arms[context] = {}
@@ -306,7 +302,7 @@ class ContextualRedTeamBandit:
         use_global_fallback = context_samples < self.min_context_samples
 
         # Sample from each strategy
-        samples: Dict[AttackStrategy, float] = {}
+        samples: dict[AttackStrategy, float] = {}
 
         for strategy in AttackStrategy:
             context_sample = context_arms[strategy].sample()
@@ -337,7 +333,7 @@ class ContextualRedTeamBandit:
 
         return selected
 
-    def select_top_k(self, context: ContextKey, k: int = 3) -> List[AttackStrategy]:
+    def select_top_k(self, context: ContextKey, k: int = 3) -> list[AttackStrategy]:
         """
         Select top-k strategies for given context.
 
@@ -352,7 +348,7 @@ class ContextualRedTeamBandit:
         context_samples = self._get_context_sample_count(context)
         use_global_fallback = context_samples < self.min_context_samples
 
-        samples: Dict[AttackStrategy, float] = {}
+        samples: dict[AttackStrategy, float] = {}
 
         for strategy in AttackStrategy:
             context_sample = context_arms[strategy].sample()
@@ -399,7 +395,7 @@ class ContextualRedTeamBandit:
 
     def update_batch(
         self,
-        results: List[Tuple[ContextKey, AttackStrategy, bool, float]]
+        results: list[tuple[ContextKey, AttackStrategy, bool, float]]
     ):
         """
         Update bandit with multiple results.
@@ -414,7 +410,7 @@ class ContextualRedTeamBandit:
     # Query Methods
     # =========================================================================
 
-    def get_context_stats(self, context: ContextKey) -> Dict[str, Any]:
+    def get_context_stats(self, context: ContextKey) -> dict[str, Any]:
         """Get statistics for a specific context."""
         if context not in self.context_arms:
             return {
@@ -452,14 +448,14 @@ class ContextualRedTeamBandit:
             }
         }
 
-    def get_all_contexts(self) -> List[ContextKey]:
+    def get_all_contexts(self) -> list[ContextKey]:
         """Get all known contexts."""
         return list(self._known_contexts)
 
     def get_expected_rewards(
         self,
-        context: Optional[ContextKey] = None
-    ) -> Dict[AttackStrategy, float]:
+        context: ContextKey | None = None
+    ) -> dict[AttackStrategy, float]:
         """
         Get expected rewards for all strategies.
 
@@ -481,7 +477,7 @@ class ContextualRedTeamBandit:
 
     def get_best_strategy(
         self,
-        context: Optional[ContextKey] = None
+        context: ContextKey | None = None
     ) -> AttackStrategy:
         """Get strategy with highest expected reward."""
         rewards = self.get_expected_rewards(context)
@@ -489,9 +485,9 @@ class ContextualRedTeamBandit:
 
     def get_exploration_candidates(
         self,
-        context: Optional[ContextKey] = None,
+        context: ContextKey | None = None,
         uncertainty_threshold: float = 0.1
-    ) -> List[AttackStrategy]:
+    ) -> list[AttackStrategy]:
         """
         Get strategies with high uncertainty (worth exploring).
 
@@ -513,7 +509,7 @@ class ContextualRedTeamBandit:
             if arm.uncertainty > uncertainty_threshold
         ]
 
-    def get_global_stats(self) -> Dict[str, Any]:
+    def get_global_stats(self) -> dict[str, Any]:
         """Get global (aggregated) statistics."""
         total_pulls = sum(arm.total_pulls for arm in self.global_arms.values())
         total_rewards = sum(arm.total_rewards for arm in self.global_arms.values())
@@ -533,7 +529,7 @@ class ContextualRedTeamBandit:
             }
         }
 
-    def get_context_comparison(self) -> List[Dict[str, Any]]:
+    def get_context_comparison(self) -> list[dict[str, Any]]:
         """
         Compare best strategies across all contexts.
 
@@ -594,7 +590,7 @@ class ContextualRedTeamBandit:
     def find_similar_context(
         self,
         context: ContextKey
-    ) -> Optional[ContextKey]:
+    ) -> ContextKey | None:
         """
         Find the most similar known context.
 
@@ -631,7 +627,7 @@ class ContextualRedTeamBandit:
     # Decay
     # =========================================================================
 
-    def _apply_decay(self, context: Optional[ContextKey] = None):
+    def _apply_decay(self, context: ContextKey | None = None):
         """Apply decay to priors (for non-stationary environments)."""
         # Decay global arms
         for arm in self.global_arms.values():
@@ -691,7 +687,7 @@ class ContextualRedTeamBandit:
         if not path.exists():
             return
 
-        with open(path, 'r') as f:
+        with open(path) as f:
             state = json.load(f)
 
         self.initial_alpha = state.get('initial_alpha', 1.0)
@@ -727,7 +723,7 @@ class ContextualRedTeamBandit:
                 except ValueError:
                     pass
 
-    def reset(self, context: Optional[ContextKey] = None):
+    def reset(self, context: ContextKey | None = None):
         """
         Reset bandit to initial state.
 
@@ -773,7 +769,7 @@ def create_contextual_bandit(
     decay_rate: float = 0.0,
     global_weight: float = 0.3,
     min_context_samples: int = 5,
-    state_path: Optional[Path] = None
+    state_path: Path | None = None
 ) -> ContextualRedTeamBandit:
     """
     Create a ContextualRedTeamBandit, optionally loading saved state.

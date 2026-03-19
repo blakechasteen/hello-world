@@ -10,7 +10,6 @@ import logging
 import os
 import sys
 import time
-from typing import Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -76,26 +75,26 @@ def _get_sync_manager():
 
 
 class CozStatusResponse(BaseModel):
-    tasks: Dict
-    alerts: List
-    seasonal_focus: Dict
+    tasks: dict
+    alerts: list
+    seasonal_focus: dict
     timestamp: str
 
 
 class CozFinancialsResponse(BaseModel):
-    products: List[Dict]
-    reinvestment: Dict
-    summary: Dict
+    products: list[dict]
+    reinvestment: dict
+    summary: dict
 
 
 class CozInventoryResponse(BaseModel):
-    summary: Dict
-    reorder_list: List
-    alerts: List
+    summary: dict
+    reorder_list: list
+    alerts: list
 
 
 class CozScheduleResponse(BaseModel):
-    context: Dict
+    context: dict
 
 
 class CozAnalyzeRequest(BaseModel):
@@ -104,14 +103,14 @@ class CozAnalyzeRequest(BaseModel):
 
 
 class CozAnalyzeResponse(BaseModel):
-    data: Dict
+    data: dict
     analysis: str
     domain: str
     latency_ms: float
 
 
 class CozBriefResponse(BaseModel):
-    brief: Dict
+    brief: dict
 
 
 # --- Layer 1: Direct Lookups ---
@@ -190,7 +189,7 @@ async def coz_analyze(request: CozAnalyzeRequest):
     )
 
 
-def _get_domain_data(sm, domain: str) -> Dict:
+def _get_domain_data(sm, domain: str) -> dict:
     """Extract relevant data for a domain query."""
     domain_map = {
         "financial": sm.get_financial_summary,
@@ -209,10 +208,11 @@ def _get_domain_data(sm, domain: str) -> Dict:
     return sm.get_daily_brief()
 
 
-async def _analyze_with_llm(data: Dict, question: str, domain: str) -> str:
+async def _analyze_with_llm(data: dict, question: str, domain: str) -> str:
     """Single-pass LLM analysis of domain data. Follows Elle's pattern."""
     try:
         import json
+
         import httpx
 
         ollama_url = os.environ.get("PROMPTLY_OLLAMA_URL", "http://127.0.0.1:11434")
@@ -260,7 +260,7 @@ async def _analyze_with_llm(data: Dict, question: str, domain: str) -> str:
 # --- Layer 3: Context Injection ---
 
 
-def get_coz_context_block() -> Optional[str]:
+def get_coz_context_block() -> str | None:
     """
     Generate a context block for injection into Elle's system prompt.
     Returns None if Coz data is unavailable.

@@ -74,44 +74,43 @@ Usage:
 """
 
 # Core metrics
-from hololoom.dark_trace.eval.metrics import (
-    SAEMetrics,
-    ReconstructionMetrics,
-    SparsityMetrics,
-    InterpretabilityMetrics,
-    SteeringMetrics,
-    CausalMetrics,
-    MetricsConfig,
-    MetricsReport,
-    compute_all_metrics,
+# Baselines
+from hololoom.dark_trace.eval.baselines import (
+    BaselineComparison,
+    BaselineMethod,
+    BaselineResult,
+    MeanBaseline,
+    PCABaseline,
+    RandomBaseline,
+    SupervisedProbeBaseline,
 )
 
 # Benchmarks
 from hololoom.dark_trace.eval.benchmarks import (
-    SyntheticBenchmark,
+    BenchmarkConfig,
+    BenchmarkResult,
+    BenchmarkSuite,
+    ConsistencyBenchmark,
     FeatureRecoveryBenchmark,
     InterventionBenchmark,
-    ConsistencyBenchmark,
-    BenchmarkSuite,
-    BenchmarkResult,
-    BenchmarkConfig,
+    SyntheticBenchmark,
 )
-
-# Baselines
-from hololoom.dark_trace.eval.baselines import (
-    BaselineMethod,
-    RandomBaseline,
-    PCABaseline,
-    SupervisedProbeBaseline,
-    MeanBaseline,
-    BaselineComparison,
-    BaselineResult,
+from hololoom.dark_trace.eval.metrics import (
+    CausalMetrics,
+    InterpretabilityMetrics,
+    MetricsConfig,
+    MetricsReport,
+    ReconstructionMetrics,
+    SAEMetrics,
+    SparsityMetrics,
+    SteeringMetrics,
+    compute_all_metrics,
 )
 
 # Reporting
 from hololoom.dark_trace.eval.reporter import (
-    EvaluationReporter,
     EvaluationReport,
+    EvaluationReporter,
     MetricsDashboard,
     RegressionDetector,
     ReportConfig,

@@ -8,7 +8,7 @@ and semantic shift detection from the awareness graph.
 """
 
 import logging
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -28,8 +28,8 @@ class ConsciousnessPerceptionStage:
 
     def __init__(
         self,
-        awareness_graph: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
+        awareness_graph: Any | None = None,
+        logger: logging.Logger | None = None,
     ):
         self.awareness_graph = awareness_graph
         self.logger = logger or logging.getLogger(__name__)

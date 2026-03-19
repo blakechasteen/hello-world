@@ -15,7 +15,7 @@ import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from hololoom.ml.config import RegistryConfig
 from hololoom.ml.protocol import (
@@ -52,7 +52,7 @@ class ModelRegistry:
                 └── ...
     """
 
-    def __init__(self, config: Optional[RegistryConfig] = None):
+    def __init__(self, config: RegistryConfig | None = None):
         """
         Initialize model registry.
 
@@ -72,12 +72,12 @@ class ModelRegistry:
         """Get path to index file."""
         return self.config.storage_path / self.config.index_file
 
-    def _load_index(self) -> Dict[str, Any]:
+    def _load_index(self) -> dict[str, Any]:
         """Load index from disk or create empty."""
         index_path = self._index_path()
         if index_path.exists():
             try:
-                with open(index_path, "r") as f:
+                with open(index_path) as f:
                     return json.load(f)
             except Exception as e:
                 logger.warning(f"Failed to load index: {e}, creating new")
@@ -98,7 +98,7 @@ class ModelRegistry:
     def save(
         self,
         result: TrainingResult,
-        evaluation: Optional[EvaluationResult] = None,
+        evaluation: EvaluationResult | None = None,
     ) -> str:
         """
         Save trained model to registry.
@@ -178,7 +178,7 @@ class ModelRegistry:
             for model_id, _ in to_archive:
                 self.delete(model_id)
 
-    def load(self, model_id: str) -> Optional[TrainingResult]:
+    def load(self, model_id: str) -> TrainingResult | None:
         """
         Load model from registry.
 
@@ -215,7 +215,7 @@ class ModelRegistry:
 
         # Load training metadata
         training_path = model_dir / "training.json"
-        with open(training_path, "r") as f:
+        with open(training_path) as f:
             meta = json.load(f)
 
         return TrainingResult(
@@ -233,7 +233,7 @@ class ModelRegistry:
             metadata=meta.get("metadata", {}),
         )
 
-    def load_evaluation(self, model_id: str) -> Optional[EvaluationResult]:
+    def load_evaluation(self, model_id: str) -> EvaluationResult | None:
         """
         Load evaluation results for a model.
 
@@ -252,7 +252,7 @@ class ModelRegistry:
         if not eval_path.exists():
             return None
 
-        with open(eval_path, "r") as f:
+        with open(eval_path) as f:
             meta = json.load(f)
 
         return EvaluationResult(
@@ -273,11 +273,11 @@ class ModelRegistry:
 
     def list_models(
         self,
-        model_type: Optional[ModelType] = None,
-        status: Optional[ModelStatus] = None,
-        min_r2: Optional[float] = None,
+        model_type: ModelType | None = None,
+        status: ModelStatus | None = None,
+        min_r2: float | None = None,
         limit: int = 100,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Query models with optional filters.
 
@@ -315,7 +315,7 @@ class ModelRegistry:
         self,
         model_type: ModelType,
         metric: str = "r2_score",
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get the best model by a specific metric.
 
@@ -415,7 +415,7 @@ class ModelRegistry:
         info = self._index["models"][model_id]
         training_path = Path(info["path"]) / "training.json"
         if training_path.exists():
-            with open(training_path, "r") as f:
+            with open(training_path) as f:
                 meta = json.load(f)
             meta["status"] = status.value
             with open(training_path, "w") as f:
@@ -423,7 +423,7 @@ class ModelRegistry:
 
         return True
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get registry statistics.
 

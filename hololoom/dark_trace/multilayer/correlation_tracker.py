@@ -17,12 +17,11 @@ Research Basis:
 Created: 2025-12-28
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Set, Any
-from enum import Enum
 import math
 import time
-
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # =============================================================================
 # Configuration
@@ -98,7 +97,7 @@ class CorrelationPair:
     target_feature: str        # Feature ID (e.g., "layer_6.sae_17")
     correlation: float         # Correlation value [-1, 1]
     n_samples: int             # Number of samples used
-    p_value: Optional[float] = None   # Statistical significance
+    p_value: float | None = None   # Statistical significance
     confidence: float = 0.0    # Confidence in correlation estimate
     last_updated: float = 0.0  # Timestamp of last update
 
@@ -117,13 +116,13 @@ class LayerCorrelation:
     """Correlations between features in two layers."""
     source_layer: int
     target_layer: int
-    correlations: List[CorrelationPair] = field(default_factory=list)
+    correlations: list[CorrelationPair] = field(default_factory=list)
     mean_correlation: float = 0.0
     max_correlation: float = 0.0
     n_significant: int = 0
     timestamp: float = field(default_factory=time.time)
 
-    def get_top_correlations(self, k: int = 10) -> List[CorrelationPair]:
+    def get_top_correlations(self, k: int = 10) -> list[CorrelationPair]:
         """Get top-k correlations by absolute value."""
         sorted_corrs = sorted(
             self.correlations,
@@ -135,14 +134,14 @@ class LayerCorrelation:
     def get_correlations_for_feature(
         self,
         feature_id: str
-    ) -> List[CorrelationPair]:
+    ) -> list[CorrelationPair]:
         """Get all correlations involving a specific feature."""
         return [
             c for c in self.correlations
             if c.source_feature == feature_id or c.target_feature == feature_id
         ]
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """Get summary statistics."""
         if not self.correlations:
             return {
@@ -172,7 +171,7 @@ class LayerCorrelation:
 class CorrelationSnapshot:
     """Snapshot of all cross-layer correlations at a point in time."""
     timestamp: float
-    layer_correlations: Dict[Tuple[int, int], LayerCorrelation]
+    layer_correlations: dict[tuple[int, int], LayerCorrelation]
     n_total_pairs: int
     n_significant_pairs: int
     global_mean_correlation: float
@@ -181,14 +180,14 @@ class CorrelationSnapshot:
         self,
         source_layer: int,
         target_layer: int
-    ) -> Optional[LayerCorrelation]:
+    ) -> LayerCorrelation | None:
         """Get correlation data between two specific layers."""
         return self.layer_correlations.get((source_layer, target_layer))
 
     def get_feature_trajectory(
         self,
         feature_id: str
-    ) -> List[CorrelationPair]:
+    ) -> list[CorrelationPair]:
         """Get all correlations for a feature across all layer pairs."""
         trajectory = []
         for layer_corr in self.layer_correlations.values():
@@ -225,7 +224,7 @@ class WelfordCorrelator:
         print(f"Correlation: {correlator.correlation()}")
     """
 
-    def __init__(self, decay_factor: Optional[float] = None):
+    def __init__(self, decay_factor: float | None = None):
         """
         Initialize correlator.
 
@@ -330,7 +329,7 @@ class WelfordCorrelator:
             return 0.0
         return self.C_xy / (self.n - 1)
 
-    def p_value(self) -> Optional[float]:
+    def p_value(self) -> float | None:
         """
         Estimate p-value for correlation using t-distribution approximation.
 
@@ -444,7 +443,7 @@ class WelfordCorrelator:
         adjustment = 1.0 + 1.0 / (4.0 * df)
         return WelfordCorrelator._normal_cdf(t / adjustment)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "n": self.n,
@@ -460,7 +459,7 @@ class WelfordCorrelator:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "WelfordCorrelator":
+    def from_dict(cls, data: dict[str, Any]) -> "WelfordCorrelator":
         """Deserialize from dictionary."""
         correlator = cls(decay_factor=data.get("decay_factor"))
         correlator.n = data["n"]
@@ -502,8 +501,8 @@ class CorrelationTracker:
     def __init__(
         self,
         n_layers: int,
-        config: Optional[CorrelationConfig] = None,
-        feature_ids: Optional[Dict[int, List[str]]] = None
+        config: CorrelationConfig | None = None,
+        feature_ids: dict[int, list[str]] | None = None
     ):
         """
         Initialize correlation tracker.
@@ -517,26 +516,26 @@ class CorrelationTracker:
         self.config = config or CorrelationConfig.default()
 
         # Initialize feature ID mappings
-        self.feature_ids: Dict[int, List[str]] = feature_ids or {}
+        self.feature_ids: dict[int, list[str]] = feature_ids or {}
 
         # Correlators for each layer pair
         # Key: (source_layer, target_layer, source_feature, target_feature)
-        self._correlators: Dict[Tuple[int, int, str, str], WelfordCorrelator] = {}
+        self._correlators: dict[tuple[int, int, str, str], WelfordCorrelator] = {}
 
         # Cache for computed correlations
-        self._correlation_cache: Dict[Tuple[int, int], LayerCorrelation] = {}
-        self._cache_valid: Dict[Tuple[int, int], bool] = {}
+        self._correlation_cache: dict[tuple[int, int], LayerCorrelation] = {}
+        self._cache_valid: dict[tuple[int, int], bool] = {}
 
         # Statistics
         self._n_updates = 0
         self._last_snapshot_time = 0.0
 
         # Active feature tracking (for memory efficiency)
-        self._active_features: Dict[int, Set[str]] = {i: set() for i in range(n_layers)}
+        self._active_features: dict[int, set[str]] = {i: set() for i in range(n_layers)}
 
     def update(
         self,
-        layer_activations: Dict[int, Dict[str, float]],
+        layer_activations: dict[int, dict[str, float]],
         update_cache: bool = True
     ) -> None:
         """
@@ -573,8 +572,8 @@ class CorrelationTracker:
         self,
         source_layer: int,
         target_layer: int,
-        source_acts: Dict[str, float],
-        target_acts: Dict[str, float]
+        source_acts: dict[str, float],
+        target_acts: dict[str, float]
     ) -> None:
         """Update correlations for a single layer pair."""
         # Track active features
@@ -611,9 +610,9 @@ class CorrelationTracker:
 
     def _limit_features(
         self,
-        activations: Dict[str, float],
+        activations: dict[str, float],
         max_features: int
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Limit features to top-k by activation magnitude."""
         if len(activations) <= max_features:
             return activations
@@ -727,7 +726,7 @@ class CorrelationTracker:
 
         return layer_corr
 
-    def get_all_layer_correlations(self) -> Dict[Tuple[int, int], LayerCorrelation]:
+    def get_all_layer_correlations(self) -> dict[tuple[int, int], LayerCorrelation]:
         """Get correlations for all layer pairs."""
         result = {}
         for i in range(self.n_layers - 1):
@@ -738,7 +737,7 @@ class CorrelationTracker:
         self,
         feature_id: str,
         min_correlation: float = 0.3
-    ) -> List[CorrelationPair]:
+    ) -> list[CorrelationPair]:
         """
         Trace how a feature propagates through layers.
 
@@ -800,7 +799,7 @@ class CorrelationTracker:
     def get_feature_correlations(
         self,
         feature_id: str
-    ) -> List[CorrelationPair]:
+    ) -> list[CorrelationPair]:
         """Get all correlations involving a specific feature."""
         correlations = []
 
@@ -851,7 +850,7 @@ class CorrelationTracker:
         self._last_snapshot_time = snapshot.timestamp
         return snapshot
 
-    def statistics(self) -> Dict[str, Any]:
+    def statistics(self) -> dict[str, Any]:
         """Get tracker statistics."""
         return {
             "n_updates": self._n_updates,
@@ -876,7 +875,7 @@ class CorrelationTracker:
         self._n_updates = 0
         self._active_features = {i: set() for i in range(self.n_layers)}
 
-    def save_state(self) -> Dict[str, Any]:
+    def save_state(self) -> dict[str, Any]:
         """Save tracker state for persistence."""
         return {
             "n_layers": self.n_layers,
@@ -897,7 +896,7 @@ class CorrelationTracker:
         }
 
     @classmethod
-    def load_state(cls, state: Dict[str, Any]) -> "CorrelationTracker":
+    def load_state(cls, state: dict[str, Any]) -> "CorrelationTracker":
         """Load tracker from saved state."""
         config = CorrelationConfig(
             method=CorrelationMethod(state["config"]["method"]),

@@ -24,9 +24,10 @@ Example:
     >>> sampler = create_thompson_sampler("gp", param_dim=10)
 """
 
-from typing import Literal, Any
-from hololoom.ts_core.models.discrete_bernoulli import DiscreteBernoulliTS, create_discrete_ts
+from typing import Any, Literal
+
 from hololoom.ts_core.models.bayes_linear import BayesianLinearTS, create_bayesian_linear_ts
+from hololoom.ts_core.models.discrete_bernoulli import DiscreteBernoulliTS, create_discrete_ts
 from hololoom.ts_core.models.gp_ts import GaussianProcessTS, create_gp_ts
 
 

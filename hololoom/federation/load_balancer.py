@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Load Balancer for Distributed Inference
 ========================================
@@ -19,7 +18,6 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Set
 
 from hololoom.federation.types import FederationNode, GuildTrustLevel
 
@@ -87,7 +85,7 @@ class NodeStats:
     current_load: float = 0.0
     health: NodeHealth = NodeHealth.UNKNOWN
     last_health_check: float = 0.0
-    models: Set[str] = field(default_factory=set)
+    models: set[str] = field(default_factory=set)
 
     @property
     def success_rate(self) -> float:
@@ -125,11 +123,11 @@ class LoadBalancerConfig:
 class SelectionResult:
     """Result of node selection."""
 
-    node: Optional[FederationNode]
-    node_id: Optional[str]
+    node: FederationNode | None
+    node_id: str | None
     score: float
     reason: str
-    alternatives: List[str] = field(default_factory=list)
+    alternatives: list[str] = field(default_factory=list)
 
 
 # ============================================================================
@@ -156,7 +154,7 @@ class CircuitBreaker:
     ):
         self._failure_threshold = failure_threshold
         self._reset_seconds = reset_seconds
-        self._states: Dict[str, CircuitBreakerState] = {}
+        self._states: dict[str, CircuitBreakerState] = {}
 
     def is_open(self, node_id: str) -> bool:
         """Check if circuit is open (blocking requests)."""
@@ -207,7 +205,7 @@ class CircuitBreaker:
 
         return False
 
-    def get_state(self, node_id: str) -> Optional[CircuitBreakerState]:
+    def get_state(self, node_id: str) -> CircuitBreakerState | None:
         """Get circuit breaker state for a node."""
         return self._states.get(node_id)
 
@@ -245,7 +243,7 @@ class LoadBalancer:
 
     def __init__(
         self,
-        config: Optional[LoadBalancerConfig] = None,
+        config: LoadBalancerConfig | None = None,
     ):
         """
         Initialize load balancer.
@@ -254,9 +252,9 @@ class LoadBalancer:
             config: Load balancer configuration (uses defaults if None)
         """
         self._config = config or LoadBalancerConfig()
-        self._nodes: Dict[str, FederationNode] = {}
-        self._stats: Dict[str, NodeStats] = {}
-        self._circuit_breaker: Optional[CircuitBreaker] = None
+        self._nodes: dict[str, FederationNode] = {}
+        self._stats: dict[str, NodeStats] = {}
+        self._circuit_breaker: CircuitBreaker | None = None
         self._round_robin_index = 0
 
         if self._config.enable_circuit_breaker:
@@ -268,7 +266,7 @@ class LoadBalancer:
     def register_node(
         self,
         node: FederationNode,
-        models: Optional[Set[str]] = None,
+        models: set[str] | None = None,
         initial_load: float = 0.0,
     ) -> None:
         """
@@ -310,7 +308,7 @@ class LoadBalancer:
         self,
         node_id: str,
         health: NodeHealth,
-        models: Optional[Set[str]] = None,
+        models: set[str] | None = None,
     ) -> None:
         """
         Update a node's health status.
@@ -389,9 +387,9 @@ class LoadBalancer:
 
     def select_node(
         self,
-        model: Optional[str] = None,
-        required_trust: Optional[GuildTrustLevel] = None,
-        exclude_nodes: Optional[Set[str]] = None,
+        model: str | None = None,
+        required_trust: GuildTrustLevel | None = None,
+        exclude_nodes: set[str] | None = None,
     ) -> SelectionResult:
         """
         Select the best node for a request.
@@ -473,7 +471,7 @@ class LoadBalancer:
 
     def _select_round_robin(
         self,
-        candidates: List[tuple],
+        candidates: list[tuple],
     ) -> tuple:
         """Round robin selection."""
         self._round_robin_index = (
@@ -484,7 +482,7 @@ class LoadBalancer:
 
     def _select_random(
         self,
-        candidates: List[tuple],
+        candidates: list[tuple],
     ) -> tuple:
         """Random selection."""
         import random
@@ -493,7 +491,7 @@ class LoadBalancer:
 
     def _select_trust_first(
         self,
-        candidates: List[tuple],
+        candidates: list[tuple],
     ) -> tuple:
         """Select highest trust node."""
         sorted_candidates = sorted(
@@ -506,7 +504,7 @@ class LoadBalancer:
 
     def _select_least_connections(
         self,
-        candidates: List[tuple],
+        candidates: list[tuple],
     ) -> tuple:
         """Select node with fewest active connections."""
         sorted_candidates = sorted(
@@ -519,7 +517,7 @@ class LoadBalancer:
 
     def _select_weighted(
         self,
-        candidates: List[tuple],
+        candidates: list[tuple],
     ) -> tuple:
         """
         Weighted selection based on load, trust, latency, and success rate.
@@ -569,18 +567,18 @@ class LoadBalancer:
 
         return sorted_candidates[0]
 
-    def get_stats(self, node_id: str) -> Optional[NodeStats]:
+    def get_stats(self, node_id: str) -> NodeStats | None:
         """Get statistics for a node."""
         return self._stats.get(node_id)
 
-    def get_all_stats(self) -> Dict[str, NodeStats]:
+    def get_all_stats(self) -> dict[str, NodeStats]:
         """Get statistics for all nodes."""
         return dict(self._stats)
 
     def get_available_nodes(
         self,
-        model: Optional[str] = None,
-    ) -> List[str]:
+        model: str | None = None,
+    ) -> list[str]:
         """
         Get list of available node IDs.
 
@@ -601,7 +599,7 @@ class LoadBalancer:
             available.append(node_id)
         return available
 
-    def get_models(self) -> Set[str]:
+    def get_models(self) -> set[str]:
         """Get set of all available models across nodes."""
         models = set()
         for stats in self._stats.values():

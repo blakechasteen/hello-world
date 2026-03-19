@@ -6,8 +6,8 @@ DATAPIG Configuration System
 Configurable thresholds and feature flags for all detection categories.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Dict, Any
 
 
 @dataclass
@@ -42,7 +42,7 @@ class DetectorConfig:
     # Duplicates
     duplicate_method: str = "exact"  # "exact", "fuzzy", "subset"
     fuzzy_similarity_threshold: float = 0.9  # Levenshtein similarity >=90%
-    duplicate_subset_columns: Optional[List[str]] = None  # Check specific columns
+    duplicate_subset_columns: list[str] | None = None  # Check specific columns
 
     # PII Detection
     pii_entropy_threshold: float = 4.0  # Shannon entropy >4.0 = potential secret
@@ -50,8 +50,8 @@ class DetectorConfig:
 
     # Schema Drift
     schema_detection_method: str = "first_row"  # "first_row", "statistical_mode", "explicit"
-    explicit_schema: Optional[Dict[str, type]] = None  # Explicit schema if method="explicit"
-    nullable_fields: Optional[List[str]] = None  # Fields that can be None
+    explicit_schema: dict[str, type] | None = None  # Explicit schema if method="explicit"
+    nullable_fields: list[str] | None = None  # Fields that can be None
 
     # Label Noise
     label_noise_confidence_threshold: float = 0.5  # Only report if >50% contradictions
@@ -77,7 +77,7 @@ class DetectorConfig:
     # Performance Tuning
     # ========================================================================
 
-    sample_size: Optional[int] = None  # None = process all rows
+    sample_size: int | None = None  # None = process all rows
     enable_caching: bool = True  # Cache intermediate results
     parallel_workers: int = 1  # Number of parallel detection threads
     batch_size: int = 1000  # Process in batches for large datasets
@@ -86,11 +86,11 @@ class DetectorConfig:
     # Extensibility
     # ========================================================================
 
-    custom_validators: List[Callable] = field(default_factory=list)  # User-defined validators
-    custom_pii_patterns: Dict[str, str] = field(default_factory=dict)  # Custom regex patterns
+    custom_validators: list[Callable] = field(default_factory=list)  # User-defined validators
+    custom_pii_patterns: dict[str, str] = field(default_factory=dict)  # Custom regex patterns
 
     # Range violations (if enabled)
-    expected_ranges: Dict[str, tuple] = field(default_factory=dict)  # {"field": (min, max)}
+    expected_ranges: dict[str, tuple] = field(default_factory=dict)  # {"field": (min, max)}
 
     # ========================================================================
     # Reporting

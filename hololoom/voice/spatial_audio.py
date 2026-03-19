@@ -10,13 +10,12 @@ Author: HoloLoom Team
 Date: November 15, 2025
 """
 
-from dataclasses import dataclass
-from typing import Optional, Tuple
 import math
+from dataclasses import dataclass
+
 import numpy as np
 
 from hololoom.voice.ar_context import ARContext, Vector3
-
 
 # ============================================================================
 # Audio Configuration
@@ -49,7 +48,7 @@ class SpatialAudioHandler:
     - Doppler shift (future)
     """
 
-    def __init__(self, config: Optional[SpatialAudioConfig] = None):
+    def __init__(self, config: SpatialAudioConfig | None = None):
         """
         Initialize spatial audio handler.
 

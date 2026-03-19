@@ -7,15 +7,14 @@ Basic OCR backend using pytesseract.
 Good baseline quality, works on CPU, widely available.
 """
 
-from typing import Union, Any, List
-import warnings
+from typing import Any
 
 from hololoom.spinningWheel.ocr_protocol import (
     BaseOCRBackend,
-    OCRResult,
-    OCRQuality,
+    OCRBoundingBox,
     OCROutputFormat,
-    OCRBoundingBox
+    OCRQuality,
+    OCRResult,
 )
 
 
@@ -110,7 +109,7 @@ class TesseractOCRBackend(BaseOCRBackend):
 
     async def extract_text_structured(
         self,
-        image: Union[Any],
+        image: Any,
         **kwargs
     ) -> OCRResult:
         """Extract text with bounding boxes."""

@@ -26,7 +26,7 @@ Usage:
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from hololoom.ts_core.arm import BanditArm
 
@@ -42,9 +42,9 @@ class ObservationReflector:
     """
 
     def __init__(self):
-        self._arms: Dict[Tuple[str, str], BanditArm] = {}
+        self._arms: dict[tuple[str, str], BanditArm] = {}
 
-    def _key(self, mode: str, term_name: str) -> Tuple[str, str]:
+    def _key(self, mode: str, term_name: str) -> tuple[str, str]:
         return (mode, term_name)
 
     def _get_arm(self, mode: str, term_name: str) -> BanditArm:
@@ -60,7 +60,7 @@ class ObservationReflector:
     def record_outcome(
         self,
         mode: str,
-        breakdown: Dict[str, float],
+        breakdown: dict[str, float],
         success: bool,
         weight: float = 1.0,
         firing_threshold: float = 0.1,
@@ -116,8 +116,8 @@ class ObservationReflector:
     def suggest_weight_adjustments(
         self,
         mode: str,
-        terms: List[Any],  # List[ScoringTerm] — duck-typed to avoid circular import
-    ) -> Dict[str, float]:
+        terms: list[Any],  # List[ScoringTerm] — duck-typed to avoid circular import
+    ) -> dict[str, float]:
         """Return learned multipliers for all terms in a scoring pipeline.
 
         Pass the result directly as mode_weights to score_terms():
@@ -133,7 +133,7 @@ class ObservationReflector:
     # Observability
     # =========================================================================
 
-    def stats(self) -> Dict[str, dict]:
+    def stats(self) -> dict[str, dict]:
         """Return bandit statistics for all arms."""
         result = {}
         for (mode, term_name), arm in self._arms.items():

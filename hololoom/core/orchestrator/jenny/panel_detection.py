@@ -11,13 +11,13 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Dict, List, Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from hololoom.protocols.types import Query
     from hololoom.fabric.spacetime import Spacetime
     from hololoom.loom.command import PatternSpec
     from hololoom.protocols import ComplexityLevel
+    from hololoom.protocols.types import Query
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ JENNY_STAGES_THRESHOLD = 3         # Above this -> TIMELINE panel
 JENNY_DURATION_THRESHOLD_MS = 100  # Above this -> METRIC panel
 
 
-def classify_query_type(spacetime: 'Spacetime') -> str:
+def classify_query_type(spacetime: Spacetime) -> str:
     """
     Classify query type for Thompson Sampling panel selection.
 
@@ -64,7 +64,7 @@ def classify_query_type(spacetime: 'Spacetime') -> str:
     return 'factual'
 
 
-def get_panel_type_candidates(spacetime: 'Spacetime') -> List:
+def get_panel_type_candidates(spacetime: Spacetime) -> list:
     """
     Get candidate panel types based on response content analysis.
 
@@ -113,7 +113,7 @@ def get_panel_type_candidates(spacetime: 'Spacetime') -> List:
     return candidates
 
 
-def detect_panel_type_heuristic(spacetime: 'Spacetime'):
+def detect_panel_type_heuristic(spacetime: Spacetime):
     """
     Heuristic-based panel type detection (fallback for MRF).
 
@@ -155,7 +155,7 @@ def detect_panel_type_heuristic(spacetime: 'Spacetime'):
 
 
 def detect_jenny_panel_type(
-    spacetime: 'Spacetime',
+    spacetime: Spacetime,
     jenny_mrf_compiler=None,
     jenny_learner=None,
 ):
@@ -179,7 +179,6 @@ def detect_jenny_panel_type(
     Returns:
         PanelTypeJenny enum value
     """
-    from hololoom.visualization.jenny_spec import PanelTypeJenny
 
     # Phase 2.1-2.2: Try MRF-learned selection first
     if jenny_mrf_compiler and jenny_learner:
@@ -210,11 +209,11 @@ def detect_jenny_panel_type(
 
 
 def build_jenny_panel_context(
-    query: 'Query',
-    spacetime: 'Spacetime',
-    pattern_spec: Optional['PatternSpec'],
-    complexity: Optional['ComplexityLevel'],
-) -> Dict[str, Any]:
+    query: Query,
+    spacetime: Spacetime,
+    pattern_spec: PatternSpec | None,
+    complexity: ComplexityLevel | None,
+) -> dict[str, Any]:
     """
     Build context dict for Jenny panel generation.
 

@@ -20,7 +20,6 @@ Date: December 2025
 """
 
 import asyncio
-from typing import List, Tuple, Optional
 
 
 def start_terminal(**kwargs) -> None:
@@ -31,16 +30,16 @@ def start_terminal(**kwargs) -> None:
 async def _terminal_main(**kwargs) -> None:
     """Main terminal loop with Rich formatting."""
     try:
+        from rich import box
         from rich.console import Console
-        from rich.panel import Panel
-        from rich.table import Table
-        from rich.prompt import Prompt
-        from rich.spinner import Spinner
+        from rich.layout import Layout
         from rich.live import Live
         from rich.markdown import Markdown
+        from rich.panel import Panel
+        from rich.prompt import Prompt
+        from rich.spinner import Spinner
+        from rich.table import Table
         from rich.text import Text
-        from rich.layout import Layout
-        from rich import box
     except ImportError:
         print("Rich terminal requires 'rich' package.")
         print("Install with: pip install rich")
@@ -49,7 +48,7 @@ async def _terminal_main(**kwargs) -> None:
     from hololoom.lite import HoloLoomLite
 
     console = Console()
-    history: List[Tuple[str, str, float]] = []
+    history: list[tuple[str, str, float]] = []
 
     # Header
     console.print()
@@ -181,8 +180,8 @@ async def _terminal_main(**kwargs) -> None:
 
 def _rich_help(console):
     """Print help with Rich formatting."""
-    from rich.table import Table
     from rich import box
+    from rich.table import Table
 
     table = Table(title="Commands", box=box.ROUNDED)
     table.add_column("Command", style="cyan")
@@ -209,10 +208,10 @@ def _rich_help(console):
     console.print()
 
 
-def _rich_history(console, history: List[Tuple[str, str, float]]):
+def _rich_history(console, history: list[tuple[str, str, float]]):
     """Print history with Rich formatting."""
-    from rich.table import Table
     from rich import box
+    from rich.table import Table
 
     if not history:
         console.print("[yellow]No history yet.[/yellow]")
@@ -236,8 +235,8 @@ def _rich_history(console, history: List[Tuple[str, str, float]]):
 
 async def _rich_memories(console, loom):
     """Print memories with Rich formatting."""
-    from rich.table import Table
     from rich import box
+    from rich.table import Table
 
     metrics = loom.get_metrics()
 

@@ -48,35 +48,26 @@ Author: HoloLoom Team
 Date: 2025-11-04
 """
 
-import asyncio
 import logging
-from pathlib import Path
-from typing import List, Dict, Set, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import hashlib
-import json
+from pathlib import Path
+from typing import Any
 
 try:
     from .mcp_rag_server import (
-        semantic_chunk,
         hybrid_search,
-        rerank_results,
+        init_memory,
         rag_query,
-        init_memory
+        rerank_results,
+        semantic_chunk,
     )
-    from .protocol import UnifiedMemoryInterface, Memory, create_unified_memory
+    from .protocol import Memory, UnifiedMemoryInterface, create_unified_memory
 except ImportError:
     # Fallback for standalone execution
-    from mcp_rag_server import (
-        semantic_chunk,
-        hybrid_search,
-        rerank_results,
-        rag_query,
-        init_memory
-    )
-    from protocol import UnifiedMemoryInterface, Memory, create_unified_memory
+    from mcp_rag_server import rag_query, semantic_chunk
+    from protocol import UnifiedMemoryInterface, create_unified_memory
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -100,16 +91,16 @@ class RepositoryMetadata:
 
     name: str
     path: str
-    tags: Set[str] = field(default_factory=set)
+    tags: set[str] = field(default_factory=set)
     access_level: AccessLevel = AccessLevel.PUBLIC
     description: str = ""
-    indexed_at: Optional[datetime] = None
+    indexed_at: datetime | None = None
     file_count: int = 0
     line_count: int = 0
-    last_modified: Optional[datetime] = None
+    last_modified: datetime | None = None
 
     # Patterns to ignore
-    ignore_patterns: Set[str] = field(default_factory=lambda: {
+    ignore_patterns: set[str] = field(default_factory=lambda: {
         "*.pyc", "__pycache__", "node_modules", ".git",
         ".venv", "venv", "*.egg-info", "dist", "build"
     })
@@ -120,10 +111,10 @@ class AgentContext:
     """Access context for a specific agent."""
 
     agent_id: str
-    allowed_repos: Set[str] = field(default_factory=set)  # Empty = all public
-    blocked_repos: Set[str] = field(default_factory=set)
-    allowed_tags: Set[str] = field(default_factory=set)   # Empty = all tags
-    blocked_tags: Set[str] = field(default_factory=set)
+    allowed_repos: set[str] = field(default_factory=set)  # Empty = all public
+    blocked_repos: set[str] = field(default_factory=set)
+    allowed_tags: set[str] = field(default_factory=set)   # Empty = all tags
+    blocked_tags: set[str] = field(default_factory=set)
     access_level: AccessLevel = AccessLevel.PUBLIC
 
     def can_access_repo(self, repo: RepositoryMetadata) -> bool:
@@ -145,7 +136,7 @@ class AgentContext:
 
         return True
 
-    def can_access_tags(self, tags: Set[str]) -> bool:
+    def can_access_tags(self, tags: set[str]) -> bool:
         """Check if agent can access content with these tags."""
         # Blocked tags
         if self.blocked_tags & tags:
@@ -166,7 +157,7 @@ def chunk_code_file(
     file_path: Path,
     content: str,
     max_chunk_size: int = 1000
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Chunk code file respecting language semantics.
 
@@ -216,7 +207,7 @@ def _chunk_python(
     file_path: Path,
     content: str,
     max_chunk_size: int
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Chunk Python file by class/function definitions."""
     chunks = []
 
@@ -273,12 +264,12 @@ def _chunk_python(
 
 def _make_python_chunk(
     file_path: Path,
-    lines: List[str],
-    chunk_type: Optional[str],
-    name: Optional[str],
-    imports: List[str],
+    lines: list[str],
+    chunk_type: str | None,
+    name: str | None,
+    imports: list[str],
     line_number: int
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create Python chunk with metadata."""
     # Include imports for context
     context_lines = imports[:5] if imports else []  # Max 5 imports
@@ -301,7 +292,7 @@ def _chunk_typescript(
     file_path: Path,
     content: str,
     max_chunk_size: int
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Chunk TypeScript/JavaScript file."""
     # Similar to Python but with different patterns
     # For now, fallback to semantic chunking
@@ -322,7 +313,7 @@ def _chunk_markdown(
     file_path: Path,
     content: str,
     max_chunk_size: int
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Chunk Markdown by sections."""
     sections = []
     current_section = []
@@ -368,7 +359,7 @@ class RepositoryContextManager:
     - Fast semantic search
     """
 
-    def __init__(self, memory: Optional[UnifiedMemoryInterface] = None):
+    def __init__(self, memory: UnifiedMemoryInterface | None = None):
         """
         Initialize repository manager.
 
@@ -376,11 +367,11 @@ class RepositoryContextManager:
             memory: Optional memory backend (created if not provided)
         """
         self.memory = memory
-        self.repositories: Dict[str, RepositoryMetadata] = {}
-        self.agent_contexts: Dict[str, AgentContext] = {}
+        self.repositories: dict[str, RepositoryMetadata] = {}
+        self.agent_contexts: dict[str, AgentContext] = {}
 
         # Memory ID -> Repository name mapping
-        self._memory_to_repo: Dict[str, str] = {}
+        self._memory_to_repo: dict[str, str] = {}
 
     async def initialize(self):
         """Initialize memory backend if needed."""
@@ -397,7 +388,7 @@ class RepositoryContextManager:
         self,
         name: str,
         path: str,
-        tags: Optional[Set[str]] = None,
+        tags: set[str] | None = None,
         access_level: AccessLevel = AccessLevel.PUBLIC,
         description: str = "",
         auto_index: bool = True
@@ -440,7 +431,7 @@ class RepositoryContextManager:
     async def index_repository(
         self,
         name: str,
-        file_extensions: Optional[Set[str]] = None
+        file_extensions: set[str] | None = None
     ):
         """
         Index all files in repository.
@@ -522,10 +513,10 @@ class RepositoryContextManager:
     def create_agent_context(
         self,
         agent_id: str,
-        allowed_repos: Optional[Set[str]] = None,
-        blocked_repos: Optional[Set[str]] = None,
-        allowed_tags: Optional[Set[str]] = None,
-        blocked_tags: Optional[Set[str]] = None,
+        allowed_repos: set[str] | None = None,
+        blocked_repos: set[str] | None = None,
+        allowed_tags: set[str] | None = None,
+        blocked_tags: set[str] | None = None,
         access_level: AccessLevel = AccessLevel.PUBLIC
     ) -> 'AgentQueryContext':
         """
@@ -557,8 +548,8 @@ class RepositoryContextManager:
 
     def list_repositories(
         self,
-        agent_context: Optional[AgentContext] = None
-    ) -> List[RepositoryMetadata]:
+        agent_context: AgentContext | None = None
+    ) -> list[RepositoryMetadata]:
         """
         List repositories accessible to agent.
 
@@ -595,9 +586,9 @@ class AgentQueryContext:
         self,
         query_text: str,
         limit: int = 5,
-        repository: Optional[str] = None,
-        tags: Optional[Set[str]] = None
-    ) -> List[Dict[str, Any]]:
+        repository: str | None = None,
+        tags: set[str] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Query code with access control.
 
@@ -664,7 +655,7 @@ class AgentQueryContext:
 
         return filtered_results[:limit]
 
-    def list_repositories(self) -> List[RepositoryMetadata]:
+    def list_repositories(self) -> list[RepositoryMetadata]:
         """List repositories accessible to this agent."""
         return self.manager.list_repositories(self.context)
 
@@ -674,7 +665,7 @@ class AgentQueryContext:
 # ============================================================================
 
 async def create_repo_manager(
-    repositories: Optional[Dict[str, str]] = None
+    repositories: dict[str, str] | None = None
 ) -> RepositoryContextManager:
     """
     Create and initialize repository manager.

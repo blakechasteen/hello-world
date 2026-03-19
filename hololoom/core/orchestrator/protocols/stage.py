@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Stage Executor Protocols and Base Classes
 ==========================================
@@ -28,10 +27,11 @@ Date: 2025-12-09
 
 from __future__ import annotations
 
-import time
 import logging
+import time
 from abc import ABC, abstractmethod
-from typing import Protocol, runtime_checkable, Optional, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -71,7 +71,7 @@ class StageExecutorProtocol(Protocol):
     stage_name: str
     """Human-readable name for logging and tracing."""
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute this stage and return updated context.
 
@@ -132,8 +132,8 @@ class BaseStageExecutor(ABC):
 
     def __init__(
         self,
-        logger: Optional[logging.Logger] = None,
-        emit_stage_event: Optional[Callable[[int, str, float], None]] = None
+        logger: logging.Logger | None = None,
+        emit_stage_event: Callable[[int, str, float], None] | None = None
     ):
         """
         Initialize base executor with optional logging and monitoring.
@@ -147,7 +147,7 @@ class BaseStageExecutor(ABC):
         self._emit_stage_event = emit_stage_event or (lambda *args: None)
 
     @abstractmethod
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute this stage and return updated context.
 
@@ -176,7 +176,7 @@ class BaseStageExecutor(ABC):
 
     def _record_timing(
         self,
-        ctx: 'WeavingContext',
+        ctx: WeavingContext,
         stage_key: str,
         start: float
     ) -> float:
@@ -243,7 +243,7 @@ class BaseStageExecutor(ABC):
     # Context Helpers
     # ========================================================================
 
-    def _add_error(self, ctx: 'WeavingContext', error: str) -> None:
+    def _add_error(self, ctx: WeavingContext, error: str) -> None:
         """
         Add error to context and log it.
 
@@ -254,7 +254,7 @@ class BaseStageExecutor(ABC):
         ctx.add_error(error)
         self._log_stage_error(error)
 
-    def _add_warning(self, ctx: 'WeavingContext', warning: str) -> None:
+    def _add_warning(self, ctx: WeavingContext, warning: str) -> None:
         """
         Add warning to context and log it.
 
@@ -267,10 +267,74 @@ class BaseStageExecutor(ABC):
 
 
 # ============================================================================
+# Gate Executor (ABC for pre-pipeline gates)
+# ============================================================================
+
+class GateExecutor(BaseStageExecutor):
+    """
+    Abstract base class for pipeline gates that run before the weaving stages.
+
+    Gates evaluate a query and either:
+    - Return None to pass through to the next gate / full pipeline
+    - Return a result (e.g., Spacetime) to short-circuit the pipeline
+
+    Subclasses must:
+    - Set stage_id, stage_name, and timing_key class attributes
+    - Implement evaluate() method
+
+    The execute() method delegates to evaluate(), handling timing automatically.
+
+    Example:
+        >>> class MyCacheGate(GateExecutor):
+        ...     stage_id = -1
+        ...     stage_name = "Cache Check"
+        ...     timing_key = "cache_check"
+        ...
+        ...     async def evaluate(self, ctx: WeavingContext) -> Optional[Any]:
+        ...         cached = self.cache.get(ctx.current_query_text)
+        ...         return cached  # None = miss (continue), value = hit (short-circuit)
+    """
+
+    timing_key: str = "gate"
+
+    @abstractmethod
+    async def evaluate(self, ctx: WeavingContext) -> Any | None:
+        """
+        Evaluate whether this gate short-circuits the pipeline.
+
+        Args:
+            ctx: WeavingContext with accumulated pipeline state
+
+        Returns:
+            None to continue the pipeline, or a result to short-circuit
+        """
+        ...
+
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
+        """
+        Execute the gate by delegating to evaluate() with timing.
+
+        If evaluate() returns a non-None result, it is stored as
+        ctx.gate_result for the orchestrator to handle.
+        """
+        self._log_stage_start()
+        start = self._start_timing()
+
+        result = await self.evaluate(ctx)
+        if result is not None:
+            ctx.gate_result = result
+
+        duration_ms = self._record_timing(ctx, self.timing_key, start)
+        self._log_stage_complete(duration_ms)
+        return ctx
+
+
+# ============================================================================
 # Exports
 # ============================================================================
 
 __all__ = [
     'StageExecutorProtocol',
     'BaseStageExecutor',
+    'GateExecutor',
 ]

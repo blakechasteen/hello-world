@@ -36,9 +36,11 @@ Usage:
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from enum import Enum
+from typing import Any
+
 import numpy as np
 
 
@@ -56,7 +58,7 @@ class AxisDiscoveryConfig:
 
     n_components: int = 50
     min_explained_variance: float = 0.01
-    max_components: Optional[int] = None
+    max_components: int | None = None
     normalize: bool = True
     center: bool = True
     random_state: int = 42
@@ -67,7 +69,7 @@ class AxisDiscoveryConfig:
     n_epochs: int = 100
 
     # Clustering settings
-    n_clusters: Optional[int] = None
+    n_clusters: int | None = None
     min_cluster_size: int = 5
     cluster_method: str = "kmeans"  # kmeans, hierarchical, dbscan
 
@@ -105,16 +107,16 @@ class DiscoveredAxis:
     method: DiscoveryMethod = DiscoveryMethod.PCA
 
     # Labeling (filled by AutoLabeler)
-    label: Optional[str] = None
-    description: Optional[str] = None
+    label: str | None = None
+    description: str | None = None
     confidence: float = 0.0
 
     # Examples that activate this axis
-    top_positive_examples: List[Any] = field(default_factory=list)
-    top_negative_examples: List[Any] = field(default_factory=list)
+    top_positive_examples: list[Any] = field(default_factory=list)
+    top_negative_examples: list[Any] = field(default_factory=list)
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def name(self) -> str:
@@ -129,7 +131,7 @@ class DiscoveredAxis:
             return float(np.dot(activations, self.direction))
         return np.dot(activations, self.direction)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "index": self.index,
@@ -148,8 +150,8 @@ class DiscoveredAxis:
 class ContrastivePair:
     """A contrastive pair for axis discovery."""
 
-    positive: List[np.ndarray]  # Examples that should activate positively
-    negative: List[np.ndarray]  # Examples that should activate negatively
+    positive: list[np.ndarray]  # Examples that should activate positively
+    negative: list[np.ndarray]  # Examples that should activate negatively
     label: str  # Label for this axis
     weight: float = 1.0  # Importance weight
 
@@ -163,12 +165,12 @@ class LearnedLens(ABC):
         pass
 
     @abstractmethod
-    def get_axes(self) -> List[DiscoveredAxis]:
+    def get_axes(self) -> list[DiscoveredAxis]:
         """Get discovered axes."""
         pass
 
     @abstractmethod
-    def project(self, activations: np.ndarray) -> Dict[str, float]:
+    def project(self, activations: np.ndarray) -> dict[str, float]:
         """Project activations onto discovered semantic space."""
         pass
 
@@ -192,12 +194,12 @@ class PCAAxisDiscovery(LearnedLens):
     These directions often correspond to interpretable semantic concepts.
     """
 
-    def __init__(self, config: Optional[AxisDiscoveryConfig] = None):
+    def __init__(self, config: AxisDiscoveryConfig | None = None):
         self.config = config or AxisDiscoveryConfig.default()
-        self._components: Optional[np.ndarray] = None
-        self._explained_variance: Optional[np.ndarray] = None
-        self._mean: Optional[np.ndarray] = None
-        self._axes: List[DiscoveredAxis] = []
+        self._components: np.ndarray | None = None
+        self._explained_variance: np.ndarray | None = None
+        self._mean: np.ndarray | None = None
+        self._axes: list[DiscoveredAxis] = []
         self._fitted = False
 
     def fit(self, activations: np.ndarray, **kwargs) -> None:
@@ -274,13 +276,13 @@ class PCAAxisDiscovery(LearnedLens):
 
         self._fitted = True
 
-    def get_axes(self) -> List[DiscoveredAxis]:
+    def get_axes(self) -> list[DiscoveredAxis]:
         """Get discovered axes."""
         if not self._fitted:
             return []
         return self._axes
 
-    def project(self, activations: np.ndarray) -> Dict[str, float]:
+    def project(self, activations: np.ndarray) -> dict[str, float]:
         """Project activations onto discovered semantic space."""
         if not self._fitted or not self._axes:
             return {}
@@ -319,12 +321,12 @@ class ContrastiveAxisDiscovery(LearnedLens):
 
     def __init__(
         self,
-        pairs: Optional[List[ContrastivePair]] = None,
-        config: Optional[AxisDiscoveryConfig] = None,
+        pairs: list[ContrastivePair] | None = None,
+        config: AxisDiscoveryConfig | None = None,
     ):
         self.pairs = pairs or []
         self.config = config or AxisDiscoveryConfig.default()
-        self._axes: List[DiscoveredAxis] = []
+        self._axes: list[DiscoveredAxis] = []
         self._fitted = False
 
     def add_pair(self, pair: ContrastivePair) -> None:
@@ -387,13 +389,13 @@ class ContrastiveAxisDiscovery(LearnedLens):
 
         self._fitted = True
 
-    def get_axes(self) -> List[DiscoveredAxis]:
+    def get_axes(self) -> list[DiscoveredAxis]:
         """Get discovered axes."""
         if not self._fitted:
             return []
         return self._axes
 
-    def project(self, activations: np.ndarray) -> Dict[str, float]:
+    def project(self, activations: np.ndarray) -> dict[str, float]:
         """Project activations onto discovered semantic space."""
         if not self._fitted or not self._axes:
             return {}
@@ -414,11 +416,11 @@ class ClusteringAxisDiscovery(LearnedLens):
     based on cluster centroids.
     """
 
-    def __init__(self, config: Optional[AxisDiscoveryConfig] = None):
+    def __init__(self, config: AxisDiscoveryConfig | None = None):
         self.config = config or AxisDiscoveryConfig.default()
-        self._centroids: Optional[np.ndarray] = None
-        self._labels: Optional[np.ndarray] = None
-        self._axes: List[DiscoveredAxis] = []
+        self._centroids: np.ndarray | None = None
+        self._labels: np.ndarray | None = None
+        self._axes: list[DiscoveredAxis] = []
         self._fitted = False
 
     def fit(self, activations: np.ndarray, **kwargs) -> None:
@@ -487,7 +489,7 @@ class ClusteringAxisDiscovery(LearnedLens):
 
     def _kmeans(
         self, data: np.ndarray, n_clusters: int, max_iter: int = 100
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Simple k-means implementation."""
         n_samples = data.shape[0]
 
@@ -518,13 +520,13 @@ class ClusteringAxisDiscovery(LearnedLens):
 
         return centroids, labels
 
-    def get_axes(self) -> List[DiscoveredAxis]:
+    def get_axes(self) -> list[DiscoveredAxis]:
         """Get discovered axes."""
         if not self._fitted:
             return []
         return self._axes
 
-    def project(self, activations: np.ndarray) -> Dict[str, float]:
+    def project(self, activations: np.ndarray) -> dict[str, float]:
         """Project activations onto discovered semantic space."""
         if not self._fitted or not self._axes:
             return {}
@@ -536,7 +538,7 @@ class ClusteringAxisDiscovery(LearnedLens):
 
         return projection
 
-    def get_cluster_assignments(self) -> Optional[np.ndarray]:
+    def get_cluster_assignments(self) -> np.ndarray | None:
         """Get cluster assignments from last fit."""
         return self._labels
 
@@ -549,11 +551,11 @@ class LabelingResult:
     label: str
     description: str
     confidence: float
-    supporting_examples: List[str] = field(default_factory=list)
-    alternative_labels: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    supporting_examples: list[str] = field(default_factory=list)
+    alternative_labels: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "axis_index": self.axis_index,
@@ -601,8 +603,8 @@ Response format (JSON):
 
     def __init__(
         self,
-        llm_client: Optional[Callable] = None,
-        prompt_template: Optional[str] = None,
+        llm_client: Callable | None = None,
+        prompt_template: str | None = None,
         max_examples: int = 5,
     ):
         """
@@ -616,13 +618,13 @@ Response format (JSON):
         self.llm_client = llm_client
         self.prompt_template = prompt_template or self.DEFAULT_PROMPT
         self.max_examples = max_examples
-        self._cache: Dict[int, LabelingResult] = {}
+        self._cache: dict[int, LabelingResult] = {}
 
     def label(
         self,
         axis: DiscoveredAxis,
-        positive_examples: Optional[List[str]] = None,
-        negative_examples: Optional[List[str]] = None,
+        positive_examples: list[str] | None = None,
+        negative_examples: list[str] | None = None,
     ) -> LabelingResult:
         """
         Generate label for an axis.
@@ -670,14 +672,14 @@ Response format (JSON):
         self._cache[axis.index] = result
         return result
 
-    def _format_examples(self, examples: List[str]) -> str:
+    def _format_examples(self, examples: list[str]) -> str:
         """Format examples for prompt."""
         if not examples:
             return "(No examples provided)"
         return "\n".join(f"- {ex}" for ex in examples)
 
     def _parse_response(
-        self, axis_index: int, response: str, examples: List[str]
+        self, axis_index: int, response: str, examples: list[str]
     ) -> LabelingResult:
         """Parse LLM response."""
         import json
@@ -712,8 +714,8 @@ Response format (JSON):
     def _heuristic_label(
         self,
         axis: DiscoveredAxis,
-        positive: List[str],
-        negative: List[str],
+        positive: list[str],
+        negative: list[str],
     ) -> LabelingResult:
         """Generate heuristic label when LLM not available."""
         # Simple heuristic: use method and index
@@ -749,9 +751,9 @@ Response format (JSON):
 
     def label_batch(
         self,
-        axes: List[DiscoveredAxis],
-        examples_fn: Optional[Callable[[DiscoveredAxis], Tuple[List[str], List[str]]]] = None,
-    ) -> List[LabelingResult]:
+        axes: list[DiscoveredAxis],
+        examples_fn: Callable[[DiscoveredAxis], tuple[list[str], list[str]]] | None = None,
+    ) -> list[LabelingResult]:
         """
         Label multiple axes.
 
@@ -774,8 +776,8 @@ Response format (JSON):
 
     def update_axes(
         self,
-        axes: List[DiscoveredAxis],
-        examples_fn: Optional[Callable] = None,
+        axes: list[DiscoveredAxis],
+        examples_fn: Callable | None = None,
     ) -> None:
         """
         Update axes with generated labels.

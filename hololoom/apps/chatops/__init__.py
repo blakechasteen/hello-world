@@ -29,16 +29,16 @@ Quick Start:
 
 # Core components - always available
 from hololoom.apps.chatops.core import (
-    MatrixBot,
-    MatrixBotConfig,
     ChatOpsOrchestrator,
+    ChatOpsSkill,
+    ChatOpsSkills,
     ConversationContext,
     ConversationMemory,
     EntityType,
+    MatrixBot,
+    MatrixBotConfig,
     RelationType,
-    ChatOpsSkills,
     SkillResult,
-    ChatOpsSkill,
 )
 
 # Main runner
@@ -52,8 +52,8 @@ except ImportError:
 try:
     from hololoom.apps.chatops.handlers import (
         MultimodalHandler,
-        ThreadHandler,
         ProactiveAgent,
+        ThreadHandler,
     )
     _HANDLERS_AVAILABLE = True
 except ImportError:

@@ -14,10 +14,9 @@ Date: November 2025
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
-from enum import Enum
-import asyncio
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class RoutingStrategy(Enum):
@@ -34,10 +33,10 @@ class UserContext:
     user_id: str
     session_id: str
     role: str = "user"
-    department: Optional[str] = None
-    preferences: Dict[str, Any] = field(default_factory=dict)
-    history: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    department: str | None = None
+    preferences: dict[str, Any] = field(default_factory=dict)
+    history: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -48,8 +47,8 @@ class RoutingDecision:
     strategy_used: RoutingStrategy
     context_quality: float  # 0.0-1.0 (how good was the context?)
     reasoning: str
-    alternatives: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    alternatives: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class ContextAwareRouter:
@@ -90,10 +89,10 @@ class ContextAwareRouter:
         self.enable_ab_testing = enable_ab_testing
 
         # User context storage (session history)
-        self._user_contexts: Dict[str, UserContext] = {}
+        self._user_contexts: dict[str, UserContext] = {}
 
         # Routing history for learning
-        self._routing_history: List[Dict[str, Any]] = []
+        self._routing_history: list[dict[str, Any]] = []
 
         # Performance metrics
         self._metrics = {
@@ -107,7 +106,7 @@ class ContextAwareRouter:
     async def route(
         self,
         query: str,
-        user_context: Optional[UserContext] = None,
+        user_context: UserContext | None = None,
         enrich_context: bool = True,
     ) -> RoutingDecision:
         """
@@ -223,7 +222,7 @@ class ContextAwareRouter:
 
             return user_context, quality
 
-        except Exception as e:
+        except Exception:
             # Graceful degradation if ContextDepartment unavailable
             return user_context, 0.5
 
@@ -389,10 +388,10 @@ class ContextAwareRouter:
                     -0.2, current - 0.05  # Cap at -20% penalty
                 )
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get routing performance metrics"""
         return self._metrics.copy()
 
-    def get_user_context(self, user_id: str) -> Optional[UserContext]:
+    def get_user_context(self, user_id: str) -> UserContext | None:
         """Get user context by user_id"""
         return self._user_contexts.get(user_id)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Tool Execution Executor - Step 8: Safety-Gated Tool Execution
 ==============================================================
@@ -17,15 +16,16 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import logging
-from typing import Callable, Optional, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from hololoom.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
+    from hololoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
     from hololoom.orchestrator.context import WeavingContext
     from hololoom.tools.executor import ToolExecutor
-    from hololoom.alignment.safety_guardrails import SafetyGuardrails
-    from hololoom.alignment.audit_trail import AuditTrail
 
 
 class ToolExecutionExecutor(BaseStageExecutor):
@@ -60,11 +60,11 @@ class ToolExecutionExecutor(BaseStageExecutor):
 
     def __init__(
         self,
-        tool_executor: 'ToolExecutor',
-        guardrails: Optional['SafetyGuardrails'] = None,
-        audit_trail: Optional['AuditTrail'] = None,
-        logger: Optional[logging.Logger] = None,
-        emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+        tool_executor: ToolExecutor,
+        guardrails: SafetyGuardrails | None = None,
+        audit_trail: AuditTrail | None = None,
+        logger: logging.Logger | None = None,
+        emit_stage_event: Callable[[int, str, float], None] | None = None,
     ):
         """
         Initialize Tool Execution Executor.
@@ -81,7 +81,7 @@ class ToolExecutionExecutor(BaseStageExecutor):
         self.guardrails = guardrails
         self.audit_trail = audit_trail
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute tool with safety gating.
 
@@ -114,7 +114,7 @@ class ToolExecutionExecutor(BaseStageExecutor):
 
         return ctx
 
-    def update_guardrails(self, guardrails: Optional['SafetyGuardrails']) -> None:
+    def update_guardrails(self, guardrails: SafetyGuardrails | None) -> None:
         """
         Update safety guardrails.
 
@@ -123,7 +123,7 @@ class ToolExecutionExecutor(BaseStageExecutor):
         """
         self.guardrails = guardrails
 
-    def update_audit_trail(self, audit_trail: Optional['AuditTrail']) -> None:
+    def update_audit_trail(self, audit_trail: AuditTrail | None) -> None:
         """
         Update audit trail.
 

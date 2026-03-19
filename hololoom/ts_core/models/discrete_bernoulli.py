@@ -20,8 +20,9 @@ Example:
     >>> print(stats["best_arm"])  # Arm with highest posterior mean
 """
 
-import numpy as np
 from typing import Literal
+
+import numpy as np
 
 
 class DiscreteBernoulliTS:

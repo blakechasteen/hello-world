@@ -25,18 +25,16 @@ Usage:
 Then open: http://localhost:8001
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, Form
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from pathlib import Path
-import json
 import asyncio
-from contextlib import asynccontextmanager
-from typing import Dict, List, Optional
-import sys
+import json
 import logging
-import tempfile
 import os
+import sys
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -54,39 +52,43 @@ if ffmpeg_path.exists():
             logger.info(f"Added ffmpeg to PATH: {pkg}")
             break
 
-from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
-from hololoom.config import Config, MemoryBackend
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.alignment.audit_trail import OutcomeType, AuditTrail
-from hololoom.apps.workflow_builder.conversation_manager import ConversationManager
-from hololoom.apps.workflow_builder.promptly_bridge import PromptlyBridge, PROMPTLY_AVAILABLE
+from hololoom.protocols.types import MemoryShard, Query
+
+from hololoom.agentic import ReasoningMode, create_agentic_orchestrator
 
 # MCTS Agent Pool for background learning
 from hololoom.agents.background_learner import create_agent_pool
+from hololoom.alignment.audit_trail import AuditTrail
+from hololoom.apps.workflow_builder.conversation_manager import ConversationManager
 
 # Multi-threaded conversation manager with breakthrough sharing
-from hololoom.apps.workflow_builder.conversation_thread_manager import create_conversation_thread_manager
-
-# Spinners for content ingestion
-from hololoom.spinningWheel.youtube_spinner import YouTubeSpinner, TRANSCRIPT_API_AVAILABLE as YOUTUBE_AVAILABLE
-from hololoom.spinningWheel.whisper_spinner import WhisperSpinner, WHISPER_AVAILABLE
-from hololoom.spinningWheel.spreadsheet_spinner import SpreadsheetSpinner, PANDAS_AVAILABLE as SPREADSHEET_AVAILABLE
-from hololoom.spinningWheel.pdf_spinner import PDFSpinner, PDF_AVAILABLE, PDFPLUMBER_AVAILABLE
-from hololoom.spinningWheel.email_spinner import EmailSpinner, HTML_AVAILABLE as EMAIL_AVAILABLE
-from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
-from hololoom.spinningWheel.git_spinner import GitSpinner
-from hololoom.spinningWheel.matrix_spinner import MatrixSpinner, MATRIX_AVAILABLE
-from hololoom.spinningWheel.url_spinner import URLSpinner, WEB_AVAILABLE as URL_AVAILABLE
+from hololoom.apps.workflow_builder.promptly_bridge import PROMPTLY_AVAILABLE, PromptlyBridge
+from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # Voice integration for conversational dashboard
 from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
-from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+from hololoom.config import Config, MemoryBackend
+from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
+from hololoom.spinningWheel.email_spinner import HTML_AVAILABLE as EMAIL_AVAILABLE
+from hololoom.spinningWheel.email_spinner import EmailSpinner
+from hololoom.spinningWheel.git_spinner import GitSpinner
+from hololoom.spinningWheel.matrix_spinner import MATRIX_AVAILABLE, MatrixSpinner
+from hololoom.spinningWheel.pdf_spinner import PDF_AVAILABLE, PDFPLUMBER_AVAILABLE, PDFSpinner
+from hololoom.spinningWheel.spreadsheet_spinner import PANDAS_AVAILABLE as SPREADSHEET_AVAILABLE
+from hololoom.spinningWheel.spreadsheet_spinner import SpreadsheetSpinner
+from hololoom.spinningWheel.url_spinner import WEB_AVAILABLE as URL_AVAILABLE
+from hololoom.spinningWheel.url_spinner import URLSpinner
+from hololoom.spinningWheel.whisper_spinner import WHISPER_AVAILABLE, WhisperSpinner
+from hololoom.spinningWheel.youtube_spinner import TRANSCRIPT_API_AVAILABLE as YOUTUBE_AVAILABLE
+
+# Spinners for content ingestion
+from hololoom.spinningWheel.youtube_spinner import YouTubeSpinner
 
 # Active WebSocket connections
-active_connections: List[WebSocket] = []
+active_connections: list[WebSocket] = []
 
 # Conversation tracking: WebSocket -> conversation_id
-websocket_conversations: Dict[WebSocket, int] = {}
+websocket_conversations: dict[WebSocket, int] = {}
 
 # Agentic orchestrator (initialized on startup)
 agentic_orchestrator = None
@@ -128,7 +130,7 @@ async def lifespan(app: FastAPI):
     # Initialize conversation manager (persistent SQLite storage)
     conversation_manager = ConversationManager(db_path="./data/conversations.db")
     stats = conversation_manager.get_stats()
-    logger.info(f"Conversation database initialized")
+    logger.info("Conversation database initialized")
     logger.info(f"  - Total conversations: {stats['total_conversations']}")
     logger.info(f"  - Total messages: {stats['total_messages']}")
     logger.info(f"  - Database: {stats['db_path']}")
@@ -168,12 +170,12 @@ async def lifespan(app: FastAPI):
 
         # Check LLM status
         llm_status = "available" if agentic_orchestrator.llm else "unavailable"
-        logger.info(f"Agentic orchestrator initialized")
+        logger.info("Agentic orchestrator initialized")
         logger.info(f"  - LLM status: {llm_status}")
-        logger.info(f"  - Alignment: enabled")
+        logger.info("  - Alignment: enabled")
         logger.info(f"  - Memory backend: {orchestrator_config.memory_backend.value}")
-        logger.info(f"  - Verification: enabled")
-        logger.info(f"  - Goal tracking: enabled")
+        logger.info("  - Verification: enabled")
+        logger.info("  - Goal tracking: enabled")
 
     except Exception as e:
         logger.error(f"Failed to initialize orchestrator: {e}")
@@ -291,8 +293,8 @@ async def lifespan(app: FastAPI):
     # Initialize MCTS Agent Pool for background learning
     logger.info("Initializing MCTS Agent Pool...")
     try:
-        from hololoom.memory.graph import KG
         from hololoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.memory.graph import KG
 
         # Get KG and embeddings from orchestrator
         kg = agentic_orchestrator.kg if hasattr(agentic_orchestrator, 'kg') else KG()
@@ -734,7 +736,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         'llm_status': 'active' if agentic_orchestrator.llm else 'unavailable'
                     }
 
-                    logger.info(f"Reasoning complete:")
+                    logger.info("Reasoning complete:")
                     logger.info(f"  - Steps: {len(result.steps_taken)}")
                     logger.info(f"  - Confidence: {result.spacetime.confidence:.2f}")
                     logger.info(f"  - Duration: {result.total_duration_ms:.1f}ms")
@@ -1675,7 +1677,7 @@ async def upload_code(file: UploadFile = File(...)):
         )
 
 
-def create_demo_shards() -> List[MemoryShard]:
+def create_demo_shards() -> list[MemoryShard]:
     """Create demo knowledge shards"""
     return [
         MemoryShard(

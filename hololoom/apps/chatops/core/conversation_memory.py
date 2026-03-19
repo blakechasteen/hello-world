@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Conversation Memory for ChatOps
 ================================
@@ -23,16 +22,17 @@ Enables:
     - Context-aware responses
 """
 
+import hashlib
 import logging
-from typing import Dict, List, Optional, Set, Any
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-import hashlib
+from typing import Any
 
 try:
+    import networkx as nx
+
     from hololoom.memory.graph import KG, KGEdge
     from hololoom.protocols.types import MemoryShard
-    import networkx as nx
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:
     HOLOLOOM_AVAILABLE = False
@@ -89,7 +89,7 @@ class ConversationStats:
     unique_participants: int = 0
     topics_discussed: int = 0
     date_range: tuple = field(default_factory=lambda: (None, None))
-    most_active_user: Optional[str] = None
+    most_active_user: str | None = None
     message_frequency: float = 0.0  # Messages per hour
 
 
@@ -125,7 +125,7 @@ class ConversationMemory:
         results = memory.search("architecture", limit=5)
     """
 
-    def __init__(self, kg: Optional[Any] = None):
+    def __init__(self, kg: Any | None = None):
         """
         Initialize conversation memory.
 
@@ -139,10 +139,10 @@ class ConversationMemory:
             self.kg = kg or KG()
 
         # Message counters per conversation
-        self.message_counters: Dict[str, int] = {}
+        self.message_counters: dict[str, int] = {}
 
         # Entity extraction cache
-        self.entity_cache: Dict[str, Set[str]] = {}
+        self.entity_cache: dict[str, set[str]] = {}
 
         logger.info("ConversationMemory initialized")
 
@@ -155,9 +155,9 @@ class ConversationMemory:
         conversation_id: str,
         sender: str,
         text: str,
-        timestamp: Optional[datetime] = None,
-        reply_to: Optional[str] = None,
-        metadata: Optional[Dict] = None
+        timestamp: datetime | None = None,
+        reply_to: str | None = None,
+        metadata: dict | None = None
     ) -> str:
         """
         Add message to conversation memory.
@@ -230,7 +230,7 @@ class ConversationMemory:
         conversation_id: str,
         sender: str,
         timestamp: datetime,
-        reply_to: Optional[str]
+        reply_to: str | None
     ) -> None:
         """Add relationships for message."""
         # Message -> Conversation
@@ -269,7 +269,7 @@ class ConversationMemory:
         self,
         conversation_id: str,
         timestamp: datetime
-    ) -> Optional[str]:
+    ) -> str | None:
         """Get previous message in conversation."""
         # Would query KG for most recent message before timestamp
         # For now, simplified
@@ -282,7 +282,7 @@ class ConversationMemory:
     # Entity & Topic Extraction
     # ========================================================================
 
-    def _extract_entities(self, text: str) -> List[str]:
+    def _extract_entities(self, text: str) -> list[str]:
         """
         Extract entities from message text.
 
@@ -310,7 +310,7 @@ class ConversationMemory:
 
         return entities
 
-    def _extract_topics(self, text: str) -> List[str]:
+    def _extract_topics(self, text: str) -> list[str]:
         """
         Extract topics from message text.
 
@@ -327,7 +327,7 @@ class ConversationMemory:
         topics = [kw for kw in keywords if kw in text_lower]
         return topics
 
-    def _link_entities(self, msg_id: str, entities: List[str]) -> None:
+    def _link_entities(self, msg_id: str, entities: list[str]) -> None:
         """Link message to mentioned entities."""
         for entity in entities:
             entity_id = self._entity_node_id(entity)
@@ -347,7 +347,7 @@ class ConversationMemory:
                 rel_type=RelationType.MENTIONS
             )
 
-    def _link_topics(self, msg_id: str, topics: List[str]) -> None:
+    def _link_topics(self, msg_id: str, topics: list[str]) -> None:
         """Link message to discussion topics."""
         for topic in topics:
             topic_id = self._topic_node_id(topic)
@@ -417,8 +417,8 @@ class ConversationMemory:
         self,
         conversation_id: str,
         limit: int = 10,
-        before: Optional[datetime] = None
-    ) -> List[MemoryShard]:
+        before: datetime | None = None
+    ) -> list[MemoryShard]:
         """
         Get recent messages from conversation.
 
@@ -459,8 +459,8 @@ class ConversationMemory:
         self,
         conv_node_id: str,
         limit: int,
-        before: Optional[datetime]
-    ) -> List[Dict]:
+        before: datetime | None
+    ) -> list[dict]:
         """Query messages from KG."""
         # Simplified - in production would use proper graph traversal
         return []
@@ -469,8 +469,8 @@ class ConversationMemory:
         self,
         query: str,
         limit: int = 5,
-        conversation_id: Optional[str] = None
-    ) -> List[Dict]:
+        conversation_id: str | None = None
+    ) -> list[dict]:
         """
         Search messages by text.
 
@@ -548,7 +548,7 @@ class ConversationMemory:
         self,
         conversation_id: str,
         limit: int
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """Mock context retrieval."""
         return []
 

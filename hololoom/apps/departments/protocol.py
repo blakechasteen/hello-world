@@ -25,31 +25,31 @@ from hololoom.protocols.department import (  # noqa: F401, E402
     # Confidence
     ConfidenceLevel,
     ConfidenceMetadata,
-    # Privacy
-    PrivacyLevel,
-    PrivacyEnvelope,
+    # Protocols
+    Department,
+    # Configuration
+    DepartmentConfig,
+    # Type Aliases
+    DepartmentFactory,
+    DepartmentManifest,
+    DepartmentProtocol,
     # Requests and Responses
     DepartmentRequest,
     DepartmentResponse,
+    DSStarCheck,
+    PrivacyEnvelope,
+    # Privacy
+    PrivacyLevel,
+    VerificationCheck,
+    VerificationFunction,
+    VerificationResult,
     # Verification
     VerificationStatus,
-    VerificationCheck,
-    DSStarCheck,
-    VerificationResult,
-    # Protocols
-    Department,
-    DepartmentProtocol,
+    # Learning Functions
+    compute_learning_rate,
     # Helpers
     create_simple_request,
     create_simple_response,
-    # Type Aliases
-    DepartmentFactory,
-    VerificationFunction,
-    # Configuration
-    DepartmentConfig,
-    DepartmentManifest,
-    # Learning Functions
-    compute_learning_rate,
     should_update_now,
 )
 

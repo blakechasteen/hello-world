@@ -18,10 +18,9 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
-import asyncio
+from typing import Any
 
 
 class VisualMood(Enum):
@@ -122,12 +121,12 @@ class SemanticProfile:
 @dataclass
 class EnrichedScene:
     """A scene enriched with semantic understanding."""
-    elements: List[Dict[str, Any]]
+    elements: list[dict[str, Any]]
     profile: SemanticProfile
-    style_hints: Dict[str, Any] = field(default_factory=dict)
-    related_memories: List[Dict[str, Any]] = field(default_factory=list)
+    style_hints: dict[str, Any] = field(default_factory=dict)
+    related_memories: list[dict[str, Any]] = field(default_factory=list)
 
-    def get_lighting_config(self) -> Dict[str, Any]:
+    def get_lighting_config(self) -> dict[str, Any]:
         """Get lighting configuration based on semantic profile."""
         mood = self.profile.mood
         intensity = self.profile.lighting_intensity
@@ -176,7 +175,7 @@ class EnrichedScene:
 
         return configs.get(mood, configs[VisualMood.NEUTRAL])
 
-    def get_animation_config(self) -> Dict[str, Any]:
+    def get_animation_config(self) -> dict[str, Any]:
         """Get animation configuration based on semantic profile."""
         speed = self.profile.animation_speed
         mood = self.profile.mood
@@ -206,7 +205,7 @@ class SemanticExtractor:
             hololoom: Optional HoloLoom instance for semantic projection
         """
         self.hololoom = hololoom
-        self._cache: Dict[str, SemanticProfile] = {}
+        self._cache: dict[str, SemanticProfile] = {}
 
     async def analyze(self, text: str) -> SemanticProfile:
         """
@@ -340,7 +339,7 @@ class SemanticExtractor:
     async def enrich_scene(
         self,
         text: str,
-        base_elements: List[Dict[str, Any]],
+        base_elements: list[dict[str, Any]],
     ) -> EnrichedScene:
         """
         Enrich a scene with semantic understanding.
@@ -387,9 +386,9 @@ class SemanticExtractor:
 
     def _apply_semantic_styling(
         self,
-        elements: List[Dict[str, Any]],
+        elements: list[dict[str, Any]],
         profile: SemanticProfile,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Apply semantic-derived styling to elements."""
         styled = []
 
@@ -461,7 +460,7 @@ class SemanticExtractor:
 
 
 # Singleton instance
-_semantic_extractor: Optional[SemanticExtractor] = None
+_semantic_extractor: SemanticExtractor | None = None
 
 
 def get_semantic_extractor(hololoom=None) -> SemanticExtractor:

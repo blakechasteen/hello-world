@@ -8,13 +8,13 @@ Run from repository root:
     PYTHONPATH=. python HoloLoom/redteam/visualization/demo_attack_trajectory.py
 """
 
+from pathlib import Path
+
 from hololoom.redteam.visualization import (
     AttackPoint,
     AttackTrajectoryRenderer,
     render_attack_trajectory,
 )
-import json
-from pathlib import Path
 
 
 def demo_1_simple_rendering():
@@ -42,7 +42,7 @@ def demo_1_simple_rendering():
     output_path.write_text(html)
     print(f"✓ Saved to: {output_path}")
     print(f"  File size: {len(html):,} bytes")
-    print(f"  Open in browser to view")
+    print("  Open in browser to view")
 
 
 def demo_2_detailed_points():
@@ -147,7 +147,7 @@ def demo_2_detailed_points():
     print(f"  Data points: {len(points)}")
     print(f"  Strategies: {len(set(p.strategy for p in points))}")
     print(f"  File size: {len(html):,} bytes")
-    print(f"  Anomalies detected: Yes (see diamonds on chart)")
+    print("  Anomalies detected: Yes (see diamonds on chart)")
 
 
 def demo_3_no_anomalies():
@@ -198,7 +198,7 @@ def demo_3_no_anomalies():
     output_path = Path(__file__).parent / "demo_output_3_clean.html"
     output_path.write_text(html)
     print(f"✓ Saved to: {output_path}")
-    print(f"  Anomaly detection: DISABLED")
+    print("  Anomaly detection: DISABLED")
     print(f"  File size: {len(html):,} bytes")
 
 
@@ -247,7 +247,7 @@ def demo_4_model_comparison():
     print(f"✓ Saved to: {output_path}")
     print(f"  Models compared: {len(models)}")
     print(f"  Data points: {len(points)}")
-    print(f"  Key insight: GPT-4 most vulnerable, Gemini most robust")
+    print("  Key insight: GPT-4 most vulnerable, Gemini most robust")
 
 
 def demo_5_metrics_summary():

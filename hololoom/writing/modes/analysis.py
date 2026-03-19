@@ -8,15 +8,9 @@ Philosophy: Balanced presentation with evidence and conclusions.
 """
 
 import logging
-from typing import List, Dict, Any, Optional, Set
+from typing import Any
 
-from ..core.protocol import (
-    ModeWriterProtocol,
-    WritingContext,
-    WritingMode,
-    StyleGuide,
-    MemoryShard
-)
+from ..core.protocol import MemoryShard, StyleGuide, WritingContext, WritingMode
 
 logger = logging.getLogger(__name__)
 
@@ -91,9 +85,9 @@ class AnalysisWriter:
 
     def _analyze_content(
         self,
-        memories: List[MemoryShard],
+        memories: list[MemoryShard],
         analysis_type: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze memories for analytical content.
 
@@ -146,8 +140,8 @@ class AnalysisWriter:
     def _generate_report_structure(
         self,
         query: str,
-        memories: List[MemoryShard],
-        analysis: Dict[str, Any],
+        memories: list[MemoryShard],
+        analysis: dict[str, Any],
         analysis_type: str,
         style: StyleGuide
     ) -> str:
@@ -201,8 +195,8 @@ class AnalysisWriter:
     def _generate_executive_summary(
         self,
         query: str,
-        memories: List[MemoryShard],
-        analysis: Dict[str, Any]
+        memories: list[MemoryShard],
+        analysis: dict[str, Any]
     ) -> str:
         """Generate executive summary."""
         # Use top finding or highest relevance memory
@@ -221,7 +215,7 @@ class AnalysisWriter:
 
         return summary.strip()
 
-    def _generate_findings(self, findings: List[Dict[str, Any]]) -> str:
+    def _generate_findings(self, findings: list[dict[str, Any]]) -> str:
         """Generate key findings section."""
         parts = []
 
@@ -237,8 +231,8 @@ class AnalysisWriter:
 
     def _generate_comparison(
         self,
-        comparisons: List[str],
-        entities: List[str]
+        comparisons: list[str],
+        entities: list[str]
     ) -> str:
         """Generate comparison section."""
         if not comparisons:
@@ -258,8 +252,8 @@ class AnalysisWriter:
 
     def _generate_detailed_analysis(
         self,
-        memories: List[MemoryShard],
-        analysis: Dict[str, Any]
+        memories: list[MemoryShard],
+        analysis: dict[str, Any]
     ) -> str:
         """Generate detailed analysis section."""
         parts = []
@@ -282,7 +276,7 @@ class AnalysisWriter:
 
         return '\n\n'.join(parts)
 
-    def _generate_data_insights(self, data_points: List[str]) -> str:
+    def _generate_data_insights(self, data_points: list[str]) -> str:
         """Generate data insights section."""
         parts = ["Key metrics and data points:\n"]
 
@@ -297,8 +291,8 @@ class AnalysisWriter:
     def _generate_conclusions(
         self,
         query: str,
-        memories: List[MemoryShard],
-        analysis: Dict[str, Any]
+        memories: list[MemoryShard],
+        analysis: dict[str, Any]
     ) -> str:
         """Generate conclusions section."""
         # Synthesize from top findings

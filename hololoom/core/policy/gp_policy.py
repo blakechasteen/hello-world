@@ -49,33 +49,31 @@ Author: HoloLoom Mathematical Moonshot Team
 Date: 2025-11-03
 """
 
+import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Any
+
 import numpy as np
 import torch
-import logging
 
 # Import GP bandits
 from hololoom.bandits.gaussian_process_bandits import (
-    GPThompsonSampling,
-    GPUpperConfidenceBound,
-    GaussianProcess,
-    create_gp_thompson_sampling,
-    create_gp_ucb,
     KernelConfig,
     KernelType,
+    create_gp_thompson_sampling,
+    create_gp_ucb,
 )
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Import policy components
 from hololoom.policy.unified import (
+    BanditStrategy,
     UnifiedPolicy,
     create_policy,
-    BanditStrategy,
 )
 
 # Import types
-from hololoom.protocols.types import Features, Context, ActionPlan
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.protocols.types import ActionPlan, Context, Features
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +108,7 @@ class GPConfig:
 
     # Action space (continuous hyperparameters)
     action_space_dims: int = 3  # Default: stiffness, damping, temperature
-    action_space_bounds: Dict[str, Tuple[float, float]] = field(default_factory=lambda: {
+    action_space_bounds: dict[str, tuple[float, float]] = field(default_factory=lambda: {
         'stiffness': (0.05, 0.5),
         'damping': (0.5, 0.95),
         'temperature': (0.1, 2.0)
@@ -140,7 +138,7 @@ class ActionSpaceNormalizer:
     - temperature: [0.1, 2.0] → [0, 1]
     """
 
-    def __init__(self, bounds: Dict[str, Tuple[float, float]]):
+    def __init__(self, bounds: dict[str, tuple[float, float]]):
         """
         Initialize normalizer.
 
@@ -151,7 +149,7 @@ class ActionSpaceNormalizer:
         self.param_names = list(bounds.keys())
         self.n_dims = len(self.param_names)
 
-    def normalize(self, params: Dict[str, float]) -> np.ndarray:
+    def normalize(self, params: dict[str, float]) -> np.ndarray:
         """
         Normalize parameters to [0, 1]^d.
 
@@ -168,7 +166,7 @@ class ActionSpaceNormalizer:
             x[i] = (val - min_val) / (max_val - min_val)
         return x
 
-    def denormalize(self, x: np.ndarray) -> Dict[str, float]:
+    def denormalize(self, x: np.ndarray) -> dict[str, float]:
         """
         Denormalize from [0, 1]^d to original scale.
 
@@ -243,14 +241,14 @@ class GPPolicy:
     candidate_set: np.ndarray  # Normalized candidates
 
     # GP bandit (thompson or ucb)
-    gp_bandit: Optional[Any] = None  # GPThompsonSampling or GPUpperConfidenceBound
+    gp_bandit: Any | None = None  # GPThompsonSampling or GPUpperConfidenceBound
 
     # Observation tracking
     observations: int = 0
-    observation_buffer: List[Tuple[np.ndarray, float]] = field(default_factory=list)
+    observation_buffer: list[tuple[np.ndarray, float]] = field(default_factory=list)
 
     # Current hyperparameters
-    current_hyperparams: Dict[str, float] = field(default_factory=dict)
+    current_hyperparams: dict[str, float] = field(default_factory=dict)
 
     def __post_init__(self):
         """Initialize GP bandit."""
@@ -351,7 +349,7 @@ class GPPolicy:
 
         return action_plan
 
-    def get_gp_statistics(self) -> Dict[str, Any]:
+    def get_gp_statistics(self) -> dict[str, Any]:
         """
         Get GP bandit statistics.
 
@@ -384,13 +382,13 @@ class GPPolicy:
 def create_gp_policy(
     mem_dim: int,
     emb: MatryoshkaEmbeddings,
-    scales: List[int],
-    gp_config: Optional[GPConfig] = None,
-    device: Optional[torch.device] = None,
+    scales: list[int],
+    gp_config: GPConfig | None = None,
+    device: torch.device | None = None,
     n_layers: int = 2,
     n_heads: int = 4,
     epsilon: float = 0.1,
-    cfg: Optional[Any] = None,
+    cfg: Any | None = None,
     **kwargs
 ) -> GPPolicy:
     """

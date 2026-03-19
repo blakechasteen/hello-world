@@ -37,27 +37,28 @@ Usage:
         print(f"Hypothesis rejected: {result.rejection_reason}")
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable, Union
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any
+
 import numpy as np
 
 from hololoom.dark_trace.causal.ablation import (
-    FeatureAblator,
-    AblationResult,
     AblationConfig,
+    AblationResult,
+    FeatureAblator,
 )
 from hololoom.dark_trace.causal.injection import (
     FeatureInjector,
-    InjectionResult,
     InjectionConfig,
+    InjectionResult,
 )
 from hololoom.dark_trace.causal.patching import (
     ActivationPatcher,
-    PatchResult,
-    CausalTrace,
     PatchConfig,
+    PatchResult,
 )
 
 
@@ -97,7 +98,7 @@ class CausalHypothesis:
     # Core hypothesis
     feature: str  # Feature ID (e.g., "sae.42")
     claim: str  # Human-readable claim
-    expected_effect: Dict[str, float]  # Expected behavioral effects
+    expected_effect: dict[str, float]  # Expected behavioral effects
 
     # Hypothesis type and constraints
     hypothesis_type: HypothesisType = HypothesisType.BEHAVIORAL
@@ -105,13 +106,13 @@ class CausalHypothesis:
     min_effect_size: float = 0.1  # Minimum effect to consider supported
 
     # Test specifications
-    test_inputs: Optional[List[str]] = None  # Inputs to test on
-    control_features: Optional[List[str]] = None  # Features that shouldn't change
+    test_inputs: list[str] | None = None  # Inputs to test on
+    control_features: list[str] | None = None  # Features that shouldn't change
 
     # Metadata
     source: str = ""  # Where hypothesis came from
     confidence_prior: float = 0.5  # Prior confidence in hypothesis
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         if self.test_inputs is None:
@@ -130,8 +131,8 @@ class EvidenceItem:
     result: Any  # AblationResult, InjectionResult, PatchResult, etc.
     supports_hypothesis: bool
     effect_size: float
-    p_value: Optional[float]
-    confidence_interval: Optional[Tuple[float, float]]
+    p_value: float | None
+    confidence_interval: tuple[float, float] | None
     interpretation: str
 
     def strength(self) -> float:
@@ -159,12 +160,12 @@ class ValidationResult:
     confidence: float  # 0-1 confidence in conclusion
 
     # Evidence
-    evidence: List[EvidenceItem]
+    evidence: list[EvidenceItem]
     evidence_summary: str
 
     # Statistics
     mean_effect_size: float
-    combined_p_value: Optional[float]
+    combined_p_value: float | None
     effect_consistency: float  # How consistent effects are across tests
 
     # Detailed results
@@ -173,13 +174,13 @@ class ValidationResult:
     patching_supports: bool
 
     # If rejected, why
-    rejection_reason: Optional[str]
+    rejection_reason: str | None
 
     # Metadata
     validation_level: ValidationLevel
     timestamp: str
     duration_seconds: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def summary(self) -> str:
         """Generate human-readable summary."""
@@ -187,27 +188,27 @@ class ValidationResult:
 
         lines = [
             f"Hypothesis Validation: {status}",
-            f"=" * 50,
+            "=" * 50,
             f"Feature: {self.hypothesis.feature}",
             f"Claim: {self.hypothesis.claim}",
-            f"",
+            "",
             f"Confidence: {self.confidence:.2%}",
             f"Mean effect size: {self.mean_effect_size:.4f}",
             f"Effect consistency: {self.effect_consistency:.2%}",
-            f"",
-            f"Evidence streams:",
+            "",
+            "Evidence streams:",
             f"  Ablation: {'Supports' if self.ablation_supports else 'Does not support'}",
             f"  Injection: {'Supports' if self.injection_supports else 'Does not support'}",
             f"  Patching: {'Supports' if self.patching_supports else 'Does not support'}",
-            f"",
+            "",
             f"Evidence items: {len(self.evidence)}",
         ]
 
         if self.rejection_reason:
-            lines.append(f"")
+            lines.append("")
             lines.append(f"Rejection reason: {self.rejection_reason}")
 
-        lines.append(f"")
+        lines.append("")
         lines.append(f"Summary: {self.evidence_summary}")
 
         return "\n".join(lines)
@@ -220,7 +221,7 @@ class GroundTruthComparison:
     # Ground truth data
     feature_id: str
     ground_truth_label: str  # Human-assigned label
-    ground_truth_examples: List[str]  # Examples that should activate
+    ground_truth_examples: list[str]  # Examples that should activate
 
     # Comparison results
     activation_recall: float  # % of ground truth examples that activate
@@ -234,7 +235,7 @@ class GroundTruthComparison:
     # Metadata
     n_examples_tested: int
     n_activations_found: int
-    mismatches: List[Dict[str, Any]]  # Examples that don't match
+    mismatches: list[dict[str, Any]]  # Examples that don't match
 
 
 @dataclass
@@ -245,11 +246,11 @@ class ValidationSuite:
     description: str
 
     # Test data
-    test_inputs: List[str]  # Inputs to test
-    ground_truths: Dict[str, str]  # feature_id -> ground truth label
+    test_inputs: list[str]  # Inputs to test
+    ground_truths: dict[str, str]  # feature_id -> ground truth label
 
     # Expected behaviors (optional)
-    expected_behaviors: Dict[str, Dict[str, float]]  # input -> {metric: value}
+    expected_behaviors: dict[str, dict[str, float]]  # input -> {metric: value}
 
     # Configuration
     min_examples: int = 10
@@ -259,8 +260,8 @@ class ValidationSuite:
     def from_examples(
         cls,
         name: str,
-        positive_examples: List[str],
-        negative_examples: List[str],
+        positive_examples: list[str],
+        negative_examples: list[str],
         feature_id: str,
         label: str,
     ) -> "ValidationSuite":
@@ -308,7 +309,7 @@ class CausalValidator:
         ablator: FeatureAblator,
         injector: FeatureInjector,
         patcher: ActivationPatcher,
-        behavior_measurer: Optional[Callable] = None,
+        behavior_measurer: Callable | None = None,
     ):
         """
         Initialize validator.
@@ -325,7 +326,7 @@ class CausalValidator:
         self.behavior_measurer = behavior_measurer or self._default_behavior_measurer
 
         # Validation history
-        self._history: List[ValidationResult] = []
+        self._history: list[ValidationResult] = []
 
     def validate(
         self,
@@ -440,10 +441,10 @@ class CausalValidator:
 
     def validate_batch(
         self,
-        hypotheses: List[CausalHypothesis],
+        hypotheses: list[CausalHypothesis],
         test_suite: ValidationSuite,
         level: ValidationLevel = ValidationLevel.STANDARD,
-    ) -> List[ValidationResult]:
+    ) -> list[ValidationResult]:
         """
         Validate multiple hypotheses.
 
@@ -465,8 +466,8 @@ class CausalValidator:
         self,
         feature_id: str,
         ground_truth_label: str,
-        positive_examples: List[str],
-        negative_examples: List[str],
+        positive_examples: list[str],
+        negative_examples: list[str],
     ) -> GroundTruthComparison:
         """
         Compare feature behavior to ground truth labels.
@@ -546,9 +547,9 @@ class CausalValidator:
 
     def build_causal_graph(
         self,
-        features: List[str],
-        test_inputs: List[str],
-    ) -> Dict[str, Any]:
+        features: list[str],
+        test_inputs: list[str],
+    ) -> dict[str, Any]:
         """
         Build causal graph showing relationships between features.
 
@@ -603,7 +604,7 @@ class CausalValidator:
             "n_edges": len(edges),
         }
 
-    def get_validation_history(self) -> List[ValidationResult]:
+    def get_validation_history(self) -> list[ValidationResult]:
         """Get history of all validations."""
         return self._history.copy()
 
@@ -618,8 +619,8 @@ class CausalValidator:
     def _test_ablation(
         self,
         hypothesis: CausalHypothesis,
-        test_inputs: List[str],
-    ) -> List[EvidenceItem]:
+        test_inputs: list[str],
+    ) -> list[EvidenceItem]:
         """Test hypothesis via ablation (causal necessity)."""
         evidence = []
 
@@ -659,8 +660,8 @@ class CausalValidator:
     def _test_injection(
         self,
         hypothesis: CausalHypothesis,
-        test_inputs: List[str],
-    ) -> List[EvidenceItem]:
+        test_inputs: list[str],
+    ) -> list[EvidenceItem]:
         """Test hypothesis via injection (causal sufficiency)."""
         evidence = []
 
@@ -698,8 +699,8 @@ class CausalValidator:
     def _test_patching(
         self,
         hypothesis: CausalHypothesis,
-        test_inputs: List[str],
-    ) -> List[EvidenceItem]:
+        test_inputs: list[str],
+    ) -> list[EvidenceItem]:
         """Test hypothesis via activation patching."""
         evidence = []
 
@@ -739,8 +740,8 @@ class CausalValidator:
     def _test_dose_response(
         self,
         hypothesis: CausalHypothesis,
-        test_inputs: List[str],
-    ) -> List[EvidenceItem]:
+        test_inputs: list[str],
+    ) -> list[EvidenceItem]:
         """Test dose-response relationship."""
         evidence = []
 
@@ -779,8 +780,8 @@ class CausalValidator:
     def _test_interactions(
         self,
         hypothesis: CausalHypothesis,
-        test_inputs: List[str],
-    ) -> List[EvidenceItem]:
+        test_inputs: list[str],
+    ) -> list[EvidenceItem]:
         """Test interactions with control features."""
         evidence = []
 
@@ -827,10 +828,10 @@ class CausalValidator:
 
     def _aggregate_evidence(
         self,
-        evidence: List[EvidenceItem],
+        evidence: list[EvidenceItem],
         hypothesis: CausalHypothesis,
         level: ValidationLevel,
-    ) -> Tuple[bool, float, Optional[str]]:
+    ) -> tuple[bool, float, str | None]:
         """Aggregate evidence into final conclusion."""
         if not evidence:
             return False, 0.0, "No evidence collected"
@@ -887,8 +888,8 @@ class CausalValidator:
 
     def _combine_p_values(
         self,
-        evidence: List[EvidenceItem],
-    ) -> Optional[float]:
+        evidence: list[EvidenceItem],
+    ) -> float | None:
         """Combine p-values using Fisher's method."""
         p_values = [e.p_value for e in evidence if e.p_value is not None]
 
@@ -906,7 +907,7 @@ class CausalValidator:
 
     def _generate_evidence_summary(
         self,
-        evidence: List[EvidenceItem],
+        evidence: list[EvidenceItem],
         supported: bool,
         hypothesis: CausalHypothesis,
     ) -> str:
@@ -1025,19 +1026,19 @@ class CausalValidator:
     def _default_behavior_measurer(
         self,
         output: Any,
-        metrics: List[str],
-    ) -> Dict[str, float]:
+        metrics: list[str],
+    ) -> dict[str, float]:
         """Default behavior measurement function."""
         # Simplified - returns dummy values
-        return {metric: 0.5 for metric in metrics}
+        return dict.fromkeys(metrics, 0.5)
 
 
 def create_validator(
     model: Any,
     probe: Any,
-    ablation_config: Optional[AblationConfig] = None,
-    injection_config: Optional[InjectionConfig] = None,
-    patch_config: Optional[PatchConfig] = None,
+    ablation_config: AblationConfig | None = None,
+    injection_config: InjectionConfig | None = None,
+    patch_config: PatchConfig | None = None,
 ) -> CausalValidator:
     """
     Factory function to create CausalValidator with all components.

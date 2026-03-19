@@ -4,7 +4,8 @@ GovernanceMiddleware Protocol — the contract every middleware implements.
 
 from __future__ import annotations
 
-from typing import Callable, Awaitable, Protocol, runtime_checkable
+from collections.abc import Awaitable, Callable
+from typing import Protocol, runtime_checkable
 
 from .context import GovernanceContext
 

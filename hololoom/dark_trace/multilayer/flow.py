@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Information Flow Analysis for Multi-Layer SAE
 
@@ -15,7 +16,8 @@ Research Basis:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Any, Tuple, Set, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
 import numpy as np
 
 try:
@@ -28,12 +30,7 @@ except ImportError:
     nn = None
 
 if TYPE_CHECKING:
-    from hololoom.dark_trace.multilayer.causal_metrics import (
-        CausalStrengthEstimator,
-        TransferEntropyEstimator,
-        CausalStrengthResult,
-        TransferEntropyResult,
-    )
+    pass
 
 
 class FlowDirection(Enum):
@@ -75,7 +72,7 @@ class FlowConfig:
 
     # Skip connection analysis
     analyze_skip_connections: bool = True
-    skip_connection_layers: Optional[List[Tuple[int, int]]] = None  # (from, to) pairs
+    skip_connection_layers: list[tuple[int, int]] | None = None  # (from, to) pairs
 
     # Sampling
     n_samples: int = 1000
@@ -131,7 +128,7 @@ class LayerFlow:
     # Capacity utilization
     capacity_used: float = 0.0  # Fraction of capacity used
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "layer_idx": self.layer_idx,
@@ -171,9 +168,9 @@ class CrossLayerFlow:
     compression_ratio: float = 1.0  # < 1 = compression, > 1 = expansion
 
     # Top feature mappings (source_feature_id, target_feature_id, strength)
-    top_mappings: List[Tuple[str, str, float]] = field(default_factory=list)
+    top_mappings: list[tuple[str, str, float]] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "source_layer": self.source_layer,
@@ -205,13 +202,13 @@ class FlowBottleneck:
     information_loss: float = 0.0
 
     # Affected features
-    affected_features: List[str] = field(default_factory=list)
+    affected_features: list[str] = field(default_factory=list)
     n_affected: int = 0
 
     # Description
     description: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "layer_idx": self.layer_idx,
@@ -248,7 +245,7 @@ class ResidualContribution:
     # Direct effect on output
     logit_attribution: float = 0.0  # How much this layer affects logits
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "layer_idx": self.layer_idx,
@@ -268,23 +265,23 @@ class FlowAnalysisResult:
     """Complete flow analysis result."""
 
     # Per-layer flows
-    layer_flows: Dict[int, LayerFlow] = field(default_factory=dict)
+    layer_flows: dict[int, LayerFlow] = field(default_factory=dict)
 
     # Cross-layer flows
-    cross_layer_flows: Dict[Tuple[int, int], CrossLayerFlow] = field(default_factory=dict)
+    cross_layer_flows: dict[tuple[int, int], CrossLayerFlow] = field(default_factory=dict)
 
     # Bottlenecks
-    bottlenecks: List[FlowBottleneck] = field(default_factory=list)
+    bottlenecks: list[FlowBottleneck] = field(default_factory=list)
 
     # Residual contributions
-    residual_contributions: Dict[int, ResidualContribution] = field(default_factory=dict)
+    residual_contributions: dict[int, ResidualContribution] = field(default_factory=dict)
 
     # Summary statistics
     total_information_preserved: float = 0.0
     overall_compression_ratio: float = 1.0
-    bottleneck_layer: Optional[int] = None  # Most severe bottleneck
+    bottleneck_layer: int | None = None  # Most severe bottleneck
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "layer_flows": {k: v.to_dict() for k, v in self.layer_flows.items()},
@@ -326,7 +323,7 @@ class InformationFlowAnalyzer:
     def __init__(
         self,
         layer_sae_manager: Any,  # LayerSAEManager
-        config: Optional[FlowConfig] = None
+        config: FlowConfig | None = None
     ):
         """
         Initialize flow analyzer.
@@ -341,7 +338,7 @@ class InformationFlowAnalyzer:
     def analyze(
         self,
         test_inputs: Any,
-        layers: Optional[List[int]] = None
+        layers: list[int] | None = None
     ) -> FlowAnalysisResult:
         """
         Analyze information flow across layers.
@@ -510,9 +507,9 @@ class InformationFlowAnalyzer:
 
     def _detect_bottlenecks(
         self,
-        layer_flows: Dict[int, LayerFlow],
-        cross_flows: Dict[Tuple[int, int], CrossLayerFlow]
-    ) -> List[FlowBottleneck]:
+        layer_flows: dict[int, LayerFlow],
+        cross_flows: dict[tuple[int, int], CrossLayerFlow]
+    ) -> list[FlowBottleneck]:
         """Detect information bottlenecks."""
         bottlenecks = []
 
@@ -576,8 +573,8 @@ class InformationFlowAnalyzer:
     def _analyze_residual_stream(
         self,
         test_inputs: Any,
-        layers: List[int]
-    ) -> Dict[int, ResidualContribution]:
+        layers: list[int]
+    ) -> dict[int, ResidualContribution]:
         """Analyze residual stream contributions."""
         contributions = {}
 
@@ -621,7 +618,7 @@ class InformationFlowAnalyzer:
     def _compute_summary(
         self,
         result: FlowAnalysisResult,
-        layers: List[int]
+        layers: list[int]
     ) -> None:
         """Compute summary statistics."""
         if not layers:
@@ -752,7 +749,7 @@ class InformationFlowAnalyzer:
         source_layer: int,
         target_layer: int,
         top_k: int = 20
-    ) -> List[Tuple[str, str, float]]:
+    ) -> list[tuple[str, str, float]]:
         """Compute top feature mappings between layers via correlation."""
         mappings = []
 
@@ -848,9 +845,9 @@ class InformationFlowAnalyzer:
         source_layer: int,
         target_layer: int,
         test_inputs: Any,
-        intervention_features: Optional[List[int]] = None,
+        intervention_features: list[int] | None = None,
         n_interventions: int = 10,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze causal strength between layers using Pearl's do-calculus.
 
@@ -943,7 +940,7 @@ class InformationFlowAnalyzer:
         test_inputs: Any,
         history_length: int = 3,
         n_bins: int = 10,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compute detailed transfer entropy between layers.
 
@@ -1046,8 +1043,8 @@ class InformationFlowAnalyzer:
     def get_causal_flow_analysis(
         self,
         test_inputs: Any,
-        layers: Optional[List[int]] = None,
-    ) -> Dict[str, Any]:
+        layers: list[int] | None = None,
+    ) -> dict[str, Any]:
         """
         Perform comprehensive causal flow analysis across all layer pairs.
 
@@ -1094,7 +1091,7 @@ class InformationFlowAnalyzer:
             )
 
         # Build causal graph (significant connections only)
-        causal_graph: Dict[int, List[Tuple[int, float]]] = {l: [] for l in layers}
+        causal_graph: dict[int, list[tuple[int, float]]] = {l: [] for l in layers}
         for (src, tgt), result in causal_results.items():
             if result.get("causal_effect", 0) > 0.1:
                 causal_graph[src].append((tgt, result["causal_effect"]))
@@ -1187,7 +1184,7 @@ class InformationFlowAnalyzer:
 def analyze_information_flow(
     layer_sae_manager: Any,
     test_inputs: Any,
-    config: Optional[FlowConfig] = None
+    config: FlowConfig | None = None
 ) -> FlowAnalysisResult:
     """
     Convenience function to analyze information flow.

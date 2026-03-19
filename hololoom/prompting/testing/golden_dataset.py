@@ -5,10 +5,10 @@ of known good prompt-response pairs for testing and validation.
 """
 
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from hololoom.prompting.testing.protocol import PromptTestCase
 
@@ -20,18 +20,18 @@ class GoldenPair:
     prompt: str
     expected_output: str
     quality_score: float
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         data = asdict(self)
         data["created_at"] = self.created_at.isoformat()
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "GoldenPair":
+    def from_dict(cls, data: dict[str, Any]) -> "GoldenPair":
         """Create from dictionary for JSON deserialization."""
         data = data.copy()
         data["created_at"] = datetime.fromisoformat(data["created_at"])
@@ -41,13 +41,13 @@ class GoldenPair:
 class GoldenDatasetManager:
     """Manages a collection of golden prompt-response pairs."""
 
-    def __init__(self, dataset_path: Optional[str] = None):
+    def __init__(self, dataset_path: str | None = None):
         """Initialize the manager, optionally loading from a file.
 
         Args:
             dataset_path: Optional path to JSON file with golden pairs
         """
-        self.pairs: Dict[str, GoldenPair] = {}
+        self.pairs: dict[str, GoldenPair] = {}
         if dataset_path:
             self.load(dataset_path)
 
@@ -56,8 +56,8 @@ class GoldenDatasetManager:
         prompt: str,
         expected_output: str,
         quality_score: float,
-        tags: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        tags: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> GoldenPair:
         """Add a new golden pair.
 
@@ -85,7 +85,7 @@ class GoldenDatasetManager:
         self.pairs[prompt] = pair
         return pair
 
-    def get_pairs(self, tags: Optional[List[str]] = None) -> List[GoldenPair]:
+    def get_pairs(self, tags: list[str] | None = None) -> list[GoldenPair]:
         """Get pairs, optionally filtered by tags.
 
         Args:
@@ -103,7 +103,7 @@ class GoldenDatasetManager:
             if any(tag in pair.tags for tag in tags)
         ]
 
-    def get_test_cases(self, tags: Optional[List[str]] = None) -> List[PromptTestCase]:
+    def get_test_cases(self, tags: list[str] | None = None) -> list[PromptTestCase]:
         """Convert golden pairs to test cases.
 
         Args:
@@ -146,7 +146,7 @@ class GoldenDatasetManager:
         Args:
             path: Path to load from
         """
-        with open(path, "r") as f:
+        with open(path) as f:
             data = json.load(f)
 
         self.pairs = {
@@ -168,7 +168,7 @@ class GoldenDatasetManager:
             return True
         return False
 
-    def update_pair(self, prompt: str, **kwargs) -> Optional[GoldenPair]:
+    def update_pair(self, prompt: str, **kwargs) -> GoldenPair | None:
         """Update an existing pair.
 
         Args:
@@ -211,7 +211,7 @@ class GoldenDatasetManager:
 
 
 def create_golden_dataset(
-    path: Optional[str] = None,
+    path: str | None = None,
 ) -> GoldenDatasetManager:
     """Factory function to create a golden dataset manager.
 

@@ -11,8 +11,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Set
-
+from typing import Any
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  ENUMS
@@ -76,7 +75,7 @@ class DeviceManifest:
     device_name: str                        # Human-readable name ("blake-laptop")
     public_key: bytes                       # Ed25519 public key for this device
     api_key_id: str                         # API key for rate limiting
-    capabilities: Set[str] = field(default_factory=lambda: {
+    capabilities: set[str] = field(default_factory=lambda: {
         DeviceCapability.WEAVE,
         DeviceCapability.RECALL,
         DeviceCapability.EXPERIENCE,
@@ -86,8 +85,8 @@ class DeviceManifest:
     status: DeviceStatus = DeviceStatus.PENDING
     paired_at: datetime = field(default_factory=datetime.utcnow)
     last_seen: datetime = field(default_factory=datetime.utcnow)
-    last_sync: Optional[datetime] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    last_sync: datetime | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def is_active(self) -> bool:
         """Check if device is active and authorized."""
@@ -106,7 +105,7 @@ class DeviceManifest:
         self.last_sync = datetime.utcnow()
         self.update_seen()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "device_id": self.device_id,
@@ -122,7 +121,7 @@ class DeviceManifest:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DeviceManifest":
+    def from_dict(cls, data: dict[str, Any]) -> DeviceManifest:
         """Deserialize from dictionary."""
         return cls(
             device_id=data["device_id"],
@@ -155,8 +154,8 @@ class HandoffRequest:
     source_device: str                      # Device ID of sender
     target_device: str                      # Device ID of recipient
     identity_did: str                       # DID of the identity
-    pending_ops: List[Dict[str, Any]]       # CRDT operations to sync
-    context: Dict[str, Any]                 # UI state, ambient context
+    pending_ops: list[dict[str, Any]]       # CRDT operations to sync
+    context: dict[str, Any]                 # UI state, ambient context
     timestamp: float                        # Unix timestamp
     nonce: str                              # For replay protection
     signature: bytes = b""                  # Ed25519 signature
@@ -184,7 +183,7 @@ class HandoffRequest:
         }
         return json.dumps(data, sort_keys=True).encode("utf-8")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "request_id": self.request_id,
@@ -199,7 +198,7 @@ class HandoffRequest:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "HandoffRequest":
+    def from_dict(cls, data: dict[str, Any]) -> HandoffRequest:
         """Deserialize from dictionary."""
         return cls(
             request_id=data["request_id"],
@@ -224,7 +223,7 @@ class HandoffResult:
     target_device: str
     ops_transferred: int = 0
     duration_ms: float = 0.0
-    error: Optional[str] = None
+    error: str | None = None
     completed_at: datetime = field(default_factory=datetime.utcnow)
 
     @property
@@ -232,7 +231,7 @@ class HandoffResult:
         """Check if handoff was successful."""
         return self.status == HandoffStatus.COMPLETED
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "request_id": self.request_id,
@@ -282,7 +281,7 @@ class SignedOp:
         }
         return json.dumps(data, sort_keys=True).encode("utf-8")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "op_id": self.op_id,
@@ -296,7 +295,7 @@ class SignedOp:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "SignedOp":
+    def from_dict(cls, data: dict[str, Any]) -> SignedOp:
         """Deserialize from dictionary."""
         return cls(
             op_id=data["op_id"],
@@ -332,8 +331,8 @@ class HandoffError(Exception):
         self,
         message: str,
         *,
-        device_id: Optional[str] = None,
-        suggestion: Optional[str] = None,
+        device_id: str | None = None,
+        suggestion: str | None = None,
     ):
         self.device_id = device_id
         self.suggestion = suggestion

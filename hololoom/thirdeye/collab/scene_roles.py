@@ -14,11 +14,11 @@ Created: 2025-12-03
 Author: HoloLoom Team
 """
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, Set, Optional, List, Callable
-from datetime import datetime
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum, auto
 
 from .scene_sync import SceneOperationType
 
@@ -125,7 +125,7 @@ class RoleAssignment:
     role: SceneRole
     assigned_by: str
     assigned_at: datetime = field(default_factory=datetime.now)
-    expires_at: Optional[datetime] = None  # None = never expires
+    expires_at: datetime | None = None  # None = never expires
 
     def is_expired(self) -> bool:
         """Check if this assignment has expired."""
@@ -140,8 +140,8 @@ class RoleChangeEvent:
     Event emitted when a role changes.
     """
     user_id: str
-    previous_role: Optional[SceneRole]
-    new_role: Optional[SceneRole]  # None = role removed
+    previous_role: SceneRole | None
+    new_role: SceneRole | None  # None = role removed
     changed_by: str
     timestamp: datetime = field(default_factory=datetime.now)
     reason: str = ""
@@ -179,7 +179,7 @@ class RoleEnforcer:
     """
 
     # Map operations to required permissions
-    OPERATION_PERMISSIONS: Dict[SceneOperationType, str] = {
+    OPERATION_PERMISSIONS: dict[SceneOperationType, str] = {
         SceneOperationType.ADD_ELEMENT: 'can_add',
         SceneOperationType.UPDATE_ELEMENT: 'can_update_any',  # Default to any, check owner below
         SceneOperationType.REMOVE_ELEMENT: 'can_delete_any',
@@ -202,9 +202,9 @@ class RoleEnforcer:
             scene_id: ID of the scene to enforce roles for
         """
         self.scene_id = scene_id
-        self._assignments: Dict[str, RoleAssignment] = {}
-        self._element_owners: Dict[str, str] = {}  # element_id -> user_id
-        self._change_handlers: List[Callable[[RoleChangeEvent], None]] = []
+        self._assignments: dict[str, RoleAssignment] = {}
+        self._element_owners: dict[str, str] = {}  # element_id -> user_id
+        self._change_handlers: list[Callable[[RoleChangeEvent], None]] = []
 
     # -------------------------------------------------------------------------
     # Role Management
@@ -215,7 +215,7 @@ class RoleEnforcer:
         user_id: str,
         role: SceneRole,
         assigned_by: str,
-        expires_at: Optional[datetime] = None,
+        expires_at: datetime | None = None,
         reason: str = "",
     ) -> RoleAssignment:
         """
@@ -318,7 +318,7 @@ class RoleEnforcer:
 
             logger.info(f"Revoked role from user {user_id} in scene {self.scene_id}")
 
-    def get_role(self, user_id: str) -> Optional[SceneRole]:
+    def get_role(self, user_id: str) -> SceneRole | None:
         """
         Get a user's current role.
 
@@ -341,7 +341,7 @@ class RoleEnforcer:
             return RolePermissions(role=SceneRole.VIEWER, can_view=False)
         return RolePermissions.for_role(role)
 
-    def list_users_by_role(self, role: Optional[SceneRole] = None) -> List[str]:
+    def list_users_by_role(self, role: SceneRole | None = None) -> list[str]:
         """
         List users with a specific role (or all users if role is None).
         """
@@ -361,7 +361,7 @@ class RoleEnforcer:
         self,
         user_id: str,
         operation: SceneOperationType,
-        element_id: Optional[str] = None,
+        element_id: str | None = None,
     ) -> bool:
         """
         Check if a user can perform an operation.
@@ -404,7 +404,7 @@ class RoleEnforcer:
         self,
         user_id: str,
         operation: SceneOperationType,
-        element_id: Optional[str] = None,
+        element_id: str | None = None,
     ):
         """
         Enforce that a user can perform an operation.
@@ -428,7 +428,7 @@ class RoleEnforcer:
         """
         self._element_owners[element_id] = user_id
 
-    def get_element_owner(self, element_id: str) -> Optional[str]:
+    def get_element_owner(self, element_id: str) -> str | None:
         """Get the owner of an element."""
         return self._element_owners.get(element_id)
 
@@ -456,7 +456,7 @@ class RoleEnforcer:
     # Serialization
     # -------------------------------------------------------------------------
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             'scene_id': self.scene_id,
@@ -473,7 +473,7 @@ class RoleEnforcer:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'RoleEnforcer':
+    def from_dict(cls, data: dict) -> 'RoleEnforcer':
         """Deserialize from dictionary."""
         enforcer = cls(scene_id=data['scene_id'])
 

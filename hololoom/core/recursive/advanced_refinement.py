@@ -28,23 +28,19 @@ Integration with UnifiedMRF:
 - Quality metrics track improvement trajectory
 """
 
-import asyncio
 import logging
 import warnings
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import List, Optional, Dict, Any, Callable, Union
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.prompting.unified_mrf import ModelProvider, RefinementStrategyType, UnifiedMRF
 from hololoom.protocols.types import Query
-from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.recursive.scratchpad import Scratchpad
 from hololoom.weaving_orchestrator import WeavingOrchestrator
-from hololoom.recursive.scratchpad import Scratchpad, ScratchpadEntry
-from hololoom.prompting.unified_mrf import (
-    UnifiedMRF,
-    RefinementStrategyType,
-    ModelProvider
-)
 
 
 class RefinementStrategy(Enum):
@@ -143,8 +139,8 @@ class RefinementResult:
     **UPDATED (Phase 1.4):** strategy_used accepts both RefinementStrategy and RefinementStrategyType.
     """
     final_spacetime: Spacetime
-    trajectory: List[QualityMetrics]
-    strategy_used: Union[RefinementStrategy, RefinementStrategyType]
+    trajectory: list[QualityMetrics]
+    strategy_used: RefinementStrategy | RefinementStrategyType
     iterations: int
     improved: bool
     improvement_rate: float  # Quality improvement per iteration
@@ -171,7 +167,7 @@ class RefinementPattern:
     initial_quality: float
     final_quality: float
     iterations: int
-    query_characteristics: Dict[str, Any]  # Length, motifs, etc.
+    query_characteristics: dict[str, Any]  # Length, motifs, etc.
     improvement_rate: float
     occurrences: int = 1
     avg_improvement: float = 0.0
@@ -203,9 +199,9 @@ class AdvancedRefiner:
     def __init__(
         self,
         orchestrator: WeavingOrchestrator,
-        scratchpad: Optional[Scratchpad] = None,
+        scratchpad: Scratchpad | None = None,
         enable_learning: bool = True,
-        model_provider: Optional[ModelProvider] = None
+        model_provider: ModelProvider | None = None
     ):
         """
         Initialize advanced refiner.
@@ -226,16 +222,16 @@ class AdvancedRefiner:
         self.mrf = UnifiedMRF()
 
         # Learning: Track which strategies work best
-        self.learned_patterns: Dict[str, RefinementPattern] = {}
-        self.strategy_success_rates: Dict[RefinementStrategy, List[float]] = {
-            strategy: [] for strategy in RefinementStrategy
+        self.learned_patterns: dict[str, RefinementPattern] = {}
+        self.strategy_success_rates: dict[RefinementStrategyType, list[float]] = {
+            strategy: [] for strategy in RefinementStrategyType
         }
 
     async def refine(
         self,
         query: Query,
         initial_spacetime: Spacetime,
-        strategy: Optional[Union[RefinementStrategy, RefinementStrategyType]] = None,
+        strategy: RefinementStrategy | RefinementStrategyType | None = None,
         max_iterations: int = 3,
         quality_threshold: float = 0.9
     ) -> RefinementResult:
@@ -266,7 +262,7 @@ class AdvancedRefiner:
         self.logger.info(f"Refining with strategy: {strategy.value}")
 
         # Initialize trajectory tracking
-        trajectory: List[QualityMetrics] = [
+        trajectory: list[QualityMetrics] = [
             self._extract_metrics(initial_spacetime)
         ]
 
@@ -372,7 +368,7 @@ class AdvancedRefiner:
 
     def _get_strategy_function(
         self,
-        strategy: Union[RefinementStrategy, RefinementStrategyType]
+        strategy: RefinementStrategy | RefinementStrategyType
     ) -> Callable:
         """
         Get refinement function for strategy.
@@ -411,11 +407,10 @@ class AdvancedRefiner:
             response=previous_spacetime.response,
             strategy=RefinementStrategyType.REFINE,
             max_iterations=1,  # Single iteration per call
-            model=self.model_provider
         )
 
         # Build expanded query using refined prompt
-        expanded_text = refined_result.refined_response
+        expanded_text = refined_result.response
         expanded_query = Query(text=expanded_text, metadata=query.metadata)
 
         # Re-weave with expanded query
@@ -440,11 +435,10 @@ class AdvancedRefiner:
             response=previous_spacetime.response,
             strategy=RefinementStrategyType.CRITIQUE,
             max_iterations=1,
-            model=self.model_provider
         )
 
         # Build critique query using refined response
-        critique_text = refined_result.refined_response
+        critique_text = refined_result.response
         critique_query = Query(text=critique_text, metadata=query.metadata)
 
         # Re-weave with critique
@@ -474,11 +468,10 @@ class AdvancedRefiner:
             response=previous_spacetime.response,
             strategy=RefinementStrategyType.VERIFY,
             max_iterations=1,
-            model=self.model_provider
         )
 
         # Build verification query using refined response
-        verify_text = refined_result.refined_response
+        verify_text = refined_result.response
         verify_query = Query(text=verify_text, metadata=query.metadata)
 
         # Re-weave with verification request
@@ -513,11 +506,10 @@ class AdvancedRefiner:
             response=previous_spacetime.response,
             strategy=RefinementStrategyType.ELEGANCE,
             max_iterations=1,
-            model=self.model_provider
         )
 
         # Build elegance query using refined response
-        elegance_text = refined_result.refined_response
+        elegance_text = refined_result.response
         elegance_query = Query(text=elegance_text, metadata=query.metadata)
 
         # Re-weave with elegance refinement
@@ -543,11 +535,10 @@ class AdvancedRefiner:
             response=previous_spacetime.response,
             strategy=RefinementStrategyType.HOFSTADTER,
             max_iterations=1,
-            model=self.model_provider
         )
 
         # Build self-referential query using refined response
-        hofstadter_text = refined_result.refined_response
+        hofstadter_text = refined_result.response
         hofstadter_query = Query(text=hofstadter_text, metadata=query.metadata)
 
         # Re-weave with self-reference
@@ -580,6 +571,11 @@ class AdvancedRefiner:
         if not result.improved:
             return
 
+        # Normalize deprecated RefinementStrategy to RefinementStrategyType
+        strategy_key = result.strategy_used
+        if isinstance(strategy_key, RefinementStrategy):
+            strategy_key = RefinementStrategy.to_unified_type(strategy_key)
+
         # Extract query characteristics
         query_characteristics = {
             "length": len(query.text),
@@ -588,7 +584,7 @@ class AdvancedRefiner:
         }
 
         # Create pattern hash
-        pattern_hash = f"{result.strategy_used.value}_{query_characteristics['length']//50}"
+        pattern_hash = f"{strategy_key.value}_{query_characteristics['length']//50}"
 
         # Update or create pattern
         if pattern_hash in self.learned_patterns:
@@ -608,14 +604,14 @@ class AdvancedRefiner:
 
         # Track strategy success
         improvement = result.trajectory[-1].score() - result.trajectory[0].score()
-        self.strategy_success_rates[result.strategy_used].append(improvement)
+        self.strategy_success_rates[strategy_key].append(improvement)
 
         self.logger.info(
             f"Learned pattern: {result.strategy_used.value} improved "
             f"quality by {improvement:.3f} for query length ~{len(query.text)}"
         )
 
-    def get_strategy_statistics(self) -> Dict[str, Any]:
+    def get_strategy_statistics(self) -> dict[str, Any]:
         """Get statistics on strategy performance"""
         stats = {}
 
@@ -635,7 +631,7 @@ class AdvancedRefiner:
 
         return stats
 
-    def get_learned_patterns(self) -> List[RefinementPattern]:
+    def get_learned_patterns(self) -> list[RefinementPattern]:
         """Get all learned refinement patterns"""
         return sorted(
             self.learned_patterns.values(),
@@ -649,11 +645,11 @@ async def refine_with_strategy(
     query: Query,
     initial_spacetime: Spacetime,
     orchestrator: WeavingOrchestrator,
-    strategy: Optional[Union[RefinementStrategy, RefinementStrategyType]] = None,
+    strategy: RefinementStrategy | RefinementStrategyType | None = None,
     max_iterations: int = 3,
     quality_threshold: float = 0.9,
-    scratchpad: Optional[Scratchpad] = None,
-    model_provider: Optional[ModelProvider] = None
+    scratchpad: Scratchpad | None = None,
+    model_provider: ModelProvider | None = None
 ) -> RefinementResult:
     """
     Convenience function for one-off advanced refinement.

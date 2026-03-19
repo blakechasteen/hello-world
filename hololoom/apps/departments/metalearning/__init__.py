@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Meta-Learning Department - Few-shot learning, transfer learning, and meta-adaptation.
 
@@ -12,20 +11,20 @@ Exports:
 """
 
 from .metalearning import (
-    MetaLearningDepartment,
-    FewShotLearner,
-    TransferLearner,
-    MetaAdaptationEngine,
-    KnowledgeConsolidator,
-    TaskType,
-    TransferStrategy,
     AdaptationStrategy,
-    Example,
-    TaskContext,
-    Prototype,
-    TransferredKnowledge,
     ConsolidatedKnowledge,
-    LearningStrategy
+    Example,
+    FewShotLearner,
+    KnowledgeConsolidator,
+    LearningStrategy,
+    MetaAdaptationEngine,
+    MetaLearningDepartment,
+    Prototype,
+    TaskContext,
+    TaskType,
+    TransferLearner,
+    TransferredKnowledge,
+    TransferStrategy,
 )
 
 __all__ = [

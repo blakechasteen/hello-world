@@ -27,34 +27,33 @@ Updated: 2025-12-03 (Added role enforcement, shared styles, activity feed)
 Author: HoloLoom Team
 """
 
+from .scene_presence import (
+    USER_COLORS,
+    CursorMode,
+    FocusTarget,
+    SceneCursor,
+    SceneFocus,
+    ScenePresenceTracker,
+    create_scene_presence,
+)
 from .scene_sync import (
+    ROLES_AVAILABLE,
     CollaborativeScene,
     SceneOperation,
     SceneOperationType,
     SceneState,
     create_collaborative_scene,
-    ROLES_AVAILABLE,
-)
-
-from .scene_presence import (
-    ScenePresenceTracker,
-    SceneFocus,
-    SceneCursor,
-    FocusTarget,
-    CursorMode,
-    USER_COLORS,
-    create_scene_presence,
 )
 
 # Role enforcement (graceful import if available)
 try:
     from .scene_roles import (
-        SceneRole,
-        RolePermissions,
         RoleAssignment,
         RoleChangeEvent,
         RoleEnforcementError,
         RoleEnforcer,
+        RolePermissions,
+        SceneRole,
         create_role_enforcer,
     )
     _ROLES_EXPORTS = [
@@ -73,15 +72,15 @@ except ImportError:
 # Shared styles (graceful import if available)
 try:
     from .shared_styles import (
-        StyleCategory,
-        StyleStatus,
-        VoteType,
-        StyleProperties,
-        StyleVote,
-        StyleVersion,
         SharedStyle,
-        StyleChangeEvent,
         SharedStyleLibrary,
+        StyleCategory,
+        StyleChangeEvent,
+        StyleProperties,
+        StyleStatus,
+        StyleVersion,
+        StyleVote,
+        VoteType,
         create_style_library,
     )
     _STYLES_EXPORTS = [
@@ -102,11 +101,11 @@ except ImportError:
 # Activity feed (graceful import if available)
 try:
     from .activity_feed import (
-        ActivityType,
-        ActivityPriority,
         ActivityEntry,
-        ActivityFilter,
         ActivityFeed,
+        ActivityFilter,
+        ActivityPriority,
+        ActivityType,
         create_activity_feed,
     )
     _ACTIVITY_EXPORTS = [

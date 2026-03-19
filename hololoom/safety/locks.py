@@ -18,12 +18,12 @@ Safety Philosophy:
 - Clear error messages (guide users to documentation)
 """
 
-import os
 import logging
-from enum import Enum
-from typing import Optional, List, Dict, Any
+import os
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 # Setup logging
 logger = logging.getLogger("hololoom.safety")
@@ -60,7 +60,7 @@ class Layer6BlockedException(Exception):
     Includes clear guidance on how to proceed safely.
     """
 
-    def __init__(self, capability: Layer6Capability, message: Optional[str] = None):
+    def __init__(self, capability: Layer6Capability, message: str | None = None):
         self.capability = capability
         self.timestamp = datetime.now()
 
@@ -106,9 +106,9 @@ class Layer6Attempt:
     timestamp: datetime
     capability: Layer6Capability
     allowed: bool
-    context: Dict[str, Any]
+    context: dict[str, Any]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "timestamp": self.timestamp.isoformat(),
@@ -126,7 +126,7 @@ class SafetyMonitor:
     """
 
     def __init__(self):
-        self.attempts: List[Layer6Attempt] = []
+        self.attempts: list[Layer6Attempt] = []
         self._setup_logging()
 
     def _setup_logging(self):
@@ -144,7 +144,7 @@ class SafetyMonitor:
         self,
         capability: Layer6Capability,
         allowed: bool,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ):
         """
         Record Layer 6 access attempt.
@@ -175,9 +175,9 @@ class SafetyMonitor:
 
     def get_attempts(
         self,
-        capability: Optional[Layer6Capability] = None,
-        allowed: Optional[bool] = None
-    ) -> List[Layer6Attempt]:
+        capability: Layer6Capability | None = None,
+        allowed: bool | None = None
+    ) -> list[Layer6Attempt]:
         """
         Get recorded attempts, optionally filtered.
 
@@ -198,7 +198,7 @@ class SafetyMonitor:
 
         return filtered
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get summary statistics of Layer 6 attempts."""
         total = len(self.attempts)
         allowed = sum(1 for a in self.attempts if a.allowed)
@@ -237,7 +237,7 @@ class SafetyLock:
     UNLOCK_VALUE = "research"
 
     @staticmethod
-    def is_layer6_enabled(config: Optional[Any] = None) -> bool:
+    def is_layer6_enabled(config: Any | None = None) -> bool:
         """
         Check if Layer 6 is enabled.
 
@@ -265,8 +265,8 @@ class SafetyLock:
     @staticmethod
     def require_layer6(
         capability: Layer6Capability,
-        config: Optional[Any] = None,
-        context: Optional[Dict[str, Any]] = None
+        config: Any | None = None,
+        context: dict[str, Any] | None = None
     ):
         """
         Require Layer 6 to be enabled, raise exception if not.
@@ -290,8 +290,8 @@ class SafetyLock:
     @staticmethod
     def check_layer6(
         capability: Layer6Capability,
-        config: Optional[Any] = None,
-        context: Optional[Dict[str, Any]] = None
+        config: Any | None = None,
+        context: dict[str, Any] | None = None
     ) -> bool:
         """
         Check if Layer 6 capability is available (non-throwing).
@@ -314,7 +314,7 @@ class SafetyLock:
     @staticmethod
     def blocked_exception(
         capability: Layer6Capability,
-        message: Optional[str] = None
+        message: str | None = None
     ) -> Layer6BlockedException:
         """
         Create a Layer6BlockedException for the given capability.
@@ -390,15 +390,15 @@ Questions? Open a GitHub Discussion.
 
 
 # Convenience functions
-def is_layer6_enabled(config: Optional[Any] = None) -> bool:
+def is_layer6_enabled(config: Any | None = None) -> bool:
     """Check if Layer 6 is enabled."""
     return SafetyLock.is_layer6_enabled(config)
 
 
 def require_layer6(
     capability: Layer6Capability,
-    config: Optional[Any] = None,
-    context: Optional[Dict[str, Any]] = None
+    config: Any | None = None,
+    context: dict[str, Any] | None = None
 ):
     """Require Layer 6 to be enabled, raise exception if not."""
     SafetyLock.require_layer6(capability, config, context)
@@ -406,8 +406,8 @@ def require_layer6(
 
 def check_layer6(
     capability: Layer6Capability,
-    config: Optional[Any] = None,
-    context: Optional[Dict[str, Any]] = None
+    config: Any | None = None,
+    context: dict[str, Any] | None = None
 ) -> bool:
     """Check if Layer 6 capability is available (non-throwing)."""
     return SafetyLock.check_layer6(capability, config, context)

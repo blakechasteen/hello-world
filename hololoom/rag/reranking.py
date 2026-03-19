@@ -29,9 +29,9 @@ Architecture:
 """
 
 import logging
-from typing import Protocol, List, Tuple, Optional
-from dataclasses import dataclass
 import time
+from dataclasses import dataclass
+from typing import Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +51,9 @@ class Reranker(Protocol):
     def rerank(
         self,
         query: str,
-        documents: List[str],
+        documents: list[str],
         top_k: int
-    ) -> List[Tuple[int, float]]:
+    ) -> list[tuple[int, float]]:
         """
         Rerank documents by relevance to query.
 
@@ -124,9 +124,9 @@ class CrossEncoderReranker:
     def rerank(
         self,
         query: str,
-        documents: List[str],
+        documents: list[str],
         top_k: int
-    ) -> List[Tuple[int, float]]:
+    ) -> list[tuple[int, float]]:
         """
         Rerank documents using cross-encoder.
 
@@ -212,9 +212,9 @@ class NoOpReranker:
     def rerank(
         self,
         query: str,
-        documents: List[str],
+        documents: list[str],
         top_k: int
-    ) -> List[Tuple[int, float]]:
+    ) -> list[tuple[int, float]]:
         """
         Return documents in original order.
 
@@ -310,8 +310,8 @@ class RerankingStats:
 
 
 def compute_reranking_benefit(
-    original_scores: List[float],
-    reranked_scores: List[float]
+    original_scores: list[float],
+    reranked_scores: list[float]
 ) -> float:
     """
     Compute the benefit of reranking (improvement in average score).

@@ -22,17 +22,16 @@ Date: October 29, 2025
 """
 
 import asyncio
-from typing import Optional, Dict, Any
-from pathlib import Path
-from dataclasses import dataclass
 import webbrowser
+from dataclasses import dataclass
+from pathlib import Path
 
-from ..weaving_orchestrator import WeavingOrchestrator
 from ..documentation.types import Query
 from ..fabric.spacetime import Spacetime
+from ..weaving_orchestrator import WeavingOrchestrator
 from .constructor import DashboardConstructor
-from .html_renderer import HTMLRenderer
 from .dashboard import Dashboard
+from .html_renderer import HTMLRenderer
 
 
 @dataclass
@@ -41,7 +40,7 @@ class DashboardResult:
     spacetime: Spacetime
     dashboard: Dashboard
     html: str
-    file_path: Optional[Path] = None
+    file_path: Path | None = None
 
 
 class DashboardOrchestrator(WeavingOrchestrator):
@@ -81,7 +80,7 @@ class DashboardOrchestrator(WeavingOrchestrator):
     async def weave_with_dashboard(
         self,
         query: Query,
-        save_path: Optional[str] = None,
+        save_path: str | None = None,
         open_browser: bool = False,
         **weave_kwargs
     ) -> DashboardResult:
@@ -140,7 +139,7 @@ class DashboardOrchestrator(WeavingOrchestrator):
         # Step 5: Optionally open in browser
         if open_browser and file_path:
             webbrowser.open(f'file://{file_path.absolute()}')
-            self.logger.info(f"[DASHBOARD] Opened in browser")
+            self.logger.info("[DASHBOARD] Opened in browser")
 
         return DashboardResult(
             spacetime=spacetime,
@@ -189,7 +188,7 @@ class DashboardOrchestrator(WeavingOrchestrator):
     async def serve_dashboard(
         self,
         query: Query,
-        output_dir: Optional[Path] = None,
+        output_dir: Path | None = None,
         **weave_kwargs
     ) -> DashboardResult:
         """
@@ -240,7 +239,7 @@ async def weave_and_visualize(
     cfg,
     shards=None,
     memory=None,
-    save_path: Optional[str] = None,
+    save_path: str | None = None,
     open_browser: bool = False
 ) -> DashboardResult:
     """

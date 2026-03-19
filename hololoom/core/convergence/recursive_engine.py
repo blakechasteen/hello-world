@@ -11,22 +11,19 @@ Integration: Promptly → HoloLoom convergence layer
 """
 
 import logging
-from typing import Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
 
-from hololoom.protocols.types import Query, Features
+from hololoom.convergence.engine import CollapseStrategy, ConvergenceEngine
+from hololoom.convergence.recursive_reasoner import create_recursive_reasoner
 from hololoom.fabric.spacetime import Spacetime
-from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
-from hololoom.convergence.recursive_reasoner import (
-    BaseRecursiveReasoner,
-    create_recursive_reasoner
-)
 from hololoom.protocols.recursive_reasoning import (
-    RecursiveConfig,
-    ReasoningStrategy,
+    QualityScoringProtocol,
     ReasoningJournal,
-    QualityScoringProtocol
+    ReasoningStrategy,
+    RecursiveConfig,
 )
+from hololoom.protocols.types import Features, Query
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +66,8 @@ class RecursiveConvergenceEngine(ConvergenceEngine):
         self,
         *args,
         enable_recursive: bool = True,
-        default_config: Optional[RecursiveConfig] = None,
-        quality_scorer: Optional[QualityScoringProtocol] = None,
+        default_config: RecursiveConfig | None = None,
+        quality_scorer: QualityScoringProtocol | None = None,
         **kwargs
     ):
         """
@@ -95,7 +92,7 @@ class RecursiveConvergenceEngine(ConvergenceEngine):
         self.quality_scorer = quality_scorer
 
         # Will be set when integrated with orchestrator
-        self.weaving_fn: Optional[Callable] = None
+        self.weaving_fn: Callable | None = None
 
         logger.info(
             f"RecursiveConvergenceEngine initialized "
@@ -119,7 +116,7 @@ class RecursiveConvergenceEngine(ConvergenceEngine):
         self,
         query: Query,
         features: Features,
-        config: Optional[RecursiveConfig] = None
+        config: RecursiveConfig | None = None
     ) -> RecursiveConvergenceResult:
         """
         Converge to decision with optional recursive refinement.

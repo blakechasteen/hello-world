@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Performance Optimizer for ChatOps
 ==================================
@@ -26,15 +25,17 @@ Usage:
         result = await process_query(query)
 """
 
-import logging
 import asyncio
-import time
 import functools
 import hashlib
-from typing import Dict, List, Optional, Any, Callable
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+import logging
+import time
 from collections import OrderedDict
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
+
 import psutil
 
 logger = logging.getLogger(__name__)
@@ -86,7 +87,7 @@ class LRUCache:
         self.hits = 0
         self.misses = 0
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """
         Get value from cache.
 
@@ -115,7 +116,7 @@ class LRUCache:
 
         return entry.value
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+    def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """
         Set value in cache.
 
@@ -163,7 +164,7 @@ class LRUCache:
 
         return len(expired_keys)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         total_requests = self.hits + self.misses
         hit_rate = self.hits / total_requests if total_requests > 0 else 0
@@ -188,7 +189,7 @@ class ProfileEntry:
     name: str
     duration_ms: float
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class PerformanceProfiler:
@@ -200,14 +201,14 @@ class PerformanceProfiler:
 
     def __init__(self):
         """Initialize profiler."""
-        self.entries: List[ProfileEntry] = []
-        self.active_timers: Dict[str, float] = {}
+        self.entries: list[ProfileEntry] = []
+        self.active_timers: dict[str, float] = {}
 
     def start(self, name: str) -> None:
         """Start timing an operation."""
         self.active_timers[name] = time.time()
 
-    def stop(self, name: str, metadata: Optional[Dict] = None) -> float:
+    def stop(self, name: str, metadata: dict | None = None) -> float:
         """
         Stop timing an operation.
 
@@ -234,7 +235,7 @@ class PerformanceProfiler:
 
         return duration_ms
 
-    def get_stats(self, name: Optional[str] = None) -> Dict[str, Any]:
+    def get_stats(self, name: str | None = None) -> dict[str, Any]:
         """
         Get profiling statistics.
 
@@ -317,7 +318,7 @@ class PerformanceOptimizer:
         self.profiler = PerformanceProfiler() if enable_profiling else None
 
         # Query deduplication (prevent concurrent duplicate requests)
-        self.in_flight: Dict[str, asyncio.Future] = {}
+        self.in_flight: dict[str, asyncio.Future] = {}
 
         logger.info("PerformanceOptimizer initialized")
 
@@ -352,7 +353,7 @@ class PerformanceOptimizer:
 
         return ":".join(key_parts)
 
-    def cache(self, ttl: Optional[int] = None, key_func: Optional[Callable] = None):
+    def cache(self, ttl: int | None = None, key_func: Callable | None = None):
         """
         Cache decorator for async functions.
 
@@ -480,7 +481,7 @@ class PerformanceOptimizer:
     # Resource Monitoring
     # ========================================================================
 
-    def get_resource_usage(self) -> Dict[str, Any]:
+    def get_resource_usage(self) -> dict[str, Any]:
         """Get current resource usage."""
         try:
             process = psutil.Process()
@@ -499,7 +500,7 @@ class PerformanceOptimizer:
     # Statistics & Monitoring
     # ========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get comprehensive performance statistics."""
         stats = {
             "cache": self.cache.get_stats(),
@@ -537,11 +538,11 @@ class PerformanceOptimizer:
 # ============================================================================
 
 async def batch_process(
-    items: List[Any],
+    items: list[Any],
     process_func: Callable,
     batch_size: int = 10,
     max_concurrent: int = 5
-) -> List[Any]:
+) -> list[Any]:
     """
     Process items in batches with concurrency control.
 

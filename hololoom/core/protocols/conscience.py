@@ -12,11 +12,10 @@ Author: HoloLoom Team
 Date: 2025-12-03
 """
 
-from typing import Dict, Any, Optional, List, Protocol, runtime_checkable
 from dataclasses import dataclass, field
-from enum import IntEnum
 from datetime import datetime
-
+from enum import IntEnum
+from typing import Any, Protocol, runtime_checkable
 
 # =============================================================================
 # Step Types for Agentic Integration
@@ -80,13 +79,13 @@ class ConscienceDecision:
     reason: str
     voice: str  # Voice name (QUIET, WHISPER, VOICE, SHOUT)
     voice_level: int = 0
-    concerns: List[Dict[str, Any]] = field(default_factory=list)
+    concerns: list[dict[str, Any]] = field(default_factory=list)
     guidance: str = ""
-    witness_id: Optional[str] = None
+    witness_id: str | None = None
     step_type: StepType = StepType.QUERY
     step_index: int = 0
     evaluation_time_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
@@ -99,7 +98,7 @@ class ConscienceDecision:
         """Whether this decision recommends human review."""
         return self.risk_level >= RiskLevel.MEDIUM
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "allowed": self.allowed,
@@ -118,7 +117,7 @@ class ConscienceDecision:
             "timestamp": self.timestamp.isoformat(),
         }
 
-    def to_safety_gate_decision(self) -> Dict[str, Any]:
+    def to_safety_gate_decision(self) -> dict[str, Any]:
         """
         Convert to legacy SafetyGateDecision format.
 
@@ -163,7 +162,7 @@ class ConscienceProtocol(Protocol):
     async def consider(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> Any:  # Returns Judgment
         """
         Consider an action before execution.
@@ -180,9 +179,9 @@ class ConscienceProtocol(Protocol):
     async def witness(
         self,
         action: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         judgment: Any,  # Judgment type
-        result: Optional[Dict[str, Any]] = None
+        result: dict[str, Any] | None = None
     ) -> str:
         """
         Witness an action and its outcome.
@@ -200,7 +199,7 @@ class ConscienceProtocol(Protocol):
 
     async def learn(
         self,
-        feedback: Dict[str, Any]
+        feedback: dict[str, Any]
     ) -> None:
         """
         Learn from feedback.
@@ -226,7 +225,7 @@ class ExtendedConscienceProtocol(ConscienceProtocol, Protocol):
     async def is_safe(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> bool:
         """Quick check if an action is safe."""
         ...
@@ -234,13 +233,13 @@ class ExtendedConscienceProtocol(ConscienceProtocol, Protocol):
     async def gate(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         execute_fn=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Gate an action through conscience with automatic execution."""
         ...
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get statistics about conscience activity."""
         ...
 
@@ -283,7 +282,7 @@ def create_allowed_decision(
 def create_blocked_decision(
     reason: str,
     risk_level: RiskLevel = RiskLevel.HIGH,
-    concerns: Optional[List[Dict[str, Any]]] = None,
+    concerns: list[dict[str, Any]] | None = None,
     guidance: str = "Action blocked for safety",
     step_type: StepType = StepType.QUERY,
     step_index: int = 0,
@@ -323,7 +322,7 @@ def create_blocked_decision(
 
 def create_review_decision(
     reason: str,
-    concerns: Optional[List[Dict[str, Any]]] = None,
+    concerns: list[dict[str, Any]] | None = None,
     guidance: str = "Human review recommended",
     step_type: StepType = StepType.QUERY,
     step_index: int = 0,
@@ -372,8 +371,8 @@ class NullConscience:
     async def consider(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Always returns safe judgment."""
         return {
             "voice": "QUIET",
@@ -387,16 +386,16 @@ class NullConscience:
     async def witness(
         self,
         action: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         judgment: Any,
-        result: Optional[Dict[str, Any]] = None
+        result: dict[str, Any] | None = None
     ) -> str:
         """No-op witness, returns empty record ID."""
         return ""
 
     async def learn(
         self,
-        feedback: Dict[str, Any]
+        feedback: dict[str, Any]
     ) -> None:
         """No-op learn."""
         pass
@@ -404,11 +403,11 @@ class NullConscience:
     async def is_safe(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> bool:
         """Always safe."""
         return True
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Empty statistics."""
         return {"status": "disabled"}

@@ -11,10 +11,10 @@ Available Skills:
 - image_processing: Image processing with PIL/Pillow
 """
 
-from .stable_diffusion import StableDiffusionSkill
 from .ffmpeg_skill import FFmpegSkill
-from .latex_compiler import LaTeXCompilerSkill
 from .graphviz_skill import GraphvizSkill
 from .image_processing_skill import ImageProcessingSkill
+from .latex_compiler import LaTeXCompilerSkill
+from .stable_diffusion import StableDiffusionSkill
 
 __all__ = ['StableDiffusionSkill', 'FFmpegSkill', 'LaTeXCompilerSkill', 'GraphvizSkill', 'ImageProcessingSkill']

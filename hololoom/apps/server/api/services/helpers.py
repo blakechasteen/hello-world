@@ -13,18 +13,18 @@ Functions:
 """
 
 import logging
-from typing import Optional, List, Dict
 
-from hololoom.agentic import create_agentic_orchestrator
 from hololoom.protocols.types import MemoryShard
 
-from ..models import VerificationResponse, ReasoningStepResponse
+from hololoom.agentic import create_agentic_orchestrator
+
+from ..models import ReasoningStepResponse, VerificationResponse
 from ..state import state
 
 logger = logging.getLogger(__name__)
 
 
-def load_memory_shards() -> List[MemoryShard]:
+def load_memory_shards() -> list[MemoryShard]:
     """
     Load memory shards from data source (fallback when persistent backend unavailable).
 
@@ -42,7 +42,7 @@ def load_memory_shards() -> List[MemoryShard]:
     ]
 
 
-async def load_from_persistent_backend() -> List[MemoryShard]:
+async def load_from_persistent_backend() -> list[MemoryShard]:
     """
     Load memories from persistent backend (Neo4j/Qdrant).
 
@@ -99,7 +99,7 @@ async def get_orchestrator():
     return state.orchestrator
 
 
-def format_verification(verification) -> Optional[VerificationResponse]:
+def format_verification(verification) -> VerificationResponse | None:
     """Format verification result for API response."""
     if verification is None:
         return None
@@ -113,7 +113,7 @@ def format_verification(verification) -> Optional[VerificationResponse]:
     )
 
 
-def format_steps(steps: List[Dict]) -> List[ReasoningStepResponse]:
+def format_steps(steps: list[dict]) -> list[ReasoningStepResponse]:
     """Format reasoning steps for API response."""
     return [
         ReasoningStepResponse(

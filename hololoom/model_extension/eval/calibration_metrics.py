@@ -22,11 +22,9 @@ Author: HoloLoom Architecture Team
 Date: December 2025
 """
 
-import math
 import logging
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Tuple
-from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +51,13 @@ class CalibrationMetrics:
     expected_calibration_error: float = 0.0
     maximum_calibration_error: float = 0.0
     brier_score: float = 0.0
-    calibration_curve: List[Tuple[float, float]] = field(default_factory=list)
-    reliability_diagram: Dict[str, Any] = field(default_factory=dict)
+    calibration_curve: list[tuple[float, float]] = field(default_factory=list)
+    reliability_diagram: dict[str, Any] = field(default_factory=dict)
     total_predictions: int = 0
     num_bins: int = 10
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "expected_calibration_error": self.expected_calibration_error,
@@ -113,9 +111,9 @@ class Prediction:
     """A single prediction with confidence and outcome."""
     confidence: float  # Reported confidence (0-1)
     correct: bool  # Whether prediction was correct
-    predicted_class: Optional[int] = None
-    true_class: Optional[int] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    predicted_class: int | None = None
+    true_class: int | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -129,7 +127,7 @@ class CalibrationBin:
     avg_confidence: float
     calibration_error: float  # |accuracy - avg_confidence|
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "bin_lower": self.bin_lower,
             "bin_upper": self.bin_upper,
@@ -146,9 +144,9 @@ class CalibrationBin:
 # =============================================================================
 
 def compute_calibration_bins(
-    predictions: List[Prediction],
+    predictions: list[Prediction],
     num_bins: int = 10,
-) -> List[CalibrationBin]:
+) -> list[CalibrationBin]:
     """
     Compute calibration statistics per bin.
 
@@ -165,7 +163,7 @@ def compute_calibration_bins(
         return []
 
     # Initialize bins
-    bins: List[List[Prediction]] = [[] for _ in range(num_bins)]
+    bins: list[list[Prediction]] = [[] for _ in range(num_bins)]
 
     # Assign predictions to bins
     for pred in predictions:
@@ -205,7 +203,7 @@ def compute_calibration_bins(
 
 
 def expected_calibration_error(
-    predictions: List[Prediction],
+    predictions: list[Prediction],
     num_bins: int = 10,
 ) -> float:
     """
@@ -237,7 +235,7 @@ def expected_calibration_error(
 
 
 def maximum_calibration_error(
-    predictions: List[Prediction],
+    predictions: list[Prediction],
     num_bins: int = 10,
 ) -> float:
     """
@@ -267,7 +265,7 @@ def maximum_calibration_error(
     return max(b.calibration_error for b in non_empty_bins)
 
 
-def brier_score(predictions: List[Prediction]) -> float:
+def brier_score(predictions: list[Prediction]) -> float:
     """
     Brier Score.
 
@@ -294,9 +292,9 @@ def brier_score(predictions: List[Prediction]) -> float:
 
 
 def compute_calibration_curve(
-    predictions: List[Prediction],
+    predictions: list[Prediction],
     num_bins: int = 10,
-) -> List[Tuple[float, float]]:
+) -> list[tuple[float, float]]:
     """
     Compute calibration curve as (avg_confidence, accuracy) pairs.
 
@@ -317,9 +315,9 @@ def compute_calibration_curve(
 
 
 def compute_reliability_diagram(
-    predictions: List[Prediction],
+    predictions: list[Prediction],
     num_bins: int = 10,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Compute data for reliability diagram visualization.
 
@@ -377,7 +375,7 @@ class CalibrationEvaluator:
 
     def evaluate(
         self,
-        predictions: List[Prediction],
+        predictions: list[Prediction],
     ) -> CalibrationMetrics:
         """
         Evaluate calibration across all predictions.
@@ -406,8 +404,8 @@ class CalibrationEvaluator:
 
     def evaluate_from_scores(
         self,
-        confidences: List[float],
-        correct: List[bool],
+        confidences: list[float],
+        correct: list[bool],
     ) -> CalibrationMetrics:
         """
         Evaluate calibration from raw scores.
@@ -433,10 +431,10 @@ class CalibrationEvaluator:
 
     def evaluate_regression(
         self,
-        predicted_values: List[float],
-        true_values: List[float],
-        confidence_intervals: List[Tuple[float, float]],
-    ) -> Dict[str, Any]:
+        predicted_values: list[float],
+        true_values: list[float],
+        confidence_intervals: list[tuple[float, float]],
+    ) -> dict[str, Any]:
         """
         Evaluate calibration for regression with confidence intervals.
 
@@ -471,9 +469,9 @@ class CalibrationEvaluator:
 
     def analyze_by_confidence_band(
         self,
-        predictions: List[Prediction],
-        bands: Optional[List[Tuple[float, float]]] = None,
-    ) -> Dict[str, Dict[str, float]]:
+        predictions: list[Prediction],
+        bands: list[tuple[float, float]] | None = None,
+    ) -> dict[str, dict[str, float]]:
         """
         Analyze calibration within specific confidence bands.
 
@@ -551,8 +549,8 @@ def create_prediction(
 
 
 def evaluate_simple(
-    confidences: List[float],
-    correct: List[bool],
+    confidences: list[float],
+    correct: list[bool],
     num_bins: int = 10,
 ) -> CalibrationMetrics:
     """
@@ -571,8 +569,8 @@ def evaluate_simple(
 
 
 def is_overconfident(
-    confidences: List[float],
-    correct: List[bool],
+    confidences: list[float],
+    correct: list[bool],
     threshold: float = 0.8,
 ) -> bool:
     """
@@ -602,8 +600,8 @@ def is_overconfident(
 
 
 def is_underconfident(
-    confidences: List[float],
-    correct: List[bool],
+    confidences: list[float],
+    correct: list[bool],
     threshold: float = 0.4,
 ) -> bool:
     """

@@ -38,12 +38,13 @@ Usage:
     print(f"Mean activation: {stats.global_mean:.3f}")
 """
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
-from enum import Enum
-from collections import deque
-import numpy as np
 import time
+from collections import deque
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Optional
+
+import numpy as np
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.engine import DarkTraceEngine
@@ -88,9 +89,9 @@ class FeatureStatistics:
     recent_values: deque = field(default_factory=lambda: deque(maxlen=1000))
 
     # Baseline statistics (for drift comparison)
-    baseline_mean: Optional[float] = None
-    baseline_std: Optional[float] = None
-    baseline_sparsity: Optional[float] = None
+    baseline_mean: float | None = None
+    baseline_std: float | None = None
+    baseline_sparsity: float | None = None
 
     @property
     def variance(self) -> float:
@@ -140,7 +141,7 @@ class FeatureStatistics:
         self.baseline_std = self.std
         self.baseline_sparsity = self.sparsity
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "feature_id": self.feature_id,
@@ -160,14 +161,14 @@ class DriftReport:
     """Report of detected drift."""
 
     has_drift: bool = False
-    drifted_features: List[str] = field(default_factory=list)
-    drift_details: Dict[str, List[DriftType]] = field(default_factory=dict)
-    drift_scores: Dict[str, float] = field(default_factory=dict)
+    drifted_features: list[str] = field(default_factory=list)
+    drift_details: dict[str, list[DriftType]] = field(default_factory=dict)
+    drift_scores: dict[str, float] = field(default_factory=dict)
     alert_level: AlertLevel = AlertLevel.INFO
     timestamp: float = field(default_factory=time.time)
-    recommendations: List[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "has_drift": self.has_drift,
@@ -189,12 +190,12 @@ class Alert:
 
     level: AlertLevel
     message: str
-    feature_id: Optional[str] = None
-    drift_type: Optional[DriftType] = None
-    value: Optional[float] = None
-    threshold: Optional[float] = None
+    feature_id: str | None = None
+    drift_type: DriftType | None = None
+    value: float | None = None
+    threshold: float | None = None
     timestamp: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -233,7 +234,7 @@ class DriftDetector:
     - Sparsity change detection (absolute difference)
     """
 
-    def __init__(self, config: Optional[MonitorConfig] = None):
+    def __init__(self, config: MonitorConfig | None = None):
         """
         Initialize drift detector.
 
@@ -244,8 +245,8 @@ class DriftDetector:
 
     def detect_drift(
         self,
-        statistics: Dict[str, FeatureStatistics],
-        features_to_check: Optional[Set[str]] = None,
+        statistics: dict[str, FeatureStatistics],
+        features_to_check: set[str] | None = None,
     ) -> DriftReport:
         """
         Check for drift in feature statistics.
@@ -323,12 +324,12 @@ class DriftDetector:
 
         return report
 
-    def _generate_recommendations(self, report: DriftReport) -> List[str]:
+    def _generate_recommendations(self, report: DriftReport) -> list[str]:
         """Generate actionable recommendations based on drift."""
         recommendations = []
 
         # Count drift types
-        drift_type_counts: Dict[DriftType, int] = {}
+        drift_type_counts: dict[DriftType, int] = {}
         for drift_types in report.drift_details.values():
             for dt in drift_types:
                 drift_type_counts[dt] = drift_type_counts.get(dt, 0) + 1
@@ -374,7 +375,7 @@ class InterpretabilityMonitor:
     def __init__(
         self,
         engine: Optional["DarkTraceEngine"] = None,
-        config: Optional[MonitorConfig] = None,
+        config: MonitorConfig | None = None,
     ):
         """
         Initialize interpretability monitor.
@@ -387,7 +388,7 @@ class InterpretabilityMonitor:
         self.config = config or MonitorConfig()
 
         # Statistics tracking
-        self._statistics: Dict[str, FeatureStatistics] = {}
+        self._statistics: dict[str, FeatureStatistics] = {}
         self._global_stats = FeatureStatistics(feature_id="__global__")
 
         # Drift detection
@@ -396,7 +397,7 @@ class InterpretabilityMonitor:
         self._last_drift_check = 0
 
         # Alerting
-        self._alerts: List[Alert] = []
+        self._alerts: list[Alert] = []
         self._alerts_this_hour: int = 0
         self._hour_start: float = time.time()
 
@@ -407,8 +408,8 @@ class InterpretabilityMonitor:
     def record(
         self,
         activations: np.ndarray,
-        feature_ids: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        feature_ids: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Record activations for monitoring.
@@ -466,7 +467,7 @@ class InterpretabilityMonitor:
     def record_from_trace(
         self,
         trace_result: Any,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Record from a TraceResult object.
@@ -496,7 +497,7 @@ class InterpretabilityMonitor:
                     metadata=metadata,
                 )
 
-    def set_baseline(self, feature_ids: Optional[List[str]] = None) -> None:
+    def set_baseline(self, feature_ids: list[str] | None = None) -> None:
         """
         Set current statistics as baseline for drift detection.
 
@@ -513,7 +514,7 @@ class InterpretabilityMonitor:
 
     def check_drift(
         self,
-        features_to_check: Optional[Set[str]] = None,
+        features_to_check: set[str] | None = None,
     ) -> DriftReport:
         """
         Check for feature drift.
@@ -555,8 +556,8 @@ class InterpretabilityMonitor:
 
     def get_statistics(
         self,
-        feature_ids: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        feature_ids: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Get current statistics.
 
@@ -596,15 +597,15 @@ class InterpretabilityMonitor:
 
         return result
 
-    def get_feature_statistics(self, feature_id: str) -> Optional[FeatureStatistics]:
+    def get_feature_statistics(self, feature_id: str) -> FeatureStatistics | None:
         """Get statistics for a specific feature."""
         return self._statistics.get(feature_id)
 
     def get_alerts(
         self,
-        since: Optional[float] = None,
-        level: Optional[AlertLevel] = None,
-    ) -> List[Alert]:
+        since: float | None = None,
+        level: AlertLevel | None = None,
+    ) -> list[Alert]:
         """
         Get alerts.
 
@@ -631,7 +632,7 @@ class InterpretabilityMonitor:
         self._alerts = []
         return count
 
-    def get_health_summary(self) -> Dict[str, Any]:
+    def get_health_summary(self) -> dict[str, Any]:
         """
         Get overall health summary.
 
@@ -669,7 +670,7 @@ class InterpretabilityMonitor:
 
 def create_monitor(
     engine: Optional["DarkTraceEngine"] = None,
-    config: Optional[MonitorConfig] = None,
+    config: MonitorConfig | None = None,
     enable_drift_detection: bool = True,
     enable_alerting: bool = True,
 ) -> InterpretabilityMonitor:

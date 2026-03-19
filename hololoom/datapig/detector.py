@@ -7,11 +7,11 @@ This module provides comprehensive data quality validation with
 Star Trek-themed detection categories.
 """
 
-from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Union
 import re
+from dataclasses import dataclass
 from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
 
 class Severity(Enum):
@@ -46,7 +46,7 @@ class DataQualityIssue:
     severity: Severity
     message: str
     location: str  # Column, row, or dataset location
-    details: Dict[str, Any]
+    details: dict[str, Any]
     stardate: float  # When issue was detected
 
     def __str__(self) -> str:
@@ -76,7 +76,7 @@ class DataPigDetector:
         enable_fuzzy_duplicates: bool = True,
         fuzzy_similarity_threshold: float = 0.85,
         fuzzy_use_phonetic: bool = True,
-        fuzzy_fields: Optional[List[str]] = None,
+        fuzzy_fields: list[str] | None = None,
         enable_entropy_detection: bool = True,
         high_entropy_threshold: float = 3.0,
         low_entropy_threshold: float = 1.5,
@@ -91,9 +91,9 @@ class DataPigDetector:
         self.high_entropy_threshold = high_entropy_threshold
         self.low_entropy_threshold = low_entropy_threshold
         self.entropy_min_samples = entropy_min_samples
-        self.issues: List[DataQualityIssue] = []
+        self.issues: list[DataQualityIssue] = []
 
-    def analyze_dataset(self, data: Union[Dict, List[Dict], Any]) -> List[DataQualityIssue]:
+    def analyze_dataset(self, data: dict | list[dict] | Any) -> list[DataQualityIssue]:
         """
         Run full data quality analysis (all detection categories)
 
@@ -153,7 +153,7 @@ class DataPigDetector:
     # Detection Systems (Star Trek Themed)
     # ============================================================================
 
-    def _detect_schema_drift(self, rows: List[Dict], stardate: float):
+    def _detect_schema_drift(self, rows: list[dict], stardate: float):
         """
         "Captain, the laws of physics have changed!" - Spock
 
@@ -198,7 +198,7 @@ class DataPigDetector:
                             stardate=stardate
                         ))
 
-    def _detect_data_leaks(self, rows: List[Dict], stardate: float):
+    def _detect_data_leaks(self, rows: list[dict], stardate: float):
         """
         "Hull breach on deck 7!" - Security Officer
 
@@ -234,7 +234,7 @@ class DataPigDetector:
                             stardate=stardate
                         ))
 
-    def _detect_stale_data(self, rows: List[Dict], stardate: float):
+    def _detect_stale_data(self, rows: list[dict], stardate: float):
         """
         "These readings are from last century!" - Chief O'Brien
 
@@ -288,13 +288,13 @@ class DataPigDetector:
                 except (ValueError, OSError):
                     pass
 
-    def _detect_duplicates(self, rows: List[Dict], stardate: float):
+    def _detect_duplicates(self, rows: list[dict], stardate: float):
         """
         "We're seeing double, Captain!" - Sulu
 
         Detects exact and fuzzy duplicates
         """
-        seen_hashes: Dict[int, int] = {}  # hash -> first occurrence index
+        seen_hashes: dict[int, int] = {}  # hash -> first occurrence index
 
         for idx, row in enumerate(rows):
             # Create hash of row (excluding None values for stability)
@@ -317,7 +317,7 @@ class DataPigDetector:
             else:
                 seen_hashes[row_hash] = idx
 
-    def _detect_fuzzy_duplicates(self, rows: List[Dict], stardate: float):
+    def _detect_fuzzy_duplicates(self, rows: list[dict], stardate: float):
         """
         "Similar life forms detected nearby!" - Sensors
 
@@ -372,7 +372,7 @@ class DataPigDetector:
                 stardate=stardate
             ))
 
-    def _detect_entropy_pii(self, rows: List[Dict], stardate: float):
+    def _detect_entropy_pii(self, rows: list[dict], stardate: float):
         """
         "Encrypted Romulan transmission detected!" - Communications Officer
 
@@ -437,14 +437,14 @@ class DataPigDetector:
                     stardate=stardate
                 ))
 
-    def _detect_outliers(self, rows: List[Dict], stardate: float):
+    def _detect_outliers(self, rows: list[dict], stardate: float):
         """
         "Captain, these readings are... impossible!" - Spock
 
         Detects statistical anomalies and impossible values
         """
         # Collect numeric columns
-        numeric_cols: Dict[str, List[float]] = {}
+        numeric_cols: dict[str, list[float]] = {}
 
         for row in rows:
             for key, value in row.items():
@@ -488,14 +488,14 @@ class DataPigDetector:
                             stardate=stardate
                         ))
 
-    def _detect_inconsistent_formatting(self, rows: List[Dict], stardate: float):
+    def _detect_inconsistent_formatting(self, rows: list[dict], stardate: float):
         """
         "Universal translator malfunction!" - Uhura
 
         Detects inconsistent formatting (dates, phone numbers, etc.)
         """
         # Track format patterns per column
-        column_formats: Dict[str, Set[str]] = {}
+        column_formats: dict[str, set[str]] = {}
 
         for idx, row in enumerate(rows):
             for key, value in row.items():
@@ -525,7 +525,7 @@ class DataPigDetector:
                     stardate=stardate
                 ))
 
-    def _detect_missing_relations(self, rows: List[Dict], stardate: float):
+    def _detect_missing_relations(self, rows: list[dict], stardate: float):
         """
         "Transporter lost the signal!" - Chief O'Brien
 
@@ -535,8 +535,8 @@ class DataPigDetector:
         fk_pattern = r'(.+)_(id|ref|fk)$'
 
         # Collect all IDs
-        id_fields: Dict[str, Set[Any]] = {}
-        fk_fields: Dict[str, List[tuple]] = {}  # fk -> [(row_idx, value)]
+        id_fields: dict[str, set[Any]] = {}
+        fk_fields: dict[str, list[tuple]] = {}  # fk -> [(row_idx, value)]
 
         for idx, row in enumerate(rows):
             for key, value in row.items():
@@ -579,7 +579,7 @@ class DataPigDetector:
                             ))
                     break
 
-    def _detect_distribution_shift(self, rows: List[Dict], stardate: float):
+    def _detect_distribution_shift(self, rows: list[dict], stardate: float):
         """
         "We've entered an alternate reality!" - Captain Janeway
 
@@ -588,7 +588,7 @@ class DataPigDetector:
         # Simple check: look for categorical columns with unexpected values
         # Track value distributions
 
-        categorical_cols: Dict[str, Dict[Any, int]] = {}
+        categorical_cols: dict[str, dict[Any, int]] = {}
 
         for row in rows:
             for key, value in row.items():
@@ -619,7 +619,7 @@ class DataPigDetector:
                     stardate=stardate
                 ))
 
-    def _detect_sampling_bias(self, rows: List[Dict], stardate: float):
+    def _detect_sampling_bias(self, rows: list[dict], stardate: float):
         """
         "Prime Directive violation detected!" - Captain Picard
 
@@ -633,7 +633,7 @@ class DataPigDetector:
                 continue
 
             # Count class distribution
-            class_counts: Dict[Any, int] = {}
+            class_counts: dict[Any, int] = {}
             for row in rows:
                 if label_col in row:
                     value = row[label_col]
@@ -664,7 +664,7 @@ class DataPigDetector:
                     stardate=stardate
                 ))
 
-    def _detect_label_noise(self, rows: List[Dict], stardate: float):
+    def _detect_label_noise(self, rows: list[dict], stardate: float):
         """
         "Temporal anomaly detected - contradictory data!" - Seven of Nine
 
@@ -678,7 +678,7 @@ class DataPigDetector:
                 continue
 
             # Create feature -> labels mapping
-            feature_labels: Dict[str, Set[Any]] = {}
+            feature_labels: dict[str, set[Any]] = {}
 
             for idx, row in enumerate(rows):
                 if label_col not in row:
@@ -713,7 +713,7 @@ class DataPigDetector:
     # Helper Methods
     # ============================================================================
 
-    def _normalize_data(self, data: Any) -> List[Dict]:
+    def _normalize_data(self, data: Any) -> list[dict]:
         """Convert various data formats to list of dicts"""
         # Try pandas DataFrame
         try:
@@ -768,7 +768,7 @@ class DataPigDetector:
 # Convenience Functions
 # ============================================================================
 
-def analyze_dataset(data: Any, verbose: bool = False) -> List[DataQualityIssue]:
+def analyze_dataset(data: Any, verbose: bool = False) -> list[DataQualityIssue]:
     """
     Quick analysis function - one-liner for data validation
 

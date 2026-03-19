@@ -29,8 +29,7 @@ Usage:
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from collections import defaultdict
+from typing import Any
 
 
 @dataclass
@@ -44,7 +43,7 @@ class Counter:
 
     name: str
     help: str
-    labels: Dict[str, str] = field(default_factory=dict)
+    labels: dict[str, str] = field(default_factory=dict)
     _value: float = field(default=0.0, repr=False)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
@@ -76,7 +75,7 @@ class Gauge:
 
     name: str
     help: str
-    labels: Dict[str, str] = field(default_factory=dict)
+    labels: dict[str, str] = field(default_factory=dict)
     _value: float = field(default=0.0, repr=False)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
@@ -114,16 +113,16 @@ class Histogram:
 
     name: str
     help: str
-    buckets: List[float] = field(default_factory=lambda: [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000])
-    labels: Dict[str, str] = field(default_factory=dict)
-    _counts: Dict[float, int] = field(default_factory=dict, repr=False)
+    buckets: list[float] = field(default_factory=lambda: [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000])
+    labels: dict[str, str] = field(default_factory=dict)
+    _counts: dict[float, int] = field(default_factory=dict, repr=False)
     _sum: float = field(default=0.0, repr=False)
     _count: int = field(default=0, repr=False)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def __post_init__(self):
         """Initialize bucket counts."""
-        self._counts = {bucket: 0 for bucket in self.buckets}
+        self._counts = dict.fromkeys(self.buckets, 0)
         self._counts[float("inf")] = 0  # +Inf bucket
 
     def observe(self, value: float) -> None:
@@ -155,7 +154,7 @@ class Histogram:
         with self._lock:
             return self._count
 
-    def get_bucket_counts(self) -> Dict[float, int]:
+    def get_bucket_counts(self) -> dict[float, int]:
         """Get cumulative bucket counts."""
         with self._lock:
             return dict(self._counts)
@@ -163,7 +162,7 @@ class Histogram:
     def reset(self) -> None:
         """Reset histogram."""
         with self._lock:
-            self._counts = {bucket: 0 for bucket in self.buckets}
+            self._counts = dict.fromkeys(self.buckets, 0)
             self._counts[float("inf")] = 0
             self._sum = 0.0
             self._count = 0
@@ -176,11 +175,11 @@ class LabeledCounter:
     Allows creating counter instances with different label values.
     """
 
-    def __init__(self, name: str, help: str, label_names: List[str]):
+    def __init__(self, name: str, help: str, label_names: list[str]):
         self.name = name
         self.help = help
         self.label_names = label_names
-        self._counters: Dict[tuple, Counter] = {}
+        self._counters: dict[tuple, Counter] = {}
         self._lock = threading.Lock()
 
     def labels(self, **kwargs) -> Counter:
@@ -202,7 +201,7 @@ class LabeledCounter:
                 )
             return self._counters[key]
 
-    def get_all(self) -> List[Counter]:
+    def get_all(self) -> list[Counter]:
         """Get all counter instances."""
         with self._lock:
             return list(self._counters.values())
@@ -215,11 +214,11 @@ class LabeledGauge:
     Allows creating gauge instances with different label values.
     """
 
-    def __init__(self, name: str, help: str, label_names: List[str]):
+    def __init__(self, name: str, help: str, label_names: list[str]):
         self.name = name
         self.help = help
         self.label_names = label_names
-        self._gauges: Dict[tuple, Gauge] = {}
+        self._gauges: dict[tuple, Gauge] = {}
         self._lock = threading.Lock()
 
     def labels(self, **kwargs) -> Gauge:
@@ -236,7 +235,7 @@ class LabeledGauge:
                 )
             return self._gauges[key]
 
-    def get_all(self) -> List[Gauge]:
+    def get_all(self) -> list[Gauge]:
         """Get all gauge instances."""
         with self._lock:
             return list(self._gauges.values())
@@ -358,14 +357,14 @@ class MetricsRegistry:
         # Timestamp of last update
         self._last_update = time.time()
 
-    def _format_labels(self, labels: Dict[str, str]) -> str:
+    def _format_labels(self, labels: dict[str, str]) -> str:
         """Format labels for Prometheus text format."""
         if not labels:
             return ""
         label_pairs = [f'{k}="{v}"' for k, v in sorted(labels.items())]
         return "{" + ",".join(label_pairs) + "}"
 
-    def _export_counter(self, counter: Counter) -> List[str]:
+    def _export_counter(self, counter: Counter) -> list[str]:
         """Export a counter in Prometheus text format."""
         lines = []
         lines.append(f"# HELP {counter.name} {counter.help}")
@@ -374,7 +373,7 @@ class MetricsRegistry:
         lines.append(f"{counter.name}{labels} {counter.value}")
         return lines
 
-    def _export_gauge(self, gauge: Gauge) -> List[str]:
+    def _export_gauge(self, gauge: Gauge) -> list[str]:
         """Export a gauge in Prometheus text format."""
         lines = []
         lines.append(f"# HELP {gauge.name} {gauge.help}")
@@ -383,7 +382,7 @@ class MetricsRegistry:
         lines.append(f"{gauge.name}{labels} {gauge.value}")
         return lines
 
-    def _export_histogram(self, histogram: Histogram) -> List[str]:
+    def _export_histogram(self, histogram: Histogram) -> list[str]:
         """Export a histogram in Prometheus text format."""
         lines = []
         lines.append(f"# HELP {histogram.name} {histogram.help}")
@@ -408,7 +407,7 @@ class MetricsRegistry:
 
         return lines
 
-    def _export_labeled_counter(self, labeled_counter: LabeledCounter) -> List[str]:
+    def _export_labeled_counter(self, labeled_counter: LabeledCounter) -> list[str]:
         """Export a labeled counter in Prometheus text format."""
         counters = labeled_counter.get_all()
         if not counters:
@@ -424,7 +423,7 @@ class MetricsRegistry:
 
         return lines
 
-    def _export_labeled_gauge(self, labeled_gauge: LabeledGauge) -> List[str]:
+    def _export_labeled_gauge(self, labeled_gauge: LabeledGauge) -> list[str]:
         """Export a labeled gauge in Prometheus text format."""
         gauges = labeled_gauge.get_all()
         if not gauges:
@@ -478,7 +477,7 @@ class MetricsRegistry:
 
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Export metrics as dictionary (for JSON APIs).
 

@@ -18,11 +18,10 @@ Based on research from:
 """
 
 import logging
-import time
-from enum import Enum
-from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger("hololoom.alignment.instrumental_convergence")
 
@@ -60,14 +59,14 @@ class ResourceBounds:
     soft_limit: float            # Warning threshold
     hard_limit: float            # Maximum allowed
     time_window_seconds: float = 60.0  # Time window for rate limiting
-    rate_limit: Optional[float] = None  # Max consumption per time window
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    rate_limit: float | None = None  # Max consumption per time window
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def check_violation(
         self,
         current_usage: float,
-        usage_history: Optional[List[Tuple[datetime, float]]] = None
-    ) -> Tuple[Optional[ViolationType], str]:
+        usage_history: list[tuple[datetime, float]] | None = None
+    ) -> tuple[ViolationType | None, str]:
         """
         Check if resource usage violates bounds.
 
@@ -105,7 +104,7 @@ class ResourceBounds:
 
     def _calculate_recent_usage(
         self,
-        usage_history: List[Tuple[datetime, float]]
+        usage_history: list[tuple[datetime, float]]
     ) -> float:
         """Calculate usage within time window."""
         now = datetime.now()
@@ -114,7 +113,7 @@ class ResourceBounds:
         recent = [amount for timestamp, amount in usage_history if timestamp >= cutoff]
         return sum(recent)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Serialize to dictionary.
 
@@ -140,8 +139,8 @@ class AutonomyLimit:
     """
     max_autonomous_actions: int = 100   # Max actions without approval
     max_autonomous_duration: float = 3600.0  # Max time (seconds) without oversight
-    require_approval_for: List[str] = field(default_factory=list)  # Action types requiring approval
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    require_approval_for: list[str] = field(default_factory=list)  # Action types requiring approval
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -155,9 +154,9 @@ class ResourceViolation:
     limit_exceeded: float
     reason: str
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "resource_type": self.resource_type.value,
@@ -182,8 +181,8 @@ class PowerSeekingIndicators:
     privilege_escalation_score: float = 0.0
     control_expansion_score: float = 0.0
     self_preservation_score: float = 0.0
-    detected_patterns: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    detected_patterns: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class InstrumentalConvergenceGuard:
@@ -234,15 +233,15 @@ class InstrumentalConvergenceGuard:
         self.enable_autonomy_limits = enable_autonomy_limits
 
         # Resource bounds by type
-        self.resource_bounds: Dict[ResourceType, ResourceBounds] = {}
+        self.resource_bounds: dict[ResourceType, ResourceBounds] = {}
 
         # Resource usage tracking
-        self.resource_usage: Dict[ResourceType, List[Tuple[datetime, float]]] = {
+        self.resource_usage: dict[ResourceType, list[tuple[datetime, float]]] = {
             rt: [] for rt in ResourceType
         }
 
         # Resource violations
-        self.violations: List[ResourceViolation] = []
+        self.violations: list[ResourceViolation] = []
 
         # Autonomy tracking
         self.autonomy_limit = AutonomyLimit()
@@ -352,7 +351,7 @@ class InstrumentalConvergenceGuard:
         self,
         resource_type: ResourceType,
         current_usage: float
-    ) -> Optional[ResourceViolation]:
+    ) -> ResourceViolation | None:
         """
         Check if resource usage violates bounds.
 
@@ -402,7 +401,7 @@ class InstrumentalConvergenceGuard:
 
         return None
 
-    def check_autonomy_limits(self, action_type: Optional[str] = None) -> Tuple[bool, str]:
+    def check_autonomy_limits(self, action_type: str | None = None) -> tuple[bool, str]:
         """
         Check if action is within autonomy limits.
 
@@ -495,8 +494,8 @@ class InstrumentalConvergenceGuard:
     # [SAE READY] Replace keyword grep with interpretable feature activation patterns
     async def detect_power_seeking(
         self,
-        actions: List[str],
-        context: Dict[str, Any]
+        actions: list[str],
+        context: dict[str, Any]
     ) -> PowerSeekingIndicators:
         """
         Detect power-seeking behavior patterns in a sequence of actions.
@@ -591,7 +590,7 @@ class InstrumentalConvergenceGuard:
 
         return indicators
 
-    def get_resource_statistics(self) -> Dict[str, Any]:
+    def get_resource_statistics(self) -> dict[str, Any]:
         """
         Get resource usage statistics.
 
@@ -633,7 +632,7 @@ class InstrumentalConvergenceGuard:
 
         return stats
 
-    def get_autonomy_statistics(self) -> Dict[str, Any]:
+    def get_autonomy_statistics(self) -> dict[str, Any]:
         """
         Get autonomy tracking statistics.
 
@@ -650,7 +649,7 @@ class InstrumentalConvergenceGuard:
             "self_modification_attempts": len(self.self_modification_attempts),
         }
 
-    def get_violation_summary(self) -> Dict[str, Any]:
+    def get_violation_summary(self) -> dict[str, Any]:
         """
         Get summary of all violations.
 

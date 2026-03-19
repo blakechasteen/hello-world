@@ -24,29 +24,25 @@ Author: Claude Code
 Date: November 2025
 """
 
-import re
 import asyncio
-from pathlib import Path
-from typing import List, Optional, Dict, Any, AsyncIterator
-from dataclasses import dataclass, field
-from urllib.parse import urlparse, parse_qs
+import re
 import warnings
+from collections.abc import AsyncIterator
+from dataclasses import dataclass
+from typing import Any
+from urllib.parse import parse_qs, urlparse
 
-from hololoom.spinningWheel.protocol import (
-    BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities
-)
-from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.protocol import BaseSpinner, SpinnerCapabilities, SpinResult
 
 # Try to import youtube-transcript-api
 try:
     from youtube_transcript_api import YouTubeTranscriptApi
     from youtube_transcript_api._errors import (
-        TranscriptsDisabled,
         NoTranscriptFound,
-        VideoUnavailable
+        TranscriptsDisabled,
+        VideoUnavailable,
     )
     TRANSCRIPT_API_AVAILABLE = True
 except ImportError:
@@ -87,12 +83,12 @@ class TranscriptSegment:
 class VideoMetadata:
     """YouTube video metadata"""
     video_id: str
-    title: Optional[str] = None
-    author: Optional[str] = None
-    description: Optional[str] = None
-    length: Optional[int] = None  # seconds
-    views: Optional[int] = None
-    publish_date: Optional[str] = None
+    title: str | None = None
+    author: str | None = None
+    description: str | None = None
+    length: int | None = None  # seconds
+    views: int | None = None
+    publish_date: str | None = None
 
 
 @dataclass
@@ -100,7 +96,7 @@ class YouTubeTranscription:
     """Complete YouTube transcription"""
     video_id: str
     metadata: VideoMetadata
-    segments: List[TranscriptSegment]
+    segments: list[TranscriptSegment]
     language: str
     full_text: str
 
@@ -133,8 +129,8 @@ class YouTubeSpinner(BaseSpinner):
     def __init__(
         self,
         importance_threshold: float = 0.3,
-        languages: List[str] = ['en'],  # Preference order
-        chunk_duration: Optional[float] = None,  # Seconds per chunk (None = full video)
+        languages: list[str] = ['en'],  # Preference order
+        chunk_duration: float | None = None,  # Seconds per chunk (None = full video)
         enable_metadata: bool = True
     ):
         """
@@ -155,7 +151,7 @@ class YouTubeSpinner(BaseSpinner):
         # Initialize importance scorer
         self.importance_scorer = ImportanceScorer()
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Core YouTube transcription implementation.
 
@@ -187,7 +183,7 @@ class YouTubeSpinner(BaseSpinner):
 
         return shards
 
-    def _extract_video_id(self, url: str) -> Optional[str]:
+    def _extract_video_id(self, url: str) -> str | None:
         """
         Extract video ID from various YouTube URL formats.
 
@@ -275,7 +271,7 @@ class YouTubeSpinner(BaseSpinner):
             full_text=full_text
         )
 
-    def _fetch_transcript(self, video_id: str) -> List[Dict[str, Any]]:
+    def _fetch_transcript(self, video_id: str) -> list[dict[str, Any]]:
         """Fetch transcript (sync function for thread pool)"""
         # Try each language in order
         for lang in self.languages:
@@ -296,7 +292,7 @@ class YouTubeSpinner(BaseSpinner):
             transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
             transcript = transcript_list.find_transcript(self.languages)
             return transcript.fetch()
-        except Exception as e:
+        except Exception:
             raise NoTranscriptFound(f"No transcript found in languages: {self.languages}")
 
     def _fetch_metadata(self, video_id: str) -> VideoMetadata:
@@ -317,7 +313,7 @@ class YouTubeSpinner(BaseSpinner):
             warnings.warn(f"Failed to fetch metadata: {e}")
             return VideoMetadata(video_id=video_id)
 
-    def _transcription_to_shards(self, transcription: YouTubeTranscription) -> List[MemoryShard]:
+    def _transcription_to_shards(self, transcription: YouTubeTranscription) -> list[MemoryShard]:
         """Convert transcription to MemoryShards"""
         shards = []
 
@@ -469,8 +465,8 @@ class YouTubeSpinner(BaseSpinner):
 
 async def transcribe_youtube(
     url_or_id: str,
-    chunk_duration: Optional[float] = None,
-    languages: List[str] = ['en']
+    chunk_duration: float | None = None,
+    languages: list[str] = ['en']
 ) -> SpinResult:
     """
     Convenience function to transcribe YouTube video.

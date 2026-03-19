@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Promptly API
 ============
@@ -19,11 +19,11 @@ Features:
 Created: 2025-01-20
 """
 
+import logging
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
-import logging
-import json
 
 router = APIRouter(prefix="/promptly", tags=["promptly"])
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ except ImportError as e:
     DSPyHoloLoom = None
 
 # Global Promptly instance
-promptly_engine: Optional[Any] = None
+promptly_engine: Any | None = None
 
 
 def get_promptly_engine():
@@ -56,14 +56,14 @@ def get_promptly_engine():
 class ExplainRequest(BaseModel):
     code: str
     language: str
-    output_schema: Optional[Dict[str, Any]] = None
+    output_schema: dict[str, Any] | None = None
     mode: str = "comprehensive"  # "brief", "comprehensive", "tutorial"
 
 
 class ExplainResponse(BaseModel):
     explanation: str
-    structure: Dict[str, Any]  # Structured breakdown
-    key_concepts: List[str]
+    structure: dict[str, Any]  # Structured breakdown
+    key_concepts: list[str]
     complexity: str
     confidence: float
 
@@ -72,20 +72,20 @@ class RefactorRequest(BaseModel):
     code: str
     language: str
     goal: str  # "readability", "performance", "maintainability"
-    constraints: Optional[List[str]] = None  # Things to preserve
+    constraints: list[str] | None = None  # Things to preserve
 
 
 class RefactorResponse(BaseModel):
     original_code: str
     refactored_code: str
-    changes: List[Dict[str, Any]]  # Surgical edits
+    changes: list[dict[str, Any]]  # Surgical edits
     reasoning: str
     preservation_score: float  # How much of original preserved
 
 
 class ResearchRequest(BaseModel):
     question: str
-    context: Optional[str] = None
+    context: str | None = None
     max_stages: int = 3
 
 
@@ -98,14 +98,14 @@ class ResearchStage(BaseModel):
 
 class ResearchResponse(BaseModel):
     question: str
-    stages: List[ResearchStage]
+    stages: list[ResearchStage]
     final_answer: str
     overall_confidence: float
 
 
 class VerifyRequest(BaseModel):
     claim: str
-    context: Optional[str] = None
+    context: str | None = None
     evidence_threshold: float = 0.7
 
 
@@ -113,31 +113,31 @@ class VerifyResponse(BaseModel):
     claim: str
     verified: bool
     confidence: float
-    evidence: List[Dict[str, Any]]
+    evidence: list[dict[str, Any]]
     reasoning: str
 
 
 class ConfidenceRequest(BaseModel):
     query: str
     response: str
-    context: Optional[str] = None
+    context: str | None = None
 
 
 class ConfidenceResponse(BaseModel):
     confidence: float
-    factors: Dict[str, float]  # What contributed to confidence
+    factors: dict[str, float]  # What contributed to confidence
     reliability: str  # "high", "medium", "low"
-    suggestions: List[str]  # How to improve
+    suggestions: list[str]  # How to improve
 
 
 class SchemaRequest(BaseModel):
     query: str
-    output_schema: Dict[str, Any]  # JSON schema
-    context: Optional[str] = None
+    output_schema: dict[str, Any]  # JSON schema
+    context: str | None = None
 
 
 class SchemaResponse(BaseModel):
-    result: Dict[str, Any]  # Structured output matching schema
+    result: dict[str, Any]  # Structured output matching schema
     validation_status: str
     compliance_score: float
 
@@ -193,12 +193,12 @@ async def explain_code(request: ExplainRequest):
         if request.mode == "brief":
             explanation = f"Brief overview: {complexity.capitalize()} {request.language} code with {line_count} lines."
         elif request.mode == "tutorial":
-            explanation = f"Let's learn from this code step by step:\n\n"
+            explanation = "Let's learn from this code step by step:\n\n"
             explanation += f"1. This is {request.language} code\n"
             explanation += f"2. It has {line_count} lines of {complexity} complexity\n"
             explanation += f"3. Key concepts: {', '.join(key_concepts) if key_concepts else 'basic programming'}"
         else:  # comprehensive
-            explanation = f"Comprehensive analysis:\n\n"
+            explanation = "Comprehensive analysis:\n\n"
             explanation += f"Language: {request.language}\n"
             explanation += f"Complexity: {complexity}\n"
             explanation += f"Lines: {line_count}\n"

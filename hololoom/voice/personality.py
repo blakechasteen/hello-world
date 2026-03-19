@@ -16,13 +16,13 @@ Date: November 16, 2025
 Phase: 3 (Custom Personalities)
 """
 
-import os
 import re
-import yaml
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 try:
     import structlog
@@ -63,7 +63,7 @@ class PersonalityTraits:
             if not 0.0 <= value <= 1.0:
                 raise ValueError(f"{field_name} must be between 0.0 and 1.0, got {value}")
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Convert to dictionary"""
         return {
             'formality': self.formality,
@@ -74,7 +74,7 @@ class PersonalityTraits:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, float]) -> 'PersonalityTraits':
+    def from_dict(cls, data: dict[str, float]) -> 'PersonalityTraits':
         """Create from dictionary"""
         return cls(**data)
 
@@ -98,10 +98,10 @@ class Personality:
     traits: PersonalityTraits
     voice_id: str
     prompt_template: str
-    example_responses: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    example_responses: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
             'name': self.name,
@@ -114,7 +114,7 @@ class Personality:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Personality':
+    def from_dict(cls, data: dict[str, Any]) -> 'Personality':
         """Create from dictionary"""
         traits = PersonalityTraits.from_dict(data['traits'])
         return cls(
@@ -158,7 +158,7 @@ class PersonalityManager:
         voice_id = manager.get_voice_for_personality()
     """
 
-    def __init__(self, personalities_dir: Optional[Path] = None):
+    def __init__(self, personalities_dir: Path | None = None):
         """
         Initialize personality manager
 
@@ -172,8 +172,8 @@ class PersonalityManager:
             personalities_dir = current_file.parent / "personalities"
 
         self.personalities_dir = Path(personalities_dir)
-        self.personalities: Dict[str, Personality] = {}
-        self.active_personality: Optional[Personality] = None
+        self.personalities: dict[str, Personality] = {}
+        self.active_personality: Personality | None = None
 
         # Load default personalities
         self._load_default_personalities()
@@ -213,7 +213,7 @@ class PersonalityManager:
 
         for yaml_file in yaml_files:
             try:
-                with open(yaml_file, 'r') as f:
+                with open(yaml_file) as f:
                     data = yaml.safe_load(f)
 
                 personality = Personality.from_dict(data)
@@ -362,7 +362,7 @@ class PersonalityManager:
 
         return self.active_personality
 
-    def apply_personality(self, response: str, personality: Optional[Personality] = None) -> str:
+    def apply_personality(self, response: str, personality: Personality | None = None) -> str:
         """
         Apply personality styling to a response
 
@@ -483,7 +483,7 @@ class PersonalityManager:
         # In practice, humor is better controlled via prompt engineering
         return text
 
-    def get_voice_for_personality(self, personality: Optional[Personality] = None) -> str:
+    def get_voice_for_personality(self, personality: Personality | None = None) -> str:
         """
         Get OpenAI TTS voice ID for personality
 
@@ -502,7 +502,7 @@ class PersonalityManager:
 
         return personality.voice_id
 
-    def get_prompt_template(self, personality: Optional[Personality] = None) -> str:
+    def get_prompt_template(self, personality: Personality | None = None) -> str:
         """
         Get system prompt template for personality
 
@@ -521,14 +521,14 @@ class PersonalityManager:
 
         return personality.prompt_template
 
-    def list_personalities(self) -> List[str]:
+    def list_personalities(self) -> list[str]:
         """Get list of available personality IDs"""
         return list(self.personalities.keys())
 
-    def get_personality(self, personality_id: str) -> Optional[Personality]:
+    def get_personality(self, personality_id: str) -> Personality | None:
         """Get personality by ID"""
         return self.personalities.get(personality_id)
 
-    def get_active_personality(self) -> Optional[Personality]:
+    def get_active_personality(self) -> Personality | None:
         """Get currently active personality"""
         return self.active_personality

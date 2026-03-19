@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom Departments - Modular nested learning architecture.
 
@@ -72,21 +71,16 @@ from hololoom.protocols.department import (
     # Confidence System
     ConfidenceLevel,
     ConfidenceMetadata,
-
+    # Protocol
+    Department,
+    DepartmentConfig,
+    # Marketplace
+    DepartmentManifest,
     # Request/Response
     DepartmentRequest,
     DepartmentResponse,
-
     # Verification
     VerificationResult,
-
-    # Marketplace
-    DepartmentManifest,
-    DepartmentConfig,
-
-    # Protocol
-    Department,
-
     # Utilities
     compute_learning_rate,
     should_update_now,
@@ -95,15 +89,12 @@ from hololoom.protocols.department import (
 # ============================================================================
 # Base Implementation
 # ============================================================================
-
 from .base import BaseDepartment
 
 # ============================================================================
 # Registry
 # ============================================================================
-
-from .registry import DepartmentRegistry, DepartmentInstance
-
+from .registry import DepartmentInstance, DepartmentRegistry
 
 # ============================================================================
 # Public API

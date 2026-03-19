@@ -10,14 +10,16 @@ Verifies that:
 
 import asyncio
 import sys
+
 sys.path.insert(0, 'c:/Users/blake/Documents/mythRL')
 
-from hololoom.config import Config, MemoryBackend
+from datetime import datetime
+
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 from hololoom.memory.backend_factory import create_memory_backend
 from hololoom.memory.protocol import Memory, MemoryQuery
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
-from datetime import datetime
-import numpy as np
+
+from hololoom.config import Config, MemoryBackend
 
 
 async def test_embedding_pipeline():
@@ -124,7 +126,7 @@ async def test_chat_archiving():
     print("  Chat Archiving with Embeddings Test")
     print("="*70 + "\n")
 
-    from hololoom.apps.workflow_builder.thread_manager import ThreadManager, Message
+    from hololoom.apps.workflow_builder.thread_manager import ThreadManager
     from hololoom.awareness import CompositionalAwarenessLayer, DualStreamGenerator, OllamaLLM
 
     # Initialize components
@@ -162,7 +164,7 @@ async def test_chat_archiving():
 
     result = await thread_manager.process_message(test_query)
 
-    print(f"✓ Message processed")
+    print("✓ Message processed")
     print(f"  Thread ID: {result['thread_id']}")
     if 'assistant_message' in result:
         print(f"  Response: {result['assistant_message']['content'][:100]}...\n")

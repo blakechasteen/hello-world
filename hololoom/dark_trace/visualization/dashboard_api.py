@@ -27,28 +27,26 @@ Usage:
 Created: 2025-12-28
 """
 
-from dataclasses import dataclass, field
-from typing import (
-    Dict,
-    List,
-    Any,
-    Optional,
-    TYPE_CHECKING,
-)
-from datetime import datetime
 import asyncio
 import logging
 import time
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Optional,
+)
 
 # Try to import FastAPI, gracefully degrade if not available
 try:
     from fastapi import (
         APIRouter,
-        WebSocket,
-        WebSocketDisconnect,
+        Body,
         HTTPException,
         Query,
-        Body,
+        WebSocket,
+        WebSocketDisconnect,
     )
     from fastapi.responses import JSONResponse
     from pydantic import BaseModel, Field
@@ -78,9 +76,9 @@ if FASTAPI_AVAILABLE:
     class FeatureInfo(BaseModel):
         """Feature information model."""
         index: int = Field(..., description="Feature index")
-        label: Optional[str] = Field(None, description="Feature label")
+        label: str | None = Field(None, description="Feature label")
         namespace: str = Field(..., description="Feature namespace (sae/semantic)")
-        metadata: Dict[str, Any] = Field(default_factory=dict)
+        metadata: dict[str, Any] = Field(default_factory=dict)
 
     class LayerInfo(BaseModel):
         """Layer information model."""
@@ -95,11 +93,11 @@ if FASTAPI_AVAILABLE:
         layer: int = Field(..., description="Layer index")
         feature_index: int = Field(..., description="Feature index")
         activation: float = Field(..., description="Activation value")
-        metadata: Dict[str, Any] = Field(default_factory=dict)
+        metadata: dict[str, Any] = Field(default_factory=dict)
 
     class SteeringRequest(BaseModel):
         """Steering vector request."""
-        features: Dict[str, float] = Field(
+        features: dict[str, float] = Field(
             ...,
             description="Feature name/index to steering coefficient mapping"
         )
@@ -119,7 +117,7 @@ if FASTAPI_AVAILABLE:
         engine_available: bool
         streaming_available: bool
         client_count: int
-        statistics: Dict[str, Any]
+        statistics: dict[str, Any]
 
 else:
     # Stub classes when FastAPI not available
@@ -155,7 +153,7 @@ class DashboardAPIConfig:
     enable_steering: bool = True
     max_history_entries: int = 1000
     history_retention_seconds: float = 3600.0  # 1 hour
-    cors_origins: List[str] = field(default_factory=lambda: ["*"])
+    cors_origins: list[str] = field(default_factory=lambda: ["*"])
 
 
 # =============================================================================
@@ -185,7 +183,7 @@ class DarkTraceDashboardAPI:
         self,
         engine: Optional["DarkTraceEngine"] = None,
         streaming_server: Optional["DarkTraceStreamingServer"] = None,
-        config: Optional[DashboardAPIConfig] = None,
+        config: DashboardAPIConfig | None = None,
     ):
         """
         Initialize dashboard API.
@@ -205,11 +203,11 @@ class DarkTraceDashboardAPI:
         self.config = config or DashboardAPIConfig()
 
         # Activation history buffer
-        self._activation_history: List[Dict[str, Any]] = []
+        self._activation_history: list[dict[str, Any]] = []
         self._history_lock = asyncio.Lock()
 
         # WebSocket clients
-        self._ws_clients: Dict[str, WebSocket] = {}
+        self._ws_clients: dict[str, WebSocket] = {}
 
         # Create router
         self.router = APIRouter(tags=["Dark Trace"])
@@ -231,9 +229,9 @@ class DarkTraceDashboardAPI:
             )
 
         # Features endpoint
-        @self.router.get("/features", response_model=List[FeatureInfo])
+        @self.router.get("/features", response_model=list[FeatureInfo])
         async def get_features(
-            namespace: Optional[str] = Query(None, description="Filter by namespace"),
+            namespace: str | None = Query(None, description="Filter by namespace"),
             limit: int = Query(100, description="Maximum features to return"),
             offset: int = Query(0, description="Offset for pagination"),
         ):
@@ -245,7 +243,7 @@ class DarkTraceDashboardAPI:
             return features
 
         # Layers endpoint
-        @self.router.get("/layers", response_model=List[LayerInfo])
+        @self.router.get("/layers", response_model=list[LayerInfo])
         async def get_layers():
             """Get layer information."""
             if not self.engine:
@@ -260,12 +258,12 @@ class DarkTraceDashboardAPI:
             return self._get_statistics()
 
         # History endpoint
-        @self.router.get("/history", response_model=List[ActivationEntry])
+        @self.router.get("/history", response_model=list[ActivationEntry])
         async def get_history(
-            layer: Optional[int] = Query(None, description="Filter by layer"),
-            feature: Optional[int] = Query(None, description="Filter by feature"),
+            layer: int | None = Query(None, description="Filter by layer"),
+            feature: int | None = Query(None, description="Filter by feature"),
             limit: int = Query(100, description="Maximum entries"),
-            since: Optional[float] = Query(None, description="Unix timestamp cutoff"),
+            since: float | None = Query(None, description="Unix timestamp cutoff"),
         ):
             """Get activation history."""
             return await self._get_history(layer, feature, limit, since)
@@ -310,7 +308,7 @@ class DarkTraceDashboardAPI:
                 """WebSocket endpoint for real-time streaming."""
                 await self._handle_websocket(websocket)
 
-    def _get_statistics(self) -> Dict[str, Any]:
+    def _get_statistics(self) -> dict[str, Any]:
         """Get current statistics."""
         stats = {
             "timestamp": time.time(),
@@ -335,10 +333,10 @@ class DarkTraceDashboardAPI:
 
     def _get_features(
         self,
-        namespace: Optional[str],
+        namespace: str | None,
         limit: int,
         offset: int,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get feature list."""
         features = []
 
@@ -373,7 +371,7 @@ class DarkTraceDashboardAPI:
 
         return features
 
-    def _get_layers(self) -> List[Dict[str, Any]]:
+    def _get_layers(self) -> list[dict[str, Any]]:
         """Get layer information."""
         layers = []
 
@@ -402,11 +400,11 @@ class DarkTraceDashboardAPI:
 
     async def _get_history(
         self,
-        layer: Optional[int],
-        feature: Optional[int],
+        layer: int | None,
+        feature: int | None,
         limit: int,
-        since: Optional[float],
-    ) -> List[Dict[str, Any]]:
+        since: float | None,
+    ) -> list[dict[str, Any]]:
         """Get activation history with filters."""
         async with self._history_lock:
             filtered = self._activation_history.copy()
@@ -427,7 +425,7 @@ class DarkTraceDashboardAPI:
         # Limit
         return filtered[:limit]
 
-    async def _apply_steering(self, request: SteeringRequest) -> Dict[str, Any]:
+    async def _apply_steering(self, request: SteeringRequest) -> dict[str, Any]:
         """Apply steering vector."""
         if not self.engine:
             return {
@@ -454,7 +452,7 @@ class DarkTraceDashboardAPI:
                 "message": str(e),
             }
 
-    def _get_feature_details(self, feature_id: str) -> Optional[Dict[str, Any]]:
+    def _get_feature_details(self, feature_id: str) -> dict[str, Any] | None:
         """Get detailed feature information."""
         if not self.engine:
             return None
@@ -523,7 +521,7 @@ class DarkTraceDashboardAPI:
     async def _handle_ws_message(
         self,
         client_id: str,
-        data: Dict[str, Any],
+        data: dict[str, Any],
     ) -> None:
         """Handle incoming WebSocket message."""
         msg_type = data.get("type", "")
@@ -551,7 +549,7 @@ class DarkTraceDashboardAPI:
         layer: int,
         feature_index: int,
         activation: float,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Record an activation for history and streaming.
@@ -596,9 +594,9 @@ class DarkTraceDashboardAPI:
     async def record_activations_batch(
         self,
         layer: int,
-        feature_indices: List[int],
-        activations: List[float],
-        metadata: Optional[Dict[str, Any]] = None,
+        feature_indices: list[int],
+        activations: list[float],
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Record a batch of activations.
@@ -645,7 +643,7 @@ class DarkTraceDashboardAPI:
             },
         })
 
-    async def _broadcast_ws(self, message: Dict[str, Any]) -> None:
+    async def _broadcast_ws(self, message: dict[str, Any]) -> None:
         """Broadcast message to all WebSocket clients."""
         disconnected = []
 
@@ -667,7 +665,7 @@ class DarkTraceDashboardAPI:
 def create_dashboard_api(
     engine: Optional["DarkTraceEngine"] = None,
     streaming_server: Optional["DarkTraceStreamingServer"] = None,
-    config: Optional[DashboardAPIConfig] = None,
+    config: DashboardAPIConfig | None = None,
 ) -> DarkTraceDashboardAPI:
     """
     Factory function for dashboard API.

@@ -19,12 +19,11 @@ Created: December 2025
 """
 
 import asyncio
-import subprocess
 import logging
-from typing import Dict, Any, List, Optional
 from pathlib import Path
+from typing import Any
 
-from hololoom.tapestry.protocol import Thread, SignalResult
+from hololoom.tapestry.protocol import SignalResult, Thread
 from hololoom.tapestry.signals.registry import SignalRegistry
 
 logger = logging.getLogger(__name__)
@@ -44,7 +43,7 @@ class TestSignal:
     name = "tests"
     weight = 0.20
 
-    async def check(self, thread: Thread, context: Dict[str, Any]) -> SignalResult:
+    async def check(self, thread: Thread, context: dict[str, Any]) -> SignalResult:
         """
         Run pytest on specified test paths.
 
@@ -133,7 +132,7 @@ class TroughSignal:
     name = "quality"
     weight = 0.20
 
-    async def check(self, thread: Thread, context: Dict[str, Any]) -> SignalResult:
+    async def check(self, thread: Thread, context: dict[str, Any]) -> SignalResult:
         """
         Analyze files for quality issues.
 
@@ -200,7 +199,7 @@ class TroughSignal:
                 details={"error": str(e), "fallback": "basic"}
             )
 
-    async def _basic_quality_check(self, files: List[str]) -> SignalResult:
+    async def _basic_quality_check(self, files: list[str]) -> SignalResult:
         """Basic quality check when Trough unavailable."""
         issues = []
 
@@ -260,7 +259,7 @@ class AlignmentSignal:
     name = "alignment"
     weight = 0.15
 
-    async def check(self, thread: Thread, context: Dict[str, Any]) -> SignalResult:
+    async def check(self, thread: Thread, context: dict[str, Any]) -> SignalResult:
         """
         Check alignment/safety constraints.
 
@@ -348,7 +347,7 @@ class ArchitectureSignal:
     name = "architecture"
     weight = 0.15
 
-    async def check(self, thread: Thread, context: Dict[str, Any]) -> SignalResult:
+    async def check(self, thread: Thread, context: dict[str, Any]) -> SignalResult:
         """
         Check architecture pattern adherence.
 
@@ -438,7 +437,7 @@ class DocumentationSignal:
     name = "documentation"
     weight = 0.15
 
-    async def check(self, thread: Thread, context: Dict[str, Any]) -> SignalResult:
+    async def check(self, thread: Thread, context: dict[str, Any]) -> SignalResult:
         """
         Check documentation coverage.
 
@@ -529,7 +528,7 @@ class IntegrationSignal:
     name = "integration"
     weight = 0.15
 
-    async def check(self, thread: Thread, context: Dict[str, Any]) -> SignalResult:
+    async def check(self, thread: Thread, context: dict[str, Any]) -> SignalResult:
         """
         Check integration coherence.
 

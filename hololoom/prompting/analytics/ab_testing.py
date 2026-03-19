@@ -41,16 +41,15 @@ Usage:
         print(f"Deploy treatment! Effect size: {analysis['cohens_d']:.2f}")
 """
 
-import time
+import hashlib
 import json
 import logging
-import hashlib
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from enum import Enum
-from collections import defaultdict
 import statistics
+import time
+from dataclasses import asdict, dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +76,7 @@ class ABResult:
     group: ABGroup
     quality_score: float
     execution_time_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -106,7 +105,7 @@ class ABTest:
         treatment_description: str,
         traffic_split: float = 0.5,
         minimum_sample_size: int = 30,
-        persist_path: Optional[Path] = None
+        persist_path: Path | None = None
     ):
         """
         Initialize A/B test.
@@ -131,13 +130,13 @@ class ABTest:
         self.persist_path.mkdir(parents=True, exist_ok=True)
 
         # Results storage
-        self.results: Dict[ABGroup, List[ABResult]] = {
+        self.results: dict[ABGroup, list[ABResult]] = {
             ABGroup.CONTROL: [],
             ABGroup.TREATMENT: []
         }
 
         # User assignments (for consistency)
-        self.user_assignments: Dict[str, ABGroup] = {}
+        self.user_assignments: dict[str, ABGroup] = {}
 
         # Load existing data
         self._load_data()
@@ -179,7 +178,7 @@ class ABTest:
         group: ABGroup,
         quality_score: float,
         execution_time_ms: float,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ):
         """
         Log A/B test result.
@@ -210,7 +209,7 @@ class ABTest:
         # Persist
         self._persist_result(result)
 
-    def analyze(self) -> Dict[str, Any]:
+    def analyze(self) -> dict[str, Any]:
         """
         Analyze A/B test results with statistical tests.
 
@@ -379,7 +378,7 @@ class ABTest:
         return f"Effect size: {effect_desc} (Cohen's d={cohens_d:.2f}). " \
                f"Quality improvement: {improvement_percent:+.1f}%.{time_note} {recommendation}"
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get test summary."""
         return {
             "name": self.config.name,
@@ -413,7 +412,7 @@ class ABTest:
             return
 
         try:
-            with open(results_file, "r", encoding="utf-8") as f:
+            with open(results_file, encoding="utf-8") as f:
                 for line in f:
                     data = json.loads(line)
                     # Convert string back to enum
@@ -438,7 +437,7 @@ def create_ab_test(
     control_description: str,
     treatment_description: str,
     traffic_split: float = 0.5,
-    persist_path: Optional[Path] = None
+    persist_path: Path | None = None
 ) -> ABTest:
     """
     Create A/B test.

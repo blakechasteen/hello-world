@@ -41,12 +41,13 @@ Author: HoloLoom Memory Team
 Date: October 30, 2025
 """
 
-from typing import Dict, List, Optional, Set, Callable
+import asyncio
+import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-import asyncio
+
 import numpy as np
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +93,7 @@ class MemoryNode:
     max_spring_constant: float = 10.0 # Maximum k (cap reinforcement)
 
     # Neighbor Connections (for activation spreading)
-    neighbors: Set[str] = field(default_factory=set)
+    neighbors: set[str] = field(default_factory=set)
 
     def __post_init__(self):
         """Ensure numpy arrays are correct shape."""
@@ -193,7 +194,7 @@ class SpringDynamicsEngine:
         await engine.stop()
     """
 
-    def __init__(self, config: Optional[SpringEngineConfig] = None):
+    def __init__(self, config: SpringEngineConfig | None = None):
         """
         Initialize spring dynamics engine.
 
@@ -203,13 +204,13 @@ class SpringDynamicsEngine:
         self.config = config or SpringEngineConfig()
 
         # Memory nodes: {node_id: MemoryNode}
-        self.nodes: Dict[str, MemoryNode] = {}
+        self.nodes: dict[str, MemoryNode] = {}
 
         # Active set (nodes with significant velocity or recent access)
-        self.active_nodes: Set[str] = set()
+        self.active_nodes: set[str] = set()
 
         # Background task
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
         self.running = False
 
         # Statistics
@@ -218,8 +219,8 @@ class SpringDynamicsEngine:
         self.total_propagations = 0
 
         # Callbacks (for monitoring)
-        self.on_node_activated: Optional[Callable[[str], None]] = None
-        self.on_node_sleeping: Optional[Callable[[str], None]] = None
+        self.on_node_activated: Callable[[str], None] | None = None
+        self.on_node_sleeping: Callable[[str], None] | None = None
 
     # ========================================================================
     # Lifecycle Management
@@ -306,7 +307,7 @@ class SpringDynamicsEngine:
         4. Apply damping
         """
         # Calculate forces
-        forces: Dict[str, np.ndarray] = {}
+        forces: dict[str, np.ndarray] = {}
 
         for node_id in list(self.active_nodes):
             node = self.nodes.get(node_id)
@@ -424,9 +425,9 @@ class SpringDynamicsEngine:
         node_id: str,
         embedding: np.ndarray,
         content: str = "",
-        neighbors: Optional[Set[str]] = None,
+        neighbors: set[str] | None = None,
         initial_spring_constant: float = 1.0,
-        decay_rate: Optional[float] = None
+        decay_rate: float | None = None
     ):
         """
         Add a memory node to the engine.
@@ -469,7 +470,7 @@ class SpringDynamicsEngine:
             for node in self.nodes.values():
                 node.neighbors.discard(node_id)
 
-    def get_node(self, node_id: str) -> Optional[MemoryNode]:
+    def get_node(self, node_id: str) -> MemoryNode | None:
         """Get a memory node by ID."""
         return self.nodes.get(node_id)
 
@@ -480,7 +481,7 @@ class SpringDynamicsEngine:
     def on_memory_accessed(
         self,
         node_id: str,
-        query_embedding: Optional[np.ndarray] = None,
+        query_embedding: np.ndarray | None = None,
         pulse_strength: float = 0.5
     ):
         """
@@ -634,7 +635,7 @@ class SpringDynamicsEngine:
         seed_nodes = self._find_seed_nodes(query_embedding, top_n=5)
 
         # 2. Initialize activation states
-        activation = {node_id: 0.0 for node_id in self.nodes.keys()}
+        activation = dict.fromkeys(self.nodes.keys(), 0.0)
         for node_id, similarity in seed_nodes:
             activation[node_id] = seed_strength * similarity
 
@@ -703,7 +704,7 @@ class SpringDynamicsEngine:
         self,
         query_embedding: np.ndarray,
         top_n: int = 5
-    ) -> List[tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Find seed nodes most semantically similar to query.
 
@@ -730,10 +731,10 @@ class SpringDynamicsEngine:
 
     def _detect_creative_insights(
         self,
-        seed_nodes: List[str],
-        activated_nodes: List[tuple[str, float]],
+        seed_nodes: list[str],
+        activated_nodes: list[tuple[str, float]],
         query_embedding: np.ndarray
-    ) -> List[tuple[str, float, str]]:
+    ) -> list[tuple[str, float, str]]:
         """
         Detect creative insights: activated nodes that are semantically distant from query.
 
@@ -776,7 +777,7 @@ class SpringDynamicsEngine:
     # Statistics & Monitoring
     # ========================================================================
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get engine statistics."""
         active_node_list = list(self.active_nodes)
 
@@ -814,26 +815,26 @@ class BetaWaveRecallResult:
     """
 
     # Recalled memories (node_id, activation_level)
-    recalled_memories: List[tuple[str, float]]
+    recalled_memories: list[tuple[str, float]]
 
     # All node activations (for visualization/analysis)
-    all_activations: Dict[str, float]
+    all_activations: dict[str, float]
 
     # Creative insights (node_id, activation, insight_type)
     # These are semantically distant nodes activated through spreading
-    creative_insights: List[tuple[str, float, str]]
+    creative_insights: list[tuple[str, float, str]]
 
     # Seed nodes (node_id, similarity_to_query)
-    seed_nodes: List[tuple[str, float]]
+    seed_nodes: list[tuple[str, float]]
 
     # Spreading metadata
     iterations: int  # How many iterations until convergence
 
-    def get_direct_recalls(self) -> List[str]:
+    def get_direct_recalls(self) -> list[str]:
         """Get node IDs that were directly similar to query (seeds)."""
         return [node_id for node_id, _ in self.seed_nodes]
 
-    def get_associative_recalls(self) -> List[str]:
+    def get_associative_recalls(self) -> list[str]:
         """Get node IDs recalled via spreading (not seeds)."""
         seed_ids = set(self.get_direct_recalls())
         return [
@@ -842,7 +843,7 @@ class BetaWaveRecallResult:
             if node_id not in seed_ids
         ]
 
-    def get_creative_insight_ids(self) -> List[str]:
+    def get_creative_insight_ids(self) -> list[str]:
         """Get node IDs identified as creative insights."""
         return [node_id for node_id, _, _ in self.creative_insights]
 

@@ -13,7 +13,6 @@ Created: December 2025
 import asyncio
 import logging
 import subprocess
-from typing import Optional, List, Tuple
 from pathlib import Path
 
 from hololoom.tapestry.protocol import DirtyWorkingDirectoryError
@@ -32,7 +31,7 @@ class GitIntegration:
     - Tracking commit history
     """
 
-    def __init__(self, repo_path: Optional[str] = None):
+    def __init__(self, repo_path: str | None = None):
         """
         Initialize Git integration.
 
@@ -179,7 +178,7 @@ class GitIntegration:
         logger.warning(f"Rolling back to {commit_hash}")
         await self._run("reset", "--hard", commit_hash)
 
-    async def get_changed_files(self, since_commit: Optional[str] = None) -> List[str]:
+    async def get_changed_files(self, since_commit: str | None = None) -> list[str]:
         """
         Get list of changed files.
 
@@ -207,7 +206,7 @@ class GitIntegration:
         except subprocess.CalledProcessError:
             return []
 
-    async def get_recent_commits(self, count: int = 5) -> List[Tuple[str, str]]:
+    async def get_recent_commits(self, count: int = 5) -> list[tuple[str, str]]:
         """
         Get recent commits.
 
@@ -257,7 +256,7 @@ class GitIntegration:
             logger.error(f"Failed to create branch: {e}")
             return False
 
-    async def stash(self, message: Optional[str] = None) -> bool:
+    async def stash(self, message: str | None = None) -> bool:
         """
         Stash current changes.
 

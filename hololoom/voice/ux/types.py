@@ -4,11 +4,10 @@ Milestone 1: Conversational Mode + Basic Threads (6 weeks)
 Date: November 2025
 """
 
-from enum import Enum
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-
+from enum import Enum
+from typing import Any
 
 # ============================================================================
 # Voice Modes
@@ -109,7 +108,7 @@ class Intent:
     """Classified user intent from NLU"""
     type: IntentType
     confidence: float
-    entities: Dict[str, Any] = field(default_factory=dict)
+    entities: dict[str, Any] = field(default_factory=dict)
     raw_transcript: str = ""
     requires_confirmation: bool = False
     can_execute_immediately: bool = True
@@ -122,12 +121,12 @@ class Thread:
     id: str
     name: str
     state: ThreadState
-    messages: List[Dict[str, Any]] = field(default_factory=list)
+    messages: list[dict[str, Any]] = field(default_factory=list)
     summary: str = ""
     created_at: datetime = field(default_factory=datetime.now)
     last_active: datetime = field(default_factory=datetime.now)
     activation_count: int = 0
-    context_snapshot: Optional[Dict[str, Any]] = None
+    context_snapshot: dict[str, Any] | None = None
 
 
 @dataclass
@@ -135,9 +134,9 @@ class VoiceResponse:
     """System response to user input"""
     text: str
     should_speak: bool = True
-    visual_feedback: Optional[Dict[str, Any]] = None
-    thread_id: Optional[str] = None
-    new_thread_state: Optional[ThreadState] = None
+    visual_feedback: dict[str, Any] | None = None
+    thread_id: str | None = None
+    new_thread_state: ThreadState | None = None
     timestamp: datetime = field(default_factory=datetime.now)
     latency_ms: int = 0
 
@@ -152,9 +151,9 @@ class VoiceMetrics:
     intent_confidence: float = 0.0
     stt_confidence: float = 0.0
     command_success: bool = False
-    error_message: Optional[str] = None
+    error_message: str | None = None
     voice_mode: VoiceMode = VoiceMode.CONVERSATIONAL
-    battery_level: Optional[int] = None
-    network_quality: Optional[str] = None
-    memory_usage_percent: Optional[float] = None
+    battery_level: int | None = None
+    network_quality: str | None = None
+    memory_usage_percent: float | None = None
     timestamp: datetime = field(default_factory=datetime.now)

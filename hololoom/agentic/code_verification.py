@@ -23,19 +23,16 @@ Usage:
             print(f"  Line {error.line}: {error.message}")
 """
 
-import asyncio
-import subprocess
-import tempfile
-import os
-import json
-import re
 import ast
+import asyncio
+import json
 import logging
-from typing import List, Dict, Optional, Any, Tuple
+import os
+import re
+import tempfile
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -60,10 +57,10 @@ class VerificationType(str, Enum):
 class CodeError:
     """Represents a code error or warning."""
     line: int
-    column: Optional[int]
+    column: int | None
     message: str
     severity: ErrorSeverity
-    code: Optional[str] = None  # Error code (e.g., "E501" for Pylint)
+    code: str | None = None  # Error code (e.g., "E501" for Pylint)
     source: str = "unknown"  # Which tool found this (tsc, mypy, pylint, etc.)
 
 
@@ -73,10 +70,10 @@ class VerificationResult:
     success: bool
     verification_type: VerificationType
     language: str
-    errors: List[CodeError] = field(default_factory=list)
-    warnings: List[CodeError] = field(default_factory=list)
-    stdout: Optional[str] = None
-    stderr: Optional[str] = None
+    errors: list[CodeError] = field(default_factory=list)
+    warnings: list[CodeError] = field(default_factory=list)
+    stdout: str | None = None
+    stderr: str | None = None
     execution_time_ms: float = 0.0
 
     @property
@@ -233,7 +230,7 @@ class PythonVerifier:
 
         return result
 
-    def _parse_mypy_output(self, output: str, file_path: str) -> List[CodeError]:
+    def _parse_mypy_output(self, output: str, file_path: str) -> list[CodeError]:
         """Parse mypy output into CodeError objects."""
         errors = []
 
@@ -255,7 +252,7 @@ class PythonVerifier:
 
         return errors
 
-    def _parse_pylint_output(self, output: str, file_path: str) -> List[CodeError]:
+    def _parse_pylint_output(self, output: str, file_path: str) -> list[CodeError]:
         """Parse pylint JSON output into CodeError objects."""
         errors = []
 
@@ -371,7 +368,7 @@ class TypeScriptVerifier:
 
         return result
 
-    def _parse_tsc_output(self, output: str, file_path: str) -> List[CodeError]:
+    def _parse_tsc_output(self, output: str, file_path: str) -> list[CodeError]:
         """Parse tsc output into CodeError objects."""
         errors = []
 
@@ -396,7 +393,7 @@ class TypeScriptVerifier:
 
         return errors
 
-    def _parse_eslint_output(self, output: str, file_path: str) -> List[CodeError]:
+    def _parse_eslint_output(self, output: str, file_path: str) -> list[CodeError]:
         """Parse eslint JSON output into CodeError objects."""
         errors = []
 
@@ -440,7 +437,7 @@ class CodeVerifier:
         check_syntax: bool = True,
         check_types: bool = True,
         check_lint: bool = False
-    ) -> List[VerificationResult]:
+    ) -> list[VerificationResult]:
         """
         Verify code with multiple checks.
 
@@ -492,7 +489,7 @@ class CodeVerifier:
         code: str,
         language: str,
         file_path: str = "temp"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run all available verifications and return comprehensive report.
 
@@ -565,7 +562,7 @@ class CodeVerifier:
             "summary": self._generate_summary(unique_errors, all_warnings)
         }
 
-    def _generate_summary(self, errors: List[CodeError], warnings: List[CodeError]) -> str:
+    def _generate_summary(self, errors: list[CodeError], warnings: list[CodeError]) -> str:
         """Generate human-readable summary."""
         if not errors:
             summary = "✅ No errors found"

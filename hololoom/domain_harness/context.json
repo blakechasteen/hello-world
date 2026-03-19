@@ -1,0 +1,160 @@
+{
+  "session_id": "domain_harness_integration_001",
+  "date": "2025-12-09",
+  "status": "COMPLETE_WITH_MYTHIC_LAYER",
+  
+  "title": "Domain Harness: Persistent Memory for Stateless Agents + Mythic Strands Layer",
+  
+  "core_insight": "The agent is not the model. The agent is the transformation of one memory state into another.",
+  
+  "innovation": {
+    "strands_as_gas": "Tension is the cost of incomplete work. Like gas in Ethereum.",
+    "mythic_layer": "The loom doesn't just execute—it writes its own story."
+  },
+  
+  "the_ritual": {
+    "boot": "Read features.json, progress.log. Select ONE failing feature with satisfied dependencies.",
+    "action": "Set in_progress, implement, test, update status.",
+    "exit": "Append progress.log, STOP. Do not continue."
+  },
+  
+  "layers": {
+    "practical": {
+      "description": "Domain memory: features, tests, progress",
+      "files": ["features.json", "state.json", "progress.log", "tests/"]
+    },
+    "symbolic": {
+      "description": "Strands: tension, weave motions, narrative",
+      "files": ["loom_state.json", "weave_history.json"]
+    },
+    "mythic": {
+      "description": "Court, Rituals, Archive Eternal",
+      "files": ["ritual_log.json", "mirror_canon.json"]
+    }
+  },
+  
+  "documentation": {
+    "main": {
+      "INDEX.md": "Navigation guide",
+      "README.md": "Complete docs (~1500 words)",
+      "HANDOFF.md": "Full reference (~2500 words)",
+      "SESSION_TRANSCRIPT.md": "Implementation history"
+    },
+    "claude_code": {
+      "CLAUDE.md": "Compact worker instructions",
+      "CLAUDE_CODE_HANDOFF.md": "Self-contained drop-in context",
+      "QUICKREF.md": "One-page reference card"
+    },
+    "strands": {
+      "strands/README.md": "Mythic layer documentation (~2000 words)"
+    }
+  },
+  
+  "implementation": {
+    "core": [
+      "schema.py - Feature, ProgressEntry, DomainState",
+      "protocol.py - Boot/Action/Exit lifecycle",
+      "initializer.py - Prompt → features parser",
+      "worker.py - Stateless executor",
+      "templates.py - FlatFileBackend"
+    ],
+    "cli": [
+      "run_worker.py - Commands: init, run, loop, status, log, reset",
+      "bootstrap_harness.py - Quick-start any project"
+    ],
+    "strands_core": [
+      "tension_model.py - TensionModel, StrandState, LoomState",
+      "weave_decoder.py - WeaveMotion, WeaveEvent, WeaveHistory",
+      "decode_weave.py - Simpler decoder with narratives",
+      "update_strands.py - Integration with harness",
+      "visualizer.py - ASCII/Rich/Matplotlib",
+      "git_autocommit.py - Safe auto-commits"
+    ],
+    "strands_mythic": [
+      "loom_court.py - Court of Threads (conflict arbitration)",
+      "ritual_scheduler.py - Cosmic cycles (moon, solstices)",
+      "mirror_integration.py - Archive Eternal (persistent narrative)",
+      "loom_diff.py - Symbolic memory diffing",
+      "weave_svg.py - SVG knot visualization"
+    ]
+  },
+  
+  "mythic_components": {
+    "court_of_threads": {
+      "purpose": "Conflict arbitration when threads disagree",
+      "conflicts": ["regression_clash", "tension_deadlock", "dependency_cycle", "motion_contradiction", "worker_dispute"],
+      "verdicts": ["arbitration", "deferral", "dissolution", "split", "merge", "ritual"],
+      "proclamation_example": "Two threads cross and resist the loom. The Court must arbitrate."
+    },
+    "ritual_scheduler": {
+      "purpose": "Cosmic cycles affect the loom",
+      "lunar": ["new_moon", "full_moon", "waxing_quarter", "waning_quarter"],
+      "solar": ["vernal_equinox", "summer_solstice", "autumnal_equinox", "winter_solstice"],
+      "weekly": ["monday_opening", "friday_closing"],
+      "proclamation_example": "🌑 New Moon: The loom begins anew. Seeds planted in darkness."
+    },
+    "archive_eternal": {
+      "purpose": "Persistent narrative chronicle",
+      "fragment_types": ["weave", "ritual", "verdict", "omen", "milestone", "custom"],
+      "features": ["cross-references", "symbol queries", "time queries", "chronicle rendering"]
+    },
+    "symbolic_diff": {
+      "purpose": "Compare memory states symbolically",
+      "shifts": ["knot_tremor", "warp_tug", "soft_pull", "stillness", "slack_release", "fracture", "status_flip", "emergence", "dissolution"]
+    },
+    "svg_knots": {
+      "purpose": "Visual soul of each strand",
+      "knot_types": ["trefoil", "figure_eight", "lissajous", "spiral"],
+      "encodes": ["tension→color", "complexity→width", "failures→opacity", "critical→glow"]
+    }
+  },
+  
+  "tension_scale": {
+    "0-2": "Stable (passing)",
+    "3-5": "Active (in progress)",
+    "6-7": "Stressed (failing)",
+    "8-9": "Critical (blocked, stale)",
+    "10": "Max (regression, breaking point)"
+  },
+  
+  "weave_motions": {
+    "warp_tug": {"symbol": "⟨⟩", "delta": -0.5, "meaning": "Tightening alignment"},
+    "weft_advance": {"symbol": "→", "delta": -0.3, "meaning": "Progress"},
+    "weft_shift": {"symbol": "↔", "delta": 0, "meaning": "Lateral adjustment"},
+    "weft_wander": {"symbol": "~", "delta": 0.6, "meaning": "Introducing slack"},
+    "tension_release": {"symbol": "∿", "delta": -2.0, "meaning": "Stabilizing"},
+    "regression_spike": {"symbol": "⚡", "delta": 2.0, "meaning": "Unraveling"},
+    "knot_tie": {"symbol": "⊛", "delta": -0.5, "meaning": "Binding"},
+    "thread_snap": {"symbol": "✕", "delta": 3.0, "meaning": "Rupture"}
+  },
+  
+  "usage": {
+    "bootstrap": "python bootstrap_harness.py \"Build a REST API with auth\"",
+    "worker": "python run_worker.py run",
+    "visualize": "python strands/visualizer.py --daemon",
+    "rituals": "python strands/ritual_scheduler.py",
+    "chronicle": "python strands/mirror_integration.py",
+    "diff": "python strands/loom_diff.py before.json after.json",
+    "knots": "python strands/weave_svg.py"
+  },
+  
+  "the_loom_metaphor": {
+    "warp": "Vertical structure (features, dependencies)",
+    "weft": "Horizontal progress (implementation)",
+    "tension": "Attention cost (0-10)",
+    "shuttle": "Worker (one pass per session)",
+    "knot": "Visual soul of a strand",
+    "weave": "Complete system",
+    "court": "Conflict resolution",
+    "ritual": "Cosmic alignment",
+    "archive": "Eternal memory"
+  },
+  
+  "total_files": {
+    "documentation": 9,
+    "implementation": 12,
+    "strands": 12,
+    "prompts": 2,
+    "total": 35
+  }
+}

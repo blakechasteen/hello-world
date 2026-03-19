@@ -23,11 +23,10 @@ Usage:
     audio = await voice.speak("Your revenue is $450", metric_type="neutral")
 """
 
-import asyncio
-from typing import Optional, Literal, Dict, Any
-from pathlib import Path
-import tempfile
 import logging
+import tempfile
+from pathlib import Path
+from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ logger = logging.getLogger(__name__)
 try:
     import sys
     sys.path.insert(0, str(Path(__file__).parent.parent.parent / "cos"))
-    from cos.interface.voice_chat import VoiceChat, DualPrompt, VocalInstructions
+    from cos.interface.voice_chat import DualPrompt, VocalInstructions, VoiceChat
     VOICE_CHAT_AVAILABLE = True
 except ImportError:
     VOICE_CHAT_AVAILABLE = False
@@ -43,7 +42,7 @@ except ImportError:
 
 # Try importing Whisper
 try:
-    from hololoom.spinningWheel.whisper_spinner import WhisperSpinner, WHISPER_AVAILABLE
+    from hololoom.spinningWheel.whisper_spinner import WHISPER_AVAILABLE, WhisperSpinner
 except ImportError:
     WHISPER_AVAILABLE = False
     logger.warning("Whisper not available (install openai-whisper)")
@@ -109,7 +108,7 @@ class VoiceIntegration:
 
         logger.info(f"Voice integration ready (TTS: {self.tts_available}, Transcription: {self.transcription_available})")
 
-    async def transcribe_audio(self, audio_data: bytes, save_path: Optional[str] = None) -> Optional[str]:
+    async def transcribe_audio(self, audio_data: bytes, save_path: str | None = None) -> str | None:
         """
         Transcribe audio to text using Whisper.
 
@@ -154,10 +153,10 @@ class VoiceIntegration:
     async def speak(
         self,
         text: str,
-        metric_type: Optional[Literal["positive", "negative", "neutral", "warning"]] = None,
-        emotion: Optional[str] = None,
-        save_path: Optional[str] = None
-    ) -> Optional[bytes]:
+        metric_type: Literal["positive", "negative", "neutral", "warning"] | None = None,
+        emotion: str | None = None,
+        save_path: str | None = None
+    ) -> bytes | None:
         """
         Generate speech from text using TTS.
 
@@ -198,9 +197,9 @@ class VoiceIntegration:
 
     async def speak_response(
         self,
-        response_data: Dict[str, Any],
-        save_path: Optional[str] = None
-    ) -> Optional[bytes]:
+        response_data: dict[str, Any],
+        save_path: str | None = None
+    ) -> bytes | None:
         """
         Speak an agentic response with appropriate vocal delivery.
 
@@ -240,7 +239,7 @@ class VoiceIntegration:
             logger.error(f"Response speech error: {e}")
             return None
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get voice integration status"""
         return {
             'tts_available': self.tts_available,
@@ -252,7 +251,7 @@ class VoiceIntegration:
 
 
 # Singleton instance (initialized in server startup)
-voice_integration: Optional[VoiceIntegration] = None
+voice_integration: VoiceIntegration | None = None
 
 
 async def create_voice_integration(
@@ -284,6 +283,6 @@ async def create_voice_integration(
     return voice_integration
 
 
-def get_voice_integration() -> Optional[VoiceIntegration]:
+def get_voice_integration() -> VoiceIntegration | None:
     """Get global voice integration instance"""
     return voice_integration

@@ -37,11 +37,10 @@ import os
 import warnings
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Import from shared types
 from hololoom.protocols.types import BanditStrategy
-
 
 # =============================================================================
 # ENUMS (Keep for backward compatibility - these are widely used)
@@ -140,7 +139,7 @@ class ExpansionBundle:
         config.load_expansion(MyExpansion(my_setting=True))
     """
 
-    def get_settings(self) -> Dict[str, Any]:
+    def get_settings(self) -> dict[str, Any]:
         """Return dictionary of settings to merge into config."""
         raise NotImplementedError
 
@@ -233,7 +232,7 @@ def _detect_llm() -> tuple:
 # MODE DEFAULTS (internal - settings derived from execution mode)
 # =============================================================================
 
-_MODE_DEFAULTS: Dict[ExecutionMode, Dict[str, Any]] = {
+_MODE_DEFAULTS: dict[ExecutionMode, dict[str, Any]] = {
     ExecutionMode.BARE: {
         "scales": [768],
         "fusion_weights": {768: 1.0},
@@ -350,8 +349,8 @@ class Config:
     memory_path: str = "data"
 
     # LLM - auto-detected but overridable
-    llm_provider: Optional[str] = None
-    llm_model: Optional[str] = None
+    llm_provider: str | None = None
+    llm_model: str | None = None
 
     # =========================================================================
     # TIER 2: AUTO-CONFIGURED (from environment)
@@ -362,10 +361,10 @@ class Config:
     # =========================================================================
     # INTERNAL STATE (not user-facing)
     # =========================================================================
-    _mode_settings: Dict[str, Any] = field(default_factory=dict, repr=False)
-    _expansion_settings: Dict[str, Any] = field(default_factory=dict, repr=False)
-    _expansions: List[Any] = field(default_factory=list, repr=False)
-    _legacy_fields: Dict[str, Any] = field(default_factory=dict, repr=False)
+    _mode_settings: dict[str, Any] = field(default_factory=dict, repr=False)
+    _expansion_settings: dict[str, Any] = field(default_factory=dict, repr=False)
+    _expansions: list[Any] = field(default_factory=list, repr=False)
+    _legacy_fields: dict[str, Any] = field(default_factory=dict, repr=False)
 
     # =========================================================================
     # BACKWARD COMPATIBILITY FIELDS (deprecated, but preserved)
@@ -373,7 +372,7 @@ class Config:
     # =========================================================================
 
     # Basic model/policy settings (still commonly used)
-    base_model_name: Optional[str] = None
+    base_model_name: str | None = None
     n_transformer_layers: int = 2
     n_attention_heads: int = 4
     n_tools: int = 4
@@ -383,8 +382,8 @@ class Config:
     blend_neural_weight: float = 0.7
 
     # Embedding configuration
-    scales: List[int] = field(default_factory=lambda: [768])
-    fusion_weights: Dict[int, float] = field(default_factory=lambda: {768: 1.0})
+    scales: list[int] = field(default_factory=lambda: [768])
+    fusion_weights: dict[int, float] = field(default_factory=lambda: {768: 1.0})
     enable_zero_copy_embeddings: bool = False
     zero_copy_cache_path: str = '.cache/embeddings.mmap'
     zero_copy_cache_size: int = 10000
@@ -484,7 +483,7 @@ class Config:
     conscience_fail_open: bool = True
     conscience_auto_learn: bool = True
     conscience_learning_interval: float = 60.0
-    conscience_persist_path: Optional[str] = None
+    conscience_persist_path: str | None = None
 
     # Memory management
     working_memory_size: int = 100
@@ -531,12 +530,12 @@ class Config:
 
     # Hyperspace Configuration
     hyperspace_depth: int = 3
-    hyperspace_thresholds: List[float] = field(default_factory=lambda: [0.6, 0.75, 0.85])
+    hyperspace_thresholds: list[float] = field(default_factory=lambda: [0.6, 0.75, 0.85])
     hyperspace_breadth: int = 10
 
     # Legacy: kg_backend is deprecated - use memory_backend instead
     # Kept for backward compatibility but emits DeprecationWarning when used
-    kg_backend: Optional[KGBackend] = None
+    kg_backend: KGBackend | None = None
 
     # =========================================================================
     # EXPANSION BUNDLE FIELDS (backward compatibility)
@@ -583,13 +582,13 @@ class Config:
 
     # Advanced Spectral Bundle
     use_wavelets: bool = False
-    wavelet_scales: List[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])
+    wavelet_scales: list[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])
     wavelet_type: str = "mexican_hat"
     use_diffusion_maps: bool = False
     diffusion_map_dims: int = 32
     diffusion_time: float = 1.0
     use_multiscale_spectral: bool = False
-    multiscale_spectral_scales: List[int] = field(default_factory=lambda: [96, 192, 384])
+    multiscale_spectral_scales: list[int] = field(default_factory=lambda: [96, 192, 384])
 
     def __post_init__(self):
         """Initialize mode defaults and auto-detection."""
@@ -766,7 +765,7 @@ class Config:
     # SERIALIZATION
     # =========================================================================
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize config to dictionary."""
         return {
             'scales': self.scales,
@@ -792,7 +791,7 @@ class Config:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> "Config":
+    def from_dict(cls, data: dict) -> "Config":
         """Deserialize config from dictionary."""
         # Handle mode enum
         if 'mode' in data and isinstance(data['mode'], str):

@@ -6,12 +6,13 @@ Supports bootstrap sampling for ensemble training and priority sampling (future)
 """
 
 import random
+from collections import deque
+from dataclasses import dataclass
+
 import numpy as np
 import numpy.typing as npt
-from collections import deque
-from dataclasses import dataclass, field
-from typing import Literal
-from hololoom.bandits.neural_ts.types import Observation, Context, Action
+
+from hololoom.bandits.neural_ts.types import Action, Context, Observation
 
 
 @dataclass

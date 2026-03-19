@@ -17,11 +17,10 @@ Benefits:
 
 from __future__ import annotations  # Enable string type hints
 
-import logging
-import json
-import os
 import asyncio
-from typing import List, Dict, Optional, Any
+import json
+import logging
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -29,7 +28,7 @@ import numpy as np
 
 # Handle imports for both package and standalone usage
 try:
-    from ..protocol import Memory, MemoryQuery, RetrievalResult, Strategy, MemoryStore
+    from ..protocol import Memory, MemoryQuery, MemoryStore, RetrievalResult, Strategy
 except ImportError:
     # Standalone execution - will be imported after path setup
     pass
@@ -70,8 +69,8 @@ class FileMemoryStore:
         self.embedder = embedder
 
         # In-memory cache (loaded on init)
-        self.memories: List[Memory] = []
-        self.embeddings: Optional[np.ndarray] = None
+        self.memories: list[Memory] = []
+        self.embeddings: np.ndarray | None = None
 
         # Async lock
         self.lock = asyncio.Lock()
@@ -88,7 +87,7 @@ class FileMemoryStore:
         # Load memories
         if self.memories_path.exists():
             self.memories = []
-            with open(self.memories_path, 'r', encoding='utf-8') as f:
+            with open(self.memories_path, encoding='utf-8') as f:
                 for line in f:
                     try:
                         data = json.loads(line.strip())
@@ -326,7 +325,7 @@ class FileMemoryStore:
         if self.embeddings is not None:
             np.save(self.embeddings_path, self.embeddings)
 
-    async def health_check(self) -> Dict:
+    async def health_check(self) -> dict:
         """Check store health."""
         return {
             'status': 'healthy',
@@ -343,8 +342,8 @@ class FileMemoryStore:
 # ============================================================================
 
 if __name__ == "__main__":
-    import sys
     import os
+    import sys
 
     # Add repo root to path
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(
@@ -353,8 +352,8 @@ if __name__ == "__main__":
     sys.path.insert(0, repo_root)
 
     # Now import after path is set
-    from hololoom.memory.protocol import Memory, MemoryQuery, RetrievalResult, Strategy
     from hololoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.memory.protocol import Memory, MemoryQuery, RetrievalResult, Strategy
 
     async def main():
         print("="*80)

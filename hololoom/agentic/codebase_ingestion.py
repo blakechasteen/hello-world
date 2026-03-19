@@ -22,16 +22,15 @@ Usage:
 """
 
 import ast
-import re
 import logging
-from pathlib import Path
-from typing import List, Dict, Optional, Set, Any, Tuple
+import re
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
+from typing import Any
 
 from hololoom.memory.graph import KG, KGEdge
 from hololoom.protocols.types import MemoryShard
-
 
 logger = logging.getLogger(__name__)
 
@@ -66,13 +65,13 @@ class CodeEntity:
     entity_type: EntityType
     file_path: str
     line_number: int
-    signature: Optional[str] = None
-    docstring: Optional[str] = None
-    parameters: List[str] = None
-    return_type: Optional[str] = None
-    decorators: List[str] = None
-    parent: Optional[str] = None  # For methods (parent = class name)
-    references: List[str] = None  # Other entities this references
+    signature: str | None = None
+    docstring: str | None = None
+    parameters: list[str] = None
+    return_type: str | None = None
+    decorators: list[str] = None
+    parent: str | None = None  # For methods (parent = class name)
+    references: list[str] = None  # Other entities this references
 
     def __post_init__(self):
         if self.parameters is None:
@@ -88,9 +87,9 @@ class CodeFile:
     """Represents a parsed code file."""
     path: str
     language: Language
-    entities: List[CodeEntity]
-    imports: List[str]
-    module_docstring: Optional[str] = None
+    entities: list[CodeEntity]
+    imports: list[str]
+    module_docstring: str | None = None
 
 
 class PythonParser:
@@ -180,7 +179,7 @@ class PythonParser:
             references=self._extract_references(node)
         )
 
-    def _parse_import(self, node) -> List[str]:
+    def _parse_import(self, node) -> list[str]:
         """Parse import statement."""
         if isinstance(node, ast.Import):
             return [alias.name for alias in node.names]
@@ -194,7 +193,7 @@ class PythonParser:
         params = ", ".join(arg.arg for arg in node.args.args)
         return f"{node.name}({params})"
 
-    def _get_return_annotation(self, node: ast.FunctionDef) -> Optional[str]:
+    def _get_return_annotation(self, node: ast.FunctionDef) -> str | None:
         """Get return type annotation."""
         if node.returns:
             return ast.unparse(node.returns)
@@ -208,7 +207,7 @@ class PythonParser:
             return ast.unparse(decorator.func)
         return ast.unparse(decorator)
 
-    def _extract_references(self, node) -> List[str]:
+    def _extract_references(self, node) -> list[str]:
         """Extract names referenced in function/method body."""
         references = set()
         for child in ast.walk(node):
@@ -294,7 +293,7 @@ class CodebaseIndexer:
     Provides semantic search over code entities and hallucination detection.
     """
 
-    def __init__(self, kg: Optional[KG] = None):
+    def __init__(self, kg: KG | None = None):
         """
         Initialize indexer.
 
@@ -307,14 +306,14 @@ class CodebaseIndexer:
             Language.TYPESCRIPT: TypeScriptParser(),
             Language.JAVASCRIPT: TypeScriptParser(),
         }
-        self.indexed_files: Set[str] = set()
+        self.indexed_files: set[str] = set()
 
     async def ingest_workspace(
         self,
         workspace_path: str,
-        languages: Optional[List[Language]] = None,
-        exclude_patterns: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        languages: list[Language] | None = None,
+        exclude_patterns: list[str] | None = None
+    ) -> dict[str, Any]:
         """
         Ingest entire workspace into knowledge graph.
 
@@ -402,7 +401,7 @@ class CodebaseIndexer:
             Parsed CodeFile object
         """
         # Read file
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             content = f.read()
 
         # Parse file
@@ -482,9 +481,9 @@ class CodebaseIndexer:
     async def search_entity(
         self,
         name: str,
-        entity_type: Optional[EntityType] = None,
+        entity_type: EntityType | None = None,
         fuzzy: bool = True
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Search for code entities by name.
 
@@ -538,9 +537,9 @@ class CodebaseIndexer:
     async def find_similar_entities(
         self,
         name: str,
-        entity_type: Optional[EntityType] = None,
+        entity_type: EntityType | None = None,
         k: int = 5
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Find entities with similar names (for hallucination detection).
 
@@ -575,7 +574,7 @@ class CodebaseIndexer:
         candidates.sort(key=lambda x: x[1], reverse=True)
         return candidates[:k]
 
-    def to_memory_shards(self) -> List[MemoryShard]:
+    def to_memory_shards(self) -> list[MemoryShard]:
         """
         Convert indexed codebase to MemoryShard format for HoloLoom.
 
@@ -619,7 +618,7 @@ class CodebaseIndexer:
 
         return shards
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get indexer statistics."""
         stats = {
             "total_entities": len(self.kg.G.nodes),

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom ChatOps - Deployment Verification
 ===========================================
@@ -10,12 +9,11 @@ Usage:
     python verify_deployment.py --config chatops_test_config.yaml
 """
 
-import sys
-import os
-import asyncio
 import argparse
+import asyncio
+import os
+import sys
 from pathlib import Path
-from typing import List, Tuple
 
 # Add repo root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -55,9 +53,6 @@ class ImportTest(VerificationTest):
     async def run(self) -> bool:
         try:
             # Core imports
-            from holoLoom.chatops import MatrixBot, ChatOpsOrchestrator
-            from holoLoom.chatops.conversation_memory import ConversationMemory
-            from holoLoom.chatops.matrix_bot import MatrixBotConfig
 
             # Optional imports
             try:
@@ -137,7 +132,7 @@ class ConfigTest(VerificationTest):
                 return False
 
             # Load config
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path) as f:
                 config = yaml.safe_load(f)
 
             # Validate required fields
@@ -212,9 +207,9 @@ class ComponentTest(VerificationTest):
 
     async def run(self) -> bool:
         try:
-            from holoLoom.chatops.matrix_bot import MatrixBotConfig, MatrixBot
             from holoLoom.chatops.chatops_bridge import ChatOpsOrchestrator
             from holoLoom.chatops.conversation_memory import ConversationMemory
+            from holoLoom.chatops.matrix_bot import MatrixBotConfig
 
             # Test MatrixBotConfig
             config = MatrixBotConfig(
@@ -254,7 +249,7 @@ class MatrixConnectionTest(VerificationTest):
             from nio import AsyncClient
 
             # Load config
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path) as f:
                 config = yaml.safe_load(f)
 
             matrix_config = config['matrix']
@@ -300,7 +295,7 @@ class MatrixConnectionTest(VerificationTest):
 # Main Verification Runner
 # ============================================================================
 
-async def run_verification(config_path: str) -> Tuple[int, int]:
+async def run_verification(config_path: str) -> tuple[int, int]:
     """
     Run all verification tests.
 
@@ -316,7 +311,7 @@ async def run_verification(config_path: str) -> Tuple[int, int]:
     print()
 
     # Create test suite
-    tests: List[VerificationTest] = [
+    tests: list[VerificationTest] = [
         ImportTest(),
         DependencyTest(),
         DirectoryTest(),

@@ -49,7 +49,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, FrozenSet, List, Optional, Set, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.plugins.interface import DarkTracePlugin, PluginMetadata
@@ -112,7 +112,7 @@ class PluginCapability(Enum):
 # Trust Level → Capability Mapping
 # =============================================================================
 
-TRUST_CAPABILITIES: Dict[TrustLevel, FrozenSet[PluginCapability]] = {
+TRUST_CAPABILITIES: dict[TrustLevel, frozenset[PluginCapability]] = {
     TrustLevel.SANDBOXED: frozenset({
         PluginCapability.READ_ACTIVATIONS,
         PluginCapability.READ_FEATURES,
@@ -146,7 +146,7 @@ TRUST_CAPABILITIES: Dict[TrustLevel, FrozenSet[PluginCapability]] = {
 # =============================================================================
 
 # Risk weights for each capability (0.0 = safe, 1.0 = critical)
-CAPABILITY_RISK_WEIGHTS: Dict[PluginCapability, float] = {
+CAPABILITY_RISK_WEIGHTS: dict[PluginCapability, float] = {
     PluginCapability.READ_ACTIVATIONS: 0.1,
     PluginCapability.READ_FEATURES: 0.1,
     PluginCapability.READ_CONFIG: 0.05,
@@ -174,7 +174,7 @@ class BlockedPlugin:
     blocked_at: datetime
     blocked_by: str
     severity: str = "high"  # low, medium, high, critical
-    patterns: List[str] = field(default_factory=list)  # Name patterns to match
+    patterns: list[str] = field(default_factory=list)  # Name patterns to match
 
 
 class BlockedPluginsRegistry:
@@ -186,8 +186,8 @@ class BlockedPluginsRegistry:
     """
 
     def __init__(self) -> None:
-        self._blocked: Dict[str, BlockedPlugin] = {}
-        self._blocked_patterns: List[re.Pattern] = []
+        self._blocked: dict[str, BlockedPlugin] = {}
+        self._blocked_patterns: list[re.Pattern] = []
 
     def add_blocked(
         self,
@@ -195,7 +195,7 @@ class BlockedPluginsRegistry:
         reason: str,
         blocked_by: str = "system",
         severity: str = "high",
-        patterns: Optional[List[str]] = None
+        patterns: list[str] | None = None
     ) -> None:
         """Add a plugin to the blocked list."""
         blocked = BlockedPlugin(
@@ -215,7 +215,7 @@ class BlockedPluginsRegistry:
             except re.error as e:
                 logger.warning(f"Invalid block pattern '{pattern}': {e}")
 
-    def is_blocked(self, plugin_name: str) -> Optional[BlockedPlugin]:
+    def is_blocked(self, plugin_name: str) -> BlockedPlugin | None:
         """Check if a plugin is blocked."""
         # Direct name match
         if plugin_name.lower() in self._blocked:
@@ -241,7 +241,7 @@ class BlockedPluginsRegistry:
             return True
         return False
 
-    def list_blocked(self) -> List[BlockedPlugin]:
+    def list_blocked(self) -> list[BlockedPlugin]:
         """List all blocked plugins."""
         return list(self._blocked.values())
 
@@ -266,14 +266,14 @@ class SafetyCheckResult:
     """
     allowed: bool
     trust_level: TrustLevel
-    blocked_capabilities: List[PluginCapability]
+    blocked_capabilities: list[PluginCapability]
     risk_score: float
-    reason: Optional[str] = None
-    warnings: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    reason: str | None = None
+    warnings: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "allowed": self.allowed,
@@ -293,7 +293,7 @@ class OperationGateResult:
     allowed: bool
     capability: PluginCapability
     plugin_name: str
-    reason: Optional[str] = None
+    reason: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -308,7 +308,7 @@ class SignatureVerifier:
     Plugins signed with known keys can be promoted from SANDBOXED to VERIFIED.
     """
 
-    def __init__(self, trusted_keys: Optional[Dict[str, bytes]] = None) -> None:
+    def __init__(self, trusted_keys: dict[str, bytes] | None = None) -> None:
         """
         Initialize verifier.
 
@@ -400,9 +400,9 @@ class PluginSafetyGate:
 
     def __init__(
         self,
-        guardrails: Optional[Any] = None,
-        signature_verifier: Optional[SignatureVerifier] = None,
-        blocked_registry: Optional[BlockedPluginsRegistry] = None,
+        guardrails: Any | None = None,
+        signature_verifier: SignatureVerifier | None = None,
+        blocked_registry: BlockedPluginsRegistry | None = None,
         risk_threshold: float = 0.8,
     ) -> None:
         """
@@ -420,11 +420,11 @@ class PluginSafetyGate:
         self._risk_threshold = risk_threshold
 
         # Cache trust levels for registered plugins
-        self._trust_cache: Dict[str, TrustLevel] = {}
+        self._trust_cache: dict[str, TrustLevel] = {}
 
         # Operation counters for monitoring
-        self._operation_counts: Dict[str, int] = {}
-        self._blocked_counts: Dict[str, int] = {}
+        self._operation_counts: dict[str, int] = {}
+        self._blocked_counts: dict[str, int] = {}
 
         logger.info("PluginSafetyGate initialized")
 
@@ -470,7 +470,7 @@ class PluginSafetyGate:
             SafetyCheckResult with validation outcome
         """
         metadata = plugin.metadata
-        warnings: List[str] = []
+        warnings: list[str] = []
 
         # 1. Check blocked list
         blocked = self._blocked_registry.is_blocked(metadata.name)
@@ -543,7 +543,7 @@ class PluginSafetyGate:
             }
         )
 
-    def _validate_metadata(self, metadata: "PluginMetadata") -> List[str]:
+    def _validate_metadata(self, metadata: "PluginMetadata") -> list[str]:
         """Validate plugin metadata structure."""
         issues = []
 
@@ -602,7 +602,7 @@ class PluginSafetyGate:
     def _parse_requested_capabilities(
         self,
         metadata: "PluginMetadata"
-    ) -> List[PluginCapability]:
+    ) -> list[PluginCapability]:
         """Parse requested capabilities from metadata."""
         caps = []
         for cap_str in metadata.requested_capabilities:
@@ -617,7 +617,7 @@ class PluginSafetyGate:
 
     def _calculate_risk_score(
         self,
-        capabilities: List[PluginCapability]
+        capabilities: list[PluginCapability]
     ) -> float:
         """Calculate overall risk score from requested capabilities."""
         if not capabilities:
@@ -646,14 +646,14 @@ class PluginSafetyGate:
         self,
         metadata: "PluginMetadata",
         trust_level: TrustLevel
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Additional check via HoloLoom SafetyGuardrails."""
         if self._guardrails is None:
             return {"allowed": True}
 
         try:
             # Create an action request for the guardrails
-            from hololoom.alignment import ActionRequest, ActionCategory
+            from hololoom.alignment import ActionCategory, ActionRequest
 
             request = ActionRequest(
                 action=f"register_plugin:{metadata.name}",
@@ -685,7 +685,7 @@ class PluginSafetyGate:
         self,
         plugin_name: str,
         capability: PluginCapability,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> OperationGateResult:
         """
         Gate a specific plugin operation.
@@ -729,7 +729,7 @@ class PluginSafetyGate:
         # Optional runtime check via guardrails
         if self._guardrails is not None:
             try:
-                from hololoom.alignment import ActionRequest, ActionCategory
+                from hololoom.alignment import ActionCategory, ActionRequest
 
                 # Map capability to action category
                 category_map = {
@@ -817,7 +817,7 @@ class PluginSafetyGate:
     # Monitoring
     # -------------------------------------------------------------------------
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get gate statistics for monitoring."""
         return {
             "registered_plugins": len(self._trust_cache),
@@ -841,9 +841,9 @@ class PluginSafetyGate:
 # =============================================================================
 
 def create_safety_gate(
-    guardrails: Optional[Any] = None,
+    guardrails: Any | None = None,
     risk_threshold: float = 0.8,
-    trusted_keys: Optional[Dict[str, bytes]] = None
+    trusted_keys: dict[str, bytes] | None = None
 ) -> PluginSafetyGate:
     """
     Create a configured PluginSafetyGate.

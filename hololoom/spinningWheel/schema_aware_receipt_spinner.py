@@ -37,17 +37,16 @@ Author: Claude Code
 Date: January 2025
 """
 
-from typing import Dict, List, Optional, Any, Union
-from pathlib import Path
-from dataclasses import dataclass, field
 import hashlib
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
-from hololoom.spinningWheel.receipt_spinner import ReceiptSpinner, ReceiptData
-from hololoom.spinningWheel.schema_registry import SchemaRegistry, SchemaDefinition, FieldMapping
-from hololoom.spinningWheel.protocol import SpinResult
-from hololoom.protocols.types import MemoryShard
 from hololoom.memory.graph import KG, KGEdge
-
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import SpinResult
+from hololoom.spinningWheel.receipt_spinner import ReceiptData, ReceiptSpinner
+from hololoom.spinningWheel.schema_registry import FieldMapping, SchemaRegistry
 
 # ============================================================================
 # Graph Transformation Results
@@ -59,20 +58,20 @@ class GraphTransformation:
     success: bool
 
     # Nodes created
-    nodes_created: List[Dict[str, Any]] = field(default_factory=list)
+    nodes_created: list[dict[str, Any]] = field(default_factory=list)
 
     # Edges created
-    edges_created: List[KGEdge] = field(default_factory=list)
+    edges_created: list[KGEdge] = field(default_factory=list)
 
     # Schema used
-    schema_name: Optional[str] = None
+    schema_name: str | None = None
 
     # Field mappings applied
-    field_mappings: Dict[str, FieldMapping] = field(default_factory=dict)
+    field_mappings: dict[str, FieldMapping] = field(default_factory=dict)
 
     # Validation results
-    validation_errors: List[str] = field(default_factory=list)
-    validation_warnings: List[str] = field(default_factory=list)
+    validation_errors: list[str] = field(default_factory=list)
+    validation_warnings: list[str] = field(default_factory=list)
 
     # Metadata
     processing_time_ms: float = 0.0
@@ -125,8 +124,8 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
 
     def __init__(
         self,
-        yarn_graph: Optional[KG] = None,
-        schema_registry: Optional[SchemaRegistry] = None,
+        yarn_graph: KG | None = None,
+        schema_registry: SchemaRegistry | None = None,
         importance_threshold: float = 0.3,
         verify_calculations: bool = True,
         categorize: bool = True,
@@ -160,7 +159,7 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
         self.default_schema = default_schema
 
         # Track transformations
-        self.transformations: List[GraphTransformation] = []
+        self.transformations: list[GraphTransformation] = []
 
     # ========================================================================
     # Main Processing (Override)
@@ -168,7 +167,7 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
 
     async def spin(
         self,
-        source: Union[str, Path, List],
+        source: str | Path | list,
         **kwargs
     ) -> SpinResult:
         """
@@ -290,7 +289,7 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
 
         return transformation
 
-    async def _find_schema(self, receipt_data: ReceiptData) -> Optional[str]:
+    async def _find_schema(self, receipt_data: ReceiptData) -> str | None:
         """Find best matching schema for receipt data."""
         if not self.schema_registry:
             # No registry - use default
@@ -309,7 +308,7 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
 
         return schema_name or self.default_schema
 
-    def _receipt_to_dict(self, receipt_data: ReceiptData) -> Dict[str, Any]:
+    def _receipt_to_dict(self, receipt_data: ReceiptData) -> dict[str, Any]:
         """Convert ReceiptData to flat dict for field mapping."""
         return {
             'merchant_name': receipt_data.merchant,
@@ -329,7 +328,7 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
         receipt_data: ReceiptData,
         schema_name: str,
         shard: MemoryShard
-    ) -> tuple[List[Dict], List[KGEdge]]:
+    ) -> tuple[list[dict], list[KGEdge]]:
         """
         Create graph nodes and edges from receipt data.
 
@@ -483,8 +482,8 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
 
     def _insert_into_graph(
         self,
-        nodes: List[Dict],
-        edges: List[KGEdge]
+        nodes: list[dict],
+        edges: list[KGEdge]
     ) -> None:
         """
         Insert nodes and edges into Yarn Graph.
@@ -514,11 +513,11 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
     # Query Interface
     # ========================================================================
 
-    def get_transformations(self) -> List[GraphTransformation]:
+    def get_transformations(self) -> list[GraphTransformation]:
         """Get all graph transformations created by this spinner."""
         return self.transformations.copy()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get transformation statistics.
 
@@ -550,11 +549,11 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
 
     def query_transactions(
         self,
-        merchant: Optional[str] = None,
-        category: Optional[str] = None,
-        min_total: Optional[float] = None,
-        max_total: Optional[float] = None
-    ) -> List[Dict[str, Any]]:
+        merchant: str | None = None,
+        category: str | None = None,
+        min_total: float | None = None,
+        max_total: float | None = None
+    ) -> list[dict[str, Any]]:
         """
         Query transactions from Yarn Graph.
 
@@ -609,7 +608,7 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
 
         return results
 
-    def query_merchants(self) -> List[Dict[str, Any]]:
+    def query_merchants(self) -> list[dict[str, Any]]:
         """Get all merchants from Yarn Graph."""
         results = []
 
@@ -624,7 +623,7 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
 
         return results
 
-    def get_transaction_details(self, transaction_id: str) -> Optional[Dict[str, Any]]:
+    def get_transaction_details(self, transaction_id: str) -> dict[str, Any] | None:
         """
         Get full details for a transaction including merchant and items.
 
@@ -682,9 +681,9 @@ class SchemaAwareReceiptSpinner(ReceiptSpinner):
 # ============================================================================
 
 async def process_receipt_to_graph(
-    receipt_path: Union[str, Path],
-    yarn_graph: Optional[KG] = None,
-    schema_registry: Optional[SchemaRegistry] = None,
+    receipt_path: str | Path,
+    yarn_graph: KG | None = None,
+    schema_registry: SchemaRegistry | None = None,
     **spinner_kwargs
 ) -> tuple[SpinResult, GraphTransformation]:
     """

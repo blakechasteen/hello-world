@@ -31,8 +31,12 @@ class RBACMiddleware:
         try:
             from hololoom.agents.policy_governance import (
                 CommunicationRequest as GovRequest,
-                Priority as GovPriority,
+            )
+            from hololoom.agents.policy_governance import (
                 PolicyDecision,
+            )
+            from hololoom.agents.policy_governance import (
+                Priority as GovPriority,
             )
         except ImportError:
             # Governance module not installed — skip silently

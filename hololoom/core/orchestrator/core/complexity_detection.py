@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Complexity Detection and Provenance
 ====================================
@@ -22,23 +21,22 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from hololoom.protocols.types import Query
-from hololoom.protocols import ComplexityLevel, ProvenanceTrace
 from hololoom.loom.command import PatternCard
-
+from hololoom.protocols import ComplexityLevel, ProvenanceTrace
+from hololoom.protocols.types import Query
 
 logger = logging.getLogger(__name__)
 
 
 def assess_complexity_level(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     query: Query,
-    trace: Optional[ProvenanceTrace] = None
+    trace: ProvenanceTrace | None = None
 ) -> ComplexityLevel:
     """
     Assess query complexity using hybrid word count + intent detection.
@@ -144,7 +142,7 @@ def assess_complexity_level(
 
 
 def create_provenance_trace(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     query: Query,
     complexity: ComplexityLevel
 ) -> ProvenanceTrace:

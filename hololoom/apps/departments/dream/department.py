@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Dream Department - Phase 2 NeuroHood-HoloLoom Integration
 =========================================================
@@ -26,25 +27,24 @@ Author: Phase 2 Integration
 Date: November 2025
 """
 
-import asyncio
 import logging
-from typing import Dict, Any, Optional, List, Union
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from ..protocol import DepartmentProtocol
 
 # Graceful degradation - works without NeuroHood
 try:
-    from NeuroHood.dreams.narrative_generator import DreamNarrative, NarrativeAct
     from NeuroHood.dreams.hololoom_adapter import (
-        store_dream_narrative,
+        DreamMemoryBridge,
+        is_hololoom_available,
         recall_dreams,
         reflect_on_dream,
-        is_hololoom_available,
-        DreamMemoryBridge
+        store_dream_narrative,
     )
+    from NeuroHood.dreams.narrative_generator import DreamNarrative, NarrativeAct
     NEUROHOOD_AVAILABLE = True
 except ImportError:
     NEUROHOOD_AVAILABLE = False
@@ -80,16 +80,16 @@ class DSStarCheck(Enum):
 class VerificationResult:
     """Result of DS-STAR verification."""
     passed: bool
-    checks: Dict[DSStarCheck, bool] = field(default_factory=dict)
-    scores: Dict[DSStarCheck, float] = field(default_factory=dict)
-    messages: List[str] = field(default_factory=list)
+    checks: dict[DSStarCheck, bool] = field(default_factory=dict)
+    scores: dict[DSStarCheck, float] = field(default_factory=dict)
+    messages: list[str] = field(default_factory=list)
     confidence: float = 0.0
 
     @property
-    def failed_checks(self) -> List[DSStarCheck]:
+    def failed_checks(self) -> list[DSStarCheck]:
         return [check for check, passed in self.checks.items() if not passed]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "passed": self.passed,
             "checks": {k.value: v for k, v in self.checks.items()},
@@ -115,13 +115,13 @@ class DreamAction(Enum):
 class DreamRequest:
     """Request to Dream Department."""
     action: DreamAction
-    narrative: Optional[Any] = None  # DreamNarrative
-    narratives: Optional[List[Any]] = None  # For batch_store
-    resident_id: Optional[str] = None
-    query: Optional[str] = None
+    narrative: Any | None = None  # DreamNarrative
+    narratives: list[Any] | None = None  # For batch_store
+    resident_id: str | None = None
+    query: str | None = None
     limit: int = 10
-    feedback: Optional[Dict[str, Any]] = None
-    dream_memories: Optional[List[Any]] = None
+    feedback: dict[str, Any] | None = None
+    dream_memories: list[Any] | None = None
     verify_strict: bool = False
 
 
@@ -130,10 +130,10 @@ class DreamResponse:
     """Response from Dream Department."""
     success: bool
     action: DreamAction
-    result: Optional[Any] = None
-    verification: Optional[VerificationResult] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    error: Optional[str] = None
+    result: Any | None = None
+    verification: VerificationResult | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
 
 
 # =============================================================================
@@ -250,7 +250,7 @@ class DreamDSStarVerifier:
             confidence=confidence
         )
 
-    def _check_domain(self, narrative: Any) -> tuple[float, List[str]]:
+    def _check_domain(self, narrative: Any) -> tuple[float, list[str]]:
         """Check domain validity - is this dream content?"""
         messages = []
         score = 0.0
@@ -298,7 +298,7 @@ class DreamDSStarVerifier:
 
         return min(score, 1.0), messages
 
-    def _check_sensibility(self, narrative: Any) -> tuple[float, List[str]]:
+    def _check_sensibility(self, narrative: Any) -> tuple[float, list[str]]:
         """Check semantic sensibility - does it make sense?"""
         messages = []
         score = 0.0
@@ -340,7 +340,7 @@ class DreamDSStarVerifier:
 
         return min(score, 1.0), messages
 
-    def _check_temporal(self, narrative: Any) -> tuple[float, List[str]]:
+    def _check_temporal(self, narrative: Any) -> tuple[float, list[str]]:
         """Check temporal consistency."""
         messages = []
         score = 0.0
@@ -387,7 +387,7 @@ class DreamDSStarVerifier:
 
         return min(score, 1.0), messages
 
-    def _check_argument(self, narrative: Any) -> tuple[float, List[str]]:
+    def _check_argument(self, narrative: Any) -> tuple[float, list[str]]:
         """Check logical argument structure."""
         messages = []
         score = 0.0
@@ -426,7 +426,7 @@ class DreamDSStarVerifier:
 
         return min(score, 1.0), messages
 
-    def _check_reference(self, narrative: Any) -> tuple[float, List[str]]:
+    def _check_reference(self, narrative: Any) -> tuple[float, list[str]]:
         """Check symbol and archetype references."""
         messages = []
         score = 0.0
@@ -511,8 +511,8 @@ class DreamDepartment(DepartmentProtocol):
         self.enable_spinner = enable_spinner and DREAM_SPINNER_AVAILABLE
 
         self.verifier = DreamDSStarVerifier(strict=strict_verification)
-        self.spinner: Optional[Any] = None
-        self.bridge: Optional[Any] = None
+        self.spinner: Any | None = None
+        self.bridge: Any | None = None
 
         self.started = False
 
@@ -565,7 +565,7 @@ class DreamDepartment(DepartmentProtocol):
         self.started = False
         logger.info("Dream Department stopped")
 
-    async def process(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    async def process(self, request: dict[str, Any]) -> dict[str, Any]:
         """
         Process Dream Department request.
 
@@ -644,7 +644,7 @@ class DreamDepartment(DepartmentProtocol):
     # Internal Methods
     # ========================================================================
 
-    def _parse_request(self, request: Dict[str, Any]) -> DreamRequest:
+    def _parse_request(self, request: dict[str, Any]) -> DreamRequest:
         """Parse raw request into DreamRequest."""
         action_str = request.get("action")
         if not action_str:
@@ -1029,7 +1029,7 @@ class DreamDepartment(DepartmentProtocol):
             }
         )
 
-    def _response_to_dict(self, response: DreamResponse) -> Dict[str, Any]:
+    def _response_to_dict(self, response: DreamResponse) -> dict[str, Any]:
         """Convert response to dictionary."""
         result = {
             "success": response.success,
@@ -1050,7 +1050,7 @@ class DreamDepartment(DepartmentProtocol):
 
         return result
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get department statistics."""
         uptime = None
         if self.stats["start_time"]:

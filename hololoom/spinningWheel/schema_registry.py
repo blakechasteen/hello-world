@@ -33,14 +33,13 @@ Author: Claude Code
 Date: January 2025
 """
 
-from typing import Dict, List, Optional, Any, Tuple
+import json
 from dataclasses import dataclass, field
 from enum import Enum
-import json
 from pathlib import Path
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
-
 
 # ============================================================================
 # Schema Types
@@ -67,22 +66,22 @@ class SchemaDefinition:
     version: str = "1.0"
 
     # Schema structure (format depends on schema_type)
-    nodes: Dict[str, Any] = field(default_factory=dict)  # For graph schemas
-    tables: Dict[str, Any] = field(default_factory=dict)  # For SQL schemas
-    properties: Dict[str, Any] = field(default_factory=dict)  # For JSON schemas
+    nodes: dict[str, Any] = field(default_factory=dict)  # For graph schemas
+    tables: dict[str, Any] = field(default_factory=dict)  # For SQL schemas
+    properties: dict[str, Any] = field(default_factory=dict)  # For JSON schemas
 
     # Relationships/edges
-    edges: Dict[str, Any] = field(default_factory=dict)
+    edges: dict[str, Any] = field(default_factory=dict)
 
     # Metadata
     description: str = ""
     domain: str = "general"  # Domain: finance, healthcare, etc.
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
     # Validation rules
-    constraints: Dict[str, Any] = field(default_factory=dict)
+    constraints: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             'name': self.name,
@@ -99,7 +98,7 @@ class SchemaDefinition:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'SchemaDefinition':
+    def from_dict(cls, data: dict[str, Any]) -> 'SchemaDefinition':
         """Deserialize from dictionary."""
         return cls(
             name=data['name'],
@@ -122,16 +121,16 @@ class FieldMapping:
     source_field: str
     target_field: str
     confidence: float  # 0.0-1.0
-    transform: Optional[str] = None  # Optional transformation function
+    transform: str | None = None  # Optional transformation function
 
 
 @dataclass
 class ValidationResult:
     """Result of schema validation."""
     is_valid: bool
-    errors: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
-    suggestions: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
 
     @property
     def has_errors(self) -> bool:
@@ -159,8 +158,8 @@ class SchemaRegistry:
 
     def __init__(
         self,
-        memory_backend: Optional[Any] = None,
-        storage_path: Optional[Path] = None
+        memory_backend: Any | None = None,
+        storage_path: Path | None = None
     ):
         """
         Initialize schema registry.
@@ -169,7 +168,7 @@ class SchemaRegistry:
             memory_backend: HoloLoom memory backend for RAG
             storage_path: Path to persist schemas (None = in-memory only)
         """
-        self.schemas: Dict[str, SchemaDefinition] = {}
+        self.schemas: dict[str, SchemaDefinition] = {}
         self.memory = memory_backend
         self.storage_path = Path(storage_path) if storage_path else None
 
@@ -178,10 +177,10 @@ class SchemaRegistry:
             self.storage_path.mkdir(parents=True, exist_ok=True)
 
         # Schema usage statistics (for learning)
-        self.usage_stats: Dict[str, int] = {}
+        self.usage_stats: dict[str, int] = {}
 
         # Field mapping cache (for performance)
-        self._mapping_cache: Dict[str, Dict[str, str]] = {}
+        self._mapping_cache: dict[str, dict[str, str]] = {}
 
     # ========================================================================
     # Schema Registration
@@ -190,7 +189,7 @@ class SchemaRegistry:
     async def register_schema(
         self,
         name: str,
-        schema: Dict[str, Any],
+        schema: dict[str, Any],
         schema_type: SchemaType = SchemaType.GRAPH
     ) -> None:
         """
@@ -335,7 +334,7 @@ class SchemaRegistry:
         self,
         sample_data: str,
         k: int = 3
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Use RAG to find best matching schema for data.
 
@@ -391,7 +390,7 @@ Look for schemas that match:
         # Fallback
         return self._fallback_schema_match(sample_data)
 
-    def _fallback_schema_match(self, sample_data: str) -> Optional[str]:
+    def _fallback_schema_match(self, sample_data: str) -> str | None:
         """Fallback schema matching using keywords."""
         sample_lower = sample_data.lower()
 
@@ -417,9 +416,9 @@ Look for schemas that match:
     async def suggest_field_mapping(
         self,
         schema_name: str,
-        extracted_data: Dict[str, Any],
+        extracted_data: dict[str, Any],
         confidence_threshold: float = 0.5
-    ) -> Dict[str, FieldMapping]:
+    ) -> dict[str, FieldMapping]:
         """
         Suggest how to map extracted fields to schema fields.
 
@@ -487,8 +486,8 @@ Look for schemas that match:
         schema_name: str,
         field_name: str,
         field_value: Any,
-        schema_fields: List[str]
-    ) -> Optional[str]:
+        schema_fields: list[str]
+    ) -> str | None:
         """Use RAG to find best field mapping."""
         query = f"""In schema '{schema_name}', which field best matches:
 
@@ -514,8 +513,8 @@ Return only the field name."""
     def _heuristic_field_mapping(
         self,
         field_name: str,
-        schema_fields: List[str]
-    ) -> Optional[str]:
+        schema_fields: list[str]
+    ) -> str | None:
         """Heuristic field mapping based on name similarity."""
         field_lower = field_name.lower().replace('_', ' ')
 
@@ -533,7 +532,7 @@ Return only the field name."""
 
         return None
 
-    def _get_schema_fields(self, schema: SchemaDefinition) -> List[str]:
+    def _get_schema_fields(self, schema: SchemaDefinition) -> list[str]:
         """Get all fields from schema."""
         fields = []
 
@@ -560,7 +559,7 @@ Return only the field name."""
     def validate_data(
         self,
         schema_name: str,
-        data: Dict[str, Any]
+        data: dict[str, Any]
     ) -> ValidationResult:
         """
         Validate data against schema.
@@ -647,15 +646,15 @@ Return only the field name."""
     # Schema Management
     # ========================================================================
 
-    def get_schema(self, name: str) -> Optional[SchemaDefinition]:
+    def get_schema(self, name: str) -> SchemaDefinition | None:
         """Get schema by name."""
         return self.schemas.get(name)
 
-    def list_schemas(self) -> List[str]:
+    def list_schemas(self) -> list[str]:
         """List all registered schema names."""
         return list(self.schemas.keys())
 
-    def get_usage_stats(self) -> Dict[str, int]:
+    def get_usage_stats(self) -> dict[str, int]:
         """Get schema usage statistics."""
         return self.usage_stats.copy()
 
@@ -668,7 +667,7 @@ Return only the field name."""
         loaded = 0
         for schema_file in directory.glob("*.json"):
             try:
-                with open(schema_file, 'r') as f:
+                with open(schema_file) as f:
                     schema_dict = json.load(f)
 
                 schema = SchemaDefinition.from_dict(schema_dict)
@@ -685,7 +684,7 @@ Return only the field name."""
 # Convenience Functions
 # ============================================================================
 
-def create_expense_schema() -> Dict[str, Any]:
+def create_expense_schema() -> dict[str, Any]:
     """Create standard expense tracking schema."""
     return {
         'description': 'Expense tracking schema for receipts and transactions',
@@ -724,7 +723,7 @@ def create_expense_schema() -> Dict[str, Any]:
     }
 
 
-def create_task_schema() -> Dict[str, Any]:
+def create_task_schema() -> dict[str, Any]:
     """Create standard task management schema."""
     return {
         'description': 'Task management schema for notes and action items',

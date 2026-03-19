@@ -17,12 +17,12 @@ States:
 
 import asyncio
 import time
-from typing import Callable, Optional, TypeVar, Any
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import TypeVar
 
 from hololoom.context.error_handling import CircuitBreakerOpenError
-
 
 # ============================================================================
 # Circuit States
@@ -72,7 +72,7 @@ class CircuitBreaker:
     - Close automatically after successful recovery
     """
 
-    def __init__(self, config: Optional[CircuitBreakerConfig] = None):
+    def __init__(self, config: CircuitBreakerConfig | None = None):
         """
         Initialize circuit breaker
 
@@ -137,7 +137,7 @@ class CircuitBreaker:
             self._on_failure()
             raise
 
-        except Exception as e:
+        except Exception:
             self._on_failure()
             raise
 
@@ -264,7 +264,7 @@ class CircuitBreakerRegistry:
     def get_or_create(
         self,
         name: str,
-        config: Optional[CircuitBreakerConfig] = None
+        config: CircuitBreakerConfig | None = None
     ) -> CircuitBreaker:
         """
         Get or create circuit breaker by name

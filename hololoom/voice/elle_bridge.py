@@ -11,15 +11,15 @@ Author: HoloLoom Team
 Date: November 15, 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List
-from enum import Enum
 import asyncio
 import time
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # HoloLoom imports
 try:
-    from hololoom.protocols.types import Query, ModalityType
+    from hololoom.protocols.types import ModalityType, Query
     from hololoom.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError:
@@ -27,9 +27,8 @@ except ImportError:
 
 # Voice module imports
 from hololoom.voice.ar_context import ARContext, AREvent, AREventType
-from hololoom.voice.command_router import CommandRouter, Intent, ElleAction
-from hololoom.voice.spatial_audio import SpatialAudioHandler, SpatialAudioConfig
-
+from hololoom.voice.command_router import CommandRouter, ElleAction, Intent
+from hololoom.voice.spatial_audio import SpatialAudioHandler
 
 # ============================================================================
 # Response Types
@@ -48,13 +47,13 @@ class ResponseMode(Enum):
 class ARVisualization:
     """AR visualization data."""
     type: str = "overlay"          # "overlay", "highlight", "path", "panel"
-    target_object: Optional[str] = None
-    content: Dict[str, Any] = field(default_factory=dict)
+    target_object: str | None = None
+    content: dict[str, Any] = field(default_factory=dict)
     duration: float = 5.0          # Display duration in seconds
-    position: Optional[List[float]] = None  # [x, y, z] position
-    style: Dict[str, Any] = field(default_factory=dict)
+    position: list[float] | None = None  # [x, y, z] position
+    style: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
         return {
             "type": self.type,
@@ -84,14 +83,14 @@ class ElleResponse:
         processing_time: Time taken to generate response (ms)
     """
     voice_text: str = ""
-    voice_audio: Optional[bytes] = None
-    ar_visualization: Optional[ARVisualization] = None
-    spatial_audio_position: Optional[List[float]] = None
+    voice_audio: bytes | None = None
+    ar_visualization: ARVisualization | None = None
+    spatial_audio_position: list[float] | None = None
     response_mode: ResponseMode = ResponseMode.MULTIMODAL
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     processing_time: float = 0.0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
         return {
             "voice_text": self.voice_text,
@@ -122,7 +121,7 @@ class ElleBridge:
 
     def __init__(
         self,
-        orchestrator: Optional[Any] = None,
+        orchestrator: Any | None = None,
         enable_hololoom: bool = True,
         enable_spatial_audio: bool = True,
         default_response_mode: ResponseMode = ResponseMode.MULTIMODAL_SPATIAL
@@ -146,9 +145,9 @@ class ElleBridge:
         self.spatial_audio_handler = SpatialAudioHandler() if enable_spatial_audio else None
 
         # Session state
-        self.active_context: Optional[ARContext] = None
-        self.recent_intents: List[Intent] = []
-        self.recent_responses: List[ElleResponse] = []
+        self.active_context: ARContext | None = None
+        self.recent_intents: list[Intent] = []
+        self.recent_responses: list[ElleResponse] = []
 
         # Performance tracking
         self.total_queries = 0
@@ -158,7 +157,7 @@ class ElleBridge:
         self,
         transcript: str,
         ar_context: ARContext,
-        response_mode: Optional[ResponseMode] = None
+        response_mode: ResponseMode | None = None
     ) -> ElleResponse:
         """
         Process voice command with AR context.
@@ -233,7 +232,7 @@ class ElleBridge:
         self,
         event: AREvent,
         ar_context: ARContext
-    ) -> Optional[ElleResponse]:
+    ) -> ElleResponse | None:
         """
         Handle AR events (selections, navigation, gestures).
 
@@ -317,7 +316,7 @@ class ElleBridge:
         transcript: str,
         intent: Intent,
         ar_context: ARContext
-    ) -> Optional[Dict]:
+    ) -> dict | None:
         """
         Process query through HoloLoom orchestrator.
 
@@ -364,7 +363,7 @@ class ElleBridge:
         intent: Intent,
         elle_action: ElleAction,
         ar_context: ARContext,
-        hololoom_response: Optional[Dict],
+        hololoom_response: dict | None,
         response_mode: ResponseMode
     ) -> ElleResponse:
         """
@@ -417,7 +416,7 @@ class ElleBridge:
         intent: Intent,
         elle_action: ElleAction,
         ar_context: ARContext
-    ) -> Optional[ARVisualization]:
+    ) -> ARVisualization | None:
         """Create AR visualization based on intent and action."""
         target_obj = None
         if intent.target:
@@ -481,7 +480,7 @@ class ElleBridge:
         self,
         intent: Intent,
         ar_context: ARContext
-    ) -> Optional[List[float]]:
+    ) -> list[float] | None:
         """Get 3D position for spatial audio."""
         # If there's a target object, position audio there
         if intent.target:
@@ -510,7 +509,7 @@ class ElleBridge:
             ar_context.user_position.z + 2.0  # 2 meters in front
         ]
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get usage statistics."""
         return {
             "total_queries": self.total_queries,

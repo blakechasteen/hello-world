@@ -33,16 +33,20 @@ Usage:
 """
 
 import asyncio
-import time
 import re
-from typing import List, Dict, Any, Optional
-from datetime import datetime
+import time
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
 
 try:
-    from hololoom.apps.workflow_builder.conversation_manager import ConversationManager, Message, Conversation
+    from hololoom.apps.workflow_builder.conversation_manager import (
+        Conversation,
+        ConversationManager,
+        Message,
+    )
 except ImportError:
     ConversationManager = None  # type: ignore[assignment,misc]
     Message = None  # type: ignore[assignment,misc]
@@ -53,7 +57,7 @@ except ImportError:
 class ImportanceScore:
     """Importance score for a conversation turn."""
     score: float  # 0.0 to 1.0
-    signals: Dict[str, float]  # Individual scoring signals
+    signals: dict[str, float]  # Individual scoring signals
     reason: str  # Human-readable explanation
 
 
@@ -94,9 +98,9 @@ class ChatHistorySpinner:
 
     async def spin_all(
         self,
-        limit: Optional[int] = None,
-        min_importance: Optional[float] = None
-    ) -> List[MemoryShard]:
+        limit: int | None = None,
+        min_importance: float | None = None
+    ) -> list[MemoryShard]:
         """
         Spin all conversations into MemoryShards.
 
@@ -129,8 +133,8 @@ class ChatHistorySpinner:
     async def spin_conversation(
         self,
         conversation_id: int,
-        min_importance: Optional[float] = None
-    ) -> List[MemoryShard]:
+        min_importance: float | None = None
+    ) -> list[MemoryShard]:
         """
         Spin a single conversation into MemoryShards.
 
@@ -177,8 +181,8 @@ class ChatHistorySpinner:
     async def spin_recent(
         self,
         hours: int = 24,
-        min_importance: Optional[float] = None
-    ) -> List[MemoryShard]:
+        min_importance: float | None = None
+    ) -> list[MemoryShard]:
         """
         Spin recent conversations (within last N hours).
 
@@ -214,7 +218,7 @@ class ChatHistorySpinner:
 
         return all_shards
 
-    def _group_into_turns(self, messages: List[Message]) -> List[Dict[str, Any]]:
+    def _group_into_turns(self, messages: list[Message]) -> list[dict[str, Any]]:
         """
         Group messages into conversation turns (user + assistant pairs).
 
@@ -250,7 +254,7 @@ class ChatHistorySpinner:
 
         return turns
 
-    def _score_importance(self, turn: Dict[str, Any]) -> ImportanceScore:
+    def _score_importance(self, turn: dict[str, Any]) -> ImportanceScore:
         """
         Score the importance of a conversation turn.
 
@@ -330,7 +334,7 @@ class ChatHistorySpinner:
 
     def _create_shard(
         self,
-        turn: Dict[str, Any],
+        turn: dict[str, Any],
         turn_idx: int,
         conversation: Conversation,
         importance: ImportanceScore
@@ -412,7 +416,7 @@ class ChatHistorySpinner:
             }
         )
 
-    async def spin_by_tag(self, tag: str) -> List[MemoryShard]:
+    async def spin_by_tag(self, tag: str) -> list[MemoryShard]:
         """
         Spin conversations with a specific tag.
 
@@ -435,7 +439,7 @@ class ChatHistorySpinner:
 
         return all_shards
 
-    async def spin_by_project(self, project_id: int) -> List[MemoryShard]:
+    async def spin_by_project(self, project_id: int) -> list[MemoryShard]:
         """
         Spin conversations in a specific project.
 
@@ -567,7 +571,7 @@ class ChatHistoryAutoCapture:
 async def ingest_chat_history(
     conversation_manager: ConversationManager,
     hololoom_instance,
-    limit: Optional[int] = None,
+    limit: int | None = None,
     importance_threshold: float = 0.3
 ) -> int:
     """

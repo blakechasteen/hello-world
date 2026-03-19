@@ -21,15 +21,16 @@ PERFORMANCE OPTIMIZATIONS:
 - Batch trajectory integration
 """
 
-import numpy as np
-from typing import Callable, Tuple, Dict, List, Optional
+from collections.abc import Callable
 from dataclasses import dataclass
+
+import numpy as np
 
 # Import performance utilities
 from .performance import (
-    stormer_verlet_step_jit,
-    ProjectionCache,
     HAS_NUMBA,
+    ProjectionCache,
+    stormer_verlet_step_jit,
 )
 
 
@@ -151,7 +152,7 @@ class GeometricIntegrator:
 
     def integrate_trajectory(self, q0_full: np.ndarray, p0_full: np.ndarray,
                             gradient_fn_full: Callable[[np.ndarray], np.ndarray],
-                            dt: float, n_steps: int) -> List[SemanticState]:
+                            dt: float, n_steps: int) -> list[SemanticState]:
         """
         Integrate semantic trajectory using geometric integrator
 
@@ -187,8 +188,8 @@ class GeometricIntegrator:
 
         return states
 
-    def compute_energy_drift(self, states: List[SemanticState],
-                            potential_fn: Callable) -> Dict:
+    def compute_energy_drift(self, states: list[SemanticState],
+                            potential_fn: Callable) -> dict:
         """
         Measure how well energy is conserved
 
@@ -213,8 +214,8 @@ class MultiScaleGeometricFlow:
     Each scale has its own frequency → creates interference patterns
     """
 
-    def __init__(self, projection_matrices: Dict[int, np.ndarray],
-                 masses: Optional[Dict[int, float]] = None):
+    def __init__(self, projection_matrices: dict[int, np.ndarray],
+                 masses: dict[int, float] | None = None):
         """
         Args:
             projection_matrices: {scale: P_matrix} for each Matryoshka scale
@@ -226,7 +227,7 @@ class MultiScaleGeometricFlow:
             for scale, P in projection_matrices.items()
         }
 
-    def compute_resonance(self, states_by_scale: Dict[int, List[SemanticState]]) -> np.ndarray:
+    def compute_resonance(self, states_by_scale: dict[int, list[SemanticState]]) -> np.ndarray:
         """
         Compute resonance between scales
 
@@ -263,10 +264,10 @@ class MultiScaleGeometricFlow:
 
         return np.array(resonance_over_time)
 
-    def integrate_all_scales(self, q0_full_by_scale: Dict[int, np.ndarray],
-                            p0_full_by_scale: Dict[int, np.ndarray],
-                            gradient_fns: Dict[int, Callable],
-                            dt: float, n_steps: int) -> Dict:
+    def integrate_all_scales(self, q0_full_by_scale: dict[int, np.ndarray],
+                            p0_full_by_scale: dict[int, np.ndarray],
+                            gradient_fns: dict[int, Callable],
+                            dt: float, n_steps: int) -> dict:
         """
         Integrate all scales simultaneously and compute interference
         """
@@ -291,9 +292,9 @@ class MultiScaleGeometricFlow:
         }
 
 
-def visualize_geometric_flow(states: List[SemanticState],
-                            dimension_names: List[str],
-                            save_path: Optional[str] = None):
+def visualize_geometric_flow(states: list[SemanticState],
+                            dimension_names: list[str],
+                            save_path: str | None = None):
     """
     Visualize geometric flow in semantic space
     """

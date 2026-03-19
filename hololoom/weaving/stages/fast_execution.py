@@ -9,7 +9,7 @@ detailed trace construction, and optional metadata injection.
 
 import logging
 from datetime import datetime
-from typing import ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -29,13 +29,13 @@ class FastExecutionStage:
 
     def __init__(
         self,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         self.logger = logger or logging.getLogger(__name__)
 
     async def execute(self, ctx: 'WeavingContext') -> None:
         """Assemble minimal Spacetime from tool result."""
-        from hololoom.fabric.spacetime import Spacetime, WeavingTrace, Artifact
+        from hololoom.fabric.spacetime import Artifact, Spacetime, WeavingTrace
 
         end_time = datetime.now()
         start_time = ctx.start_time or end_time

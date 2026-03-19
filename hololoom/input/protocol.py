@@ -5,10 +5,11 @@ Defines unified interface for multi-modal input processing.
 All input processors (text, image, audio, structured) implement this protocol.
 """
 
-from typing import Protocol, Dict, List, Optional, Any, Union
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+from typing import Any, Protocol, Union
+
 import numpy as np
 
 
@@ -30,31 +31,31 @@ class ProcessedInput:
     All input processors return this structure, enabling
     consistent handling across modalities.
     """
-    
+
     # Core fields
     modality: ModalityType
     content: str  # Human-readable description
     embedding: np.ndarray  # Feature vector
-    
+
     # Metadata
     confidence: float = 1.0  # Processing confidence (0.0-1.0)
-    source: Optional[str] = None  # File path, URL, etc.
-    
+    source: str | None = None  # File path, URL, etc.
+
     # Modality-specific features
-    features: Dict[str, Any] = field(default_factory=dict)
-    
+    features: dict[str, Any] = field(default_factory=dict)
+
     # Cross-modal alignment
-    aligned_embeddings: Dict[ModalityType, np.ndarray] = field(default_factory=dict)
-    
+    aligned_embeddings: dict[ModalityType, np.ndarray] = field(default_factory=dict)
+
     def __post_init__(self):
         """Validate processed input."""
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError(f"Confidence must be in [0.0, 1.0], got {self.confidence}")
-        
+
         if self.embedding is not None and not isinstance(self.embedding, np.ndarray):
             self.embedding = np.array(self.embedding)
-    
-    def to_dict(self) -> Dict:
+
+    def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
         return {
             'modality': self.modality.value,
@@ -72,13 +73,13 @@ class ProcessedInput:
 @dataclass
 class TextFeatures:
     """Text-specific features."""
-    entities: List[Dict[str, str]] = field(default_factory=list)  # NER results
-    sentiment: Dict[str, float] = field(default_factory=dict)  # Polarity, subjectivity
-    topics: List[str] = field(default_factory=list)  # Main topics
-    keyphrases: List[str] = field(default_factory=list)  # Key phrases
+    entities: list[dict[str, str]] = field(default_factory=list)  # NER results
+    sentiment: dict[str, float] = field(default_factory=dict)  # Polarity, subjectivity
+    topics: list[str] = field(default_factory=list)  # Main topics
+    keyphrases: list[str] = field(default_factory=list)  # Key phrases
     language: str = "en"
-    
-    def to_dict(self) -> Dict:
+
+    def to_dict(self) -> dict:
         return {
             'entities': self.entities,
             'sentiment': self.sentiment,
@@ -91,14 +92,14 @@ class TextFeatures:
 @dataclass
 class ImageFeatures:
     """Image-specific features."""
-    objects: List[Dict[str, Any]] = field(default_factory=list)  # Detected objects
-    scene: Optional[str] = None  # Scene classification
-    caption: Optional[str] = None  # Generated caption
-    ocr_text: Optional[str] = None  # Extracted text
-    colors: List[str] = field(default_factory=list)  # Dominant colors
+    objects: list[dict[str, Any]] = field(default_factory=list)  # Detected objects
+    scene: str | None = None  # Scene classification
+    caption: str | None = None  # Generated caption
+    ocr_text: str | None = None  # Extracted text
+    colors: list[str] = field(default_factory=list)  # Dominant colors
     dimensions: tuple = (0, 0)  # Width, height
-    
-    def to_dict(self) -> Dict:
+
+    def to_dict(self) -> dict:
         return {
             'objects': self.objects,
             'scene': self.scene,
@@ -112,15 +113,15 @@ class ImageFeatures:
 @dataclass
 class AudioFeatures:
     """Audio-specific features."""
-    transcript: Optional[str] = None  # Speech-to-text
-    language: Optional[str] = None  # Detected language
+    transcript: str | None = None  # Speech-to-text
+    language: str | None = None  # Detected language
     speaker_count: int = 1  # Number of speakers
-    emotion: Optional[str] = None  # Detected emotion
-    acoustic: Dict[str, Any] = field(default_factory=dict)  # MFCC, pitch, energy
+    emotion: str | None = None  # Detected emotion
+    acoustic: dict[str, Any] = field(default_factory=dict)  # MFCC, pitch, energy
     duration: float = 0.0  # Duration in seconds
     sample_rate: int = 16000
-    
-    def to_dict(self) -> Dict:
+
+    def to_dict(self) -> dict:
         return {
             'transcript': self.transcript,
             'language': self.language,
@@ -135,13 +136,13 @@ class AudioFeatures:
 @dataclass
 class StructuredFeatures:
     """Structured data features."""
-    schema: Dict[str, str] = field(default_factory=dict)  # Column types
+    schema: dict[str, str] = field(default_factory=dict)  # Column types
     row_count: int = 0
     column_count: int = 0
-    relationships: List[Dict[str, Any]] = field(default_factory=list)  # Foreign keys, etc.
-    summary_stats: Dict[str, Any] = field(default_factory=dict)  # Mean, std, etc.
-    
-    def to_dict(self) -> Dict:
+    relationships: list[dict[str, Any]] = field(default_factory=list)  # Foreign keys, etc.
+    summary_stats: dict[str, Any] = field(default_factory=dict)  # Mean, std, etc.
+
+    def to_dict(self) -> dict:
         return {
             'schema': self.schema,
             'row_count': self.row_count,
@@ -157,10 +158,10 @@ class InputProcessorProtocol(Protocol):
     
     Each modality (text, image, audio, structured) implements this interface.
     """
-    
+
     async def process(
         self,
-        input_data: Union[str, bytes, Path, Dict],
+        input_data: str | bytes | Path | dict,
         **kwargs
     ) -> ProcessedInput:
         """
@@ -174,11 +175,11 @@ class InputProcessorProtocol(Protocol):
             ProcessedInput with unified structure
         """
         ...
-    
+
     def get_modality(self) -> ModalityType:
         """Return the modality type this processor handles."""
         ...
-    
+
     def is_available(self) -> bool:
         """Check if required dependencies are available."""
         ...
@@ -190,10 +191,10 @@ class MultiModalFusionProtocol(Protocol):
     
     Combines features from multiple modalities into unified representation.
     """
-    
+
     async def fuse(
         self,
-        inputs: List[ProcessedInput],
+        inputs: list[ProcessedInput],
         strategy: str = "attention"  # "attention", "concat", "average"
     ) -> ProcessedInput:
         """
@@ -207,11 +208,11 @@ class MultiModalFusionProtocol(Protocol):
             Fused ProcessedInput with MULTIMODAL modality
         """
         ...
-    
+
     def align_embeddings(
         self,
-        inputs: List[ProcessedInput]
-    ) -> List[ProcessedInput]:
+        inputs: list[ProcessedInput]
+    ) -> list[ProcessedInput]:
         """
         Align embeddings across modalities to same space.
         
@@ -231,16 +232,16 @@ class InputMetadata:
     
     Used for tracking provenance and debugging.
     """
-    
+
     modality: ModalityType
     processor: str  # Processor class name
     processing_time_ms: float
-    model_used: Optional[str] = None
+    model_used: str | None = None
     confidence: float = 1.0
-    errors: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
-    
-    def to_dict(self) -> Dict:
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
         return {
             'modality': self.modality.value,
             'processor': self.processor,
@@ -253,5 +254,5 @@ class InputMetadata:
 
 
 # Type aliases for convenience
-InputData = Union[str, bytes, Path, Dict, Any]
+InputData = Union[str, bytes, Path, dict, Any]
 ProcessorResult = ProcessedInput

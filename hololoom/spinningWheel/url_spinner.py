@@ -28,13 +28,13 @@ Usage:
     result = await spinner.spin_website("https://example.com")
 """
 
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Set, AsyncIterator
-from urllib.parse import urljoin, urlparse
 import hashlib
-import time
 import re
+import time
+from collections.abc import AsyncIterator
+from dataclasses import dataclass, field
+from typing import Any
+from urllib.parse import urljoin, urlparse
 
 # Required dependencies
 try:
@@ -45,30 +45,29 @@ except ImportError:
     WEB_AVAILABLE = False
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities,
-    SpinnerCheckpoint,
     ImportanceScore,
-    ImportanceSignals
+    ImportanceSignals,
+    SpinnerCapabilities,
+    SpinResult,
 )
-from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass
 class WebPage:
     """Parsed web page"""
     url: str
-    title: Optional[str]
-    description: Optional[str]
-    keywords: List[str] = field(default_factory=list)
+    title: str | None
+    description: str | None
+    keywords: list[str] = field(default_factory=list)
     text_content: str = ""
-    html_content: Optional[str] = None
-    links: List[str] = field(default_factory=list)
-    images: List[Dict[str, str]] = field(default_factory=list)  # {src, alt}
-    headers: Dict[str, str] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    html_content: str | None = None
+    links: list[str] = field(default_factory=list)
+    images: list[dict[str, str]] = field(default_factory=list)  # {src, alt}
+    headers: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def domain(self) -> str:
@@ -81,12 +80,12 @@ class WebPage:
         return len(self.text_content.split())
 
     @property
-    def internal_links(self) -> List[str]:
+    def internal_links(self) -> list[str]:
         """Get internal links (same domain)"""
         return [link for link in self.links if self.domain in link]
 
     @property
-    def external_links(self) -> List[str]:
+    def external_links(self) -> list[str]:
         """Get external links (different domain)"""
         return [link for link in self.links if self.domain not in link]
 
@@ -226,7 +225,7 @@ class URLSpinner(BaseSpinner):
         self.respect_robots = respect_robots
 
         # Tracking
-        self.visited_urls: Set[str] = set()
+        self.visited_urls: set[str] = set()
         self.last_request_time: float = 0.0
 
         # Create importance scorer
@@ -255,7 +254,7 @@ class URLSpinner(BaseSpinner):
         """Check if web dependencies are available"""
         return WEB_AVAILABLE
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Spin URL(s) into MemoryShards
 
@@ -290,8 +289,8 @@ class URLSpinner(BaseSpinner):
     async def spin_website(
         self,
         start_url: str,
-        url_filter: Optional[callable] = None
-    ) -> List[MemoryShard]:
+        url_filter: callable | None = None
+    ) -> list[MemoryShard]:
         """
         Recursively crawl website
 
@@ -364,7 +363,7 @@ class URLSpinner(BaseSpinner):
             for shard in batch:
                 yield shard
 
-    def _fetch_page(self, url: str) -> Optional[WebPage]:
+    def _fetch_page(self, url: str) -> WebPage | None:
         """
         Fetch and parse web page
 
@@ -393,7 +392,7 @@ class URLSpinner(BaseSpinner):
             print(f"Warning: Failed to fetch {url}: {e}")
             return None
 
-    def _page_to_shards(self, page: WebPage) -> List[MemoryShard]:
+    def _page_to_shards(self, page: WebPage) -> list[MemoryShard]:
         """
         Convert WebPage to MemoryShards
 
@@ -460,7 +459,7 @@ class URLSpinner(BaseSpinner):
 
         return '\n'.join(parts)
 
-    def _extract_entities(self, page: WebPage) -> List[str]:
+    def _extract_entities(self, page: WebPage) -> list[str]:
         """Extract entities from page"""
         entities = []
 
@@ -476,7 +475,7 @@ class URLSpinner(BaseSpinner):
 
         return list(set(entities))
 
-    def _extract_motifs(self, page: WebPage) -> List[str]:
+    def _extract_motifs(self, page: WebPage) -> list[str]:
         """Extract motifs from page"""
         motifs = []
 

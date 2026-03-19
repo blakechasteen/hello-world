@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Recursive Web Crawler with Matryoshka Importance Gating
 ========================================================
@@ -25,13 +26,12 @@ Features:
 """
 
 import asyncio
-import logging
-from typing import List, Set, Optional, Dict, Tuple
-from dataclasses import dataclass, field
-from urllib.parse import urljoin, urlparse
-from datetime import datetime, timedelta
 import hashlib
+import logging
 import re
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from urllib.parse import urljoin, urlparse
 
 try:
     from bs4 import BeautifulSoup
@@ -68,7 +68,7 @@ class CrawlConfig:
 
     # Matryoshka importance thresholds (by depth)
     # Only follow links above threshold at each depth
-    importance_thresholds: Dict[int, float] = field(default_factory=lambda: {
+    importance_thresholds: dict[int, float] = field(default_factory=lambda: {
         0: 0.0,   # Seed URL (always crawl)
         1: 0.6,   # Direct links (medium importance)
         2: 0.75,  # Second-level links (high importance)
@@ -82,7 +82,7 @@ class CrawlConfig:
 
     # Content filtering
     min_content_length: int = 200     # Skip short pages
-    skip_patterns: List[str] = field(default_factory=lambda: [
+    skip_patterns: list[str] = field(default_factory=lambda: [
         r'/login', r'/signup', r'/register',
         r'/cart', r'/checkout',
         r'/search\?', r'/tag/',
@@ -108,28 +108,28 @@ class RecursiveCrawler:
     - Prevents crawling noise while capturing related content
     """
 
-    def __init__(self, config: Optional[CrawlConfig] = None):
+    def __init__(self, config: CrawlConfig | None = None):
         self.config = config or CrawlConfig()
 
         # Tracking
-        self.visited_urls: Set[str] = set()
-        self.visited_hashes: Set[str] = set()  # Content deduplication
-        self.domain_counts: Dict[str, int] = {}
+        self.visited_urls: set[str] = set()
+        self.visited_hashes: set[str] = set()  # Content deduplication
+        self.domain_counts: dict[str, int] = {}
         self.pages_crawled: int = 0
-        self.start_time: Optional[datetime] = None
+        self.start_time: datetime | None = None
 
         # Queue of (LinkInfo, priority) tuples
         # Higher importance = higher priority
-        self.link_queue: List[Tuple[float, LinkInfo]] = []
+        self.link_queue: list[tuple[float, LinkInfo]] = []
 
         # Results
-        self.crawled_pages: List[Dict] = []
+        self.crawled_pages: list[dict] = []
 
     async def crawl(
         self,
         seed_url: str,
-        seed_topic: Optional[str] = None
-    ) -> List[Dict]:
+        seed_topic: str | None = None
+    ) -> list[dict]:
         """
         Start recursive crawl from seed URL.
 
@@ -196,7 +196,7 @@ class RecursiveCrawler:
         elapsed = (datetime.now() - self.start_time).total_seconds()
         logger.info("")
         logger.info("=" * 60)
-        logger.info(f"✓ Crawl complete!")
+        logger.info("✓ Crawl complete!")
         logger.info(f"  Pages crawled: {self.pages_crawled}")
         logger.info(f"  Max depth reached: {max((p['depth'] for p in self.crawled_pages), default=0)}")
         logger.info(f"  Domains visited: {len(self.domain_counts)}")
@@ -226,13 +226,13 @@ class RecursiveCrawler:
         domain = urlparse(link.url).netloc
 
         if self.config.same_domain_only and domain != self.seed_domain:
-            logger.debug(f"  ✗ Different domain")
+            logger.debug("  ✗ Different domain")
             return False
 
         # Check domain diversity
         domain_count = self.domain_counts.get(domain, 0)
         if domain_count >= self.config.max_pages_per_domain:
-            logger.debug(f"  ✗ Domain limit reached")
+            logger.debug("  ✗ Domain limit reached")
             return False
 
         # Check skip patterns
@@ -265,7 +265,7 @@ class RecursiveCrawler:
 
         return False
 
-    async def _crawl_page(self, link: LinkInfo) -> Optional[Dict]:
+    async def _crawl_page(self, link: LinkInfo) -> dict | None:
         """Crawl a single page."""
 
         try:
@@ -283,7 +283,7 @@ class RecursiveCrawler:
             shards = await spinner.spin({'url': link.url})
 
             if not shards:
-                logger.warning(f"  ✗ No content extracted")
+                logger.warning("  ✗ No content extracted")
                 return None
 
             # Calculate content hash for deduplication
@@ -291,7 +291,7 @@ class RecursiveCrawler:
             content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
 
             if content_hash in self.visited_hashes:
-                logger.info(f"  ✗ Duplicate content")
+                logger.info("  ✗ Duplicate content")
                 return None
 
             # Mark as visited
@@ -327,7 +327,7 @@ class RecursiveCrawler:
             logger.error(f"  ✗ Error: {e}")
             return None
 
-    async def _extract_and_queue_links(self, page_data: Dict, parent_link: LinkInfo):
+    async def _extract_and_queue_links(self, page_data: dict, parent_link: LinkInfo):
         """Extract links from page and add to queue."""
 
         # Get first shard for HTML content
@@ -391,7 +391,7 @@ class RecursiveCrawler:
         if queued > 0:
             logger.debug(f"  Queued {queued} links for depth {parent_link.depth + 1}")
 
-    def _score_links(self, links: List[LinkInfo], page_data: Dict) -> List[LinkInfo]:
+    def _score_links(self, links: list[LinkInfo], page_data: dict) -> list[LinkInfo]:
         """
         Score link importance/relevance.
 
@@ -462,7 +462,7 @@ class RecursiveCrawler:
             return text[:context_chars]
         return ""
 
-    def _detect_topic(self, shards: List) -> str:
+    def _detect_topic(self, shards: list) -> str:
         """Auto-detect topic from first page."""
         # Use title + first chunk
         title = shards[0].metadata.get('title', '')
@@ -489,11 +489,11 @@ class RecursiveCrawler:
 # Convenience function
 async def crawl_recursive(
     seed_url: str,
-    seed_topic: Optional[str] = None,
+    seed_topic: str | None = None,
     max_depth: int = 2,
     max_pages: int = 50,
     same_domain_only: bool = False
-) -> List[Dict]:
+) -> list[dict]:
     """
     Recursively crawl web content with importance gating.
 

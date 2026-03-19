@@ -1,8 +1,10 @@
-import numpy as np
 import math
 import random
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
+
 
 @dataclass
 class PerturbSpec:
@@ -27,14 +29,14 @@ class ThompsonSampler:
         # We assume rewards are normalized to [0, 1]
         self.stats = {arm: {'alpha': 1.0, 'beta': 1.0} for arm in self.arms}
 
-    def select_arm(self) -> Tuple[int, float]:
+    def select_arm(self) -> tuple[int, float]:
         """Sample from Beta distributions and pick the best arm."""
         samples = {}
         for arm, params in self.stats.items():
             samples[arm] = np.random.beta(params['alpha'], params['beta'])
         return max(samples, key=samples.get)
 
-    def update(self, arm: Tuple[int, float], reward: float):
+    def update(self, arm: tuple[int, float], reward: float):
         """Update Beta distribution for the arm."""
         # Clip reward to [0, 1] just in case
         r = max(0.0, min(1.0, reward))
@@ -46,7 +48,7 @@ class MCTSNode:
     def __init__(self, pattern: str, parent=None):
         self.pattern = pattern
         self.parent = parent
-        self.children: Dict[str, MCTSNode] = {}
+        self.children: dict[str, MCTSNode] = {}
         self.visits = 0
         self.value = 0.0
         self.untried_patterns = [
@@ -56,10 +58,10 @@ class MCTSNode:
     def uct_select_child(self, exploration_weight=1.41):
         """Select child with highest UCB1 score."""
         log_n = math.log(self.visits)
-        
+
         def ucb(node):
             return (node.value / node.visits) + exploration_weight * math.sqrt(log_n / node.visits)
-            
+
         return max(self.children.values(), key=ucb)
 
     def expand(self):
@@ -90,30 +92,30 @@ class MCTS:
         # 1. Selection & Expansion (Simulation)
         for _ in range(50):
             node = self.root
-            
+
             # Select
             while not node.untried_patterns and node.children:
                 node = node.uct_select_child()
-            
+
             # Expand
             if node.untried_patterns:
                 node = node.expand()
-            
+
             # Rollout (Simulation) - Random reward for simulation
             # In a real system, we might use a heuristic or value network
-            sim_reward = random.random() 
-            
+            sim_reward = random.random()
+
             # Backpropagate
             node.update(sim_reward)
-            
+
         # 2. Real Selection (Exploitation)
         # Choose child with most visits
         if not self.root.children:
              # Should not happen if we ran simulations, but fallback
              return random.choice(["balanced", "quality_first"])
-             
+
         best_child = max(self.root.children.values(), key=lambda n: n.visits)
-        
+
         # For the actual run, we don't move the root down yet (unless we want to commit to a path).
         # We just want to know which pattern looks best NOW.
         # But to support "Curriculum", we might want to track history.
@@ -137,7 +139,7 @@ class Shuttle:
     * Uses MCTS to select high-level strategies (Pattern Cards).
     * Allocates per-worker seeds.
     """
-    
+
     def __init__(self):
         self.ts_sampler = ThompsonSampler()
         self.mcts = MCTS()
@@ -151,24 +153,24 @@ class Shuttle:
         self.last_selected_pattern = self.mcts.select_next_pattern()
         return self.last_selected_pattern
 
-    def propose_perturbations(self, model_id: str, num_workers: int, yarn: Any = None) -> List[PerturbSpec]:
+    def propose_perturbations(self, model_id: str, num_workers: int, yarn: Any = None) -> list[PerturbSpec]:
         """
         Propose a batch of perturbations, potentially guided by Lineage Analysis.
         """
         specs = []
-        
+
         # Select hyperparameters for this batch using Thompson Sampling
         rank, scale = self.ts_sampler.select_arm()
         self.last_selected_arm = (rank, scale)
-        
+
         # Intelligent Targeting: If Yarn is provided, analyze the graph
         target_model_id = model_id
-        
+
         if yarn:
             try:
                 # 1. Find most central node (Exploitation)
                 central_node = yarn.analyze_lineage()
-                
+
                 # 2. Find "Stagnant" nodes (Exploration)
                 # Nodes with low reward but high centrality? Or just leaf nodes?
                 # For now, we mix strategies: 80% on current model, 20% on central model
@@ -186,7 +188,7 @@ class Shuttle:
             # Differential Evolution: Mutate the scale
             # We want diversity in step sizes
             worker_scale = self.de.mutate(scale)
-            
+
             # Create Spec
             spec = PerturbSpec(
                 seed_A=np.random.randint(0, 1000000),
@@ -195,10 +197,10 @@ class Shuttle:
                 scale=worker_scale
             )
             specs.append(spec)
-            
+
         return specs
 
-    def update_bandit(self, worker_results: List[Dict[str, Any]]):
+    def update_bandit(self, worker_results: list[dict[str, Any]]):
         """
         Update policies based on worker results.
         """
@@ -207,11 +209,11 @@ class Shuttle:
 
         # Average reward for this batch
         avg_reward = np.mean([r['reward'] for r in worker_results])
-        
+
         # Update Thompson Sampler
         if self.last_selected_arm:
             self.ts_sampler.update(self.last_selected_arm, avg_reward)
-            
+
         # Update MCTS
         if self.last_selected_pattern:
             self.mcts.update(self.last_selected_pattern, avg_reward)

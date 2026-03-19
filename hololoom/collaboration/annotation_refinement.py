@@ -9,12 +9,13 @@ Phase 3: Collaborative Intelligence - MRF Integration.
 Created: December 2025
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Tuple
 import logging
 import re
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class RefinementStrategy(Enum):
 
 
 # Default strategy mapping by annotation type
-ANNOTATION_STRATEGY_MAP: Dict[AnnotationType, RefinementStrategy] = {
+ANNOTATION_STRATEGY_MAP: dict[AnnotationType, RefinementStrategy] = {
     AnnotationType.NOTE: RefinementStrategy.ELEGANCE,
     AnnotationType.QUESTION: RefinementStrategy.VERIFY,
     AnnotationType.INSIGHT: RefinementStrategy.CRITIQUE,
@@ -78,7 +79,7 @@ class RefinementSuggestion:
         else:
             return self.confidence * 0.6  # Major rewrite
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "original_text": self.original_text,
             "refined_text": self.refined_text,
@@ -98,13 +99,13 @@ class RefinementResult:
     annotation_type: AnnotationType
     original_text: str
     final_text: str
-    suggestions: List[RefinementSuggestion]
+    suggestions: list[RefinementSuggestion]
     strategy_used: RefinementStrategy
     total_passes: int
     quality_before: float  # 0.0-1.0
     quality_after: float   # 0.0-1.0
     refinement_time_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def quality_improvement(self) -> float:
@@ -116,13 +117,13 @@ class RefinementResult:
         """Check if refinement improved the annotation."""
         return self.quality_after > self.quality_before
 
-    def best_suggestion(self) -> Optional[RefinementSuggestion]:
+    def best_suggestion(self) -> RefinementSuggestion | None:
         """Get highest confidence suggestion."""
         if not self.suggestions:
             return None
         return max(self.suggestions, key=lambda s: s.confidence)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "annotation_id": self.annotation_id,
             "annotation_type": self.annotation_type.value,
@@ -177,7 +178,7 @@ class AnnotationQualityScorer:
             r'\b(key|important|critical|essential)\b',
         ]
 
-    def score(self, text: str, annotation_type: AnnotationType) -> Dict[str, float]:
+    def score(self, text: str, annotation_type: AnnotationType) -> dict[str, float]:
         """
         Score annotation on multiple quality dimensions.
 
@@ -346,7 +347,7 @@ class AnnotationQualityScorer:
 
         return max(0.0, min(1.0, score))
 
-    def _get_weights(self, annotation_type: AnnotationType) -> Dict[str, float]:
+    def _get_weights(self, annotation_type: AnnotationType) -> dict[str, float]:
         """Get dimension weights by annotation type."""
         weights = {
             AnnotationType.NOTE: {
@@ -391,8 +392,8 @@ class AnnotationRefiner:
 
     def __init__(
         self,
-        scorer: Optional[AnnotationQualityScorer] = None,
-        strategy_map: Optional[Dict[AnnotationType, RefinementStrategy]] = None,
+        scorer: AnnotationQualityScorer | None = None,
+        strategy_map: dict[AnnotationType, RefinementStrategy] | None = None,
         enable_learning: bool = True
     ):
         self.scorer = scorer or AnnotationQualityScorer()
@@ -400,11 +401,11 @@ class AnnotationRefiner:
         self.enable_learning = enable_learning
 
         # Learning: track which refinements are accepted
-        self.refinement_history: List[Dict[str, Any]] = []
-        self.strategy_success_rates: Dict[str, Dict[str, float]] = {}
+        self.refinement_history: list[dict[str, Any]] = []
+        self.strategy_success_rates: dict[str, dict[str, float]] = {}
 
         # Refinement handlers by strategy
-        self._strategy_handlers: Dict[RefinementStrategy, Callable] = {
+        self._strategy_handlers: dict[RefinementStrategy, Callable] = {
             RefinementStrategy.ELEGANCE: self._apply_elegance,
             RefinementStrategy.VERIFY: self._apply_verify,
             RefinementStrategy.CRITIQUE: self._apply_critique,
@@ -417,8 +418,8 @@ class AnnotationRefiner:
         annotation_id: str,
         text: str,
         annotation_type: AnnotationType,
-        context: Optional[Dict[str, Any]] = None,
-        strategy: Optional[RefinementStrategy] = None,
+        context: dict[str, Any] | None = None,
+        strategy: RefinementStrategy | None = None,
         max_passes: int = 3
     ) -> RefinementResult:
         """
@@ -490,9 +491,9 @@ class AnnotationRefiner:
         self,
         text: str,
         annotation_type: AnnotationType,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         max_passes: int
-    ) -> Tuple[List[RefinementSuggestion], str]:
+    ) -> tuple[list[RefinementSuggestion], str]:
         """
         ELEGANCE strategy: Clarity -> Simplicity -> Beauty
 
@@ -533,9 +534,9 @@ class AnnotationRefiner:
         self,
         text: str,
         annotation_type: AnnotationType,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         max_passes: int
-    ) -> Tuple[List[RefinementSuggestion], str]:
+    ) -> tuple[list[RefinementSuggestion], str]:
         """
         VERIFY strategy: Accuracy -> Completeness -> Consistency
 
@@ -580,9 +581,9 @@ class AnnotationRefiner:
         self,
         text: str,
         annotation_type: AnnotationType,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         max_passes: int
-    ) -> Tuple[List[RefinementSuggestion], str]:
+    ) -> tuple[list[RefinementSuggestion], str]:
         """
         CRITIQUE strategy: Challenge assumptions (single pass)
 
@@ -617,9 +618,9 @@ class AnnotationRefiner:
         self,
         text: str,
         annotation_type: AnnotationType,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         max_passes: int
-    ) -> Tuple[List[RefinementSuggestion], str]:
+    ) -> tuple[list[RefinementSuggestion], str]:
         """
         REFINE strategy: Iterative expansion and improvement.
 
@@ -659,9 +660,9 @@ class AnnotationRefiner:
         self,
         text: str,
         annotation_type: AnnotationType,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         max_passes: int
-    ) -> Tuple[List[RefinementSuggestion], str]:
+    ) -> tuple[list[RefinementSuggestion], str]:
         """
         HOFSTADTER strategy: Recursive self-reference and meta-analysis.
 
@@ -707,7 +708,7 @@ class AnnotationRefiner:
 
     # --- Helper methods for refinement passes ---
 
-    def _clarity_pass(self, text: str, annotation_type: AnnotationType) -> Tuple[str, Optional[RefinementSuggestion]]:
+    def _clarity_pass(self, text: str, annotation_type: AnnotationType) -> tuple[str, RefinementSuggestion | None]:
         """Improve clarity by removing ambiguity."""
         refined = text
         changes = []
@@ -740,7 +741,7 @@ class AnnotationRefiner:
 
         return text, None
 
-    def _simplicity_pass(self, text: str, annotation_type: AnnotationType) -> Tuple[str, Optional[RefinementSuggestion]]:
+    def _simplicity_pass(self, text: str, annotation_type: AnnotationType) -> tuple[str, RefinementSuggestion | None]:
         """Simplify by removing unnecessary words."""
         refined = text
         changes = []
@@ -784,7 +785,7 @@ class AnnotationRefiner:
 
         return text, None
 
-    def _polish_pass(self, text: str, annotation_type: AnnotationType) -> Tuple[str, Optional[RefinementSuggestion]]:
+    def _polish_pass(self, text: str, annotation_type: AnnotationType) -> tuple[str, RefinementSuggestion | None]:
         """Polish for flow and rhythm."""
         refined = text
         changes = []
@@ -815,7 +816,7 @@ class AnnotationRefiner:
 
         return text, None
 
-    def _verify_question(self, text: str) -> Tuple[str, Optional[RefinementSuggestion]]:
+    def _verify_question(self, text: str) -> tuple[str, RefinementSuggestion | None]:
         """Verify question is well-formed and answerable."""
         refined = text
         issues = []
@@ -844,7 +845,7 @@ class AnnotationRefiner:
 
         return text, None
 
-    def _verify_accuracy(self, text: str, annotation_type: AnnotationType) -> Tuple[str, Optional[RefinementSuggestion]]:
+    def _verify_accuracy(self, text: str, annotation_type: AnnotationType) -> tuple[str, RefinementSuggestion | None]:
         """Verify accuracy of claims."""
         # For now, just flag absolute claims that may need hedging
         absolute_words = re.findall(r'\b(always|never|all|none|every|no one|everyone)\b', text.lower())
@@ -865,7 +866,7 @@ class AnnotationRefiner:
 
         return text, None
 
-    def _completeness_pass(self, text: str, annotation_type: AnnotationType) -> Tuple[str, Optional[RefinementSuggestion]]:
+    def _completeness_pass(self, text: str, annotation_type: AnnotationType) -> tuple[str, RefinementSuggestion | None]:
         """Check for completeness."""
         word_count = len(text.split())
 
@@ -883,7 +884,7 @@ class AnnotationRefiner:
 
         return text, None
 
-    def _consistency_pass(self, text: str, annotation_type: AnnotationType) -> Tuple[str, Optional[RefinementSuggestion]]:
+    def _consistency_pass(self, text: str, annotation_type: AnnotationType) -> tuple[str, RefinementSuggestion | None]:
         """Check internal consistency."""
         # Look for contradictions
         contradictions = [
@@ -911,7 +912,7 @@ class AnnotationRefiner:
 
         return text, None
 
-    def _identify_assumptions(self, text: str) -> List[str]:
+    def _identify_assumptions(self, text: str) -> list[str]:
         """Identify unstated assumptions in text."""
         assumptions = []
 
@@ -943,7 +944,7 @@ class AnnotationRefiner:
             return text
         return text
 
-    def _expand_annotation(self, text: str, annotation_type: AnnotationType, context: Dict[str, Any]) -> str:
+    def _expand_annotation(self, text: str, annotation_type: AnnotationType, context: dict[str, Any]) -> str:
         """Expand a brief annotation with context."""
         node_name = context.get("node_name", "this concept")
 
@@ -954,7 +955,7 @@ class AnnotationRefiner:
 
         return text
 
-    def _meta_analyze(self, text: str, annotation_type: AnnotationType) -> Optional[str]:
+    def _meta_analyze(self, text: str, annotation_type: AnnotationType) -> str | None:
         """Generate meta-analysis of the annotation."""
         word_count = len(text.split())
 
@@ -970,7 +971,7 @@ class AnnotationRefiner:
 
         return None
 
-    def _find_implicit_relationships(self, text: str, context: Dict[str, Any]) -> List[str]:
+    def _find_implicit_relationships(self, text: str, context: dict[str, Any]) -> list[str]:
         """Find implicit relationships in connection annotations."""
         implicit = []
 
@@ -1004,11 +1005,11 @@ class AnnotationRefiner:
         if len(self.refinement_history) > 1000:
             self.refinement_history = self.refinement_history[-500:]
 
-    def get_strategy_effectiveness(self) -> Dict[str, Dict[str, float]]:
+    def get_strategy_effectiveness(self) -> dict[str, dict[str, float]]:
         """Calculate effectiveness of each strategy by annotation type."""
         from collections import defaultdict
 
-        stats: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: defaultdict(list))
+        stats: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
 
         for record in self.refinement_history:
             key = f"{record['annotation_type']}_{record['strategy']}"
@@ -1025,7 +1026,7 @@ class AnnotationRefiner:
 
         return effectiveness
 
-    def suggest_strategy(self, annotation_type: AnnotationType, context: Optional[Dict[str, Any]] = None) -> RefinementStrategy:
+    def suggest_strategy(self, annotation_type: AnnotationType, context: dict[str, Any] | None = None) -> RefinementStrategy:
         """
         Suggest best strategy based on learning history.
 
@@ -1049,7 +1050,7 @@ class AnnotationRefiner:
 # Factory functions
 def create_annotation_refiner(
     enable_learning: bool = True,
-    custom_strategy_map: Optional[Dict[AnnotationType, RefinementStrategy]] = None
+    custom_strategy_map: dict[AnnotationType, RefinementStrategy] | None = None
 ) -> AnnotationRefiner:
     """Create an annotation refiner with MRF strategies."""
     return AnnotationRefiner(

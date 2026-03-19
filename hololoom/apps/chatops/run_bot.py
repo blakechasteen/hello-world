@@ -16,18 +16,17 @@ Usage:
     python run_bot.py --homeserver https://matrix.org --user @bot:matrix.org
 """
 
-import asyncio
 import argparse
+import asyncio
 import logging
-import sys
 import os
-from pathlib import Path
+import sys
 
 # Add HoloLoom to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from matrix_bot import MatrixBot, MatrixBotConfig
 from hololoom_handlers import HoloLoomMatrixHandlers
+from matrix_bot import MatrixBot, MatrixBotConfig
 
 
 def setup_logging(level: str = "INFO"):

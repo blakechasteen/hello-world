@@ -5,12 +5,11 @@ Extends PromptlyDB to provide workflow-specific versioning, branching, and
 diffing capabilities for prompt workflows and execution pipelines.
 """
 
-import json
 import hashlib
+import json
 import sqlite3
-from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Any
 
 
 class WorkflowStore:
@@ -85,7 +84,7 @@ class WorkflowStore:
 
         conn.commit()
 
-    def _generate_commit_hash(self, workflow_dict: Dict) -> str:
+    def _generate_commit_hash(self, workflow_dict: dict) -> str:
         """
         Generate commit hash from workflow dictionary.
 
@@ -103,7 +102,7 @@ class WorkflowStore:
     def save_workflow(
         self,
         name: str,
-        workflow_dict: Dict,
+        workflow_dict: dict,
         branch: str = "main",
         message: str = "",
     ) -> str:
@@ -186,9 +185,9 @@ class WorkflowStore:
     def get_workflow(
         self,
         name: str,
-        version: Optional[int] = None,
+        version: int | None = None,
         branch: str = "main",
-    ) -> Optional[Dict]:
+    ) -> dict | None:
         """
         Retrieve a workflow by name and optional version.
 
@@ -238,7 +237,7 @@ class WorkflowStore:
 
         return workflow_dict
 
-    def list_workflows(self, branch: str = "main") -> List[Dict]:
+    def list_workflows(self, branch: str = "main") -> list[dict]:
         """
         List all workflows on a specific branch.
 
@@ -284,7 +283,7 @@ class WorkflowStore:
         """
         # Get source workflow
         source = self.get_workflow(name, branch=from_branch)
-        if not source is None and "_metadata" in source:
+        if source is not None and "_metadata" in source:
             del source["_metadata"]
 
         if source is None:
@@ -325,7 +324,7 @@ class WorkflowStore:
 
     def diff_workflows(
         self, name: str, version1: int, version2: int, branch: str = "main"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compare two workflow versions and return differences.
 

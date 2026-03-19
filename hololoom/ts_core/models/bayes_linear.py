@@ -27,9 +27,10 @@ Example:
     ...     sampler.update(query.context, action, reward)
 """
 
+from typing import Literal
+
 import numpy as np
 import numpy.typing as npt
-from typing import Literal
 
 
 class BayesianLinearTS:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Knowledge Graph Department - Graph construction, reasoning, evolution, and verification.
 
@@ -31,18 +30,15 @@ Performance:
 - Verification: <100ms
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Set, Tuple
-from enum import Enum
-import asyncio
-import uuid
 import re
-from datetime import datetime
 from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 from hololoom.apps.departments.base import BaseDepartment, DepartmentRequest, DepartmentResponse
 from hololoom.memory.graph import KG, KGEdge
-
 
 # ============================================================================
 # Data Structures
@@ -89,22 +85,22 @@ class Triple:
     predicate: str
     object: str
     weight: float = 1.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class GraphQuery:
     """A graph query for pattern matching."""
-    pattern: List[Triple]  # Pattern to match (can have wildcards)
-    constraints: Dict[str, Any] = field(default_factory=dict)
+    pattern: list[Triple]  # Pattern to match (can have wildcards)
+    constraints: dict[str, Any] = field(default_factory=dict)
     max_results: int = 10
 
 
 @dataclass
 class GraphPath:
     """A path through the knowledge graph."""
-    entities: List[str]
-    relations: List[str]
+    entities: list[str]
+    relations: list[str]
     total_weight: float
     hops: int
 
@@ -112,9 +108,9 @@ class GraphPath:
 @dataclass
 class Subgraph:
     """A subgraph extracted from the knowledge graph."""
-    entities: Set[str]
-    edges: List[KGEdge]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    entities: set[str]
+    edges: list[KGEdge]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -122,9 +118,9 @@ class EvolutionRecord:
     """Record of a graph evolution operation."""
     operation: EvolutionOperation
     timestamp: float
-    details: Dict[str, Any]
+    details: dict[str, Any]
     success: bool
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 
 @dataclass
@@ -132,9 +128,9 @@ class ConsistencyViolation:
     """A consistency violation in the knowledge graph."""
     violation_type: ConsistencyViolationType
     description: str
-    entities_involved: List[str]
+    entities_involved: list[str]
     severity: float  # 0.0-1.0
-    suggested_fix: Optional[str] = None
+    suggested_fix: str | None = None
 
 
 @dataclass
@@ -142,7 +138,7 @@ class VerificationReport:
     """Report of graph verification."""
     is_consistent: bool
     consistency_score: float  # 0.0-1.0
-    violations: List[ConsistencyViolation]
+    violations: list[ConsistencyViolation]
     num_entities: int
     num_relations: int
     timestamp: float = field(default_factory=lambda: datetime.now().timestamp())
@@ -210,7 +206,7 @@ class GraphConstructor:
 
         return kg
 
-    def extract_triples(self, text: str) -> List[Triple]:
+    def extract_triples(self, text: str) -> list[Triple]:
         """
         Extract triples from text.
 
@@ -225,7 +221,7 @@ class GraphConstructor:
         else:
             return self._extract_triples_regex(text)
 
-    def _extract_triples_spacy(self, text: str) -> List[Triple]:
+    def _extract_triples_spacy(self, text: str) -> list[Triple]:
         """Extract triples using spaCy."""
         doc = self._nlp(text)
         triples = []
@@ -292,7 +288,7 @@ class GraphConstructor:
         phrase = "_".join(t.text.lower() for t in phrase_tokens)
         return phrase
 
-    def _extract_triples_regex(self, text: str) -> List[Triple]:
+    def _extract_triples_regex(self, text: str) -> list[Triple]:
         """Extract triples using regex patterns (fallback)."""
         triples = []
 
@@ -376,7 +372,7 @@ class GraphReasoner:
         end_entity: str,
         max_hops: int = 5,
         max_paths: int = 10
-    ) -> List[GraphPath]:
+    ) -> list[GraphPath]:
         """
         Find paths between two entities.
 
@@ -435,7 +431,7 @@ class GraphReasoner:
     def extract_subgraph(
         self,
         kg: KG,
-        seed_entities: List[str],
+        seed_entities: list[str],
         max_hops: int = 2,
         min_weight: float = 0.5
     ) -> Subgraph:
@@ -498,7 +494,7 @@ class GraphReasoner:
             }
         )
 
-    def query_graph(self, kg: KG, query: GraphQuery) -> List[Dict[str, Any]]:
+    def query_graph(self, kg: KG, query: GraphQuery) -> list[dict[str, Any]]:
         """
         Query graph with pattern matching.
 
@@ -550,7 +546,7 @@ class GraphReasoner:
             return False
         return True
 
-    def find_communities(self, kg: KG, min_community_size: int = 3) -> List[Set[str]]:
+    def find_communities(self, kg: KG, min_community_size: int = 3) -> list[set[str]]:
         """
         Find communities (clusters) of related entities.
 
@@ -625,9 +621,9 @@ class GraphEvolver:
         """
         self.prune_threshold = prune_threshold
         self.max_history = max_history
-        self._evolution_history: List[EvolutionRecord] = []
+        self._evolution_history: list[EvolutionRecord] = []
 
-    def add_entity(self, kg: KG, entity: str, metadata: Optional[Dict[str, Any]] = None) -> EvolutionRecord:
+    def add_entity(self, kg: KG, entity: str, metadata: dict[str, Any] | None = None) -> EvolutionRecord:
         """Add entity to graph."""
         # KG automatically adds entities when edges are added
         # Record operation
@@ -647,7 +643,7 @@ class GraphEvolver:
         predicate: str,
         obj: str,
         weight: float = 1.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> EvolutionRecord:
         """Add relation to graph."""
         try:
@@ -824,7 +820,7 @@ class GraphEvolver:
         self._record_evolution(record)
         return record
 
-    def get_evolution_history(self, limit: int = 10) -> List[EvolutionRecord]:
+    def get_evolution_history(self, limit: int = 10) -> list[EvolutionRecord]:
         """Get recent evolution history."""
         return self._evolution_history[-limit:]
 
@@ -901,7 +897,7 @@ class GraphVerifier:
             num_relations=num_relations
         )
 
-    def _check_duplicate_entities(self, kg: KG) -> List[ConsistencyViolation]:
+    def _check_duplicate_entities(self, kg: KG) -> list[ConsistencyViolation]:
         """Check for duplicate entities."""
         violations = []
         entities = kg.get_all_entities()
@@ -923,7 +919,7 @@ class GraphVerifier:
 
         return violations
 
-    def _check_conflicting_relations(self, kg: KG) -> List[ConsistencyViolation]:
+    def _check_conflicting_relations(self, kg: KG) -> list[ConsistencyViolation]:
         """Check for conflicting relations."""
         violations = []
         all_edges = kg.get_all_edges()
@@ -949,13 +945,13 @@ class GraphVerifier:
                             description=f"Multiple relations between '{source}' and '{target}': {relations}",
                             entities_involved=[source, target],
                             severity=0.3,
-                            suggested_fix=f"Review and consolidate relations"
+                            suggested_fix="Review and consolidate relations"
                         )
                     )
 
         return violations
 
-    def _check_circular_dependencies(self, kg: KG) -> List[ConsistencyViolation]:
+    def _check_circular_dependencies(self, kg: KG) -> list[ConsistencyViolation]:
         """Check for circular dependencies."""
         violations = []
 
@@ -974,7 +970,7 @@ class GraphVerifier:
                             description=f"Circular dependency: '{edge.source}' -{edge.relation_type}-> '{edge.target}' and reverse",
                             entities_involved=[edge.source, edge.target],
                             severity=0.7,
-                            suggested_fix=f"Remove one of the edges or change relation type"
+                            suggested_fix="Remove one of the edges or change relation type"
                         )
                     )
 
@@ -1017,11 +1013,11 @@ class KnowledgeGraphDepartment(BaseDepartment):
     def __init__(
         self,
         registry = None,
-        knowledge_graph: Optional[KG] = None,
-        graph_constructor: Optional[GraphConstructor] = None,
-        graph_reasoner: Optional[GraphReasoner] = None,
-        graph_evolver: Optional[GraphEvolver] = None,
-        graph_verifier: Optional[GraphVerifier] = None
+        knowledge_graph: KG | None = None,
+        graph_constructor: GraphConstructor | None = None,
+        graph_reasoner: GraphReasoner | None = None,
+        graph_evolver: GraphEvolver | None = None,
+        graph_verifier: GraphVerifier | None = None
     ):
         """
         Initialize Knowledge Graph Department.
@@ -1103,7 +1099,7 @@ class KnowledgeGraphDepartment(BaseDepartment):
                 error_message=str(e)
             )
 
-    async def verify(self, request: DepartmentRequest, result: Any) -> Tuple[bool, float, str]:
+    async def verify(self, request: DepartmentRequest, result: Any) -> tuple[bool, float, str]:
         """
         Verify knowledge graph result quality.
 
@@ -1185,7 +1181,7 @@ class KnowledgeGraphDepartment(BaseDepartment):
     # Task Execution Methods
     # ========================================================================
 
-    async def _execute_construct_graph(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_construct_graph(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute graph construction task."""
         text = params.get("text", "")
         merge_with_existing = params.get("merge_with_existing", True)
@@ -1212,7 +1208,7 @@ class KnowledgeGraphDepartment(BaseDepartment):
             "confidence": min(1.0, (num_entities + num_relations) / 20)
         }
 
-    async def _execute_find_paths(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_find_paths(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute path finding task."""
         start_entity = params.get("start_entity")
         end_entity = params.get("end_entity")
@@ -1244,7 +1240,7 @@ class KnowledgeGraphDepartment(BaseDepartment):
             "confidence": min(1.0, len(paths) / 5)
         }
 
-    async def _execute_extract_subgraph(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_extract_subgraph(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute subgraph extraction task."""
         seed_entities = params.get("seed_entities", [])
         max_hops = params.get("max_hops", 2)
@@ -1268,7 +1264,7 @@ class KnowledgeGraphDepartment(BaseDepartment):
             "confidence": 0.8
         }
 
-    async def _execute_query_graph(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_query_graph(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute graph query task."""
         pattern = params.get("pattern", [])
         max_results = params.get("max_results", 10)
@@ -1293,7 +1289,7 @@ class KnowledgeGraphDepartment(BaseDepartment):
             "confidence": min(1.0, len(results) / max_results)
         }
 
-    async def _execute_evolve_graph(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_evolve_graph(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute graph evolution task."""
         operation = params.get("operation")
 
@@ -1325,7 +1321,7 @@ class KnowledgeGraphDepartment(BaseDepartment):
             "confidence": 0.9 if record.success else 0.0
         }
 
-    async def _execute_verify_graph(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_verify_graph(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute graph verification task."""
         report = self.graph_verifier.verify(self.knowledge_graph)
 
@@ -1351,7 +1347,7 @@ class KnowledgeGraphDepartment(BaseDepartment):
     # Health Monitoring
     # ========================================================================
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Check department health."""
         success_rate = (
             self._successful_tasks / self._total_tasks

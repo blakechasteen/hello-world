@@ -27,7 +27,7 @@ class SafetyGateMiddleware:
         self._guardrails = safety_guardrails
 
     async def __call__(self, ctx: GovernanceContext, next: NextFn) -> GovernanceContext:
-        from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+        from hololoom.alignment.safety_guardrails import ActionCategory, ActionRequest
 
         has_code_context = bool(ctx.request_metadata.get("has_code_context"))
 

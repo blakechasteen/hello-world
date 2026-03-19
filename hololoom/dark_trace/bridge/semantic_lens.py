@@ -14,29 +14,27 @@ Research Basis:
 - 16 standard dimensions + 228 extended (narrative, emotional, archetypal, etc.)
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Callable
+from collections.abc import Callable
+from dataclasses import dataclass
+
 import numpy as np
 import torch
 
 from hololoom.dark_trace.protocol import (
-    TraceLens,
     BaseLens,
-    LensType,
     Feature,
-    FeatureSource,
     FeatureActivation,
+    LensType,
     SteeringVector,
-    SafetyFlag,
 )
 
 # Import semantic dimensions
 try:
     from hololoom.semantic_calculus.dimensions import (
+        EXTENDED_244_DIMENSIONS,
+        STANDARD_DIMENSIONS,
         SemanticDimension,
         SemanticSpectrum,
-        STANDARD_DIMENSIONS,
-        EXTENDED_244_DIMENSIONS,
     )
     SEMANTIC_AVAILABLE = True
 except ImportError:
@@ -98,9 +96,9 @@ class SemanticLens(BaseLens):
 
     def __init__(
         self,
-        embed_fn: Optional[Callable] = None,
+        embed_fn: Callable | None = None,
         input_dim: int = 384,
-        config: Optional[SemanticLensConfig] = None,
+        config: SemanticLensConfig | None = None,
         name: str = "SemanticLens",
     ):
         """
@@ -140,7 +138,7 @@ class SemanticLens(BaseLens):
         self._axes_learned = False
 
         # Projection matrix (learned from axes)
-        self._projection_matrix: Optional[torch.Tensor] = None
+        self._projection_matrix: torch.Tensor | None = None
 
         # Register semantic features
         if self.config.register_features:
@@ -157,7 +155,7 @@ class SemanticLens(BaseLens):
             )
             self.register_feature(feature)
 
-    def learn_axes(self, embed_fn: Optional[Callable] = None) -> None:
+    def learn_axes(self, embed_fn: Callable | None = None) -> None:
         """
         Learn semantic axes from exemplar words.
 
@@ -249,8 +247,8 @@ class SemanticLens(BaseLens):
         self,
         activations: torch.Tensor,
         threshold: float = 0.0,
-        top_k: Optional[int] = None,
-    ) -> List[FeatureActivation]:
+        top_k: int | None = None,
+    ) -> list[FeatureActivation]:
         """
         Get active semantic dimensions above threshold.
 
@@ -313,8 +311,8 @@ class SemanticLens(BaseLens):
 
     def steer(
         self,
-        goals: Dict[str, float],
-        input_dim: Optional[int] = None,
+        goals: dict[str, float],
+        input_dim: int | None = None,
     ) -> SteeringVector:
         """
         Generate steering vector from semantic goals.
@@ -369,7 +367,7 @@ class SemanticLens(BaseLens):
         self,
         activations: torch.Tensor,
         verbosity: int = 1,
-        include_features: Optional[List[str]] = None,
+        include_features: list[str] | None = None,
     ) -> str:
         """
         Generate human-readable explanation of semantic activations.
@@ -434,18 +432,18 @@ class SemanticLens(BaseLens):
     # Additional Methods
     # =========================================================================
 
-    def get_dimension_names(self) -> List[str]:
+    def get_dimension_names(self) -> list[str]:
         """Get list of all dimension names."""
         return [dim.name for dim in self._dimensions]
 
-    def get_dimension(self, name: str) -> Optional[SemanticDimension]:
+    def get_dimension(self, name: str) -> SemanticDimension | None:
         """Get a semantic dimension by name."""
         for dim in self._dimensions:
             if dim.name == name:
                 return dim
         return None
 
-    def project_to_dict(self, activations: torch.Tensor) -> Dict[str, float]:
+    def project_to_dict(self, activations: torch.Tensor) -> dict[str, float]:
         """
         Project activations and return as dimension-name dict.
 
@@ -470,7 +468,7 @@ class SemanticLens(BaseLens):
         self,
         activations1: torch.Tensor,
         activations2: torch.Tensor,
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> dict[str, dict[str, float]]:
         """
         Compare semantic projections of two activations.
 
@@ -493,7 +491,7 @@ class SemanticLens(BaseLens):
             "difference": diff,
         }
 
-    def get_axes_tensor(self) -> Optional[torch.Tensor]:
+    def get_axes_tensor(self) -> torch.Tensor | None:
         """Get the learned axes as a tensor [n_dims, input_dim]."""
         return self._projection_matrix
 
@@ -517,7 +515,7 @@ class SemanticLens(BaseLens):
 
 
 def create_semantic_lens(
-    embed_fn: Optional[Callable] = None,
+    embed_fn: Callable | None = None,
     input_dim: int = 384,
     use_extended: bool = False,
 ) -> SemanticLens:

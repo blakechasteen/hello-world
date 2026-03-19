@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Workflow Evaluation Demo
 ========================
@@ -15,16 +14,15 @@ Created: 2025-12-23
 
 import asyncio
 import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from workflow_evaluation import (
+    ABTestConfig,
+    ABTestRunner,
+    BenchmarkDataset,
     WorkflowEvaluator,
     WorkflowVersionControl,
-    ABTestRunner,
-    ABTestConfig,
-    BenchmarkDataset,
-    TestCase
 )
 
 
@@ -53,7 +51,7 @@ async def evaluate_single_workflow(evaluator, workflow, test_cases, workflow_nam
 
     report = await evaluator.evaluate_workflow(workflow, test_cases, parallel=True)
 
-    print(f"\n[Results]")
+    print("\n[Results]")
     print(f"   Success Rate: {report.success_rate:.1%}")
     print(f"   Avg Latency: {report.avg_latency_ms:.1f}ms")
     print(f"   P95 Latency: {report.p95_latency_ms:.1f}ms")
@@ -80,7 +78,7 @@ async def run_ab_test(runner, workflow_a, workflow_b, test_cases):
 
     result = await runner.run_test(config)
 
-    print(f"\n[A/B Test Results]")
+    print("\n[A/B Test Results]")
     print(f"   Samples A: {result.samples_a}, Samples B: {result.samples_b}")
     print(f"   Latency A: {result.latency_a_avg:.1f}ms, B: {result.latency_b_avg:.1f}ms ({result.latency_improvement:+.1f}%)")
     print(f"   Confidence A: {result.confidence_a_avg:.3f}, B: {result.confidence_b_avg:.3f} ({result.confidence_improvement:+.1f}%)")
@@ -115,7 +113,7 @@ async def demo_version_control(workflows):
     # Create experiment branch for one workflow
     if 'ensemble_decision_maker' in workflows:
         vcs.create_branch('ensemble_decision_maker', 'experiment')
-        print(f"[branch] Created 'experiment' for ensemble_decision_maker")
+        print("[branch] Created 'experiment' for ensemble_decision_maker")
 
         # Modify and commit to experiment branch
         modified_workflow = json.loads(json.dumps(workflows['ensemble_decision_maker']))
@@ -137,7 +135,7 @@ async def demo_version_control(workflows):
 
         # Show diff
         diff = vcs.diff(versions['ensemble_decision_maker'].version_id, v2.version_id)
-        print(f"\n[Diff] main -> experiment:")
+        print("\n[Diff] main -> experiment:")
         print(f"   Added nodes: {len(diff['nodes']['added'])}")
         print(f"   Removed nodes: {len(diff['nodes']['removed'])}")
         print(f"   Modified nodes: {len(diff['nodes']['modified'])}")
@@ -172,7 +170,7 @@ async def main():
 
     all_tests = factual_tests + complex_tests + adversarial_tests
 
-    print(f"\n[Benchmark Dataset]")
+    print("\n[Benchmark Dataset]")
     print(f"   Factual Q&A: {len(factual_tests)} tests")
     print(f"   Complex Reasoning: {len(complex_tests)} tests")
     print(f"   Adversarial: {len(adversarial_tests)} tests")

@@ -30,21 +30,21 @@ Author: Claude Code
 Date: January 2025
 """
 
+import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Dict, Any, Optional
-import time
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.ocr_backends import get_all_available_backends
+from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities,
     ImportanceScore,
-    ImportanceSignals
+    ImportanceSignals,
+    SpinnerCapabilities,
+    SpinResult,
 )
-from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
-from hololoom.spinningWheel.ocr_backends import get_all_available_backends
 
 
 @dataclass
@@ -118,7 +118,7 @@ class ImageSpinner(BaseSpinner):
         self,
         source: Any,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Extract text from image(s).
 
@@ -237,7 +237,7 @@ class ImageSpinner(BaseSpinner):
                 format=img.format or 'unknown',
                 mode=img.mode
             )
-        except Exception as e:
+        except Exception:
             # Fallback metadata
             return ImageMetadata(
                 file_path=image_path,
@@ -319,7 +319,7 @@ class ImageSpinner(BaseSpinner):
             reason=reason
         )
 
-    async def _enrich_content(self, text: str) -> tuple[List[str], List[str]]:
+    async def _enrich_content(self, text: str) -> tuple[list[str], list[str]]:
         """
         Extract entities and motifs using Ollama.
 

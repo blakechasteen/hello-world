@@ -16,16 +16,13 @@ Date: November 2025
 """
 
 import asyncio
-from typing import Dict, Any, List, Optional
-from datetime import datetime
 
-from hololoom.apps.departments.protocol import DepartmentRequest, DepartmentResponse
-from hololoom.apps.departments.rag_department import RAGDepartment
-from hololoom.apps.departments.planning_department import PlanningDepartment
-from hololoom.apps.departments.orchestration_department import OrchestrationDepartment
-from hololoom.apps.departments.infrastructure_department import InfrastructureDepartment
 from hololoom.apps.departments.context_department import ContextDepartment
-
+from hololoom.apps.departments.infrastructure_department import InfrastructureDepartment
+from hololoom.apps.departments.orchestration_department import OrchestrationDepartment
+from hololoom.apps.departments.planning_department import PlanningDepartment
+from hololoom.apps.departments.protocol import DepartmentRequest
+from hololoom.apps.departments.rag_department import RAGDepartment
 
 # ===== Workflow 1: Research & Analysis Pipeline =====
 
@@ -468,7 +465,7 @@ async def monitoring_scaling_workflow_example():
     monitor_response = await infrastructure_dept.execute(monitor_request)
     metrics = monitor_response.result["metrics"]
 
-    print(f"[+] Resources monitored:")
+    print("[+] Resources monitored:")
     print(f"  CPU: {metrics['cpu_percent']:.1f}%")
     print(f"  Memory: {metrics['memory_percent']:.1f}%")
     print(f"  Disk: {metrics['disk_percent']:.1f}%")
@@ -485,7 +482,7 @@ async def monitoring_scaling_workflow_example():
     perf_response = await infrastructure_dept.execute(perf_request)
     analysis = perf_response.result
 
-    print(f"[+] Performance analysis:")
+    print("[+] Performance analysis:")
     print(f"  Latency p95: {analysis.get('latency_p95', 0):.1f}ms")
     print(f"  Error rate: {analysis.get('error_rate', 0):.2%}")
 

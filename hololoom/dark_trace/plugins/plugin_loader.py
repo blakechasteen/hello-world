@@ -8,34 +8,33 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Callable
-from dataclasses import dataclass, field
-from pathlib import Path
-from datetime import datetime
+import hashlib
 import importlib
 import importlib.util
-import sys
-import os
 import json
-import threading
-import time
-import hashlib
 import logging
+import sys
+import threading
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 from hololoom.dark_trace.plugins.plugin_protocol import (
-    DarkTracePlugin,
-    LensPlugin,
-    ValidatorPlugin,
     AnalyzerPlugin,
-    VisualizerPlugin,
+    DarkTracePlugin,
+    DatasetPlugin,
+    LensPlugin,
+    ModelAdapterPlugin,
+    PluginCategory,
+    PluginFactory,
+    PluginMetadata,
+    PluginStatus,
     SafetyPlugin,
     SteeringPlugin,
-    DatasetPlugin,
-    ModelAdapterPlugin,
-    PluginMetadata,
-    PluginCategory,
-    PluginStatus,
-    PluginFactory,
+    ValidatorPlugin,
+    VisualizerPlugin,
 )
 
 # Abstract base classes that should not be instantiated directly
@@ -67,9 +66,9 @@ class LoadedPlugin:
     file_path: Path
     status: PluginStatus = PluginStatus.ACTIVE
     loaded_at: datetime = field(default_factory=datetime.now)
-    last_health_check: Optional[datetime] = None
-    file_hash: Optional[str] = None
-    error_message: Optional[str] = None
+    last_health_check: datetime | None = None
+    file_hash: str | None = None
+    error_message: str | None = None
 
     def is_healthy(self) -> bool:
         try:
@@ -91,36 +90,36 @@ class PluginLoader:
 
     def __init__(
         self,
-        plugin_dirs: Optional[List[Path]] = None,
-        verifier: Optional[PluginVerifier] = None,
+        plugin_dirs: list[Path] | None = None,
+        verifier: PluginVerifier | None = None,
         require_signature: bool = False,
     ):
         self.plugin_dirs = plugin_dirs or []
         self.verifier = verifier or PluginVerifier()
         self.require_signature = require_signature
 
-        self._loaded_plugins: Dict[str, LoadedPlugin] = {}
-        self._plugin_factories: Dict[str, PluginFactory] = {}
-        self._file_hashes: Dict[str, str] = {}
+        self._loaded_plugins: dict[str, LoadedPlugin] = {}
+        self._plugin_factories: dict[str, PluginFactory] = {}
+        self._file_hashes: dict[str, str] = {}
         self._lock = threading.RLock()
 
         # Hot reload monitoring
         self._hot_reload_enabled = False
-        self._hot_reload_thread: Optional[threading.Thread] = None
+        self._hot_reload_thread: threading.Thread | None = None
         self._hot_reload_stop = threading.Event()
         self._hot_reload_interval = 2.0  # seconds
 
         # Callbacks
-        self._on_load_callbacks: List[Callable[[LoadedPlugin], None]] = []
-        self._on_unload_callbacks: List[Callable[[str], None]] = []
-        self._on_reload_callbacks: List[Callable[[LoadedPlugin], None]] = []
+        self._on_load_callbacks: list[Callable[[LoadedPlugin], None]] = []
+        self._on_unload_callbacks: list[Callable[[str], None]] = []
+        self._on_reload_callbacks: list[Callable[[LoadedPlugin], None]] = []
 
     def register_factory(self, name: str, factory: PluginFactory) -> None:
         """Register a plugin factory for programmatic plugin creation."""
         with self._lock:
             self._plugin_factories[name] = factory
 
-    def load_from_factory(self, name: str) -> Optional[LoadedPlugin]:
+    def load_from_factory(self, name: str) -> LoadedPlugin | None:
         """Load a plugin from a registered factory."""
         with self._lock:
             if name not in self._plugin_factories:
@@ -155,7 +154,7 @@ class PluginLoader:
         self,
         file_path: Path,
         verify: bool = True,
-    ) -> Optional[LoadedPlugin]:
+    ) -> LoadedPlugin | None:
         """
         Load a plugin from a Python file.
 
@@ -177,7 +176,7 @@ class PluginLoader:
                 if verify and self.require_signature:
                     manifest_path = file_path.parent / "manifest.json"
                     if manifest_path.exists():
-                        with open(manifest_path, 'r') as f:
+                        with open(manifest_path) as f:
                             manifest_data = json.load(f)
                         signed_manifest = SignedManifest.from_dict(manifest_data)
                         valid, msg = self.verifier.full_verify(
@@ -249,7 +248,7 @@ class PluginLoader:
         self,
         directory: Path,
         recursive: bool = True,
-    ) -> List[LoadedPlugin]:
+    ) -> list[LoadedPlugin]:
         """
         Load all plugins from a directory.
 
@@ -279,7 +278,7 @@ class PluginLoader:
 
         return loaded
 
-    def discover_plugins(self) -> List[LoadedPlugin]:
+    def discover_plugins(self) -> list[LoadedPlugin]:
         """
         Discover and load plugins from all registered plugin directories.
 
@@ -303,7 +302,7 @@ class PluginLoader:
         """
         return self._unload_plugin(plugin_name)
 
-    def reload(self, plugin_name: str) -> Optional[LoadedPlugin]:
+    def reload(self, plugin_name: str) -> LoadedPlugin | None:
         """
         Reload a plugin from its original file.
 
@@ -332,7 +331,7 @@ class PluginLoader:
                     self._notify_reload(result)
                 return result
 
-    def get_plugin(self, name: str) -> Optional[DarkTracePlugin]:
+    def get_plugin(self, name: str) -> DarkTracePlugin | None:
         """Get a loaded plugin by name."""
         with self._lock:
             if name in self._loaded_plugins:
@@ -342,7 +341,7 @@ class PluginLoader:
     def get_plugins_by_category(
         self,
         category: PluginCategory
-    ) -> List[DarkTracePlugin]:
+    ) -> list[DarkTracePlugin]:
         """Get all plugins of a specific category."""
         with self._lock:
             return [
@@ -352,12 +351,12 @@ class PluginLoader:
                 and loaded.status == PluginStatus.ACTIVE
             ]
 
-    def list_plugins(self) -> List[PluginMetadata]:
+    def list_plugins(self) -> list[PluginMetadata]:
         """List all loaded plugins."""
         with self._lock:
             return [loaded.metadata for loaded in self._loaded_plugins.values()]
 
-    def get_status(self, plugin_name: str) -> Optional[PluginStatus]:
+    def get_status(self, plugin_name: str) -> PluginStatus | None:
         """Get the status of a plugin."""
         with self._lock:
             if plugin_name in self._loaded_plugins:
@@ -511,7 +510,7 @@ class PluginLoader:
             logger.info(f"Unloaded plugin: {plugin_name}")
             return True
 
-    def _find_plugin_class(self, module) -> Optional[Type[DarkTracePlugin]]:
+    def _find_plugin_class(self, module) -> type[DarkTracePlugin] | None:
         """Find a DarkTracePlugin subclass in a module."""
         for name in dir(module):
             obj = getattr(module, name)
@@ -524,7 +523,7 @@ class PluginLoader:
         return None
 
     # Health check
-    def check_health(self) -> Dict[str, bool]:
+    def check_health(self) -> dict[str, bool]:
         """Check health of all loaded plugins."""
         results = {}
         with self._lock:
@@ -537,7 +536,7 @@ class PluginLoader:
                     results[name] = False
         return results
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get summary of loaded plugins."""
         with self._lock:
             by_category = {}
@@ -564,14 +563,14 @@ class PluginLoader:
 
 # Factory functions
 def create_loader(
-    plugin_dirs: Optional[List[Path]] = None,
+    plugin_dirs: list[Path] | None = None,
     require_signature: bool = False,
 ) -> PluginLoader:
     """Create a plugin loader."""
     return PluginLoader(plugin_dirs, require_signature=require_signature)
 
 
-def load_plugin(file_path: Path) -> Optional[LoadedPlugin]:
+def load_plugin(file_path: Path) -> LoadedPlugin | None:
     """Quick function to load a single plugin."""
     loader = PluginLoader()
     return loader.load_from_file(file_path, verify=False)

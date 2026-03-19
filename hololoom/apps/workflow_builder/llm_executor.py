@@ -14,10 +14,8 @@ Supports multiple providers: OpenAI, Anthropic, Ollama, local models
 
 import json
 import os
-from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
-import asyncio
-
+from typing import Any
 
 # ============================================================================
 # LLM Client Abstraction
@@ -27,21 +25,21 @@ import asyncio
 class LLMResponse:
     """Standardized LLM response"""
     content: str
-    usage: Dict[str, int]
+    usage: dict[str, int]
     model: str
     provider: str
     finish_reason: str = "stop"
-    raw_response: Optional[Dict] = None
+    raw_response: dict | None = None
 
 
 class LLMClient:
     """Abstract base for LLM providers"""
 
-    def __init__(self, provider: str, api_key: Optional[str] = None):
+    def __init__(self, provider: str, api_key: str | None = None):
         self.provider = provider
         self.api_key = api_key or self._get_api_key()
 
-    def _get_api_key(self) -> Optional[str]:
+    def _get_api_key(self) -> str | None:
         """Get API key from environment"""
         key_map = {
             'openai': 'OPENAI_API_KEY',
@@ -64,7 +62,7 @@ class LLMClient:
 class OpenAIClient(LLMClient):
     """OpenAI API client"""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         super().__init__('openai', api_key)
         try:
             import openai
@@ -112,7 +110,7 @@ class OpenAIClient(LLMClient):
 class AnthropicClient(LLMClient):
     """Anthropic Claude API client"""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         super().__init__('anthropic', api_key)
         try:
             import anthropic
@@ -229,7 +227,7 @@ def create_client(provider: str) -> LLMClient:
     return client_class()
 
 
-async def execute_llm_prompt(config: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str, Any]:
+async def execute_llm_prompt(config: dict[str, Any], inputs: dict[str, Any]) -> dict[str, Any]:
     """
     Execute simple LLM prompt
 
@@ -281,7 +279,7 @@ async def execute_llm_prompt(config: Dict[str, Any], inputs: Dict[str, Any]) -> 
     }
 
 
-async def execute_structured_llm(config: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str, Any]:
+async def execute_structured_llm(config: dict[str, Any], inputs: dict[str, Any]) -> dict[str, Any]:
     """
     Execute LLM with structured JSON output
 
@@ -344,7 +342,7 @@ Respond ONLY with the JSON object, no additional text or explanation."""
                 is_valid = validate_schema(structured_data, output_schema)
                 if not is_valid and retry_on_invalid and attempt < max_retries - 1:
                     # Add feedback to prompt and retry
-                    user_prompt += f"\n\nPrevious attempt was invalid. Ensure the JSON matches the schema exactly."
+                    user_prompt += "\n\nPrevious attempt was invalid. Ensure the JSON matches the schema exactly."
                     continue
             else:
                 is_valid = True
@@ -378,7 +376,7 @@ Respond ONLY with the JSON object, no additional text or explanation."""
     }
 
 
-async def execute_prompt_chain(config: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str, Any]:
+async def execute_prompt_chain(config: dict[str, Any], inputs: dict[str, Any]) -> dict[str, Any]:
     """
     Execute chain of prompts sequentially
 
@@ -452,7 +450,7 @@ async def execute_prompt_chain(config: Dict[str, Any], inputs: Dict[str, Any]) -
     }
 
 
-async def execute_few_shot(config: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str, Any]:
+async def execute_few_shot(config: dict[str, Any], inputs: dict[str, Any]) -> dict[str, Any]:
     """
     Execute few-shot learning prompt
 
@@ -482,9 +480,9 @@ async def execute_few_shot(config: Dict[str, Any], inputs: Dict[str, Any]) -> Di
         few_shot_prompt += f"Input: {example['input']}\n"
         few_shot_prompt += f"Output: {example['output']}\n\n"
 
-    few_shot_prompt += f"Now perform the same task on this new input:\n"
+    few_shot_prompt += "Now perform the same task on this new input:\n"
     few_shot_prompt += f"Input: {inputs.get('query', '')}\n"
-    few_shot_prompt += f"Output:"
+    few_shot_prompt += "Output:"
 
     client = create_client(provider)
     response = await client.complete(
@@ -502,7 +500,7 @@ async def execute_few_shot(config: Dict[str, Any], inputs: Dict[str, Any]) -> Di
     }
 
 
-async def execute_llm_consensus(config: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str, Any]:
+async def execute_llm_consensus(config: dict[str, Any], inputs: dict[str, Any]) -> dict[str, Any]:
     """
     Execute multi-model consensus
 
@@ -590,7 +588,7 @@ async def execute_llm_consensus(config: Dict[str, Any], inputs: Dict[str, Any]) 
     }
 
 
-async def execute_rag_prompt(config: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str, Any]:
+async def execute_rag_prompt(config: dict[str, Any], inputs: dict[str, Any]) -> dict[str, Any]:
     """
     Execute RAG (Retrieval-Augmented Generation) prompt
 
@@ -676,7 +674,7 @@ Question: {query}"""
 # Helper Functions
 # ============================================================================
 
-def substitute_template(template: str, context: Dict[str, Any]) -> str:
+def substitute_template(template: str, context: dict[str, Any]) -> str:
     """
     Substitute ${variable.path} placeholders in template
 
@@ -703,7 +701,7 @@ def substitute_template(template: str, context: Dict[str, Any]) -> str:
     return re.sub(r'\$\{([^}]+)\}', replace_var, template)
 
 
-def validate_schema(data: Dict, schema: Dict) -> bool:
+def validate_schema(data: dict, schema: dict) -> bool:
     """
     Simple JSON Schema validation
 
@@ -741,7 +739,7 @@ def validate_schema(data: Dict, schema: Dict) -> bool:
 # Executor Dispatch
 # ============================================================================
 
-async def execute_llm_agent(agent_type: str, config: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str, Any]:
+async def execute_llm_agent(agent_type: str, config: dict[str, Any], inputs: dict[str, Any]) -> dict[str, Any]:
     """
     Main dispatcher for LLM agent execution
 

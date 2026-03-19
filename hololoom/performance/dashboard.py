@@ -17,20 +17,20 @@ Features:
 
 import asyncio
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
+    from rich import box
     from rich.console import Console
     from rich.layout import Layout
-    from rich.panel import Panel
-    from rich.table import Table
     from rich.live import Live
-    from rich.progress import Progress, BarColumn, TextColumn
-    from rich import box
+    from rich.panel import Panel
+    from rich.progress import BarColumn, Progress, TextColumn
+    from rich.table import Table
     HAS_RICH = True
 except ImportError:
     HAS_RICH = False

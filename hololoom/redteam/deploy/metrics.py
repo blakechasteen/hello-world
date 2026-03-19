@@ -14,11 +14,11 @@ Author: CARTS Team
 Date: 2025-12-09
 """
 
-import time
 import logging
-from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
+import time
 from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Any
 
 logger = logging.getLogger("carts-deploy.metrics")
 
@@ -28,7 +28,7 @@ class JobMetrics:
     """Metrics for a single job execution."""
     job_id: str
     start_time: float
-    end_time: Optional[float] = None
+    end_time: float | None = None
     status: str = "running"  # running, succeeded, failed, timeout
     exit_code: int = 0
     execution_time_seconds: float = 0.0
@@ -36,8 +36,8 @@ class JobMetrics:
     memory_mb_max: float = 0.0
     network_bytes_sent: int = 0
     network_bytes_received: int = 0
-    violations: List[str] = field(default_factory=list)
-    labels: Dict[str, str] = field(default_factory=dict)
+    violations: list[str] = field(default_factory=list)
+    labels: dict[str, str] = field(default_factory=dict)
 
 
 class MetricsCollector:
@@ -45,12 +45,12 @@ class MetricsCollector:
 
     def __init__(self, namespace: str = "carts"):
         self.namespace = namespace
-        self.jobs: Dict[str, JobMetrics] = {}
-        self.counters: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
-        self.histograms: Dict[str, List[float]] = defaultdict(list)
-        self.gauges: Dict[str, float] = {}
+        self.jobs: dict[str, JobMetrics] = {}
+        self.counters: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        self.histograms: dict[str, list[float]] = defaultdict(list)
+        self.gauges: dict[str, float] = {}
 
-    def start_job(self, job_id: str, labels: Dict[str, str] = None) -> None:
+    def start_job(self, job_id: str, labels: dict[str, str] = None) -> None:
         """Record job start."""
         self.jobs[job_id] = JobMetrics(
             job_id=job_id,
@@ -65,7 +65,7 @@ class MetricsCollector:
         job_id: str,
         status: str,
         exit_code: int = 0,
-        resource_usage: Dict[str, Any] = None,
+        resource_usage: dict[str, Any] = None,
     ) -> None:
         """Record job completion."""
         if job_id not in self.jobs:
@@ -141,7 +141,7 @@ class MetricsCollector:
 
         return "\n".join(lines)
 
-    def export_json(self) -> Dict[str, Any]:
+    def export_json(self) -> dict[str, Any]:
         """Export metrics as JSON."""
         execution_times = self.histograms["execution_seconds"]
 
@@ -190,7 +190,7 @@ def get_metrics() -> MetricsCollector:
     return _metrics
 
 
-def start_job(job_id: str, labels: Dict[str, str] = None) -> None:
+def start_job(job_id: str, labels: dict[str, str] = None) -> None:
     """Record job start on global collector."""
     _metrics.start_job(job_id, labels)
 
@@ -199,7 +199,7 @@ def end_job(
     job_id: str,
     status: str,
     exit_code: int = 0,
-    resource_usage: Dict[str, Any] = None,
+    resource_usage: dict[str, Any] = None,
 ) -> None:
     """Record job end on global collector."""
     _metrics.end_job(job_id, status, exit_code, resource_usage)

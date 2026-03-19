@@ -37,13 +37,12 @@ Phase: 11.5 - Plugin Discovery (Safety Scanning)
 import importlib
 import importlib.util
 import logging
-import os
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Type, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -80,17 +79,17 @@ class DiscoveredPlugin:
     source: DiscoverySource
     status: DiscoveryStatus
     location: str  # File path or entry point name
-    manifest: Optional[Dict[str, Any]] = None
-    plugin_class: Optional[Type] = None
-    suggested_trust: Optional[str] = None  # "sandboxed", "verified", etc.
-    issues: List[str] = field(default_factory=list)
+    manifest: dict[str, Any] | None = None
+    plugin_class: type | None = None
+    suggested_trust: str | None = None  # "sandboxed", "verified", etc.
+    issues: list[str] = field(default_factory=list)
     discovered_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property
     def is_valid(self) -> bool:
         return self.status == DiscoveryStatus.SUCCESS
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "name": self.name,
@@ -108,19 +107,19 @@ class DiscoveredPlugin:
 @dataclass
 class DiscoveryResult:
     """Aggregated result of plugin discovery."""
-    discovered: List[DiscoveredPlugin]
+    discovered: list[DiscoveredPlugin]
     valid_count: int = 0
     blocked_count: int = 0
     invalid_count: int = 0
-    sources_scanned: Set[DiscoverySource] = field(default_factory=set)
+    sources_scanned: set[DiscoverySource] = field(default_factory=set)
     scan_duration_ms: float = 0.0
 
     @property
-    def valid_plugins(self) -> List[DiscoveredPlugin]:
+    def valid_plugins(self) -> list[DiscoveredPlugin]:
         return [p for p in self.discovered if p.is_valid]
 
     @property
-    def blocked_plugins(self) -> List[DiscoveredPlugin]:
+    def blocked_plugins(self) -> list[DiscoveredPlugin]:
         return [p for p in self.discovered if p.status == DiscoveryStatus.BLOCKED]
 
     def summary(self) -> str:
@@ -196,9 +195,9 @@ class PluginDiscovery:
 
     def __init__(
         self,
-        safety_gate: Optional[Any] = None,
-        builtin_packages: Optional[List[str]] = None,
-        custom_patterns: Optional[List[str]] = None,
+        safety_gate: Any | None = None,
+        builtin_packages: list[str] | None = None,
+        custom_patterns: list[str] | None = None,
         enable_pattern_scan: bool = True,
     ):
         """
@@ -224,7 +223,7 @@ class PluginDiscovery:
         self._patterns = [re.compile(p) for p in all_patterns]
 
         # Cache discovered plugins
-        self._cache: Dict[str, DiscoveredPlugin] = {}
+        self._cache: dict[str, DiscoveredPlugin] = {}
 
     # =========================================================================
     # Main Discovery Methods
@@ -232,7 +231,7 @@ class PluginDiscovery:
 
     async def discover_all(
         self,
-        plugin_folders: Optional[List[str]] = None,
+        plugin_folders: list[str] | None = None,
         include_entrypoints: bool = True,
         include_builtin: bool = True,
     ) -> DiscoveryResult:
@@ -250,8 +249,8 @@ class PluginDiscovery:
         import time
         start_time = time.perf_counter()
 
-        discovered: List[DiscoveredPlugin] = []
-        sources_scanned: Set[DiscoverySource] = set()
+        discovered: list[DiscoveredPlugin] = []
+        sources_scanned: set[DiscoverySource] = set()
 
         # 1. Discover from folders
         if plugin_folders:
@@ -288,7 +287,7 @@ class PluginDiscovery:
             scan_duration_ms=elapsed_ms,
         )
 
-    async def discover_folder(self, folder_path: str) -> List[DiscoveredPlugin]:
+    async def discover_folder(self, folder_path: str) -> list[DiscoveredPlugin]:
         """
         Discover plugins from a folder.
 
@@ -302,7 +301,7 @@ class PluginDiscovery:
         Returns:
             List of discovered plugins
         """
-        discovered: List[DiscoveredPlugin] = []
+        discovered: list[DiscoveredPlugin] = []
         folder = Path(folder_path)
 
         if not folder.exists() or not folder.is_dir():
@@ -322,7 +321,7 @@ class PluginDiscovery:
     async def discover_entrypoints(
         self,
         group: str = "dark_trace.plugins"
-    ) -> List[DiscoveredPlugin]:
+    ) -> list[DiscoveredPlugin]:
         """
         Discover plugins from Python entry points.
 
@@ -332,7 +331,7 @@ class PluginDiscovery:
         Returns:
             List of discovered plugins
         """
-        discovered: List[DiscoveredPlugin] = []
+        discovered: list[DiscoveredPlugin] = []
 
         try:
             # Python 3.10+
@@ -359,7 +358,7 @@ class PluginDiscovery:
 
         return discovered
 
-    async def discover_builtin(self) -> List[DiscoveredPlugin]:
+    async def discover_builtin(self) -> list[DiscoveredPlugin]:
         """
         Discover built-in plugins from known packages.
 
@@ -368,7 +367,7 @@ class PluginDiscovery:
         Returns:
             List of discovered built-in plugins
         """
-        discovered: List[DiscoveredPlugin] = []
+        discovered: list[DiscoveredPlugin] = []
 
         for package_name in self._builtin_packages:
             try:
@@ -396,9 +395,9 @@ class PluginDiscovery:
     # Private Discovery Methods
     # =========================================================================
 
-    async def _discover_folder_plugin(self, folder: Path) -> Optional[DiscoveredPlugin]:
+    async def _discover_folder_plugin(self, folder: Path) -> DiscoveredPlugin | None:
         """Discover a single plugin from a folder."""
-        issues: List[str] = []
+        issues: list[str] = []
 
         # 1. Look for manifest
         manifest = self._load_manifest(folder)
@@ -485,7 +484,7 @@ class PluginDiscovery:
             suggested_trust=suggested_trust,
         )
 
-    async def _discover_entrypoint_plugin(self, ep: Any) -> Optional[DiscoveredPlugin]:
+    async def _discover_entrypoint_plugin(self, ep: Any) -> DiscoveredPlugin | None:
         """Discover a single plugin from an entry point."""
         try:
             plugin_class = ep.load()
@@ -533,14 +532,14 @@ class PluginDiscovery:
     # Helper Methods
     # =========================================================================
 
-    def _load_manifest(self, folder: Path) -> Optional[Dict[str, Any]]:
+    def _load_manifest(self, folder: Path) -> dict[str, Any] | None:
         """Load plugin manifest from folder."""
         # Try YAML first
         yaml_path = folder / "plugin.yaml"
         if yaml_path.exists():
             try:
                 import yaml
-                with open(yaml_path, "r") as f:
+                with open(yaml_path) as f:
                     return yaml.safe_load(f)
             except ImportError:
                 logger.warning("PyYAML not installed, skipping YAML manifests")
@@ -552,14 +551,14 @@ class PluginDiscovery:
         if json_path.exists():
             try:
                 import json
-                with open(json_path, "r") as f:
+                with open(json_path) as f:
                     return json.load(f)
             except Exception as e:
                 logger.warning(f"Failed to load {json_path}: {e}")
 
         return None
 
-    def _validate_manifest(self, manifest: Dict[str, Any]) -> List[str]:
+    def _validate_manifest(self, manifest: dict[str, Any]) -> list[str]:
         """Validate manifest has required fields."""
         issues = []
 
@@ -571,7 +570,7 @@ class PluginDiscovery:
 
         return issues
 
-    def _scan_folder_for_patterns(self, folder: Path) -> List[str]:
+    def _scan_folder_for_patterns(self, folder: Path) -> list[str]:
         """Scan folder for malicious patterns."""
         issues = []
 
@@ -592,8 +591,8 @@ class PluginDiscovery:
     async def _import_plugin_class(
         self,
         folder: Path,
-        manifest: Dict[str, Any],
-    ) -> Optional[Type]:
+        manifest: dict[str, Any],
+    ) -> type | None:
         """Import the plugin class from a folder."""
         try:
             # Add folder to path temporarily
@@ -638,7 +637,7 @@ class PluginDiscovery:
         from hololoom.dark_trace.plugins.interface import DarkTracePlugin
         return issubclass(cls, DarkTracePlugin) and cls is not DarkTracePlugin
 
-    def _determine_trust_level(self, manifest: Dict[str, Any]) -> str:
+    def _determine_trust_level(self, manifest: dict[str, Any]) -> str:
         """Determine suggested trust level from manifest."""
         # If signed and verified, can be VERIFIED
         if manifest.get("signature"):
@@ -656,7 +655,7 @@ class PluginDiscovery:
     # Cache Management
     # =========================================================================
 
-    def get_cached(self, name: str) -> Optional[DiscoveredPlugin]:
+    def get_cached(self, name: str) -> DiscoveredPlugin | None:
         """Get a cached discovered plugin by name."""
         return self._cache.get(name)
 
@@ -665,7 +664,7 @@ class PluginDiscovery:
         self._cache.clear()
 
     @property
-    def cached_plugins(self) -> Dict[str, DiscoveredPlugin]:
+    def cached_plugins(self) -> dict[str, DiscoveredPlugin]:
         """Get all cached plugins."""
         return dict(self._cache)
 
@@ -675,7 +674,7 @@ class PluginDiscovery:
 # =============================================================================
 
 def create_discovery(
-    safety_gate: Optional[Any] = None,
+    safety_gate: Any | None = None,
     **kwargs,
 ) -> PluginDiscovery:
     """

@@ -13,16 +13,16 @@ Combines all 7 explainability techniques into a single, coherent API:
 This is the main entry point for Layer 5: Explainability.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Callable
-from enum import Enum
+from typing import Any
 
-from .feature_attribution import FeatureAttributor, AttributionMethod, FeatureImportance
 from .attention_explainer import AttentionExplainer, AttentionHeatmap
-from .counterfactual_generator import CounterfactualGenerator, Counterfactual, CounterfactualMethod
-from .natural_language import NaturalLanguageExplainer, ExplanationType
+from .counterfactual_generator import Counterfactual, CounterfactualGenerator
 from .decision_tree_extractor import DecisionTreeExtractor, RuleSet
-from .provenance_tracker import ProvenanceTracker, LineageGraph
+from .feature_attribution import FeatureAttributor, FeatureImportance
+from .natural_language import ExplanationType, NaturalLanguageExplainer
+from .provenance_tracker import LineageGraph, ProvenanceTracker
 
 
 @dataclass
@@ -35,29 +35,29 @@ class Explanation:
     # Core decision info
     decision: Any
     confidence: float = 1.0
-    inputs: Optional[Dict[str, Any]] = None
+    inputs: dict[str, Any] | None = None
 
     # 1. Feature Attribution
-    feature_importances: List[FeatureImportance] = field(default_factory=list)
+    feature_importances: list[FeatureImportance] = field(default_factory=list)
 
     # 2. Attention Visualization
-    attention_heatmaps: List[AttentionHeatmap] = field(default_factory=list)
+    attention_heatmaps: list[AttentionHeatmap] = field(default_factory=list)
 
     # 3. Counterfactuals
-    counterfactuals: List[Counterfactual] = field(default_factory=list)
+    counterfactuals: list[Counterfactual] = field(default_factory=list)
 
     # 4. Natural Language
     natural_language_explanation: str = ""
 
     # 5. Decision Rules
-    rules: Optional[RuleSet] = None
+    rules: RuleSet | None = None
 
     # 6. Provenance
-    lineage: Optional[LineageGraph] = None
+    lineage: LineageGraph | None = None
 
     # Metadata
     explanation_method: str = "unified"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def summary(self) -> str:
         """Generate summary of explanation"""
@@ -119,7 +119,7 @@ class Explanation:
 
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
             'decision': self.decision,
@@ -157,14 +157,14 @@ class UnifiedExplainer:
 
     def __init__(
         self,
-        model: Optional[Callable] = None,
+        model: Callable | None = None,
         enable_attribution: bool = True,
         enable_attention: bool = True,
         enable_counterfactuals: bool = True,
         enable_natural_language: bool = True,
         enable_rules: bool = False,  # Expensive
         enable_provenance: bool = True,
-        twin_network: Optional[Any] = None  # From Layer 4
+        twin_network: Any | None = None  # From Layer 4
     ):
         """
         Args:
@@ -195,11 +195,11 @@ class UnifiedExplainer:
 
     def explain(
         self,
-        features: Dict[str, Any],
-        decision: Optional[Any] = None,
-        target_prediction: Optional[Any] = None,
-        input_tokens: Optional[List[str]] = None,
-        training_data: Optional[List[Dict[str, Any]]] = None,
+        features: dict[str, Any],
+        decision: Any | None = None,
+        target_prediction: Any | None = None,
+        input_tokens: list[str] | None = None,
+        training_data: list[dict[str, Any]] | None = None,
         confidence: float = 1.0
     ) -> Explanation:
         """
@@ -344,7 +344,7 @@ class UnifiedExplainer:
 
         return explanation
 
-    def _evaluate_model(self, features: Dict[str, Any]) -> Any:
+    def _evaluate_model(self, features: dict[str, Any]) -> Any:
         """Evaluate model on features"""
         if self.model is None:
             return None
@@ -370,8 +370,8 @@ class UnifiedExplainer:
 
 def explain(
     model: Callable,
-    features: Dict[str, Any],
-    target_prediction: Optional[Any] = None,
+    features: dict[str, Any],
+    target_prediction: Any | None = None,
     confidence: float = 1.0,
     enable_all: bool = True
 ) -> Explanation:

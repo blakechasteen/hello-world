@@ -1,5 +1,7 @@
+from typing import Any
+
 import numpy as np
-from typing import Any, List, Dict, Optional
+
 
 class ContextPacker:
     """
@@ -10,23 +12,23 @@ class ContextPacker:
     """
     def __init__(self, max_tokens: int = 4096):
         self.max_tokens = max_tokens
-        
-    def pack(self, items: List[str]) -> str:
+
+    def pack(self, items: list[str]) -> str:
         """
         Pack multiple text items into a single context string.
         """
         packed = ""
         current_len = 0
-        
+
         for item in items:
             # Simple character approximation (4 chars ~= 1 token)
             item_len = len(item) // 4
             if current_len + item_len > self.max_tokens:
                 break
-                
+
             packed += item + "\n\n"
             current_len += item_len
-            
+
         return packed.strip()
 
 class SpectralScorer:
@@ -72,7 +74,7 @@ class Warp:
     * Manages context packing for efficient evaluation.
     * Generates structured reward signals.
     """
-    
+
     def __init__(self):
         # Initialize Symbolic Evaluators
         try:
@@ -90,7 +92,7 @@ class Warp:
         except ImportError:
             self.has_resonance = False
             # print("Warning: ResonanceShed not available.")
-            
+
         # Initialize Vector Embedding Model
         try:
             from sentence_transformers import SentenceTransformer
@@ -100,7 +102,7 @@ class Warp:
         except ImportError:
             # print("Warning: sentence-transformers not installed. Using random embeddings.")
             self.has_embedder = False
-            
+
         self.packer = ContextPacker()
 
     def embed(self, text: str) -> np.ndarray:
@@ -111,7 +113,7 @@ class Warp:
             try:
                 # Returns a numpy array (384-dim for MiniLM)
                 return self.embedder.encode(text)
-            except Exception as e:
+            except Exception:
                 # print(f"Embedding failed: {e}")
                 return np.random.randn(384)
         else:
@@ -121,13 +123,13 @@ class Warp:
         """Compute cosine similarity between two vectors."""
         norm_a = np.linalg.norm(vec_a)
         norm_b = np.linalg.norm(vec_b)
-        
+
         if norm_a == 0 or norm_b == 0:
             return 0.0
-            
+
         return np.dot(vec_a, vec_b) / (norm_a * norm_b)
 
-    def score(self, target: Any, output_text: str, pattern_name: str = "balanced", metrics: Optional[Dict[str, float]] = None) -> float:
+    def score(self, target: Any, output_text: str, pattern_name: str = "balanced", metrics: dict[str, float] | None = None) -> float:
         """
         Compute a composite score with dynamic weighting based on the active Pattern Card.
         Args:
@@ -138,15 +140,15 @@ class Warp:
         """
         # Define Weights based on Pattern
         weights = {
-            "semantic": 1.0, "safety": 1.0, "coherence": 1.0, 
+            "semantic": 1.0, "safety": 1.0, "coherence": 1.0,
             "hyperbolic": 1.0, "novelty": 1.0, "info": 1.0, "topology": 1.0,
-            
+
             # Architecture Metrics
             "sparsity_bonus": 0.5,      # Reward for SNN/Sparse models
             "efficiency": 0.5,          # Reward for low energy
             "spectral_stability": 1.0   # Penalty for exploding gradients proxy
         }
-        
+
         if pattern_name == "quality_first":
             weights.update({
                 "semantic": 2.0, "safety": 2.0, "coherence": 1.5
@@ -162,25 +164,25 @@ class Warp:
             weights.update({
                 "semantic": 1.0, "efficiency": 3.0, "sparsity_bonus": 2.0
             })
-            
+
         scores = {}
-        
+
         # 1. Semantic Similarity (Linear Algebra)
         if isinstance(target, str) and self.has_embedder:
             target_vec = self.embed(target)
             output_vec = self.embed(output_text)
-            
+
             # Hyperbolic
             from hololoom.eggroll.math_crusher import HyperbolicGeometry
             hyp_target = HyperbolicGeometry.exp_map(target_vec)
             hyp_output = HyperbolicGeometry.exp_map(output_vec)
             hyp_dist = HyperbolicGeometry.poincare_distance(hyp_target, hyp_output)
             scores["hyperbolic"] = np.exp(-hyp_dist)
-            
+
             # Cosine
             similarity = self.cosine_similarity(target_vec, output_vec)
             scores["semantic"] = (similarity + 1) / 2
-            
+
             # Information Theory
             from hololoom.eggroll.math_crusher import InformationTheory, StatisticalMeasures
             def softmax(x):
@@ -191,12 +193,12 @@ class Warp:
             p_joint /= p_joint.sum()
             mi = InformationTheory.mutual_information(p_joint)
             scores["info"] = min(1.0, mi / 6.0)
-            
+
             # Novelty (KL)
             p_uniform = np.ones_like(p_output) / len(p_output)
             kl = StatisticalMeasures.kl_divergence(p_output, p_uniform)
             scores["novelty"] = min(1.0, kl / 6.0)
-            
+
             # Topology
             from hololoom.eggroll.math_crusher import TopologicalFeatures
             chunks = [c for c in output_text.split('.') if len(c) > 5]
@@ -209,10 +211,10 @@ class Warp:
         else:
             # Fallbacks
             scores.update({
-                "semantic": 0.5, "hyperbolic": 0.5, 
+                "semantic": 0.5, "hyperbolic": 0.5,
                 "info": 0.5, "novelty": 0.5, "topology": 0.5
             })
-        
+
         # 2. Safety
         if self.has_safety:
             try:
@@ -225,7 +227,7 @@ class Warp:
                 else:
                     risk_scores = {"safe": 1.0, "low": 0.9, "medium": 0.7, "high": 0.4, "critical": 0.0}
                     scores["safety"] = risk_scores.get(decision.risk_level.value, 0.5)
-            except Exception:
+            except (ConnectionError, TimeoutError, OSError):
                 scores["safety"] = 0.5
         else:
             scores["safety"] = 0.5
@@ -249,13 +251,13 @@ class Warp:
                 scores["sparsity_bonus"] = metrics["sparsity"]
             else:
                 scores["sparsity_bonus"] = 0.5
-                
+
             if "energy" in metrics:
                 # Lower energy is better. Assuming metric is normalized 0..1 where 1 is MAX energy
                 scores["efficiency"] = 1.0 - metrics["energy"]
             else:
                 scores["efficiency"] = 0.5
-                
+
             if "spectral_radius" in metrics:
                 # Stability Check: Radius near 1.0 is often good. >1.5 is unstable. <0.5 is vanishing.
                 # Gaussian reward around 1.0
@@ -272,11 +274,11 @@ class Warp:
         # Weighted Average
         total_score = 0.0
         total_weight = 0.0
-        
+
         for key, val in scores.items():
             w = weights.get(key, 1.0) # Default to 1.0 if not specified in pattern
             total_score += val * w
             total_weight += w
-            
+
         if total_weight == 0: return 0.0
         return float(total_score / total_weight)

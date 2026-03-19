@@ -8,14 +8,15 @@ Date: November 2025
 """
 
 import pytest
+
 from hololoom.routing.context_aware import (
-    ContextAwareRouter,
-    UserContext,
-    RoutingStrategy,
-    PersonalizationEngine,
-    ABTestRouter,
     ABTestConfig,
-    RoutingVariant
+    ABTestRouter,
+    ContextAwareRouter,
+    PersonalizationEngine,
+    RoutingStrategy,
+    RoutingVariant,
+    UserContext,
 )
 
 

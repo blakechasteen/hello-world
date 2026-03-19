@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Persistent Background Agent
 ===========================
@@ -31,15 +30,15 @@ Architecture:
 """
 
 import asyncio
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List, Callable
-from datetime import datetime, timedelta
-from pathlib import Path
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 from hololoom.scratchpad import (
     RecursiveScratchpad,
-    Thought,
     ThoughtType,
 )
 
@@ -54,10 +53,10 @@ class AgentState:
     requests_processed: int = 0
     avg_confidence: float = 0.5
     learning_cycles: int = 0
-    last_reflection: Optional[datetime] = None
-    thompson_priors: Dict[str, Dict[str, float]] = field(default_factory=dict)
-    recent_requests: List[Dict[str, Any]] = field(default_factory=list)
-    insights: List[str] = field(default_factory=list)
+    last_reflection: datetime | None = None
+    thompson_priors: dict[str, dict[str, float]] = field(default_factory=dict)
+    recent_requests: list[dict[str, Any]] = field(default_factory=list)
+    insights: list[str] = field(default_factory=list)
 
 
 class PersistentBackgroundAgent:
@@ -73,7 +72,7 @@ class PersistentBackgroundAgent:
         agent_id: str,
         agent_type: str,
         loop_interval: float = 60.0,  # Run every 60 seconds
-        scratchpad_path: Optional[Path] = None,
+        scratchpad_path: Path | None = None,
         max_history: int = 50,
     ):
         """
@@ -99,15 +98,15 @@ class PersistentBackgroundAgent:
 
         # Scratchpad for internal dialogue
         self.scratchpad_path = scratchpad_path or Path(f"{agent_id}_scratchpad.db")
-        self.scratchpad: Optional[RecursiveScratchpad] = None
+        self.scratchpad: RecursiveScratchpad | None = None
 
         # Background task
-        self._background_task: Optional[asyncio.Task] = None
+        self._background_task: asyncio.Task | None = None
         self._running = False
 
         # Callbacks
-        self.on_insight: Optional[Callable[[str], None]] = None
-        self.on_state_change: Optional[Callable[[AgentState], None]] = None
+        self.on_insight: Callable[[str], None] | None = None
+        self.on_state_change: Callable[[AgentState], None] | None = None
 
     async def start(self) -> None:
         """Start background learning loop."""
@@ -164,7 +163,7 @@ class PersistentBackgroundAgent:
         result: Any,
         confidence: float,
         duration_ms: float,
-        metadata: Optional[Dict] = None
+        metadata: dict | None = None
     ) -> None:
         """
         Record a request for learning.
@@ -321,7 +320,7 @@ class PersistentBackgroundAgent:
             return
 
         # Group by strategy (if available in metadata)
-        strategy_results: Dict[str, List[float]] = {}
+        strategy_results: dict[str, list[float]] = {}
 
         for req in self.state.recent_requests[-20:]:
             strategy = req.get('metadata', {}).get('strategy', 'default')
@@ -381,11 +380,11 @@ class PersistentBackgroundAgent:
         """Get current agent state."""
         return self.state
 
-    def get_insights(self, limit: int = 10) -> List[str]:
+    def get_insights(self, limit: int = 10) -> list[str]:
         """Get recent insights."""
         return self.state.insights[-limit:]
 
-    def get_thompson_priors(self) -> Dict[str, Dict[str, float]]:
+    def get_thompson_priors(self) -> dict[str, dict[str, float]]:
         """Get Thompson Sampling priors."""
         return self.state.thompson_priors
 
@@ -405,7 +404,7 @@ class AgentManager:
             loop_interval: Seconds between learning cycles
         """
         self.loop_interval = loop_interval
-        self.agents: Dict[str, PersistentBackgroundAgent] = {}
+        self.agents: dict[str, PersistentBackgroundAgent] = {}
 
     async def create_agent(
         self,
@@ -451,11 +450,11 @@ class AgentManager:
         """Async context manager exit."""
         await self.stop_all()
 
-    def get_agent(self, agent_id: str) -> Optional[PersistentBackgroundAgent]:
+    def get_agent(self, agent_id: str) -> PersistentBackgroundAgent | None:
         """Get agent by ID."""
         return self.agents.get(agent_id)
 
-    def get_all_states(self) -> Dict[str, AgentState]:
+    def get_all_states(self) -> dict[str, AgentState]:
         """Get states of all agents."""
         return {
             agent_id: agent.get_state()

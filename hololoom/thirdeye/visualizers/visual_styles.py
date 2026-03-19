@@ -18,10 +18,9 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from abc import ABC, abstractmethod
+from typing import Any
 
 
 class StyleName(Enum):
@@ -50,7 +49,7 @@ class ColorPalette:
     warning: str = "#f59e0b"
     error: str = "#ef4444"
 
-    def as_dict(self) -> Dict[str, str]:
+    def as_dict(self) -> dict[str, str]:
         return {
             "primary": self.primary,
             "secondary": self.secondary,
@@ -84,7 +83,7 @@ class LightingSetup:
     ambient_intensity: float = 0.4
     directional_color: str = "#ffffff"
     directional_intensity: float = 0.6
-    directional_position: Dict[str, float] = field(
+    directional_position: dict[str, float] = field(
         default_factory=lambda: {"x": 5, "y": 10, "z": 5}
     )
     shadows: bool = False
@@ -145,9 +144,9 @@ class VisualStyle:
     layout: LayoutRules
 
     # Style-specific element overrides
-    element_overrides: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    element_overrides: dict[str, dict[str, Any]] = field(default_factory=dict)
 
-    def apply_to_element(self, element: Dict[str, Any]) -> Dict[str, Any]:
+    def apply_to_element(self, element: dict[str, Any]) -> dict[str, Any]:
         """Apply this style to an element."""
         styled = element.copy()
 
@@ -188,7 +187,7 @@ class VisualStyle:
 
         return styled
 
-    def get_scene_config(self) -> Dict[str, Any]:
+    def get_scene_config(self) -> dict[str, Any]:
         """Get scene-wide configuration for this style."""
         return {
             'background': {
@@ -570,7 +569,7 @@ NEON_STYLE = VisualStyle(
 # Style Registry and Selection
 # =============================================================================
 
-STYLES: Dict[StyleName, VisualStyle] = {
+STYLES: dict[StyleName, VisualStyle] = {
     StyleName.BLUEPRINT: BLUEPRINT_STYLE,
     StyleName.STORYBOARD: STORYBOARD_STYLE,
     StyleName.DASHBOARD: DASHBOARD_STYLE,
@@ -617,7 +616,7 @@ def get_style_for_mood(mood: str) -> VisualStyle:
     return STYLES[style_name]
 
 
-def list_styles() -> List[Dict[str, str]]:
+def list_styles() -> list[dict[str, str]]:
     """List all available styles."""
     return [
         {

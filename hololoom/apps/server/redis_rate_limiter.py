@@ -19,12 +19,11 @@ import asyncio
 import logging
 import time
 from collections import defaultdict, deque
-from typing import Dict, Optional, Tuple
 from contextlib import asynccontextmanager
 
 import redis.asyncio as redis
 from fastapi import HTTPException, Request
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 
 from hololoom.utils.security import sanitize_uri
 
@@ -78,14 +77,14 @@ class InMemoryRateLimiter:
         """
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self.requests: Dict[str, deque] = defaultdict(deque)
+        self.requests: dict[str, deque] = defaultdict(deque)
 
     async def check_rate_limit(
         self,
         key: str,
-        max_requests: Optional[int] = None,
-        window_seconds: Optional[int] = None
-    ) -> Tuple[bool, int, float]:
+        max_requests: int | None = None,
+        window_seconds: int | None = None
+    ) -> tuple[bool, int, float]:
         """
         Check if request exceeds rate limit.
 
@@ -156,7 +155,7 @@ class RedisRateLimiter:
         default_window_seconds: int = 60,
         key_prefix: str = "ratelimit",
         enable_fallback: bool = True,
-        fallback_limiter: Optional[InMemoryRateLimiter] = None,
+        fallback_limiter: InMemoryRateLimiter | None = None,
         connection_timeout: float = 5.0,
         operation_timeout: float = 1.0
     ):
@@ -182,7 +181,7 @@ class RedisRateLimiter:
         self.operation_timeout = operation_timeout
 
         # Redis client (initialized on first use)
-        self._redis: Optional[redis.Redis] = None
+        self._redis: redis.Redis | None = None
         self._connected = False
         self._connection_lock = asyncio.Lock()
 
@@ -267,9 +266,9 @@ class RedisRateLimiter:
     async def check_rate_limit(
         self,
         key: str,
-        max_requests: Optional[int] = None,
-        window_seconds: Optional[int] = None
-    ) -> Tuple[bool, int, float]:
+        max_requests: int | None = None,
+        window_seconds: int | None = None
+    ) -> tuple[bool, int, float]:
         """
         Check if request exceeds rate limit using Redis sliding window.
 
@@ -309,7 +308,7 @@ class RedisRateLimiter:
         key: str,
         max_requests: int,
         window_seconds: int
-    ) -> Tuple[bool, int, float]:
+    ) -> tuple[bool, int, float]:
         """
         Internal Redis rate limit check using sorted sets.
 
@@ -390,8 +389,8 @@ class RedisRateLimiter:
         self,
         request: Request,
         endpoint: str,
-        max_requests: Optional[int] = None,
-        window_seconds: Optional[int] = None
+        max_requests: int | None = None,
+        window_seconds: int | None = None
     ):
         """
         Context manager for rate limiting with automatic metrics.
@@ -445,7 +444,7 @@ class RedisRateLimiter:
 # ============================================================================
 
 def create_redis_rate_limiter(
-    redis_url: Optional[str] = None,
+    redis_url: str | None = None,
     **kwargs
 ) -> RedisRateLimiter:
     """
@@ -477,7 +476,7 @@ class EndpointRateLimiter:
     Different endpoints can have different rate limits.
     """
 
-    def __init__(self, redis_rate_limiter: Optional[RedisRateLimiter] = None):
+    def __init__(self, redis_rate_limiter: RedisRateLimiter | None = None):
         """
         Initialize endpoint rate limiter.
 
@@ -552,7 +551,7 @@ class EndpointRateLimiter:
 
 # Create global endpoint rate limiter
 # This will be initialized in the FastAPI lifespan
-_global_limiter: Optional[EndpointRateLimiter] = None
+_global_limiter: EndpointRateLimiter | None = None
 
 
 def get_rate_limiter() -> EndpointRateLimiter:

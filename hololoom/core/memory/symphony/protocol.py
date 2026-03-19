@@ -17,10 +17,10 @@ Author: Claude Code
 Date: 2025-11-22
 """
 
-from typing import Protocol, List, Dict, Any, Optional, runtime_checkable
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-import time
+from typing import Any, Protocol, runtime_checkable
 
 
 class MemoryStrategy(str, Enum):
@@ -65,18 +65,18 @@ class MemoryResult:
     source_system: MemorySystem      # Which system provided this
     activation: float = 0.0          # Activation level (if applicable)
     heat: float = 0.0                # Heat score (if applicable)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class MemoryCoordinationResult:
     """Result from coordinated memory access."""
-    results: List[MemoryResult]
+    results: list[MemoryResult]
     strategy_used: MemoryStrategy
-    systems_accessed: List[MemorySystem]
+    systems_accessed: list[MemorySystem]
     total_latency_ms: float
     cache_hit: bool
-    coordination_metadata: Dict[str, Any] = field(default_factory=dict)
+    coordination_metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -87,8 +87,8 @@ class MemoryPerformanceMetrics:
     cache_misses: int = 0
     avg_latency_ms: float = 0.0
     avg_results_per_query: float = 0.0
-    strategy_usage: Dict[MemoryStrategy, int] = field(default_factory=dict)
-    system_usage: Dict[MemorySystem, int] = field(default_factory=dict)
+    strategy_usage: dict[MemoryStrategy, int] = field(default_factory=dict)
+    system_usage: dict[MemorySystem, int] = field(default_factory=dict)
 
 
 @runtime_checkable
@@ -136,7 +136,7 @@ class MemorySystemProtocol(Protocol):
         query: str,
         k: int = 10,
         **kwargs
-    ) -> List[MemoryResult]:
+    ) -> list[MemoryResult]:
         """Retrieve memories from this system."""
         ...
 
@@ -163,13 +163,13 @@ class StrategySelectionCriteria:
 class CoordinationPlan:
     """Plan for coordinating multiple memory systems."""
     strategy: MemoryStrategy
-    systems_to_query: List[MemorySystem]
+    systems_to_query: list[MemorySystem]
     parallel_execution: bool         # Execute in parallel vs sequential
-    fallback_systems: List[MemorySystem]
+    fallback_systems: list[MemorySystem]
     estimated_latency_ms: float
     expected_coverage: float         # 0.0-1.0
 
 
 # Convenience type aliases
 MemoryQueryResult = MemoryResult
-SystemAccessOrder = List[MemorySystem]
+SystemAccessOrder = list[MemorySystem]

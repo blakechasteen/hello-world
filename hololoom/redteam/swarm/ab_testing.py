@@ -23,10 +23,9 @@ import math
 import random
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
-
 
 # =============================================================================
 # Enums
@@ -90,7 +89,7 @@ class Variant:
     total_reward: float = 0.0
 
     # Per-sample data for statistical analysis
-    samples: List[float] = field(default_factory=list)
+    samples: list[float] = field(default_factory=list)
 
     @property
     def success_rate(self) -> float:
@@ -192,7 +191,7 @@ class ExperimentConfig:
 
     # Metadata
     created_at: float = field(default_factory=time.time)
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -208,12 +207,12 @@ class Experiment:
     treatment: Variant = field(default_factory=lambda: Variant("treatment", ""))
 
     # Timestamps
-    started_at: Optional[float] = None
-    completed_at: Optional[float] = None
+    started_at: float | None = None
+    completed_at: float | None = None
 
     # Results
-    latest_result: Optional[StatisticalResult] = None
-    analysis_history: List[StatisticalResult] = field(default_factory=list)
+    latest_result: StatisticalResult | None = None
+    analysis_history: list[StatisticalResult] = field(default_factory=list)
 
     def __post_init__(self):
         """Initialize variants from config."""
@@ -435,7 +434,7 @@ class StatisticalAnalyzer:
         relative_improvement: float,
         n_c: int,
         n_t: int,
-    ) -> Tuple[str, bool]:
+    ) -> tuple[str, bool]:
         """Generate deployment recommendation.
 
         Returns:
@@ -573,7 +572,7 @@ class EarlyStoppingChecker:
         self._analyzer = analyzer
         self._confidence_threshold = confidence_threshold
 
-    def should_stop(self, experiment: Experiment) -> Tuple[bool, str]:
+    def should_stop(self, experiment: Experiment) -> tuple[bool, str]:
         """Check if experiment should stop early.
 
         Args:
@@ -639,7 +638,7 @@ class ABTestManager:
         Args:
             seed: Random seed for reproducibility
         """
-        self._experiments: Dict[str, Experiment] = {}
+        self._experiments: dict[str, Experiment] = {}
         self._analyzer = StatisticalAnalyzer()
         self._splitter = TrafficSplitter(seed=seed)
         self._early_stopper = EarlyStoppingChecker(self._analyzer)
@@ -651,7 +650,7 @@ class ABTestManager:
     def create_experiment(
         self,
         config: ExperimentConfig,
-        experiment_id: Optional[str] = None,
+        experiment_id: str | None = None,
     ) -> Experiment:
         """Create a new experiment.
 
@@ -780,8 +779,8 @@ class ABTestManager:
 
     def list_experiments(
         self,
-        status: Optional[ExperimentStatus] = None,
-    ) -> List[Experiment]:
+        status: ExperimentStatus | None = None,
+    ) -> list[Experiment]:
         """List experiments.
 
         Args:
@@ -804,7 +803,7 @@ class ABTestManager:
     def assign_variant(
         self,
         experiment_id: str,
-        request_id: Optional[str] = None,
+        request_id: str | None = None,
     ) -> Variant:
         """Assign a request to a variant.
 
@@ -901,7 +900,7 @@ class ABTestManager:
     # Deployment
     # -------------------------------------------------------------------------
 
-    def can_deploy(self, experiment_id: str) -> Tuple[bool, str]:
+    def can_deploy(self, experiment_id: str) -> tuple[bool, str]:
         """Check if treatment can be deployed.
 
         Args:

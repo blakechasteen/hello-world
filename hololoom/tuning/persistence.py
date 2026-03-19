@@ -6,9 +6,9 @@ Saves/loads learned parameters across sessions.
 
 import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class TuningStateManager:
         self.state_dir.mkdir(parents=True, exist_ok=True)
         self.state_file = self.state_dir / "learned_params.json"
 
-    def save_state(self, coordinator_state: Dict[str, Any]):
+    def save_state(self, coordinator_state: dict[str, Any]):
         """
         Save complete tuning state to disk.
 
@@ -62,7 +62,7 @@ class TuningStateManager:
             if temp_file.exists():
                 temp_file.unlink()
 
-    def load_state(self) -> Optional[Dict[str, Any]]:
+    def load_state(self) -> dict[str, Any] | None:
         """
         Load tuning state from disk.
 
@@ -103,7 +103,7 @@ class TuningStateManager:
         except Exception as e:
             logger.error(f"Failed to save backup: {e}")
 
-    def get_tuning_history(self) -> Dict[str, Any]:
+    def get_tuning_history(self) -> dict[str, Any]:
         """Get tuning history from saved state."""
         state = self.load_state()
         if state is None:
@@ -116,7 +116,7 @@ class TuningStateManager:
             'last_updated': state.get('last_updated'),
         }
 
-    def _compute_success_rates(self, state: Dict[str, Any]) -> Dict[str, float]:
+    def _compute_success_rates(self, state: dict[str, Any]) -> dict[str, float]:
         """Compute success rate for each agent."""
         rates = {}
 

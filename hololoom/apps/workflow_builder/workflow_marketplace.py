@@ -22,14 +22,11 @@ Usage:
     app.include_router(router, prefix="/api/marketplace")
 """
 
-import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, asdict
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
-
 
 # ---------------------------------------------------------------------------
 # Request/Response Models
@@ -39,7 +36,7 @@ class CategoryResponse(BaseModel):
     """Category in the marketplace."""
     id: str
     name: str
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
     description: str
     icon: str
     display_order: int
@@ -58,7 +55,7 @@ class TemplateListItem(BaseModel):
     usage_count: int
     avg_rating: float
     rating_count: int
-    tags: List[str]
+    tags: list[str]
 
 
 class TemplateDetail(BaseModel):
@@ -75,18 +72,18 @@ class TemplateDetail(BaseModel):
     usage_count: int
     avg_rating: float
     rating_count: int
-    tags: List[str]
+    tags: list[str]
     published_at: str
     updated_at: str
     # Workflow details
-    nodes: List[Dict[str, Any]]
-    connections: List[Dict[str, Any]]
-    metadata: Dict[str, Any]
+    nodes: list[dict[str, Any]]
+    connections: list[dict[str, Any]]
+    metadata: dict[str, Any]
 
 
 class TemplateListResponse(BaseModel):
     """Paginated template list response."""
-    templates: List[TemplateListItem]
+    templates: list[TemplateListItem]
     total: int
     page: int
     page_size: int
@@ -117,8 +114,8 @@ class UsageResponse(BaseModel):
 
 class ExportResponse(BaseModel):
     """Exported workflow JSON."""
-    workflow: Dict[str, Any]
-    marketplace_metadata: Dict[str, Any]
+    workflow: dict[str, Any]
+    marketplace_metadata: dict[str, Any]
 
 
 # ---------------------------------------------------------------------------
@@ -145,7 +142,7 @@ async def create_marketplace_router(db_path: str = "./workflows.db") -> APIRoute
     # Categories
     # -----------------------------------------------------------------------
 
-    @router.get("/categories", response_model=List[CategoryResponse])
+    @router.get("/categories", response_model=list[CategoryResponse])
     async def list_categories():
         """Get all template categories."""
         categories = await persistence.get_all_categories()
@@ -167,8 +164,8 @@ async def create_marketplace_router(db_path: str = "./workflows.db") -> APIRoute
 
     @router.get("/templates", response_model=TemplateListResponse)
     async def list_templates(
-        category: Optional[str] = Query(None, description="Filter by category"),
-        difficulty: Optional[str] = Query(None, description="Filter by difficulty"),
+        category: str | None = Query(None, description="Filter by category"),
+        difficulty: str | None = Query(None, description="Filter by difficulty"),
         page: int = Query(1, ge=1, description="Page number"),
         page_size: int = Query(20, ge=1, le=100, description="Items per page")
     ):
@@ -215,7 +212,7 @@ async def create_marketplace_router(db_path: str = "./workflows.db") -> APIRoute
             total_pages=total_pages
         )
 
-    @router.get("/templates/featured", response_model=List[TemplateListItem])
+    @router.get("/templates/featured", response_model=list[TemplateListItem])
     async def get_featured_templates():
         """Get featured templates for homepage display."""
         templates = await persistence.list_marketplace_templates(featured_only=True)
@@ -241,11 +238,11 @@ async def create_marketplace_router(db_path: str = "./workflows.db") -> APIRoute
 
         return enriched
 
-    @router.get("/templates/search", response_model=List[TemplateListItem])
+    @router.get("/templates/search", response_model=list[TemplateListItem])
     async def search_templates(
         q: str = Query(..., min_length=1, description="Search query"),
-        category: Optional[str] = Query(None, description="Filter by category"),
-        difficulty: Optional[str] = Query(None, description="Filter by difficulty"),
+        category: str | None = Query(None, description="Filter by category"),
+        difficulty: str | None = Query(None, description="Filter by difficulty"),
         limit: int = Query(20, ge=1, le=100, description="Max results")
     ):
         """Search templates by name, description, or tags."""
@@ -336,8 +333,9 @@ async def create_marketplace_router(db_path: str = "./workflows.db") -> APIRoute
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
 
-        from .workflow_persistence import TemplateRatingRecord
         import uuid
+
+        from .workflow_persistence import TemplateRatingRecord
 
         rating = TemplateRatingRecord(
             id=str(uuid.uuid4()),

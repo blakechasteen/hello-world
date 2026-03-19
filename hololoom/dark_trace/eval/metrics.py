@@ -11,20 +11,14 @@ Research Basis:
 - SAE evaluation best practices from interpretability research
 """
 
+import math
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import (
     Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Union,
     Protocol,
 )
-import math
-from datetime import datetime
 
 
 class MetricLevel(Enum):
@@ -92,7 +86,7 @@ class ReconstructionMetrics:
     relative_error: float  # Relative reconstruction error
 
     # Per-layer metrics (optional)
-    per_layer_mse: Optional[Dict[int, float]] = None
+    per_layer_mse: dict[int, float] | None = None
 
     def is_acceptable(self, threshold_mse: float = 0.01) -> bool:
         """Check if reconstruction quality is acceptable."""
@@ -121,7 +115,7 @@ class SparsityMetrics:
     gini_coefficient: float  # Gini coefficient of activations
     dead_feature_count: int  # Number of dead features
     dead_feature_ratio: float  # Ratio of dead features
-    activation_frequency: Dict[str, float] = field(default_factory=dict)
+    activation_frequency: dict[str, float] = field(default_factory=dict)
 
     # Distribution statistics
     mean_activation: float = 0.0
@@ -170,7 +164,7 @@ class InterpretabilityMetrics:
     feature_uniqueness: float  # How unique/distinct features are
 
     # Optional per-feature metrics
-    per_feature_quality: Optional[List[FeatureQuality]] = None
+    per_feature_quality: list[FeatureQuality] | None = None
 
     # Clustering metrics
     n_semantic_clusters: int = 0
@@ -199,7 +193,7 @@ class SteeringMetrics:
     target_achievement_rate: float  # Rate of achieving steering targets
 
     # Per-intervention metrics
-    intervention_results: Dict[str, float] = field(default_factory=dict)
+    intervention_results: dict[str, float] = field(default_factory=dict)
 
     # Safety metrics
     safety_relevant_features: int = 0
@@ -247,12 +241,12 @@ class MetricsReport:
     reconstruction: ReconstructionMetrics
     sparsity: SparsityMetrics
     interpretability: InterpretabilityMetrics
-    steering: Optional[SteeringMetrics] = None
-    causal: Optional[CausalMetrics] = None
+    steering: SteeringMetrics | None = None
+    causal: CausalMetrics | None = None
 
     # Metadata
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
-    config: Optional[MetricsConfig] = None
+    config: MetricsConfig | None = None
     n_samples_evaluated: int = 0
     evaluation_time_seconds: float = 0.0
 
@@ -296,7 +290,7 @@ class MetricsReport:
 
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         result = {
             "timestamp": self.timestamp,
@@ -346,7 +340,7 @@ class SAEProtocol(Protocol):
         """Decode latent space to activations."""
         ...
 
-    def forward(self, x: Any) -> Tuple[Any, Any]:
+    def forward(self, x: Any) -> tuple[Any, Any]:
         """Forward pass returning reconstruction and latents."""
         ...
 
@@ -364,8 +358,8 @@ class SAEMetrics:
 
     def __init__(
         self,
-        sae: Optional[SAEProtocol] = None,
-        config: Optional[MetricsConfig] = None,
+        sae: SAEProtocol | None = None,
+        config: MetricsConfig | None = None,
     ):
         """Initialize metrics calculator.
 
@@ -375,12 +369,12 @@ class SAEMetrics:
         """
         self.sae = sae
         self.config = config or MetricsConfig()
-        self._cache: Dict[str, Any] = {}
+        self._cache: dict[str, Any] = {}
 
     def compute_all(
         self,
         activations: Any,
-        labels: Optional[Any] = None,
+        labels: Any | None = None,
     ) -> MetricsReport:
         """Compute all metrics.
 
@@ -691,7 +685,7 @@ class SAEMetrics:
 def compute_all_metrics(
     sae: SAEProtocol,
     activations: Any,
-    config: Optional[MetricsConfig] = None,
+    config: MetricsConfig | None = None,
 ) -> MetricsReport:
     """Convenience function to compute all metrics.
 

@@ -7,9 +7,9 @@ Provides lookup by module ID and lists available modules.
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
-from ..shared.types import ModuleManifest
+
 from ..shared.logging import get_logger
+from ..shared.types import ModuleManifest
 
 logger = get_logger(__name__, component="node")
 
@@ -35,8 +35,8 @@ class ModuleRegistry:
             module_dir: Directory containing WASM modules
         """
         self.module_dir = Path(module_dir)
-        self.modules: Dict[str, ModuleManifest] = {}
-        self._wasm_paths: Dict[str, Path] = {}
+        self.modules: dict[str, ModuleManifest] = {}
+        self._wasm_paths: dict[str, Path] = {}
         self._scan_modules()
 
     def _scan_modules(self) -> None:
@@ -76,7 +76,7 @@ class ModuleRegistry:
         except Exception as e:
             logger.error(f"Failed to load module from {manifest_path}: {e}")
 
-    def get(self, module_id: str) -> Optional[ModuleManifest]:
+    def get(self, module_id: str) -> ModuleManifest | None:
         """
         Get module manifest by ID.
 
@@ -88,7 +88,7 @@ class ModuleRegistry:
         """
         return self.modules.get(module_id)
 
-    def get_wasm_path(self, module_id: str) -> Optional[Path]:
+    def get_wasm_path(self, module_id: str) -> Path | None:
         """
         Get path to WASM binary for a module.
 
@@ -100,7 +100,7 @@ class ModuleRegistry:
         """
         return self._wasm_paths.get(module_id)
 
-    def list(self) -> List[ModuleManifest]:
+    def list(self) -> list[ModuleManifest]:
         """List all available modules."""
         return list(self.modules.values())
 

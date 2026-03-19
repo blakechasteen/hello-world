@@ -16,8 +16,8 @@ Usage:
     results = await provider.search("What is Thompson Sampling?")
 """
 
-from typing import Optional
 import logging
+from typing import Optional
 
 from ..protocol import SearchProvider
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 async def create_provider(
     provider_name: str,
-    api_key: Optional[str] = None,
+    api_key: str | None = None,
     **kwargs
 ) -> SearchProvider:
     """

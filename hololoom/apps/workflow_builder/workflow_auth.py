@@ -7,14 +7,12 @@ Created: 2025-12-23
 Part of HoloLoom Workflow Builder production integration.
 """
 
-import os
-import hmac
 import hashlib
+import hmac
+import os
 import time
 import uuid
-from typing import Optional, Dict, Set, Callable
 from dataclasses import dataclass, field
-from functools import wraps
 
 # Configuration from environment
 MULTI_USER_ENABLED = os.environ.get("WORKFLOW_MULTI_USER", "false").lower() == "true"
@@ -33,13 +31,13 @@ class AuthContext:
     """
     user_id: str
     is_authenticated: bool
-    permissions: Set[str] = field(default_factory=set)
+    permissions: set[str] = field(default_factory=set)
 
     def has_permission(self, permission: str) -> bool:
         """Check if user has a specific permission."""
         return permission in self.permissions
 
-    def has_all_permissions(self, permissions: Set[str]) -> bool:
+    def has_all_permissions(self, permissions: set[str]) -> bool:
         """Check if user has all specified permissions."""
         return permissions.issubset(self.permissions)
 
@@ -57,7 +55,7 @@ class NonceTracker:
         Args:
             expiry_seconds: How long to remember used nonces
         """
-        self._used: Dict[str, float] = {}
+        self._used: dict[str, float] = {}
         self._expiry = expiry_seconds
 
     def check_and_mark(self, nonce: str) -> bool:
@@ -136,7 +134,7 @@ def verify_signature(
 def create_signed_headers(
     api_key: str,
     secret: str = API_SECRET
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Create signed authentication headers for a request.
 
     Useful for clients making authenticated requests.
@@ -179,10 +177,10 @@ class PermissionError(AuthenticationError):
 
 
 def get_auth_context_sync(
-    api_key: Optional[str] = None,
-    timestamp: Optional[str] = None,
-    nonce: Optional[str] = None,
-    signature: Optional[str] = None
+    api_key: str | None = None,
+    timestamp: str | None = None,
+    nonce: str | None = None,
+    signature: str | None = None
 ) -> AuthContext:
     """Get authentication context from request headers (synchronous).
 
@@ -241,14 +239,14 @@ def get_auth_context_sync(
 # ==================== FastAPI Integration ====================
 
 try:
-    from fastapi import Request, HTTPException, Depends
+    from fastapi import Depends, HTTPException, Request
     from fastapi.security import APIKeyHeader
 
     api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
     async def get_auth_context(
         request: Request,
-        api_key: Optional[str] = Depends(api_key_header)
+        api_key: str | None = Depends(api_key_header)
     ) -> AuthContext:
         """FastAPI dependency for authentication.
 
@@ -340,8 +338,8 @@ class User:
     id: str
     api_key: str
     name: str
-    email: Optional[str]
-    permissions: Set[str]
+    email: str | None
+    permissions: set[str]
     created_at: float
     is_active: bool = True
 
@@ -353,14 +351,14 @@ class UserStore:
     """
 
     def __init__(self):
-        self._users: Dict[str, User] = {}
-        self._api_key_index: Dict[str, str] = {}  # api_key -> user_id
+        self._users: dict[str, User] = {}
+        self._api_key_index: dict[str, str] = {}  # api_key -> user_id
 
     def create_user(
         self,
         name: str,
-        email: Optional[str] = None,
-        permissions: Optional[Set[str]] = None
+        email: str | None = None,
+        permissions: set[str] | None = None
     ) -> User:
         """Create a new user with generated API key."""
         user_id = str(uuid.uuid4())
@@ -379,18 +377,18 @@ class UserStore:
         self._api_key_index[api_key] = user_id
         return user
 
-    def get_by_api_key(self, api_key: str) -> Optional[User]:
+    def get_by_api_key(self, api_key: str) -> User | None:
         """Look up user by API key."""
         user_id = self._api_key_index.get(api_key)
         if user_id:
             return self._users.get(user_id)
         return None
 
-    def get_by_id(self, user_id: str) -> Optional[User]:
+    def get_by_id(self, user_id: str) -> User | None:
         """Look up user by ID."""
         return self._users.get(user_id)
 
-    def update_permissions(self, user_id: str, permissions: Set[str]) -> bool:
+    def update_permissions(self, user_id: str, permissions: set[str]) -> bool:
         """Update user permissions."""
         user = self._users.get(user_id)
         if user:

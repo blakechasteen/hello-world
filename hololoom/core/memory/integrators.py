@@ -25,11 +25,11 @@ Author: HoloLoom Mathematical Physics Team
 Date: 2025-11-03
 """
 
-from typing import Callable, Tuple, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
-import numpy as np
+from typing import Any
 
+import numpy as np
 
 # ============================================================================
 # Integrator Types
@@ -86,7 +86,7 @@ class ForceFunction:
         dp/dt = F(q)          (force from positions)
     """
 
-    def __call__(self, state: DynamicalState) -> Tuple[np.ndarray, np.ndarray]:
+    def __call__(self, state: DynamicalState) -> tuple[np.ndarray, np.ndarray]:
         """
         Compute time derivatives.
 
@@ -536,7 +536,7 @@ def analyze_stability(
     state: DynamicalState,
     dt: float,
     n_steps: int = 1000
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Analyze stability of integration scheme.
 

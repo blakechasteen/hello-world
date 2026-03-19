@@ -69,104 +69,101 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from hololoom.dark_trace.research.sparse_probing import (
-    # Enums
-    ProbeType,
-    # Config and Results
-    ProbeConfig,
-    ProbeResult,
-    ActivationDataset,
+# Phase 2: Adversarial Catalog
+from hololoom.dark_trace.research.adversarial_catalog import (
     # Classes
-    SparseProbe,
-    FeatureProber,
-    ContrastiveProber,
-    # Factory functions
-    create_probe,
-    create_feature_prober,
-)
-
-from hololoom.dark_trace.research.concept_erasure import (
+    AdversarialCatalog,
+    # Data Structures
+    CatalogedVulnerability,
+    CatalogSummary,
+    RegressionReport,
     # Enums
-    ErasureMethod,
-    # Config and Results
-    ErasureConfig,
-    ErasureResult,
-    # Classes
-    ConceptEraser,
-    LEACEEraser,
-    ConceptSurgery,
+    VulnerabilityStatus,
     # Factory functions
-    create_eraser,
-    create_leace_eraser,
-    create_concept_surgery,
+    create_catalog,
 )
-
 from hololoom.dark_trace.research.adversarial_discovery import (
-    # Enums
-    AttackMethod,
-    TargetType,
-    # Config and Results
-    AttackConfig,
-    AdversarialExample,
-    DiscoveryResult,
     # Classes
     AdversarialAttacker,
-    FeatureSensitivityAnalyzer,
     AdversarialDiscoverer,
+    AdversarialExample,
+    # Config and Results
+    AttackConfig,
+    # Enums
+    AttackMethod,
+    DiscoveryResult,
+    FeatureSensitivityAnalyzer,
+    TargetType,
     # Factory functions
     create_attacker,
     create_discoverer,
-    create_sensitivity_analyzer,
     # Phase 2 integration functions
     create_prober_from_discoverer,
+    create_sensitivity_analyzer,
     probe_feature_with_catalog,
 )
 
 # Phase 2: Adversarial Probing Suite
 from hololoom.dark_trace.research.adversarial_prober import (
-    # Enums
-    VulnerabilityLevel,
-    ProbeMethod,
-    # Config and Results
-    ProbeConfig,
-    ProbeResult,
-    VulnerabilityReport,
+    AdversarialProber,
     # Classes
     GradientProber,
-    AdversarialProber,
+    # Config and Results
+    ProbeConfig,
+    ProbeMethod,
+    ProbeResult,
+    # Enums
+    VulnerabilityLevel,
+    VulnerabilityReport,
     # Factory functions
     create_prober,
+)
+from hololoom.dark_trace.research.concept_erasure import (
+    # Classes
+    ConceptEraser,
+    ConceptSurgery,
+    # Config and Results
+    ErasureConfig,
+    # Enums
+    ErasureMethod,
+    ErasureResult,
+    LEACEEraser,
+    create_concept_surgery,
+    # Factory functions
+    create_eraser,
+    create_leace_eraser,
 )
 
 # Phase 2: Genetic Adversarial Search
 from hololoom.dark_trace.research.genetic_prober import (
-    # Enums
-    SelectionMethod,
     CrossoverMethod,
-    MutationMethod,
+    EvolutionResult,
+    GeneticAdversarialSearch,
     # Config and Results
     GeneticConfig,
-    Individual,
-    EvolutionResult,
     # Classes
     GeneticOperators,
-    GeneticAdversarialSearch,
+    Individual,
+    MutationMethod,
+    # Enums
+    SelectionMethod,
     # Factory functions
     create_genetic_search,
 )
-
-# Phase 2: Adversarial Catalog
-from hololoom.dark_trace.research.adversarial_catalog import (
+from hololoom.dark_trace.research.sparse_probing import (
+    ActivationDataset,
+    ContrastiveProber,
+    FeatureProber,
+    # Config and Results
+    ProbeConfig,
+    ProbeResult,
     # Enums
-    VulnerabilityStatus,
-    # Data Structures
-    CatalogedVulnerability,
-    CatalogSummary,
-    RegressionReport,
+    ProbeType,
     # Classes
-    AdversarialCatalog,
+    SparseProbe,
+    create_feature_prober,
     # Factory functions
-    create_catalog,
+    create_probe,
 )
 
 __all__ = [

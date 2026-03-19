@@ -16,13 +16,15 @@ Implements:
 - Information gain: Measure uncertainty reduction
 """
 
-import numpy as np
-from typing import Dict, List, Set, Optional, Callable, Tuple, Any
-from dataclasses import dataclass, field
-from itertools import combinations
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from itertools import combinations
+from typing import Any
 
-from .dag import CausalDAG, CausalNode, CausalEdge, NodeType
+import numpy as np
+
+from .dag import CausalDAG, CausalEdge, CausalNode, NodeType
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ class ConditionalIndependence:
     """Result of conditional independence test."""
     X: str
     Y: str
-    Z: Set[str]
+    Z: set[str]
     independent: bool
     p_value: float
     test_statistic: float
@@ -41,8 +43,8 @@ class ConditionalIndependence:
 @dataclass
 class ExperimentResult:
     """Result of causal experiment."""
-    intervention: Dict[str, Any]
-    observations: Dict[str, Any]
+    intervention: dict[str, Any]
+    observations: dict[str, Any]
     timestamp: float
     sample_size: int
 
@@ -75,7 +77,7 @@ class CausalDiscovery:
 
     def __init__(
         self,
-        variables: List[str],
+        variables: list[str],
         alpha: float = 0.05,
         max_conditioning_size: int = 3
     ):
@@ -92,16 +94,16 @@ class CausalDiscovery:
         self.max_conditioning_size = max_conditioning_size
 
         # Learned structure
-        self.undirected_edges: Set[Tuple[str, str]] = set()
-        self.directed_edges: Set[Tuple[str, str]] = set()
-        self.separating_sets: Dict[Tuple[str, str], Set[str]] = {}
+        self.undirected_edges: set[tuple[str, str]] = set()
+        self.directed_edges: set[tuple[str, str]] = set()
+        self.separating_sets: dict[tuple[str, str], set[str]] = {}
 
         # Experimental data
-        self.experiments: List[ExperimentResult] = []
-        self.observational_data: Optional[np.ndarray] = None
+        self.experiments: list[ExperimentResult] = []
+        self.observational_data: np.ndarray | None = None
 
         # Edge beliefs (for active learning)
-        self.edge_beliefs: Dict[Tuple[str, str], float] = {}
+        self.edge_beliefs: dict[tuple[str, str], float] = {}
         self._initialize_edge_beliefs()
 
     def _initialize_edge_beliefs(self):
@@ -111,7 +113,7 @@ class CausalDiscovery:
                 if i < j:  # Undirected
                     self.edge_beliefs[(X, Y)] = 0.5  # 50% prior
 
-    def fit_observational(self, data: np.ndarray, variable_names: List[str]):
+    def fit_observational(self, data: np.ndarray, variable_names: list[str]):
         """
         Learn causal structure from observational data using PC algorithm.
 
@@ -145,7 +147,7 @@ class CausalDiscovery:
     def _test_independence_at_depth(
         self,
         data: np.ndarray,
-        variable_names: List[str],
+        variable_names: list[str],
         depth: int
     ):
         """Test conditional independence with conditioning sets of size 'depth'."""
@@ -184,9 +186,9 @@ class CausalDiscovery:
         self,
         X: str,
         Y: str,
-        Z: Set[str],
+        Z: set[str],
         data: np.ndarray,
-        variable_names: List[str]
+        variable_names: list[str]
     ) -> ConditionalIndependence:
         """
         Test if X ⊥ Y | Z using partial correlation.
@@ -250,7 +252,7 @@ class CausalDiscovery:
             test_statistic=test_stat
         )
 
-    def _get_neighbors(self, node: str) -> Set[str]:
+    def _get_neighbors(self, node: str) -> set[str]:
         """Get undirected neighbors of node."""
         neighbors = set()
         for X, Y in self.undirected_edges:
@@ -343,7 +345,7 @@ class CausalDiscovery:
 
         return dag
 
-    def select_intervention(self) -> Dict[str, Any]:
+    def select_intervention(self) -> dict[str, Any]:
         """
         Select most informative intervention for active learning.
 
@@ -400,7 +402,7 @@ class CausalDiscovery:
 
         return uncertainty
 
-    def update(self, intervention: Dict[str, Any], observations: Dict[str, Any]):
+    def update(self, intervention: dict[str, Any], observations: dict[str, Any]):
         """
         Update causal beliefs based on experimental result.
 
@@ -470,8 +472,8 @@ class ActiveCausalLearner:
 
     def __init__(
         self,
-        variables: List[str],
-        environment: Optional[Callable] = None
+        variables: list[str],
+        environment: Callable | None = None
     ):
         """
         Initialize active learner.

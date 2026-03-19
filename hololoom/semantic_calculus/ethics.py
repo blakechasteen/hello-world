@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Ethical Semantic Policy Engine
 
@@ -20,10 +21,11 @@ Mathematical foundation:
 This is the "moral compass" for semantic navigation.
 """
 
-import numpy as np
-from typing import Dict, List, Tuple, Optional, Callable
-from dataclasses import dataclass
 import warnings
+from collections.abc import Callable
+from dataclasses import dataclass
+
+import numpy as np
 
 try:
     from scipy.optimize import minimize
@@ -42,16 +44,16 @@ class EthicalObjective:
     This encodes VALUES - what makes communication good
     """
     # Dimensions to maximize (virtues)
-    maximize: Dict[str, float]  # {dimension_name: weight}
+    maximize: dict[str, float]  # {dimension_name: weight}
 
     # Dimensions to minimize (vices)
-    minimize: Dict[str, float]
+    minimize: dict[str, float]
 
     # Constraints (must satisfy)
-    constraints: List[Callable]  # functions that return True if satisfied
+    constraints: list[Callable]  # functions that return True if satisfied
 
     # Overall weights for different aspects
-    weights: Dict[str, float] = None
+    weights: dict[str, float] = None
 
     def __post_init__(self):
         if self.weights is None:
@@ -129,7 +131,7 @@ class EthicalSemanticPolicy:
     While avoiding manipulation and maintaining virtue.
     """
 
-    def __init__(self, objective: EthicalObjective, dimension_names: List[str]):
+    def __init__(self, objective: EthicalObjective, dimension_names: list[str]):
         """
         Args:
             objective: Ethical objective defining values
@@ -311,7 +313,7 @@ class EthicalSemanticPolicy:
 
         return np.array(path)
 
-    def analyze_conversation_ethics(self, trajectory: np.ndarray) -> Dict:
+    def analyze_conversation_ethics(self, trajectory: np.ndarray) -> dict:
         """
         Analyze ethical properties of a conversation trajectory
 
@@ -353,7 +355,7 @@ class EthicalSemanticPolicy:
         return analysis
 
     def suggest_ethical_response(self, q_current: np.ndarray,
-                                 candidate_responses: List[np.ndarray]) -> Tuple[int, Dict]:
+                                 candidate_responses: list[np.ndarray]) -> tuple[int, dict]:
         """
         Given current position and candidate next words,
         choose the most ethical response
@@ -392,7 +394,7 @@ class EthicalSemanticPolicy:
 def visualize_ethical_landscape(policy: EthicalSemanticPolicy,
                                 dim1: str, dim2: str,
                                 n_points: int = 50,
-                                save_path: Optional[str] = None):
+                                save_path: str | None = None):
     """
     Visualize virtue landscape in 2D slice of semantic space
     """

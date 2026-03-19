@@ -9,13 +9,11 @@ Author: mythRL Team
 Date: 2025-10-27 (Phase 1 - Task 1.1: Protocol Standardization)
 """
 
-from typing import Protocol, runtime_checkable, List, Any, Tuple, Optional
+from typing import Any, Protocol, runtime_checkable
 
 # Import shared types
 try:
-    from hololoom.protocols.types import (
-        Features, Context, ActionPlan, Query, Vector
-    )
+    from hololoom.protocols.types import ActionPlan, Context, Features, Query, Vector
 except ImportError:
     # Fallback if types not available
     Features = Any
@@ -40,7 +38,7 @@ class Embedder(Protocol):
     Implementations: MatryoshkaEmbeddings, SpectralEmbedder, etc.
     """
 
-    def encode(self, texts: List[str]) -> List[Vector]:
+    def encode(self, texts: list[str]) -> list[Vector]:
         """
         Encode texts into vectors (SYNCHRONOUS).
 
@@ -74,7 +72,7 @@ class MotifDetector(Protocol):
     Implementations: RegexMotifDetector, SpaCyMotifDetector, etc.
     """
 
-    async def detect(self, text: str) -> List[Tuple[str, int, int, float]]:
+    async def detect(self, text: str) -> list[tuple[str, int, int, float]]:
         """
         Detect motifs in text.
 
@@ -120,7 +118,7 @@ class PolicyEngine(Protocol):
         """
         ...
 
-    async def update(self, reward: float, metadata: Optional[Any] = None):
+    async def update(self, reward: float, metadata: Any | None = None):
         """
         Update policy based on reward (for learning policies).
 
@@ -148,7 +146,7 @@ class RoutingStrategy(Protocol):
     async def select_mode(
         self,
         query: Query,
-        context: Optional[Any] = None
+        context: Any | None = None
     ) -> str:
         """
         Select execution mode based on query.
@@ -190,7 +188,7 @@ class ExecutionEngine(Protocol):
         self,
         tool: str,
         args: Any,
-        context: Optional[Context] = None
+        context: Context | None = None
     ) -> Any:
         """
         Execute a tool with arguments.
@@ -218,11 +216,11 @@ class ToolRegistry(Protocol):
         """Register a tool."""
         ...
 
-    def get(self, name: str) -> Optional[Any]:
+    def get(self, name: str) -> Any | None:
         """Get a tool by name."""
         ...
 
-    def list_tools(self) -> List[str]:
+    def list_tools(self) -> list[str]:
         """List all registered tools."""
         ...
 

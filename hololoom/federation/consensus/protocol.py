@@ -14,10 +14,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, FrozenSet, Generic, List, Literal, Optional, TypeVar
+from typing import Any
 
 from hololoom.federation.types import Response
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  FINALITY TYPES
@@ -49,10 +48,10 @@ class ConsensusResult:
     abstentions: int = 0
     finality_type: FinalityType = FinalityType.INSTANT
     confidence: float = 0.0  # For probabilistic finality
-    agreeing_nodes: FrozenSet[str] = field(default_factory=frozenset)
-    dissenting_nodes: FrozenSet[str] = field(default_factory=frozenset)
+    agreeing_nodes: frozenset[str] = field(default_factory=frozenset)
+    dissenting_nodes: frozenset[str] = field(default_factory=frozenset)
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def agreement_ratio(self) -> float:
@@ -154,7 +153,7 @@ class ConsensusProtocol(ABC):
         """
         ...
 
-    async def get_state(self) -> Dict[str, Any]:
+    async def get_state(self) -> dict[str, Any]:
         """Get current protocol state (for debugging/monitoring)."""
         return {
             "name": self.name,
@@ -174,8 +173,8 @@ class ConsensusProtocol(ABC):
 class ResponseConsensusResult(ConsensusResult):
     """Consensus result for Response objects."""
 
-    consensus_response: Optional[Response] = None
-    all_responses: List[Response] = field(default_factory=list)
+    consensus_response: Response | None = None
+    all_responses: list[Response] = field(default_factory=list)
 
 
 class ResponseConsensusProtocol(ConsensusProtocol):
@@ -197,7 +196,7 @@ class ResponseConsensusProtocol(ConsensusProtocol):
     async def collect_responses(
         self,
         proposal_id: str,
-        responses: List[Response],
+        responses: list[Response],
     ) -> ResponseConsensusResult:
         """
         Collect multiple responses and determine consensus.

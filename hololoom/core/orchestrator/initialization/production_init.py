@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Production Hardening Initialization
 ====================================
@@ -39,11 +38,11 @@ PRODUCTION_HARDENING_AVAILABLE = False
 try:
     from hololoom.context import (
         ProductionConfig,
-        create_system_monitor,
         create_circuit_breaker_registry,
-        create_rate_limiter,
+        create_error_handler,
         create_health_checker,
-        create_error_handler
+        create_rate_limiter,
+        create_system_monitor,
     )
     PRODUCTION_HARDENING_AVAILABLE = True
 except ImportError:
@@ -51,7 +50,7 @@ except ImportError:
 
 
 def initialize_production_hardening(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     production_config,
     rate_limit_qps: float,
     rate_limit_concurrent: int,

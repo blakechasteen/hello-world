@@ -8,8 +8,8 @@ Provides the minimal interfaces needed by the recursive learning system.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
 from enum import Enum
+from typing import Any
 
 
 @dataclass
@@ -23,10 +23,10 @@ class ScratchpadEntry:
     action: str  # What tool/action was taken
     observation: str  # What the result was
     score: float  # Quality score (0-1)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    iteration: Optional[int] = None  # Which iteration this was
-    timestamp: Optional[float] = None  # When it occurred
+    iteration: int | None = None  # Which iteration this was
+    timestamp: float | None = None  # When it occurred
 
 
 class Scratchpad:
@@ -44,7 +44,7 @@ class Scratchpad:
         Args:
             capacity: Maximum number of entries to store
         """
-        self.entries: List[ScratchpadEntry] = []
+        self.entries: list[ScratchpadEntry] = []
         self.capacity = capacity
 
     def add_entry(
@@ -53,8 +53,8 @@ class Scratchpad:
         action: str,
         observation: str,
         score: float,
-        iteration: Optional[int] = None,
-        metadata: Optional[Dict] = None
+        iteration: int | None = None,
+        metadata: dict | None = None
     ):
         """Add a new entry to the scratchpad."""
         entry = ScratchpadEntry(
@@ -72,11 +72,11 @@ class Scratchpad:
         if len(self.entries) > self.capacity:
             self.entries = self.entries[-self.capacity:]
 
-    def get_history(self) -> List[ScratchpadEntry]:
+    def get_history(self) -> list[ScratchpadEntry]:
         """Get complete history of entries."""
         return self.entries.copy()
 
-    def get_last_n(self, n: int) -> List[ScratchpadEntry]:
+    def get_last_n(self, n: int) -> list[ScratchpadEntry]:
         """Get last n entries."""
         return self.entries[-n:]
 
@@ -116,7 +116,7 @@ class LoopResult:
     success: bool
     iterations: int
     final_quality: float
-    history: List[ScratchpadEntry] = field(default_factory=list)
+    history: list[ScratchpadEntry] = field(default_factory=list)
     improvement: float = 0.0  # Quality delta from start to end
 
     def summary(self) -> str:

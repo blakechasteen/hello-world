@@ -20,14 +20,11 @@ where we disagree, and why. The tensions ARE the interesting parts."
 Author: HoloLoom Architecture Team
 """
 
-import asyncio
 import logging
-import random
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
 
-from hololoom.fabric.fabric import Fabric, Tension, Resolution
+from hololoom.fabric.fabric import Fabric, Resolution, Tension
 from hololoom.fabric.spacetime import WeavingTrace
 
 logger = logging.getLogger(__name__)
@@ -47,8 +44,8 @@ class Claim:
     text: str                      # The claim itself
     source_loom: str               # Which loom made this claim
     confidence: float              # Confidence in this claim
-    supporting_evidence: List[str] = field(default_factory=list)
-    embedding: Optional[List[float]] = None  # For similarity comparison
+    supporting_evidence: list[str] = field(default_factory=list)
+    embedding: list[float] | None = None  # For similarity comparison
 
     def __hash__(self):
         return hash(self.text)
@@ -71,7 +68,7 @@ class Agreement:
     When multiple looms make similar claims, we identify the consensus.
     """
     claim: str                     # The agreed-upon claim
-    supporting_looms: List[str]    # Which looms agree
+    supporting_looms: list[str]    # Which looms agree
     avg_confidence: float          # Average confidence across looms
     strength: float                # How strong is the agreement (0.0-1.0)
 
@@ -131,11 +128,11 @@ class LoomConsensus:
         self.tension_threshold = tension_threshold
 
         # Thompson Sampling priors (alpha, beta per loom)
-        self._thompson_priors: Dict[str, Tuple[float, float]] = {}
+        self._thompson_priors: dict[str, tuple[float, float]] = {}
 
     # ====== Main Synthesis ======
 
-    async def synthesize(self, fabrics: List[Fabric]) -> Fabric:
+    async def synthesize(self, fabrics: list[Fabric]) -> Fabric:
         """
         Synthesize multiple fabrics into collective fabric.
 
@@ -213,7 +210,7 @@ class LoomConsensus:
 
     # ====== Tension Detection ======
 
-    def has_significant_tensions(self, fabric: Fabric, threshold: Optional[float] = None) -> bool:
+    def has_significant_tensions(self, fabric: Fabric, threshold: float | None = None) -> bool:
         """
         Check if fabric has significant unresolved tensions.
 
@@ -228,7 +225,7 @@ class LoomConsensus:
         tensions = fabric.metadata.get("tensions", [])
         return any(t.get("severity", 0) > threshold for t in tensions)
 
-    def get_tensions(self, fabric: Fabric) -> List[Tension]:
+    def get_tensions(self, fabric: Fabric) -> list[Tension]:
         """
         Get all tensions from a collective fabric.
 
@@ -248,7 +245,7 @@ class LoomConsensus:
     async def attempt_resolution(
         self,
         tension: Tension,
-        exploration_fabrics: List[Fabric]
+        exploration_fabrics: list[Fabric]
     ) -> Resolution:
         """
         Try to resolve a tension with deeper exploration.
@@ -302,15 +299,15 @@ class LoomConsensus:
 
     def _extract_claims(
         self,
-        fabrics: List[Fabric]
-    ) -> Dict[str, List[Claim]]:
+        fabrics: list[Fabric]
+    ) -> dict[str, list[Claim]]:
         """
         Extract discrete claims from each fabric's response.
 
         Simple heuristic: split on sentences.
         Future: Use LLM for claim extraction.
         """
-        claims_by_loom: Dict[str, List[Claim]] = {}
+        claims_by_loom: dict[str, list[Claim]] = {}
 
         for fabric in fabrics:
             claims = []
@@ -331,15 +328,15 @@ class LoomConsensus:
 
     def _find_agreements(
         self,
-        claims_by_loom: Dict[str, List[Claim]]
-    ) -> List[Agreement]:
+        claims_by_loom: dict[str, list[Claim]]
+    ) -> list[Agreement]:
         """
         Find claims where multiple looms agree.
 
         Uses simple text similarity (future: semantic similarity).
         """
-        agreements: List[Agreement] = []
-        seen_claims: Set[str] = set()
+        agreements: list[Agreement] = []
+        seen_claims: set[str] = set()
 
         all_claims = []
         for loom, claims in claims_by_loom.items():
@@ -377,9 +374,9 @@ class LoomConsensus:
 
     def _find_tensions(
         self,
-        fabrics: List[Fabric],
-        claims_by_loom: Dict[str, List[Claim]]
-    ) -> List[Tension]:
+        fabrics: list[Fabric],
+        claims_by_loom: dict[str, list[Claim]]
+    ) -> list[Tension]:
         """
         Find significant disagreements between looms.
 
@@ -388,8 +385,8 @@ class LoomConsensus:
         2. Low agreement_with scores
         3. Contradicting claims (future: semantic contradiction detection)
         """
-        tensions: List[Tension] = []
-        seen_pairs: Set[Tuple[str, str]] = set()
+        tensions: list[Tension] = []
+        seen_pairs: set[tuple[str, str]] = set()
 
         # 1. Collect explicit tensions
         for fabric in fabrics:
@@ -454,8 +451,8 @@ class LoomConsensus:
 
     def _compute_collective_epistemic(
         self,
-        fabrics: List[Fabric],
-        tensions: List[Tension]
+        fabrics: list[Fabric],
+        tensions: list[Tension]
     ) -> float:
         """
         Compute collective epistemic confidence.
@@ -488,7 +485,7 @@ class LoomConsensus:
 
         return max(0.0, min(1.0, avg_epistemic - tension_penalty - ignorance_penalty))
 
-    def _intersect_blind_spots(self, fabrics: List[Fabric]) -> List[str]:
+    def _intersect_blind_spots(self, fabrics: list[Fabric]) -> list[str]:
         """
         Find blind spots shared by ALL looms.
 
@@ -504,29 +501,29 @@ class LoomConsensus:
 
         return list(common)
 
-    def _collect_falsifiability(self, fabrics: List[Fabric]) -> List[str]:
+    def _collect_falsifiability(self, fabrics: list[Fabric]) -> list[str]:
         """
         Collect all falsifiers from all looms.
 
         Union of what would change each loom's mind.
         """
-        all_falsifiers: Set[str] = set()
+        all_falsifiers: set[str] = set()
         for fabric in fabrics:
             all_falsifiers.update(fabric.falsifiable_by)
         return list(all_falsifiers)
 
-    def _collect_ignorance(self, fabrics: List[Fabric]) -> List[str]:
+    def _collect_ignorance(self, fabrics: list[Fabric]) -> list[str]:
         """
         Collect admitted ignorance from all looms.
 
         Tracks what different looms know they don't know.
         """
-        all_ignorance: Set[str] = set()
+        all_ignorance: set[str] = set()
         for fabric in fabrics:
             all_ignorance.update(fabric.admits_ignorance)
         return list(all_ignorance)
 
-    def _weighted_confidence(self, fabrics: List[Fabric]) -> float:
+    def _weighted_confidence(self, fabrics: list[Fabric]) -> float:
         """
         Compute weighted average confidence.
 
@@ -547,8 +544,8 @@ class LoomConsensus:
 
     def _merge_agreed_claims(
         self,
-        agreements: List[Agreement],
-        fabrics: List[Fabric]
+        agreements: list[Agreement],
+        fabrics: list[Fabric]
     ) -> str:
         """
         Merge agreed-upon claims into response.
@@ -569,7 +566,7 @@ class LoomConsensus:
 
         return merged
 
-    def _merge_traces(self, fabrics: List[Fabric]) -> WeavingTrace:
+    def _merge_traces(self, fabrics: list[Fabric]) -> WeavingTrace:
         """
         Merge traces from multiple fabrics.
 
@@ -682,7 +679,7 @@ class LoomConsensus:
 
         return False
 
-    def _compute_pairwise_similarity(self, claims: List[str]) -> float:
+    def _compute_pairwise_similarity(self, claims: list[str]) -> float:
         """
         Compute average pairwise similarity between claims.
         """
@@ -699,7 +696,7 @@ class LoomConsensus:
 
         return total / count if count > 0 else 0.0
 
-    def _merge_claims_text(self, claims: List[str]) -> str:
+    def _merge_claims_text(self, claims: list[str]) -> str:
         """
         Merge multiple claims into consensus text.
 

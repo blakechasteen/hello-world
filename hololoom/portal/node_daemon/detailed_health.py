@@ -28,7 +28,7 @@ Usage:
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Deque
+from typing import Any
 
 
 @dataclass
@@ -55,7 +55,7 @@ class DetailedHealth:
     # Overall status
     healthy: bool
     degraded: bool = False
-    degradation_reasons: List[str] = field(default_factory=list)
+    degradation_reasons: list[str] = field(default_factory=list)
 
     # Current resource metrics
     cpu_percent: float = 0.0
@@ -73,18 +73,18 @@ class DetailedHealth:
     # System info
     uptime_seconds: float = 0.0
     module_count: int = 0
-    module_load_errors: List[str] = field(default_factory=list)
+    module_load_errors: list[str] = field(default_factory=list)
 
     # Trend data (last 5 minutes, 12 samples @ 30s by default)
-    memory_trend: List[float] = field(default_factory=list)
-    cpu_trend: List[float] = field(default_factory=list)
+    memory_trend: list[float] = field(default_factory=list)
+    cpu_trend: list[float] = field(default_factory=list)
 
     # Derived insights
     memory_leak_suspected: bool = False
     high_cpu_sustained: bool = False
     estimated_available_slots: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "healthy": self.healthy,
@@ -152,19 +152,19 @@ class HealthMonitor:
         self.high_cpu_threshold = high_cpu_threshold
         self.high_memory_threshold = high_memory_threshold
 
-        self._samples: Deque[HealthSample] = deque(maxlen=max_samples)
+        self._samples: deque[HealthSample] = deque(maxlen=max_samples)
         self._start_time = time.time()
         self._jobs_completed = 0
         self._jobs_failed = 0
-        self._job_durations: Deque[float] = deque(maxlen=100)
-        self._module_errors: List[str] = []
+        self._job_durations: deque[float] = deque(maxlen=100)
+        self._module_errors: list[str] = []
 
     def record_sample(
         self,
         job_queue_depth: int,
-        cpu_percent: Optional[float] = None,
-        memory_percent: Optional[float] = None,
-        memory_mb: Optional[int] = None,
+        cpu_percent: float | None = None,
+        memory_percent: float | None = None,
+        memory_mb: int | None = None,
     ) -> None:
         """
         Record a health sample.
@@ -335,7 +335,7 @@ class HealthMonitor:
         )
 
         # Determine health status
-        degradation_reasons: List[str] = []
+        degradation_reasons: list[str] = []
 
         if memory_percent > 90:
             degradation_reasons.append("Critical memory usage (>90%)")
@@ -382,7 +382,7 @@ class HealthMonitor:
             estimated_available_slots=estimated_available_slots,
         )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get monitor statistics for diagnostics."""
         return {
             "sample_count": len(self._samples),

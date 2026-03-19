@@ -43,19 +43,17 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
+from .communication import MessageBus
 from .protocols import (
     AgentMessage,
-    AgentProtocol,
     AgentResult,
     AgentRole,
     AgentState,
     AgentTask,
     MessagePriority,
 )
-from .communication import MessageBus
-
 
 # ============================================================================
 # Metrics Dataclass
@@ -103,7 +101,7 @@ class AgentMetrics:
     error_count: int = 0
     recovery_count: int = 0
     # Running statistics for averages
-    _task_durations: List[float] = field(default_factory=list)
+    _task_durations: list[float] = field(default_factory=list)
 
     def update_task_timing(self, duration_ms: float) -> None:
         """Update task timing statistics.
@@ -155,7 +153,7 @@ class AgentMetrics:
         """Update uptime based on start time."""
         self.uptime_seconds = time.time() - self.start_time
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize metrics to dict.
 
         Returns:
@@ -265,9 +263,9 @@ class BaseAgent:
         self._state_lock = asyncio.Lock()
 
         # Message handling
-        self._message_handler_task: Optional[asyncio.Task] = None
-        self._pending_tasks: Dict[str, AgentTask] = {}
-        self._pending_results: Dict[str, AgentResult] = {}
+        self._message_handler_task: asyncio.Task | None = None
+        self._pending_tasks: dict[str, AgentTask] = {}
+        self._pending_results: dict[str, AgentResult] = {}
 
         # Metrics
         self._metrics = AgentMetrics()
@@ -411,7 +409,7 @@ class BaseAgent:
     # Message Handling
     # ========================================================================
 
-    async def handle_message(self, message: AgentMessage) -> Optional[AgentMessage]:
+    async def handle_message(self, message: AgentMessage) -> AgentMessage | None:
         """Process incoming message from bus.
 
         Routes based on message_type:
@@ -619,7 +617,7 @@ class BaseAgent:
         self,
         recipient: str,
         message_type: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         priority: MessagePriority = MessagePriority.NORMAL,
         requires_ack: bool = False,
     ) -> bool:
@@ -667,7 +665,7 @@ class BaseAgent:
     async def broadcast(
         self,
         message_type: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         priority: MessagePriority = MessagePriority.NORMAL,
     ) -> int:
         """Send message to all agents.
@@ -746,7 +744,7 @@ class BaseAgent:
     # Metrics
     # ========================================================================
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get agent metrics for monitoring.
 
         Returns:

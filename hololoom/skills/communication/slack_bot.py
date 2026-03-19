@@ -1,9 +1,16 @@
 """Slack Bot Skill - Proactive communication"""
 
 import time
-from typing import Dict, Any, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 # Check for slack_sdk availability
 try:
@@ -17,7 +24,7 @@ except ImportError:
 class SlackBotSkill(BaseSkill):
     """Slack bot for proactive communication."""
 
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: str | None = None):
         """
         Initialize Slack Bot Skill.
 
@@ -117,7 +124,7 @@ class SlackBotSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _send_message(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _send_message(self, params: dict[str, Any]) -> dict[str, Any]:
         """Send direct message to user."""
         user = params["user"]
         text = params["text"]
@@ -137,7 +144,7 @@ class SlackBotSkill(BaseSkill):
             "success": response["ok"]
         }
 
-    async def _post_to_channel(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _post_to_channel(self, params: dict[str, Any]) -> dict[str, Any]:
         """Post message to channel."""
         channel = params["channel"]
         text = params["text"]
@@ -159,7 +166,7 @@ class SlackBotSkill(BaseSkill):
             "success": response["ok"]
         }
 
-    async def _create_thread(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _create_thread(self, params: dict[str, Any]) -> dict[str, Any]:
         """Create threaded conversation."""
         channel = params["channel"]
         parent_text = params["parent_text"]
@@ -192,7 +199,7 @@ class SlackBotSkill(BaseSkill):
             "success": True
         }
 
-    async def _upload_file(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _upload_file(self, params: dict[str, Any]) -> dict[str, Any]:
         """Upload file to channel."""
         channels = params["channels"]
         file = params["file"]
@@ -215,7 +222,7 @@ class SlackBotSkill(BaseSkill):
             "success": response["ok"]
         }
 
-    async def _react(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _react(self, params: dict[str, Any]) -> dict[str, Any]:
         """Add emoji reaction to message."""
         channel = params["channel"]
         timestamp = params["timestamp"]
@@ -235,7 +242,7 @@ class SlackBotSkill(BaseSkill):
             "success": response["ok"]
         }
 
-    async def _update_status(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _update_status(self, params: dict[str, Any]) -> dict[str, Any]:
         """Update bot status."""
         status_text = params["status_text"]
         status_emoji = params.get("status_emoji", "")
@@ -256,4 +263,5 @@ class SlackBotSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(SlackBotSkill())

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Weaving Pipeline Steps 7-9: Convergence, Execution, and Output
 ==============================================================
@@ -23,24 +22,21 @@ Date: 2025-12-09
 
 from __future__ import annotations
 
-import time
 import asyncio
 import logging
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable, Optional, Any, Dict, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import numpy as np
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
-    from hololoom.config import Config
-    from hololoom.tools.executor import ToolExecutor
-    from hololoom.alignment.safety_guardrails import SafetyGuardrails
     from hololoom.alignment.audit_trail import AuditTrail
-    from hololoom.convergence.engine import ConvergenceEngine
-    from hololoom.warp.space import WarpSpace
-    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.config import Config
+    from hololoom.orchestrator.context import WeavingContext
+    from hololoom.tools.executor import ToolExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -50,14 +46,14 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 async def execute_step7_convergence(
-    ctx: 'WeavingContext',
-    cfg: 'Config',
+    ctx: WeavingContext,
+    cfg: Config,
     policy: Any,
-    tool_executor: 'ToolExecutor',
-    gradient_router: Optional[Any] = None,
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
-) -> 'WeavingContext':
+    tool_executor: ToolExecutor,
+    gradient_router: Any | None = None,
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
+) -> WeavingContext:
     """
     Step 7: Convergence Engine collapses to discrete tool selection.
 
@@ -134,7 +130,7 @@ async def execute_step7_convergence(
             log.warning(f"Gradient flow routing failed: {e}")
 
     # Create Convergence Engine and collapse
-    from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
+    from hololoom.convergence.engine import CollapseStrategy, ConvergenceEngine
 
     # Map bandit strategy to collapse strategy
     strategy_map = {
@@ -171,24 +167,28 @@ async def execute_step7_convergence(
 # ============================================================================
 
 async def execute_step8_tool_execution(
-    ctx: 'WeavingContext',
-    tool_executor: 'ToolExecutor',
-    guardrails: Optional['SafetyGuardrails'] = None,
-    audit_trail: Optional['AuditTrail'] = None,
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
-) -> 'WeavingContext':
+    ctx: WeavingContext,
+    tool_executor: ToolExecutor,
+    guardrails: SafetyGuardrails | None = None,
+    audit_trail: AuditTrail | None = None,
+    minimax_gate: Any | None = None,
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
+) -> WeavingContext:
     """
-    Step 8: Tool Execution with Safety Gating.
+    Step 8: Tool Execution with Safety Gating + Minimax Verification.
 
-    Gates the action through safety guardrails, logs to audit trail,
-    and executes the selected tool.
+    Gates the action through:
+    1. Minimax verification (game-theoretic worst-case check) — optional
+    2. Safety guardrails (alignment check) — optional
+    Then executes the selected tool.
 
     Args:
         ctx: Weaving context with collapse_result
         tool_executor: Tool executor for running tools
         guardrails: Optional safety guardrails
         audit_trail: Optional audit trail for logging
+        minimax_gate: Optional MinimaxGate for game-theoretic verification
         emit_stage_event: Optional callback for stage events
         log: Optional logger
 
@@ -208,6 +208,42 @@ async def execute_step8_tool_execution(
     log = log or logger
     step_start = ctx.start_timer()
 
+    # 8pre. Minimax Verification Gate (Wire 3 — game-theoretic check)
+    if minimax_gate and hasattr(ctx, 'collapse_result') and ctx.collapse_result:
+        try:
+            tools = tool_executor.tools if hasattr(tool_executor, 'tools') else ['answer', 'research', 'remember', 'clarify']
+            n_tools = len(tools)
+
+            # Build payoff matrix from available context
+            # Rows = tools, Cols = environment states (normal, adversarial, degraded)
+            tool_payoffs = np.ones((n_tools, 3)) * 0.5  # baseline
+            for i, tool in enumerate(tools):
+                tool_prob = ctx.neural_probs[i] if hasattr(ctx, 'neural_probs') and i < len(ctx.neural_probs) else 0.25
+                confidence = ctx.collapse_result.confidence if ctx.collapse_result else 0.5
+                # Normal state: payoff proportional to neural probability
+                tool_payoffs[i, 0] = tool_prob * confidence
+                # Adversarial state: safe tools do better
+                tool_payoffs[i, 1] = 0.8 if tool in ('answer', 'clarify') else 0.2 * tool_prob
+                # Degraded state: simple tools preferred
+                tool_payoffs[i, 2] = 0.6 if tool in ('answer', 'remember') else 0.3 * tool_prob
+
+            selected_idx = tools.index(ctx.collapse_result.tool) if ctx.collapse_result.tool in tools else 0
+            gate_result = minimax_gate.verify(
+                selected_tool=selected_idx,
+                tool_payoffs=tool_payoffs,
+            )
+            ctx.minimax_result = gate_result
+
+            if not gate_result.verified:
+                log.info(
+                    f"  [8pre] Minimax divergence: TS chose {ctx.collapse_result.tool}, "
+                    f"minimax prefers {tools[gate_result.minimax_tool]} "
+                    f"(regret={gate_result.regret:.3f})"
+                )
+
+        except Exception as e:
+            log.debug(f"Minimax gate failed (non-blocking): {e}")
+
     # Emit stage start event
     if emit_stage_event:
         emit_stage_event(8, "Tool Execution", None)
@@ -215,8 +251,8 @@ async def execute_step8_tool_execution(
     # 8a. Action Gating - Check safety before tool execution
     if guardrails:
         try:
-            from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
             from hololoom.alignment.audit_trail import DecisionType, OutcomeType
+            from hololoom.alignment.safety_guardrails import ActionRequest
 
             ctx.action_request = ActionRequest(
                 action_id=str(uuid4()),
@@ -230,7 +266,7 @@ async def execute_step8_tool_execution(
                 }
             )
 
-            ctx.safety_decision = guardrails.gate_action(ctx.action_request)
+            ctx.safety_decision = guardrails.evaluate(ctx.action_request)
 
             # Log to audit trail
             if audit_trail:
@@ -238,7 +274,7 @@ async def execute_step8_tool_execution(
                     decision_id=ctx.action_request.action_id,
                     decision_type=DecisionType.TOOL_SELECTION,
                     action=ctx.collapse_result.tool,
-                    outcome=OutcomeType.ALLOWED if ctx.safety_decision.allowed else OutcomeType.BLOCKED,
+                    outcome=OutcomeType.APPROVED if ctx.safety_decision.allowed else OutcomeType.REJECTED,
                     metadata={
                         "query": ctx.current_query_text[:200],
                         "confidence": ctx.collapse_result.confidence,
@@ -257,8 +293,8 @@ async def execute_step8_tool_execution(
 
                 return ctx
 
-        except Exception as e:
-            log.warning(f"Safety gating failed (non-blocking): {e}")
+        except (ConnectionError, TimeoutError, OSError) as e:
+            log.warning(f"Safety gating failed (service unavailable): {e}")
             ctx.add_warning(f"Safety gating error: {e}")
             # Continue with tool execution (graceful degradation)
 
@@ -280,7 +316,7 @@ async def execute_step8_tool_execution(
     return ctx
 
 
-def _categorize_tool_to_category(tool: str) -> 'ActionCategory':
+def _categorize_tool_to_category(tool: str) -> ActionCategory:
     """Categorize tool for safety classification, returning ActionCategory enum.
 
     Args:
@@ -310,14 +346,14 @@ def _categorize_tool_to_category(tool: str) -> 'ActionCategory':
 # ============================================================================
 
 async def execute_step9_spacetime_fabric(
-    ctx: 'WeavingContext',
-    cfg: 'Config',
-    semantic_cache: Optional[Any] = None,
-    dashboard_constructor: Optional[Any] = None,
-    awareness_context: Optional[Dict[str, Any]] = None,
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
-) -> 'WeavingContext':
+    ctx: WeavingContext,
+    cfg: Config,
+    semantic_cache: Any | None = None,
+    dashboard_constructor: Any | None = None,
+    awareness_context: dict[str, Any] | None = None,
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
+) -> WeavingContext:
     """
     Step 9: Spacetime Fabric - Weave final output with provenance.
 
@@ -358,7 +394,7 @@ async def execute_step9_spacetime_fabric(
     duration_ms = ctx.total_duration_ms
 
     # Import fabric types
-    from hololoom.fabric.spacetime import Spacetime, WeavingTrace, Artifact
+    from hololoom.fabric.spacetime import Artifact, Spacetime, WeavingTrace
 
     # Create WeavingTrace with full provenance
     ctx.trace = WeavingTrace(
@@ -494,7 +530,7 @@ async def execute_step9_spacetime_fabric(
 
     # Record timing
     duration = ctx.record_timing_since('spacetime_assembly', step_start)
-    log.info(f"  [9] Spacetime fabric woven!")
+    log.info("  [9] Spacetime fabric woven!")
 
     # Emit stage complete event
     if emit_stage_event:

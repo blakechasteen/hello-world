@@ -11,16 +11,15 @@ Search: Keyword-based (basic) + TF-IDF with temporal decay (semantic).
 Created: 2026-03-13
 """
 
+import logging
 import math
 import os
 import re
 import sqlite3
-import logging
 import uuid
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
@@ -77,7 +76,7 @@ class ObservationStore:
         self,
         agent: str,
         content: str,
-        tags: List[str] | None = None,
+        tags: list[str] | None = None,
         room_id: str | None = None,
         relevance_score: float = 1.0,
     ) -> str:
@@ -105,7 +104,7 @@ class ObservationStore:
         query: str,
         agent: str | None = None,
         limit: int = 10,
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Keyword search with tag boost (3x weight)."""
         terms = query.lower().split()
         if not terms:
@@ -144,7 +143,7 @@ class ObservationStore:
         self,
         agent: str | None = None,
         limit: int = 20,
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Get most recent observations, optionally filtered by agent."""
         if agent:
             rows = self._conn.execute(
@@ -180,7 +179,7 @@ class ObservationStore:
         agent: str | None = None,
         limit: int = 10,
         decay_half_life: float = 30.0,
-    ) -> List[dict]:
+    ) -> list[dict]:
         """TF-IDF search with bigrams, temporal decay, and tag boost."""
         query_terms = _tokenize(query)
         if not query_terms:
@@ -250,7 +249,7 @@ _STOPWORDS = frozenset(
 )
 
 
-def _tokenize(text: str) -> List[str]:
+def _tokenize(text: str) -> list[str]:
     """Tokenize text into unigrams + bigrams, stripping stopwords."""
     words = [w for w in re.split(r'\W+', text.lower()) if len(w) >= 2 and w not in _STOPWORDS]
     # Generate bigrams
@@ -266,7 +265,7 @@ class TFIDFScorer:
         self._doc_terms: dict[str, Counter] = {}  # doc_id -> term frequencies
         self._num_docs: int = 0
 
-    def fit(self, documents: List[Tuple[str, str]]) -> None:
+    def fit(self, documents: list[tuple[str, str]]) -> None:
         """Build index from (doc_id, text) pairs."""
         self._doc_freq.clear()
         self._doc_terms.clear()
@@ -280,7 +279,7 @@ class TFIDFScorer:
             for term in set(terms):
                 self._doc_freq[term] += 1
 
-    def score(self, query_terms: List[str], doc_id: str) -> float:
+    def score(self, query_terms: list[str], doc_id: str) -> float:
         """Score a document against query terms using TF-IDF."""
         if doc_id not in self._doc_terms or self._num_docs == 0:
             return 0.0
@@ -300,7 +299,7 @@ class TFIDFScorer:
         return score
 
 
-def _extract_keywords(context: str, top_k: int = 5) -> List[str]:
+def _extract_keywords(context: str, top_k: int = 5) -> list[str]:
     """Extract top keywords from a context string (unigrams only)."""
     words = [w for w in re.split(r'\W+', context.lower()) if len(w) >= 2 and w not in _STOPWORDS]
     counts = Counter(words)
@@ -308,7 +307,7 @@ def _extract_keywords(context: str, top_k: int = 5) -> List[str]:
 
 
 # Singleton
-_store: Optional[ObservationStore] = None
+_store: ObservationStore | None = None
 
 
 def get_store() -> ObservationStore:
@@ -325,8 +324,8 @@ def get_store() -> ObservationStore:
 class WriteRequest(BaseModel):
     agent: str = Field(..., min_length=1, max_length=50)
     content: str = Field(..., min_length=1, max_length=10000)
-    tags: List[str] = Field(default_factory=list)
-    room_id: Optional[str] = None
+    tags: list[str] = Field(default_factory=list)
+    room_id: str | None = None
 
 
 class WriteResponse(BaseModel):
@@ -337,22 +336,22 @@ class WriteResponse(BaseModel):
 
 class SearchRequest(BaseModel):
     q: str = Field(..., min_length=1, max_length=500)
-    agent: Optional[str] = None
+    agent: str | None = None
     limit: int = Field(default=10, ge=1, le=100)
 
 
 class ObservationOut(BaseModel):
     id: str
     agent: str
-    room_id: Optional[str]
+    room_id: str | None
     content: str
-    tags: Optional[str]
+    tags: str | None
     created_at: str
     relevance_score: float
 
 
 class SearchResponse(BaseModel):
-    observations: List[ObservationOut]
+    observations: list[ObservationOut]
     total: int
 
 
@@ -380,7 +379,7 @@ async def write_observation(request: WriteRequest):
 @router.get("/search", response_model=SearchResponse)
 async def search_observations(
     q: str,
-    agent: Optional[str] = None,
+    agent: str | None = None,
     limit: int = 10,
 ):
     """Search observations by keyword."""
@@ -394,7 +393,7 @@ async def search_observations(
 
 @router.get("/recent", response_model=SearchResponse)
 async def recent_observations(
-    agent: Optional[str] = None,
+    agent: str | None = None,
     limit: int = 20,
 ):
     """Get most recent observations."""
@@ -409,7 +408,7 @@ async def recent_observations(
 @router.get("/relevant", response_model=SearchResponse)
 async def relevant_observations(
     context: str,
-    agent: Optional[str] = None,
+    agent: str | None = None,
     limit: int = 5,
     decay_half_life: float = 30.0,
 ):

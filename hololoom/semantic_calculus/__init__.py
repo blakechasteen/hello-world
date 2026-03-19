@@ -52,76 +52,86 @@ Author: BearL Labs
 __version__ = "0.1.0"
 
 # === Core Calculus ===
-from .flow_calculus import (
-    SemanticState,
-    SemanticTrajectory,
-    SemanticFlowCalculus,
-    SemanticFlowVisualizer,
-    analyze_text_flow,
+from .adapter import (
+    create_semantic_thread,
+    extract_trajectory_metrics,
+    format_semantic_summary,
+    quick_analysis,
 )
+from .analyzer import SemanticAnalyzer, create_semantic_analyzer, get_cache_stats
+
+# === Integration Layer (Clean Interface) ===
+# Now organized into focused modules
+from .config import SemanticCalculusConfig
 
 # === Semantic Dimensions (The Key Projection!) ===
 from .dimensions import (
+    EXTENDED_244_DIMENSIONS,
+    STANDARD_DIMENSIONS,
     SemanticDimension,
     SemanticSpectrum,
-    STANDARD_DIMENSIONS,
-    EXTENDED_244_DIMENSIONS,
-    visualize_semantic_spectrum,
     print_spectrum_summary,
+    visualize_semantic_spectrum,
+)
+
+# Note: integrator.SemanticState is not exported (internal, conflicts with flow_calculus.SemanticState)
+# === Ethical Policy ===
+from .ethics import (
+    COMPASSIONATE_COMMUNICATION,
+    SCIENTIFIC_DISCOURSE,
+    THERAPEUTIC_DIALOGUE,
+    EthicalObjective,
+    EthicalSemanticPolicy,
+    visualize_ethical_landscape,
+)
+from .flow_calculus import (
+    SemanticFlowCalculus,
+    SemanticFlowVisualizer,
+    SemanticState,
+    SemanticTrajectory,
+    analyze_text_flow,
+)
+
+# === Hyperbolic Semantics ===
+from .hyperbolic import (
+    ComplexSemanticFlow,
+    HyperbolicPoint,
+    HyperbolicSemanticSpace,
+    PoincareGeometry,
+    SemanticSymmetryGroup,
+    visualize_hyperbolic_hierarchy,
+)
+
+# === Integral Geometry ===
+from .integral_geometry import (
+    CroftonFormula,
+    InverseRadonTransform,
+    RadonTransform,
+    SemanticTomography,
+    visualize_tomographic_reconstruction,
 )
 
 # === Geometric Integration ===
 from .integrator import (
     GeometricIntegrator,
     MultiScaleGeometricFlow,
-    visualize_geometric_flow,
     compute_semantic_force_field,
-)
-# Note: integrator.SemanticState is not exported (internal, conflicts with flow_calculus.SemanticState)
-
-# === Ethical Policy ===
-from .ethics import (
-    EthicalObjective,
-    EthicalSemanticPolicy,
-    COMPASSIONATE_COMMUNICATION,
-    SCIENTIFIC_DISCOURSE,
-    THERAPEUTIC_DIALOGUE,
-    visualize_ethical_landscape,
-)
-
-# === Integral Geometry ===
-from .integral_geometry import (
-    RadonTransform,
-    InverseRadonTransform,
-    CroftonFormula,
-    SemanticTomography,
-    visualize_tomographic_reconstruction,
-)
-
-# === Hyperbolic Semantics ===
-from .hyperbolic import (
-    HyperbolicPoint,
-    PoincareGeometry,
-    HyperbolicSemanticSpace,
-    ComplexSemanticFlow,
-    SemanticSymmetryGroup,
-    visualize_hyperbolic_hierarchy,
-)
-
-# === System Identification ===
-from .system_id import (
-    LearnedSemanticSystem,
-    SemanticSystemIdentification,
-    visualize_system_identification,
-    demonstrate_system_identification,
+    visualize_geometric_flow,
 )
 
 # === Performance Utilities ===
 from .performance import (
+    HAS_NUMBA,
     EmbeddingCache,
     ProjectionCache,
     timer,
-    HAS_NUMBA,
+)
+from .semantic_state import (
+    SEMANTIC_CATEGORIES,
+    SIGNIFICANT_SHIFT_THRESHOLD,
+    TOPIC_SHIFT_THRESHOLD,
+    SemanticAwareBandit,  # Thompson Sampling with semantic adjustments
+    SemanticToolSelector,
 )
 
 # === Policy Integration (Phase 8 - December 2025) ===
@@ -129,24 +139,25 @@ from .performance import (
 # Note: This is DIFFERENT from flow_calculus.SemanticState (trajectory analysis)
 from .semantic_state import (
     SemanticState as PolicySemanticState,  # Alias to avoid conflict
-    SemanticToolSelector,
-    SemanticAwareBandit,  # Thompson Sampling with semantic adjustments
-    SEMANTIC_CATEGORIES,
-    TOPIC_SHIFT_THRESHOLD,
-    SIGNIFICANT_SHIFT_THRESHOLD,
 )
 
-# === Integration Layer (Clean Interface) ===
-# Now organized into focused modules
-from .config import SemanticCalculusConfig
-from .analyzer import SemanticAnalyzer, create_semantic_analyzer, get_cache_stats
-from .adapter import create_semantic_thread, quick_analysis, format_semantic_summary, extract_trajectory_metrics
+# === System Identification ===
+from .system_id import (
+    LearnedSemanticSystem,
+    SemanticSystemIdentification,
+    demonstrate_system_identification,
+    visualize_system_identification,
+)
 
 # Backward compatibility: Keep old integration.py imports working
 try:
     from .integration import (
-        SemanticCalculusConfig as _LegacyConfig,
         SemanticAnalyzer as _LegacyAnalyzer,
+    )
+    from .integration import (
+        SemanticCalculusConfig as _LegacyConfig,
+    )
+    from .integration import (
         create_semantic_analyzer as _legacy_create,
     )
 except ImportError:

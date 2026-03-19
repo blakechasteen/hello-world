@@ -14,7 +14,7 @@ Date: November 2025
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Tuple
+
 import numpy as np
 
 
@@ -23,9 +23,9 @@ class RoutingPrediction:
     """ML routing prediction"""
     department_id: str
     confidence: float
-    alternatives: List[Tuple[str, float]]  # (department, probability)
+    alternatives: list[tuple[str, float]]  # (department, probability)
     model_version: str
-    features_used: List[str]
+    features_used: list[str]
 
 
 class MLRouter:
@@ -46,7 +46,7 @@ class MLRouter:
 
     def __init__(
         self,
-        model_path: Optional[str] = None,
+        model_path: str | None = None,
         model_version: str = "v1.0"
     ):
         """
@@ -83,7 +83,7 @@ class MLRouter:
     def predict(
         self,
         query: str,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> RoutingPrediction:
         """
         Predict optimal department for query.
@@ -240,7 +240,7 @@ class MLRouter:
         # For now: no-op
         pass
 
-    def get_metrics(self) -> Dict:
+    def get_metrics(self) -> dict:
         """
         Get ML router metrics.
 

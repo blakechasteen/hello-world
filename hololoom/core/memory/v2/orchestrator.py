@@ -30,24 +30,25 @@ Shell budgets (default):
 
 import logging
 import time
-from dataclasses import dataclass, field
+from collections.abc import Callable, Coroutine
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Coroutine, Dict, List, Optional
+from typing import Any
 
-from .navigator import Navigator, NavigatorResult, PPRConfig
-from .formatter import Formatter, FormatConfig, ContextBlock
-from .confidence import ConfidenceEstimator, ConfidenceConfig, DualConfidence
+from .activation import ActivationAdapter
 from .blackboard import (
     Blackboard,
-    WorkingMemory,
     ProductionRule,
-    default_skip_verify_rules,
-    default_skip_flag_rules,
+    WorkingMemory,
     compute_ppr_entropy,
+    default_skip_flag_rules,
+    default_skip_verify_rules,
     extract_seed_sources,
 )
-from .activation import ActivationAdapter
-from .knowledge_source import SourceRegistry, Phase
+from .confidence import ConfidenceConfig, ConfidenceEstimator, DualConfidence
+from .formatter import ContextBlock, FormatConfig, Formatter
+from .knowledge_source import Phase, SourceRegistry
+from .navigator import Navigator, NavigatorResult, PPRConfig
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +179,7 @@ SHELL_SCHEMAS = {
 }
 
 
-def parse_structured_response(response: str, shell_type: ShellType) -> Optional[Dict]:
+def parse_structured_response(response: str, shell_type: ShellType) -> dict | None:
     """Try to parse a structured JSON response from VERIFY/FLAG shells.
 
     Returns parsed dict on success, None on failure (free-text response).
@@ -226,7 +227,7 @@ class ShellResult:
 class LoopResult:
     """Result from the full Matryoshka shell loop."""
     response: str                       # Final response text
-    shells_executed: List[ShellResult]   # Results from each shell
+    shells_executed: list[ShellResult]   # Results from each shell
     final_confidence: DualConfidence     # Confidence of the final response
     total_tokens: int                    # Total context tokens across all shells
     total_elapsed: float                 # Total wall time
@@ -248,7 +249,7 @@ class LoopResult:
             f"{self.total_elapsed:.1f}s"
         )
 
-    def audit_entry(self) -> Dict[str, Any]:
+    def audit_entry(self) -> dict[str, Any]:
         """Generate an audit log entry for training pipeline consumption."""
         return {
             "query": self.shells_executed[0].prompt if self.shells_executed else "",
@@ -312,15 +313,15 @@ class MatryoshkaOrchestrator:
         self,
         navigator: Navigator,
         llm_fn: Callable[[str, int], Coroutine[Any, Any, str]],
-        confidence_config: Optional[ConfidenceConfig] = None,
-        shell_configs: Optional[Dict[ShellType, ShellConfig]] = None,
-        audit_fn: Optional[Callable[[Dict], None]] = None,
-        working_memory: Optional[WorkingMemory] = None,
-        skip_verify_rules: Optional[List[ProductionRule]] = None,
-        skip_flag_rules: Optional[List[ProductionRule]] = None,
-        activation_adapter: Optional[ActivationAdapter] = None,
+        confidence_config: ConfidenceConfig | None = None,
+        shell_configs: dict[ShellType, ShellConfig] | None = None,
+        audit_fn: Callable[[dict], None] | None = None,
+        working_memory: WorkingMemory | None = None,
+        skip_verify_rules: list[ProductionRule] | None = None,
+        skip_flag_rules: list[ProductionRule] | None = None,
+        activation_adapter: ActivationAdapter | None = None,
         enable_structured_output: bool = False,
-        sources: Optional[SourceRegistry] = None,
+        sources: SourceRegistry | None = None,
     ):
         """
         Args:
@@ -368,7 +369,7 @@ class MatryoshkaOrchestrator:
         query: str,
         max_shells: int = 3,
         force_verify: bool = False,
-        blackboard: Optional[Blackboard] = None,
+        blackboard: Blackboard | None = None,
     ) -> LoopResult:
         """Execute the Matryoshka shell loop with blackboard-driven control.
 
@@ -386,7 +387,7 @@ class MatryoshkaOrchestrator:
             LoopResult with final response, all shell results, and blackboard
         """
         t0 = time.perf_counter()
-        shell_results: List[ShellResult] = []
+        shell_results: list[ShellResult] = []
         total_tokens = 0
 
         # Create or reuse blackboard (working memory persists across queries)
@@ -551,8 +552,8 @@ class MatryoshkaOrchestrator:
         self,
         shell_type: ShellType,
         query: str,
-        previous_response: Optional[str] = None,
-        blackboard: Optional[Blackboard] = None,
+        previous_response: str | None = None,
+        blackboard: Blackboard | None = None,
     ) -> ShellResult:
         """Execute a single shell: navigate → confidence → format → generate.
 
@@ -693,10 +694,10 @@ class MatryoshkaOrchestrator:
 
     def _build_loop_result(
         self,
-        shell_results: List[ShellResult],
+        shell_results: list[ShellResult],
         total_tokens: int,
         start_time: float,
-        blackboard: Optional[Blackboard] = None,
+        blackboard: Blackboard | None = None,
     ) -> LoopResult:
         """Build the final loop result and emit audit entry."""
         final = shell_results[-1]

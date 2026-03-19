@@ -7,8 +7,8 @@ This enables extensibility, composability, and auto-detection.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
 from enum import Enum
+from typing import Any
 
 
 class StrategyCategory(Enum):
@@ -30,13 +30,13 @@ class StrategyContext:
     might need to make decisions or enhance the prompt.
     """
     query: str
-    user_context: Optional[Dict[str, Any]] = None
-    selection: Optional[str] = None
-    file_path: Optional[str] = None
-    previous_result: Optional[Any] = None
+    user_context: dict[str, Any] | None = None
+    selection: str | None = None
+    file_path: str | None = None
+    previous_result: Any | None = None
 
     # Metadata about the request
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def with_query(self, new_query: str) -> 'StrategyContext':
         """Create new context with updated query"""
@@ -58,15 +58,15 @@ class StrategyResult:
     Contains the enhanced query plus metadata about the enhancement.
     """
     enhanced_query: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Control flow
     requires_followup: bool = False
-    followup_strategies: Optional[List[str]] = None
+    followup_strategies: list[str] | None = None
 
     # Quality metrics
     confidence: float = 1.0  # 0-1, how confident is this enhancement?
-    estimated_improvement: Optional[float] = None  # Estimated quality boost
+    estimated_improvement: float | None = None  # Estimated quality boost
 
     def with_metadata(self, **kwargs) -> 'StrategyResult':
         """Add metadata to result"""
@@ -204,7 +204,7 @@ class TemplateStrategy(PromptingStrategy):
     The template is formatted with query context and returned.
     """
 
-    def __init__(self, template: str, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, template: str, config: dict[str, Any] | None = None):
         """
         Initialize template strategy.
 
@@ -266,8 +266,8 @@ class LLMPoweredStrategy(PromptingStrategy):
         """
         if not self.orchestrator:
             # Lazy import to avoid circular dependency
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
             from hololoom.config import Config
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
             self.orchestrator = WeavingOrchestrator(cfg=Config.fast())
 
         from hololoom.protocols.types import Query

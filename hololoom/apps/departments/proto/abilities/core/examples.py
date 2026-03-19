@@ -10,7 +10,9 @@ Status: Production ready (2025-12-03)
 
 import asyncio
 import sys
+
 from code_execution import CodeExecutionAbility, CodeExecutionConfig
+
 from ..protocol import AbilityContext, AbilityTrustLevel
 
 
@@ -217,7 +219,7 @@ async def example_statistics():
         print(f"Execution {i+1}: {result.output.strip()}")
 
     # Show statistics
-    print(f"\nStatistics:")
+    print("\nStatistics:")
     print(f"  Total executions: {ability.execution_count}")
     print(f"  Total duration: {ability.total_duration_ms:.1f}ms")
     print(f"  Last execution: {ability.last_execution}")

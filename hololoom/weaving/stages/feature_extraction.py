@@ -12,13 +12,13 @@ This stage extracts multi-modal features including:
 
 import logging
 import time
-from typing import Dict, Any, Optional, List
+from typing import Any
 
-from hololoom.protocols.types import Query, Features
-from hololoom.resonance.shed import ResonanceShed
-from hololoom.motif.base import create_motif_detector
 from hololoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
 from hololoom.loom.command import PatternSpec
+from hololoom.motif.base import create_motif_detector
+from hololoom.protocols.types import Features, Query
+from hololoom.resonance.shed import ResonanceShed
 from hololoom.weaving.protocols import StageResult
 
 
@@ -33,9 +33,9 @@ class FeatureExtractionStage:
     def __init__(
         self,
         config: Any,
-        linguistic_gate: Optional[Any] = None,
-        guardrails: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
+        linguistic_gate: Any | None = None,
+        guardrails: Any | None = None,
+        logger: logging.Logger | None = None,
     ):
         """
         Initialize the feature extraction stage.
@@ -54,7 +54,7 @@ class FeatureExtractionStage:
     async def execute(
         self,
         query: Query,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         pattern_spec: PatternSpec,
     ) -> StageResult:
         """
@@ -169,7 +169,7 @@ class FeatureExtractionStage:
                 base_model_name=self.config.base_model_name
             )
 
-    async def _create_semantic_analyzer(self, pattern_spec: PatternSpec, embedder: Any) -> Optional[Any]:
+    async def _create_semantic_analyzer(self, pattern_spec: PatternSpec, embedder: Any) -> Any | None:
         """
         Create semantic analyzer if enabled.
 
@@ -202,7 +202,7 @@ class FeatureExtractionStage:
             self.logger.warning("Semantic calculus not available")
             return None
 
-    def _extract_features_from_plasma(self, dot_plasma: Dict[str, Any]) -> Features:
+    def _extract_features_from_plasma(self, dot_plasma: dict[str, Any]) -> Features:
         """
         Extract Features object from DotPlasma.
 
@@ -224,10 +224,10 @@ class FeatureExtractionStage:
         """Get the name of this stage."""
         return "feature_extraction"
 
-    def get_required_context_keys(self) -> List[str]:
+    def get_required_context_keys(self) -> list[str]:
         """Get required context keys."""
         return []  # Optional: knowledge_graph
 
-    def get_output_context_keys(self) -> List[str]:
+    def get_output_context_keys(self) -> list[str]:
         """Get output context keys."""
         return ["dot_plasma", "features"]

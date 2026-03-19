@@ -14,7 +14,7 @@ SECURITY: Uses asyncio.Lock for proper async concurrency control.
 import asyncio
 from collections import defaultdict, deque
 from time import time
-from typing import Dict, Any
+from typing import Any
 
 
 class RateLimiter:
@@ -43,7 +43,7 @@ class RateLimiter:
         """
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self.requests: Dict[str, deque] = defaultdict(deque)
+        self.requests: dict[str, deque] = defaultdict(deque)
         self._lock = asyncio.Lock()  # SECURITY: Async-safe access
 
     async def check_rate_limit(self, client_id: str) -> bool:
@@ -101,8 +101,8 @@ class ServerStats:
         self.successful_queries = 0
         self.failed_queries = 0
         self.latencies: deque = deque(maxlen=1000)  # Last 1000 latencies
-        self.queries_by_mode: Dict[str, int] = defaultdict(int)
-        self.errors_by_type: Dict[str, int] = defaultdict(int)
+        self.queries_by_mode: dict[str, int] = defaultdict(int)
+        self.errors_by_type: dict[str, int] = defaultdict(int)
 
     def record_query(self, mode: str, latency_ms: float, success: bool):
         """Record a query completion."""
@@ -143,7 +143,7 @@ class ServerStats:
             return 100.0
         return (self.successful_queries / self.total_queries) * 100
 
-    def get_stats_dict(self) -> Dict[str, Any]:
+    def get_stats_dict(self) -> dict[str, Any]:
         """Get all stats as dictionary."""
         return {
             "uptime_seconds": self.get_uptime(),

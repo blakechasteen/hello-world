@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom Orchestrator Package
 ==============================
@@ -43,57 +42,6 @@ from .context import (
     create_weaving_context,
 )
 
-# Stage executor protocols (Phase 2)
-from .protocols import (
-    StageExecutorProtocol,
-    BaseStageExecutor,
-)
-
-# Component protocols (Phase 3)
-from .protocols import (
-    PatternSelectorProtocol,
-    ThreadSelectorProtocol,
-    FeatureExtractorProtocol,
-    ConvergenceProtocol,
-    ToolExecutorProtocol,
-    SpacetimeAssemblerProtocol,
-)
-
-# Default implementations (Phase 3)
-from .protocols import (
-    DefaultPatternSelector,
-    DefaultThreadSelector,
-    DefaultFeatureExtractor,
-    DefaultConvergence,
-    DefaultToolExecutor,
-    DefaultSpacetimeAssembler,
-)
-
-# Stage functions (Steps 0-3)
-from .stages import (
-    execute_step0_meta_prompt,
-    execute_step1_pattern_selection,
-    execute_step2_chrono_trigger,
-    execute_step3_thread_selection,
-)
-
-# Stage functions (Steps 4-6: Parallel Execution)
-from .stages import (
-    create_resonance_shed,
-    create_warp_space,
-    select_pattern_embedder,
-    execute_steps_4_6_parallel,
-    execute_step5_5_warp_compute,
-    execute_step6_5_beta_wave_packing,
-)
-
-# Stage functions (Steps 7-9: Convergence, Execution, Output)
-from .stages import (
-    execute_step7_convergence,
-    execute_step8_tool_execution,
-    execute_step9_spacetime_fabric,
-)
-
 # Core utilities (already extracted)
 from .core import (
     assess_complexity_level,
@@ -102,8 +50,8 @@ from .core import (
 
 # Jenny UI integration (already extracted)
 from .jenny import (
-    detect_jenny_panel_type,
     build_jenny_panel_context,
+    detect_jenny_panel_type,
 )
 
 # Pipeline (Phase 2 - Day 10)
@@ -113,25 +61,64 @@ from .pipeline import (
     create_minimal_pipeline,
 )
 
-# Stage Executor Classes (Phase 2)
-from .stages.executors import (
-    MetaPromptExecutor,
-    PatternSelectionExecutor,
-    ChronoTriggerExecutor,
-    ThreadSelectionExecutor,
-    ParallelFeatureExecutor,
-    ConvergenceExecutor,
-    ToolExecutionExecutor,
-    SpacetimeExecutor,
-)
-
 # Protocol Factory (Phase 3 - Day 13)
 from .protocol_factory import (
     OrchestratorComponents,
+    ProtocolOrchestrator,
     create_component_defaults,
     create_orchestrator_from_protocols,
     create_pipeline_with_protocols,
-    ProtocolOrchestrator,
+)
+
+# Stage executor protocols (Phase 2)
+# Component protocols (Phase 3)
+# Default implementations (Phase 3)
+from .protocols import (
+    BaseStageExecutor,
+    ConvergenceProtocol,
+    DefaultConvergence,
+    DefaultFeatureExtractor,
+    DefaultPatternSelector,
+    DefaultSpacetimeAssembler,
+    DefaultThreadSelector,
+    DefaultToolExecutor,
+    FeatureExtractorProtocol,
+    PatternSelectorProtocol,
+    SpacetimeAssemblerProtocol,
+    StageExecutorProtocol,
+    ThreadSelectorProtocol,
+    ToolExecutorProtocol,
+)
+
+# Stage functions (Steps 0-3)
+# Stage functions (Steps 4-6: Parallel Execution)
+# Stage functions (Steps 7-9: Convergence, Execution, Output)
+from .stages import (
+    create_resonance_shed,
+    create_warp_space,
+    execute_step0_meta_prompt,
+    execute_step1_pattern_selection,
+    execute_step2_chrono_trigger,
+    execute_step3_thread_selection,
+    execute_step5_5_warp_compute,
+    execute_step6_5_beta_wave_packing,
+    execute_step7_convergence,
+    execute_step8_tool_execution,
+    execute_step9_spacetime_fabric,
+    execute_steps_4_6_parallel,
+    select_pattern_embedder,
+)
+
+# Stage Executor Classes (Phase 2)
+from .stages.executors import (
+    ChronoTriggerExecutor,
+    ConvergenceExecutor,
+    MetaPromptExecutor,
+    ParallelFeatureExecutor,
+    PatternSelectionExecutor,
+    SpacetimeExecutor,
+    ThreadSelectionExecutor,
+    ToolExecutionExecutor,
 )
 
 __all__ = [

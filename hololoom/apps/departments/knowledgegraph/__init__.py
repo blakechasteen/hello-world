@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Knowledge Graph Department - Graph construction, reasoning, evolution, and verification.
 
@@ -12,21 +11,21 @@ Exports:
 """
 
 from .knowledgegraph import (
-    KnowledgeGraphDepartment,
-    GraphConstructor,
-    GraphReasoner,
-    GraphEvolver,
-    GraphVerifier,
-    RelationType,
-    EvolutionOperation,
-    ConsistencyViolationType,
-    Triple,
-    GraphQuery,
-    GraphPath,
-    Subgraph,
-    EvolutionRecord,
     ConsistencyViolation,
-    VerificationReport
+    ConsistencyViolationType,
+    EvolutionOperation,
+    EvolutionRecord,
+    GraphConstructor,
+    GraphEvolver,
+    GraphPath,
+    GraphQuery,
+    GraphReasoner,
+    GraphVerifier,
+    KnowledgeGraphDepartment,
+    RelationType,
+    Subgraph,
+    Triple,
+    VerificationReport,
 )
 
 __all__ = [

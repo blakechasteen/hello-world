@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Thread-Aware Response Handler
 ==============================
@@ -23,9 +22,9 @@ Architecture:
 """
 
 import logging
-from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +44,10 @@ class ThreadNode:
     text: str
     sender: str
     timestamp: datetime
-    parent_id: Optional[str] = None
-    children_ids: List[str] = field(default_factory=list)
+    parent_id: str | None = None
+    children_ids: list[str] = field(default_factory=list)
     depth: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -60,7 +59,7 @@ class ThreadContext:
     """
     thread_root_id: str
     conversation_id: str
-    nodes: Dict[str, ThreadNode] = field(default_factory=dict)
+    nodes: dict[str, ThreadNode] = field(default_factory=dict)
     max_depth: int = 0
 
     def add_node(self, node: ThreadNode) -> None:
@@ -77,7 +76,7 @@ class ThreadContext:
             if node.message_id not in parent.children_ids:
                 parent.children_ids.append(node.message_id)
 
-    def get_thread_chain(self, message_id: str) -> List[ThreadNode]:
+    def get_thread_chain(self, message_id: str) -> list[ThreadNode]:
         """
         Get the chain of messages from root to this message.
 
@@ -101,7 +100,7 @@ class ThreadContext:
 
         return chain
 
-    def get_children(self, message_id: str) -> List[ThreadNode]:
+    def get_children(self, message_id: str) -> list[ThreadNode]:
         """Get immediate children of a message."""
         if message_id not in self.nodes:
             return []
@@ -172,10 +171,10 @@ class ThreadHandler:
         self.max_thread_depth = max_thread_depth
 
         # Active threads: thread_root_id -> ThreadContext
-        self.threads: Dict[str, ThreadContext] = {}
+        self.threads: dict[str, ThreadContext] = {}
 
         # Message to thread mapping: message_id -> thread_root_id
-        self.message_to_thread: Dict[str, str] = {}
+        self.message_to_thread: dict[str, str] = {}
 
         logger.info("ThreadHandler initialized")
 
@@ -185,9 +184,9 @@ class ThreadHandler:
         text: str,
         sender: str,
         conversation_id: str,
-        parent_id: Optional[str] = None,
-        timestamp: Optional[datetime] = None,
-        metadata: Optional[Dict] = None
+        parent_id: str | None = None,
+        timestamp: datetime | None = None,
+        metadata: dict | None = None
     ) -> ThreadContext:
         """
         Process a message and update thread context.
@@ -264,7 +263,7 @@ class ThreadHandler:
 
         return thread_context
 
-    def get_thread_context(self, message_id: str) -> Optional[ThreadContext]:
+    def get_thread_context(self, message_id: str) -> ThreadContext | None:
         """
         Get thread context for a message.
 
@@ -280,7 +279,7 @@ class ThreadHandler:
         thread_root_id = self.message_to_thread[message_id]
         return self.threads.get(thread_root_id)
 
-    def get_parent_chain(self, message_id: str) -> List[str]:
+    def get_parent_chain(self, message_id: str) -> list[str]:
         """
         Get chain of parent message IDs.
 
@@ -301,7 +300,7 @@ class ThreadHandler:
         self,
         thread_root_id: str,
         max_messages: int = 20
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Generate summary of a thread.
 
@@ -336,7 +335,7 @@ class ThreadHandler:
 
         return "\n".join(lines)
 
-    def get_statistics(self, conversation_id: Optional[str] = None) -> Dict[str, Any]:
+    def get_statistics(self, conversation_id: str | None = None) -> dict[str, Any]:
         """
         Get threading statistics.
 
@@ -369,7 +368,7 @@ class ThreadHandler:
 # Integration with Matrix Events
 # ============================================================================
 
-def extract_thread_info_from_event(event: Any) -> Optional[str]:
+def extract_thread_info_from_event(event: Any) -> str | None:
     """
     Extract thread parent ID from Matrix event.
 

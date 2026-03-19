@@ -5,9 +5,16 @@ Docker Skill - Container orchestration and management
 import asyncio
 import json
 import time
-from typing import Dict, Any, List
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 
 class DockerSkill(BaseSkill):
@@ -56,7 +63,7 @@ class DockerSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _dispatch(self, operation: str, parameters: Dict[str, Any]):
+    async def _dispatch(self, operation: str, parameters: dict[str, Any]):
         if operation == "ps":
             return await self._ps(parameters)
         elif operation == "build":
@@ -76,7 +83,7 @@ class DockerSkill(BaseSkill):
         elif operation == "prune":
             return await self._prune(parameters)
 
-    async def _run_docker(self, args: List[str]) -> str:
+    async def _run_docker(self, args: list[str]) -> str:
         cmd = ["docker"] + args
         proc = await asyncio.create_subprocess_exec(
             *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
@@ -166,4 +173,5 @@ class DockerSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(DockerSkill())

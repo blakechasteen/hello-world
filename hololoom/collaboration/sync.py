@@ -8,14 +8,13 @@ Phase 3: Multi-User Collaboration - State sync infrastructure.
 Created: November 2025
 """
 
+import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Set, Tuple
+from enum import Enum
+from typing import Any
 from uuid import uuid4
-import asyncio
-import json
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -48,20 +47,20 @@ class Operation:
     target_id: str
     user_id: str
     timestamp: datetime
-    data: Dict[str, Any]
+    data: dict[str, Any]
 
     # For ordering (Lamport timestamp-like)
     sequence_number: int = 0
-    vector_clock: Dict[str, int] = field(default_factory=dict)
+    vector_clock: dict[str, int] = field(default_factory=dict)
 
     # Parent operation for causality
-    parent_ops: List[str] = field(default_factory=list)
+    parent_ops: list[str] = field(default_factory=list)
 
     # State
     applied: bool = False
     confirmed: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "op_id": self.op_id,
             "op_type": self.op_type.value,
@@ -78,7 +77,7 @@ class Operation:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Operation':
+    def from_dict(cls, data: dict[str, Any]) -> 'Operation':
         return cls(
             op_id=data["op_id"],
             op_type=OperationType(data["op_type"]),
@@ -103,10 +102,10 @@ class Conflict:
     operation_b: Operation
     target_id: str
     detected_at: datetime = field(default_factory=datetime.now)
-    resolution: Optional[str] = None
-    resolved_by: Optional[str] = None
+    resolution: str | None = None
+    resolved_by: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "conflict_id": self.conflict_id,
             "operation_a": self.operation_a.to_dict(),
@@ -125,10 +124,10 @@ class SyncState:
     target_type: str
     version: int = 0
     last_modified: datetime = field(default_factory=datetime.now)
-    last_modifier: Optional[str] = None
-    checksum: Optional[str] = None
-    locked_by: Optional[str] = None
-    lock_expires: Optional[datetime] = None
+    last_modifier: str | None = None
+    checksum: str | None = None
+    locked_by: str | None = None
+    lock_expires: datetime | None = None
 
     def increment_version(self, user_id: str):
         """Increment version after modification."""
@@ -146,7 +145,7 @@ class SyncState:
             return False
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "target_id": self.target_id,
             "target_type": self.target_type,
@@ -164,8 +163,8 @@ class OperationBuffer:
 
     def __init__(self, max_size: int = 1000):
         self.max_size = max_size
-        self.pending: Dict[str, Operation] = {}
-        self.confirmed: List[str] = []
+        self.pending: dict[str, Operation] = {}
+        self.confirmed: list[str] = []
 
     def add(self, op: Operation) -> bool:
         """Add operation to buffer."""
@@ -178,7 +177,7 @@ class OperationBuffer:
         self.pending[op.op_id] = op
         return True
 
-    def confirm(self, op_id: str) -> Optional[Operation]:
+    def confirm(self, op_id: str) -> Operation | None:
         """Mark operation as confirmed."""
         op = self.pending.pop(op_id, None)
         if op:
@@ -186,11 +185,11 @@ class OperationBuffer:
             self.confirmed.append(op_id)
         return op
 
-    def reject(self, op_id: str) -> Optional[Operation]:
+    def reject(self, op_id: str) -> Operation | None:
         """Remove rejected operation."""
         return self.pending.pop(op_id, None)
 
-    def get_pending_for_target(self, target_id: str) -> List[Operation]:
+    def get_pending_for_target(self, target_id: str) -> list[Operation]:
         """Get pending operations for a target."""
         return [
             op for op in self.pending.values()
@@ -221,17 +220,17 @@ class StateSynchronizer:
 
         # Operation management
         self.sequence_number = 0
-        self.vector_clock: Dict[str, int] = {user_id: 0}
-        self.operation_log: List[Operation] = []
+        self.vector_clock: dict[str, int] = {user_id: 0}
+        self.operation_log: list[Operation] = []
         self.buffer = OperationBuffer()
 
         # State tracking
-        self.sync_states: Dict[str, SyncState] = {}
-        self.conflicts: Dict[str, Conflict] = {}
+        self.sync_states: dict[str, SyncState] = {}
+        self.conflicts: dict[str, Conflict] = {}
 
         # Event handlers
-        self._event_handlers: Dict[str, List[Callable]] = {}
-        self._apply_handlers: Dict[str, Callable] = {}
+        self._event_handlers: dict[str, list[Callable]] = {}
+        self._apply_handlers: dict[str, Callable] = {}
 
     def register_apply_handler(
         self,
@@ -246,8 +245,8 @@ class StateSynchronizer:
         op_type: OperationType,
         target_type: str,
         target_id: str,
-        data: Dict[str, Any],
-        parent_ops: Optional[List[str]] = None
+        data: dict[str, Any],
+        parent_ops: list[str] | None = None
     ) -> Operation:
         """Create a new operation."""
         self.sequence_number += 1
@@ -375,8 +374,8 @@ class StateSynchronizer:
     def _detect_conflicts(
         self,
         new_op: Operation,
-        existing_ops: List[Operation]
-    ) -> List[Conflict]:
+        existing_ops: list[Operation]
+    ) -> list[Conflict]:
         """Detect conflicts between operations."""
         conflicts = []
 
@@ -467,7 +466,7 @@ class StateSynchronizer:
         self,
         op_a: Operation,
         op_b: Operation
-    ) -> Optional[Operation]:
+    ) -> Operation | None:
         """Attempt to merge two conflicting operations."""
         if op_a.op_type != OperationType.UPDATE or op_b.op_type != OperationType.UPDATE:
             return None
@@ -540,15 +539,15 @@ class StateSynchronizer:
         })
         return True
 
-    def get_pending_operations(self) -> List[Operation]:
+    def get_pending_operations(self) -> list[Operation]:
         """Get all pending operations."""
         return list(self.buffer.pending.values())
 
     def get_operation_history(
         self,
-        target_id: Optional[str] = None,
+        target_id: str | None = None,
         limit: int = 100
-    ) -> List[Operation]:
+    ) -> list[Operation]:
         """Get operation history."""
         ops = self.operation_log
 
@@ -563,7 +562,7 @@ class StateSynchronizer:
             self._event_handlers[event] = []
         self._event_handlers[event].append(handler)
 
-    def _emit_event(self, event: str, data: Dict[str, Any]):
+    def _emit_event(self, event: str, data: dict[str, Any]):
         """Emit event to handlers."""
         handlers = self._event_handlers.get(event, [])
         for handler in handlers:
@@ -586,7 +585,7 @@ class StateSynchronizer:
             "user_id": self.user_id
         })
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export synchronizer state."""
         return {
             "session_id": self.session_id,

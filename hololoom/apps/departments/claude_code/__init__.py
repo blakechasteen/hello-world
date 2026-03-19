@@ -25,12 +25,7 @@ Usage:
 """
 
 from .department import ClaudeCodeDepartment
-from .protocol import (
-    ClaudeCodeRequest,
-    ClaudeCodeResponse,
-    MCPToolCall,
-    CodeAction
-)
+from .protocol import ClaudeCodeRequest, ClaudeCodeResponse, CodeAction, MCPToolCall
 
 __all__ = [
     'ClaudeCodeDepartment',

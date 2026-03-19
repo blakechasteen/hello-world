@@ -6,13 +6,13 @@ Abstract base class for complexity-based execution strategies.
 
 import logging
 import time
-from typing import Dict, List, Any, Optional
 from abc import ABC, abstractmethod
+from typing import Any
 
-from hololoom.protocols.types import Query
-from hololoom.protocols import ComplexityLevel, ProvenanceTrace
 from hololoom.fabric.spacetime import Spacetime, WeavingTrace
-from hololoom.weaving.protocols import WeavingStageProtocol, StageResult
+from hololoom.protocols import ComplexityLevel
+from hololoom.protocols.types import Query
+from hololoom.weaving.protocols import StageResult, WeavingStageProtocol
 
 
 class BaseStrategy(ABC):
@@ -27,8 +27,8 @@ class BaseStrategy(ABC):
 
     def __init__(
         self,
-        stages: Dict[str, WeavingStageProtocol],
-        logger: Optional[logging.Logger] = None,
+        stages: dict[str, WeavingStageProtocol],
+        logger: logging.Logger | None = None,
     ):
         """
         Initialize the base strategy.
@@ -39,7 +39,7 @@ class BaseStrategy(ABC):
         """
         self.stages = stages
         self.logger = logger or logging.getLogger(__name__)
-        self.stage_results: List[StageResult] = []
+        self.stage_results: list[StageResult] = []
 
     @abstractmethod
     def get_complexity_level(self) -> ComplexityLevel:
@@ -47,14 +47,14 @@ class BaseStrategy(ABC):
         ...
 
     @abstractmethod
-    def get_stage_names(self) -> List[str]:
+    def get_stage_names(self) -> list[str]:
         """Get the ordered list of stage names to execute."""
         ...
 
     async def execute(
         self,
         query: Query,
-        initial_context: Dict[str, Any],
+        initial_context: dict[str, Any],
     ) -> Spacetime:
         """
         Execute the strategy's stages in order.
@@ -117,7 +117,7 @@ class BaseStrategy(ABC):
         self,
         stage: WeavingStageProtocol,
         query: Query,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         stage_name: str,
     ) -> StageResult:
         """
@@ -149,7 +149,7 @@ class BaseStrategy(ABC):
     def should_skip_stage(
         self,
         stage_name: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
     ) -> bool:
         """
         Check if a stage should be skipped.
@@ -169,7 +169,7 @@ class BaseStrategy(ABC):
         self,
         stage_name: str,
         result: StageResult,
-        context: Dict[str, Any],
+        context: dict[str, Any],
     ) -> bool:
         """
         Check if execution should terminate early.
@@ -209,7 +209,7 @@ class BaseStrategy(ABC):
     def _create_spacetime(
         self,
         query: Query,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         total_duration_ms: float,
     ) -> Spacetime:
         """
@@ -254,7 +254,7 @@ class BaseStrategy(ABC):
             }
         )
 
-    def get_stage_timings(self) -> Dict[str, float]:
+    def get_stage_timings(self) -> dict[str, float]:
         """
         Get timing information for executed stages.
 

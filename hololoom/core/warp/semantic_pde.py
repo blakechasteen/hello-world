@@ -39,12 +39,12 @@ Author: HoloLoom PDE Team
 Date: 2025-11-03
 """
 
-from typing import Callable, Optional, Tuple, Dict, Any, List
+import warnings
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-import numpy as np
-import warnings
 
+import numpy as np
 
 # ============================================================================
 # PDE Types
@@ -79,7 +79,7 @@ class PDEConfig:
 class HeatEquationSolver:
     """1D heat equation solver with finite-difference compatibility helpers."""
 
-    laplacian: Optional[np.ndarray] = None
+    laplacian: np.ndarray | None = None
     dt: float = 0.01
     implicit: bool = True
     domain_size: float = 1.0
@@ -165,7 +165,7 @@ class HeatEquationSolver:
 
         return self._apply_boundary(next_u.copy())
 
-    def solve(self, u0: np.ndarray, t_final: float, n_snapshots: int = 10) -> Tuple[np.ndarray, np.ndarray]:
+    def solve(self, u0: np.ndarray, t_final: float, n_snapshots: int = 10) -> tuple[np.ndarray, np.ndarray]:
         n_steps = int(max(t_final / self.dt, 1))
         snapshot_interval = max(1, n_steps // max(n_snapshots, 1))
 
@@ -197,7 +197,7 @@ class HeatEquationSolver:
 class WaveEquationSolver:
     """1D wave equation solver supporting legacy graph-based API."""
 
-    laplacian: Optional[np.ndarray] = None
+    laplacian: np.ndarray | None = None
     wave_speed: float = 1.0
     dt: float = 0.01
     domain_size: float = 1.0
@@ -238,7 +238,7 @@ class WaveEquationSolver:
             u[-1] = u[1]
         return u
 
-    def step(self, u: np.ndarray, ut: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def step(self, u: np.ndarray, ut: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         u = np.asarray(u, dtype=float).reshape(-1)
         ut = np.asarray(ut, dtype=float).reshape(-1)
 
@@ -248,7 +248,7 @@ class WaveEquationSolver:
 
         return self._apply_boundary(u_new.copy()), self._apply_boundary(ut_new.copy())
 
-    def solve(self, u0: np.ndarray, v0: np.ndarray, t_final: float, n_snapshots: int = 10) -> Tuple[np.ndarray, np.ndarray]:
+    def solve(self, u0: np.ndarray, v0: np.ndarray, t_final: float, n_snapshots: int = 10) -> tuple[np.ndarray, np.ndarray]:
         n_steps = int(max(t_final / self.dt, 1))
         snapshot_interval = max(1, n_steps // max(n_snapshots, 1))
 
@@ -279,7 +279,7 @@ class WaveEquationSolver:
 class ReactionDiffusionSolver:
     """1D two-species reaction-diffusion (Gray-Scott inspired) solver."""
 
-    laplacian: Optional[np.ndarray] = None
+    laplacian: np.ndarray | None = None
     domain_size: float = 1.0
     n_points: int = 51
     diffusion_a: float = 0.1
@@ -303,7 +303,7 @@ class ReactionDiffusionSolver:
     def _laplacian(self, field: np.ndarray) -> np.ndarray:
         return self.laplacian @ field
 
-    def step(self, u: np.ndarray, v: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def step(self, u: np.ndarray, v: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         u = np.asarray(u, dtype=float).reshape(-1)
         v = np.asarray(v, dtype=float).reshape(-1)
 
@@ -326,7 +326,7 @@ class ReactionDiffusionSolver:
 
         return u_next, v_next
 
-    def solve(self, u0: np.ndarray, v0: np.ndarray, t_final: float, n_snapshots: int = 10) -> Tuple[np.ndarray, np.ndarray]:
+    def solve(self, u0: np.ndarray, v0: np.ndarray, t_final: float, n_snapshots: int = 10) -> tuple[np.ndarray, np.ndarray]:
         n_steps = int(max(t_final / self.dt, 1))
         snapshot_interval = max(1, n_steps // max(n_snapshots, 1))
 
@@ -466,7 +466,7 @@ class HamiltonJacobiSolver:
         u0: np.ndarray,
         t_final: float,
         n_snapshots: int = 10
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Solve Hamilton-Jacobi equation."""
         n_steps = int(t_final / self.dt)
         snapshot_interval = max(1, n_steps // n_snapshots)

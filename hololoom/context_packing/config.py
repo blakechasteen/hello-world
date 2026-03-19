@@ -9,7 +9,7 @@ Date: 2025-11-22
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+
 from .protocol import ImportanceSignal
 
 
@@ -49,7 +49,7 @@ class ImportanceScorerConfig:
     """
     # Signal weights (should sum to 1.0)
     # Phase 5: Rebalanced to include INFORMATION_CONTENT (25% weight)
-    weights: Dict[ImportanceSignal, float] = field(default_factory=lambda: {
+    weights: dict[ImportanceSignal, float] = field(default_factory=lambda: {
         ImportanceSignal.RECENCY: 0.15,           # Recent = important (reduced from 0.20)
         ImportanceSignal.RELEVANCE: 0.20,         # Relevant = important (reduced from 0.30)
         ImportanceSignal.CENTRALITY: 0.12,        # Central = moderately important (reduced from 0.15)

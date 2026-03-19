@@ -25,18 +25,17 @@ Author: Claude Code
 Date: October 29, 2025
 """
 
-from typing import Union, List, Dict, Any, Optional
-from pathlib import Path
 import asyncio
-
+from pathlib import Path
+from typing import Any
 
 # ============================================================================
 # Universal Ingestion
 # ============================================================================
 
 async def spin(
-    source: Union[str, Path, bytes, Dict, List, Any],
-    memory: Optional[Any] = None,
+    source: str | Path | bytes | dict | list | Any,
+    memory: Any | None = None,
     return_shards: bool = False
 ) -> Any:
     """
@@ -123,8 +122,8 @@ async def spin(
 async def _create_auto_memory():
     """Create automatic in-memory backend."""
     try:
-        from hololoom.memory.backend_factory import create_memory_backend
         from hololoom.config import Config, MemoryBackend
+        from hololoom.memory.backend_factory import create_memory_backend
 
         # Create INMEMORY backend (always works, no dependencies)
         config = Config.bare()
@@ -225,8 +224,8 @@ class MinimalMemory:
 # ============================================================================
 
 async def spin_batch(
-    sources: List[Any],
-    memory: Optional[Any] = None,
+    sources: list[Any],
+    memory: Any | None = None,
     max_concurrent: int = 5
 ) -> Any:
     """
@@ -275,7 +274,7 @@ async def spin_batch(
 
 async def spin_url(
     url: str,
-    memory: Optional[Any] = None,
+    memory: Any | None = None,
     max_depth: int = 1,
     follow_links: bool = False
 ) -> Any:
@@ -340,8 +339,8 @@ async def spin_url(
 # ============================================================================
 
 async def spin_directory(
-    directory: Union[str, Path],
-    memory: Optional[Any] = None,
+    directory: str | Path,
+    memory: Any | None = None,
     pattern: str = "*",
     recursive: bool = False
 ) -> Any:
@@ -391,8 +390,8 @@ async def spin_directory(
 
 async def spin_from_query(
     query_text: str,
-    memory: Optional[Any] = None,
-    orchestrator: Optional[Any] = None
+    memory: Any | None = None,
+    orchestrator: Any | None = None
 ) -> Any:
     """
     Execute HoloLoom query and ingest results into memory.
@@ -415,8 +414,8 @@ async def spin_from_query(
     """
     # Create orchestrator if needed
     if orchestrator is None:
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
         from hololoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
 
         config = Config.fast()
         orchestrator = WeavingOrchestrator(cfg=config)

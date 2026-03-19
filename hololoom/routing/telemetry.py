@@ -15,10 +15,9 @@ Date: 2025-11-13
 
 import json
 import time
-from pathlib import Path
-from typing import Optional, Dict, List
-from datetime import date, datetime, timedelta
 from collections import defaultdict
+from datetime import date, datetime, timedelta
+from pathlib import Path
 
 
 class ClassificationTelemetry:
@@ -65,12 +64,12 @@ class ClassificationTelemetry:
         self,
         query: str,
         predicted: str,
-        actual: Optional[str] = None,
+        actual: str | None = None,
         confidence: float = 0.0,
         tier_used: str = "unknown",
         latency_ms: float = 0.0,
-        user_feedback: Optional[str] = None,
-        metadata: Optional[Dict] = None
+        user_feedback: str | None = None,
+        metadata: dict | None = None
     ):
         """
         Log a classification result.
@@ -137,9 +136,9 @@ class ClassificationTelemetry:
 
     def get_misclassifications(
         self,
-        limit: Optional[int] = None,
-        since_days: Optional[int] = None
-    ) -> List[Dict]:
+        limit: int | None = None,
+        since_days: int | None = None
+    ) -> list[dict]:
         """
         Get recent misclassifications.
 
@@ -166,7 +165,7 @@ class ClassificationTelemetry:
 
         return misses
 
-    def get_accuracy(self, since_days: Optional[int] = None) -> float:
+    def get_accuracy(self, since_days: int | None = None) -> float:
         """
         Get classification accuracy.
 
@@ -206,7 +205,7 @@ class ClassificationTelemetry:
 
         return correct / total if total > 0 else 0.0
 
-    def get_tier_distribution(self, since_days: Optional[int] = None) -> Dict[str, int]:
+    def get_tier_distribution(self, since_days: int | None = None) -> dict[str, int]:
         """
         Get distribution of queries by tier.
 
@@ -239,7 +238,7 @@ class ClassificationTelemetry:
 
         return dict(tier_counts)
 
-    def get_latency_by_tier(self, since_days: Optional[int] = None) -> Dict[str, Dict[str, float]]:
+    def get_latency_by_tier(self, since_days: int | None = None) -> dict[str, dict[str, float]]:
         """
         Get latency statistics by tier.
 
@@ -294,7 +293,7 @@ class ClassificationTelemetry:
         self,
         output_file: str,
         min_confidence_delta: float = 0.2,
-        since_days: Optional[int] = 7
+        since_days: int | None = 7
     ) -> int:
         """
         Export misclassifications for adaptive learning.
@@ -331,7 +330,7 @@ class ClassificationTelemetry:
 
         return len(learning_opportunities)
 
-    def get_stats_summary(self, since_days: Optional[int] = None) -> Dict:
+    def get_stats_summary(self, since_days: int | None = None) -> dict:
         """
         Get comprehensive statistics summary.
 
@@ -353,7 +352,7 @@ class ClassificationTelemetry:
 
 
 # Singleton instance for global access
-_telemetry_instance: Optional[ClassificationTelemetry] = None
+_telemetry_instance: ClassificationTelemetry | None = None
 
 
 def get_telemetry(log_path: str = "./classification_logs") -> ClassificationTelemetry:

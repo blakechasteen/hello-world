@@ -9,12 +9,12 @@ query complexity and configuration.
 
 import logging
 import time
-from typing import Dict, Any, Optional
+from typing import Any
 
-from hololoom.protocols.types import Query
 from hololoom.loom.command import LoomCommand, PatternCard, PatternSpec
 from hololoom.protocols import ComplexityLevel
-from hololoom.weaving.protocols import StageResult, WeavingStageProtocol
+from hololoom.protocols.types import Query
+from hololoom.weaving.protocols import StageResult
 
 
 class PatternSelectionStage:
@@ -30,9 +30,9 @@ class PatternSelectionStage:
     def __init__(
         self,
         loom_command: LoomCommand,
-        default_pattern: Optional[PatternCard] = None,
+        default_pattern: PatternCard | None = None,
         enable_auto_detect: bool = True,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         """
         Initialize the pattern selection stage.
@@ -51,8 +51,8 @@ class PatternSelectionStage:
     async def execute(
         self,
         query: Query,
-        context: Dict[str, Any],
-        pattern_spec: Optional[PatternSpec] = None,
+        context: dict[str, Any],
+        pattern_spec: PatternSpec | None = None,
     ) -> StageResult:
         """
         Execute pattern selection.

@@ -8,17 +8,17 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-import time
-import sys
-import gc
-import tracemalloc
 import functools
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
-from dataclasses import dataclass, field
-from contextlib import contextmanager
-from collections import deque
+import gc
 import statistics
 import threading
+import time
+import tracemalloc
+from collections import deque
+from collections.abc import Callable
+from contextlib import contextmanager
+from dataclasses import dataclass, field
+from typing import Any, TypeVar
 
 import numpy as np
 
@@ -55,7 +55,7 @@ class LatencyMeasurement:
     operation: str
     duration_ns: int
     timestamp: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def duration_ms(self) -> float:
@@ -92,7 +92,7 @@ class LatencyStatistics:
             f"p95={self.p95_ms:.3f}ms, p99={self.p99_ms:.3f}ms"
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "operation": self.operation,
             "count": self.count,
@@ -117,7 +117,7 @@ class MemoryProfiler:
 
     def __init__(self, track_top_allocations: int = 10):
         self.track_top_allocations = track_top_allocations
-        self.snapshots: List[MemorySnapshot] = []
+        self.snapshots: list[MemorySnapshot] = []
         self._lock = threading.Lock()
         self._tracing_started = False
 
@@ -159,7 +159,7 @@ class MemoryProfiler:
         if tracemalloc.is_tracing():
             tracemalloc.reset_peak()
 
-    def get_top_allocations(self, limit: Optional[int] = None) -> List[Tuple[str, int]]:
+    def get_top_allocations(self, limit: int | None = None) -> list[tuple[str, int]]:
         """Get top memory allocations by size."""
         if not tracemalloc.is_tracing():
             return []
@@ -175,7 +175,7 @@ class MemoryProfiler:
 
         return result
 
-    def get_memory_delta(self) -> Optional[int]:
+    def get_memory_delta(self) -> int | None:
         """Get memory change since first snapshot."""
         with self._lock:
             if len(self.snapshots) < 2:
@@ -205,7 +205,7 @@ class MemoryProfiler:
         with self._lock:
             self.snapshots.clear()
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get summary of memory profiling."""
         with self._lock:
             if not self.snapshots:
@@ -236,7 +236,7 @@ class LatencyProfiler:
 
     def __init__(self, max_samples_per_operation: int = 1000):
         self.max_samples = max_samples_per_operation
-        self._measurements: Dict[str, deque] = {}
+        self._measurements: dict[str, deque] = {}
         self._lock = threading.Lock()
 
     def record(self, operation: str, duration_ns: int, **metadata) -> LatencyMeasurement:
@@ -265,7 +265,7 @@ class LatencyProfiler:
             end = time.perf_counter_ns()
             self.record(operation, end - start, **metadata)
 
-    def time_function(self, operation: Optional[str] = None):
+    def time_function(self, operation: str | None = None):
         """Decorator to time a function."""
         def decorator(func: Callable[..., T]) -> Callable[..., T]:
             op_name = operation or func.__name__
@@ -283,7 +283,7 @@ class LatencyProfiler:
             return wrapper
         return decorator
 
-    def get_statistics(self, operation: str) -> Optional[LatencyStatistics]:
+    def get_statistics(self, operation: str) -> LatencyStatistics | None:
         """Get statistics for an operation."""
         with self._lock:
             if operation not in self._measurements:
@@ -309,19 +309,19 @@ class LatencyProfiler:
             p99_ms=np.percentile(durations_ms, 99),
         )
 
-    def get_all_statistics(self) -> Dict[str, LatencyStatistics]:
+    def get_all_statistics(self) -> dict[str, LatencyStatistics]:
         """Get statistics for all operations."""
         with self._lock:
             operations = list(self._measurements.keys())
 
         return {op: self.get_statistics(op) for op in operations}
 
-    def get_operations(self) -> List[str]:
+    def get_operations(self) -> list[str]:
         """Get list of recorded operations."""
         with self._lock:
             return list(self._measurements.keys())
 
-    def clear(self, operation: Optional[str] = None) -> None:
+    def clear(self, operation: str | None = None) -> None:
         """Clear measurements."""
         with self._lock:
             if operation:
@@ -330,7 +330,7 @@ class LatencyProfiler:
             else:
                 self._measurements.clear()
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get summary of all profiled operations."""
         all_stats = self.get_all_statistics()
 
@@ -363,7 +363,7 @@ def profile_memory(label: str = "operation"):
     return decorator
 
 
-def profile_latency(operation: Optional[str] = None, print_result: bool = True):
+def profile_latency(operation: str | None = None, print_result: bool = True):
     """Decorator to profile latency of a function."""
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         op_name = operation or func.__name__
@@ -417,7 +417,7 @@ class CombinedProfiler:
             delta_bytes = mem_after.current_bytes - mem_before.current_bytes
             peak_bytes = mem_after.peak_bytes
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get combined summary."""
         return {
             "memory": self.memory.get_summary(),

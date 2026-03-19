@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Custom Commands Framework
 ==========================
@@ -30,15 +29,15 @@ Usage:
     result = await manager.execute("deploy", ctx, "production")
 """
 
-import logging
+import importlib.util
 import inspect
-import re
-from typing import Dict, List, Optional, Any, Callable, Set
+import logging
+import sys
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-import importlib.util
-import sys
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +54,9 @@ class CommandParameter:
     required: bool = True
     default: Any = None
     description: str = ""
-    choices: Optional[List[Any]] = None
+    choices: list[Any] | None = None
 
-    def validate(self, value: Any) -> tuple[bool, Optional[str]]:
+    def validate(self, value: Any) -> tuple[bool, str | None]:
         """
         Validate parameter value.
 
@@ -102,7 +101,7 @@ class CommandContext:
     is_admin: bool = False
     room_name: str = ""
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -111,13 +110,13 @@ class CommandDefinition:
     name: str
     handler: Callable
     description: str = ""
-    params: List[CommandParameter] = field(default_factory=list)
-    aliases: List[str] = field(default_factory=list)
+    params: list[CommandParameter] = field(default_factory=list)
+    aliases: list[str] = field(default_factory=list)
     admin_only: bool = False
     enabled: bool = True
     category: str = "general"
-    examples: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    examples: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def generate_help(self) -> str:
         """Generate help text for command."""
@@ -189,9 +188,9 @@ class CustomCommandManager:
 
     def __init__(self):
         """Initialize command manager."""
-        self.commands: Dict[str, CommandDefinition] = {}
-        self.aliases: Dict[str, str] = {}  # alias -> command_name
-        self.categories: Set[str] = set()
+        self.commands: dict[str, CommandDefinition] = {}
+        self.aliases: dict[str, str] = {}  # alias -> command_name
+        self.categories: set[str] = set()
 
         logger.info("CustomCommandManager initialized")
 
@@ -203,11 +202,11 @@ class CustomCommandManager:
         self,
         name: str,
         description: str = "",
-        params: Optional[List[Dict]] = None,
-        aliases: Optional[List[str]] = None,
+        params: list[dict] | None = None,
+        aliases: list[str] | None = None,
         admin_only: bool = False,
         category: str = "general",
-        examples: Optional[List[str]] = None
+        examples: list[str] | None = None
     ):
         """
         Decorator for registering commands.
@@ -265,11 +264,11 @@ class CustomCommandManager:
         name: str,
         handler: Callable,
         description: str = "",
-        params: Optional[List[CommandParameter]] = None,
-        aliases: Optional[List[str]] = None,
+        params: list[CommandParameter] | None = None,
+        aliases: list[str] | None = None,
         admin_only: bool = False,
         category: str = "general",
-        examples: Optional[List[str]] = None
+        examples: list[str] | None = None
     ) -> None:
         """
         Register a command.
@@ -432,7 +431,7 @@ class CustomCommandManager:
     # Help & Discovery
     # ========================================================================
 
-    def get_help(self, command_name: Optional[str] = None) -> str:
+    def get_help(self, command_name: str | None = None) -> str:
         """
         Get help text.
 
@@ -470,15 +469,15 @@ class CustomCommandManager:
                 admin_marker = "🔒 " if cmd.admin_only else ""
                 lines.append(f"• `!{cmd.name}` - {admin_marker}{cmd.description}")
 
-        lines.append(f"\nUse `!help <command>` for detailed help")
+        lines.append("\nUse `!help <command>` for detailed help")
 
         return "\n".join(lines)
 
     def list_commands(
         self,
-        category: Optional[str] = None,
+        category: str | None = None,
         include_disabled: bool = False
-    ) -> List[str]:
+    ) -> list[str]:
         """
         List command names.
 
@@ -553,7 +552,7 @@ class CustomCommandManager:
     # Statistics
     # ========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get command statistics."""
         return {
             "total_commands": len(self.commands),

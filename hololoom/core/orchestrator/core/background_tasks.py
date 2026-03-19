@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Background Task Management
 ==========================
@@ -31,7 +30,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def start_background_consolidation(orchestrator: 'WeavingOrchestrator') -> None:
+def start_background_consolidation(orchestrator: WeavingOrchestrator) -> None:
     """
     Start background consolidation loop.
 
@@ -75,7 +74,7 @@ def start_background_consolidation(orchestrator: 'WeavingOrchestrator') -> None:
 
 
 def spawn_background_task(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     coro
 ) -> asyncio.Task:
     """

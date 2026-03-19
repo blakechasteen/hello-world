@@ -36,9 +36,9 @@ Date: 2025-12-08 (Jenny Moonshot M1)
 
 import asyncio
 import logging
-from typing import Dict, List, Optional, Type, Callable, Any, Set
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from functools import wraps
+from typing import Any, Optional
 
 from hololoom.protocols.jenny import (
     JennyRendererProtocol,
@@ -64,10 +64,10 @@ class RendererEntry:
         targets: Set of supported RenderTarget values
         concurrent: Whether safe for parallel rendering
     """
-    renderer_class: Type[JennyRendererProtocol]
-    instance: Optional[JennyRendererProtocol] = None
+    renderer_class: type[JennyRendererProtocol]
+    instance: JennyRendererProtocol | None = None
     priority: int = 0
-    targets: Set[RenderTarget] = field(default_factory=set)
+    targets: set[RenderTarget] = field(default_factory=set)
     concurrent: bool = True
 
     def get_instance(self) -> JennyRendererProtocol:
@@ -118,8 +118,8 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
     """
 
     def __init__(self):
-        self._renderers: Dict[str, RendererEntry] = {}
-        self._target_index: Dict[RenderTarget, List[str]] = {
+        self._renderers: dict[str, RendererEntry] = {}
+        self._target_index: dict[RenderTarget, list[str]] = {
             target: [] for target in RenderTarget
         }
         self._lock = asyncio.Lock()
@@ -131,9 +131,9 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
 
     def register(
         self,
-        renderer_class: Type[JennyRendererProtocol],
+        renderer_class: type[JennyRendererProtocol],
         priority: int = 0,
-        name: Optional[str] = None
+        name: str | None = None
     ) -> None:
         """
         Register a renderer class.
@@ -217,7 +217,7 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
     @staticmethod
     def register_decorator(
         priority: int = 0,
-        name: Optional[str] = None
+        name: str | None = None
     ) -> Callable:
         """
         Decorator for renderer registration.
@@ -227,7 +227,7 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
             class HTMLRenderer(JennyRendererBase):
                 ...
         """
-        def decorator(cls: Type[JennyRendererProtocol]) -> Type[JennyRendererProtocol]:
+        def decorator(cls: type[JennyRendererProtocol]) -> type[JennyRendererProtocol]:
             RendererRegistry().register(cls, priority=priority, name=name)
             return cls
         return decorator
@@ -236,7 +236,7 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
     # Lookup
     # ========================================================================
 
-    def get_by_name(self, name: str) -> Optional[JennyRendererProtocol]:
+    def get_by_name(self, name: str) -> JennyRendererProtocol | None:
         """
         Get renderer by name.
 
@@ -253,7 +253,7 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
         self,
         target: RenderTarget,
         prefer_concurrent: bool = False
-    ) -> Optional[JennyRendererProtocol]:
+    ) -> JennyRendererProtocol | None:
         """
         Get best renderer for a target format.
 
@@ -281,7 +281,7 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
     def get_all_for_target(
         self,
         target: RenderTarget
-    ) -> List[JennyRendererProtocol]:
+    ) -> list[JennyRendererProtocol]:
         """
         Get all renderers supporting a target.
 
@@ -294,7 +294,7 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
         names = self._target_index.get(target, [])
         return [self._renderers[n].get_instance() for n in names]
 
-    def list_renderers(self) -> List[Dict[str, Any]]:
+    def list_renderers(self) -> list[dict[str, Any]]:
         """
         List all registered renderers.
 
@@ -317,9 +317,9 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
 
     async def render(
         self,
-        specs: List[Any],
+        specs: list[Any],
         target: RenderTarget = RenderTarget.HTML,
-        options: Optional[Dict[str, Any]] = None
+        options: dict[str, Any] | None = None
     ) -> str:
         """
         Render specs using best available renderer.
@@ -343,10 +343,10 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
 
     async def render_concurrent(
         self,
-        specs: List[Any],
-        targets: List[RenderTarget],
-        options: Optional[Dict[str, Any]] = None
-    ) -> Dict[RenderTarget, str]:
+        specs: list[Any],
+        targets: list[RenderTarget],
+        options: dict[str, Any] | None = None
+    ) -> dict[RenderTarget, str]:
         """
         Render to multiple targets concurrently.
 
@@ -361,7 +361,7 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
         Returns:
             Dict mapping target → rendered output
         """
-        results: Dict[RenderTarget, str] = {}
+        results: dict[RenderTarget, str] = {}
         concurrent_tasks = []
         sequential_targets = []
 
@@ -460,7 +460,7 @@ def get_registry() -> RendererRegistry:
 
 def register_renderer(
     priority: int = 0,
-    name: Optional[str] = None
+    name: str | None = None
 ) -> Callable:
     """
     Decorator to register a renderer class.
@@ -475,9 +475,9 @@ def register_renderer(
 
 
 async def render_jenny(
-    specs: List[Any],
+    specs: list[Any],
     target: RenderTarget = RenderTarget.HTML,
-    options: Optional[Dict[str, Any]] = None
+    options: dict[str, Any] | None = None
 ) -> str:
     """
     Convenience function to render JennySpecs.

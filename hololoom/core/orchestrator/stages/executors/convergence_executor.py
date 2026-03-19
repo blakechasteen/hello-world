@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Convergence Executor - Step 7: Decision Collapse
 =================================================
@@ -17,13 +16,14 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import logging
-from typing import Callable, Optional, Any, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
     from hololoom.config import Config
+    from hololoom.orchestrator.context import WeavingContext
     from hololoom.tools.executor import ToolExecutor
 
 
@@ -57,12 +57,12 @@ class ConvergenceExecutor(BaseStageExecutor):
 
     def __init__(
         self,
-        cfg: 'Config',
+        cfg: Config,
         policy: Any,
-        tool_executor: 'ToolExecutor',
-        gradient_router: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
-        emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+        tool_executor: ToolExecutor,
+        gradient_router: Any | None = None,
+        logger: logging.Logger | None = None,
+        emit_stage_event: Callable[[int, str, float], None] | None = None,
     ):
         """
         Initialize Convergence Executor.
@@ -81,7 +81,7 @@ class ConvergenceExecutor(BaseStageExecutor):
         self.tool_executor = tool_executor
         self.gradient_router = gradient_router
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute convergence (decision collapse).
 
@@ -123,7 +123,7 @@ class ConvergenceExecutor(BaseStageExecutor):
         """
         self.policy = policy
 
-    def update_gradient_router(self, gradient_router: Optional[Any]) -> None:
+    def update_gradient_router(self, gradient_router: Any | None) -> None:
         """
         Update the gradient router.
 

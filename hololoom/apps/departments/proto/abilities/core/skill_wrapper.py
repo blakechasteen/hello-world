@@ -37,21 +37,18 @@ Status: Production ready
 
 import logging
 import time
-from dataclasses import dataclass
-from typing import Dict, Any, Optional
 from abc import ABC
+from typing import Any
 
 from ..protocol import (
-    Ability,
-    AbilityManifest,
     AbilityContext,
+    AbilityManifest,
     AbilityResult,
-    PreflightResult,
-    VerificationResult,
     AbilityTier,
     AbilityTrustLevel,
+    PreflightResult,
+    VerificationResult,
 )
-
 
 logger = logging.getLogger("proto.skill")
 
@@ -140,7 +137,7 @@ class SkillWrapperAbility(ABC):
     def __init__(
         self,
         proto_name: str,
-        agentic_orchestrator: Optional[Any] = None
+        agentic_orchestrator: Any | None = None
     ):
         """Initialize skill wrapper.
 
@@ -185,7 +182,7 @@ class SkillWrapperAbility(ABC):
         return self._proto_name
 
     @property
-    def skill_name(self) -> Optional[str]:
+    def skill_name(self) -> str | None:
         """Return underlying HoloLoom skill name (if mapped)."""
         return self._skill_name
 
@@ -219,7 +216,7 @@ class SkillWrapperAbility(ABC):
 
     async def execute(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         context: AbilityContext
     ) -> AbilityResult:
         """Execute the ability.
@@ -269,7 +266,7 @@ class SkillWrapperAbility(ABC):
                 duration_ms=(time.time() - start) * 1000
             )
 
-    def _build_query(self, params: Dict[str, Any]) -> str:
+    def _build_query(self, params: dict[str, Any]) -> str:
         """Build query string from parameters based on ability type.
 
         Args:
@@ -326,8 +323,8 @@ class SkillWrapperAbility(ABC):
     async def _execute_via_agentic(
         self,
         query: str,
-        params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        params: dict[str, Any]
+    ) -> dict[str, Any]:
         """Execute via HoloLoom AgenticOrchestrator.
 
         Args:
@@ -338,8 +335,8 @@ class SkillWrapperAbility(ABC):
             Dict with "response" and "confidence" keys
         """
         try:
-            from hololoom.protocols.types import Query
             from hololoom.agentic.core import ReasoningMode
+            from hololoom.protocols.types import Query
 
             # Use VERIFY mode for code tasks (accuracy matters)
             result = await self._agentic.reason(
@@ -355,7 +352,7 @@ class SkillWrapperAbility(ABC):
             logger.error(f"HoloLoom execution failed: {e}. Using fallback.")
             return self._fallback_response(params)
 
-    def _fallback_response(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _fallback_response(self, params: dict[str, Any]) -> dict[str, Any]:
         """Fallback response when HoloLoom not available.
 
         Args:
@@ -412,8 +409,8 @@ class SkillWrapperAbility(ABC):
 
 
 def create_skill_abilities(
-    agentic_orchestrator: Optional[Any] = None
-) -> Dict[str, SkillWrapperAbility]:
+    agentic_orchestrator: Any | None = None
+) -> dict[str, SkillWrapperAbility]:
     """Create all skill wrapper abilities.
 
     Args:
@@ -441,7 +438,7 @@ def get_available_skills() -> list:
     return list(SKILL_MAP.keys())
 
 
-def get_skill_description(skill_name: str) -> Optional[str]:
+def get_skill_description(skill_name: str) -> str | None:
     """Get description for a skill.
 
     Args:

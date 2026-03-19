@@ -20,18 +20,18 @@ What we DON'T do (see SOMEDAY_MAYBE.md):
 """
 
 import hashlib
+import json
 import logging
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any, Tuple
 from datetime import datetime
 from pathlib import Path
-import json
+from typing import Any
+
 import numpy as np
 
-from hololoom.protocols.types import MemoryShard
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
 from hololoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
-
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 
@@ -51,17 +51,17 @@ class EmbeddingRun:
     run_id: str
     model_name: str
     model_hash: str  # Hash of model weights
-    dimensions: List[int]  # [96, 192, 384]
+    dimensions: list[int]  # [96, 192, 384]
     timestamp: datetime
     data_snapshot_hash: str  # Hash of input data
-    config: Dict[str, Any]  # Model config (tokenizer, normalization, etc.)
+    config: dict[str, Any]  # Model config (tokenizer, normalization, etc.)
 
     # Metadata
     total_items: int = 0
     avg_text_length: float = 0.0
     pipeline_version: str = "1.0.0"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "run_id": self.run_id,
             "model_name": self.model_name,
@@ -76,7 +76,7 @@ class EmbeddingRun:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'EmbeddingRun':
+    def from_dict(cls, data: dict[str, Any]) -> 'EmbeddingRun':
         data = data.copy()
         if isinstance(data['timestamp'], str):
             data['timestamp'] = datetime.fromisoformat(data['timestamp'])
@@ -95,13 +95,13 @@ class VectorMeta:
     checksum_raw: str  # Hash of raw text
     checksum_cleaned: str  # Hash after preprocessing
     text_length: int
-    language: Optional[str] = None
+    language: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Quality indicators
     normalization_error: float = 0.0  # |norm - 1.0|
     is_duplicate: bool = False
-    duplicate_of: Optional[str] = None
+    duplicate_of: str | None = None
 
 
 @dataclass
@@ -112,7 +112,7 @@ class DeterminismCheck:
     median_cosine_delta: float
     p95_cosine_delta: float
     max_cosine_delta: float
-    failures: List[Tuple[str, float]]  # (doc_id, delta)
+    failures: list[tuple[str, float]]  # (doc_id, delta)
 
     # Thresholds
     median_threshold: float = 0.01
@@ -138,7 +138,7 @@ class QualityMetrics:
     duplicate_rate: float = 0.0
     total_items: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "recall_at_1": self.recall_at_1,
             "recall_at_5": self.recall_at_5,
@@ -181,8 +181,8 @@ class EmbeddingIntegrityMonitor:
     def __init__(
         self,
         embedder: MatryoshkaEmbeddings,
-        audit_trail: Optional[AuditTrail] = None,
-        persist_path: Optional[Path] = None
+        audit_trail: AuditTrail | None = None,
+        persist_path: Path | None = None
     ):
         self.embedder = embedder
         self.audit_trail = audit_trail or AuditTrail()
@@ -190,15 +190,15 @@ class EmbeddingIntegrityMonitor:
         self.persist_path.mkdir(parents=True, exist_ok=True)
 
         # Canary set for determinism checks (1% of data, updated per run)
-        self.canary_set: Dict[str, Tuple[str, np.ndarray]] = {}
+        self.canary_set: dict[str, tuple[str, np.ndarray]] = {}
 
         self.logger = logging.getLogger(__name__)
 
     async def create_run(
         self,
-        shards: List[MemoryShard],
+        shards: list[MemoryShard],
         model_name: str = "default",
-        config: Optional[Dict[str, Any]] = None
+        config: dict[str, Any] | None = None
     ) -> EmbeddingRun:
         """
         Create new embedding run with full provenance.
@@ -354,8 +354,8 @@ class EmbeddingIntegrityMonitor:
     async def compute_quality_metrics(
         self,
         embeddings: np.ndarray,
-        gold_set: List[Tuple[str, List[str]]],
-        k_values: List[int] = [1, 5, 10]
+        gold_set: list[tuple[str, list[str]]],
+        k_values: list[int] = [1, 5, 10]
     ) -> QualityMetrics:
         """
         Compute retrieval quality metrics on gold set.
@@ -427,7 +427,7 @@ class EmbeddingIntegrityMonitor:
         self,
         embeddings: np.ndarray,
         tolerance: float = 1e-3
-    ) -> Tuple[np.ndarray, List[int]]:
+    ) -> tuple[np.ndarray, list[int]]:
         """
         Enforce L2 normalization and detect violations.
 
@@ -452,9 +452,9 @@ class EmbeddingIntegrityMonitor:
     def detect_duplicates(
         self,
         embeddings: np.ndarray,
-        texts: List[str],
+        texts: list[str],
         threshold: float = 0.995
-    ) -> List[Tuple[int, int, float]]:
+    ) -> list[tuple[int, int, float]]:
         """
         Detect near-duplicate documents.
 
@@ -485,7 +485,7 @@ class EmbeddingIntegrityMonitor:
     # Helper Methods
     # ========================================================================
 
-    def _hash_data_snapshot(self, shards: List[MemoryShard]) -> str:
+    def _hash_data_snapshot(self, shards: list[MemoryShard]) -> str:
         """Hash data snapshot for provenance."""
         content = "".join(s.text for s in shards)
         return hashlib.sha256(content.encode()).hexdigest()[:16]
@@ -503,7 +503,7 @@ class EmbeddingIntegrityMonitor:
         with open(run_file, 'w') as f:
             json.dump(run.to_dict(), f, indent=2)
 
-    def _update_canary_set(self, shards: List[MemoryShard], run: EmbeddingRun):
+    def _update_canary_set(self, shards: list[MemoryShard], run: EmbeddingRun):
         """Update canary set with 1% sample."""
         n_canary = max(1, len(shards) // 100)  # 1% minimum 1
         canary_shards = shards[:n_canary]
@@ -527,8 +527,8 @@ class EmbeddingIntegrityMonitor:
 
 def create_integrity_monitor(
     embedder: MatryoshkaEmbeddings,
-    audit_trail: Optional[AuditTrail] = None,
-    persist_path: Optional[Path] = None
+    audit_trail: AuditTrail | None = None,
+    persist_path: Path | None = None
 ) -> EmbeddingIntegrityMonitor:
     """
     Create embedding integrity monitor.

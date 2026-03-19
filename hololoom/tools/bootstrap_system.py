@@ -19,10 +19,11 @@ Tracks:
 """
 
 import asyncio
-import logging
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
+
 import numpy as np
 
 # Reduce logging verbosity
@@ -305,7 +306,7 @@ async def run_bootstrap():
     print("="*80)
     print()
 
-    print(f"Overall Performance:")
+    print("Overall Performance:")
     print(f"  Total queries: {len(results)}")
     print(f"  Successful: {len(successful)} ({len(successful)/len(results)*100:.1f}%)")
     print(f"  Avg confidence: {np.mean([r.get('confidence', 0) for r in successful]):.2f}")
@@ -313,7 +314,7 @@ async def run_bootstrap():
     print()
 
     # By category
-    print(f"Performance by Category:")
+    print("Performance by Category:")
     for category in ["similarity", "optimization", "analysis", "verification"]:
         cat_results = [r for r in results if r.get("category") == category]
         cat_successful = [r for r in cat_results if r.get("success", False)]
@@ -328,7 +329,7 @@ async def run_bootstrap():
     # Math pipeline stats
     with_math = [r for r in results if "math_operations" in r]
     if with_math:
-        print(f"Math Pipeline:")
+        print("Math Pipeline:")
         print(f"  Executions: {len(with_math)}")
         print(f"  Avg operations: {np.mean([len(r['math_operations']) for r in with_math]):.1f}")
         print(f"  Avg cost: {np.mean([r.get('math_cost', 0) for r in with_math]):.1f}")
@@ -341,7 +342,7 @@ async def run_bootstrap():
             for op in r.get("math_operations", []):
                 all_ops[op] = all_ops.get(op, 0) + 1
 
-        print(f"  Top operations:")
+        print("  Top operations:")
         for op, count in sorted(all_ops.items(), key=lambda x: x[1], reverse=True)[:10]:
             print(f"    {op}: {count}")
         print()
@@ -351,7 +352,7 @@ async def run_bootstrap():
 
     if "math_pipeline" in stats:
         mp = stats["math_pipeline"]
-        print(f"RL Learning Statistics:")
+        print("RL Learning Statistics:")
         print(f"  Total executions: {mp['total_executions']}")
         print(f"  Total cost: {mp['total_cost']}")
         print(f"  Avg confidence: {mp['avg_confidence']:.2f}")
@@ -363,7 +364,7 @@ async def run_bootstrap():
 
             leaderboard = rl.get("leaderboard", [])
             if leaderboard:
-                print(f"  Top operations by success rate:")
+                print("  Top operations by success rate:")
                 for i, op_stats in enumerate(leaderboard[:10], 1):
                     total = op_stats["successes"] + op_stats["failures"]
                     rate = op_stats["successes"] / total if total > 0 else 0
@@ -398,7 +399,7 @@ async def run_bootstrap():
     # Save RL state
     if orchestrator.math_pipeline:
         orchestrator.math_pipeline.selector._save_state()
-        print(f"RL state saved to: HoloLoom/warp/math/.smart_selector_state.json")
+        print("RL state saved to: HoloLoom/warp/math/.smart_selector_state.json")
 
     print()
     print("="*80)

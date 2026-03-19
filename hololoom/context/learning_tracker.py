@@ -17,12 +17,9 @@ Key Metrics Tracked:
 Validated in Demo 4 (learning improves accuracy over time)
 """
 
-import time
 import logging
-from typing import List, Dict, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
-
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +128,7 @@ class LearningTracker:
             reflection_buffer: Optional ReflectionBuffer for persistence
         """
         self.reflection_buffer = reflection_buffer
-        self.routing_history: List[RoutingEvent] = []
+        self.routing_history: list[RoutingEvent] = []
 
         # Statistics
         self.total_events = 0
@@ -251,7 +248,7 @@ class LearningTracker:
             success_rate=success_rate
         )
 
-    def get_overall_performance(self, window: int = 100) -> Dict:
+    def get_overall_performance(self, window: int = 100) -> dict:
         """
         Get overall performance across all backends
 
@@ -289,7 +286,7 @@ class LearningTracker:
             "success_rate": success_rate
         }
 
-    def get_backend_comparison(self, window: int = 100) -> Dict[str, PerformanceMetrics]:
+    def get_backend_comparison(self, window: int = 100) -> dict[str, PerformanceMetrics]:
         """
         Compare performance across all backends
 
@@ -312,9 +309,9 @@ class LearningTracker:
 
     def get_confidence_trends(
         self,
-        backend: Optional[str] = None,
+        backend: str | None = None,
         window: int = 100
-    ) -> List[float]:
+    ) -> list[float]:
         """
         Get confidence trend over time
 
@@ -334,9 +331,9 @@ class LearningTracker:
 
     def get_latency_trends(
         self,
-        backend: Optional[str] = None,
+        backend: str | None = None,
         window: int = 100
-    ) -> List[float]:
+    ) -> list[float]:
         """
         Get latency trend over time
 
@@ -361,12 +358,12 @@ class LearningTracker:
         Returns:
             Human-readable summary
         """
-        summary = f"Learning Tracker Summary:\n"
+        summary = "Learning Tracker Summary:\n"
         summary += f"  Total events: {self.total_events}\n\n"
 
         # Overall performance
         overall = self.get_overall_performance(window=100)
-        summary += f"Overall (last 100 events):\n"
+        summary += "Overall (last 100 events):\n"
         summary += f"  Avg confidence: {overall['avg_confidence']:.3f}\n"
         summary += f"  Avg latency: {overall['avg_latency_ms']:.1f}ms\n"
         summary += f"  Fallback rate: {overall['fallback_rate']*100:.1f}%\n"
@@ -386,7 +383,7 @@ class LearningTracker:
 
         return summary
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """
         Get learning tracker statistics
 

@@ -20,19 +20,16 @@ Example:
         print(chunk, end="")
 """
 
+import asyncio
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import (
-    AsyncIterator,
-    Dict,
     Any,
-    Optional,
-    List,
     Protocol,
     runtime_checkable,
 )
-from enum import Enum
-import asyncio
 
 
 class ProviderType(Enum):
@@ -57,13 +54,13 @@ class GenerationConfig:
     max_tokens: int = 4096
     temperature: float = 0.7
     top_p: float = 0.9
-    top_k: Optional[int] = None
-    stop_sequences: Optional[List[str]] = None
+    top_k: int | None = None
+    stop_sequences: list[str] | None = None
     presence_penalty: float = 0.0
     frequency_penalty: float = 0.0
-    system_prompt: Optional[str] = None
+    system_prompt: str | None = None
 
-    def to_anthropic(self) -> Dict[str, Any]:
+    def to_anthropic(self) -> dict[str, Any]:
         """Convert to Anthropic API format."""
         config = {
             "max_tokens": self.max_tokens,
@@ -76,7 +73,7 @@ class GenerationConfig:
             config["stop_sequences"] = self.stop_sequences
         return config
 
-    def to_openai(self) -> Dict[str, Any]:
+    def to_openai(self) -> dict[str, Any]:
         """Convert to OpenAI API format."""
         config = {
             "max_tokens": self.max_tokens,
@@ -89,7 +86,7 @@ class GenerationConfig:
             config["stop"] = self.stop_sequences
         return config
 
-    def to_ollama(self) -> Dict[str, Any]:
+    def to_ollama(self) -> dict[str, Any]:
         """Convert to Ollama API format."""
         config = {
             "num_predict": self.max_tokens,
@@ -102,7 +99,7 @@ class GenerationConfig:
             config["stop"] = self.stop_sequences
         return config
 
-    def to_google(self) -> Dict[str, Any]:
+    def to_google(self) -> dict[str, Any]:
         """Convert to Google Gemini API format."""
         config = {
             "max_output_tokens": self.max_tokens,
@@ -115,7 +112,7 @@ class GenerationConfig:
             config["stop_sequences"] = self.stop_sequences
         return config
 
-    def to_cohere(self) -> Dict[str, Any]:
+    def to_cohere(self) -> dict[str, Any]:
         """Convert to Cohere API format."""
         config = {
             "max_tokens": self.max_tokens,
@@ -139,7 +136,7 @@ class Message:
     role: str  # "user", "assistant", "system"
     content: str
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         return {"role": self.role, "content": self.content}
 
 
@@ -149,9 +146,9 @@ class GenerationResult:
     text: str
     model: str
     provider: str
-    usage: Dict[str, int] = field(default_factory=dict)
-    finish_reason: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    usage: dict[str, int] = field(default_factory=dict)
+    finish_reason: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def input_tokens(self) -> int:
@@ -186,16 +183,16 @@ class LLMProvider(Protocol):
     async def generate(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> GenerationResult:
         """Generate text from prompt."""
         ...
 
     async def chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> GenerationResult:
         """Generate response from chat messages."""
         ...
@@ -203,16 +200,16 @@ class LLMProvider(Protocol):
     async def stream(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[str]:
         """Stream text generation."""
         ...
 
     async def stream_chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> AsyncIterator[str]:
         """Stream chat generation."""
         ...
@@ -228,8 +225,8 @@ class BaseLLMProvider(ABC):
     def __init__(
         self,
         model: str,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
         timeout: float = 60.0,
     ):
         self.model = model
@@ -258,8 +255,8 @@ class BaseLLMProvider(ABC):
     async def generate(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> GenerationResult:
         """Generate text from prompt."""
         ...
@@ -267,8 +264,8 @@ class BaseLLMProvider(ABC):
     @abstractmethod
     async def chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> GenerationResult:
         """Generate response from chat messages."""
         ...
@@ -277,8 +274,8 @@ class BaseLLMProvider(ABC):
     async def stream(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[str]:
         """Stream text generation."""
         ...
@@ -286,8 +283,8 @@ class BaseLLMProvider(ABC):
     @abstractmethod
     async def stream_chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> AsyncIterator[str]:
         """Stream chat generation."""
         ...
@@ -297,7 +294,7 @@ class BaseLLMProvider(ABC):
         """Check if provider is available."""
         ...
 
-    def _ensure_config(self, config: Optional[GenerationConfig]) -> GenerationConfig:
+    def _ensure_config(self, config: GenerationConfig | None) -> GenerationConfig:
         """Ensure config exists."""
         return config or GenerationConfig()
 
@@ -310,8 +307,8 @@ class AnthropicProvider(BaseLLMProvider):
     def __init__(
         self,
         model: str = DEFAULT_MODEL,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
         timeout: float = 60.0,
     ):
         super().__init__(model, api_key, base_url, timeout)
@@ -341,8 +338,8 @@ class AnthropicProvider(BaseLLMProvider):
     async def generate(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> GenerationResult:
         """Generate text from prompt."""
         messages = [Message(role="user", content=prompt)]
@@ -350,8 +347,8 @@ class AnthropicProvider(BaseLLMProvider):
 
     async def chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> GenerationResult:
         """Generate response from chat messages."""
         # Extract system prompt if first message is system
@@ -366,9 +363,9 @@ class AnthropicProvider(BaseLLMProvider):
 
     async def _generate_impl(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig],
-        system_prompt: Optional[str],
+        messages: list[Message],
+        config: GenerationConfig | None,
+        system_prompt: str | None,
     ) -> GenerationResult:
         """Implementation of generation."""
         config = self._ensure_config(config)
@@ -400,8 +397,8 @@ class AnthropicProvider(BaseLLMProvider):
     async def stream(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[str]:
         """Stream text generation."""
         messages = [Message(role="user", content=prompt)]
@@ -410,8 +407,8 @@ class AnthropicProvider(BaseLLMProvider):
 
     async def stream_chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> AsyncIterator[str]:
         """Stream chat generation."""
         system_prompt = None
@@ -426,9 +423,9 @@ class AnthropicProvider(BaseLLMProvider):
 
     async def _stream_impl(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig],
-        system_prompt: Optional[str],
+        messages: list[Message],
+        config: GenerationConfig | None,
+        system_prompt: str | None,
     ) -> AsyncIterator[str]:
         """Implementation of streaming."""
         config = self._ensure_config(config)
@@ -464,8 +461,8 @@ class OpenAIProvider(BaseLLMProvider):
     def __init__(
         self,
         model: str = DEFAULT_MODEL,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
         timeout: float = 60.0,
     ):
         super().__init__(model, api_key, base_url, timeout)
@@ -495,8 +492,8 @@ class OpenAIProvider(BaseLLMProvider):
     async def generate(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> GenerationResult:
         """Generate text from prompt."""
         messages = []
@@ -507,8 +504,8 @@ class OpenAIProvider(BaseLLMProvider):
 
     async def chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> GenerationResult:
         """Generate response from chat messages."""
         config = self._ensure_config(config)
@@ -537,8 +534,8 @@ class OpenAIProvider(BaseLLMProvider):
     async def stream(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[str]:
         """Stream text generation."""
         messages = []
@@ -550,8 +547,8 @@ class OpenAIProvider(BaseLLMProvider):
 
     async def stream_chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> AsyncIterator[str]:
         """Stream chat generation."""
         config = self._ensure_config(config)
@@ -586,8 +583,8 @@ class OllamaProvider(BaseLLMProvider):
     def __init__(
         self,
         model: str = DEFAULT_MODEL,
-        api_key: Optional[str] = None,  # Not used, for interface consistency
-        base_url: Optional[str] = None,
+        api_key: str | None = None,  # Not used, for interface consistency
+        base_url: str | None = None,
         timeout: float = 120.0,
     ):
         super().__init__(
@@ -618,8 +615,8 @@ class OllamaProvider(BaseLLMProvider):
     async def generate(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> GenerationResult:
         """Generate text from prompt."""
         config = self._ensure_config(config)
@@ -651,8 +648,8 @@ class OllamaProvider(BaseLLMProvider):
 
     async def chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> GenerationResult:
         """Generate response from chat messages."""
         config = self._ensure_config(config)
@@ -683,8 +680,8 @@ class OllamaProvider(BaseLLMProvider):
     async def stream(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[str]:
         """Stream text generation."""
         config = self._ensure_config(config)
@@ -704,8 +701,8 @@ class OllamaProvider(BaseLLMProvider):
 
     async def stream_chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> AsyncIterator[str]:
         """Stream chat generation."""
         config = self._ensure_config(config)
@@ -725,8 +722,8 @@ class OllamaProvider(BaseLLMProvider):
     def is_available(self) -> bool:
         """Check if Ollama is available."""
         try:
-            import ollama
             import httpx
+            import ollama
             # Try to connect to Ollama
             try:
                 response = httpx.get(f"{self.base_url}/api/tags", timeout=2.0)
@@ -745,8 +742,8 @@ class GoogleProvider(BaseLLMProvider):
     def __init__(
         self,
         model: str = DEFAULT_MODEL,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
         timeout: float = 60.0,
     ):
         super().__init__(model, api_key, base_url, timeout)
@@ -778,8 +775,8 @@ class GoogleProvider(BaseLLMProvider):
     async def generate(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> GenerationResult:
         """Generate text from prompt."""
         config = self._ensure_config(config)
@@ -812,8 +809,8 @@ class GoogleProvider(BaseLLMProvider):
 
     async def chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> GenerationResult:
         """Generate response from chat messages."""
         config = self._ensure_config(config)
@@ -854,8 +851,8 @@ class GoogleProvider(BaseLLMProvider):
     async def stream(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[str]:
         """Stream text generation."""
         config = self._ensure_config(config)
@@ -883,8 +880,8 @@ class GoogleProvider(BaseLLMProvider):
 
     async def stream_chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> AsyncIterator[str]:
         """Stream chat generation."""
         # For simplicity, use non-streaming chat and yield result
@@ -908,8 +905,8 @@ class CohereProvider(BaseLLMProvider):
     def __init__(
         self,
         model: str = DEFAULT_MODEL,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
         timeout: float = 60.0,
     ):
         super().__init__(model, api_key, base_url, timeout)
@@ -935,8 +932,8 @@ class CohereProvider(BaseLLMProvider):
     async def generate(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> GenerationResult:
         """Generate text from prompt."""
         messages = []
@@ -947,8 +944,8 @@ class CohereProvider(BaseLLMProvider):
 
     async def chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> GenerationResult:
         """Generate response from chat messages."""
         config = self._ensure_config(config)
@@ -987,8 +984,8 @@ class CohereProvider(BaseLLMProvider):
     async def stream(
         self,
         prompt: str,
-        config: Optional[GenerationConfig] = None,
-        system_prompt: Optional[str] = None,
+        config: GenerationConfig | None = None,
+        system_prompt: str | None = None,
     ) -> AsyncIterator[str]:
         """Stream text generation."""
         messages = []
@@ -1000,8 +997,8 @@ class CohereProvider(BaseLLMProvider):
 
     async def stream_chat(
         self,
-        messages: List[Message],
-        config: Optional[GenerationConfig] = None,
+        messages: list[Message],
+        config: GenerationConfig | None = None,
     ) -> AsyncIterator[str]:
         """Stream chat generation."""
         config = self._ensure_config(config)
@@ -1037,9 +1034,9 @@ class CohereProvider(BaseLLMProvider):
 
 def create_provider(
     provider: str,
-    model: Optional[str] = None,
-    api_key: Optional[str] = None,
-    base_url: Optional[str] = None,
+    model: str | None = None,
+    api_key: str | None = None,
+    base_url: str | None = None,
     timeout: float = 60.0,
 ) -> BaseLLMProvider:
     """
@@ -1086,8 +1083,8 @@ def create_provider(
 
 
 def get_best_available_provider(
-    api_keys: Optional[Dict[str, str]] = None,
-) -> Optional[BaseLLMProvider]:
+    api_keys: dict[str, str] | None = None,
+) -> BaseLLMProvider | None:
     """
     Get the best available provider based on what's installed and configured.
 

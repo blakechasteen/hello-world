@@ -24,18 +24,15 @@ Usage:
     orchestrator = WeavingOrchestrator(cfg=config, memory=create_memory_backend(config))
 """
 
-import asyncio
 import logging
 import time
-from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from enum import Enum
 
 # Import from canonical protocols
-from hololoom.protocols import MemoryStore, MemoryNavigator
 from hololoom.config import Config
-from hololoom.memory.protocol import Memory, MemoryQuery, RetrievalResult, Strategy
 from hololoom.memory.graph import KG as NetworkXKG  # Base storage
+from hololoom.memory.protocol import Memory, MemoryQuery, RetrievalResult, Strategy
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +49,7 @@ class CrawlComplexity(Enum):
 class CrawlConfig:
     """Configuration for multipass crawling."""
     max_depth: int
-    thresholds: List[float]
+    thresholds: list[float]
     initial_limit: int
     max_total_items: int
     importance_threshold: float
@@ -63,7 +60,7 @@ class CrawlStats:
     """Statistics from a multipass crawl."""
     passes: int = 0
     total_items: int = 0
-    depth_stats: Dict[int, int] = field(default_factory=dict)
+    depth_stats: dict[int, int] = field(default_factory=dict)
     fusion_events: int = 0
     duration_ms: float = 0.0
 
@@ -78,7 +75,7 @@ class HyperspaceBackend:
     - Graph traversal with relationship following
     - Multipass fusion with composite scoring
     """
-    
+
     def __init__(self, config: Config):
         """
         Initialize HYPERSPACE backend.
@@ -88,28 +85,28 @@ class HyperspaceBackend:
         """
         self.config = config
         self.logger = logging.getLogger(__name__)
-        
+
         # Use NetworkX as base storage
         self.base_storage = NetworkXKG()
-        
+
         self.logger.info("HYPERSPACE backend initialized (recursive gated multipass crawling)")
-    
+
     # ============================================================================
     # MemoryStore Protocol Implementation
     # ============================================================================
-    
+
     async def store(self, memory: Memory) -> str:
         """Store a memory (delegates to base storage)."""
         return await self.base_storage.store(memory)
-    
-    async def store_many(self, memories: List[Memory]) -> List[str]:
+
+    async def store_many(self, memories: list[Memory]) -> list[str]:
         """Store multiple memories (delegates to base storage)."""
         return await self.base_storage.store_many(memories)
-    
-    async def get_by_id(self, memory_id: str) -> Optional[Memory]:
+
+    async def get_by_id(self, memory_id: str) -> Memory | None:
         """Get memory by ID."""
         return await self.base_storage.get_by_id(memory_id)
-    
+
     async def retrieve(self, query: MemoryQuery) -> RetrievalResult:
         """
         Retrieve with multipass crawling.
@@ -117,26 +114,26 @@ class HyperspaceBackend:
         This is the main entry point that triggers intelligent crawling.
         """
         start_time = time.perf_counter()
-        
+
         # Determine complexity from query strategy
         complexity = self._map_strategy_to_complexity(query.strategy)
-        
+
         self.logger.info(f"HYPERSPACE retrieve: complexity={complexity.name}, query='{query.text[:50]}...'")
-        
+
         # Execute multipass crawl
         crawl_result = await self._multipass_memory_crawl(
             query_text=query.text,
             complexity=complexity,
             user_id=query.user_id
         )
-        
+
         duration_ms = (time.perf_counter() - start_time) * 1000
-        
+
         self.logger.info(
             f"HYPERSPACE crawl complete: {crawl_result['total_items']} items, "
             f"{crawl_result['crawl_depth']} depths, {duration_ms:.1f}ms"
         )
-        
+
         # Convert to RetrievalResult
         results = crawl_result['results'][:query.limit]  # Respect limit
         return RetrievalResult(
@@ -152,8 +149,8 @@ class HyperspaceBackend:
                 'backend': 'HYPERSPACE'
             }
         )
-    
-    async def search(self, query: str, limit: int = 10) -> List[Memory]:
+
+    async def search(self, query: str, limit: int = 10) -> list[Memory]:
         """Simple search (uses basic retrieval)."""
         result = await self.retrieve(MemoryQuery(
             text=query,
@@ -161,7 +158,7 @@ class HyperspaceBackend:
             strategy=Strategy.BALANCED
         ))
         return result.memories
-    
+
     async def health_check(self) -> bool:
         """Check backend health."""
         try:
@@ -170,17 +167,17 @@ class HyperspaceBackend:
         except Exception as e:
             self.logger.error(f"HYPERSPACE health check failed: {e}")
             return False
-    
+
     # ============================================================================
     # Multipass Crawling Implementation
     # ============================================================================
-    
+
     async def _multipass_memory_crawl(
         self,
         query_text: str,
         complexity: CrawlComplexity,
         user_id: str = "default"
-    ) -> Dict:
+    ) -> dict:
         """
         Execute recursive gated multipass memory crawling.
         
@@ -195,13 +192,13 @@ class HyperspaceBackend:
         """
         # Get crawl configuration
         config = self._get_crawl_config(complexity)
-        
+
         all_results = []
-        visited_ids: Set[str] = set()
+        visited_ids: set[str] = set()
         stats = CrawlStats()
-        
+
         start_time = time.perf_counter()
-        
+
         # Pass 0: Initial broad exploration
         initial_results = await self._retrieve_with_threshold(
             query_text,
@@ -209,7 +206,7 @@ class HyperspaceBackend:
             limit=config.initial_limit,
             user_id=user_id
         )
-        
+
         # Process initial pass
         pass_results = self._process_crawl_pass(
             initial_results,
@@ -217,20 +214,20 @@ class HyperspaceBackend:
             visited_ids=visited_ids,
             config=config
         )
-        
+
         all_results.extend(pass_results['items'])
         stats.depth_stats[0] = len(pass_results['items'])
         stats.total_items += len(pass_results['items'])
         stats.passes = 1
-        
+
         # Recursive passes based on importance
         current_depth = 1
         high_importance_items = pass_results['high_importance']
-        
+
         while (current_depth < config.max_depth and
                high_importance_items and
                len(all_results) < config.max_total_items):
-            
+
             pass_results = await self._execute_crawl_pass(
                 high_importance_items,
                 current_depth,
@@ -238,24 +235,24 @@ class HyperspaceBackend:
                 visited_ids,
                 user_id
             )
-            
+
             if pass_results['items']:
                 all_results.extend(pass_results['items'])
                 stats.depth_stats[current_depth] = len(pass_results['items'])
                 stats.total_items += len(pass_results['items'])
                 stats.passes += 1
-                
+
                 high_importance_items = pass_results['high_importance']
                 current_depth += 1
             else:
                 break
-        
+
         # Multipass fusion
         fused_results = await self._fuse_multipass_results(all_results, query_text)
         stats.fusion_events = len(fused_results.get('fusion_events', []))
-        
+
         stats.duration_ms = (time.perf_counter() - start_time) * 1000
-        
+
         return {
             'results': fused_results['ranked_results'],
             'crawl_depth': current_depth,
@@ -269,7 +266,7 @@ class HyperspaceBackend:
             },
             'fusion_score': fused_results.get('fusion_confidence', 0.7)
         }
-    
+
     def _get_crawl_config(self, complexity: CrawlComplexity) -> CrawlConfig:
         """Get crawl configuration based on complexity."""
         configs = {
@@ -303,14 +300,14 @@ class HyperspaceBackend:
             )
         }
         return configs[complexity]
-    
+
     async def _retrieve_with_threshold(
         self,
         query: str,
         threshold: float,
         limit: int,
         user_id: str
-    ) -> List[Memory]:
+    ) -> list[Memory]:
         """Retrieve memories above a relevance threshold."""
         # Use base storage for retrieval (NetworkXKG uses 'recall')
         query_obj = MemoryQuery(
@@ -319,9 +316,9 @@ class HyperspaceBackend:
             strategy=Strategy.BALANCED,
             user_id=user_id
         )
-        
+
         result = await self.base_storage.recall(query_obj, limit=limit * 2)
-        
+
         # Filter by threshold
         # NetworkXKG returns scores in the RetrievalResult
         filtered = []
@@ -331,63 +328,63 @@ class HyperspaceBackend:
             if relevance >= threshold:
                 memory.metadata['relevance'] = relevance
                 filtered.append(memory)
-        
+
         return filtered[:limit]
-    
+
     def _process_crawl_pass(
         self,
-        results: List[Memory],
+        results: list[Memory],
         depth: int,
-        visited_ids: Set[str],
+        visited_ids: set[str],
         config: CrawlConfig
-    ) -> Dict:
+    ) -> dict:
         """Process results from a crawl pass."""
         processed_items = []
         high_importance = []
-        
+
         for memory in results:
             if memory.id not in visited_ids:
                 visited_ids.add(memory.id)
-                
+
                 # Add depth information
                 memory.metadata['crawl_depth'] = depth
                 importance_score = memory.metadata.get('relevance', 0.5)
                 memory.metadata['importance_score'] = importance_score
-                
+
                 processed_items.append(memory)
-                
+
                 # Check if item warrants deeper exploration
                 if importance_score >= config.importance_threshold:
                     high_importance.append(memory)
-        
+
         return {
             'items': processed_items,
             'high_importance': high_importance
         }
-    
+
     async def _execute_crawl_pass(
         self,
-        high_importance_items: List[Memory],
+        high_importance_items: list[Memory],
         depth: int,
         config: CrawlConfig,
-        visited_ids: Set[str],
+        visited_ids: set[str],
         user_id: str
-    ) -> Dict:
+    ) -> dict:
         """Execute a crawl pass based on high-importance items."""
         # Get related items for high-importance memories
         related_queries = []
-        
+
         for memory in high_importance_items[:5]:  # Limit expansion
             # Extract key entities/concepts for related searches
             text = memory.text
             # Simple keyword extraction (in real impl, use NLP)
             keywords = text.split()[:3]  # First 3 words as search
             related_queries.append(" ".join(keywords))
-        
+
         # Retrieve related items
         all_related = []
         threshold = config.thresholds[min(depth, len(config.thresholds) - 1)]
-        
+
         for query in related_queries:
             related = await self._retrieve_with_threshold(
                 query,
@@ -396,7 +393,7 @@ class HyperspaceBackend:
                 user_id=user_id
             )
             all_related.extend(related)
-        
+
         # Process pass
         return self._process_crawl_pass(
             all_related,
@@ -404,12 +401,12 @@ class HyperspaceBackend:
             visited_ids,
             config
         )
-    
+
     async def _fuse_multipass_results(
         self,
-        all_results: List[Memory],
+        all_results: list[Memory],
         query: str
-    ) -> Dict:
+    ) -> dict:
         """
         Fuse results from multiple passes with intelligent ranking.
         
@@ -420,27 +417,27 @@ class HyperspaceBackend:
         """
         fusion_events = []
         ranked = []
-        
+
         for memory in all_results:
             # Calculate composite score
             relevance = memory.metadata.get('relevance', 0.5)
             depth = memory.metadata.get('crawl_depth', 0)
             importance = memory.metadata.get('importance_score', 0.5)
-            
+
             # Depth penalty (earlier depths slightly preferred)
             depth_penalty = min(depth * 0.1, 0.3)
-            
+
             composite_score = (
                 0.6 * relevance +
                 0.3 * (1 - depth_penalty) +
                 0.1 * importance
             )
-            
+
             memory.metadata['composite_score'] = composite_score
             memory.metadata['fusion_applied'] = True
-            
+
             ranked.append(memory)
-            
+
             fusion_events.append({
                 'memory_id': memory.id,
                 'composite_score': composite_score,
@@ -450,20 +447,20 @@ class HyperspaceBackend:
                     'importance': importance
                 }
             })
-        
+
         # Sort by composite score
         ranked.sort(key=lambda m: m.metadata['composite_score'], reverse=True)
-        
+
         # Calculate fusion confidence
         avg_score = sum(m.metadata['composite_score'] for m in ranked) / len(ranked) if ranked else 0
         fusion_confidence = min(avg_score + 0.1, 1.0)  # Boost for multipass
-        
+
         return {
             'ranked_results': ranked,
             'fusion_events': fusion_events,
             'fusion_confidence': fusion_confidence
         }
-    
+
     def _map_strategy_to_complexity(self, strategy: Strategy) -> CrawlComplexity:
         """Map retrieval strategy to crawl complexity."""
         mapping = {

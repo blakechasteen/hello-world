@@ -21,11 +21,11 @@ Architecture:
 """
 
 import logging
-import numpy as np
 import math
-from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field
-from enum import Enum
+from typing import Any, Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class MCTSNode:
     """
     tool_idx: int  # Which tool this node represents
     parent: Optional['MCTSNode'] = None
-    children: List['MCTSNode'] = field(default_factory=list)
+    children: list['MCTSNode'] = field(default_factory=list)
 
     # Statistics
     visits: int = 0
@@ -144,7 +144,7 @@ class MCTSFluxCapacitor:
         n_tools: int,
         n_simulations: int = 100,
         exploration_constant: float = 1.414,
-        thompson_priors: Optional[np.ndarray] = None
+        thompson_priors: np.ndarray | None = None
     ):
         """
         Initialize MCTS Flux Capacitor.
@@ -175,9 +175,9 @@ class MCTSFluxCapacitor:
 
     def search(
         self,
-        neural_probs: Optional[np.ndarray] = None,
-        features: Optional[Dict] = None
-    ) -> Tuple[int, float, Dict]:
+        neural_probs: np.ndarray | None = None,
+        features: dict | None = None
+    ) -> tuple[int, float, dict]:
         """
         Run MCTS search to find best tool.
 
@@ -257,8 +257,8 @@ class MCTSFluxCapacitor:
     def _simulate(
         self,
         node: MCTSNode,
-        neural_probs: Optional[np.ndarray],
-        features: Optional[Dict]
+        neural_probs: np.ndarray | None,
+        features: dict | None
     ) -> float:
         """
         Simulation phase: Use Thompson Sampling to estimate value.
@@ -324,7 +324,7 @@ class MCTSFluxCapacitor:
 
         logger.debug(f"Updated priors: tool={tool_idx}, reward={reward:.3f}")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get flux capacitor statistics."""
         return {
             "total_simulations": self.total_simulations,
@@ -347,9 +347,9 @@ class MCTSCollapseResult:
     tool_idx: int
     confidence: float
     strategy_used: str
-    mcts_stats: Dict[str, Any]
-    ucb1_scores: List[float]
-    visit_counts: List[int]
+    mcts_stats: dict[str, Any]
+    ucb1_scores: list[float]
+    visit_counts: list[int]
 
 
 class MCTSConvergenceEngine:
@@ -362,7 +362,7 @@ class MCTSConvergenceEngine:
 
     def __init__(
         self,
-        tools: List[str],
+        tools: list[str],
         n_simulations: int = 100,
         exploration_constant: float = 1.414
     ):
@@ -386,14 +386,14 @@ class MCTSConvergenceEngine:
 
         # Statistics
         self.decision_count = 0
-        self.tool_usage = {tool: 0 for tool in tools}
+        self.tool_usage = dict.fromkeys(tools, 0)
 
         logger.info(f"MCTS ConvergenceEngine initialized: {self.n_tools} tools, {n_simulations} sims/decision")
 
     def collapse(
         self,
-        neural_probs: Optional[np.ndarray] = None,
-        features: Optional[Dict] = None
+        neural_probs: np.ndarray | None = None,
+        features: dict | None = None
     ) -> MCTSCollapseResult:
         """
         Collapse continuous to discrete using MCTS.
@@ -440,7 +440,7 @@ class MCTSConvergenceEngine:
         """
         self.flux.update_priors(tool_idx, reward)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get convergence engine statistics."""
         return {
             "decision_count": self.decision_count,

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Memory Symphony Handlers for Matrix ChatOps
 =============================================
@@ -22,7 +23,7 @@ Created: 2025-12-05
 """
 
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hololoom.memory.symphony.conductor import MemoryConductor
@@ -38,10 +39,10 @@ except ImportError:
 try:
     from hololoom.memory.symphony.conductor import MemoryConductor
     from hololoom.memory.symphony.protocol import (
+        MemoryPerformanceMetrics,
+        MemoryQuery,
         MemoryStrategy,
         MemorySystem,
-        MemoryQuery,
-        MemoryPerformanceMetrics
     )
     SYMPHONY_AVAILABLE = True
 except ImportError:
@@ -55,7 +56,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +26,10 @@ def run_post_weave_hooks(
     complexity: Any,
     pattern_spec: Any,
     features: Any,
-    thread_ids: List[str],
-    stage_timings: Dict[str, float],
+    thread_ids: list[str],
+    stage_timings: dict[str, float],
     duration_ms: float,
-    prod_start_time: Optional[float],
+    prod_start_time: float | None,
     METRICS_ENABLED: bool,
     metrics: Any,
 ) -> None:
@@ -107,7 +107,7 @@ async def run_jenny_compilation(
     query: Any,
     pattern_spec: Any,
     complexity: Any,
-    stage_timings: Dict[str, float],
+    stage_timings: dict[str, float],
 ) -> None:
     """Run Jenny generative UI compilation if enabled."""
     if not (orchestrator.enable_jenny and orchestrator.jenny_runtime):
@@ -121,8 +121,8 @@ async def run_jenny_compilation(
             orchestrator._jenny_started = True
 
         # Import extraction helpers
-        from hololoom.core.orchestrator.jenny.panel_detection import detect_jenny_panel_type
         from hololoom.core.orchestrator.jenny.context_builder import build_jenny_panel_context
+        from hololoom.core.orchestrator.jenny.panel_detection import detect_jenny_panel_type
 
         panel_type = detect_jenny_panel_type(
             spacetime, orchestrator.jenny_mrf_compiler, orchestrator.jenny_learner

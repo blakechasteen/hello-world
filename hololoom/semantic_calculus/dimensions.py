@@ -17,12 +17,12 @@ PERFORMANCE OPTIMIZATIONS:
 - Cached axis computations
 """
 
+from collections.abc import Callable
+from dataclasses import dataclass
+
 import numpy as np
-from typing import List, Dict, Tuple, Optional, Callable
-from dataclasses import dataclass, field
 
 # Import performance utilities
-from .performance import SparseSemanticVector
 
 
 @dataclass
@@ -36,9 +36,9 @@ class SemanticDimension:
     - Formality: positive=["formal", "professional"], negative=["casual", "colloquial"]
     """
     name: str
-    positive_exemplars: List[str]
-    negative_exemplars: List[str]
-    axis: Optional[np.ndarray] = None  # learned direction vector
+    positive_exemplars: list[str]
+    negative_exemplars: list[str]
+    axis: np.ndarray | None = None  # learned direction vector
 
     def learn_axis(self, embed_fn: Callable, use_batch: bool = True):
         """
@@ -1360,7 +1360,7 @@ class SemanticSpectrum:
     Instead of 384 opaque numbers, we get "warmth increasing, formality decreasing"
     """
 
-    def __init__(self, dimensions: Optional[List[SemanticDimension]] = None):
+    def __init__(self, dimensions: list[SemanticDimension] | None = None):
         """
         Args:
             dimensions: List of semantic dimensions. If None, uses STANDARD_DIMENSIONS
@@ -1380,9 +1380,9 @@ class SemanticSpectrum:
         for dim in self.dimensions:
             dim.learn_axis(embed_fn)
         self._axes_learned = True
-        print(f"  All axes learned successfully")
+        print("  All axes learned successfully")
 
-    def project_vector(self, vector: np.ndarray) -> Dict[str, float]:
+    def project_vector(self, vector: np.ndarray) -> dict[str, float]:
         """
         Project a single vector onto all dimensions
 
@@ -1394,7 +1394,7 @@ class SemanticSpectrum:
 
         return {dim.name: dim.project(vector) for dim in self.dimensions}
 
-    def project_trajectory(self, positions: np.ndarray) -> Dict[str, np.ndarray]:
+    def project_trajectory(self, positions: np.ndarray) -> dict[str, np.ndarray]:
         """
         Project entire trajectory onto all dimensions
 
@@ -1413,7 +1413,7 @@ class SemanticSpectrum:
 
         return projections
 
-    def compute_spectrum_velocity(self, positions: np.ndarray, dt: float = 1.0) -> Dict[str, np.ndarray]:
+    def compute_spectrum_velocity(self, positions: np.ndarray, dt: float = 1.0) -> dict[str, np.ndarray]:
         """
         Compute velocity along each semantic dimension
 
@@ -1427,7 +1427,7 @@ class SemanticSpectrum:
 
         return velocities
 
-    def compute_spectrum_acceleration(self, positions: np.ndarray, dt: float = 1.0) -> Dict[str, np.ndarray]:
+    def compute_spectrum_acceleration(self, positions: np.ndarray, dt: float = 1.0) -> dict[str, np.ndarray]:
         """
         Compute acceleration along each semantic dimension
 
@@ -1441,8 +1441,8 @@ class SemanticSpectrum:
 
         return accelerations
 
-    def get_dominant_dimensions(self, velocity_dict: Dict[str, np.ndarray],
-                               top_k: int = 5) -> List[Tuple[str, float]]:
+    def get_dominant_dimensions(self, velocity_dict: dict[str, np.ndarray],
+                               top_k: int = 5) -> list[tuple[str, float]]:
         """
         Find which dimensions are changing most rapidly
 
@@ -1461,7 +1461,7 @@ class SemanticSpectrum:
         sorted_dims = sorted(avg_magnitudes.items(), key=lambda x: x[1], reverse=True)
         return sorted_dims[:top_k]
 
-    def analyze_semantic_forces(self, positions: np.ndarray, dt: float = 1.0) -> Dict:
+    def analyze_semantic_forces(self, positions: np.ndarray, dt: float = 1.0) -> dict:
         """
         Complete analysis: which dimensions are being pushed/pulled
 
@@ -1534,10 +1534,10 @@ class SemanticSpectrum:
 
     def evolve(
         self,
-        initial_projection: Dict[str, float],
+        initial_projection: dict[str, float],
         steps: int = 10,
         track_trajectory: bool = True
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Evolve semantic projection using PDE temporal dynamics.
 
@@ -1598,7 +1598,7 @@ class SemanticSpectrum:
 
         return evolved_projection
 
-    def get_flow_trajectory(self) -> Optional[List]:
+    def get_flow_trajectory(self) -> list | None:
         """
         Get the semantic flow trajectory if temporal dynamics enabled.
 
@@ -1611,8 +1611,8 @@ class SemanticSpectrum:
         return self._semantic_flow.get_trajectory()
 
 
-def visualize_semantic_spectrum(analysis: Dict, words: List[str],
-                                top_k: int = 8, save_path: Optional[str] = None):
+def visualize_semantic_spectrum(analysis: dict, words: list[str],
+                                top_k: int = 8, save_path: str | None = None):
     """
     Visualize how semantic dimensions change over a trajectory
 
@@ -1678,7 +1678,7 @@ def visualize_semantic_spectrum(analysis: Dict, words: List[str],
     return fig, axes
 
 
-def print_spectrum_summary(analysis: Dict, words: List[str]):
+def print_spectrum_summary(analysis: dict, words: list[str]):
     """
     Print human-readable summary of semantic forces
     """
@@ -1686,21 +1686,21 @@ def print_spectrum_summary(analysis: Dict, words: List[str]):
     print("SEMANTIC SPECTRUM ANALYSIS")
     print("=" * 70)
 
-    print(f"\nTop 5 dimensions by velocity (how fast they're changing):")
+    print("\nTop 5 dimensions by velocity (how fast they're changing):")
     for i, (name, mag) in enumerate(analysis['dominant_velocity'], 1):
         print(f"  {i}. {name:<15} (avg velocity: {mag:.4f})")
 
-    print(f"\nTop 5 dimensions by force (acceleration):")
+    print("\nTop 5 dimensions by force (acceleration):")
     for i, (name, mag) in enumerate(analysis['dominant_force'], 1):
         print(f"  {i}. {name:<15} (avg force: {mag:.4f})")
 
-    print(f"\nTop 5 dimensions by distance traveled:")
+    print("\nTop 5 dimensions by distance traveled:")
     distances = sorted(analysis['distances'].items(), key=lambda x: x[1], reverse=True)[:5]
     for i, (name, dist) in enumerate(distances, 1):
         print(f"  {i}. {name:<15} (total distance: {dist:.4f})")
 
     # Show start and end values for dominant dimensions
-    print(f"\nStart -> End values for top 3 dimensions:")
+    print("\nStart -> End values for top 3 dimensions:")
     projections = analysis['projections']
     for i, (name, _) in enumerate(analysis['dominant_velocity'][:3], 1):
         start_val = projections[name][0]

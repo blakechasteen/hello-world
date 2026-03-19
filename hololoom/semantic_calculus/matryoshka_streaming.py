@@ -29,8 +29,9 @@ Mathematical Framework:
 This creates a 2D Matryoshka structure where BOTH time AND dimension nest together.
 """
 
-import sys
 import os
+import sys
+
 # Add repository root to path for imports
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if repo_root not in sys.path:
@@ -38,20 +39,24 @@ if repo_root not in sys.path:
 
 import asyncio
 import copy
-import numpy as np
-from typing import Dict, List, Optional, AsyncIterator, Callable, Tuple
-from dataclasses import dataclass, field
-from collections import deque
-from enum import Enum
 import time
+from collections import deque
+from collections.abc import AsyncIterator, Callable
+from dataclasses import dataclass, field
+from enum import Enum
+
+import numpy as np
 
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
 from hololoom.semantic_calculus.dimensions import (
-    SemanticSpectrum, SemanticDimension,
-    STANDARD_DIMENSIONS, NARRATIVE_DIMENSIONS,
-    EMOTIONAL_DEPTH_DIMENSIONS, RELATIONAL_DIMENSIONS,
-    ARCHETYPAL_DIMENSIONS, PHILOSOPHICAL_DIMENSIONS,
-    EXTENDED_244_DIMENSIONS
+    ARCHETYPAL_DIMENSIONS,
+    EMOTIONAL_DEPTH_DIMENSIONS,
+    EXTENDED_244_DIMENSIONS,
+    NARRATIVE_DIMENSIONS,
+    PHILOSOPHICAL_DIMENSIONS,
+    RELATIONAL_DIMENSIONS,
+    STANDARD_DIMENSIONS,
+    SemanticSpectrum,
 )
 
 
@@ -100,15 +105,15 @@ class MatryoshkaSnapshot:
     word_count: int
 
     # Per-scale states (each scale has different dimensionality!)
-    states_by_scale: Dict[MatryoshkaScale, Dict[str, np.ndarray]]
+    states_by_scale: dict[MatryoshkaScale, dict[str, np.ndarray]]
 
     # Cross-scale metrics
-    resonance_scores: Dict[Tuple[MatryoshkaScale, MatryoshkaScale], float]
+    resonance_scores: dict[tuple[MatryoshkaScale, MatryoshkaScale], float]
     narrative_momentum: float
     complexity_index: float
 
     # Interpretable
-    dominant_dimensions_by_scale: Dict[MatryoshkaScale, List[str]]
+    dominant_dimensions_by_scale: dict[MatryoshkaScale, list[str]]
     semantic_summary: str
 
 
@@ -125,7 +130,7 @@ class MatryoshkaSemanticCalculus:
         matryoshka_embedder: MatryoshkaEmbeddings,
         snapshot_interval: float = 1.0,
         enable_full_244d: bool = True,
-        semantic_dims: Optional[Dict[str, int]] = None
+        semantic_dims: dict[str, int] | None = None
     ):
         """
         Initialize Matryoshka streaming calculus.
@@ -231,15 +236,15 @@ class MatryoshkaSemanticCalculus:
         }
 
         # Snapshot history
-        self.snapshots: List[MatryoshkaSnapshot] = []
-        self.event_callbacks: List[Callable] = []
+        self.snapshots: list[MatryoshkaSnapshot] = []
+        self.event_callbacks: list[Callable] = []
 
         # Global tracking
         self.total_words_processed = 0
         self.start_time = time.time()
 
         # Performance stats
-        self.compute_times_by_scale: Dict[MatryoshkaScale, List[float]] = {
+        self.compute_times_by_scale: dict[MatryoshkaScale, list[float]] = {
             scale: [] for scale in MatryoshkaScale
         }
 
@@ -404,8 +409,8 @@ class MatryoshkaSemanticCalculus:
 
     def _compute_resonances(
         self,
-        states_by_scale: Dict[MatryoshkaScale, Dict[str, np.ndarray]]
-    ) -> Dict[Tuple[MatryoshkaScale, MatryoshkaScale], float]:
+        states_by_scale: dict[MatryoshkaScale, dict[str, np.ndarray]]
+    ) -> dict[tuple[MatryoshkaScale, MatryoshkaScale], float]:
         """Compute resonance between scales (despite different dimensionalities)."""
         resonances = {}
         scales = list(states_by_scale.keys())
@@ -435,7 +440,7 @@ class MatryoshkaSemanticCalculus:
 
     def _compute_complexity(
         self,
-        states_by_scale: Dict[MatryoshkaScale, Dict[str, np.ndarray]]
+        states_by_scale: dict[MatryoshkaScale, dict[str, np.ndarray]]
     ) -> float:
         """Compute complexity (scale divergence)."""
         # Measure variance in momentum magnitudes across scales
@@ -458,9 +463,9 @@ class MatryoshkaSemanticCalculus:
 
     def _find_dominant_per_scale(
         self,
-        states_by_scale: Dict[MatryoshkaScale, Dict[str, np.ndarray]],
+        states_by_scale: dict[MatryoshkaScale, dict[str, np.ndarray]],
         top_k: int = 3
-    ) -> Dict[MatryoshkaScale, List[str]]:
+    ) -> dict[MatryoshkaScale, list[str]]:
         """Find dominant dimensions for each scale."""
         dominant = {}
 
@@ -487,7 +492,7 @@ class MatryoshkaSemanticCalculus:
 
     def _generate_summary(
         self,
-        dominant_by_scale: Dict[MatryoshkaScale, List[str]],
+        dominant_by_scale: dict[MatryoshkaScale, list[str]],
         momentum: float,
         complexity: float
     ) -> str:

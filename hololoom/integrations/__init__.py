@@ -8,8 +8,6 @@ Integrations:
 - Dark Trace: Interpretability system integration with weaving orchestrator
 """
 
-from .mcp_server import server as mcp_server
-
 # Dark Trace Integration (Phase 10 - December 2025)
 from .dark_trace_integration import (
     DarkTraceIntegration,
@@ -21,6 +19,7 @@ from .dark_trace_integration import (
     get_dark_trace,
     with_interpretability,
 )
+from .mcp_server import server as mcp_server
 
 __all__ = [
     # MCP Server

@@ -6,11 +6,10 @@ Deterministic mock provider for testing without API calls.
 Returns predictable results based on query keywords.
 """
 
-import logging
-from typing import List, Optional
 import hashlib
+import logging
 
-from ..protocol import SearchProvider, RawSearchResult, SearchResultType
+from ..protocol import RawSearchResult, SearchResultType
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +49,7 @@ class MockProvider:
         query: str,
         limit: int = 100,
         **kwargs
-    ) -> List[RawSearchResult]:
+    ) -> list[RawSearchResult]:
         """
         Return mock search results.
 
@@ -92,7 +91,7 @@ class MockProvider:
         """Get provider name."""
         return "mock"
 
-    def _generate_generic_results(self, query: str, limit: int) -> List[RawSearchResult]:
+    def _generate_generic_results(self, query: str, limit: int) -> list[RawSearchResult]:
         """Generate generic results for unknown queries."""
         # Use query hash for deterministic but varied results
         query_hash = hashlib.md5(query.encode()).hexdigest()

@@ -32,11 +32,10 @@ Usage:
 
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional, Callable
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from pathlib import Path
 import time
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -59,11 +58,11 @@ class BatchResult:
     total_items: int
     successful: int
     failed: int
-    errors: Dict[str, str] = field(default_factory=dict)  # item -> error message
+    errors: dict[str, str] = field(default_factory=dict)  # item -> error message
     shards_created: int = 0
     memories_stored: int = 0
     start_time: datetime = field(default_factory=datetime.now)
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
     duration_seconds: float = 0.0
 
     def __str__(self):
@@ -121,11 +120,11 @@ class ProgressTracker:
 
 
 async def batch_ingest_urls(
-    urls: List[str],
-    config: Optional[BatchConfig] = None,
-    tags: Optional[List[str]] = None,
+    urls: list[str],
+    config: BatchConfig | None = None,
+    tags: list[str] | None = None,
     store_in_memory: bool = True,
-    user_id: Optional[str] = None
+    user_id: str | None = None
 ) -> BatchResult:
     """
     Ingest multiple URLs in parallel.
@@ -172,7 +171,7 @@ async def batch_ingest_urls(
     # Semaphore to limit concurrent workers
     semaphore = asyncio.Semaphore(config.max_workers)
 
-    async def process_url(url: str) -> Optional[int]:
+    async def process_url(url: str) -> int | None:
         """Process a single URL with retry logic."""
         async with semaphore:
             for attempt in range(config.retry_attempts):
@@ -251,12 +250,12 @@ async def batch_ingest_urls(
 
 
 async def batch_ingest_files(
-    files: List[Path],
-    config: Optional[BatchConfig] = None,
+    files: list[Path],
+    config: BatchConfig | None = None,
     spinner_type: str = 'auto',  # auto, text, code
-    tags: Optional[List[str]] = None,
+    tags: list[str] | None = None,
     store_in_memory: bool = True,
-    user_id: Optional[str] = None
+    user_id: str | None = None
 ) -> BatchResult:
     """
     Ingest multiple files in parallel.
@@ -287,8 +286,8 @@ async def batch_ingest_files(
         tags = []
 
     # Import spinners
-    from .text import spin_text
     from .code import spin_code_file
+    from .text import spin_text
 
     if store_in_memory:
         from hololoom.memory.protocol import create_unified_memory, shards_to_memories
@@ -311,13 +310,13 @@ async def batch_ingest_files(
             return 'code'
         return 'text'
 
-    async def process_file(file_path: Path) -> Optional[int]:
+    async def process_file(file_path: Path) -> int | None:
         """Process a single file."""
         async with semaphore:
             for attempt in range(config.retry_attempts):
                 try:
                     # Read file
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                    with open(file_path, encoding='utf-8') as f:
                         content = f.read()
 
                     # Determine spinner
@@ -396,7 +395,7 @@ async def batch_ingest_files(
 async def batch_ingest_from_list_file(
     list_file: Path,
     content_type: str = 'url',  # 'url' or 'file'
-    config: Optional[BatchConfig] = None,
+    config: BatchConfig | None = None,
     **kwargs
 ) -> BatchResult:
     """
@@ -424,7 +423,7 @@ async def batch_ingest_from_list_file(
         )
     """
     # Read items from file
-    with open(list_file, 'r') as f:
+    with open(list_file) as f:
         items = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
     if content_type == 'url':

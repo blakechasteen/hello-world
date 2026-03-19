@@ -27,14 +27,15 @@ Usage:
     results = await quality.run(llm, questions=my_questions)
 """
 
+import asyncio
+import json
+import statistics
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Dict, Any, Callable, Tuple
-import asyncio
-import time
-import statistics
-import json
+from typing import Any
 
 
 class BenchmarkType(Enum):
@@ -50,11 +51,11 @@ class BenchmarkType(Enum):
 class BenchmarkQuestion:
     """A single question for benchmarking."""
     question: str
-    expected_answer: Optional[str] = None
+    expected_answer: str | None = None
     domain: str = "general"
     difficulty: str = "medium"  # easy, medium, hard
     requires_memory: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -62,7 +63,7 @@ class BenchmarkResult:
     """Result of a single benchmark question."""
     question: str
     augmented_answer: str
-    vanilla_answer: Optional[str] = None
+    vanilla_answer: str | None = None
     augmented_confidence: float = 0.0
     vanilla_confidence: float = 0.0
     augmented_latency_ms: float = 0.0
@@ -71,7 +72,7 @@ class BenchmarkResult:
     quality_score: float = 0.0  # 0.0-1.0, how good was the answer
     improvement_score: float = 0.0  # How much better than vanilla
     used_memory: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -89,9 +90,9 @@ class BenchmarkSummary:
     avg_confidence_augmented: float
     avg_confidence_vanilla: float
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "benchmark_type": self.benchmark_type.value,
@@ -123,23 +124,23 @@ class BenchmarkSummary:
             f"{'='*60}",
             f"BENCHMARK SUMMARY: {self.benchmark_type.value.upper()}",
             f"{'='*60}",
-            f"",
+            "",
             f"Questions Tested: {self.total_questions}",
-            f"",
-            f"QUALITY METRICS:",
+            "",
+            "QUALITY METRICS:",
             f"  Average Quality Score:  {self.avg_quality_score:.2f} / 1.0",
             f"  Improvement vs Vanilla: {self.avg_improvement:+.1%}",
-            f"",
-            f"PERFORMANCE METRICS:",
+            "",
+            "PERFORMANCE METRICS:",
             f"  Augmented Latency:      {self.avg_augmented_latency_ms:.1f}ms",
             f"  Vanilla Latency:        {self.avg_vanilla_latency_ms:.1f}ms",
             f"  Overhead:               {self.latency_overhead_percent:+.1f}%",
-            f"",
-            f"MEMORY UTILIZATION:",
+            "",
+            "MEMORY UTILIZATION:",
             f"  Queries Using Memory:   {self.memory_utilization_percent:.1f}%",
             f"  Avg Sources per Query:  {self.avg_sources_per_query:.1f}",
-            f"",
-            f"CONFIDENCE:",
+            "",
+            "CONFIDENCE:",
             f"  Augmented Confidence:   {self.avg_confidence_augmented:.2f}",
             f"  Vanilla Confidence:     {self.avg_confidence_vanilla:.2f}",
             f"{'='*60}",
@@ -154,7 +155,7 @@ class BaseBenchmark:
 
     def __init__(
         self,
-        quality_scorer: Optional[Callable[[str, str, str], float]] = None,
+        quality_scorer: Callable[[str, str, str], float] | None = None,
     ):
         """
         Initialize benchmark.
@@ -168,7 +169,7 @@ class BaseBenchmark:
         self,
         question: str,
         answer: str,
-        expected: Optional[str],
+        expected: str | None,
     ) -> float:
         """
         Default quality scoring based on heuristics.
@@ -209,9 +210,9 @@ class BaseBenchmark:
     async def run(
         self,
         llm,
-        questions: List[BenchmarkQuestion],
+        questions: list[BenchmarkQuestion],
         compare_vanilla: bool = True,
-    ) -> Tuple[List[BenchmarkResult], BenchmarkSummary]:
+    ) -> tuple[list[BenchmarkResult], BenchmarkSummary]:
         """
         Run benchmark on list of questions.
 
@@ -305,7 +306,7 @@ class BaseBenchmark:
             metadata=question.metadata,
         )
 
-    def _compute_summary(self, results: List[BenchmarkResult]) -> BenchmarkSummary:
+    def _compute_summary(self, results: list[BenchmarkResult]) -> BenchmarkSummary:
         """Compute summary statistics from results."""
         if not results:
             return BenchmarkSummary(
@@ -383,8 +384,8 @@ class EfficiencyBenchmark(BaseBenchmark):
     async def run_with_token_tracking(
         self,
         llm,
-        questions: List[BenchmarkQuestion],
-    ) -> Tuple[List[BenchmarkResult], BenchmarkSummary, Dict[str, int]]:
+        questions: list[BenchmarkQuestion],
+    ) -> tuple[list[BenchmarkResult], BenchmarkSummary, dict[str, int]]:
         """
         Run benchmark with detailed token tracking.
 
@@ -418,9 +419,9 @@ class RetentionBenchmark(BaseBenchmark):
     async def run_retention_test(
         self,
         llm,
-        teach_facts: List[Tuple[str, str]],  # (fact, verification_question)
+        teach_facts: list[tuple[str, str]],  # (fact, verification_question)
         delay_seconds: float = 0.0,
-    ) -> Tuple[float, List[Dict[str, Any]]]:
+    ) -> tuple[float, list[dict[str, Any]]]:
         """
         Test retention of taught facts.
 
@@ -484,9 +485,9 @@ class HallucinationBenchmark(BaseBenchmark):
     async def run_hallucination_test(
         self,
         llm,
-        questions: List[BenchmarkQuestion],
-        hallucination_detector: Optional[Callable[[str, str], float]] = None,
-    ) -> Tuple[float, float, List[Dict[str, Any]]]:
+        questions: list[BenchmarkQuestion],
+        hallucination_detector: Callable[[str, str], float] | None = None,
+    ) -> tuple[float, float, list[dict[str, Any]]]:
         """
         Test hallucination rates.
 
@@ -588,7 +589,7 @@ class DomainBenchmark(BaseBenchmark):
     def __init__(
         self,
         domain: str,
-        domain_knowledge: List[str],
+        domain_knowledge: list[str],
         **kwargs,
     ):
         """
@@ -605,8 +606,8 @@ class DomainBenchmark(BaseBenchmark):
     async def run_domain_test(
         self,
         llm,
-        questions: List[BenchmarkQuestion],
-    ) -> Tuple[float, float, BenchmarkSummary]:
+        questions: list[BenchmarkQuestion],
+    ) -> tuple[float, float, BenchmarkSummary]:
         """
         Run domain-specific benchmark.
 
@@ -639,7 +640,7 @@ class DomainBenchmark(BaseBenchmark):
 # Standard Benchmark Datasets
 # =============================================================================
 
-def get_factual_qa_dataset() -> List[BenchmarkQuestion]:
+def get_factual_qa_dataset() -> list[BenchmarkQuestion]:
     """Get standard factual Q&A benchmark questions."""
     return [
         BenchmarkQuestion(
@@ -675,7 +676,7 @@ def get_factual_qa_dataset() -> List[BenchmarkQuestion]:
     ]
 
 
-def get_retention_dataset() -> List[Tuple[str, str]]:
+def get_retention_dataset() -> list[tuple[str, str]]:
     """Get standard retention test dataset."""
     return [
         (
@@ -693,7 +694,7 @@ def get_retention_dataset() -> List[Tuple[str, str]]:
     ]
 
 
-def get_hallucination_dataset() -> List[BenchmarkQuestion]:
+def get_hallucination_dataset() -> list[BenchmarkQuestion]:
     """Get questions designed to detect hallucinations."""
     return [
         BenchmarkQuestion(
@@ -726,7 +727,7 @@ async def run_benchmark_suite(
     dataset: str = "factual_qa",
     include_retention: bool = True,
     include_hallucination: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Run a complete benchmark suite.
 
@@ -782,7 +783,7 @@ async def run_benchmark_suite(
     return results
 
 
-def generate_benchmark_report(results: Dict[str, Any]) -> str:
+def generate_benchmark_report(results: dict[str, Any]) -> str:
     """Generate a human-readable benchmark report."""
     lines = [
         "=" * 70,
@@ -834,7 +835,7 @@ def generate_benchmark_report(results: Dict[str, Any]) -> str:
 
 
 def save_benchmark_results(
-    results: Dict[str, Any],
+    results: dict[str, Any],
     filepath: str,
 ) -> None:
     """Save benchmark results to JSON file."""
@@ -842,7 +843,7 @@ def save_benchmark_results(
         json.dump(results, f, indent=2, default=str)
 
 
-def load_benchmark_results(filepath: str) -> Dict[str, Any]:
+def load_benchmark_results(filepath: str) -> dict[str, Any]:
     """Load benchmark results from JSON file."""
-    with open(filepath, 'r') as f:
+    with open(filepath) as f:
         return json.load(f)

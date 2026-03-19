@@ -16,25 +16,23 @@ Usage:
 Then open: http://localhost:8000
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
-from pathlib import Path
 import json
-import asyncio
-from typing import Dict, List
 import sys
+from pathlib import Path
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, HTMLResponse
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
     from hololoom.awareness import (
+        LLM_AVAILABLE,
         CompositionalAwarenessLayer,
         DualStreamGenerator,
         MetaAwarenessLayer,
         OllamaLLM,
-        LLM_AVAILABLE
     )
     AWARENESS_AVAILABLE = True
 except ImportError as e:
@@ -45,7 +43,7 @@ except ImportError as e:
 app = FastAPI(title="HoloLoom Multithreaded Chat")
 
 # Active WebSocket connections
-active_connections: List[WebSocket] = []
+active_connections: list[WebSocket] = []
 
 # Thread manager (will be initialized on startup)
 thread_manager = None
@@ -62,8 +60,9 @@ async def startup_event():
     # Initialize persistent memory backend (optional)
     memory_backend = None
     try:
-        from hololoom.config import Config, MemoryBackend
         from hololoom.memory.backend_factory import create_memory_backend
+
+        from hololoom.config import Config, MemoryBackend
 
         config = Config.fast()
         config.memory_backend = MemoryBackend.HYBRID  # Neo4j + Qdrant with fallback

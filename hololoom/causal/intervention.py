@@ -10,12 +10,13 @@ Key concepts:
 - Frontdoor adjustment: Use mediators when confounders are unobserved
 """
 
-from typing import Dict, Set, Any, Optional, List
-import numpy as np
 from dataclasses import dataclass
+from typing import Any
 
-from .dag import CausalDAG, CausalNode, NodeType
-from .query import CausalQuery, CausalAnswer, QueryType
+import numpy as np
+
+from .dag import CausalDAG, NodeType
+from .query import CausalAnswer, CausalQuery, QueryType
 
 
 @dataclass
@@ -31,11 +32,11 @@ class InterventionResult:
         identification_method: Method used (backdoor, frontdoor, etc.)
         adjustment_set: Variables to condition on
     """
-    intervened_variables: Dict[str, Any]
+    intervened_variables: dict[str, Any]
     mutilated_graph: CausalDAG
     identifiable: bool
-    identification_method: Optional[str] = None
-    adjustment_set: Optional[Set[str]] = None
+    identification_method: str | None = None
+    adjustment_set: set[str] | None = None
     explanation: str = ""
 
 
@@ -68,7 +69,7 @@ class InterventionEngine:
         """
         self.dag = dag
 
-    def do(self, interventions: Dict[str, Any]) -> InterventionResult:
+    def do(self, interventions: dict[str, Any]) -> InterventionResult:
         """
         Apply do-operator: Set variables to values, breaking incoming edges.
 
@@ -113,7 +114,7 @@ class InterventionEngine:
         self,
         treatment: str,
         outcome: str,
-        evidence: Optional[Dict[str, Any]] = None
+        evidence: dict[str, Any] | None = None
     ) -> InterventionResult:
         """
         Identify causal effect of treatment on outcome.
@@ -160,7 +161,7 @@ class InterventionEngine:
         self,
         treatment: str,
         outcome: str,
-        evidence: Dict[str, Any]
+        evidence: dict[str, Any]
     ) -> InterventionResult:
         """
         Try to identify causal effect using backdoor criterion.
@@ -224,7 +225,7 @@ class InterventionEngine:
         self,
         treatment: str,
         outcome: str,
-        evidence: Dict[str, Any]
+        evidence: dict[str, Any]
     ) -> InterventionResult:
         """
         Try to identify causal effect using frontdoor criterion.
@@ -265,7 +266,7 @@ class InterventionEngine:
     def query(
         self,
         query: CausalQuery,
-        data: Optional[np.ndarray] = None
+        data: np.ndarray | None = None
     ) -> CausalAnswer:
         """
         Answer causal query using identification + estimation.
@@ -368,7 +369,7 @@ class InterventionEngine:
         outcome: str,
         treatment_value: Any,
         control_value: Any,
-        data: Optional[np.ndarray] = None
+        data: np.ndarray | None = None
     ) -> CausalAnswer:
         """
         Compute Average Treatment Effect (ATE).
@@ -400,7 +401,7 @@ class InterventionEngine:
         treatment: str,
         outcome: str,
         path_type: str = "all"
-    ) -> Dict[str, List[List[str]]]:
+    ) -> dict[str, list[list[str]]]:
         """
         Find all causal paths between treatment and outcome.
 

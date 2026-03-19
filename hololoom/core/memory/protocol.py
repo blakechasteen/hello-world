@@ -8,22 +8,23 @@ from hololoom.protocols instead of defining them locally.
 Import from here for backward compatibility, or import directly from hololoom.protocols.
 """
 
-import os
 import logging
-from typing import List, Dict, Optional, Any
-
-from hololoom.utils.security import sanitize_uri
+import os
+from typing import Any
 
 # Import canonical types and protocols
 from hololoom.protocols import (
     Memory,
     MemoryQuery,
-    MemoryRetrievalResult as RetrievalResult,  # Alias for backward compatibility
-    Strategy,
-    QueryMode,
     MemoryStore,
+    QueryMode,
+    Strategy,
     shards_to_memories,
 )
+from hololoom.protocols import (
+    MemoryRetrievalResult as RetrievalResult,  # Alias for backward compatibility
+)
+from hololoom.utils.security import sanitize_uri
 
 # Re-export for backward compatibility
 __all__ = [
@@ -44,8 +45,8 @@ __all__ = [
 
 async def create_unified_memory(
     user_id: str = "default",
-    backend: Optional[str] = None,
-    config: Optional[Dict[str, Any]] = None,
+    backend: str | None = None,
+    config: dict[str, Any] | None = None,
     **kwargs
 ):
     """
@@ -90,12 +91,10 @@ async def create_unified_memory(
             backend="in-memory"
         )
     """
-    import os
-    import logging
-    
+
     logger = logging.getLogger(__name__)
     config = config or {}
-    
+
     # Try to import UnifiedMemory
     try:
         from hololoom.memory.unified import UnifiedMemory
@@ -104,42 +103,42 @@ async def create_unified_memory(
             f"UnifiedMemory implementation not available: {e}\n"
             "Ensure HoloLoom.memory.unified exists or pass a memory backend directly."
         )
-    
+
     # Backend detection and configuration
     enable_neo4j = True
     enable_qdrant = True
     enable_mem0 = config.get('enable_mem0', True)
     enable_hofstadter = config.get('enable_hofstadter', True)
-    
+
     if backend:
         # Explicit backend selection
         backend_lower = backend.lower()
-        
+
         if backend_lower == "in-memory":
             # Disable external backends
             enable_neo4j = False
             enable_qdrant = False
             logger.info("Using in-memory backend (no persistence)")
-            
+
         elif backend_lower == "neo4j":
             enable_qdrant = False
             logger.info("Using Neo4j backend")
-            
+
         elif backend_lower == "qdrant":
             enable_neo4j = False
             logger.info("Using Qdrant backend")
-            
+
         elif backend_lower == "hybrid":
             # Use both Neo4j and Qdrant
             logger.info("Using hybrid Neo4j + Qdrant backend")
-            
+
         else:
             logger.warning(f"Unknown backend '{backend}', falling back to auto-detect")
-    
+
     else:
         # Auto-detect available backends
         logger.info("Auto-detecting available memory backends...")
-        
+
         # Check Neo4j availability
         neo4j_uri = config.get('neo4j_uri') or os.getenv('NEO4J_URI')
         if not neo4j_uri:
@@ -153,7 +152,7 @@ async def create_unified_memory(
             except Exception as e:
                 enable_neo4j = False
                 logger.warning(f"Neo4j unavailable: {e}")
-        
+
         # Check Qdrant availability
         qdrant_url = config.get('qdrant_url') or os.getenv('QDRANT_URL')
         if not qdrant_url:
@@ -167,7 +166,7 @@ async def create_unified_memory(
             except Exception as e:
                 enable_qdrant = False
                 logger.warning(f"Qdrant unavailable: {e}")
-        
+
         # Log selected backend
         if enable_neo4j and enable_qdrant:
             logger.info("✓ Using hybrid Neo4j + Qdrant backend")
@@ -177,7 +176,7 @@ async def create_unified_memory(
             logger.info("✓ Using Qdrant backend")
         else:
             logger.info("✓ Using in-memory backend (fallback)")
-    
+
     # Construct UnifiedMemory with detected/configured backends
     try:
         memory = UnifiedMemory(
@@ -188,10 +187,10 @@ async def create_unified_memory(
             enable_hofstadter=enable_hofstadter,
             **kwargs
         )
-        
+
         logger.info(f"✓ UnifiedMemory initialized for user '{user_id}'")
         return memory
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize UnifiedMemory: {e}")
         raise RuntimeError(

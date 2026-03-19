@@ -18,15 +18,14 @@ Author: CARTS Team
 Date: 2025-12-03
 """
 
+import json
 import math
 import random
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-import json
-
+from typing import Any
 
 # =============================================================================
 # Enums
@@ -66,7 +65,7 @@ class TestVariant:
     """
     name: str
     description: str
-    results: List[Tuple[bool, float]] = field(default_factory=list)
+    results: list[tuple[bool, float]] = field(default_factory=list)
     total_trials: int = 0
     successes: int = 0
     total_severity: float = 0.0
@@ -101,7 +100,7 @@ class TestVariant:
             self.successes += 1
             self.total_severity += severity
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'name': self.name,
@@ -135,8 +134,8 @@ class ABTest:
     min_samples: int = 30
     status: TestStatus = TestStatus.ACTIVE
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
-    concluded_at: Optional[str] = None
-    conclusion: Optional[Dict[str, Any]] = None
+    concluded_at: str | None = None
+    conclusion: dict[str, Any] | None = None
 
     def can_analyze(self) -> bool:
         """Check if we have enough samples for analysis."""
@@ -145,7 +144,7 @@ class ABTest:
             self.treatment.total_trials >= self.min_samples
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'name': self.name,
@@ -184,7 +183,7 @@ class ABTestAnalysis:
     treatment_mean: float
     sample_size_control: int
     sample_size_treatment: int
-    confidence_interval: Tuple[float, float] = (0.0, 0.0)
+    confidence_interval: tuple[float, float] = (0.0, 0.0)
     method: SignificanceMethod = SignificanceMethod.T_TEST
 
     @property
@@ -199,7 +198,7 @@ class ABTestAnalysis:
             return float('inf') if self.treatment_mean > 0 else 0.0
         return (self.treatment_mean - self.control_mean) / self.control_mean
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'winner': self.winner,
@@ -272,7 +271,7 @@ class AttackABTester:
         self.auto_conclude = auto_conclude
         self.method = method
 
-        self._tests: Dict[str, ABTest] = {}
+        self._tests: dict[str, ABTest] = {}
 
     # -------------------------------------------------------------------------
     # ABTestProtocol Implementation
@@ -341,7 +340,7 @@ class AttackABTester:
             if analysis and analysis.is_significant:
                 self.conclude_test(test_name)
 
-    def analyze(self, test_name: str) -> Optional[ABTestAnalysis]:
+    def analyze(self, test_name: str) -> ABTestAnalysis | None:
         """
         Analyze test results.
 
@@ -363,14 +362,14 @@ class AttackABTester:
 
         return self._compute_analysis(test)
 
-    def get_active_tests(self) -> List[str]:
+    def get_active_tests(self) -> list[str]:
         """Get names of all active tests."""
         return [
             name for name, test in self._tests.items()
             if test.status == TestStatus.ACTIVE
         ]
 
-    def conclude_test(self, test_name: str) -> Optional[ABTestAnalysis]:
+    def conclude_test(self, test_name: str) -> ABTestAnalysis | None:
         """
         Conclude a test and return final results.
 
@@ -405,7 +404,7 @@ class AttackABTester:
     # Statistical Methods
     # -------------------------------------------------------------------------
 
-    def _compute_analysis(self, test: ABTest) -> Optional[ABTestAnalysis]:
+    def _compute_analysis(self, test: ABTest) -> ABTestAnalysis | None:
         """Compute statistical analysis for a test."""
         if not test.can_analyze():
             return None
@@ -578,7 +577,7 @@ class AttackABTester:
         n1: int,
         n2: int,
         confidence: float = 0.95,
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """Calculate confidence interval for Cohen's d."""
         # Standard error of d
         se = math.sqrt((n1 + n2) / (n1 * n2) + d**2 / (2 * (n1 + n2)))
@@ -635,7 +634,7 @@ class AttackABTester:
         if not path.exists():
             return
 
-        with open(path, 'r') as f:
+        with open(path) as f:
             data = json.load(f)
 
         # Load config
@@ -677,7 +676,7 @@ class AttackABTester:
                 conclusion=test_data.get('conclusion'),
             )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get comprehensive statistics."""
         active = [t for t in self._tests.values() if t.status == TestStatus.ACTIVE]
         concluded = [t for t in self._tests.values() if t.status == TestStatus.CONCLUDED]

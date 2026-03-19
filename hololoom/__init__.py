@@ -38,7 +38,6 @@ Advanced users can still import internal components:
 import importlib as _importlib
 import sys as _sys
 
-
 # ============================================================================
 # CORE MODULE REDIRECT: HoloLoom.X → HoloLoom.core.X
 # ============================================================================
@@ -134,7 +133,7 @@ def __getattr__(name):
 
     # Core API
     if name == 'HoloLoom':
-        from .unified_api import HoloLoom
+        from .hololoom import HoloLoom
         _lazy_imports[name] = HoloLoom
         return HoloLoom
 

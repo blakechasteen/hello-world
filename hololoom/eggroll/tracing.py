@@ -13,13 +13,12 @@ Span Decorators:
 from __future__ import annotations
 
 import functools
-from typing import Any, Callable, Optional, TypeVar, Union
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from hololoom.telemetry.tracing import (
     get_tracer,
-    span,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  TYPE VARIABLES
@@ -44,7 +43,7 @@ def get_eggroll_tracer():
 
 
 def trace_epoch(
-    population_id: Optional[str] = None,
+    population_id: str | None = None,
     complexity: str = "FULL",
 ) -> Callable[[F], F]:
     """
@@ -83,7 +82,7 @@ def trace_epoch(
     return decorator
 
 
-def trace_worker(worker_id: Optional[str] = None) -> Callable[[F], F]:
+def trace_worker(worker_id: str | None = None) -> Callable[[F], F]:
     """
     Decorator to trace individual worker steps.
 
@@ -156,7 +155,7 @@ def trace_selection(method: str = "tournament") -> Callable[[F], F]:
     return decorator
 
 
-def trace_mutation(mutation_rate: Optional[float] = None) -> Callable[[F], F]:
+def trace_mutation(mutation_rate: float | None = None) -> Callable[[F], F]:
     """
     Decorator to trace mutation operations.
 
@@ -251,8 +250,8 @@ def trace_rust_operation(operation: str) -> Callable[[F], F]:
 
 def eggroll_span(
     name: str,
-    population_id: Optional[str] = None,
-    worker_id: Optional[str] = None,
+    population_id: str | None = None,
+    worker_id: str | None = None,
     **attributes,
 ):
     """

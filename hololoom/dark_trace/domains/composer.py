@@ -35,22 +35,23 @@ Usage:
     # Returns "medical"
 """
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Protocol, Tuple, Union
-from enum import Enum
-import numpy as np
 import re
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Protocol
+
+import numpy as np
 
 
 class LensProtocol(Protocol):
     """Protocol for lens objects that can be composed."""
 
-    def project(self, activations: np.ndarray) -> Dict[str, float]:
+    def project(self, activations: np.ndarray) -> dict[str, float]:
         """Project activations onto semantic space."""
         ...
 
-    def get_axis_names(self) -> List[str]:
+    def get_axis_names(self) -> list[str]:
         """Get names of all axes."""
         ...
 
@@ -74,7 +75,7 @@ class RoutingRule:
     priority: int = 0  # Higher priority wins ties
     min_match_score: float = 0.0  # Minimum score to trigger
 
-    def matches(self, text: str) -> Tuple[bool, float]:
+    def matches(self, text: str) -> tuple[bool, float]:
         """
         Check if text matches this rule.
 
@@ -95,13 +96,13 @@ class RoutingRule:
 class CompositionResult:
     """Result of lens composition."""
 
-    projection: Dict[str, float]
-    source_projections: Dict[str, Dict[str, float]]
-    weights_used: Dict[str, float]
+    projection: dict[str, float]
+    source_projections: dict[str, dict[str, float]]
+    weights_used: dict[str, float]
     strategy: CompositionStrategy
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def get_domain_projection(self, domain: str) -> Dict[str, float]:
+    def get_domain_projection(self, domain: str) -> dict[str, float]:
         """Get projection for a specific domain."""
         return self.source_projections.get(domain, {})
 
@@ -137,8 +138,8 @@ class ComposedLens:
 
     def __init__(
         self,
-        lenses: Dict[str, LensProtocol],
-        weights: Dict[str, float],
+        lenses: dict[str, LensProtocol],
+        weights: dict[str, float],
         strategy: CompositionStrategy = CompositionStrategy.CONCATENATE,
     ):
         """
@@ -158,7 +159,7 @@ class ComposedLens:
             if name not in weights:
                 weights[name] = 1.0
 
-    def project(self, activations: np.ndarray) -> Dict[str, float]:
+    def project(self, activations: np.ndarray) -> dict[str, float]:
         """
         Project activations through all lenses.
 
@@ -190,8 +191,8 @@ class ComposedLens:
         )
 
     def _combine(
-        self, source_projections: Dict[str, Dict[str, float]]
-    ) -> Dict[str, float]:
+        self, source_projections: dict[str, dict[str, float]]
+    ) -> dict[str, float]:
         """Combine projections using configured strategy."""
         if self.strategy == CompositionStrategy.CONCATENATE:
             return self._combine_concatenate(source_projections)
@@ -207,8 +208,8 @@ class ComposedLens:
             return self._combine_concatenate(source_projections)
 
     def _combine_concatenate(
-        self, source_projections: Dict[str, Dict[str, float]]
-    ) -> Dict[str, float]:
+        self, source_projections: dict[str, dict[str, float]]
+    ) -> dict[str, float]:
         """Concatenate with domain prefix."""
         combined = {}
         for domain, projection in source_projections.items():
@@ -219,10 +220,10 @@ class ComposedLens:
         return combined
 
     def _combine_weighted_average(
-        self, source_projections: Dict[str, Dict[str, float]]
-    ) -> Dict[str, float]:
+        self, source_projections: dict[str, dict[str, float]]
+    ) -> dict[str, float]:
         """Weighted average for overlapping axes."""
-        axis_values: Dict[str, List[Tuple[float, float]]] = {}
+        axis_values: dict[str, list[tuple[float, float]]] = {}
 
         for domain, projection in source_projections.items():
             weight = self.weights.get(domain, 1.0)
@@ -242,10 +243,10 @@ class ComposedLens:
         return combined
 
     def _combine_max_pool(
-        self, source_projections: Dict[str, Dict[str, float]]
-    ) -> Dict[str, float]:
+        self, source_projections: dict[str, dict[str, float]]
+    ) -> dict[str, float]:
         """Take max absolute value for overlapping axes."""
-        axis_values: Dict[str, List[float]] = {}
+        axis_values: dict[str, list[float]] = {}
 
         for domain, projection in source_projections.items():
             weight = self.weights.get(domain, 1.0)
@@ -263,8 +264,8 @@ class ComposedLens:
         return combined
 
     def _combine_union(
-        self, source_projections: Dict[str, Dict[str, float]]
-    ) -> Dict[str, float]:
+        self, source_projections: dict[str, dict[str, float]]
+    ) -> dict[str, float]:
         """Keep all axes, rename duplicates."""
         combined = {}
         seen = set()
@@ -281,8 +282,8 @@ class ComposedLens:
         return combined
 
     def _combine_intersection(
-        self, source_projections: Dict[str, Dict[str, float]]
-    ) -> Dict[str, float]:
+        self, source_projections: dict[str, dict[str, float]]
+    ) -> dict[str, float]:
         """Keep only axes present in all domains."""
         if not source_projections:
             return {}
@@ -308,14 +309,14 @@ class ComposedLens:
 
         return combined
 
-    def get_axis_names(self) -> List[str]:
+    def get_axis_names(self) -> list[str]:
         """Get all axis names across all lenses."""
         names = set()
         for lens in self.lenses.values():
             names.update(lens.get_axis_names())
         return sorted(names)
 
-    def get_domain_names(self) -> List[str]:
+    def get_domain_names(self) -> list[str]:
         """Get names of all composed domains."""
         return list(self.lenses.keys())
 
@@ -335,13 +336,13 @@ class LensComposer:
             strategy: Default composition strategy
         """
         self.strategy = strategy
-        self._lenses: Dict[str, LensProtocol] = {}
-        self._weights: Dict[str, float] = {}
+        self._lenses: dict[str, LensProtocol] = {}
+        self._weights: dict[str, float] = {}
 
     def add(
         self,
         lens: LensProtocol,
-        name: Optional[str] = None,
+        name: str | None = None,
         weight: float = 1.0,
     ) -> "LensComposer":
         """
@@ -408,7 +409,7 @@ class DomainRouter:
     determine which domain lens to use.
     """
 
-    def __init__(self, default_domain: Optional[str] = None):
+    def __init__(self, default_domain: str | None = None):
         """
         Initialize router.
 
@@ -416,8 +417,8 @@ class DomainRouter:
             default_domain: Default domain when no rules match
         """
         self.default_domain = default_domain
-        self._rules: List[RoutingRule] = []
-        self._classifiers: Dict[str, Callable] = {}
+        self._rules: list[RoutingRule] = []
+        self._classifiers: dict[str, Callable] = {}
 
     def add_rule(self, rule: RoutingRule) -> "DomainRouter":
         """
@@ -437,7 +438,7 @@ class DomainRouter:
     def add_classifier(
         self,
         name: str,
-        classifier: Callable[[str], Tuple[str, float]],
+        classifier: Callable[[str], tuple[str, float]],
     ) -> "DomainRouter":
         """
         Add a classifier function for domain detection.
@@ -452,7 +453,7 @@ class DomainRouter:
         self._classifiers[name] = classifier
         return self
 
-    def route(self, text: str) -> Optional[str]:
+    def route(self, text: str) -> str | None:
         """
         Route text to a domain.
 
@@ -465,7 +466,7 @@ class DomainRouter:
         result = self.route_with_score(text)
         return result[0] if result[0] is not None else self.default_domain
 
-    def route_with_score(self, text: str) -> Tuple[Optional[str], float]:
+    def route_with_score(self, text: str) -> tuple[str | None, float]:
         """
         Route text with confidence score.
 
@@ -495,13 +496,13 @@ class DomainRouter:
 
     def route_multiple(
         self, text: str, top_k: int = 3
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Get multiple domain matches with scores.
 
         Returns list of (domain, score) tuples sorted by score.
         """
-        scores: Dict[str, float] = {}
+        scores: dict[str, float] = {}
 
         # Check rules
         for rule in self._rules:
@@ -527,8 +528,8 @@ class DomainRouter:
         self,
         text: str,
         activations: np.ndarray,
-        lenses: Dict[str, LensProtocol],
-    ) -> Tuple[str, Dict[str, float]]:
+        lenses: dict[str, LensProtocol],
+    ) -> tuple[str, dict[str, float]]:
         """
         Route and project in one step.
 
@@ -553,8 +554,8 @@ class DomainRouter:
 
 
 def create_router_from_config(
-    rules: List[Dict[str, Any]],
-    default_domain: Optional[str] = None,
+    rules: list[dict[str, Any]],
+    default_domain: str | None = None,
 ) -> DomainRouter:
     """
     Create router from configuration dict.
@@ -581,7 +582,7 @@ def create_router_from_config(
 
 
 def compose_with_routing(
-    lenses: Dict[str, LensProtocol],
+    lenses: dict[str, LensProtocol],
     router: DomainRouter,
     text: str,
     activations: np.ndarray,
@@ -607,7 +608,7 @@ def compose_with_routing(
 
     if not matches:
         # No matches: equal weights
-        weights = {name: 1.0 for name in lenses}
+        weights = dict.fromkeys(lenses, 1.0)
     else:
         # Weight by routing scores
         total_score = sum(score for _, score in matches) or 1.0

@@ -16,11 +16,10 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
-from hololoom.promptly import DSPyHoloLoom, create_signature
-from hololoom.config import Config
-from hololoom.protocols.types import MemoryShard
 import dspy
+from hololoom.protocols.types import MemoryShard
 
+from hololoom.promptly import create_signature
 
 # ============================================================================
 # CONFIGURATION

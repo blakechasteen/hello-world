@@ -15,11 +15,7 @@ from datetime import datetime
 from enum import Enum
 from typing import (
     Any,
-    Dict,
-    List,
-    Optional,
     Protocol,
-    Tuple,
     Union,
     runtime_checkable,
 )
@@ -27,8 +23,8 @@ from typing import (
 import numpy as np
 
 # Type aliases for clarity
-ArrayLike = Union[np.ndarray, List[List[float]], List[float]]
-FeatureNames = List[str]
+ArrayLike = Union[np.ndarray, list[list[float]], list[float]]
+FeatureNames = list[str]
 
 
 class ModelType(Enum):
@@ -86,13 +82,13 @@ class DataSplit:
 
     X_train: np.ndarray
     y_train: np.ndarray
-    X_val: Optional[np.ndarray] = None
-    y_val: Optional[np.ndarray] = None
-    X_test: Optional[np.ndarray] = None
-    y_test: Optional[np.ndarray] = None
-    feature_names: Optional[FeatureNames] = None
-    target_name: Optional[str] = None
-    data_hash: Optional[str] = None
+    X_val: np.ndarray | None = None
+    y_val: np.ndarray | None = None
+    X_test: np.ndarray | None = None
+    y_test: np.ndarray | None = None
+    feature_names: FeatureNames | None = None
+    target_name: str | None = None
+    data_hash: str | None = None
 
     def __post_init__(self):
         """Compute data hash if not provided."""
@@ -117,16 +113,16 @@ class DataSplit:
         return self.X_train.shape[0]
 
     @property
-    def n_val_samples(self) -> Optional[int]:
+    def n_val_samples(self) -> int | None:
         """Number of validation samples."""
         return self.X_val.shape[0] if self.X_val is not None else None
 
     @property
-    def n_test_samples(self) -> Optional[int]:
+    def n_test_samples(self) -> int | None:
         """Number of test samples."""
         return self.X_test.shape[0] if self.X_test is not None else None
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """Get summary of data split."""
         return {
             "n_features": self.n_features,
@@ -162,17 +158,17 @@ class TrainingResult:
     model_id: str
     model_type: ModelType
     model_bytes: bytes
-    hyperparameters: Dict[str, Any]
-    metrics: Dict[str, float] = field(default_factory=dict)
-    feature_names: Optional[FeatureNames] = None
-    feature_importance: Optional[Dict[str, float]] = None
-    data_hash: Optional[str] = None
+    hyperparameters: dict[str, Any]
+    metrics: dict[str, float] = field(default_factory=dict)
+    feature_names: FeatureNames | None = None
+    feature_importance: dict[str, float] | None = None
+    data_hash: str | None = None
     training_duration_ms: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
     status: ModelStatus = ModelStatus.TRAINED
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary (without model_bytes)."""
         return {
             "model_id": self.model_id,
@@ -215,16 +211,16 @@ class EvaluationResult:
     rmse: float = 0.0
     mae: float = 0.0
     r2_score: float = 0.0
-    adjusted_r2: Optional[float] = None
-    cv_scores: Optional[List[float]] = None
-    cv_mean: Optional[float] = None
-    cv_std: Optional[float] = None
-    residuals_stats: Optional[Dict[str, float]] = None
+    adjusted_r2: float | None = None
+    cv_scores: list[float] | None = None
+    cv_mean: float | None = None
+    cv_std: float | None = None
+    residuals_stats: dict[str, float] | None = None
     evaluation_duration_ms: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "model_id": self.model_id,
@@ -272,18 +268,18 @@ class PredictionResult:
 
     model_id: str
     predictions: np.ndarray
-    confidence_intervals: Optional[Tuple[np.ndarray, np.ndarray]] = None
+    confidence_intervals: tuple[np.ndarray, np.ndarray] | None = None
     prediction_duration_ms: float = 0.0
     n_samples: int = 0
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Set n_samples from predictions."""
         if self.n_samples == 0 and self.predictions is not None:
             self.n_samples = len(self.predictions)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         result = {
             "model_id": self.model_id,
@@ -318,12 +314,12 @@ class DataValidationIssue:
 
     issue_type: str
     severity: str
-    column: Optional[str] = None
+    column: str | None = None
     message: str = ""
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
     blocking: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "issue_type": self.issue_type,
@@ -348,17 +344,17 @@ class DataValidationResult:
     """
 
     is_valid: bool
-    issues: List[DataValidationIssue] = field(default_factory=list)
-    stats: Dict[str, Any] = field(default_factory=dict)
-    recommendations: List[str] = field(default_factory=list)
+    issues: list[DataValidationIssue] = field(default_factory=list)
+    stats: dict[str, Any] = field(default_factory=dict)
+    recommendations: list[str] = field(default_factory=list)
 
     @property
-    def blocking_issues(self) -> List[DataValidationIssue]:
+    def blocking_issues(self) -> list[DataValidationIssue]:
         """Get issues that block training."""
         return [i for i in self.issues if i.blocking]
 
     @property
-    def warnings(self) -> List[DataValidationIssue]:
+    def warnings(self) -> list[DataValidationIssue]:
         """Get non-blocking warning issues."""
         return [i for i in self.issues if not i.blocking]
 
@@ -449,7 +445,7 @@ class TrainerProtocol(Protocol):
     def get_feature_importance(
         self,
         result: TrainingResult,
-    ) -> Optional[Dict[str, float]]:
+    ) -> dict[str, float] | None:
         """
         Get feature importance from trained model.
 
@@ -461,7 +457,7 @@ class TrainerProtocol(Protocol):
         """
         ...
 
-    def get_hyperparameter_space(self) -> Dict[str, Any]:
+    def get_hyperparameter_space(self) -> dict[str, Any]:
         """
         Get hyperparameter search space for tuning.
 

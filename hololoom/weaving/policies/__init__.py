@@ -12,10 +12,10 @@ Replaces the BaseStrategy wrapper pattern from v1.
 
 from hololoom.protocols import ComplexityLevel
 
+from .bandit import BanditConfig, BanditPolicy
 from .base import WeavingPolicyBase
 from .fast import FastPolicy
 from .research import ResearchPolicy
-from .bandit import BanditPolicy, BanditConfig
 
 __all__ = [
     "WeavingPolicyBase",

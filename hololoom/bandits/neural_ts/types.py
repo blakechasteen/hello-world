@@ -8,6 +8,7 @@ All types use simple dataclasses for easy serialization and testing.
 import time
 from dataclasses import dataclass, field
 from typing import Any, Protocol
+
 import numpy as np
 import numpy.typing as npt
 

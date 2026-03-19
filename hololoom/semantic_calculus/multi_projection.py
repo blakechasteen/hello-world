@@ -44,24 +44,28 @@ snapshot = await calculator.analyze(text)
 ```
 """
 
-import sys
 import os
+import sys
+
 # Add repository root to path for imports
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if repo_root not in sys.path:
     sys.path.insert(0, repo_root)
 
 import asyncio
-import numpy as np
-from typing import Dict, List, Optional, AsyncIterator, Callable, Protocol, Any
-from dataclasses import dataclass, field
-from collections import deque
-from enum import Enum
 import time
+from collections import deque
+from collections.abc import AsyncIterator, Callable
+from dataclasses import dataclass
+from typing import Protocol
+
+import numpy as np
 
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
-from hololoom.semantic_calculus.dimensions import SemanticSpectrum, EXTENDED_244_DIMENSIONS, STANDARD_DIMENSIONS
-
+from hololoom.semantic_calculus.dimensions import (
+    EXTENDED_244_DIMENSIONS,
+    SemanticSpectrum,
+)
 
 # ============================================================================
 # Protocol: Pluggable Projection Space
@@ -86,7 +90,7 @@ class ProjectionSpace(Protocol):
         """
         ...
 
-    def dimension_names(self) -> List[str]:
+    def dimension_names(self) -> list[str]:
         """Get human-readable dimension names."""
         ...
 
@@ -122,7 +126,7 @@ class SemanticProjection:
         semantic_dict = self.spectrum.project_vector(embedding)
         return np.array([semantic_dict[dim.name] for dim in self.spectrum.dimensions])
 
-    def dimension_names(self) -> List[str]:
+    def dimension_names(self) -> list[str]:
         return [dim.name for dim in self.spectrum.dimensions]
 
     def dimension_count(self) -> int:
@@ -141,11 +145,6 @@ class EmotionProjection:
     def __init__(self, embed_fn: Callable[[str], np.ndarray]):
         """Initialize emotion projection with core emotional dimensions."""
         # Plutchik's 8 core emotions + intensity variants + blends
-        from hololoom.semantic_calculus.dimensions import (
-            SemanticDimension,
-            EMOTIONAL_DEPTH_DIMENSIONS,
-            STANDARD_DIMENSIONS
-        )
 
         # Use emotional subset
         emotion_dims = [
@@ -167,7 +166,7 @@ class EmotionProjection:
         emotional_dict = self.spectrum.project_vector(embedding)
         return np.array([emotional_dict[dim.name] for dim in self.spectrum.dimensions])
 
-    def dimension_names(self) -> List[str]:
+    def dimension_names(self) -> list[str]:
         return [dim.name for dim in self.spectrum.dimensions]
 
     def dimension_count(self) -> int:
@@ -184,7 +183,10 @@ class ArchetypalProjection:
     """32D archetypal projection (Jungian + Campbell)."""
 
     def __init__(self, embed_fn: Callable[[str], np.ndarray]):
-        from hololoom.semantic_calculus.dimensions import ARCHETYPAL_DIMENSIONS, NARRATIVE_DIMENSIONS
+        from hololoom.semantic_calculus.dimensions import (
+            ARCHETYPAL_DIMENSIONS,
+            NARRATIVE_DIMENSIONS,
+        )
 
         archetypal_dims = ARCHETYPAL_DIMENSIONS + NARRATIVE_DIMENSIONS
         self.spectrum = SemanticSpectrum(dimensions=archetypal_dims[:32])
@@ -196,7 +198,7 @@ class ArchetypalProjection:
         archetypal_dict = self.spectrum.project_vector(embedding)
         return np.array([archetypal_dict[dim.name] for dim in self.spectrum.dimensions])
 
-    def dimension_names(self) -> List[str]:
+    def dimension_names(self) -> list[str]:
         return [dim.name for dim in self.spectrum.dimensions]
 
     def dimension_count(self) -> int:
@@ -219,7 +221,7 @@ class IdentityProjection:
         # Return embedding as-is (truncated to dimension)
         return embedding[:self.dimension]
 
-    def dimension_names(self) -> List[str]:
+    def dimension_names(self) -> list[str]:
         return [f"emb_{i}" for i in range(self.dimension)]
 
     def dimension_count(self) -> int:
@@ -241,10 +243,10 @@ class MultiProjectionSnapshot:
     word_count: int
 
     # Projections for each space (space_name → projection_vector)
-    projections: Dict[str, np.ndarray]
+    projections: dict[str, np.ndarray]
 
     # Interpretations (space_name → human_readable_string)
-    interpretations: Dict[str, str]
+    interpretations: dict[str, str]
 
     # Cross-projection metrics
     projection_agreement: float  # How much do different projections agree?
@@ -261,7 +263,7 @@ class MultiProjectionCalculus:
     def __init__(
         self,
         matryoshka_embedder: MatryoshkaEmbeddings,
-        projection_spaces: Dict[str, ProjectionSpace],
+        projection_spaces: dict[str, ProjectionSpace],
         snapshot_interval: float = 1.0
     ):
         """
@@ -281,8 +283,8 @@ class MultiProjectionCalculus:
             if not hasattr(proj, 'project'):
                 raise ValueError(f"Projection '{name}' must implement project() method")
 
-        self.snapshots: List[MultiProjectionSnapshot] = []
-        self.event_callbacks: List[Callable] = []
+        self.snapshots: list[MultiProjectionSnapshot] = []
+        self.event_callbacks: list[Callable] = []
 
         # Tracking
         self.total_words = 0
@@ -383,7 +385,7 @@ class MultiProjectionCalculus:
         self.snapshots.append(snapshot)
         return snapshot
 
-    def _compute_agreement(self, projections: Dict[str, np.ndarray]) -> float:
+    def _compute_agreement(self, projections: dict[str, np.ndarray]) -> float:
         """Compute agreement between different projections."""
         if len(projections) < 2:
             return 1.0
@@ -414,7 +416,7 @@ class MultiProjectionCalculus:
 
         return float(np.mean(similarities)) if similarities else 0.0
 
-    def _find_dominant(self, projections: Dict[str, np.ndarray]) -> str:
+    def _find_dominant(self, projections: dict[str, np.ndarray]) -> str:
         """Find projection with strongest signal (highest magnitude)."""
         if not projections:
             return ""

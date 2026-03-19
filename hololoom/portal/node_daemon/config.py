@@ -6,9 +6,9 @@ Loads from YAML file with environment variable overrides.
 
 import os
 from pathlib import Path
-from typing import Optional
-from pydantic import BaseModel, Field
+
 import yaml
+from pydantic import BaseModel, Field
 
 
 class NodeConfig(BaseModel):
@@ -49,7 +49,7 @@ class NodeConfig(BaseModel):
     log_json: bool = Field(default=True, description="Use JSON logging")
 
 
-def load_config(config_path: Optional[str] = None) -> NodeConfig:
+def load_config(config_path: str | None = None) -> NodeConfig:
     """
     Load Node configuration from YAML file with env overrides.
 

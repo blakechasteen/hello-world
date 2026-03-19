@@ -19,12 +19,11 @@ Design Principles:
 Created: December 2025
 """
 
-from typing import Protocol, List, Optional, Dict, Any, runtime_checkable
-from enum import Enum
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-import uuid
-
+from enum import Enum
+from typing import Any, Protocol, runtime_checkable
 
 # ─────────────────────────────────────────────────────────────────
 # Enums (Weaving Status)
@@ -67,7 +66,7 @@ class SignalResult:
     signal_name: str
     passed: bool
     score: float  # 0.0-1.0
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
     is_blocker: bool = False  # Hard failure, blocks regardless of weight
 
 
@@ -87,9 +86,9 @@ class FabricCheckResult:
     """
     passed: bool
     confidence: float  # Weighted aggregate
-    signals: Dict[str, SignalResult] = field(default_factory=dict)
-    blockers: List[str] = field(default_factory=list)
-    recommendations: List[str] = field(default_factory=list)
+    signals: dict[str, SignalResult] = field(default_factory=dict)
+    blockers: list[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -119,15 +118,15 @@ class Thread:
     status: ThreadStatus
     created_at: datetime
     updated_at: datetime
-    commit_hash: Optional[str] = None
-    fabric_check: Optional[FabricCheckResult] = None
+    commit_hash: str | None = None
+    fabric_check: FabricCheckResult | None = None
     dependencies: tuple = field(default_factory=tuple)  # Immutable
 
     def with_status(
         self,
         status: ThreadStatus,
-        commit_hash: Optional[str] = None,
-        fabric_check: Optional[FabricCheckResult] = None
+        commit_hash: str | None = None,
+        fabric_check: FabricCheckResult | None = None
     ) -> 'Thread':
         """Create new Thread with updated status (immutable update)."""
         return Thread(
@@ -157,12 +156,12 @@ class Tapestry:
     """
     loom_id: str
     goal: str
-    threads: List[Thread]
+    threads: list[Thread]
     created_at: datetime
     updated_at: datetime
     initial_commit: str
     current_commit: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def _generate_loom_id(cls) -> str:
@@ -173,8 +172,8 @@ class Tapestry:
     def create(
         cls,
         goal: str,
-        thread_descriptions: List[str],
-        dependencies: Optional[Dict[str, List[str]]] = None
+        thread_descriptions: list[str],
+        dependencies: dict[str, list[str]] | None = None
     ) -> 'Tapestry':
         """
         Factory: Create tapestry with unwoven threads.
@@ -213,14 +212,14 @@ class Tapestry:
             current_commit=""
         )
 
-    def _get_thread(self, thread_id: str) -> Optional[Thread]:
+    def _get_thread(self, thread_id: str) -> Thread | None:
         """Get thread by ID."""
         for thread in self.threads:
             if thread.id == thread_id:
                 return thread
         return None
 
-    def next_unwoven(self) -> Optional[Thread]:
+    def next_unwoven(self) -> Thread | None:
         """
         Get next unwoven thread (respecting dependencies).
 
@@ -243,8 +242,8 @@ class Tapestry:
         self,
         thread_id: str,
         status: ThreadStatus,
-        commit_hash: Optional[str] = None,
-        fabric_check: Optional[FabricCheckResult] = None
+        commit_hash: str | None = None,
+        fabric_check: FabricCheckResult | None = None
     ) -> 'Tapestry':
         """
         Update a thread's status, returning new Tapestry.
@@ -262,7 +261,7 @@ class Tapestry:
         self.updated_at = datetime.utcnow()
         return self
 
-    def get_status_summary(self) -> Dict[str, int]:
+    def get_status_summary(self) -> dict[str, int]:
         """Get count of threads by status."""
         summary = {status.value: 0 for status in ThreadStatus}
         for thread in self.threads:
@@ -273,7 +272,7 @@ class Tapestry:
         """Check if all threads are woven."""
         return all(t.status == ThreadStatus.WOVEN for t in self.threads)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary for JSON persistence."""
         return {
             "loom_id": self.loom_id,
@@ -314,7 +313,7 @@ class Tapestry:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Tapestry':
+    def from_dict(cls, data: dict[str, Any]) -> 'Tapestry':
         """Deserialize from dictionary."""
         threads = []
         for t in data["threads"]:
@@ -377,7 +376,7 @@ class TapestryBackend(Protocol):
     All methods are async for consistency with HoloLoom patterns.
     """
 
-    async def load(self) -> Optional[Tapestry]:
+    async def load(self) -> Tapestry | None:
         """Load tapestry from storage. Returns None if not exists."""
         ...
 
@@ -417,7 +416,7 @@ class FabricSignal(Protocol):
     name: str
     weight: float  # 0.0-1.0
 
-    async def check(self, thread: Thread, context: Dict[str, Any]) -> SignalResult:
+    async def check(self, thread: Thread, context: dict[str, Any]) -> SignalResult:
         """
         Run this verification signal.
 

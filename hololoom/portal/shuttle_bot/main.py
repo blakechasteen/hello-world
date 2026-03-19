@@ -15,24 +15,23 @@ Commands:
 import argparse
 import asyncio
 import sys
-from typing import Optional
 
+from ..shared.logging import configure_logging, get_logger
+from .commands import CommandHandler
 from .config import ShuttleConfig, load_config
 from .scheduler import SimpleScheduler
-from .commands import CommandHandler
-from ..shared.logging import configure_logging, get_logger
 
 # Try to import matrix-nio
 try:
     from nio import (
         AsyncClient,
         AsyncClientConfig,
+        JoinError,
+        JoinResponse,
+        LoginError,
+        LoginResponse,
         MatrixRoom,
         RoomMessageText,
-        LoginResponse,
-        LoginError,
-        JoinResponse,
-        JoinError,
     )
     NIO_AVAILABLE = True
 except ImportError:
@@ -57,7 +56,7 @@ class ShuttleBot:
             config: ShuttleConfig instance
         """
         self.config = config
-        self.client: Optional[AsyncClient] = None
+        self.client: AsyncClient | None = None
         self.scheduler = SimpleScheduler(
             portal_url=config.portal_url,
             shared_secret=config.shared_secret,

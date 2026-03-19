@@ -157,8 +157,6 @@ select = [
 ]
 ignore = [
     "E501",  # line-too-long (handled by Black)
-    "W503",  # line-break-before-binary-operator
-    "W504",  # line-break-after-binary-operator
 ]
 exclude = [
     ".git",

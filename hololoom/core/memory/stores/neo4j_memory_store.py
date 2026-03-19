@@ -11,9 +11,9 @@ Stores memories as nodes with rich relationship tracking:
 This is perfect for beekeeping data where relationships matter!
 """
 
-from typing import List, Optional, Dict, Any
-from datetime import datetime
 import hashlib
+from datetime import datetime
+from typing import Any
 
 try:
     from neo4j import GraphDatabase
@@ -21,12 +21,12 @@ try:
 except ImportError:
     NEO4J_AVAILABLE = False
 
-import sys
 from pathlib import Path
 
 # Import protocol types
 protocol_path = Path(__file__).parent.parent / 'protocol.py'
 import importlib.util
+
 spec = importlib.util.spec_from_file_location("protocol", protocol_path)
 protocol = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(protocol)
@@ -435,7 +435,7 @@ class Neo4jMemoryStore:
 
             return result.single()['deleted'] > 0
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Check health of Neo4j connection."""
         try:
             with self.driver.session(database=self.database) as session:

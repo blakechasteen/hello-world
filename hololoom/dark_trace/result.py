@@ -12,22 +12,20 @@ Key Classes:
 - AblationResult: Result from ablation testing
 """
 
+import json
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 from enum import Enum, auto
-import json
+from typing import Any
 
 import torch
 
 from hololoom.dark_trace.protocol import (
-    Feature,
     FeatureActivation,
-    SteeringVector,
     LensType,
     SafetyFlag,
+    SteeringVector,
 )
-
 
 # =============================================================================
 # Result Enums
@@ -64,33 +62,33 @@ class LensResult:
     lens_name: str
 
     # Core results
-    active_features: List[FeatureActivation]
-    feature_projections: Optional[torch.Tensor] = None  # [n_features] or [batch, n_features]
+    active_features: list[FeatureActivation]
+    feature_projections: torch.Tensor | None = None  # [n_features] or [batch, n_features]
 
     # Explanation
-    explanation: Optional[str] = None
+    explanation: str | None = None
 
     # Metrics
-    reconstruction_loss: Optional[float] = None    # For SAE
-    sparsity: Optional[float] = None               # Fraction of active features
-    coherence_score: Optional[float] = None        # How coherent the activations are
+    reconstruction_loss: float | None = None    # For SAE
+    sparsity: float | None = None               # Fraction of active features
+    coherence_score: float | None = None        # How coherent the activations are
 
     # Timing
     compute_time_ms: float = 0.0
 
     # Status
     status: AnalysisStatus = AnalysisStatus.SUCCESS
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
-    def top_features(self, k: int = 5) -> List[FeatureActivation]:
+    def top_features(self, k: int = 5) -> list[FeatureActivation]:
         """Get top-k features by activation."""
         return sorted(self.active_features, reverse=True)[:k]
 
-    def get_feature_dict(self) -> Dict[str, float]:
+    def get_feature_dict(self) -> dict[str, float]:
         """Get dictionary of {feature_id: activation}."""
         return {act.feature.id: act.activation for act in self.active_features}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "lens_type": self.lens_type.name,
@@ -119,48 +117,48 @@ class TraceResult:
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Input context
-    input_shape: Tuple[int, ...] = ()
+    input_shape: tuple[int, ...] = ()
     input_dtype: str = ""
-    layer_name: Optional[str] = None
+    layer_name: str | None = None
 
     # Results per lens
-    lens_results: Dict[LensType, LensResult] = field(default_factory=dict)
+    lens_results: dict[LensType, LensResult] = field(default_factory=dict)
 
     # Aggregated results
-    all_features: List[FeatureActivation] = field(default_factory=list)
-    dominant_features: List[FeatureActivation] = field(default_factory=list)
+    all_features: list[FeatureActivation] = field(default_factory=list)
+    dominant_features: list[FeatureActivation] = field(default_factory=list)
 
     # Safety analysis
-    safety_flags: Dict[str, SafetyFlag] = field(default_factory=dict)
+    safety_flags: dict[str, SafetyFlag] = field(default_factory=dict)
     has_safety_concerns: bool = False
-    safety_summary: Optional[str] = None
+    safety_summary: str | None = None
 
     # Cross-lens analysis
-    sae_semantic_correlations: Dict[str, List[Tuple[str, float]]] = field(default_factory=dict)
+    sae_semantic_correlations: dict[str, list[tuple[str, float]]] = field(default_factory=dict)
 
     # Status
     status: AnalysisStatus = AnalysisStatus.SUCCESS
-    error_messages: List[str] = field(default_factory=list)
+    error_messages: list[str] = field(default_factory=list)
 
     # Timing
     total_time_ms: float = 0.0
 
     # Provenance
-    config_used: Dict[str, Any] = field(default_factory=dict)
-    lenses_used: List[str] = field(default_factory=list)
+    config_used: dict[str, Any] = field(default_factory=dict)
+    lenses_used: list[str] = field(default_factory=list)
 
-    def get_lens_result(self, lens_type: LensType) -> Optional[LensResult]:
+    def get_lens_result(self, lens_type: LensType) -> LensResult | None:
         """Get result for a specific lens."""
         return self.lens_results.get(lens_type)
 
-    def get_feature(self, feature_id: str) -> Optional[FeatureActivation]:
+    def get_feature(self, feature_id: str) -> FeatureActivation | None:
         """Find a specific feature across all lenses."""
         for act in self.all_features:
             if act.feature.id == feature_id:
                 return act
         return None
 
-    def top_features(self, k: int = 10, lens_type: Optional[LensType] = None) -> List[FeatureActivation]:
+    def top_features(self, k: int = 10, lens_type: LensType | None = None) -> list[FeatureActivation]:
         """
         Get top-k features by activation.
 
@@ -214,7 +212,7 @@ class TraceResult:
 
                 top = result.top_features(3)
                 if top:
-                    lines.append(f"    Top Features:")
+                    lines.append("    Top Features:")
                     for act in top:
                         lines.append(f"      • {act.feature.label or act.feature.id}: {act.activation:.3f}")
 
@@ -236,7 +234,7 @@ class TraceResult:
 
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary for logging/storage."""
         return {
             "trace_id": self.trace_id,
@@ -280,21 +278,21 @@ class SteeringResult:
     """Result from applying a steering vector."""
     # Input
     steering_vector: SteeringVector
-    target_features: Dict[str, float]
+    target_features: dict[str, float]
 
     # Outcome
     outcome: SteeringOutcome
-    features_applied: List[str] = field(default_factory=list)
-    features_blocked: List[str] = field(default_factory=list)
+    features_applied: list[str] = field(default_factory=list)
+    features_blocked: list[str] = field(default_factory=list)
 
     # Validation
-    pre_steering_activations: Optional[Dict[str, float]] = None
-    post_steering_activations: Optional[Dict[str, float]] = None
-    effectiveness_scores: Dict[str, float] = field(default_factory=dict)  # How well did steering work?
+    pre_steering_activations: dict[str, float] | None = None
+    post_steering_activations: dict[str, float] | None = None
+    effectiveness_scores: dict[str, float] = field(default_factory=dict)  # How well did steering work?
 
     # Safety
     safety_validated: bool = False
-    safety_warnings: List[str] = field(default_factory=list)
+    safety_warnings: list[str] = field(default_factory=list)
 
     def effectiveness(self) -> float:
         """Overall steering effectiveness (0-1)."""
@@ -302,7 +300,7 @@ class SteeringResult:
             return 0.0
         return sum(self.effectiveness_scores.values()) / len(self.effectiveness_scores)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "outcome": self.outcome.name,
             "features_applied": self.features_applied,
@@ -317,23 +315,23 @@ class SteeringResult:
 class AblationResult:
     """Result from ablating (removing) features."""
     # Input
-    ablated_features: List[str]
-    original_activations: Optional[torch.Tensor] = None
-    modified_activations: Optional[torch.Tensor] = None
+    ablated_features: list[str]
+    original_activations: torch.Tensor | None = None
+    modified_activations: torch.Tensor | None = None
 
     # Impact measurement
-    output_change: Optional[float] = None          # Change in model output
-    confidence_change: Optional[float] = None      # Change in confidence
-    behavior_change: Optional[str] = None          # Qualitative description
+    output_change: float | None = None          # Change in model output
+    confidence_change: float | None = None      # Change in confidence
+    behavior_change: str | None = None          # Qualitative description
 
     # Per-feature impact
-    feature_impacts: Dict[str, float] = field(default_factory=dict)
+    feature_impacts: dict[str, float] = field(default_factory=dict)
 
     # Statistical significance
     is_significant: bool = False
-    p_value: Optional[float] = None
+    p_value: float | None = None
 
-    def most_impactful_feature(self) -> Optional[Tuple[str, float]]:
+    def most_impactful_feature(self) -> tuple[str, float] | None:
         """Get the feature with highest impact."""
         if not self.feature_impacts:
             return None
@@ -344,27 +342,27 @@ class AblationResult:
 class InjectionResult:
     """Result from injecting feature values."""
     # Input
-    injected_features: Dict[str, float]
-    original_activations: Optional[torch.Tensor] = None
-    modified_activations: Optional[torch.Tensor] = None
+    injected_features: dict[str, float]
+    original_activations: torch.Tensor | None = None
+    modified_activations: torch.Tensor | None = None
 
     # Impact measurement
-    output_change: Optional[float] = None
-    expected_behavior: Optional[str] = None
-    actual_behavior: Optional[str] = None
+    output_change: float | None = None
+    expected_behavior: str | None = None
+    actual_behavior: str | None = None
     match_expected: bool = False
 
     # Dose-response (if multiple strengths tested)
-    dose_response_curve: Optional[Dict[float, float]] = None
+    dose_response_curve: dict[float, float] | None = None
 
 
 @dataclass
 class PatchResult:
     """Result from patching activations between inputs."""
     # Input
-    patched_features: List[str]
-    source_description: Optional[str] = None
-    target_description: Optional[str] = None
+    patched_features: list[str]
+    source_description: str | None = None
+    target_description: str | None = None
 
     # Results
     behavior_transferred: bool = False
@@ -372,7 +370,7 @@ class PatchResult:
 
     # Causal inference
     causal_evidence: float = 0.0  # Strength of causal claim (0-1)
-    confounders_checked: List[str] = field(default_factory=list)
+    confounders_checked: list[str] = field(default_factory=list)
 
 
 # =============================================================================
@@ -385,7 +383,7 @@ class CircuitNode:
     node_id: str
     node_type: str              # "attention_head", "mlp", "residual", etc.
     layer: int
-    position: Optional[int] = None
+    position: int | None = None
 
     # Attribution
     attribution_score: float = 0.0
@@ -393,7 +391,7 @@ class CircuitNode:
     indirect_effect: float = 0.0
 
     # Features
-    associated_features: List[str] = field(default_factory=list)
+    associated_features: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -417,32 +415,32 @@ class CircuitTrace:
     output_description: str
 
     # Circuit structure
-    nodes: List[CircuitNode] = field(default_factory=list)
-    edges: List[CircuitEdge] = field(default_factory=list)
+    nodes: list[CircuitNode] = field(default_factory=list)
+    edges: list[CircuitEdge] = field(default_factory=list)
 
     # Critical path
-    critical_path: List[str] = field(default_factory=list)  # Node IDs in order
-    bottleneck_nodes: List[str] = field(default_factory=list)
+    critical_path: list[str] = field(default_factory=list)  # Node IDs in order
+    bottleneck_nodes: list[str] = field(default_factory=list)
 
     # Vulnerability analysis
-    single_points_of_failure: List[str] = field(default_factory=list)
-    adversarial_targets: List[str] = field(default_factory=list)
+    single_points_of_failure: list[str] = field(default_factory=list)
+    adversarial_targets: list[str] = field(default_factory=list)
 
     # Visualization
-    visualization_data: Optional[Dict[str, Any]] = None
+    visualization_data: dict[str, Any] | None = None
 
-    def get_node(self, node_id: str) -> Optional[CircuitNode]:
+    def get_node(self, node_id: str) -> CircuitNode | None:
         """Get a node by ID."""
         for node in self.nodes:
             if node.node_id == node_id:
                 return node
         return None
 
-    def get_edges_from(self, node_id: str) -> List[CircuitEdge]:
+    def get_edges_from(self, node_id: str) -> list[CircuitEdge]:
         """Get all edges from a node."""
         return [e for e in self.edges if e.source == node_id]
 
-    def get_edges_to(self, node_id: str) -> List[CircuitEdge]:
+    def get_edges_to(self, node_id: str) -> list[CircuitEdge]:
         """Get all edges to a node."""
         return [e for e in self.edges if e.target == node_id]
 
@@ -467,7 +465,7 @@ class LensEvaluationMetrics:
 
     # Interpretability
     monosemanticity_score: float = 0.0      # How monosemantic are features
-    human_interpretability: Optional[float] = None  # Human eval score
+    human_interpretability: float | None = None  # Human eval score
 
     # Causal validity
     ablation_effectiveness: float = 0.0      # How effective are ablations
@@ -483,10 +481,10 @@ class DarkTraceEvaluationReport:
     # Identification
     report_id: str
     timestamp: datetime = field(default_factory=datetime.now)
-    evaluation_dataset: Optional[str] = None
+    evaluation_dataset: str | None = None
 
     # Per-lens metrics
-    lens_metrics: Dict[LensType, LensEvaluationMetrics] = field(default_factory=dict)
+    lens_metrics: dict[LensType, LensEvaluationMetrics] = field(default_factory=dict)
 
     # Cross-lens metrics
     sae_semantic_correlation_strength: float = 0.0
@@ -503,7 +501,7 @@ class DarkTraceEvaluationReport:
     def summary(self) -> str:
         """Generate summary string."""
         lines = [
-            f"Dark Trace Evaluation Report",
+            "Dark Trace Evaluation Report",
             f"ID: {self.report_id}",
             f"Timestamp: {self.timestamp.isoformat()}",
             f"Overall Quality: {self.overall_quality_score:.3f}",
@@ -518,7 +516,7 @@ class DarkTraceEvaluationReport:
             lines.append(f"    Dead Features: {metrics.dead_feature_ratio:.1%}")
             lines.append(f"    Monosemanticity: {metrics.monosemanticity_score:.3f}")
 
-        lines.append(f"\nSafety Metrics:")
+        lines.append("\nSafety Metrics:")
         lines.append(f"  Coverage: {self.safety_feature_coverage:.1%}")
         lines.append(f"  False Positive Rate: {self.false_positive_rate:.1%}")
         lines.append(f"  False Negative Rate: {self.false_negative_rate:.1%}")

@@ -11,7 +11,7 @@ This stage:
 """
 
 import logging
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -36,9 +36,9 @@ class ToolExecutionStage:
     def __init__(
         self,
         tool_executor: Any,
-        guardrails: Optional[Any] = None,
-        audit_trail: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
+        guardrails: Any | None = None,
+        audit_trail: Any | None = None,
+        logger: logging.Logger | None = None,
     ):
         self.tool_executor = tool_executor
         self.guardrails = guardrails
@@ -78,6 +78,7 @@ class ToolExecutionStage:
         """Evaluate safety constraints. Returns True if blocked."""
         try:
             from uuid import uuid4
+
             from hololoom.alignment.safety_guardrails import ActionRequest
 
             action_request = ActionRequest(

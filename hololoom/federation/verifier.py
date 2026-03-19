@@ -7,21 +7,14 @@ Disagreement is information, not failure.
 
 from __future__ import annotations
 
-import asyncio
 import logging
-from collections import Counter
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 from difflib import SequenceMatcher
-from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
-from .protocols import VerificationProtocol
 from .types import (
-    FederationNode,
     Query,
     Response,
     Verification,
-    VerificationError,
     VerificationLevel,
 )
 
@@ -61,7 +54,7 @@ class VerificationScore:
             + self.reference * weights["reference"]
         )
 
-    def as_dict(self) -> Dict[str, float]:
+    def as_dict(self) -> dict[str, float]:
         return {
             "domain": self.domain,
             "sensibility": self.sensibility,
@@ -144,10 +137,10 @@ class ConsensusVerifier:
     async def verify(
         self,
         query: Query,
-        responses: List[Response],
+        responses: list[Response],
         *,
         level: VerificationLevel,
-        quorum: Optional[int] = None,
+        quorum: int | None = None,
     ) -> Verification:
         """
         Verify responses through consensus.
@@ -204,7 +197,7 @@ class ConsensusVerifier:
     def _skip_verification(
         self,
         query: Query,
-        responses: List[Response],
+        responses: list[Response],
     ) -> Verification:
         """Skip verification (NONE level)."""
         if not responses:
@@ -229,7 +222,7 @@ class ConsensusVerifier:
     def _insufficient_quorum(
         self,
         query: Query,
-        responses: List[Response],
+        responses: list[Response],
         quorum: int,
     ) -> Verification:
         """Handle insufficient quorum."""
@@ -249,8 +242,8 @@ class ConsensusVerifier:
     def _no_consensus(
         self,
         query: Query,
-        responses: List[Response],
-        clusters: List[List[Response]],
+        responses: list[Response],
+        clusters: list[list[Response]],
     ) -> Verification:
         """Handle no consensus."""
         logger.warning(
@@ -276,8 +269,8 @@ class ConsensusVerifier:
 
     def _cluster_responses(
         self,
-        responses: List[Response],
-    ) -> List[List[Response]]:
+        responses: list[Response],
+    ) -> list[list[Response]]:
         """
         Cluster responses by similarity.
 
@@ -286,8 +279,8 @@ class ConsensusVerifier:
         if not responses:
             return []
 
-        clusters: List[List[Response]] = []
-        assigned: Set[int] = set()
+        clusters: list[list[Response]] = []
+        assigned: set[int] = set()
 
         for i, response in enumerate(responses):
             if i in assigned:
@@ -323,7 +316,7 @@ class ConsensusVerifier:
     #  MERGING
     # ───────────────────────────────────────────────────────────────────────
 
-    def _merge_responses(self, responses: List[Response]) -> str:
+    def _merge_responses(self, responses: list[Response]) -> str:
         """
         Merge cluster of responses into consensus.
 
@@ -339,8 +332,8 @@ class ConsensusVerifier:
 
     def _aggregate_scores(
         self,
-        responses: List[Response],
-    ) -> Dict[str, float]:
+        responses: list[Response],
+    ) -> dict[str, float]:
         """Aggregate verification scores from responses."""
         if not responses:
             return {}
@@ -373,7 +366,7 @@ class ConsensusVerifier:
 
     async def check_agreement(
         self,
-        responses: List[Response],
+        responses: list[Response],
         threshold: float = 0.66,
     ) -> bool:
         """Check if responses agree above threshold."""
@@ -412,7 +405,7 @@ class DSStarScorer:
     def __init__(
         self,
         *,
-        domain_keywords: Optional[Dict[str, Set[str]]] = None,
+        domain_keywords: dict[str, set[str]] | None = None,
     ):
         self._domain_keywords = domain_keywords or {}
 

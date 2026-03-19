@@ -8,11 +8,13 @@ Provides:
 - Sparse operation helpers
 """
 
-from functools import wraps, lru_cache
-from typing import Callable, List, Optional, Dict, Any, Tuple
-import numpy as np
-from collections import OrderedDict
 import time
+from collections import OrderedDict
+from collections.abc import Callable
+from functools import wraps
+from typing import Any
+
+import numpy as np
 
 
 class EmbeddingCache:
@@ -52,7 +54,7 @@ class EmbeddingCache:
         self._cache_embedding(word, embedding)
         return embedding
 
-    def get_batch(self, words: List[str]) -> np.ndarray:
+    def get_batch(self, words: list[str]) -> np.ndarray:
         """
         Get embeddings for multiple words with optimal batching
 
@@ -91,7 +93,7 @@ class EmbeddingCache:
             self.cache.popitem(last=False)
         self.cache[word] = embedding
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics"""
         total = self.hits + self.misses
         hit_rate = self.hits / total if total > 0 else 0.0
@@ -119,7 +121,7 @@ class ProjectionCache:
 
     def __init__(self, max_size: int = 1000):
         self.max_size = max_size
-        self.cache: OrderedDict[Tuple[int, int], np.ndarray] = OrderedDict()
+        self.cache: OrderedDict[tuple[int, int], np.ndarray] = OrderedDict()
         self.hits = 0
         self.misses = 0
 
@@ -188,7 +190,7 @@ def timer(func: Callable) -> Callable:
     return wrapper
 
 
-def batch_iterator(items: List[Any], batch_size: int):
+def batch_iterator(items: list[Any], batch_size: int):
     """
     Yield batches of items
 
@@ -251,7 +253,7 @@ class LazyArray:
             compute_fn: Function that computes the array
         """
         self.compute_fn = compute_fn
-        self._value: Optional[np.ndarray] = None
+        self._value: np.ndarray | None = None
         self._computed = False
 
     def get(self) -> np.ndarray:
@@ -341,7 +343,7 @@ try:
 
     @jit(nopython=True, parallel=True, cache=True)
     def stormer_verlet_step_jit(q: np.ndarray, p: np.ndarray, grad_q: np.ndarray,
-                                 grad_q_new: np.ndarray, dt: float, mass: float) -> Tuple[np.ndarray, np.ndarray]:
+                                 grad_q_new: np.ndarray, dt: float, mass: float) -> tuple[np.ndarray, np.ndarray]:
         """
         JIT-compiled Störmer-Verlet integration step
 

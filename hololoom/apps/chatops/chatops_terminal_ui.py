@@ -13,28 +13,37 @@ Interactive terminal UI for the complete ChatOps system:
 Run: python chatops_terminal_ui.py
 """
 
-from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
-from textual.widgets import Header, Footer, Button, Static, Input, TextArea, DataTable, TabbedContent, TabPane, Label, Tree, ProgressBar
-from textual.binding import Binding
-from textual.reactive import reactive
-from rich.text import Text
-from rich.panel import Panel
-from rich.table import Table as RichTable
-from datetime import datetime
 import asyncio
 import sys
 from pathlib import Path
+
+from rich.panel import Panel
+from textual.app import App, ComposeResult
+from textual.binding import Binding
+from textual.containers import Horizontal, Vertical
+from textual.reactive import reactive
+from textual.widgets import (
+    Button,
+    DataTable,
+    Footer,
+    Header,
+    Input,
+    Label,
+    Static,
+    TabbedContent,
+    TabPane,
+    TextArea,
+)
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 try:
+    from multi_agent import AgentRole, MultiAgentSystem
+    from predictive_quality import PredictiveQualitySystem
     from self_improving_bot import SelfImprovingBot
     from team_learning import TeamLearningSystem
     from workflow_marketplace import WorkflowMarketplace
-    from predictive_quality import PredictiveQualitySystem
-    from multi_agent import MultiAgentSystem, AgentRole
     CHATOPS_AVAILABLE = True
 except ImportError as e:
     CHATOPS_AVAILABLE = False

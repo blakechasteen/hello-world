@@ -20,9 +20,10 @@ Mathematical Framework:
 This is the deepest level of semantic geometry.
 """
 
-import numpy as np
-from typing import Tuple, List, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
+
+import numpy as np
 
 
 @dataclass
@@ -189,8 +190,8 @@ class HyperbolicSemanticSpace:
         self.n_dims = n_dims
         self.geometry = PoincareGeometry()
 
-    def embed_hierarchy(self, concepts: List[str],
-                       parent_child_pairs: List[Tuple[str, str]],
+    def embed_hierarchy(self, concepts: list[str],
+                       parent_child_pairs: list[tuple[str, str]],
                        embed_fn: Callable) -> dict:
         """
         Embed concepts in hyperbolic space respecting hierarchy
@@ -413,8 +414,8 @@ class SemanticSymmetryGroup:
 
 
 def visualize_hyperbolic_hierarchy(embeddings: dict,
-                                   parent_child_pairs: List[Tuple[str, str]],
-                                   save_path: Optional[str] = None):
+                                   parent_child_pairs: list[tuple[str, str]],
+                                   save_path: str | None = None):
     """
     Visualize semantic hierarchy in 2D Poincaré disk
     """

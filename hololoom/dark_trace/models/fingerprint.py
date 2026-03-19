@@ -23,11 +23,12 @@ Design Notes:
 - Threshold-based classification of universal vs specific features
 """
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
-from enum import Enum
-import numpy as np
 from collections import defaultdict
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import TYPE_CHECKING, Any
+
+import numpy as np
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.models.adapter import ModelAdapter
@@ -62,7 +63,7 @@ class FingerprintConfig:
     histogram_bins: int = 50  # Bins for histogram method
 
     # Comparison settings
-    similarity_metrics: List[SimilarityMetric] = field(
+    similarity_metrics: list[SimilarityMetric] = field(
         default_factory=lambda: [
             SimilarityMetric.COSINE,
             SimilarityMetric.CORRELATION,
@@ -92,16 +93,16 @@ class FeatureFingerprint:
     method: FingerprintMethod = FingerprintMethod.MEAN_ACTIVATION
 
     # Statistics (if computed)
-    mean: Optional[float] = None
-    std: Optional[float] = None
-    sparsity: Optional[float] = None  # Fraction of zero activations
-    max_activation: Optional[float] = None
-    activation_histogram: Optional[np.ndarray] = None
+    mean: float | None = None
+    std: float | None = None
+    sparsity: float | None = None  # Fraction of zero activations
+    max_activation: float | None = None
+    activation_histogram: np.ndarray | None = None
 
     # Metadata
     n_samples: int = 0
-    label: Optional[str] = None  # Human-readable label if available
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    label: str | None = None  # Human-readable label if available
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Ensure pattern is numpy array."""
@@ -137,7 +138,7 @@ class FeatureFingerprint:
             metadata={**self.metadata, "normalized": True},
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "feature_id": self.feature_id,
@@ -155,7 +156,7 @@ class FeatureFingerprint:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "FeatureFingerprint":
+    def from_dict(cls, data: dict[str, Any]) -> "FeatureFingerprint":
         """Deserialize from dictionary."""
         return cls(
             feature_id=data["feature_id"],
@@ -181,7 +182,7 @@ class FingerprintComparison:
     fingerprint_b: FeatureFingerprint
 
     # Similarity scores by metric
-    similarities: Dict[SimilarityMetric, float] = field(default_factory=dict)
+    similarities: dict[SimilarityMetric, float] = field(default_factory=dict)
 
     # Classification
     is_universal: bool = False
@@ -189,8 +190,8 @@ class FingerprintComparison:
     confidence: float = 0.0
 
     # Additional analysis
-    alignment_score: Optional[float] = None  # How well aligned are patterns
-    shared_variance: Optional[float] = None  # Common variance explained
+    alignment_score: float | None = None  # How well aligned are patterns
+    shared_variance: float | None = None  # Common variance explained
 
     @property
     def primary_similarity(self) -> float:
@@ -236,7 +237,7 @@ class ModelFingerprinter:
         self,
         adapter: "ModelAdapter",
         model_id: str,
-        config: Optional[FingerprintConfig] = None,
+        config: FingerprintConfig | None = None,
     ):
         """
         Initialize fingerprinter.
@@ -251,14 +252,14 @@ class ModelFingerprinter:
         self.config = config or FingerprintConfig()
 
         # Cache of computed fingerprints
-        self._fingerprint_cache: Dict[str, FeatureFingerprint] = {}
+        self._fingerprint_cache: dict[str, FeatureFingerprint] = {}
 
     def fingerprint_layer(
         self,
         layer: str,
-        inputs: List[Any],
-        feature_indices: Optional[List[int]] = None,
-    ) -> Dict[str, FeatureFingerprint]:
+        inputs: list[Any],
+        feature_indices: list[int] | None = None,
+    ) -> dict[str, FeatureFingerprint]:
         """
         Compute fingerprints for features in a layer.
 
@@ -318,9 +319,9 @@ class ModelFingerprinter:
 
     def fingerprint_model(
         self,
-        inputs: List[Any],
-        layers: Optional[List[str]] = None,
-    ) -> Dict[str, FeatureFingerprint]:
+        inputs: list[Any],
+        layers: list[str] | None = None,
+    ) -> dict[str, FeatureFingerprint]:
         """
         Compute fingerprints for entire model.
 
@@ -432,7 +433,7 @@ class ModelFingerprinter:
 
         return fingerprint
 
-    def get_cached_fingerprint(self, feature_id: str) -> Optional[FeatureFingerprint]:
+    def get_cached_fingerprint(self, feature_id: str) -> FeatureFingerprint | None:
         """Get cached fingerprint if available."""
         return self._fingerprint_cache.get(feature_id)
 
@@ -529,7 +530,7 @@ def compute_similarity(
 def compare_fingerprints(
     fp_a: FeatureFingerprint,
     fp_b: FeatureFingerprint,
-    config: Optional[FingerprintConfig] = None,
+    config: FingerprintConfig | None = None,
 ) -> FingerprintComparison:
     """
     Compare two fingerprints and classify relationship.
@@ -582,9 +583,9 @@ def compare_fingerprints(
 
 
 def find_universal_features(
-    fingerprints_by_model: Dict[str, Dict[str, FeatureFingerprint]],
-    config: Optional[FingerprintConfig] = None,
-) -> List[Tuple[str, List[FeatureFingerprint], float]]:
+    fingerprints_by_model: dict[str, dict[str, FeatureFingerprint]],
+    config: FingerprintConfig | None = None,
+) -> list[tuple[str, list[FeatureFingerprint], float]]:
     """
     Find features that appear universally across models.
 
@@ -640,9 +641,9 @@ def find_universal_features(
 
 
 def find_model_specific_features(
-    fingerprints_by_model: Dict[str, Dict[str, FeatureFingerprint]],
-    config: Optional[FingerprintConfig] = None,
-) -> Dict[str, List[Tuple[str, FeatureFingerprint, float]]]:
+    fingerprints_by_model: dict[str, dict[str, FeatureFingerprint]],
+    config: FingerprintConfig | None = None,
+) -> dict[str, list[tuple[str, FeatureFingerprint, float]]]:
     """
     Find features unique to each model.
 
@@ -689,17 +690,17 @@ def find_model_specific_features(
 class ModelComparisonReport:
     """Comprehensive report comparing multiple models."""
 
-    model_ids: List[str]
-    universal_features: List[Tuple[str, List[FeatureFingerprint], float]]
-    model_specific_features: Dict[str, List[Tuple[str, FeatureFingerprint, float]]]
+    model_ids: list[str]
+    universal_features: list[tuple[str, list[FeatureFingerprint], float]]
+    model_specific_features: dict[str, list[tuple[str, FeatureFingerprint, float]]]
 
     # Statistics
-    total_features_per_model: Dict[str, int] = field(default_factory=dict)
+    total_features_per_model: dict[str, int] = field(default_factory=dict)
     universal_count: int = 0
-    specific_count_per_model: Dict[str, int] = field(default_factory=dict)
+    specific_count_per_model: dict[str, int] = field(default_factory=dict)
 
     # Pairwise similarities
-    pairwise_similarities: Dict[Tuple[str, str], float] = field(default_factory=dict)
+    pairwise_similarities: dict[tuple[str, str], float] = field(default_factory=dict)
 
     def summary(self) -> str:
         """Generate human-readable summary."""
@@ -734,8 +735,8 @@ class ModelComparisonReport:
 
 
 def compare_models(
-    fingerprints_by_model: Dict[str, Dict[str, FeatureFingerprint]],
-    config: Optional[FingerprintConfig] = None,
+    fingerprints_by_model: dict[str, dict[str, FeatureFingerprint]],
+    config: FingerprintConfig | None = None,
 ) -> ModelComparisonReport:
     """
     Generate comprehensive comparison report for multiple models.
@@ -790,7 +791,7 @@ def compare_models(
 def create_fingerprinter(
     adapter: "ModelAdapter",
     model_id: str,
-    config: Optional[FingerprintConfig] = None,
+    config: FingerprintConfig | None = None,
 ) -> ModelFingerprinter:
     """
     Create a fingerprinter for a model adapter.

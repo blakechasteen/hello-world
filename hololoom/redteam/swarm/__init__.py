@@ -30,125 +30,125 @@ Communication Architecture:
 - Metrics collection for performance monitoring
 """
 
-from .protocols import (
-    AgentRole,
-    AgentState,
-    MessagePriority,
-    AgentMessage,
-    AgentTask,
-    AgentResult,
-    AgentProtocol,
-    CoordinatorProtocol,
-)
-from .communication import MessageBus
-from .safety import (
-    # Enums
-    SeverityLevel,
-    AuditEventType,
-    # Data classes
-    AuthorizationToken,
-    AuditEntry,
-    RateLimitConfig,
-    RateLimitState,
-    # Exceptions
-    AuthorizationError,
-    ScopeViolationError,
-    RateLimitExceededError,
-    # Layer 1: Authorization
-    AuthorizationManager,
-    # Layer 2: Scope validation
-    ScopeValidator,
-    # Layer 3: Rate limiting
-    RateLimiter,
-    # Layer 4: Audit logging
-    AuditLogger,
-    # Layer 5: Anomaly detection
-    AnomalyDetector,
-    # Severity assessment
-    SeverityAssessor,
-    # Integrated gate
-    SafetyGate,
-    # Factory functions
-    create_safety_gate,
-    create_authorization_token,
-)
-from .coordinator import (
-    SwarmCoordinator,
-    CampaignPhase,
-    SwarmMetrics,
-    SwarmCampaignResult,
-)
-from .agents import (
-    # Base agent
-    BaseAgent,
-    # Scout agent (surface probing, vulnerability discovery)
-    DiscoveryType,
-    Discovery,
-    ScoutAgent,
-    create_scout_agent,
-    # Attacker agent (attack execution with Thompson Sampling)
-    AttackStrategyType,
-    AttackStrategy,
-    AttackOutcome,
-    AttackerAgent,
-    create_attacker_agent,
-    # Exploiter agent (vulnerability exploitation)
-    ExploitationType,
-    ExploitResult,
-    ExploitationTechnique,
-    ExploiterAgent,
-    create_exploiter_agent,
-    # Coordinator agent (task distribution, result aggregation)
-    CampaignStatus,
-    TaskAssignment,
-    CoordinatorAgent,
-    create_coordinator_agent,
-)
-from .learning import (
-    # Timescales
-    LearningTimescale,
-    LearningEvent,
-    PatternUpdate,
-    # Timescale 1: Per-Attack (immediate)
-    PayloadHeat,
-    PerAttackLearner,
-    # Timescale 2: Per-Task (~seconds)
-    ThompsonSamplingPrior,
-    PerTaskLearner,
-    # Timescale 3: Per-Cycle (~minutes)
-    CrossStrategyInsight,
-    PerCycleLearner,
-    # Timescale 4: Background (~hours)
-    SystemPrior,
-    LearnedPattern,
-    BackgroundLearner,
-    # Unified Coordinator
-    HierarchicalLearningCoordinator,
-    create_learning_coordinator,
-)
 from .ab_testing import (
-    # Enums
-    ExperimentStatus,
-    TrafficAllocation,
-    SignificanceLevel,
-    EffectSizeCategory,
-    # Data classes
-    Variant,
-    StatisticalResult,
-    ExperimentConfig,
-    Experiment,
-    # Statistical Analysis
-    StatisticalAnalyzer,
-    # Traffic Splitting
-    TrafficSplitter,
-    # Early Stopping
-    EarlyStoppingChecker,
     # A/B Test Manager
     ABTestManager,
+    # Early Stopping
+    EarlyStoppingChecker,
+    EffectSizeCategory,
+    Experiment,
+    ExperimentConfig,
+    # Enums
+    ExperimentStatus,
+    SignificanceLevel,
+    # Statistical Analysis
+    StatisticalAnalyzer,
+    StatisticalResult,
+    TrafficAllocation,
+    # Traffic Splitting
+    TrafficSplitter,
+    # Data classes
+    Variant,
     # Factory functions
     create_ab_test_manager,
     create_experiment_config,
     run_ab_test,
+)
+from .agents import (
+    AttackerAgent,
+    AttackOutcome,
+    AttackStrategy,
+    # Attacker agent (attack execution with Thompson Sampling)
+    AttackStrategyType,
+    # Base agent
+    BaseAgent,
+    # Coordinator agent (task distribution, result aggregation)
+    CampaignStatus,
+    CoordinatorAgent,
+    Discovery,
+    # Scout agent (surface probing, vulnerability discovery)
+    DiscoveryType,
+    ExploitationTechnique,
+    # Exploiter agent (vulnerability exploitation)
+    ExploitationType,
+    ExploiterAgent,
+    ExploitResult,
+    ScoutAgent,
+    TaskAssignment,
+    create_attacker_agent,
+    create_coordinator_agent,
+    create_exploiter_agent,
+    create_scout_agent,
+)
+from .communication import MessageBus
+from .coordinator import (
+    CampaignPhase,
+    SwarmCampaignResult,
+    SwarmCoordinator,
+    SwarmMetrics,
+)
+from .learning import (
+    BackgroundLearner,
+    # Timescale 3: Per-Cycle (~minutes)
+    CrossStrategyInsight,
+    # Unified Coordinator
+    HierarchicalLearningCoordinator,
+    LearnedPattern,
+    LearningEvent,
+    # Timescales
+    LearningTimescale,
+    PatternUpdate,
+    # Timescale 1: Per-Attack (immediate)
+    PayloadHeat,
+    PerAttackLearner,
+    PerCycleLearner,
+    PerTaskLearner,
+    # Timescale 4: Background (~hours)
+    SystemPrior,
+    # Timescale 2: Per-Task (~seconds)
+    ThompsonSamplingPrior,
+    create_learning_coordinator,
+)
+from .protocols import (
+    AgentMessage,
+    AgentProtocol,
+    AgentResult,
+    AgentRole,
+    AgentState,
+    AgentTask,
+    CoordinatorProtocol,
+    MessagePriority,
+)
+from .safety import (
+    # Layer 5: Anomaly detection
+    AnomalyDetector,
+    AuditEntry,
+    AuditEventType,
+    # Layer 4: Audit logging
+    AuditLogger,
+    # Exceptions
+    AuthorizationError,
+    # Layer 1: Authorization
+    AuthorizationManager,
+    # Data classes
+    AuthorizationToken,
+    RateLimitConfig,
+    # Layer 3: Rate limiting
+    RateLimiter,
+    RateLimitExceededError,
+    RateLimitState,
+    # Integrated gate
+    SafetyGate,
+    # Layer 2: Scope validation
+    ScopeValidator,
+    ScopeViolationError,
+    # Severity assessment
+    SeverityAssessor,
+    # Enums
+    SeverityLevel,
+    create_authorization_token,
+    # Factory functions
+    create_safety_gate,
 )
 
 __all__ = [

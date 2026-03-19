@@ -20,44 +20,31 @@ Date: November 2025
 import asyncio
 import logging
 import time
-from typing import Any, Dict, List, Optional, Set
-from datetime import datetime, timedelta
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+from typing import Any
 
-from hololoom.config import Config
+from hololoom.apps.departments.base import BaseDepartment
 from hololoom.apps.departments.protocol import (
-    Department,
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
-    PrivacyEnvelope,
     PrivacyLevel,
-    VerificationResult,
     VerificationCheck,
+    VerificationResult,
     VerificationStatus,
-    DSStarCheck,
-    DepartmentConfig,
 )
-from hololoom.apps.departments.base import BaseDepartment
+from hololoom.config import Config
 
 # Import existing context system components
 from hololoom.context import (
-    QueryRouter,
-    QueryClassifier,
-    ThompsonBandit,
-    LearningTracker,
-    ConfidenceCalibrator,
-    StrategyUpdater,
     ErrorHandler,
+    QueryClassifier,
     SystemMonitor,
-    CircuitBreaker,
-    RateLimiter,
-    HealthChecker,
-    create_query_router,
     create_classifier,
-    create_thompson_bandit,
     create_error_handler,
     create_system_monitor,
 )
@@ -92,9 +79,9 @@ class ContextEnvelope:
     """
     user_id: str                                    # User identifier
     session_id: str                                 # Session identifier
-    preferences: Dict[str, Any] = field(default_factory=dict)  # User preferences
-    history: List[Dict[str, Any]] = field(default_factory=list)  # Recent interactions
-    metadata: Dict[str, Any] = field(default_factory=dict)  # Additional context
+    preferences: dict[str, Any] = field(default_factory=dict)  # User preferences
+    history: list[dict[str, Any]] = field(default_factory=list)  # Recent interactions
+    metadata: dict[str, Any] = field(default_factory=dict)  # Additional context
     created_at: datetime = field(default_factory=datetime.utcnow)
     last_accessed: datetime = field(default_factory=datetime.utcnow)
 
@@ -104,8 +91,8 @@ class ContextEnvelope:
     retention_days: int = 90  # How long to keep data
 
     # Access control
-    allowed_departments: Set[str] = field(default_factory=set)  # Which departments can access
-    access_log: List[Dict[str, Any]] = field(default_factory=list)  # Who accessed when
+    allowed_departments: set[str] = field(default_factory=set)  # Which departments can access
+    access_log: list[dict[str, Any]] = field(default_factory=list)  # Who accessed when
 
     def log_access(self, department: str, reason: str, approved: bool = True) -> None:
         """Log context access by a department."""
@@ -141,11 +128,11 @@ class SessionState:
     message_count: int = 0
 
     # Department tracking
-    departments_used: Set[str] = field(default_factory=set)
-    department_counts: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    departments_used: set[str] = field(default_factory=set)
+    department_counts: dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     # Session metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def is_expired(self) -> bool:
         """Check if session has expired."""
@@ -156,7 +143,7 @@ class SessionState:
         """Update last active timestamp."""
         self.last_active = datetime.utcnow()
 
-    def add_message(self, role: str, content: str, department: Optional[str] = None) -> None:
+    def add_message(self, role: str, content: str, department: str | None = None) -> None:
         """Add message to conversation history."""
         self.conversation_history.append({
             "role": role,
@@ -187,10 +174,10 @@ class PrivacyConstraint:
     """
     sensitivity: DataSensitivity
     retention_days: int
-    access_control: Dict[str, List[str]] = field(default_factory=dict)  # role → departments
-    redaction_rules: List[str] = field(default_factory=list)  # What to redact
+    access_control: dict[str, list[str]] = field(default_factory=dict)  # role → departments
+    redaction_rules: list[str] = field(default_factory=list)  # What to redact
     requires_audit: bool = False
-    allowed_operations: Set[str] = field(default_factory=set)  # What operations allowed
+    allowed_operations: set[str] = field(default_factory=set)  # What operations allowed
 
     def is_allowed(self, department: str, operation: str) -> bool:
         """Check if department is allowed to perform operation."""
@@ -215,8 +202,8 @@ class ContextEnrichment:
     """
     original_request: DepartmentRequest
     enriched_request: DepartmentRequest
-    context_sources: List[str] = field(default_factory=list)  # Where context came from
-    enrichment_metadata: Dict[str, Any] = field(default_factory=dict)
+    context_sources: list[str] = field(default_factory=list)  # Where context came from
+    enrichment_metadata: dict[str, Any] = field(default_factory=dict)
     enrichment_time_ms: float = 0.0
 
 
@@ -251,7 +238,7 @@ class ContextDepartment(BaseDepartment):
 
     def __init__(
         self,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         department_id: str = "context",
         enable_learning: bool = True,
         enable_privacy: bool = True,
@@ -300,31 +287,31 @@ class ContextDepartment(BaseDepartment):
         self.enable_privacy = enable_privacy
 
         # Context storage
-        self._context_envelopes: Dict[str, ContextEnvelope] = {}  # user_id → envelope
-        self._active_sessions: Dict[str, SessionState] = {}  # session_id → state
-        self._privacy_constraints: Dict[str, PrivacyConstraint] = {}  # user_id → constraint
+        self._context_envelopes: dict[str, ContextEnvelope] = {}  # user_id → envelope
+        self._active_sessions: dict[str, SessionState] = {}  # session_id → state
+        self._privacy_constraints: dict[str, PrivacyConstraint] = {}  # user_id → constraint
 
         # Context learning
-        self._preference_patterns: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        self._preference_patterns: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
         # user_id → preference_key → count
-        self._context_usage: Dict[str, int] = defaultdict(int)  # context_type → usage_count
+        self._context_usage: dict[str, int] = defaultdict(int)  # context_type → usage_count
 
         # Integration with existing context system
-        self._classifier: Optional[QueryClassifier] = None
-        self._error_handler: Optional[ErrorHandler] = None
-        self._monitor: Optional[SystemMonitor] = None
+        self._classifier: QueryClassifier | None = None
+        self._error_handler: ErrorHandler | None = None
+        self._monitor: SystemMonitor | None = None
 
         # Context retrieval cache
-        self._context_cache: Dict[str, Any] = {}  # cache_key → context_data
+        self._context_cache: dict[str, Any] = {}  # cache_key → context_data
         self._cache_hits = 0
         self._cache_misses = 0
 
         # Privacy tracking
-        self._privacy_violations: List[Dict[str, Any]] = []
+        self._privacy_violations: list[dict[str, Any]] = []
         self._access_denied_count = 0
 
         # Performance tracking
-        self._enrichment_times: List[float] = []
+        self._enrichment_times: list[float] = []
         self._avg_context_size: float = 0.0
 
         logger.info(f"✓ ContextDepartment initialized (id={department_id})")
@@ -514,7 +501,7 @@ class ContextDepartment(BaseDepartment):
             },
         )
 
-    async def _track_session(self, request: DepartmentRequest) -> Dict[str, Any]:
+    async def _track_session(self, request: DepartmentRequest) -> dict[str, Any]:
         """
         Track user session.
 
@@ -540,7 +527,7 @@ class ContextDepartment(BaseDepartment):
             "last_active": session.last_active.isoformat(),
         }
 
-    async def _enforce_privacy(self, request: DepartmentRequest) -> Dict[str, Any]:
+    async def _enforce_privacy(self, request: DepartmentRequest) -> dict[str, Any]:
         """
         Enforce privacy constraints.
 
@@ -574,7 +561,7 @@ class ContextDepartment(BaseDepartment):
             "requires_audit": constraint.requires_audit,
         }
 
-    async def _retrieve_context(self, request: DepartmentRequest) -> Dict[str, Any]:
+    async def _retrieve_context(self, request: DepartmentRequest) -> dict[str, Any]:
         """
         Retrieve relevant context for request.
 
@@ -616,7 +603,7 @@ class ContextDepartment(BaseDepartment):
 
         return context
 
-    async def _update_preferences(self, request: DepartmentRequest) -> Dict[str, Any]:
+    async def _update_preferences(self, request: DepartmentRequest) -> dict[str, Any]:
         """
         Update user preferences.
 
@@ -858,7 +845,7 @@ class ContextDepartment(BaseDepartment):
         # Re-execute with refined request
         return await self.execute(refined_request)
 
-    async def update_strategy(self, feedback: Dict[str, Any]) -> None:
+    async def update_strategy(self, feedback: dict[str, Any]) -> None:
         """
         Learn from feedback to improve context operations.
 
@@ -890,7 +877,7 @@ class ContextDepartment(BaseDepartment):
 
         logger.debug(f"Updated context strategy based on {outcome} feedback")
 
-    async def get_capabilities(self) -> Dict[str, Any]:
+    async def get_capabilities(self) -> dict[str, Any]:
         """Report context department capabilities."""
         return {
             "supported_tasks": self.supported_tasks,
@@ -913,7 +900,7 @@ class ContextDepartment(BaseDepartment):
             },
         }
 
-    async def get_metrics(self) -> Dict[str, Any]:
+    async def get_metrics(self) -> dict[str, Any]:
         """Get context department metrics."""
         cache_hit_rate = self._cache_hits / max(1, self._cache_hits + self._cache_misses)
         avg_enrichment_time = sum(self._enrichment_times[-100:]) / max(1, len(self._enrichment_times[-100:]))
@@ -969,7 +956,7 @@ class ContextDepartment(BaseDepartment):
 # ============================================================================
 
 def create_context_department(
-    config: Optional[Config] = None,
+    config: Config | None = None,
     enable_learning: bool = True,
     enable_privacy: bool = True,
 ) -> ContextDepartment:

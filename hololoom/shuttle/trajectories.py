@@ -9,8 +9,7 @@ HoloLoom's existing policy system (tool selection policies in policy/unified.py)
 """
 
 from dataclasses import dataclass
-from typing import Protocol, List
-
+from typing import Protocol
 
 # ============================================================================
 # Core Data Structures
@@ -45,7 +44,7 @@ class TrajectoryStrategy(Protocol):
     """
     name: str
 
-    def build_config(self, anchors: List[Anchor]) -> TraversalConfig:
+    def build_config(self, anchors: list[Anchor]) -> TraversalConfig:
         """
         Given anchors, return parameters for how to explore the Yarn graph.
 
@@ -69,7 +68,7 @@ class ProjectBlockersTrajectory:
     """
     name = "project_blockers"
 
-    def build_config(self, anchors: List[Anchor]) -> TraversalConfig:
+    def build_config(self, anchors: list[Anchor]) -> TraversalConfig:
         return TraversalConfig(
             max_depth=2,
             max_nodes=40,
@@ -84,7 +83,7 @@ class OwnershipTrajectory:
     """
     name = "who_owns_this"
 
-    def build_config(self, anchors: List[Anchor]) -> TraversalConfig:
+    def build_config(self, anchors: list[Anchor]) -> TraversalConfig:
         return TraversalConfig(
             max_depth=1,
             max_nodes=30,
@@ -99,7 +98,7 @@ class TimelineTrajectory:
     """
     name = "timeline"
 
-    def build_config(self, anchors: List[Anchor]) -> TraversalConfig:
+    def build_config(self, anchors: list[Anchor]) -> TraversalConfig:
         return TraversalConfig(
             max_depth=3,
             max_nodes=50,
@@ -114,7 +113,7 @@ class ConceptualTrajectory:
     """
     name = "conceptual"
 
-    def build_config(self, anchors: List[Anchor]) -> TraversalConfig:
+    def build_config(self, anchors: list[Anchor]) -> TraversalConfig:
         return TraversalConfig(
             max_depth=2,
             max_nodes=35,
@@ -129,7 +128,7 @@ class HierarchicalTrajectory:
     """
     name = "hierarchical"
 
-    def build_config(self, anchors: List[Anchor]) -> TraversalConfig:
+    def build_config(self, anchors: list[Anchor]) -> TraversalConfig:
         return TraversalConfig(
             max_depth=2,
             max_nodes=40,
@@ -144,7 +143,7 @@ class ExploratoryTrajectory:
     """
     name = "exploratory"
 
-    def build_config(self, anchors: List[Anchor]) -> TraversalConfig:
+    def build_config(self, anchors: list[Anchor]) -> TraversalConfig:
         return TraversalConfig(
             max_depth=2,
             max_nodes=50,
@@ -156,7 +155,7 @@ class ExploratoryTrajectory:
 # Trajectory Registry
 # ============================================================================
 
-ALL_TRAJECTORIES: List[TrajectoryStrategy] = [
+ALL_TRAJECTORIES: list[TrajectoryStrategy] = [
     ProjectBlockersTrajectory(),
     OwnershipTrajectory(),
     TimelineTrajectory(),

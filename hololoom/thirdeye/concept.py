@@ -8,10 +8,10 @@ Created: 2025-11-30
 Author: HoloLoom Team
 """
 
+import time
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import List, Optional, Dict, Any
-import time
+from typing import Any
 
 
 class ConceptType(Enum):
@@ -56,13 +56,13 @@ class SemanticPosition:
     z: float = 0.0
 
     # Full semantic embedding (optional, for distance calculations)
-    embedding: Optional[List[float]] = None
+    embedding: list[float] | None = None
 
     # Interpretable axes (from 16-axis projection)
-    axes: Dict[str, float] = field(default_factory=dict)
+    axes: dict[str, float] = field(default_factory=dict)
 
     @classmethod
-    def from_embedding(cls, embedding: List[float]) -> "SemanticPosition":
+    def from_embedding(cls, embedding: list[float]) -> "SemanticPosition":
         """Create position from full embedding with UMAP projection."""
         # Simple projection for now - use first 3 components scaled
         if len(embedding) >= 3:
@@ -103,19 +103,19 @@ class Concept:
     style: VisualStyle = VisualStyle.STANDARD
 
     # Connections to other concepts
-    connections: List[str] = field(default_factory=list)  # IDs of connected concepts
-    parent_id: Optional[str] = None      # Parent concept (for hierarchies)
+    connections: list[str] = field(default_factory=list)  # IDs of connected concepts
+    parent_id: str | None = None      # Parent concept (for hierarchies)
 
     # Content
-    description: Optional[str] = None    # Brief explanation
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    description: str | None = None    # Brief explanation
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Temporal
     created_at: float = field(default_factory=time.time)
     last_active: float = field(default_factory=time.time)
 
     # Source tracking
-    source_message_id: Optional[str] = None  # Chat message that created this
+    source_message_id: str | None = None  # Chat message that created this
 
     def touch(self) -> None:
         """Update last_active timestamp."""
@@ -125,7 +125,7 @@ class Concept:
         """How long since this concept was last active."""
         return time.time() - self.last_active
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dict for WebSocket streaming."""
         return {
             "id": self.id,
@@ -148,7 +148,7 @@ class Concept:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Concept":
+    def from_dict(cls, data: dict[str, Any]) -> "Concept":
         """Create concept from dict."""
         return cls(
             id=data["id"],
@@ -181,8 +181,8 @@ class ConceptWorld:
     """
 
     name: str
-    concepts: Dict[str, Concept] = field(default_factory=dict)
-    focal_concept_id: Optional[str] = None  # Current focus
+    concepts: dict[str, Concept] = field(default_factory=dict)
+    focal_concept_id: str | None = None  # Current focus
 
     # World bounds
     min_x: float = -50.0
@@ -196,11 +196,11 @@ class ConceptWorld:
         """Add a concept to the world."""
         self.concepts[concept.id] = concept
 
-    def remove_concept(self, concept_id: str) -> Optional[Concept]:
+    def remove_concept(self, concept_id: str) -> Concept | None:
         """Remove and return a concept from the world."""
         return self.concepts.pop(concept_id, None)
 
-    def get_concept(self, concept_id: str) -> Optional[Concept]:
+    def get_concept(self, concept_id: str) -> Concept | None:
         """Get a concept by ID."""
         return self.concepts.get(concept_id)
 
@@ -210,7 +210,7 @@ class ConceptWorld:
             self.focal_concept_id = concept_id
             self.concepts[concept_id].touch()
 
-    def get_connected_concepts(self, concept_id: str) -> List[Concept]:
+    def get_connected_concepts(self, concept_id: str) -> list[Concept]:
         """Get all concepts connected to the given concept."""
         concept = self.concepts.get(concept_id)
         if not concept:
@@ -221,7 +221,7 @@ class ConceptWorld:
             if cid in self.concepts
         ]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert world to JSON-serializable dict."""
         return {
             "name": self.name,
@@ -241,8 +241,8 @@ def create_entity_concept(
     id: str,
     label: str,
     importance: float = 0.5,
-    description: Optional[str] = None,
-    embedding: Optional[List[float]] = None,
+    description: str | None = None,
+    embedding: list[float] | None = None,
 ) -> Concept:
     """Create an entity concept (named thing)."""
     position = SemanticPosition.from_embedding(embedding) if embedding else SemanticPosition()
@@ -259,7 +259,7 @@ def create_entity_concept(
 def create_comparison_concept(
     id: str,
     label: str,
-    concepts_compared: List[str],
+    concepts_compared: list[str],
     importance: float = 0.6,
 ) -> Concept:
     """Create a comparison concept (A vs B)."""
@@ -276,7 +276,7 @@ def create_comparison_concept(
 def create_process_concept(
     id: str,
     label: str,
-    steps: List[str],
+    steps: list[str],
     importance: float = 0.5,
 ) -> Concept:
     """Create a process concept (algorithm, workflow)."""

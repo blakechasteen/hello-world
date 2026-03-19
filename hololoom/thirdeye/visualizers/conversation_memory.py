@@ -15,12 +15,12 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, List, Optional, Set, Tuple, Any
-from dataclasses import dataclass, field
-from enum import Enum
-from datetime import datetime
-import re
 import hashlib
+import re
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class EntityType(Enum):
@@ -84,18 +84,18 @@ class EntityState:
     entity_type: EntityType
 
     # Spatial state
-    position: Dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0, "z": 0})
+    position: dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0, "z": 0})
     scale: float = 1.0
     rotation: float = 0.0
 
     # Visual state
-    color: Optional[str] = None
-    style: Optional[str] = None
+    color: str | None = None
+    style: str | None = None
     visible: bool = True
     highlighted: bool = False
 
     # Semantic state
-    attributes: Dict[str, Any] = field(default_factory=dict)
+    attributes: dict[str, Any] = field(default_factory=dict)
     description: str = ""
 
     # Temporal state
@@ -104,7 +104,7 @@ class EntityState:
     mention_count: int = 1
 
     # Evolution
-    previous_states: List[Dict[str, Any]] = field(default_factory=list)
+    previous_states: list[dict[str, Any]] = field(default_factory=list)
 
     def update_mention(self) -> None:
         """Record that entity was mentioned again."""
@@ -148,7 +148,7 @@ class ConversationEvent:
     """An event in the conversation timeline."""
     id: str
     description: str
-    entities_involved: List[str]
+    entities_involved: list[str]
     timestamp: datetime = field(default_factory=datetime.now)
     event_type: str = "action"  # action, state_change, appearance, disappearance
 
@@ -166,10 +166,10 @@ class ConversationMemory:
 
     def __init__(self, max_entities: int = 100):
         self.max_entities = max_entities
-        self.entities: Dict[str, EntityState] = {}
-        self.relationships: List[Relationship] = []
-        self.timeline: List[ConversationEvent] = []
-        self._entity_aliases: Dict[str, str] = {}  # "the hero" -> "hero_123"
+        self.entities: dict[str, EntityState] = {}
+        self.relationships: list[Relationship] = []
+        self.timeline: list[ConversationEvent] = []
+        self._entity_aliases: dict[str, str] = {}  # "the hero" -> "hero_123"
 
     def _generate_id(self, name: str) -> str:
         """Generate stable ID from name."""
@@ -177,7 +177,7 @@ class ConversationMemory:
         hash_suffix = hashlib.md5(normalized.encode()).hexdigest()[:6]
         return f"{normalized.replace(' ', '_')}_{hash_suffix}"
 
-    def _find_entity_by_name(self, name: str) -> Optional[EntityState]:
+    def _find_entity_by_name(self, name: str) -> EntityState | None:
         """Find entity by name or alias."""
         normalized = name.lower().strip()
 
@@ -202,8 +202,8 @@ class ConversationMemory:
         self,
         name: str,
         entity_type: EntityType,
-        attributes: Optional[Dict[str, Any]] = None,
-        position: Optional[Dict[str, float]] = None,
+        attributes: dict[str, Any] | None = None,
+        position: dict[str, float] | None = None,
     ) -> EntityState:
         """
         Remember an entity, creating or updating as needed.
@@ -253,7 +253,7 @@ class ConversationMemory:
 
         return entity
 
-    def _auto_position(self, entity_type: EntityType) -> Dict[str, float]:
+    def _auto_position(self, entity_type: EntityType) -> dict[str, float]:
         """Calculate automatic position based on entity type and existing entities."""
         # Count entities of same type
         same_type = [e for e in self.entities.values() if e.entity_type == entity_type]
@@ -300,7 +300,7 @@ class ConversationMemory:
         relation_type: RelationType,
         strength: float = 1.0,
         bidirectional: bool = False,
-    ) -> Optional[Relationship]:
+    ) -> Relationship | None:
         """Add a relationship between two entities."""
         source = self._find_entity_by_name(source_name)
         target = self._find_entity_by_name(target_name)
@@ -337,7 +337,7 @@ class ConversationMemory:
     def record_event(
         self,
         description: str,
-        entity_names: List[str],
+        entity_names: list[str],
         event_type: str = "action"
     ) -> ConversationEvent:
         """Record an event involving entities."""
@@ -384,14 +384,14 @@ class ConversationMemory:
             if r.source_id in keep_ids and r.target_id in keep_ids
         ]
 
-    def get_active_entities(self, min_importance: float = 0.1) -> List[EntityState]:
+    def get_active_entities(self, min_importance: float = 0.1) -> list[EntityState]:
         """Get entities above importance threshold."""
         return [
             e for e in self.entities.values()
             if e.importance >= min_importance
         ]
 
-    def get_entity_graph(self) -> Dict[str, Any]:
+    def get_entity_graph(self) -> dict[str, Any]:
         """Get entities and relationships as a graph structure."""
         return {
             "entities": {
@@ -415,12 +415,12 @@ class ConversationMemory:
             ]
         }
 
-    def get_scene_context(self) -> Dict[str, Any]:
+    def get_scene_context(self) -> dict[str, Any]:
         """Get context suitable for scene composition."""
         active = self.get_active_entities()
 
         # Group by type
-        by_type: Dict[str, List[EntityState]] = {}
+        by_type: dict[str, list[EntityState]] = {}
         for entity in active:
             type_name = entity.entity_type.value
             if type_name not in by_type:
@@ -517,7 +517,7 @@ RELATIONSHIP_PATTERNS = [
 def extract_entities_from_text(
     text: str,
     memory: ConversationMemory
-) -> List[EntityState]:
+) -> list[EntityState]:
     """Extract and remember entities from text."""
     extracted = []
     text_lower = text.lower()
@@ -537,7 +537,7 @@ def extract_entities_from_text(
 def extract_relationships_from_text(
     text: str,
     memory: ConversationMemory
-) -> List[Relationship]:
+) -> list[Relationship]:
     """Extract and remember relationships from text."""
     extracted = []
 
@@ -554,7 +554,7 @@ def extract_relationships_from_text(
 
 
 # Singleton memory instance
-_conversation_memory: Optional[ConversationMemory] = None
+_conversation_memory: ConversationMemory | None = None
 
 
 def get_conversation_memory() -> ConversationMemory:

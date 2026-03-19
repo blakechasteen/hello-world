@@ -18,16 +18,15 @@ References:
 - dashboard.py (PanelSpec, PanelType base patterns)
 """
 
-from dataclasses import dataclass, field, replace
-from typing import List, Dict, Optional, Any, Tuple
-from enum import Enum
-from uuid import uuid4
-from datetime import datetime
 import json
+from dataclasses import dataclass, field, replace
+from datetime import datetime
+from enum import Enum
+from typing import Any
+from uuid import uuid4
 
 # Import consolidated enums (re-exported for backward compatibility)
-from .jenny_enums import LifecycleStage, BindingMode, DissolutionTrigger
-
+from .jenny_enums import BindingMode, DissolutionTrigger, LifecycleStage
 
 # ============================================================================
 # Panel-Specific Enums (kept here - tightly coupled to panel definitions)
@@ -120,20 +119,20 @@ class JennySpec:
     # Panel Type and Content
     # ========================================================================
     panel_type: PanelTypeJenny = PanelTypeJenny.TEXT
-    title: Optional[str] = None
-    subtitle: Optional[str] = None
-    content: Dict[str, Any] = field(default_factory=dict)
+    title: str | None = None
+    subtitle: str | None = None
+    content: dict[str, Any] = field(default_factory=dict)
 
     # ========================================================================
     # Lifecycle
     # ========================================================================
     lifecycle: LifecycleStage = LifecycleStage.NASCENT
-    dissolution_trigger: Optional[DissolutionTrigger] = None
+    dissolution_trigger: DissolutionTrigger | None = None
 
     # ========================================================================
     # Layout
     # ========================================================================
-    position: Tuple[float, float, float] = (0.0, 0.0, 0.0)  # x, y, z (AR-ready)
+    position: tuple[float, float, float] = (0.0, 0.0, 0.0)  # x, y, z (AR-ready)
     size: PanelSizeJenny = PanelSizeJenny.MEDIUM
     priority: int = 0  # Higher = closer to user (AR), higher z-index (web)
 
@@ -141,25 +140,25 @@ class JennySpec:
     # Data Binding
     # ========================================================================
     binding_mode: BindingMode = BindingMode.STATIC
-    data_source: Optional[str] = None  # Query for reactive/streaming bindings
-    refresh_interval_ms: Optional[int] = None  # For reactive mode
+    data_source: str | None = None  # Query for reactive/streaming bindings
+    refresh_interval_ms: int | None = None  # For reactive mode
 
     # ========================================================================
     # Actions
     # ========================================================================
-    actions: Tuple[Dict[str, Any], ...] = ()  # Immutable tuple of action definitions
+    actions: tuple[dict[str, Any], ...] = ()  # Immutable tuple of action definitions
 
     # ========================================================================
     # Provenance
     # ========================================================================
     timestamp: datetime = field(default_factory=datetime.now)
     compiler_version: str = "1.0.0"
-    model_checkpoint: Optional[str] = None  # For replay determinism
+    model_checkpoint: str | None = None  # For replay determinism
 
     # ========================================================================
     # Metadata (extensible)
     # ========================================================================
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate spec after initialization."""
@@ -169,7 +168,7 @@ class JennySpec:
         if self.binding_mode == BindingMode.STREAMING and not self.data_source:
             raise ValueError("STREAMING binding mode requires data_source")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert to serializable dictionary.
 
@@ -198,7 +197,7 @@ class JennySpec:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "JennySpec":
+    def from_dict(cls, data: dict[str, Any]) -> "JennySpec":
         """Create JennySpec from dictionary."""
         position = data.get("position", {"x": 0, "y": 0, "z": 0})
         if isinstance(position, dict):
@@ -247,7 +246,7 @@ class JennySpec:
         """
         return replace(self, **kwargs)
 
-    def with_lifecycle(self, new_lifecycle: LifecycleStage, trigger: Optional[DissolutionTrigger] = None) -> "JennySpec":
+    def with_lifecycle(self, new_lifecycle: LifecycleStage, trigger: DissolutionTrigger | None = None) -> "JennySpec":
         """
         Create new spec with updated lifecycle (immutable update pattern).
 
@@ -274,9 +273,9 @@ def create_action(
     label: str,
     handler: str,
     action_type: str = "button",
-    params: Optional[Dict[str, Any]] = None,
+    params: dict[str, Any] | None = None,
     requires_confirmation: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Helper to create action definitions for JennySpec.actions.
 
@@ -325,7 +324,7 @@ ACTION_EXPORT = create_action("Export", "export_panel", requires_confirmation=Tr
 # Default Actions by Panel Type
 # ============================================================================
 
-DEFAULT_ACTIONS: Dict[PanelTypeJenny, Tuple[Dict[str, Any], ...]] = {
+DEFAULT_ACTIONS: dict[PanelTypeJenny, tuple[dict[str, Any], ...]] = {
     PanelTypeJenny.GRAPH: (ACTION_PIN, ACTION_DISMISS, ACTION_EXPAND, ACTION_WHY),
     PanelTypeJenny.CONFIDENCE: (ACTION_PIN, ACTION_DISMISS, ACTION_WHY),
     PanelTypeJenny.TIMELINE: (ACTION_PIN, ACTION_DISMISS, ACTION_WHY),
@@ -342,7 +341,7 @@ DEFAULT_ACTIONS: Dict[PanelTypeJenny, Tuple[Dict[str, Any], ...]] = {
 }
 
 
-def get_default_actions(panel_type: PanelTypeJenny) -> Tuple[Dict[str, Any], ...]:
+def get_default_actions(panel_type: PanelTypeJenny) -> tuple[dict[str, Any], ...]:
     """Get default actions for a panel type."""
     return DEFAULT_ACTIONS.get(panel_type, (ACTION_PIN, ACTION_DISMISS, ACTION_WHY))
 
@@ -350,16 +349,16 @@ def get_default_actions(panel_type: PanelTypeJenny) -> Tuple[Dict[str, Any], ...
 def create_spec(
     spacetime_id: str = "",
     panel_type: PanelTypeJenny = PanelTypeJenny.TEXT,
-    title: Optional[str] = None,
-    subtitle: Optional[str] = None,
-    content: Optional[Dict[str, Any]] = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    content: dict[str, Any] | None = None,
     size: PanelSizeJenny = PanelSizeJenny.MEDIUM,
     priority: int = 0,
     lifecycle: LifecycleStage = LifecycleStage.NASCENT,
     binding_mode: BindingMode = BindingMode.STATIC,
-    data_source: Optional[str] = None,
-    actions: Optional[Tuple[Dict[str, Any], ...]] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    data_source: str | None = None,
+    actions: tuple[dict[str, Any], ...] | None = None,
+    metadata: dict[str, Any] | None = None,
 ) -> JennySpec:
     """
     Factory function to create JennySpec with sensible defaults.

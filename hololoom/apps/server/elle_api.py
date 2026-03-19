@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Elle API
 ========
@@ -15,19 +15,20 @@ Features:
 Created: 2025-01-20
 """
 
+import logging
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
-import logging
 
 router = APIRouter(prefix="/elle", tags=["elle"])
 logger = logging.getLogger(__name__)
 
 # Import Elle components
 try:
-    from hololoom.elle.engine import ElleEngine
-    from hololoom.elle.domain.scene import Scene, Intent
     from hololoom.elle.domain.action import Action, ActionType
+    from hololoom.elle.domain.scene import Intent, Scene
+    from hololoom.elle.engine import ElleEngine
     ELLE_AVAILABLE = True
     logger.info("✓ Elle components loaded successfully")
 except ImportError as e:
@@ -36,7 +37,7 @@ except ImportError as e:
     ElleEngine = None
 
 # Global Elle engine instance
-elle_engine: Optional[Any] = None
+elle_engine: Any | None = None
 
 
 def get_elle_engine():
@@ -52,42 +53,42 @@ def get_elle_engine():
 class SceneRequest(BaseModel):
     code: str
     language: str
-    file_name: Optional[str] = None
-    cursor_position: Optional[Dict[str, int]] = None  # {line, column}
-    selection: Optional[Dict[str, Any]] = None  # {start, end}
-    context: Optional[Dict[str, Any]] = None
+    file_name: str | None = None
+    cursor_position: dict[str, int] | None = None  # {line, column}
+    selection: dict[str, Any] | None = None  # {start, end}
+    context: dict[str, Any] | None = None
 
 
 class SceneAnalysis(BaseModel):
     complexity: str  # "trivial", "moderate", "complex"
-    focus_areas: List[str]
-    entities: List[Dict[str, Any]]
-    relationships: List[Dict[str, Any]]
-    suggestions: List[str]
+    focus_areas: list[str]
+    entities: list[dict[str, Any]]
+    relationships: list[dict[str, Any]]
+    suggestions: list[str]
 
 
 class GuideRequest(BaseModel):
     scene: SceneRequest
     intent: str  # "seeking_guidance", "debugging", "learning", "refactoring"
-    user_query: Optional[str] = None
+    user_query: str | None = None
 
 
 class GuideResponse(BaseModel):
     guidance: str
-    suggested_actions: List[Dict[str, Any]]
-    focus_highlights: List[Dict[str, Any]]  # Areas to highlight in editor
-    related_concepts: List[str]
+    suggested_actions: list[dict[str, Any]]
+    focus_highlights: list[dict[str, Any]]  # Areas to highlight in editor
+    related_concepts: list[str]
     confidence: float
 
 
 class SuggestRequest(BaseModel):
     code: str
     language: str
-    action_history: Optional[List[str]] = None  # Recent actions taken
+    action_history: list[str] | None = None  # Recent actions taken
 
 
 class SuggestResponse(BaseModel):
-    suggestions: List[Dict[str, Any]]
+    suggestions: list[dict[str, Any]]
     reasoning: str
     priority: str  # "high", "medium", "low"
 

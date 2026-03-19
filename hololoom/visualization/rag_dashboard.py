@@ -23,17 +23,15 @@ Date: November 2025
 Principles: Edward Tufte + HoloLoom architecture
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 import statistics
+from dataclasses import dataclass, field
+from typing import Any
 
-from .dashboard import Dashboard, Panel, PanelType, PanelSize, LayoutType
-from .confidence_trajectory import render_confidence_trajectory
 from .cache_gauge import render_cache_gauge
-from .stage_waterfall import render_pipeline_waterfall
+from .confidence_trajectory import render_confidence_trajectory
+from .dashboard import Dashboard, LayoutType, Panel, PanelSize, PanelType
 from .html_renderer import HTMLRenderer
-
+from .stage_waterfall import render_pipeline_waterfall
 
 # ============================================================================
 # RAGResult Data Structure
@@ -52,10 +50,10 @@ class RAGResult:
         metadata: Performance and diagnostic data
     """
     response: str
-    sources: List[str]
+    sources: list[str]
     confidence: float
     reasoning_mode: str = "direct"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -88,7 +86,7 @@ class RAGDashboard:
     @classmethod
     def from_query_history(
         cls,
-        queries: List[RAGResult],
+        queries: list[RAGResult],
         title: str = "RAG Performance Dashboard",
         detect_anomalies: bool = True,
         theme: str = 'light'
@@ -157,7 +155,7 @@ class RAGDashboard:
     # Panel Construction Methods
     # ========================================================================
 
-    def _build_all_panels(self) -> List[Panel]:
+    def _build_all_panels(self) -> list[Panel]:
         """Build all 5 panels for the dashboard."""
         panels = [
             self._create_retrieval_quality_panel(),
@@ -533,7 +531,7 @@ class RAGDashboard:
     # ========================================================================
 
     @staticmethod
-    def _calculate_cache_hit_rate(queries: List[RAGResult]) -> float:
+    def _calculate_cache_hit_rate(queries: list[RAGResult]) -> float:
         """Calculate cache hit rate from query history."""
         if not queries:
             return 0.0
@@ -541,7 +539,7 @@ class RAGDashboard:
         return hits / len(queries)
 
     @staticmethod
-    def _create_sparkline(values: List[float], color: str = '#6366f1', height: int = 24) -> str:
+    def _create_sparkline(values: list[float], color: str = '#6366f1', height: int = 24) -> str:
         """
         Create inline SVG sparkline for metric display.
 
@@ -585,9 +583,9 @@ class RAGDashboard:
 # ============================================================================
 
 def create_rag_dashboard(
-    queries: List[RAGResult],
+    queries: list[RAGResult],
     title: str = "RAG Performance Dashboard",
-    output_path: Optional[str] = None
+    output_path: str | None = None
 ) -> str:
     """
     Convenience function to create and render RAG dashboard.

@@ -14,7 +14,8 @@ Usage:
 """
 
 import logging
-from typing import Any, Callable, Coroutine, Dict, List, Optional
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 def create_semantic_fn(
     retriever: Any,
     score_threshold: float = 0.0,
-) -> Callable[[str, int], Coroutine[Any, Any, List[Dict]]]:
+) -> Callable[[str, int], Coroutine[Any, Any, list[dict]]]:
     """Create a Level 4 semantic search function from an existing retriever.
 
     Args:
@@ -34,7 +35,7 @@ def create_semantic_fn(
         Async function compatible with LiteMemoryBus.semantic_fn
     """
 
-    async def semantic_fn(query_text: str, max_results: int = 5) -> List[Dict]:
+    async def semantic_fn(query_text: str, max_results: int = 5) -> list[dict]:
         try:
             hits = await retriever.search(
                 query=query_text,
@@ -70,9 +71,9 @@ def create_semantic_fn(
 
 
 def create_shard_semantic_fn(
-    shards: List[Any],
+    shards: list[Any],
     embedder: Any,
-) -> Callable[[str, int], Coroutine[Any, Any, List[Dict]]]:
+) -> Callable[[str, int], Coroutine[Any, Any, list[dict]]]:
     """Create a Level 4 semantic function directly from shards + embedder.
 
     Convenience wrapper that creates a RetrieverMS internally.

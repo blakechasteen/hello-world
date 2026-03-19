@@ -4,7 +4,6 @@ Semantic Calculus Configuration
 Configuration presets and settings for semantic analysis.
 """
 
-from typing import Optional
 
 
 class SemanticCalculusConfig:
@@ -20,8 +19,8 @@ class SemanticCalculusConfig:
         ethical_framework: str = "compassionate",
         compute_trajectory: bool = True,
         compute_ethics: bool = True,
-        selection_strategy: Optional[str] = None,
-        domain: Optional[str] = None,
+        selection_strategy: str | None = None,
+        domain: str | None = None,
     ):
         """
         Initialize semantic calculus configuration.

@@ -15,11 +15,13 @@ Eliminates Parameters:
 - merge_cache_size (Phase 5 compositional cache)
 """
 
-from typing import Dict, Any, List, Optional
 from collections import deque
 from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
-from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
+
+from hololoom.tuning.base import SafeParameter, ThompsonBandit, TuningAgent
 
 # Cache size multipliers (relative to baseline)
 CACHE_SIZE_MULTIPLIERS = [0.5, 1.0, 2.0, 5.0, 10.0]  # 5 arms
@@ -96,26 +98,26 @@ class CacheTuner(TuningAgent):
         super().__init__('cache_tuner')
 
         # Cache metrics history (last 1000 measurements per cache)
-        self.metrics_history: Dict[str, deque] = {
+        self.metrics_history: dict[str, deque] = {
             cache_type: deque(maxlen=1000)
             for cache_type in ['query', 'parse', 'merge']
         }
 
         # Thompson Sampling bandits (one per cache type)
-        self.bandits: Dict[str, ThompsonBandit] = {
+        self.bandits: dict[str, ThompsonBandit] = {
             cache_type: ThompsonBandit(n_arms=len(CACHE_SIZE_MULTIPLIERS))
             for cache_type in ['query', 'parse', 'merge']
         }
 
         # Current multiplier indices (selected arm per cache)
-        self.current_multipliers: Dict[str, int] = {
+        self.current_multipliers: dict[str, int] = {
             'query': 1,   # Start with 1.0x (baseline)
             'parse': 1,
             'merge': 1,
         }
 
         # Safe parameters for each cache
-        self.safe_params: Dict[str, SafeParameter] = {}
+        self.safe_params: dict[str, SafeParameter] = {}
         for cache_type, baseline_size in BASELINE_CACHE_SIZES.items():
             min_size, max_size = SAFE_CACHE_RANGES[cache_type]
             self.safe_params[cache_type] = SafeParameter(
@@ -126,7 +128,7 @@ class CacheTuner(TuningAgent):
                 max_change_percent=0.3,  # Allow 30% change per cycle
             )
 
-    async def measure_performance(self) -> Dict[str, Any]:
+    async def measure_performance(self) -> dict[str, Any]:
         """
         Measure cache performance metrics.
 
@@ -173,7 +175,7 @@ class CacheTuner(TuningAgent):
 
         return metrics
 
-    async def tune_parameters(self) -> Dict[str, Any]:
+    async def tune_parameters(self) -> dict[str, Any]:
         """
         Tune cache sizes based on Thompson Sampling.
 
@@ -217,7 +219,7 @@ class CacheTuner(TuningAgent):
         if cache_type in self.metrics_history:
             self.metrics_history[cache_type].append(metrics)
 
-    def update_bandits(self, baseline_metrics: Dict[str, Any], new_metrics: Dict[str, Any]):
+    def update_bandits(self, baseline_metrics: dict[str, Any], new_metrics: dict[str, Any]):
         """
         Update Thompson Sampling bandits based on performance change.
 
@@ -239,7 +241,7 @@ class CacheTuner(TuningAgent):
 
             self.bandits[cache_type].update(arm_idx, success, confidence)
 
-    async def run_tuning_cycle(self) -> Dict[str, Any]:
+    async def run_tuning_cycle(self) -> dict[str, Any]:
         """
         Run complete tuning cycle for cache sizes.
 
@@ -274,7 +276,7 @@ class CacheTuner(TuningAgent):
             'bandit_stats': self.get_bandit_stats(),
         }
 
-    def _calculate_impact(self, baseline: Dict[str, Any], new: Dict[str, Any]) -> float:
+    def _calculate_impact(self, baseline: dict[str, Any], new: dict[str, Any]) -> float:
         """
         Calculate impact of tuning changes.
 
@@ -296,7 +298,7 @@ class CacheTuner(TuningAgent):
         # Overall impact (average quality improvement)
         return float(np.mean(quality_deltas)) if quality_deltas else 0.0
 
-    def get_bandit_stats(self) -> Dict[str, Any]:
+    def get_bandit_stats(self) -> dict[str, Any]:
         """
         Get Thompson Sampling bandit statistics.
 
@@ -329,7 +331,7 @@ class CacheTuner(TuningAgent):
         """
         pass  # State persistence handled by coordinator
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """Serialize agent state for persistence."""
         return {
             'total_tuning_cycles': self.total_tuning_cycles,
@@ -362,7 +364,7 @@ class CacheTuner(TuningAgent):
             },
         }
 
-    def load_state(self, state: Dict[str, Any]):
+    def load_state(self, state: dict[str, Any]):
         """Restore agent from serialized state."""
         self.total_tuning_cycles = state.get('total_tuning_cycles', 0)
         self.successful_tunings = state.get('successful_tunings', 0)

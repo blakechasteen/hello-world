@@ -12,20 +12,17 @@ This skill wraps pytest to provide:
 """
 
 import asyncio
-import subprocess
-import json
 import time
-from pathlib import Path
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
+from typing import Any
 
 from hololoom.skills.base import (
     BaseSkill,
-    SkillInput,
-    SkillOutput,
-    SkillMetadata,
     SkillCategory,
-    SkillStatus
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
 )
 
 
@@ -38,9 +35,9 @@ class PytestResult:
     errors: int
     total: int
     duration_seconds: float
-    coverage_percent: Optional[float] = None
-    failed_tests: List[str] = None
-    warnings: List[str] = None
+    coverage_percent: float | None = None
+    failed_tests: list[str] = None
+    warnings: list[str] = None
 
     @property
     def success_rate(self) -> float:
@@ -216,8 +213,8 @@ class PytestRunnerSkill(BaseSkill):
 
     async def _run_pytest(
         self,
-        args: List[str],
-        cwd: Optional[str] = None
+        args: list[str],
+        cwd: str | None = None
     ) -> PytestResult:
         """
         Run pytest with given arguments.
@@ -349,13 +346,13 @@ class PytestRunnerSkill(BaseSkill):
             warnings=warnings if warnings else None
         )
 
-    async def _run_all(self, parameters: Dict[str, Any]) -> PytestResult:
+    async def _run_all(self, parameters: dict[str, Any]) -> PytestResult:
         """Run all tests."""
         path = parameters.get("path", ".")
         args = [path]
         return await self._run_pytest(args)
 
-    async def _run_with_coverage(self, parameters: Dict[str, Any]) -> PytestResult:
+    async def _run_with_coverage(self, parameters: dict[str, Any]) -> PytestResult:
         """Run tests with coverage reporting."""
         path = parameters.get("path", ".")
         min_coverage = parameters.get("min_coverage", 80)
@@ -369,20 +366,20 @@ class PytestRunnerSkill(BaseSkill):
 
         return await self._run_pytest(args)
 
-    async def _run_specific(self, parameters: Dict[str, Any]) -> PytestResult:
+    async def _run_specific(self, parameters: dict[str, Any]) -> PytestResult:
         """Run specific test file or function."""
         path = parameters["path"]
         args = [path]
         return await self._run_pytest(args)
 
-    async def _run_marker(self, parameters: Dict[str, Any]) -> PytestResult:
+    async def _run_marker(self, parameters: dict[str, Any]) -> PytestResult:
         """Run tests with specific marker."""
         marker = parameters["marker"]
         path = parameters.get("path", ".")
         args = [path, "-m", marker]
         return await self._run_pytest(args)
 
-    async def _run_parallel(self, parameters: Dict[str, Any]) -> PytestResult:
+    async def _run_parallel(self, parameters: dict[str, Any]) -> PytestResult:
         """Run tests in parallel using pytest-xdist."""
         num_workers = parameters["num_workers"]
         path = parameters.get("path", ".")
@@ -392,4 +389,5 @@ class PytestRunnerSkill(BaseSkill):
 
 # Register skill
 from hololoom.skills.base import register_skill
+
 register_skill(PytestRunnerSkill())

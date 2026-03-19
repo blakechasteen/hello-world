@@ -20,13 +20,12 @@ Date: 2025-12-03
 
 import json
 import math
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
-from .learning_protocols import HeatScore, HeatTrackerProtocol
-
+from .learning_protocols import HeatScore
 
 # =============================================================================
 # Constants
@@ -69,8 +68,8 @@ class PayloadUsageRecord:
     total_severity: float = 0.0
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     last_accessed: str = field(default_factory=lambda: datetime.now().isoformat())
-    last_success: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    last_success: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def success_rate(self) -> float:
@@ -166,7 +165,7 @@ class PayloadUsageRecord:
             last_success=self.last_success,
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'payload_id': self.payload_id,
@@ -187,7 +186,7 @@ class PayloadUsageRecord:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'PayloadUsageRecord':
+    def from_dict(cls, data: dict[str, Any]) -> 'PayloadUsageRecord':
         """Create from dictionary."""
         return cls(
             payload_id=data['payload_id'],
@@ -250,10 +249,10 @@ class HotPayloadTracker:
         self.cold_threshold = cold_threshold
 
         # payload_id -> PayloadUsageRecord
-        self._records: Dict[str, PayloadUsageRecord] = {}
+        self._records: dict[str, PayloadUsageRecord] = {}
 
         # Strategy -> Set[payload_id] for fast strategy lookups
-        self._by_strategy: Dict[str, Set[str]] = {}
+        self._by_strategy: dict[str, set[str]] = {}
 
         # Tracking metadata
         self._created_at = datetime.now().isoformat()
@@ -269,7 +268,7 @@ class HotPayloadTracker:
         success: bool,
         severity: float = 0.0,
         strategy: str = "unknown",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> None:
         """
         Record an access to a payload.
@@ -315,7 +314,7 @@ class HotPayloadTracker:
             return 0.0
         return self._records[element_id].heat_score
 
-    def get_hot_elements(self, limit: int = 10) -> List[HeatScore]:
+    def get_hot_elements(self, limit: int = 10) -> list[HeatScore]:
         """
         Get hottest payloads (heat > threshold).
 
@@ -333,7 +332,7 @@ class HotPayloadTracker:
         hot.sort(key=lambda h: h.heat, reverse=True)
         return hot[:limit]
 
-    def get_cold_elements(self, limit: int = 10) -> List[HeatScore]:
+    def get_cold_elements(self, limit: int = 10) -> list[HeatScore]:
         """
         Get coldest payloads (heat < threshold).
 
@@ -403,15 +402,15 @@ class HotPayloadTracker:
     # Strategy-Specific Methods
     # =========================================================================
 
-    def get_hot_payloads(self, limit: int = 10) -> List[HeatScore]:
+    def get_hot_payloads(self, limit: int = 10) -> list[HeatScore]:
         """Alias for get_hot_elements."""
         return self.get_hot_elements(limit)
 
-    def get_cold_payloads(self, limit: int = 10) -> List[HeatScore]:
+    def get_cold_payloads(self, limit: int = 10) -> list[HeatScore]:
         """Alias for get_cold_elements."""
         return self.get_cold_elements(limit)
 
-    def get_hot_by_strategy(self, strategy: str, limit: int = 10) -> List[HeatScore]:
+    def get_hot_by_strategy(self, strategy: str, limit: int = 10) -> list[HeatScore]:
         """
         Get hot payloads for a specific strategy.
 
@@ -470,7 +469,7 @@ class HotPayloadTracker:
     # Statistics
     # =========================================================================
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get comprehensive statistics."""
         total = len(self._records)
         hot_count = sum(1 for r in self._records.values() if r.is_hot)
@@ -525,7 +524,7 @@ class HotPayloadTracker:
         if not path.exists():
             return
 
-        with open(path, 'r') as f:
+        with open(path) as f:
             state = json.load(f)
 
         self.decay_rate = state.get('decay_rate', DECAY_RATE)
@@ -561,7 +560,7 @@ class HotPayloadTracker:
 # =============================================================================
 
 def create_hot_payload_tracker(
-    state_path: Optional[Path] = None,
+    state_path: Path | None = None,
     decay_rate: float = DECAY_RATE,
     hot_threshold: float = HOT_THRESHOLD,
     cold_threshold: float = COLD_THRESHOLD,

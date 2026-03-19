@@ -24,14 +24,8 @@ Pass 3 (CONSISTENCY): Ensure internal coherence
 
 import logging
 import re
-from typing import List, Dict, Any
 
-from ..core.protocol import (
-    RefinerProtocol,
-    RefinementPass,
-    RefinementStrategy,
-    WritingContext
-)
+from ..core.protocol import RefinementPass, WritingContext
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +89,7 @@ class VerifyRefiner:
         self,
         text: str,
         context: WritingContext
-    ) -> tuple[str, List[str]]:
+    ) -> tuple[str, list[str]]:
         """
         Pass 1: Accuracy - Verify claims against context.
 
@@ -192,7 +186,7 @@ class VerifyRefiner:
         self,
         text: str,
         context: WritingContext
-    ) -> tuple[str, List[str]]:
+    ) -> tuple[str, list[str]]:
         """
         Pass 2: Completeness - Fill information gaps.
 
@@ -269,7 +263,7 @@ class VerifyRefiner:
         self,
         text: str,
         context: WritingContext
-    ) -> tuple[str, List[str]]:
+    ) -> tuple[str, list[str]]:
         """
         Pass 3: Consistency - Ensure internal coherence.
 
@@ -347,6 +341,6 @@ class VerifyRefiner:
         return "verify"
 
     @property
-    def passes(self) -> List[str]:
+    def passes(self) -> list[str]:
         """List of focus areas for each pass."""
         return self._passes.copy()

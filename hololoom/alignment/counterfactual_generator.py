@@ -16,11 +16,10 @@ References:
 - Mothilal et al. (2020) "Explaining ML Classifiers through Diverse Counterfactual Explanations"
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Callable
-from enum import Enum
+
 import numpy as np
-import json
 
 
 @dataclass
@@ -45,12 +44,12 @@ class Counterfactual:
 
     counterfactual_tool: str
     counterfactual_confidence: float
-    feature_changes: List[FeatureChange] = field(default_factory=list)
+    feature_changes: list[FeatureChange] = field(default_factory=list)
 
     l2_distance: float = 0.0
     sparsity: int = 0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "query_id": self.query_id,
             "original_tool": self.original_tool,
@@ -66,7 +65,7 @@ class MinimalCounterfactualGenerator:
     def __init__(
         self,
         predict_fn: Callable,
-        feature_names: List[str],
+        feature_names: list[str],
         max_iterations: int = 100
     ):
         self.predict_fn = predict_fn

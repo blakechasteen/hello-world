@@ -6,10 +6,9 @@ Bridges HoloLoom's agentic chat with Promptly's prompt management system.
 Provides import/export of prompts and template synchronization.
 """
 
-from pathlib import Path
-from typing import List, Dict, Optional
-import sys
 import logging
+import sys
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +20,8 @@ if promptly_path.exists():
 # Try to import Promptly, but make it truly optional
 PROMPTLY_AVAILABLE = False
 try:
-    from promptly.promptly import Promptly
     from promptly.loop_composition import LoopEngine
+    from promptly.promptly import Promptly
     PROMPTLY_AVAILABLE = True
 except ImportError as e:
     logger.warning(f"Promptly not available: {e}")
@@ -54,7 +53,7 @@ class PromptlyBridge:
             self.loop_engine = None
             logger.warning("LoopEngine not available (Promptly version may not support it)")
 
-    def list_prompts(self) -> List[Dict]:
+    def list_prompts(self) -> list[dict]:
         """List all prompts"""
         prompts = self.promptly.list_prompts()
         return [
@@ -68,7 +67,7 @@ class PromptlyBridge:
             for p in prompts
         ]
 
-    def get_prompt(self, name: str, version: Optional[str] = None) -> Dict:
+    def get_prompt(self, name: str, version: str | None = None) -> dict:
         """Get a specific prompt"""
         prompt = self.promptly.get_prompt(name, version)
         return {
@@ -80,7 +79,7 @@ class PromptlyBridge:
             'created_at': prompt.created_at
         }
 
-    def save_prompt(self, name: str, content: str, description: str = "", tags: List[str] = None):
+    def save_prompt(self, name: str, content: str, description: str = "", tags: list[str] = None):
         """Save a new prompt"""
         self.promptly.save_prompt(
             name=name,
@@ -90,7 +89,7 @@ class PromptlyBridge:
         )
         logger.info(f"Saved prompt: {name}")
 
-    def execute_prompt(self, name: str, variables: Dict = None, version: Optional[str] = None) -> str:
+    def execute_prompt(self, name: str, variables: dict = None, version: str | None = None) -> str:
         """Execute a prompt"""
         result = self.promptly.execute(
             prompt_name=name,
@@ -99,7 +98,7 @@ class PromptlyBridge:
         )
         return result
 
-    def run_loop(self, prompt_name: str, iterations: int = 3, variables: Dict = None) -> List[str]:
+    def run_loop(self, prompt_name: str, iterations: int = 3, variables: dict = None) -> list[str]:
         """Run a prompt in a loop"""
         if not self.loop_engine:
             raise RuntimeError("LoopEngine not available")
@@ -111,7 +110,7 @@ class PromptlyBridge:
         )
         return results
 
-    def import_from_conversation(self, messages: List[Dict]) -> str:
+    def import_from_conversation(self, messages: list[dict]) -> str:
         """Convert conversation messages to a Promptly prompt"""
         # Extract user messages as the prompt content
         user_messages = [msg for msg in messages if msg.get('role') == 'user']
@@ -123,7 +122,7 @@ class PromptlyBridge:
         prompt_content = "\n\n".join([msg['content'] for msg in user_messages])
         return prompt_content
 
-    def export_to_conversation(self, prompt_name: str) -> List[Dict]:
+    def export_to_conversation(self, prompt_name: str) -> list[dict]:
         """Convert a Promptly prompt to conversation format"""
         prompt = self.get_prompt(prompt_name)
 

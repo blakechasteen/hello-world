@@ -23,13 +23,12 @@ Author: Claude Code
 Date: January 2025
 """
 
-from typing import Protocol, List, Optional, Dict, Any, Union
-from pathlib import Path
+import time
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from abc import ABC, abstractmethod
-import time
-
+from pathlib import Path
+from typing import Any, Protocol
 
 # ============================================================================
 # OCR Types
@@ -73,7 +72,7 @@ class OCRResult:
     confidence: float  # 0.0-1.0
 
     # Optional structured output
-    bounding_boxes: Optional[List[OCRBoundingBox]] = None
+    bounding_boxes: list[OCRBoundingBox] | None = None
 
     # Metadata
     backend: str = "unknown"
@@ -82,11 +81,11 @@ class OCRResult:
     image_size: tuple[int, int] = (0, 0)
 
     # Language detection
-    detected_language: Optional[str] = None
-    language_confidence: Optional[float] = None
+    detected_language: str | None = None
+    language_confidence: float | None = None
 
     # Additional metadata
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         """Validate result."""
@@ -96,7 +95,7 @@ class OCRResult:
         if self.metadata is None:
             self.metadata = {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'text': self.text,
@@ -170,7 +169,7 @@ class OCRProtocol(Protocol):
 
     async def extract_text(
         self,
-        image: Union[Path, bytes, Any],
+        image: Path | bytes | Any,
         output_format: OCROutputFormat = OCROutputFormat.TEXT,
         **kwargs
     ) -> OCRResult:
@@ -190,7 +189,7 @@ class OCRProtocol(Protocol):
     # Optional: Structured extraction
     async def extract_text_structured(
         self,
-        image: Union[Path, bytes, Any],
+        image: Path | bytes | Any,
         **kwargs
     ) -> OCRResult:
         """
@@ -210,10 +209,10 @@ class OCRProtocol(Protocol):
     # Optional: Batch processing
     async def batch_extract(
         self,
-        images: List[Union[Path, bytes, Any]],
+        images: list[Path | bytes | Any],
         output_format: OCROutputFormat = OCROutputFormat.TEXT,
         **kwargs
-    ) -> List[OCRResult]:
+    ) -> list[OCRResult]:
         """
         Extract text from multiple images efficiently.
 
@@ -281,7 +280,7 @@ class BaseOCRBackend(ABC):
 
     async def extract_text(
         self,
-        image: Union[Path, bytes, Any],
+        image: Path | bytes | Any,
         output_format: OCROutputFormat = OCROutputFormat.TEXT,
         **kwargs
     ) -> OCRResult:
@@ -325,7 +324,7 @@ class BaseOCRBackend(ABC):
 
     async def extract_text_structured(
         self,
-        image: Union[Path, bytes, Any],
+        image: Path | bytes | Any,
         **kwargs
     ) -> OCRResult:
         """Default: Not implemented."""
@@ -333,10 +332,10 @@ class BaseOCRBackend(ABC):
 
     async def batch_extract(
         self,
-        images: List[Union[Path, bytes, Any]],
+        images: list[Path | bytes | Any],
         output_format: OCROutputFormat = OCROutputFormat.TEXT,
         **kwargs
-    ) -> List[OCRResult]:
+    ) -> list[OCRResult]:
         """Default: Sequential processing."""
         results = []
         for image in images:
@@ -374,7 +373,7 @@ class BaseOCRBackend(ABC):
     # Utilities
     # ========================================================================
 
-    def _load_image(self, image: Union[Path, bytes, Any]) -> Any:
+    def _load_image(self, image: Path | bytes | Any) -> Any:
         """
         Load image from various formats.
 
@@ -423,7 +422,7 @@ class OCRBackendChain:
         >>> result = await chain.extract_text("document.png")
     """
 
-    def __init__(self, backends: List[OCRProtocol]):
+    def __init__(self, backends: list[OCRProtocol]):
         """
         Initialize backend chain.
 
@@ -459,7 +458,7 @@ class OCRBackendChain:
 
     async def extract_text(
         self,
-        image: Union[Path, bytes, Any],
+        image: Path | bytes | Any,
         output_format: OCROutputFormat = OCROutputFormat.TEXT,
         **kwargs
     ) -> OCRResult:
@@ -499,7 +498,7 @@ class OCRBackendChain:
 
     async def extract_text_structured(
         self,
-        image: Union[Path, bytes, Any],
+        image: Path | bytes | Any,
         **kwargs
     ) -> OCRResult:
         """Extract text with bounding boxes (first backend that supports it)."""
@@ -513,10 +512,10 @@ class OCRBackendChain:
 
     async def batch_extract(
         self,
-        images: List[Union[Path, bytes, Any]],
+        images: list[Path | bytes | Any],
         output_format: OCROutputFormat = OCROutputFormat.TEXT,
         **kwargs
-    ) -> List[OCRResult]:
+    ) -> list[OCRResult]:
         """Batch extract using best available backend."""
         if self.available_backends:
             return await self.available_backends[0].batch_extract(images, output_format, **kwargs)

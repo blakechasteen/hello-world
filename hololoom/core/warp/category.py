@@ -33,11 +33,13 @@ Author: HoloLoom Team
 Date: 2025-10-25
 """
 
-import numpy as np
-from typing import Any, Dict, List, Set, Tuple, Callable, Optional, Union
-from dataclasses import dataclass, field
-from collections import defaultdict
 import logging
+from collections import defaultdict
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +61,7 @@ class Morphism:
     source: Any
     target: Any
     data: Any
-    name: Optional[str] = None
+    name: str | None = None
 
     def __post_init__(self):
         if self.name is None:
@@ -116,9 +118,9 @@ class Category:
 
     def __init__(self, name: str = "C"):
         self.name = name
-        self.objects: Set[Any] = set()
-        self.morphisms: Dict[Tuple[Any, Any], List[Morphism]] = defaultdict(list)
-        self._composition_cache: Dict[Tuple[str, str], Morphism] = {}
+        self.objects: set[Any] = set()
+        self.morphisms: dict[tuple[Any, Any], list[Morphism]] = defaultdict(list)
+        self._composition_cache: dict[tuple[str, str], Morphism] = {}
 
         logger.info(f"Category {name} initialized")
 
@@ -145,7 +147,7 @@ class Category:
         key = (morph.source, morph.target)
         self.morphisms[key].append(morph)
 
-    def hom(self, source: Any, target: Any) -> List[Morphism]:
+    def hom(self, source: Any, target: Any) -> list[Morphism]:
         """Get Hom-set: all morphisms from source to target."""
         return self.morphisms.get((source, target), [])
 
@@ -241,7 +243,7 @@ class Functor:
         """Apply functor to morphism."""
         return self.morphism_map(morph)
 
-    def __call__(self, x: Union[Any, Morphism]):
+    def __call__(self, x: Any | Morphism):
         """Apply functor to object or morphism."""
         if isinstance(x, Morphism):
             return self.map_morphism(x)
@@ -292,7 +294,7 @@ class NaturalTransformation:
     """
     source_functor: Functor
     target_functor: Functor
-    components: Dict[Any, Morphism]  # η_A for each object A
+    components: dict[Any, Morphism]  # η_A for each object A
     name: str = "η"
 
     def __post_init__(self):
@@ -383,9 +385,9 @@ class Limit:
 
     def __init__(self,
                  category: Category,
-                 diagram: Dict[Any, Any],  # Index → Object
+                 diagram: dict[Any, Any],  # Index → Object
                  limiting_object: Any,
-                 projections: Dict[Any, Morphism]):  # Index → Morphism
+                 projections: dict[Any, Morphism]):  # Index → Morphism
         self.category = category
         self.diagram = diagram
         self.limiting_object = limiting_object
@@ -393,7 +395,7 @@ class Limit:
 
         logger.info(f"Limit computed: {limiting_object}")
 
-    def universal_morphism(self, cone_vertex: Any, cone_morphisms: Dict[Any, Morphism]) -> Morphism:
+    def universal_morphism(self, cone_vertex: Any, cone_morphisms: dict[Any, Morphism]) -> Morphism:
         """
         Universal morphism u: X → L for cone (X, f_i).
 
@@ -416,9 +418,9 @@ class Colimit:
 
     def __init__(self,
                  category: Category,
-                 diagram: Dict[Any, Any],
+                 diagram: dict[Any, Any],
                  colimiting_object: Any,
-                 injections: Dict[Any, Morphism]):
+                 injections: dict[Any, Morphism]):
         self.category = category
         self.diagram = diagram
         self.colimiting_object = colimiting_object
@@ -426,7 +428,7 @@ class Colimit:
 
         logger.info(f"Colimit computed: {colimiting_object}")
 
-    def universal_morphism(self, cocone_vertex: Any, cocone_morphisms: Dict[Any, Morphism]) -> Morphism:
+    def universal_morphism(self, cocone_vertex: Any, cocone_morphisms: dict[Any, Morphism]) -> Morphism:
         """Universal morphism u: L → X for cocone (X, f_i)."""
         raise NotImplementedError("Universal morphism must be implemented for specific category")
 
@@ -514,7 +516,7 @@ class YonedaEmbedding:
             name=f"Hom(-,{obj})"
         )
 
-    def yoneda_bijection(self, obj: Any, functor: Functor) -> Dict:
+    def yoneda_bijection(self, obj: Any, functor: Functor) -> dict:
         """
         Yoneda bijection: Nat(Hom(-, A), F) ≅ F(A)
 

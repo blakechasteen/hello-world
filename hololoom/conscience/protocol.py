@@ -17,10 +17,10 @@ Author: HoloLoom Team
 Date: 2025-12-03
 """
 
-from typing import Protocol, Dict, Any, Optional, List, runtime_checkable
 from abc import abstractmethod
+from typing import Any, Protocol, runtime_checkable
 
-from .judgment import Judgment, Voice, Concern, Wisdom
+from .judgment import Concern, Judgment, Wisdom
 
 
 @runtime_checkable
@@ -57,8 +57,8 @@ class ConscienceLens(Protocol):
     async def examine(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Examine an action through this lens.
 
@@ -75,8 +75,8 @@ class ConscienceLens(Protocol):
     async def learn(
         self,
         action: str,
-        context: Dict[str, Any],
-        outcome: Dict[str, Any]
+        context: dict[str, Any],
+        outcome: dict[str, Any]
     ) -> None:
         """
         Learn from the outcome of an action.
@@ -106,9 +106,9 @@ class WitnessProtocol(Protocol):
     async def record(
         self,
         action: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         judgment: Judgment,
-        result: Optional[Dict[str, Any]] = None
+        result: dict[str, Any] | None = None
     ) -> str:
         """
         Record an action and its judgment.
@@ -127,9 +127,9 @@ class WitnessProtocol(Protocol):
     @abstractmethod
     async def query(
         self,
-        filters: Dict[str, Any],
+        filters: dict[str, Any],
         limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Query past records.
 
@@ -175,7 +175,7 @@ class LearnerProtocol(Protocol):
     async def get_wisdom(
         self,
         pattern_id: str
-    ) -> Optional[Wisdom]:
+    ) -> Wisdom | None:
         """
         Get learned wisdom for a pattern.
 
@@ -190,7 +190,7 @@ class LearnerProtocol(Protocol):
     @abstractmethod
     async def suggest_threshold(
         self,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> float:
         """
         Suggest a threshold based on learned patterns.
@@ -218,7 +218,7 @@ class ConscienceProtocol(Protocol):
     async def consider(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> Judgment:
         """
         Consider an action before execution.
@@ -236,8 +236,8 @@ class ConscienceProtocol(Protocol):
     async def witness(
         self,
         action: str,
-        result: Dict[str, Any],
-        judgment: Optional[Judgment] = None
+        result: dict[str, Any],
+        judgment: Judgment | None = None
     ) -> str:
         """
         Witness an action and its outcome.
@@ -255,7 +255,7 @@ class ConscienceProtocol(Protocol):
     @abstractmethod
     async def learn(
         self,
-        feedback: Dict[str, Any]
+        feedback: dict[str, Any]
     ) -> None:
         """
         Learn from feedback.
@@ -271,10 +271,10 @@ class ConscienceProtocol(Protocol):
 # =============================================================================
 
 # Action context containing all relevant information
-ActionContext = Dict[str, Any]
+ActionContext = dict[str, Any]
 
 # Outcome of an action
-ActionOutcome = Dict[str, Any]
+ActionOutcome = dict[str, Any]
 
 # Feedback for learning
-Feedback = Dict[str, Any]
+Feedback = dict[str, Any]

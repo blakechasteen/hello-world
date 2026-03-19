@@ -6,14 +6,14 @@ Phase 3: Multi-User Collaboration - Core session infrastructure.
 Created: November 2025
 """
 
+import asyncio
+import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Dict, List, Optional, Set, Any, Callable
+from typing import Any
 from uuid import uuid4
-import asyncio
-import json
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -53,12 +53,12 @@ class Participant:
     role: ParticipantRole
     joined_at: datetime = field(default_factory=datetime.now)
     last_active: datetime = field(default_factory=datetime.now)
-    avatar_id: Optional[str] = None
-    connection_id: Optional[str] = None
+    avatar_id: str | None = None
+    connection_id: str | None = None
     is_connected: bool = True
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "user_id": self.user_id,
             "display_name": self.display_name,
@@ -89,7 +89,7 @@ class SessionSettings:
     sync_mode: str = "real_time"  # real_time, periodic, manual
     persistence: str = "session"  # session, persistent, temporary
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "max_participants": self.max_participants,
             "allow_anonymous": self.allow_anonymous,
@@ -111,9 +111,9 @@ class JoinRequest:
     display_name: str
     requested_role: ParticipantRole
     requested_at: datetime = field(default_factory=datetime.now)
-    message: Optional[str] = None
+    message: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "user_id": self.user_id,
             "display_name": self.display_name,
@@ -134,20 +134,20 @@ class Session:
     settings: SessionSettings = field(default_factory=SessionSettings)
     created_at: datetime = field(default_factory=datetime.now)
 
-    participants: Dict[str, Participant] = field(default_factory=dict)
-    join_requests: Dict[str, JoinRequest] = field(default_factory=dict)
+    participants: dict[str, Participant] = field(default_factory=dict)
+    join_requests: dict[str, JoinRequest] = field(default_factory=dict)
 
     # Shared state references
-    knowledge_base_id: Optional[str] = None
-    whiteboard_ids: List[str] = field(default_factory=list)
+    knowledge_base_id: str | None = None
+    whiteboard_ids: list[str] = field(default_factory=list)
 
     # Session metadata
     description: str = ""
-    tags: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Event callbacks
-    _event_handlers: Dict[str, List[Callable]] = field(default_factory=dict, repr=False)
+    _event_handlers: dict[str, list[Callable]] = field(default_factory=dict, repr=False)
 
     def __post_init__(self):
         self._event_handlers = {}
@@ -210,7 +210,7 @@ class Session:
         self._emit_event("join_requested", {"request": request.to_dict()})
         return True
 
-    def approve_join_request(self, user_id: str, assigned_role: Optional[ParticipantRole] = None) -> bool:
+    def approve_join_request(self, user_id: str, assigned_role: ParticipantRole | None = None) -> bool:
         """Approve a pending join request."""
         if user_id not in self.join_requests:
             return False
@@ -225,7 +225,7 @@ class Session:
         )
         return self.add_participant(participant)
 
-    def deny_join_request(self, user_id: str, reason: Optional[str] = None) -> bool:
+    def deny_join_request(self, user_id: str, reason: str | None = None) -> bool:
         """Deny a pending join request."""
         if user_id not in self.join_requests:
             return False
@@ -237,7 +237,7 @@ class Session:
         })
         return True
 
-    def get_active_participants(self) -> List[Participant]:
+    def get_active_participants(self) -> list[Participant]:
         """Get list of currently connected participants."""
         return [p for p in self.participants.values() if p.is_connected]
 
@@ -265,7 +265,7 @@ class Session:
             self._event_handlers[event] = []
         self._event_handlers[event].append(handler)
 
-    def _emit_event(self, event: str, data: Dict[str, Any]):
+    def _emit_event(self, event: str, data: dict[str, Any]):
         """Emit an event to all handlers."""
         handlers = self._event_handlers.get(event, [])
         for handler in handlers:
@@ -274,7 +274,7 @@ class Session:
             except Exception as e:
                 logger.error(f"Event handler error: {e}")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert session to dictionary for serialization."""
         return {
             "session_id": self.session_id,
@@ -302,10 +302,10 @@ class SessionManager:
     """
 
     def __init__(self):
-        self.sessions: Dict[str, Session] = {}
-        self.user_sessions: Dict[str, Set[str]] = {}  # user_id -> session_ids
+        self.sessions: dict[str, Session] = {}
+        self.user_sessions: dict[str, set[str]] = {}  # user_id -> session_ids
         self._lock = asyncio.Lock()
-        self._event_handlers: Dict[str, List[Callable]] = {}
+        self._event_handlers: dict[str, list[Callable]] = {}
 
     async def create_session(
         self,
@@ -313,10 +313,10 @@ class SessionManager:
         owner_id: str,
         owner_name: str,
         session_type: SessionType = SessionType.KNOWLEDGE_BASE,
-        settings: Optional[SessionSettings] = None,
-        knowledge_base_id: Optional[str] = None,
+        settings: SessionSettings | None = None,
+        knowledge_base_id: str | None = None,
         description: str = "",
-        tags: Optional[List[str]] = None
+        tags: list[str] | None = None
     ) -> Session:
         """Create a new collaboration session."""
         async with self._lock:
@@ -354,7 +354,7 @@ class SessionManager:
 
             return session
 
-    async def get_session(self, session_id: str) -> Optional[Session]:
+    async def get_session(self, session_id: str) -> Session | None:
         """Get a session by ID."""
         return self.sessions.get(session_id)
 
@@ -364,8 +364,8 @@ class SessionManager:
         user_id: str,
         display_name: str,
         requested_role: ParticipantRole = ParticipantRole.EDITOR,
-        message: Optional[str] = None
-    ) -> Optional[Session]:
+        message: str | None = None
+    ) -> Session | None:
         """Request to join a session."""
         session = self.sessions.get(session_id)
         if not session:
@@ -458,17 +458,17 @@ class SessionManager:
 
             return True
 
-    async def get_user_sessions(self, user_id: str) -> List[Session]:
+    async def get_user_sessions(self, user_id: str) -> list[Session]:
         """Get all sessions a user is participating in."""
         session_ids = self.user_sessions.get(user_id, set())
         return [self.sessions[sid] for sid in session_ids if sid in self.sessions]
 
     async def list_public_sessions(
         self,
-        session_type: Optional[SessionType] = None,
-        tags: Optional[List[str]] = None,
+        session_type: SessionType | None = None,
+        tags: list[str] | None = None,
         limit: int = 50
-    ) -> List[Session]:
+    ) -> list[Session]:
         """List available public sessions."""
         sessions = []
 
@@ -494,8 +494,8 @@ class SessionManager:
         self,
         session_id: str,
         event: str,
-        data: Dict[str, Any],
-        exclude_user: Optional[str] = None
+        data: dict[str, Any],
+        exclude_user: str | None = None
     ):
         """Broadcast an event to all session participants."""
         session = self.sessions.get(session_id)
@@ -520,7 +520,7 @@ class SessionManager:
             self._event_handlers[event] = []
         self._event_handlers[event].append(handler)
 
-    def _emit_event(self, event: str, data: Dict[str, Any]):
+    def _emit_event(self, event: str, data: dict[str, Any]):
         """Emit an event to handlers."""
         handlers = self._event_handlers.get(event, [])
         for handler in handlers:
@@ -529,7 +529,7 @@ class SessionManager:
             except Exception as e:
                 logger.error(f"Event handler error: {e}")
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export manager state for persistence."""
         return {
             "sessions": {k: v.to_dict() for k, v in self.sessions.items()},

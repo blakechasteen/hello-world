@@ -24,9 +24,9 @@ try:
     from .agent_manager_hub import (
         AgentManagerHub,
         AgentThread,
+        ReasoningMode,
         TaskNode,
         ThreadStatus,
-        ReasoningMode,
         TokenCostEstimate,
     )
     __all__.extend([
@@ -41,7 +41,8 @@ except ImportError:
     pass
 
 try:
-    from .agent_manager_api import app as agent_manager_app, get_hub
+    from .agent_manager_api import app as agent_manager_app
+    from .agent_manager_api import get_hub
     __all__.extend(["agent_manager_app", "get_hub"])
 except ImportError:
     pass
@@ -49,8 +50,8 @@ except ImportError:
 try:
     from .agent_git_store import (
         AgentGitStore,
-        StepCommit,
         InMemoryGitStore,
+        StepCommit,
     )
     __all__.extend([
         "AgentGitStore",
@@ -63,10 +64,10 @@ except ImportError:
 try:
     from .agent_manager_integration import (
         AgentManagerIntegration,
-        create_integration,
-        shutdown_integration,
-        get_integration,
         create_integrated_app,
+        create_integration,
+        get_integration,
+        shutdown_integration,
     )
     __all__.extend([
         "AgentManagerIntegration",

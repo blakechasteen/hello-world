@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Synthesis Bridge - Connects synthesis modules to weaving cycle
 ================================================================
@@ -14,14 +14,18 @@ Integration Point: Between ResonanceShed and WarpSpace
 """
 
 import logging
-from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 try:
+    from hololoom.synthesis.data_synthesizer import (
+        DataSynthesizer,
+        SynthesisConfig,
+        TrainingExample,
+    )
     from hololoom.synthesis.enriched_memory import EnrichedMemory, MemoryEnricher, ReasoningType
-    from hololoom.synthesis.pattern_extractor import PatternExtractor, Pattern, PatternType
-    from hololoom.synthesis.data_synthesizer import DataSynthesizer, SynthesisConfig, TrainingExample
+    from hololoom.synthesis.pattern_extractor import Pattern, PatternExtractor, PatternType
 except ImportError as e:
     print(f"Synthesis modules not available: {e}")
     EnrichedMemory = None
@@ -40,24 +44,24 @@ class SynthesisResult:
     Contains enriched data that can inform decision making.
     """
     # Enrichment
-    enriched_query: Optional[EnrichedMemory] = None
-    enriched_context: List[EnrichedMemory] = field(default_factory=list)
+    enriched_query: EnrichedMemory | None = None
+    enriched_context: list[EnrichedMemory] = field(default_factory=list)
 
     # Pattern extraction
-    patterns: List[Pattern] = field(default_factory=list)
-    pattern_count_by_type: Dict[str, int] = field(default_factory=dict)
+    patterns: list[Pattern] = field(default_factory=list)
+    pattern_count_by_type: dict[str, int] = field(default_factory=dict)
 
     # Synthesis insights
-    key_entities: List[str] = field(default_factory=list)
-    relationships: List[tuple] = field(default_factory=list)  # (subject, predicate, object)
-    topics: List[str] = field(default_factory=list)
-    reasoning_type: Optional[str] = None
+    key_entities: list[str] = field(default_factory=list)
+    relationships: list[tuple] = field(default_factory=list)  # (subject, predicate, object)
+    topics: list[str] = field(default_factory=list)
+    reasoning_type: str | None = None
 
     # Metadata
     synthesis_duration_ms: float = 0.0
     confidence: float = 0.0
 
-    def to_trace_dict(self) -> Dict[str, Any]:
+    def to_trace_dict(self) -> dict[str, Any]:
         """Convert to dict for Spacetime trace."""
         return {
             'pattern_count': len(self.patterns),
@@ -92,7 +96,7 @@ class SynthesisBridge:
         enable_enrichment: bool = True,
         enable_pattern_extraction: bool = True,
         min_pattern_confidence: float = 0.4,
-        domain_terms: Optional[List[str]] = None
+        domain_terms: list[str] | None = None
     ):
         """
         Initialize synthesis bridge.
@@ -135,9 +139,9 @@ class SynthesisBridge:
     async def synthesize(
         self,
         query_text: str,
-        dot_plasma: Dict[str, Any],
-        context_shards: List[Any],
-        pattern_spec: Optional[Any] = None
+        dot_plasma: dict[str, Any],
+        context_shards: list[Any],
+        pattern_spec: Any | None = None
     ) -> SynthesisResult:
         """
         Main synthesis operation during weaving.
@@ -254,7 +258,7 @@ class SynthesisBridge:
 
         return result
 
-    def enrich_decision_context(self, synthesis_result: SynthesisResult) -> Dict[str, Any]:
+    def enrich_decision_context(self, synthesis_result: SynthesisResult) -> dict[str, Any]:
         """
         Create decision context from synthesis results.
 
@@ -286,7 +290,7 @@ def create_synthesis_bridge(
     enable_enrichment: bool = True,
     enable_patterns: bool = True,
     min_confidence: float = 0.4,
-    domain_terms: Optional[List[str]] = None
+    domain_terms: list[str] | None = None
 ) -> SynthesisBridge:
     """
     Create synthesis bridge with configuration.
@@ -344,7 +348,7 @@ if __name__ == "__main__":
         )
 
         # Show results
-        print(f"\nSynthesis Results:")
+        print("\nSynthesis Results:")
         print(f"  Duration: {result.synthesis_duration_ms:.1f}ms")
         print(f"  Entities: {result.key_entities}")
         print(f"  Topics: {result.topics}")
@@ -355,7 +359,7 @@ if __name__ == "__main__":
 
         # Decision context
         decision_ctx = bridge.enrich_decision_context(result)
-        print(f"\nDecision Context:")
+        print("\nDecision Context:")
         for key, value in decision_ctx.items():
             print(f"  {key}: {value}")
 

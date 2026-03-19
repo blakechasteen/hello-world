@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Pattern Detection Tuning System
 ================================
@@ -25,13 +24,13 @@ Usage:
     metrics = tuner.evaluate(test_messages)
 """
 
+import json
 import logging
 import re
-import json
-from typing import Dict, List, Optional, Set, Any, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +43,11 @@ logger = logging.getLogger(__name__)
 class PatternConfig:
     """Configuration for a pattern category."""
     name: str
-    patterns: List[str] = field(default_factory=list)
+    patterns: list[str] = field(default_factory=list)
     confidence_threshold: float = 0.6
     weight: float = 1.0
     enabled: bool = True
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -77,7 +76,7 @@ class DetectionMetrics:
         p, r = self.precision, self.recall
         return 2 * p * r / (p + r) if (p + r) > 0 else 0.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Convert to dictionary."""
         return {
             "precision": self.precision,
@@ -205,15 +204,15 @@ class PatternTuner:
         tuner.save("pattern_config.json")
     """
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """
         Initialize pattern tuner.
 
         Args:
             config_path: Optional path to load configuration from
         """
-        self.patterns: Dict[str, PatternConfig] = {}
-        self.metrics: Dict[str, DetectionMetrics] = {}
+        self.patterns: dict[str, PatternConfig] = {}
+        self.metrics: dict[str, DetectionMetrics] = {}
 
         # Load from file or use defaults
         if config_path and Path(config_path).exists():
@@ -305,7 +304,7 @@ class PatternTuner:
         text: str,
         category: str,
         return_confidence: bool = False
-    ) -> bool | Tuple[bool, float]:
+    ) -> bool | tuple[bool, float]:
         """
         Detect if text matches patterns in category.
 
@@ -346,7 +345,7 @@ class PatternTuner:
         self,
         text: str,
         enabled_only: bool = True
-    ) -> Dict[str, Tuple[bool, float]]:
+    ) -> dict[str, tuple[bool, float]]:
         """
         Detect all pattern categories in text.
 
@@ -400,7 +399,7 @@ class PatternTuner:
         else:
             metrics.true_negatives += 1
 
-    def get_metrics(self, category: Optional[str] = None) -> Dict[str, Any]:
+    def get_metrics(self, category: str | None = None) -> dict[str, Any]:
         """
         Get detection metrics.
 
@@ -423,8 +422,8 @@ class PatternTuner:
 
     def evaluate(
         self,
-        test_cases: List[Dict[str, Any]]
-    ) -> Dict[str, DetectionMetrics]:
+        test_cases: list[dict[str, Any]]
+    ) -> dict[str, DetectionMetrics]:
         """
         Evaluate detector on test cases.
 
@@ -490,7 +489,7 @@ class PatternTuner:
         Args:
             path: Input file path
         """
-        with open(path, 'r') as f:
+        with open(path) as f:
             config_data = json.load(f)
 
         self.patterns = {}
@@ -510,7 +509,7 @@ class PatternTuner:
     # Utilities
     # ========================================================================
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get summary of current configuration."""
         return {
             "categories": len(self.patterns),

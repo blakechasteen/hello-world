@@ -13,9 +13,7 @@ import secrets
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Set
 
-from .protocols import IdentityProtocol
 from .types import Capability, FederationNode, NodeStatus
 
 # Try to use cryptography library for Ed25519
@@ -63,7 +61,7 @@ class Identity:
     def __init__(
         self,
         private_key: bytes,
-        public_key: Optional[bytes] = None,
+        public_key: bytes | None = None,
     ):
         """Create identity from key bytes."""
         self._private_key_bytes = private_key
@@ -88,7 +86,7 @@ class Identity:
         self._node_id = hashlib.sha256(self._public_key_bytes).hexdigest()[:40]
 
     @classmethod
-    def generate(cls) -> "Identity":
+    def generate(cls) -> Identity:
         """Generate a new random identity."""
         if HAS_CRYPTOGRAPHY:
             priv = Ed25519PrivateKey.generate()
@@ -105,7 +103,7 @@ class Identity:
             return cls(private_bytes, public_bytes)
 
     @classmethod
-    def load(cls, path: str | Path) -> "Identity":
+    def load(cls, path: str | Path) -> Identity:
         """Load identity from file."""
         path = Path(path)
         if not path.exists():
@@ -140,7 +138,7 @@ class Identity:
             public_bytes = bytes.fromhex(hex_str[64:])
             return cls(private_bytes, public_bytes)
         else:
-            raise ValueError(f"Invalid key file format: expected 32, 64, or 128 bytes")
+            raise ValueError("Invalid key file format: expected 32, 64, or 128 bytes")
 
     def save(self, path: str | Path) -> None:
         """Save identity to file (hex-encoded for readability).
@@ -213,7 +211,7 @@ def create_node(
     identity: Identity,
     endpoint: str,
     *,
-    capabilities: Optional[Set[Capability]] = None,
+    capabilities: set[Capability] | None = None,
     version: str = "1.0.0",
 ) -> FederationNode:
     """
@@ -263,7 +261,7 @@ class SignedMessage:
         )
 
     @classmethod
-    def create(cls, payload: bytes, identity: Identity) -> "SignedMessage":
+    def create(cls, payload: bytes, identity: Identity) -> SignedMessage:
         """Create a signed message."""
         return cls(
             payload=payload,

@@ -8,19 +8,8 @@ Uses domain knowledge from memory/stores/beekeeping_strategy.py
 
 import logging
 from datetime import datetime
-from typing import Optional
 
-from .bus import MemoryBus, MemoryItem
-from .neo4j_schema import (
-    NODE_ENTITY,
-    NODE_EPISODE,
-    REL_ABOUT,
-    REL_CAUSED,
-    REL_FOLLOWED_BY,
-    REL_LOCATED_AT,
-    REL_PART_OF,
-    REL_RELATED_TO,
-)
+from .bus import MemoryBus
 
 logger = logging.getLogger(__name__)
 

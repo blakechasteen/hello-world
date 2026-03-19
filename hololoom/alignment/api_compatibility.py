@@ -22,26 +22,25 @@ Usage:
     guardrails.evaluate(ActionRequest(...))  # Implementation API
 """
 
-from typing import Optional, Dict, Any
 import logging
+from typing import Any
 
-from .safety_guardrails import (
-    SafetyGuardrails,
-    ActionRequest,
-    ActionCategory,
-    SafetyDecision,
-)
 from .deception_detection import (
+    BehavioralProbe,
     DeceptionDetector,
     GoalStatement,
-    BehavioralProbe,
 )
 from .instrumental_convergence import (
     InstrumentalConvergenceGuard,
     ResourceBounds,
     ResourceType,
 )
-
+from .safety_guardrails import (
+    ActionCategory,
+    ActionRequest,
+    SafetyDecision,
+    SafetyGuardrails,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,7 @@ def evaluate_action_wrapper(
     self: SafetyGuardrails,
     action: str,
     category: str,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
 ) -> SafetyDecision:
     """
     Specification-compliant API for SafetyGuardrails.evaluate().
@@ -98,7 +97,7 @@ def register_goal_wrapper(
     self: DeceptionDetector,
     description: str,
     priority: int = 1,
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: dict[str, Any] | None = None,
 ) -> str:
     """
     Specification-compliant API for goal registration.
@@ -152,13 +151,13 @@ def evaluate_probe_wrapper(
 
 
 def create_unified_resource_bounds(
-    max_compute_seconds: Optional[float] = None,
-    max_memory_mb: Optional[float] = None,
-    max_storage_mb: Optional[float] = None,
-    max_network_mb: Optional[float] = None,
-    max_api_calls: Optional[int] = None,
-    max_data_access_mb: Optional[float] = None,
-) -> Dict[ResourceType, ResourceBounds]:
+    max_compute_seconds: float | None = None,
+    max_memory_mb: float | None = None,
+    max_storage_mb: float | None = None,
+    max_network_mb: float | None = None,
+    max_api_calls: int | None = None,
+    max_data_access_mb: float | None = None,
+) -> dict[ResourceType, ResourceBounds]:
     """
     Specification-compliant unified ResourceBounds constructor.
 
@@ -234,12 +233,12 @@ def create_unified_resource_bounds(
 
 def configure_from_unified_bounds_wrapper(
     self: InstrumentalConvergenceGuard,
-    max_compute_seconds: Optional[float] = None,
-    max_memory_mb: Optional[float] = None,
-    max_storage_mb: Optional[float] = None,
-    max_network_mb: Optional[float] = None,
-    max_api_calls: Optional[int] = None,
-    max_data_access_mb: Optional[float] = None,
+    max_compute_seconds: float | None = None,
+    max_memory_mb: float | None = None,
+    max_storage_mb: float | None = None,
+    max_network_mb: float | None = None,
+    max_api_calls: int | None = None,
+    max_data_access_mb: float | None = None,
 ):
     """
     Specification-compliant unified bounds configuration.

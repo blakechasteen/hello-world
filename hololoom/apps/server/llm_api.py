@@ -13,14 +13,14 @@ Features:
 Created: 2025-01-20
 """
 
+import logging
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, field_validator
-from typing import Dict, List, Optional, Any
-import logging
-import asyncio
 
-from hololoom.llm import UnifiedLLMClient, LLMConfig, LLMResponse
 from hololoom.config import Config
+from hololoom.llm import LLMConfig, UnifiedLLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ ALLOWED_MODELS = frozenset([
 ])
 
 
-def validate_model_override(model: Optional[str]) -> Optional[str]:
+def validate_model_override(model: str | None) -> str | None:
     """
     SECURITY: Validate model override against whitelist.
 
@@ -95,10 +95,10 @@ def validate_model_override(model: Optional[str]) -> Optional[str]:
 router = APIRouter(prefix="/llm", tags=["llm"])
 
 # Global LLM client instance
-llm_client: Optional[UnifiedLLMClient] = None
+llm_client: UnifiedLLMClient | None = None
 
 
-def get_llm_client(config: Optional[Config] = None) -> UnifiedLLMClient:
+def get_llm_client(config: Config | None = None) -> UnifiedLLMClient:
     """
     Get or create LLM client instance.
 
@@ -151,12 +151,12 @@ class QueryRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=100000, description="Query text (max 100KB)")
     max_tokens: int = Field(default=500, ge=1, le=4096, description="Max tokens (1-4096)")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Temperature (0.0-2.0)")
-    model_override: Optional[str] = Field(default=None, description="Model override (must be whitelisted)")
-    system_prompt: Optional[str] = Field(default=None, max_length=10000, description="System prompt (max 10KB)")
+    model_override: str | None = Field(default=None, description="Model override (must be whitelisted)")
+    system_prompt: str | None = Field(default=None, max_length=10000, description="System prompt (max 10KB)")
 
     @field_validator('model_override')
     @classmethod
-    def validate_model(cls, v: Optional[str]) -> Optional[str]:
+    def validate_model(cls, v: str | None) -> str | None:
         """SECURITY: Validate model against whitelist"""
         return validate_model_override(v)
 
@@ -169,20 +169,20 @@ class QueryResponse(BaseModel):
     input_tokens: int
     output_tokens: int
     cost_usd: float
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
 
 class CompareRequest(BaseModel):
     """Request for model comparison"""
     # SECURITY: Same limits as QueryRequest
     query: str = Field(..., min_length=1, max_length=100000, description="Query text (max 100KB)")
-    models: List[str] = Field(..., min_length=1, max_length=5, description="Models to compare (max 5)")
+    models: list[str] = Field(..., min_length=1, max_length=5, description="Models to compare (max 5)")
     max_tokens: int = Field(default=500, ge=1, le=4096, description="Max tokens (1-4096)")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Temperature (0.0-2.0)")
 
     @field_validator('models')
     @classmethod
-    def validate_models(cls, v: List[str]) -> List[str]:
+    def validate_models(cls, v: list[str]) -> list[str]:
         """SECURITY: Validate all models against whitelist"""
         validated = []
         for model in v:
@@ -194,9 +194,9 @@ class CompareRequest(BaseModel):
 
 class CompareResponse(BaseModel):
     """Response from model comparison"""
-    results: Dict[str, QueryResponse]
+    results: dict[str, QueryResponse]
     total_cost_usd: float
-    winner: Optional[str] = None  # Model with best response (if determinable)
+    winner: str | None = None  # Model with best response (if determinable)
 
 
 class ModelInfo(BaseModel):
@@ -217,7 +217,7 @@ class CostStatsResponse(BaseModel):
     total_output_tokens: int
     total_cost_usd: float
     avg_cost_per_call: float
-    by_model: Dict[str, Dict[str, Any]]
+    by_model: dict[str, dict[str, Any]]
 
 
 # ============== ENDPOINTS ==============
@@ -331,7 +331,7 @@ async def compare_models(request: CompareRequest):
         raise HTTPException(status_code=500, detail="Model comparison failed. Please try again or contact support.")
 
 
-@router.get("/models", response_model=List[ModelInfo])
+@router.get("/models", response_model=list[ModelInfo])
 async def list_models():
     """
     List all available LLM models.

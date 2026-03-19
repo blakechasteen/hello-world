@@ -35,23 +35,23 @@ Author: Claude Code
 Date: January 2025
 """
 
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import List, Dict, Any, Optional
-import time
 import re
+import time
+from dataclasses import dataclass, field
 from decimal import Decimal
+from pathlib import Path
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.ocr_backends import get_all_available_backends
+from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities,
     ImportanceScore,
-    ImportanceSignals
+    ImportanceSignals,
+    SpinnerCapabilities,
+    SpinResult,
 )
-from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
-from hololoom.spinningWheel.ocr_backends import get_all_available_backends
 
 
 @dataclass
@@ -59,30 +59,30 @@ class LineItem:
     """Single line item from receipt"""
     name: str
     quantity: float = 1.0
-    unit_price: Optional[Decimal] = None
-    total_price: Optional[Decimal] = None
-    category: Optional[str] = None
+    unit_price: Decimal | None = None
+    total_price: Decimal | None = None
+    category: str | None = None
 
 
 @dataclass
 class ReceiptData:
     """Parsed receipt data"""
-    merchant: Optional[str] = None
-    merchant_address: Optional[str] = None
-    date: Optional[str] = None
-    time: Optional[str] = None
+    merchant: str | None = None
+    merchant_address: str | None = None
+    date: str | None = None
+    time: str | None = None
 
-    items: List[LineItem] = field(default_factory=list)
+    items: list[LineItem] = field(default_factory=list)
 
-    subtotal: Optional[Decimal] = None
-    tax: Optional[Decimal] = None
-    tip: Optional[Decimal] = None
-    total: Optional[Decimal] = None
+    subtotal: Decimal | None = None
+    tax: Decimal | None = None
+    tip: Decimal | None = None
+    total: Decimal | None = None
 
-    payment_method: Optional[str] = None
-    last_four: Optional[str] = None  # Last 4 digits of card
+    payment_method: str | None = None
+    last_four: str | None = None  # Last 4 digits of card
 
-    category: Optional[str] = None  # grocery, restaurant, retail, etc.
+    category: str | None = None  # grocery, restaurant, retail, etc.
     currency: str = "USD"
 
     @property
@@ -157,7 +157,7 @@ class ReceiptSpinner(BaseSpinner):
         self,
         source: Any,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Extract and parse receipt(s).
 
@@ -423,7 +423,7 @@ class ReceiptSpinner(BaseSpinner):
 
         return receipt
 
-    def _parse_decimal(self, amount_str: str) -> Optional[Decimal]:
+    def _parse_decimal(self, amount_str: str) -> Decimal | None:
         """Parse amount string to Decimal."""
         try:
             # Remove currency symbols and commas
@@ -545,7 +545,7 @@ class ReceiptSpinner(BaseSpinner):
 
         return '\n'.join(parts)
 
-    def _extract_receipt_entities(self, receipt: ReceiptData) -> List[str]:
+    def _extract_receipt_entities(self, receipt: ReceiptData) -> list[str]:
         """Extract entities from receipt."""
         entities = []
 
@@ -564,7 +564,7 @@ class ReceiptSpinner(BaseSpinner):
 
         return entities
 
-    def _extract_receipt_motifs(self, receipt: ReceiptData) -> List[str]:
+    def _extract_receipt_motifs(self, receipt: ReceiptData) -> list[str]:
         """Extract motifs from receipt."""
         motifs = ['receipt', 'purchase']
 
@@ -663,7 +663,7 @@ class ReceiptSpinner(BaseSpinner):
             reason=reason
         )
 
-    async def _enrich_content(self, text: str) -> tuple[List[str], List[str]]:
+    async def _enrich_content(self, text: str) -> tuple[list[str], list[str]]:
         """
         Extract additional entities using Ollama.
 

@@ -25,17 +25,21 @@ Target: 42% root cause detection rate for alignment failures
 Created: December 2025
 """
 
-import logging
-import hashlib
-import statistics
 import asyncio
-import random
-from enum import Enum
-from typing import List, Dict, Any, Optional, Tuple, Callable, Awaitable, Set, Protocol, runtime_checkable
+import hashlib
+import logging
+import statistics
+from collections import defaultdict
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from collections import defaultdict
-import json
+from enum import Enum
+from typing import (
+    Any,
+    Optional,
+    Protocol,
+    runtime_checkable,
+)
 
 from hololoom.bandits.beta_arm import BetaArm
 
@@ -61,15 +65,15 @@ class TrajectoryAnalyzerProtocol(Protocol):
         """Record a decision for trajectory analysis."""
         ...
 
-    def detect_drift(self) -> Tuple[bool, float, str]:
+    def detect_drift(self) -> tuple[bool, float, str]:
         """Detect behavioral drift. Returns (drift_detected, magnitude, description)."""
         ...
 
-    def detect_anomalies(self) -> List[Tuple["DecisionPoint", str]]:
+    def detect_anomalies(self) -> list[tuple["DecisionPoint", str]]:
         """Detect anomalous decisions. Returns list of (decision, anomaly_description)."""
         ...
 
-    def check_consistency(self, input_text: str) -> Tuple[bool, float]:
+    def check_consistency(self, input_text: str) -> tuple[bool, float]:
         """Check behavior consistency. Returns (is_consistent, consistency_score)."""
         ...
 
@@ -89,8 +93,8 @@ class RootCauseAnalyzerProtocol(Protocol):
         self,
         failure_type: "AlignmentFailureType",
         decision: "DecisionPoint",
-        context: Dict[str, Any] = None,
-    ) -> Tuple["RootCauseCategory", float, str]:
+        context: dict[str, Any] = None,
+    ) -> tuple["RootCauseCategory", float, str]:
         """Analyze failure to identify root cause. Returns (cause, confidence, explanation)."""
         ...
 
@@ -195,11 +199,11 @@ class AdaptiveThresholdSelector:
     THRESHOLD_OPTIONS = [1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
 
     def __init__(self, initial_threshold: float = 2.5):
-        self.priors: Dict[float, ThresholdPrior] = {
+        self.priors: dict[float, ThresholdPrior] = {
             t: ThresholdPrior() for t in self.THRESHOLD_OPTIONS
         }
         self.current_threshold = initial_threshold
-        self.selection_history: List[Dict[str, Any]] = []
+        self.selection_history: list[dict[str, Any]] = []
 
     def select(self) -> float:
         """Select threshold using Thompson Sampling."""
@@ -226,7 +230,7 @@ class AdaptiveThresholdSelector:
                 "timestamp": datetime.now().isoformat(),
             })
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get threshold selection statistics."""
         return {
             "current_threshold": self.current_threshold,
@@ -294,13 +298,13 @@ class DecisionPoint:
     timestamp: datetime
     input_text: str
     output_text: str
-    tool_selected: Optional[str] = None
+    tool_selected: str | None = None
     confidence: float = 0.0
     latency_ms: float = 0.0
-    context: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "decision_id": self.decision_id,
             "timestamp": self.timestamp.isoformat(),
@@ -322,15 +326,15 @@ class AlignmentFailure:
     decision_point: DecisionPoint
     description: str
     severity: AuditSeverity
-    evidence: List[str]
-    root_cause: Optional[RootCauseCategory] = None
+    evidence: list[str]
+    root_cause: RootCauseCategory | None = None
     root_cause_confidence: float = 0.0
-    counterfactual_analysis: Optional[str] = None
-    recommended_fix: Optional[str] = None
+    counterfactual_analysis: str | None = None
+    recommended_fix: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "failure_id": self.failure_id,
             "failure_type": self.failure_type.value,
@@ -354,17 +358,17 @@ class AuditReport:
     audit_period_start: datetime
     audit_period_end: datetime
     total_decisions_audited: int
-    failures_detected: List[AlignmentFailure]
-    root_causes_identified: Dict[str, int]  # root_cause -> count
-    severity_distribution: Dict[str, int]   # severity -> count
+    failures_detected: list[AlignmentFailure]
+    root_causes_identified: dict[str, int]  # root_cause -> count
+    severity_distribution: dict[str, int]   # severity -> count
     overall_alignment_score: float          # 0.0-1.0
-    key_findings: List[str]
-    recommendations: List[str]
-    super_agent_insights: List[str]
+    key_findings: list[str]
+    recommendations: list[str]
+    super_agent_insights: list[str]
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "report_id": self.report_id,
             "audit_period_start": self.audit_period_start.isoformat(),
@@ -418,11 +422,11 @@ class BehavioralTrajectoryAnalyzer:
         self.drift_threshold = drift_threshold
         self.anomaly_threshold = anomaly_threshold
         self.use_adaptive_thresholds = use_adaptive_thresholds
-        self.decision_history: List[DecisionPoint] = []
-        self.behavioral_fingerprints: Dict[str, List[float]] = defaultdict(list)
+        self.decision_history: list[DecisionPoint] = []
+        self.behavioral_fingerprints: dict[str, list[float]] = defaultdict(list)
 
         # December 2025: Adaptive threshold selector
-        self._threshold_selector: Optional[AdaptiveThresholdSelector] = None
+        self._threshold_selector: AdaptiveThresholdSelector | None = None
         if use_adaptive_thresholds:
             self._threshold_selector = AdaptiveThresholdSelector(
                 initial_threshold=anomaly_threshold
@@ -446,7 +450,7 @@ class BehavioralTrajectoryAnalyzer:
         words = input_text.lower().split()[:10]
         return hashlib.md5(" ".join(sorted(words)).encode()).hexdigest()[:8]
 
-    def detect_drift(self) -> Tuple[bool, float, str]:
+    def detect_drift(self) -> tuple[bool, float, str]:
         """
         Detect behavioral drift over time.
 
@@ -482,7 +486,7 @@ class BehavioralTrajectoryAnalyzer:
 
         return drift_detected, drift_magnitude, description
 
-    def detect_anomalies(self) -> List[Tuple[DecisionPoint, str]]:
+    def detect_anomalies(self) -> list[tuple[DecisionPoint, str]]:
         """
         Detect anomalous decisions that deviate from expected patterns.
 
@@ -553,7 +557,7 @@ class BehavioralTrajectoryAnalyzer:
                 confidence,
             )
 
-    def get_threshold_statistics(self) -> Optional[Dict[str, Any]]:
+    def get_threshold_statistics(self) -> dict[str, Any] | None:
         """
         Get adaptive threshold selection statistics.
 
@@ -566,7 +570,7 @@ class BehavioralTrajectoryAnalyzer:
             return self._threshold_selector.get_statistics()
         return None
 
-    def check_consistency(self, input_text: str) -> Tuple[bool, float]:
+    def check_consistency(self, input_text: str) -> tuple[bool, float]:
         """
         Check if behavior is consistent for similar inputs.
 
@@ -681,8 +685,8 @@ class RootCauseAnalyzer:
         self,
         failure_type: AlignmentFailureType,
         decision: DecisionPoint,
-        context: Dict[str, Any] = None,
-    ) -> Tuple[RootCauseCategory, float, str]:
+        context: dict[str, Any] = None,
+    ) -> tuple[RootCauseCategory, float, str]:
         """
         Analyze a failure to identify its root cause.
 
@@ -695,7 +699,7 @@ class RootCauseAnalyzer:
             Tuple of (root_cause, confidence, explanation)
         """
         context = context or {}
-        candidates: Dict[RootCauseCategory, float] = defaultdict(float)
+        candidates: dict[RootCauseCategory, float] = defaultdict(float)
         explanations = []
 
         # Check for pattern matches in input
@@ -848,7 +852,7 @@ RECOMMENDATION: [suggested action]
     async def audit_decision(
         self,
         decision: DecisionPoint,
-    ) -> Optional[AlignmentFailure]:
+    ) -> AlignmentFailure | None:
         """
         Use super-agent to audit a single decision.
 
@@ -879,7 +883,7 @@ RECOMMENDATION: [suggested action]
         self,
         response: str,
         decision: DecisionPoint,
-    ) -> Optional[AlignmentFailure]:
+    ) -> AlignmentFailure | None:
         """Parse super-agent audit response."""
         response_lower = response.lower()
 
@@ -944,7 +948,7 @@ class AlignmentMonitor:
         self.alert_callback = alert_callback
         self.check_interval_seconds = check_interval_seconds
         self._running = False
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
 
     async def start(self):
         """Start continuous monitoring."""
@@ -1023,8 +1027,8 @@ class AutomatedAlignmentAuditor:
         self.super_agent_auditor = super_agent_auditor or SuperAgentAuditor()
         self.monitor = monitor or AlignmentMonitor(self.trajectory_analyzer)
 
-        self.failures_detected: List[AlignmentFailure] = []
-        self.decisions_audited: List[DecisionPoint] = []
+        self.failures_detected: list[AlignmentFailure] = []
+        self.decisions_audited: list[DecisionPoint] = []
 
         self._setup_logging()
 
@@ -1044,7 +1048,7 @@ class AutomatedAlignmentAuditor:
         decision: DecisionPoint,
         expected_behavior: str = None,
         use_super_agent: bool = True,
-    ) -> Optional[AlignmentFailure]:
+    ) -> AlignmentFailure | None:
         """
         Audit a single decision for alignment issues.
 
@@ -1101,11 +1105,11 @@ class AutomatedAlignmentAuditor:
 
     async def batch_audit(
         self,
-        decisions: List[DecisionPoint],
+        decisions: list[DecisionPoint],
         use_super_agent: bool = True,
         parallel: bool = True,
         max_concurrent: int = 10,
-    ) -> List[AlignmentFailure]:
+    ) -> list[AlignmentFailure]:
         """
         Audit multiple decisions with optional parallel execution.
 
@@ -1135,7 +1139,7 @@ class AutomatedAlignmentAuditor:
         # December 2025: Parallel execution with concurrency limit
         semaphore = asyncio.Semaphore(max_concurrent)
 
-        async def audit_with_limit(decision: DecisionPoint) -> Optional[AlignmentFailure]:
+        async def audit_with_limit(decision: DecisionPoint) -> AlignmentFailure | None:
             async with semaphore:
                 return await self.audit_decision(decision, use_super_agent=use_super_agent)
 
@@ -1183,13 +1187,13 @@ class AutomatedAlignmentAuditor:
         ]
 
         # Count root causes
-        root_causes: Dict[str, int] = defaultdict(int)
+        root_causes: dict[str, int] = defaultdict(int)
         for failure in period_failures:
             if failure.root_cause:
                 root_causes[failure.root_cause.value] += 1
 
         # Count severities
-        severities: Dict[str, int] = defaultdict(int)
+        severities: dict[str, int] = defaultdict(int)
         for failure in period_failures:
             severities[failure.severity.value] += 1
 
@@ -1271,7 +1275,7 @@ class AutomatedAlignmentAuditor:
         """Stop continuous monitoring."""
         await self.monitor.stop()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get auditor statistics."""
         total_failures = len(self.failures_detected)
         root_cause_identified = len([
@@ -1345,7 +1349,7 @@ def create_decision_point(
     tool_selected: str = None,
     confidence: float = 0.8,
     latency_ms: float = 100.0,
-    context: Dict[str, Any] = None,
+    context: dict[str, Any] = None,
 ) -> DecisionPoint:
     """
     Create a decision point for auditing.

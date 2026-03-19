@@ -17,14 +17,14 @@ Author: Claude Code
 Date: 2025-11-13 (Moonshot Mode)
 """
 
-from enum import Enum
-from typing import Dict, List, Optional, Tuple, Set
-from dataclasses import dataclass, field
+import json
 import re
 import time
-import json
-from pathlib import Path
 from collections import defaultdict
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
+
 import numpy as np
 
 
@@ -44,8 +44,8 @@ class ClassificationResult:
     reasoning: str
     tier_used: str  # Which tier made the decision
     latency_ms: float  # Time taken to classify
-    detected_patterns: Set[str] = field(default_factory=set)
-    heuristic_scores: Optional[Dict[str, float]] = None
+    detected_patterns: set[str] = field(default_factory=set)
+    heuristic_scores: dict[str, float] | None = None
 
 
 @dataclass
@@ -53,9 +53,9 @@ class AdaptiveLearningStats:
     """Statistics for adaptive learning."""
     total_queries: int = 0
     correct_classifications: int = 0
-    misclassifications_by_tier: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
-    pattern_accuracies: Dict[str, Tuple[int, int]] = field(default_factory=dict)  # (correct, total)
-    avg_latency_by_tier: Dict[str, float] = field(default_factory=dict)
+    misclassifications_by_tier: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    pattern_accuracies: dict[str, tuple[int, int]] = field(default_factory=dict)  # (correct, total)
+    avg_latency_by_tier: dict[str, float] = field(default_factory=dict)
 
 
 class MoonshotQueryClassifier:
@@ -232,8 +232,8 @@ class MoonshotQueryClassifier:
         self,
         enable_semantic_tier: bool = True,
         enable_adaptive_learning: bool = True,
-        stats_path: Optional[Path] = None,
-        confidence_thresholds: Optional[Dict[str, float]] = None
+        stats_path: Path | None = None,
+        confidence_thresholds: dict[str, float] | None = None
     ):
         """
         Initialize moonshot classifier.
@@ -331,7 +331,7 @@ class MoonshotQueryClassifier:
         escalated.latency_ms = (time.perf_counter() - start_time) * 1000
         return escalated
 
-    def _tier1_pattern_match(self, text: str) -> Optional[ClassificationResult]:
+    def _tier1_pattern_match(self, text: str) -> ClassificationResult | None:
         """
         Tier 1: Fast pattern matching.
 
@@ -589,7 +589,7 @@ class MoonshotQueryClassifier:
             return 0.0
         return self.stats.correct_classifications / self.stats.total_queries
 
-    def get_stats_summary(self) -> Dict:
+    def get_stats_summary(self) -> dict:
         """Get comprehensive statistics summary."""
         return {
             'total_queries': self.stats.total_queries,
@@ -632,7 +632,7 @@ class MoonshotQueryClassifier:
     # Pattern Management (Phase 5 - Routing & RBAC Integration)
     # ========================================================================
 
-    def update_patterns(self, patterns: List, shadow: bool = False):
+    def update_patterns(self, patterns: list, shadow: bool = False):
         """
         Merge Pattern objects into the classifier's pattern storage.
 
@@ -694,7 +694,7 @@ class MoonshotQueryClassifier:
         mode = "shadow" if shadow else "production"
         logger.info(f"Installed {installed}/{len(patterns)} patterns in {mode} mode")
 
-    def get_active_patterns(self) -> List[Dict]:
+    def get_active_patterns(self) -> list[dict]:
         """
         Return current production patterns as dicts.
 

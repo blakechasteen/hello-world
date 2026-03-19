@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Dual-Stream Response Generation with Compositional Awareness
 
@@ -5,15 +6,14 @@ Generates both internal reasoning and external response streams,
 both guided by unified compositional awareness context.
 """
 
-from dataclasses import dataclass
-from typing import Optional, Dict, Any
 import time
+from dataclasses import dataclass
 
 # Use relative imports (moved to HoloLoom/memory/awareness/ in Dec 2025)
 from .compositional_awareness import (
     CompositionalAwarenessLayer,
     UnifiedAwarenessContext,
-    format_awareness_for_prompt
+    format_awareness_for_prompt,
 )
 
 # LLM integration (optional)
@@ -29,28 +29,28 @@ except ImportError:
 @dataclass
 class DualStreamResponse:
     """Response containing both internal and external streams"""
-    
+
     query: str
     awareness_context: UnifiedAwarenessContext
     internal_stream: str
     external_stream: str
     generation_time_ms: float
-    
+
     def format_for_display(self, show_internal: bool = True) -> str:
         """Format response for display"""
-        
+
         lines = []
         lines.append("=" * 80)
         lines.append(f"QUERY: {self.query}")
         lines.append("=" * 80)
         lines.append("")
-        
+
         if show_internal:
             lines.append("[ INTERNAL REASONING ]")
             lines.append("-" * 80)
             lines.append(self.internal_stream)
             lines.append("")
-        
+
         lines.append("[ RESPONSE ]")
         lines.append("-" * 80)
         lines.append(self.external_stream)
@@ -58,7 +58,7 @@ class DualStreamResponse:
         lines.append("=" * 80)
         lines.append(f"Generated in {self.generation_time_ms:.1f}ms")
         lines.append("=" * 80)
-        
+
         return "\n".join(lines)
 
 
@@ -69,7 +69,7 @@ class DualStreamGenerator:
     Both internal reasoning and external response are informed by
     the same unified compositional awareness context.
     """
-    
+
     def __init__(
         self,
         awareness_layer: CompositionalAwarenessLayer,
@@ -86,12 +86,12 @@ class DualStreamGenerator:
         self.awareness = awareness_layer
         self.llm = llm_generator
         self.use_llm = llm_generator is not None and hasattr(llm_generator, 'generate')
-    
+
     async def generate(
         self,
         query: str,
         show_internal: bool = True,
-        use_llm: Optional[bool] = None
+        use_llm: bool | None = None
     ) -> DualStreamResponse:
         """
         Generate dual-stream response with awareness guidance.
@@ -104,23 +104,23 @@ class DualStreamGenerator:
         Returns:
             DualStreamResponse with both streams
         """
-        
+
         start_time = time.time()
-        
+
         # Auto-detect LLM usage if not specified
         if use_llm is None:
             use_llm = self.use_llm
-        
+
         # 1. Generate unified awareness context
         awareness_ctx = await self.awareness.get_unified_context(query)
-        
+
         # 2. Generate internal reasoning stream
         internal_reasoning = await self._generate_internal_stream(
             query,
             awareness_ctx,
             use_llm=use_llm
         )
-        
+
         # 3. Generate external response stream
         external_response = await self._generate_external_stream(
             query,
@@ -128,7 +128,7 @@ class DualStreamGenerator:
             internal_reasoning,
             use_llm=use_llm
         )
-        
+
         # 4. Update awareness from generation (feedback loop)
         await self.awareness.update_from_generation(
             query=query,
@@ -136,9 +136,9 @@ class DualStreamGenerator:
             external_response=external_response,
             user_feedback={'success': True}  # Assume success for now
         )
-        
+
         generation_time = (time.time() - start_time) * 1000  # ms
-        
+
         return DualStreamResponse(
             query=query,
             awareness_context=awareness_ctx,
@@ -146,7 +146,7 @@ class DualStreamGenerator:
             external_stream=external_response,
             generation_time_ms=generation_time
         )
-    
+
     async def _generate_internal_stream(
         self,
         query: str,
@@ -221,7 +221,7 @@ class DualStreamGenerator:
             lines.append("  - ⚠️ RECOMMENDATION: Ask for clarification")
 
         return "\n".join(lines)
-    
+
     async def _generate_external_stream(
         self,
         query: str,
@@ -266,31 +266,31 @@ class DualStreamGenerator:
         else:
             # Low confidence: Acknowledge uncertainty
             return self._generate_uncertain_response(query, awareness_ctx)
-    
+
     def _generate_clarification_response(
         self,
         query: str,
         awareness_ctx: UnifiedAwarenessContext
     ) -> str:
         """Generate clarification question for uncertain queries"""
-        
+
         conf = awareness_ctx.confidence
-        
+
         return (
             f"I notice I'm not familiar with some concepts in your question. "
             f"{conf.suggested_clarification or 'Could you provide more context?'}"
         )
-    
+
     def _generate_confident_response(
         self,
         query: str,
         awareness_ctx: UnifiedAwarenessContext
     ) -> str:
         """Generate confident response for familiar queries"""
-        
+
         patterns = awareness_ctx.patterns
         struct = awareness_ctx.structural
-        
+
         # Example template (in production, would use actual LLM)
         if "ball" in query.lower() and "red" in query.lower():
             if struct.expects_definition:
@@ -304,47 +304,47 @@ class DualStreamGenerator:
                     "provides high visibility against most backgrounds, making them "
                     "easier to track during play."
                 )
-        
+
         # Generic confident response
         return (
             f"Based on {patterns.seen_count} similar queries, I can confidently say "
             f"this relates to the {patterns.domain} domain. "
             f"[This would be a detailed, direct answer in production.]"
         )
-    
+
     def _generate_hedged_response(
         self,
         query: str,
         awareness_ctx: UnifiedAwarenessContext
     ) -> str:
         """Generate hedged response for medium-confidence queries"""
-        
+
         external = awareness_ctx.external_guidance
         hedging = external.appropriate_hedging[0] if external.appropriate_hedging else "generally"
-        
+
         patterns = awareness_ctx.patterns
-        
+
         return (
             f"Based on the patterns I've seen, this {hedging} relates to "
             f"{patterns.domain}. While I have some familiarity with this topic, "
             f"I want to note that my confidence is moderate. "
             f"[Production would provide more detailed hedged answer here.]"
         )
-    
+
     def _generate_uncertain_response(
         self,
         query: str,
         awareness_ctx: UnifiedAwarenessContext
     ) -> str:
         """Generate response acknowledging high uncertainty"""
-        
+
         conf = awareness_ctx.confidence
-        
+
         nearest = ""
         if conf.nearest_known_patterns:
             patterns_str = ", ".join([p[0] for p in conf.nearest_known_patterns[:2]])
             nearest = f" The closest concepts I'm familiar with are: {patterns_str}."
-        
+
         return (
             f"I notice this query is quite novel to me (uncertainty: {conf.uncertainty_level:.2f}).{nearest} "
             f"Could you provide more context or clarify what you're asking about?"
@@ -360,9 +360,9 @@ def build_internal_prompt(
     awareness_ctx: UnifiedAwarenessContext
 ) -> str:
     """Build prompt for internal reasoning stream"""
-    
+
     awareness_text = format_awareness_for_prompt(awareness_ctx)
-    
+
     return f"""You are an AI assistant with compositional awareness. Think through this query step by step.
 
 {awareness_text}
@@ -384,9 +384,9 @@ def build_external_prompt(
     internal_reasoning: str
 ) -> str:
     """Build prompt for external response stream"""
-    
+
     external = awareness_ctx.external_guidance
-    
+
     prompt_parts = [
         "You are an AI assistant. Based on the following context and reasoning, generate an appropriate response.",
         "",
@@ -398,21 +398,21 @@ def build_external_prompt(
         f"- Structure: {external.response_structure}",
         f"- Length: {external.expected_length}",
     ]
-    
+
     if external.appropriate_hedging:
         prompt_parts.append(f"- Use hedging: {', '.join(external.appropriate_hedging)}")
-    
+
     if external.should_acknowledge_uncertainty:
         prompt_parts.append("- IMPORTANT: Acknowledge uncertainty")
-    
+
     if external.clarification_needed:
         prompt_parts.append("- IMPORTANT: Ask for clarification, don't answer directly")
-    
+
     prompt_parts.extend([
         "",
         f"Query: {query}",
         "",
         "Your response:"
     ])
-    
+
     return "\n".join(prompt_parts)

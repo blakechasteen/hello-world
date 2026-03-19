@@ -4,13 +4,14 @@ Created: 2025-12-23
 Part of HoloLoom Workflow Builder production integration.
 """
 
-import aiosqlite
 import json
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List, Dict, Any
-from dataclasses import dataclass, field
+from typing import Any
+
+import aiosqlite
 
 
 @dataclass
@@ -19,9 +20,9 @@ class WorkflowRecord:
     id: str
     name: str
     description: str
-    nodes: List[Dict]
-    connections: List[Dict]
-    metadata: Dict[str, Any]
+    nodes: list[dict]
+    connections: list[dict]
+    metadata: dict[str, Any]
     created_at: datetime
     updated_at: datetime
     owner_id: str = "default"
@@ -33,8 +34,8 @@ class VersionRecord:
     id: str
     workflow_id: str
     version_number: int
-    parent_version: Optional[str]
-    changes: Dict[str, Any]
+    parent_version: str | None
+    changes: dict[str, Any]
     created_at: datetime
     created_by: str
 
@@ -44,14 +45,14 @@ class ExecutionRecord:
     """Execution log entry."""
     id: str
     workflow_id: str
-    version_id: Optional[str]
+    version_id: str | None
     status: str  # pending, running, completed, failed, cancelled
-    input_data: Dict[str, Any]
-    output_data: Optional[Dict[str, Any]]
-    node_results: Dict[str, Any]
+    input_data: dict[str, Any]
+    output_data: dict[str, Any] | None
+    node_results: dict[str, Any]
     started_at: datetime
-    completed_at: Optional[datetime]
-    error: Optional[str]
+    completed_at: datetime | None
+    error: str | None
 
 
 # ==================== Marketplace Records ====================
@@ -61,7 +62,7 @@ class TemplateCategoryRecord:
     """Template category for marketplace organization."""
     id: str
     name: str
-    parent_id: Optional[str]
+    parent_id: str | None
     description: str
     icon: str
     display_order: int = 0
@@ -80,7 +81,7 @@ class MarketplaceTemplateRecord:
     usage_count: int
     avg_rating: float
     rating_count: int
-    tags: List[str]
+    tags: list[str]
     published_at: datetime
     updated_at: datetime
 
@@ -219,7 +220,7 @@ class WorkflowPersistence:
             db_path: Path to SQLite database file. Created if doesn't exist.
         """
         self.db_path = Path(db_path)
-        self._connection: Optional[aiosqlite.Connection] = None
+        self._connection: aiosqlite.Connection | None = None
 
     async def initialize(self):
         """Initialize database and create tables if needed."""
@@ -282,7 +283,7 @@ class WorkflowPersistence:
         await self._connection.commit()
         return workflow.id
 
-    async def get_workflow(self, workflow_id: str) -> Optional[WorkflowRecord]:
+    async def get_workflow(self, workflow_id: str) -> WorkflowRecord | None:
         """Get a workflow by ID.
 
         Args:
@@ -315,7 +316,7 @@ class WorkflowPersistence:
         owner_id: str = "default",
         limit: int = 100,
         offset: int = 0
-    ) -> List[WorkflowRecord]:
+    ) -> list[WorkflowRecord]:
         """List workflows for an owner.
 
         Args:
@@ -410,7 +411,7 @@ class WorkflowPersistence:
         await self._connection.commit()
         return version.id
 
-    async def get_versions(self, workflow_id: str, limit: int = 50) -> List[VersionRecord]:
+    async def get_versions(self, workflow_id: str, limit: int = 50) -> list[VersionRecord]:
         """Get version history for a workflow.
 
         Args:
@@ -460,7 +461,7 @@ class WorkflowPersistence:
     async def create_version(
         self,
         workflow_id: str,
-        changes: Dict[str, Any],
+        changes: dict[str, Any],
         created_by: str = "default"
     ) -> VersionRecord:
         """Create a new version for a workflow.
@@ -523,7 +524,7 @@ class WorkflowPersistence:
         await self._connection.commit()
         return execution.id
 
-    async def get_execution(self, execution_id: str) -> Optional[ExecutionRecord]:
+    async def get_execution(self, execution_id: str) -> ExecutionRecord | None:
         """Get an execution by ID.
 
         Args:
@@ -558,8 +559,8 @@ class WorkflowPersistence:
         self,
         workflow_id: str,
         limit: int = 50,
-        status: Optional[str] = None
-    ) -> List[ExecutionRecord]:
+        status: str | None = None
+    ) -> list[ExecutionRecord]:
         """Get execution history for a workflow.
 
         Args:
@@ -607,9 +608,9 @@ class WorkflowPersistence:
         self,
         execution_id: str,
         status: str,
-        output_data: Optional[Dict[str, Any]] = None,
-        node_results: Optional[Dict[str, Any]] = None,
-        error: Optional[str] = None
+        output_data: dict[str, Any] | None = None,
+        node_results: dict[str, Any] | None = None,
+        error: str | None = None
     ) -> bool:
         """Update execution status and optionally results.
 
@@ -658,8 +659,8 @@ class WorkflowPersistence:
     async def create_execution(
         self,
         workflow_id: str,
-        input_data: Dict[str, Any],
-        version_id: Optional[str] = None
+        input_data: dict[str, Any],
+        version_id: str | None = None
     ) -> ExecutionRecord:
         """Create a new execution record in pending status.
 
@@ -689,7 +690,7 @@ class WorkflowPersistence:
 
     # ==================== Statistics ====================
 
-    async def get_workflow_stats(self, workflow_id: str) -> Dict[str, Any]:
+    async def get_workflow_stats(self, workflow_id: str) -> dict[str, Any]:
         """Get statistics for a workflow.
 
         Args:
@@ -755,7 +756,7 @@ class WorkflowPersistence:
         await self._connection.commit()
         return category.id
 
-    async def get_categories(self, parent_id: Optional[str] = None) -> List[TemplateCategoryRecord]:
+    async def get_categories(self, parent_id: str | None = None) -> list[TemplateCategoryRecord]:
         """Get categories, optionally filtered by parent."""
         categories = []
         if parent_id is None:
@@ -777,7 +778,7 @@ class WorkflowPersistence:
                 ))
         return categories
 
-    async def get_all_categories(self) -> List[TemplateCategoryRecord]:
+    async def get_all_categories(self) -> list[TemplateCategoryRecord]:
         """Get all categories."""
         categories = []
         async with self._connection.execute(
@@ -822,7 +823,7 @@ class WorkflowPersistence:
         await self._connection.commit()
         return template.id
 
-    async def get_marketplace_template(self, template_id: str) -> Optional[MarketplaceTemplateRecord]:
+    async def get_marketplace_template(self, template_id: str) -> MarketplaceTemplateRecord | None:
         """Get a marketplace template by ID."""
         async with self._connection.execute(
             """SELECT id, workflow_id, category, difficulty, author, license, is_featured,
@@ -851,13 +852,13 @@ class WorkflowPersistence:
 
     async def list_marketplace_templates(
         self,
-        category: Optional[str] = None,
-        difficulty: Optional[str] = None,
+        category: str | None = None,
+        difficulty: str | None = None,
         featured_only: bool = False,
         limit: int = 50,
         offset: int = 0,
         order_by: str = "usage_count"
-    ) -> List[MarketplaceTemplateRecord]:
+    ) -> list[MarketplaceTemplateRecord]:
         """List marketplace templates with filtering."""
         templates = []
         conditions = []
@@ -902,10 +903,10 @@ class WorkflowPersistence:
     async def search_marketplace_templates(
         self,
         query: str,
-        category: Optional[str] = None,
-        difficulty: Optional[str] = None,
+        category: str | None = None,
+        difficulty: str | None = None,
         limit: int = 20
-    ) -> List[MarketplaceTemplateRecord]:
+    ) -> list[MarketplaceTemplateRecord]:
         """Search templates by name/description from workflow."""
         templates = []
         conditions = ["(w.name LIKE ? OR w.description LIKE ?)"]
@@ -996,7 +997,7 @@ class WorkflowPersistence:
         )
         await self._connection.commit()
 
-    async def get_ratings(self, template_id: str, limit: int = 50) -> List[TemplateRatingRecord]:
+    async def get_ratings(self, template_id: str, limit: int = 50) -> list[TemplateRatingRecord]:
         """Get ratings for a template."""
         ratings = []
         async with self._connection.execute(

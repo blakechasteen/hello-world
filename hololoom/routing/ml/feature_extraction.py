@@ -14,8 +14,7 @@ Date: November 2025
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional
-import re
+from typing import Any
 
 
 @dataclass
@@ -36,14 +35,14 @@ class RoutingFeatures:
     complexity_score: float  # 0.0-1.0
 
     # Keyword features
-    keywords: List[str] = field(default_factory=list)
+    keywords: list[str] = field(default_factory=list)
 
     # Semantic features
-    query_embedding: Optional[List[float]] = None
-    topic_distribution: Optional[Dict[str, float]] = None
+    query_embedding: list[float] | None = None
+    topic_distribution: dict[str, float] | None = None
 
     # Context features
-    user_role: Optional[str] = None
+    user_role: str | None = None
     session_length: int = 0
     query_history_size: int = 0
 
@@ -52,7 +51,7 @@ class RoutingFeatures:
     day_of_week: int = 0
 
     # Derived features
-    feature_dict: Dict[str, Any] = field(default_factory=dict)
+    feature_dict: dict[str, Any] = field(default_factory=dict)
 
 
 class RoutingFeatureExtractor:
@@ -83,7 +82,7 @@ class RoutingFeatureExtractor:
     def extract(
         self,
         query: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> RoutingFeatures:
         """
         Extract features from query and context.
@@ -152,7 +151,7 @@ class RoutingFeatureExtractor:
             feature_dict=feature_dict
         )
 
-    def _calculate_complexity(self, query: str, words: List[str]) -> float:
+    def _calculate_complexity(self, query: str, words: list[str]) -> float:
         """
         Calculate query complexity score (0.0-1.0).
 
@@ -191,7 +190,7 @@ class RoutingFeatureExtractor:
 
         return min(complexity, 1.0)
 
-    def _extract_keywords(self, query: str) -> List[str]:
+    def _extract_keywords(self, query: str) -> list[str]:
         """
         Extract routing-relevant keywords from query.
 
@@ -214,8 +213,8 @@ class RoutingFeatureExtractor:
     def extract_semantic_features(
         self,
         query: str,
-        embedding_model: Optional[Any] = None
-    ) -> Dict[str, Any]:
+        embedding_model: Any | None = None
+    ) -> dict[str, Any]:
         """
         Extract semantic features (embeddings, topics).
 

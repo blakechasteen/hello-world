@@ -16,17 +16,15 @@ Tests cover:
 - Edge cases and error handling
 """
 
-import pytest
-import asyncio
-from unittest.mock import Mock, AsyncMock, patch
 
-from hololoom.redteam.refinement.attack_refinement import (
-    AttackRefiner,
-    AttackRefinementStrategy,
-    AttackQualityMetrics,
-    AttackRefinementResult
-)
+import pytest
+
 from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
+from hololoom.redteam.refinement.attack_refinement import (
+    AttackQualityMetrics,
+    AttackRefinementStrategy,
+    AttackRefiner,
+)
 from hololoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
 
 

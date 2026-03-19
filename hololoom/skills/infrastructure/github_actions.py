@@ -12,21 +12,19 @@ This skill wraps GitHub CLI (`gh`) to provide:
 """
 
 import asyncio
-import subprocess
 import json
 import time
-from pathlib import Path
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 from hololoom.skills.base import (
     BaseSkill,
-    SkillInput,
-    SkillOutput,
-    SkillMetadata,
     SkillCategory,
-    SkillStatus
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
 )
 
 
@@ -47,7 +45,7 @@ class WorkflowRun:
     run_id: str
     workflow_name: str
     status: WorkflowStatus
-    conclusion: Optional[str]
+    conclusion: str | None
     created_at: str
     updated_at: str
     html_url: str
@@ -73,7 +71,7 @@ class GitHubActionsSkill(BaseSkill):
     - disable_workflow: Disable a workflow
     """
 
-    def __init__(self, gh_path: str = "gh", repo: Optional[str] = None):
+    def __init__(self, gh_path: str = "gh", repo: str | None = None):
         """
         Initialize GitHub Actions Skill.
 
@@ -223,7 +221,7 @@ class GitHubActionsSkill(BaseSkill):
 
     async def _run_gh_command(
         self,
-        args: List[str],
+        args: list[str],
         capture_output: bool = True
     ) -> str:
         """
@@ -258,7 +256,7 @@ class GitHubActionsSkill(BaseSkill):
 
         return stdout.decode('utf-8', errors='ignore') if stdout else ""
 
-    async def _trigger_workflow(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _trigger_workflow(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """Trigger a workflow run."""
         workflow = parameters["workflow"]
         ref = parameters.get("ref", "main")
@@ -281,7 +279,7 @@ class GitHubActionsSkill(BaseSkill):
             "message": f"Workflow '{workflow}' triggered on ref '{ref}'"
         }
 
-    async def _list_workflows(self, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def _list_workflows(self, parameters: dict[str, Any]) -> list[dict[str, Any]]:
         """List all workflows."""
         limit = parameters.get("limit", 10)
 
@@ -295,7 +293,7 @@ class GitHubActionsSkill(BaseSkill):
         workflows = json.loads(output)
         return workflows
 
-    async def _get_workflow_status(self, parameters: Dict[str, Any]) -> WorkflowRun:
+    async def _get_workflow_status(self, parameters: dict[str, Any]) -> WorkflowRun:
         """Get status of a workflow run."""
         run_id = parameters["run_id"]
 
@@ -340,7 +338,7 @@ class GitHubActionsSkill(BaseSkill):
             head_sha=data.get("headSha", "")
         )
 
-    async def _get_workflow_logs(self, parameters: Dict[str, Any]) -> str:
+    async def _get_workflow_logs(self, parameters: dict[str, Any]) -> str:
         """Download workflow logs."""
         run_id = parameters["run_id"]
 
@@ -352,7 +350,7 @@ class GitHubActionsSkill(BaseSkill):
 
         return output
 
-    async def _cancel_workflow(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _cancel_workflow(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """Cancel a running workflow."""
         run_id = parameters["run_id"]
 
@@ -366,7 +364,7 @@ class GitHubActionsSkill(BaseSkill):
             "message": f"Workflow run {run_id} cancelled"
         }
 
-    async def _list_runs(self, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def _list_runs(self, parameters: dict[str, Any]) -> list[dict[str, Any]]:
         """List recent workflow runs."""
         workflow = parameters.get("workflow")
         limit = parameters.get("limit", 10)
@@ -385,7 +383,7 @@ class GitHubActionsSkill(BaseSkill):
 
         return runs
 
-    async def _download_artifact(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _download_artifact(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """Download workflow artifacts."""
         run_id = parameters["run_id"]
         artifact_name = parameters["artifact_name"]
@@ -405,7 +403,7 @@ class GitHubActionsSkill(BaseSkill):
             "message": f"Artifact '{artifact_name}' downloaded to '{output_dir}'"
         }
 
-    async def _enable_workflow(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _enable_workflow(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """Enable a workflow."""
         workflow = parameters["workflow"]
 
@@ -419,7 +417,7 @@ class GitHubActionsSkill(BaseSkill):
             "message": f"Workflow '{workflow}' enabled"
         }
 
-    async def _disable_workflow(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _disable_workflow(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """Disable a workflow."""
         workflow = parameters["workflow"]
 
@@ -436,4 +434,5 @@ class GitHubActionsSkill(BaseSkill):
 
 # Register skill
 from hololoom.skills.base import register_skill
+
 register_skill(GitHubActionsSkill())

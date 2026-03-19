@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Reasoning Department - Advanced multi-hop reasoning and causal inference.
 
@@ -11,13 +10,13 @@ Exports:
 """
 
 from .reasoning import (
-    ReasoningDepartment,
-    MultiHopReasoner,
     CausalInferenceEngine,
-    CounterfactualAnalyzer,
-    ReasoningChain,
     CausalRelation,
-    CounterfactualScenario
+    CounterfactualAnalyzer,
+    CounterfactualScenario,
+    MultiHopReasoner,
+    ReasoningChain,
+    ReasoningDepartment,
 )
 
 __all__ = [

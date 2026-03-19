@@ -28,20 +28,15 @@ The Five Core Looms:
 Author: HoloLoom Architecture Team
 """
 
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 # Import Department protocol
 from hololoom.protocols.department import (
     Department,
-    DepartmentRequest,
-    DepartmentResponse,
-    VerificationResult,
 )
-
 
 # ============================================================================
 # Dream Insight Types
@@ -78,9 +73,9 @@ class DreamInsight:
     confidence: float                    # How confident (0-1)
     shareable: bool = True               # Can be shared with other looms?
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "source_loom": self.source_loom,
@@ -93,7 +88,7 @@ class DreamInsight:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'DreamInsight':
+    def from_dict(cls, data: dict[str, Any]) -> 'DreamInsight':
         """Deserialize from dictionary."""
         return cls(
             source_loom=data["source_loom"],
@@ -295,7 +290,7 @@ class Loom(Department, Protocol):
         ...
 
     @property
-    def blind_spots(self) -> List[str]:
+    def blind_spots(self) -> list[str]:
         """
         What this perspective cannot see.
 
@@ -314,7 +309,7 @@ class Loom(Department, Protocol):
 
     # ====== Epistemic Awareness ======
 
-    def admits_ignorance(self, query: str) -> List[str]:
+    def admits_ignorance(self, query: str) -> list[str]:
         """
         What I know I don't know about this query.
 
@@ -333,7 +328,7 @@ class Loom(Department, Protocol):
         """
         ...
 
-    def falsifiable_by(self, claim: str) -> List[str]:
+    def falsifiable_by(self, claim: str) -> list[str]:
         """
         What evidence would change my mind.
 
@@ -366,7 +361,7 @@ class Loom(Department, Protocol):
         """
         ...
 
-    async def dream_share(self) -> List[DreamInsight]:
+    async def dream_share(self) -> list[DreamInsight]:
         """
         Share insights for collective dreaming.
 

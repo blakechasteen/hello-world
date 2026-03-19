@@ -28,7 +28,7 @@ warnings.warn(
 )
 
 # Backward compatibility - re-export from new locations
-from .memory_protocols import MemoryStore, MemoryNavigator, PatternDetector
+from .memory_protocols import MemoryNavigator, MemoryStore, PatternDetector
 
 __all__ = [
     'MemoryStore',

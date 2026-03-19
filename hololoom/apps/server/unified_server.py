@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 HoloLoom Unified API Server
 ============================
@@ -73,42 +74,39 @@ Usage:
 """
 
 import asyncio
-import logging
 import json
-from typing import Optional, List, Dict, Any, AsyncGenerator
-from datetime import datetime
+import logging
 from collections import defaultdict, deque
+from datetime import datetime
 from time import time
-from pathlib import Path
+from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, WebSocket, WebSocketDisconnect
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field, validator
 from sse_starlette.sse import EventSourceResponse
 
-# Safety WebSocket Manager (E2.2 - December 2025)
-from hololoom.apps.server.safety_websocket import get_safety_ws_manager, SafetyWebSocketManager
-
-# HoloLoom Core
-from hololoom.config import Config, MemoryBackend
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.weaving_orchestrator import WeavingOrchestrator
-
 # Agentic Reasoning
-from hololoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
-
-# Recursive Learning
-from hololoom.recursive import FullLearningEngine, AdvancedRefiner, RefinementStrategy
+from hololoom.agentic import AgenticResult, ReasoningMode, create_agentic_orchestrator
 
 # Alignment Framework
 from hololoom.alignment.audit_trail import AuditTrail
-from hololoom.alignment.safety_guardrails import SafetyGuardrails
 from hololoom.alignment.deception_detection import DeceptionDetector
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
+
+# Safety WebSocket Manager (E2.2 - December 2025)
+from hololoom.apps.server.safety_websocket import get_safety_ws_manager
+
+# HoloLoom Core
+from hololoom.config import Config, MemoryBackend
 
 # Memory Systems
 from hololoom.memory.backend_factory import create_memory_backend
-from hololoom.memory.graph import KG
+from hololoom.protocols.types import MemoryShard, Query
+
+# Recursive Learning
+from hololoom.recursive import FullLearningEngine
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # SpinningWheel (Input Adapters)
 try:
@@ -119,7 +117,7 @@ except ImportError:
 
 # Visualization (optional - graceful degradation)
 try:
-    from hololoom.visualization.stage_waterfall import WaterfallStage, StageStatus
+    from hololoom.visualization.stage_waterfall import StageStatus, WaterfallStage
 except ImportError:
     WaterfallStage = None
     StageStatus = None
@@ -138,9 +136,9 @@ class ServerState:
 
     def __init__(self):
         self.start_time = time()
-        self.orchestrator: Optional[WeavingOrchestrator] = None
+        self.orchestrator: WeavingOrchestrator | None = None
         self.agentic_orchestrator = None
-        self.learning_engine: Optional[FullLearningEngine] = None
+        self.learning_engine: FullLearningEngine | None = None
         self.audit_trail = AuditTrail()
         self.guardrails = SafetyGuardrails(testing_mode=False)  # Production mode
         self.deception_detector = DeceptionDetector()
@@ -152,20 +150,20 @@ class ServerState:
         self.successful_queries = 0
         self.failed_queries = 0
         self.latencies: deque = deque(maxlen=1000)
-        self.queries_by_mode: Dict[str, int] = defaultdict(int)
+        self.queries_by_mode: dict[str, int] = defaultdict(int)
         self.recent_queries: deque = deque(maxlen=100)  # Last 100 queries
-        self.confidence_history: List[float] = []
+        self.confidence_history: list[float] = []
 
         # SSE subscribers
-        self.sse_clients: List[asyncio.Queue] = []
+        self.sse_clients: list[asyncio.Queue] = []
 
         # Ingestion queue
         self.ingestion_queue: deque = deque(maxlen=50)
 
         # Orchestrator monitoring (Phase 3)
-        self.current_query: Optional[Dict] = None  # {text, mode, elapsed_ms}
+        self.current_query: dict | None = None  # {text, mode, elapsed_ms}
         self.current_stage: int = 0  # 0 = idle, 1-9 = active stage
-        self.stage_durations: Dict[str, float] = {}  # stage_name → duration_ms
+        self.stage_durations: dict[str, float] = {}  # stage_name → duration_ms
         self.recent_traces: deque = deque(maxlen=20)  # Last 20 pipeline traces
 
     def stage_tracking_callback(self, stage_id: int, stage_name: str, duration_ms: float):
@@ -220,7 +218,7 @@ class ServerState:
 
         logger.info("✓ HoloLoom Unified Server initialized successfully")
 
-    def _create_test_shards(self) -> List[MemoryShard]:
+    def _create_test_shards(self) -> list[MemoryShard]:
         """Create test memory shards for development."""
         return [
             MemoryShard(
@@ -273,7 +271,7 @@ class ServerState:
             except Exception as e:
                 logger.error(f"Failed to broadcast to client: {e}")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get current server statistics."""
         uptime = time() - self.start_time
 
@@ -307,7 +305,7 @@ class QueryRequest(BaseModel):
     text: str = Field(..., description="Query text")
     mode: str = Field("direct", description="Reasoning mode: direct, verify, research, plan_execute")
     max_steps: int = Field(5, description="Maximum reasoning steps")
-    context: Optional[Dict[str, Any]] = Field(None, description="Optional context")
+    context: dict[str, Any] | None = Field(None, description="Optional context")
 
     @validator('text')
     def validate_text(cls, v):
@@ -323,7 +321,7 @@ class QueryResponse(BaseModel):
     reasoning_mode: str
     latency_ms: float
     timestamp: str
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
 
 class MemorySearchRequest(BaseModel):
@@ -337,13 +335,13 @@ class YouTubeIngestRequest(BaseModel):
     """YouTube ingestion request."""
     url: str
     chunk_duration: float = Field(60.0, ge=10.0, le=600.0)
-    languages: List[str] = Field(default=["en"])
+    languages: list[str] = Field(default=["en"])
 
 
 class SafetyGateRequest(BaseModel):
     """Safety gate request."""
     action: str
-    context: Dict[str, Any]
+    context: dict[str, Any]
 
 
 # ============================================================================

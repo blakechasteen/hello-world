@@ -24,27 +24,27 @@ Features:
 import asyncio
 import logging
 import re
-from typing import Any, Sequence, Dict, List, Optional, Tuple
+from collections.abc import Sequence
 from datetime import datetime
-from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 try:
     from mcp.server import Server
-    from mcp.types import Resource, Tool, TextContent
+    from mcp.types import Resource, TextContent, Tool
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
     print("⚠️  MCP not installed. Run: pip install mcp")
 
 try:
-    from .protocol import UnifiedMemoryInterface, Strategy, create_unified_memory, Memory
+    from .protocol import Memory, Strategy, UnifiedMemoryInterface, create_unified_memory
 except ImportError:
     # Fallback for standalone execution
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).parent))
-    from protocol import UnifiedMemoryInterface, Strategy, create_unified_memory, Memory
+    from protocol import Memory, Strategy, UnifiedMemoryInterface, create_unified_memory
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -107,7 +107,7 @@ def route_query(query: str) -> QueryStrategy:
 # Query Rewriting (HyDE - Hypothetical Document Embeddings)
 # ============================================================================
 
-def rewrite_query_hyde(query: str, strategy: QueryStrategy) -> List[str]:
+def rewrite_query_hyde(query: str, strategy: QueryStrategy) -> list[str]:
     """
     HyDE: Generate hypothetical answers to embed and search for.
 
@@ -150,7 +150,7 @@ def rewrite_query_hyde(query: str, strategy: QueryStrategy) -> List[str]:
 # Semantic Chunking
 # ============================================================================
 
-def semantic_chunk(text: str, max_chunk_size: int = 500) -> List[str]:
+def semantic_chunk(text: str, max_chunk_size: int = 500) -> list[str]:
     """
     Chunk text by semantic boundaries (paragraphs, sentences) not fixed size.
 
@@ -221,7 +221,7 @@ async def hybrid_search(
     limit: int = 10,
     dense_weight: float = 0.7,
     sparse_weight: float = 0.3
-) -> List[Tuple[Memory, float]]:
+) -> list[tuple[Memory, float]]:
     """
     Hybrid retrieval: Combine dense (semantic) + sparse (keyword) search.
 
@@ -279,9 +279,9 @@ async def hybrid_search(
 
 def rerank_results(
     query: str,
-    results: List[Tuple[Memory, float]],
+    results: list[tuple[Memory, float]],
     top_k: int = 5
-) -> List[Tuple[Memory, float]]:
+) -> list[tuple[Memory, float]]:
     """
     Re-rank results using cross-encoder for precision.
 
@@ -326,7 +326,7 @@ async def rag_query(
     limit: int = 5,
     use_hyde: bool = True,
     use_reranking: bool = True
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Complete RAG pipeline with all modern features.
 
@@ -654,7 +654,7 @@ if MCP_AVAILABLE:
                 rewrites = rewrite_query_hyde(query, strategy)
 
                 lines = [
-                    f"🔄 Query Rewriting (HyDE)",
+                    "🔄 Query Rewriting (HyDE)",
                     f"Strategy: {strategy.value}",
                     "",
                     "Original:",

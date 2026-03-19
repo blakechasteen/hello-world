@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 SQL Integration for HoloLoom RAG - Hybrid Knowledge Graph + Database Queries
 
@@ -54,20 +55,19 @@ Author: Agent H (Claude Code)
 Date: November 13, 2025
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, Union
-from pathlib import Path
-from enum import Enum
 import logging
 import re
 import time
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # UnifiedMRF for enhanced prompting (Phase 2.1 - Nov 2025)
-from hololoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+from hololoom.prompting.unified_mrf import MetapromptConfig, ModelProvider, UnifiedMRF
 
 # Optional dependencies (graceful degradation)
 try:
-    from sqlalchemy import create_engine, text, MetaData, inspect
+    from sqlalchemy import MetaData, create_engine, inspect, text
     from sqlalchemy.engine import Engine
     SQLALCHEMY_AVAILABLE = True
 except ImportError:
@@ -112,21 +112,21 @@ class SQLRAGResult:
     - sql_confidence: Confidence in SQL translation (0.0-1.0)
     """
     response: str
-    sources: List[str] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)
     confidence: float = 0.0
     reasoning_mode: str = "verify"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # SQL-specific fields
-    sql_data: Optional[Any] = None  # pandas DataFrame
-    sql_query: Optional[str] = None
+    sql_data: Any | None = None  # pandas DataFrame
+    sql_query: str | None = None
     query_type: str = "semantic"  # "sql", "semantic", or "hybrid"
     sql_confidence: float = 0.0
 
     def __str__(self) -> str:
         """Human-readable representation."""
         lines = [
-            f"SQLRAGResult(",
+            "SQLRAGResult(",
             f"  response: {self.response[:100]}...",
             f"  query_type: {self.query_type}",
             f"  confidence: {self.confidence:.2f}",
@@ -156,10 +156,10 @@ class SQLAdapter:
     def __init__(
         self,
         connection_string: str,
-        schema: Optional[Dict[str, List[str]]] = None,
+        schema: dict[str, list[str]] | None = None,
         read_only: bool = True,
         timeout: float = 5.0,
-        model_provider: Optional[str] = None  # NEW (Phase 2.1)
+        model_provider: str | None = None  # NEW (Phase 2.1)
     ):
         """
         Initialize SQL adapter.
@@ -188,8 +188,8 @@ class SQLAdapter:
         self.connection_string = connection_string
         self.read_only = read_only
         self.timeout = timeout
-        self.engine: Optional[Engine] = None
-        self.schema: Dict[str, List[str]] = schema or {}
+        self.engine: Engine | None = None
+        self.schema: dict[str, list[str]] = schema or {}
         self.model_provider = model_provider  # NEW (Phase 2.1)
 
         # UnifiedMRF for enhanced SQL translation prompts (Phase 2.1)
@@ -264,7 +264,7 @@ class SQLAdapter:
             self.engine.dispose()
             logger.info("✓ Database connection closed")
 
-    def execute_query(self, sql_query: str) -> Optional[Any]:
+    def execute_query(self, sql_query: str) -> Any | None:
         """
         Execute SQL query with safety checks.
 
@@ -349,7 +349,7 @@ class SQLAdapter:
             self._stats['total_latency_ms'] / self._stats['total_queries']
         )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get adapter statistics."""
         return {
             **self._stats,
@@ -367,8 +367,8 @@ class TextToSQLTranslator:
 
     def __init__(
         self,
-        schema: Dict[str, List[str]],
-        llm_provider: Optional[Any] = None
+        schema: dict[str, list[str]],
+        llm_provider: Any | None = None
     ):
         """
         Initialize translator.
@@ -391,7 +391,7 @@ class TextToSQLTranslator:
         self,
         question: str,
         max_retries: int = 2
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Translate natural language question to SQL.
 
@@ -641,7 +641,7 @@ class TextToSQLTranslator:
 
         return True
 
-    def _extract_table_names(self, sql_query: str) -> List[str]:
+    def _extract_table_names(self, sql_query: str) -> list[str]:
         """
         Extract table names from SQL query (simple regex-based).
 
@@ -656,7 +656,7 @@ class TextToSQLTranslator:
         matches = re.findall(pattern, sql_query, re.IGNORECASE)
         return list(set(matches))
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get translation statistics."""
         return {
             **self._stats,
@@ -676,10 +676,10 @@ class SQLRAGMixin:
 
     def __init__(
         self,
-        db_connection: Optional[str] = None,
+        db_connection: str | None = None,
         enable_hybrid_routing: bool = True,
         sql_confidence_threshold: float = 0.7,
-        schema: Optional[Dict[str, List[str]]] = None,
+        schema: dict[str, list[str]] | None = None,
         read_only: bool = True
     ):
         """
@@ -705,15 +705,15 @@ class SQLRAGMixin:
         self.read_only = read_only
 
         # SQL components (initialized in connect())
-        self.sql_adapter: Optional[SQLAdapter] = None
-        self.text_to_sql: Optional[TextToSQLTranslator] = None
+        self.sql_adapter: SQLAdapter | None = None
+        self.text_to_sql: TextToSQLTranslator | None = None
 
         # Schema
-        self.schema: Dict[str, List[str]] = schema or {}
+        self.schema: dict[str, list[str]] = schema or {}
 
         logger.info(f"✓ SQLRAGMixin initialized (hybrid_routing={'ON' if enable_hybrid_routing else 'OFF'})")
 
-    def register_schema(self, schema: Dict[str, Any]) -> None:
+    def register_schema(self, schema: dict[str, Any]) -> None:
         """
         Register database schema manually.
 
@@ -735,7 +735,7 @@ class SQLRAGMixin:
 
         logger.info(f"✓ Schema registered: {len(schema)} tables")
 
-    async def connect_sql(self, llm_provider: Optional[Any] = None) -> None:
+    async def connect_sql(self, llm_provider: Any | None = None) -> None:
         """
         Connect to database and initialize SQL components.
 
@@ -1017,7 +1017,7 @@ class SQLRAGMixin:
             fused_response += f"SQL Results:\n{sql_result.response}\n\n"
 
         if semantic_result.sources:
-            fused_response += f"Related context:\n" + "\n".join(
+            fused_response += "Related context:\n" + "\n".join(
                 f"- {source[:100]}..." for source in semantic_result.sources[:3]
             )
 
@@ -1040,7 +1040,7 @@ class SQLRAGMixin:
             }
         )
 
-    def get_sql_stats(self) -> Dict[str, Any]:
+    def get_sql_stats(self) -> dict[str, Any]:
         """
         Get SQL adapter and translator statistics.
 

@@ -14,14 +14,13 @@ Research:
 - Fox & Long (2003): PDDL2.1 - Numeric planning
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Set, Tuple
-from enum import Enum
 import logging
 from copy import deepcopy
+from dataclasses import dataclass, field
+from enum import Enum
 
 # Import Layer 2 core
-from hololoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action
+from hololoom.planning.planner import Action, Goal, HierarchicalPlanner, Plan
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,7 @@ class Resource:
     name: str
     resource_type: ResourceType
     initial_amount: float
-    capacity: Optional[float] = None  # Max at any time (None = unlimited)
+    capacity: float | None = None  # Max at any time (None = unlimited)
     cost_per_unit: float = 0.0        # Monetary cost per unit
     replenish_rate: float = 0.0       # Units per time step (for renewable)
 
@@ -80,9 +79,9 @@ class ResourceRequirement:
 class ResourceState:
     """State of resources at a point in time."""
     time: float
-    available: Dict[str, float]  # resource_name -> amount available
-    allocated: Dict[str, float]  # resource_name -> amount currently held
-    produced: Dict[str, float] = field(default_factory=dict)  # Produced so far
+    available: dict[str, float]  # resource_name -> amount available
+    allocated: dict[str, float]  # resource_name -> amount currently held
+    produced: dict[str, float] = field(default_factory=dict)  # Produced so far
 
     def total(self, resource: str) -> float:
         """Total resource (available + allocated)."""
@@ -114,7 +113,7 @@ class ResourceViolation:
 class ResourceTracker:
     """Tracks resource usage over time."""
 
-    def __init__(self, resources: List[Resource]):
+    def __init__(self, resources: list[Resource]):
         """
         Initialize tracker.
 
@@ -122,7 +121,7 @@ class ResourceTracker:
             resources: List of available resources
         """
         self.resources = {r.name: r for r in resources}
-        self.timeline: List[ResourceState] = []
+        self.timeline: list[ResourceState] = []
 
         # Initialize timeline at t=0
         initial_state = ResourceState(
@@ -158,7 +157,7 @@ class ResourceTracker:
     # ------------------------------------------------------------------------
 
     def check_feasibility(self, plan: Plan,
-                         constraints: Optional[Dict[str, float]] = None) -> bool:
+                         constraints: dict[str, float] | None = None) -> bool:
         """
         Check if plan is feasible given resources.
 
@@ -173,7 +172,7 @@ class ResourceTracker:
         return len(violations) == 0
 
     def find_violations(self, plan: Plan,
-                       constraints: Optional[Dict[str, float]] = None) -> List[ResourceViolation]:
+                       constraints: dict[str, float] | None = None) -> list[ResourceViolation]:
         """
         Find all resource constraint violations in plan.
 
@@ -255,7 +254,7 @@ class ResourceTracker:
     # Plan Simulation
     # ------------------------------------------------------------------------
 
-    def simulate_plan(self, plan: Plan) -> List[ResourceState]:
+    def simulate_plan(self, plan: Plan) -> list[ResourceState]:
         """
         Simulate plan execution to get resource timeline.
 
@@ -344,7 +343,7 @@ class ResourceTracker:
     # Resource Optimization
     # ------------------------------------------------------------------------
 
-    def compute_resource_usage(self, plan: Plan) -> Dict[str, Dict[str, float]]:
+    def compute_resource_usage(self, plan: Plan) -> dict[str, dict[str, float]]:
         """
         Compute detailed resource usage statistics.
 
@@ -381,8 +380,8 @@ class ResourceAwarePlanner:
 
     def __init__(self,
                  base_planner: HierarchicalPlanner,
-                 resources: List[Resource],
-                 constraints: Optional[Dict[str, float]] = None):
+                 resources: list[Resource],
+                 constraints: dict[str, float] | None = None):
         """
         Initialize resource-aware planner.
 
@@ -401,8 +400,8 @@ class ResourceAwarePlanner:
     # Planning
     # ------------------------------------------------------------------------
 
-    def plan(self, goal: Goal, current_state: Dict,
-             max_repair_attempts: int = 3) -> Optional[Plan]:
+    def plan(self, goal: Goal, current_state: dict,
+             max_repair_attempts: int = 3) -> Plan | None:
         """
         Generate resource-feasible plan.
 
@@ -455,7 +454,7 @@ class ResourceAwarePlanner:
     # Plan Repair
     # ------------------------------------------------------------------------
 
-    def repair_plan(self, plan: Plan, violations: List[ResourceViolation]) -> Optional[Plan]:
+    def repair_plan(self, plan: Plan, violations: list[ResourceViolation]) -> Plan | None:
         """
         Repair plan to fix resource violations.
 
@@ -571,11 +570,11 @@ class ResourceAwarePlanner:
 class ResourceAllocator:
     """Optimizes resource allocation across multiple plans."""
 
-    def __init__(self, resources: List[Resource]):
+    def __init__(self, resources: list[Resource]):
         """Initialize allocator."""
         self.resources = {r.name: r for r in resources}
 
-    def allocate(self, plans: List[Tuple[str, Plan, float]]) -> Dict[str, Plan]:
+    def allocate(self, plans: list[tuple[str, Plan, float]]) -> dict[str, Plan]:
         """
         Allocate resources to plans optimally.
 
@@ -609,7 +608,7 @@ class ResourceAllocator:
 
         return allocated
 
-    def _calculate_requirements(self, plan: Plan) -> Dict[str, float]:
+    def _calculate_requirements(self, plan: Plan) -> dict[str, float]:
         """Calculate total resource requirements for plan."""
         requirements = {}
 
@@ -622,8 +621,8 @@ class ResourceAllocator:
 
         return requirements
 
-    def _can_allocate(self, required: Dict[str, float],
-                     available: Dict[str, float]) -> bool:
+    def _can_allocate(self, required: dict[str, float],
+                     available: dict[str, float]) -> bool:
         """Check if allocation is possible."""
         for resource, amount in required.items():
             if amount > available.get(resource, 0):

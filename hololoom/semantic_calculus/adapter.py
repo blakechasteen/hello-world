@@ -4,7 +4,8 @@ HoloLoom Integration Adapters
 Helper functions for integrating semantic calculus with HoloLoom components.
 """
 
-from typing import Dict, Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from .analyzer import SemanticAnalyzer
 from .config import SemanticCalculusConfig
@@ -14,7 +15,7 @@ def create_semantic_thread(
     analyzer: SemanticAnalyzer,
     text: str,
     weight: float = 1.0
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Create a semantic flow thread for ResonanceShed.
 
@@ -48,7 +49,7 @@ def create_semantic_thread(
     }
 
 
-def quick_analysis(text: str, embed_fn: Callable) -> Dict[str, Any]:
+def quick_analysis(text: str, embed_fn: Callable) -> dict[str, Any]:
     """
     Quick one-shot semantic analysis.
 
@@ -77,7 +78,7 @@ def quick_analysis(text: str, embed_fn: Callable) -> Dict[str, Any]:
     return analyzer.analyze_text(text)
 
 
-def extract_trajectory_metrics(result: Dict[str, Any]) -> Dict[str, float]:
+def extract_trajectory_metrics(result: dict[str, Any]) -> dict[str, float]:
     """
     Extract key trajectory metrics from analysis result.
 
@@ -108,7 +109,7 @@ def extract_trajectory_metrics(result: Dict[str, Any]) -> Dict[str, float]:
     }
 
 
-def format_semantic_summary(result: Dict[str, Any]) -> str:
+def format_semantic_summary(result: dict[str, Any]) -> str:
     """
     Format analysis result as human-readable summary.
 
@@ -130,7 +131,7 @@ def format_semantic_summary(result: Dict[str, Any]) -> str:
     # Trajectory metrics
     metrics = extract_trajectory_metrics(result)
     if metrics:
-        lines.append(f"\nTrajectory:")
+        lines.append("\nTrajectory:")
         lines.append(f"  Words: {metrics['n_words']}")
         lines.append(f"  Distance: {metrics['total_distance']:.3f}")
         lines.append(f"  Avg Speed: {metrics['avg_speed']:.3f}")
@@ -139,17 +140,17 @@ def format_semantic_summary(result: Dict[str, Any]) -> str:
     # Semantic forces
     forces = result.get('semantic_forces', {})
     if 'dominant_velocity' in forces:
-        lines.append(f"\nDominant Dimensions:")
+        lines.append("\nDominant Dimensions:")
         for dim, score in forces['dominant_velocity'][:3]:
             lines.append(f"  {dim}: {score:.3f}")
 
     # Ethics
     ethics = result.get('ethics', {})
     if ethics:
-        lines.append(f"\nEthics:")
+        lines.append("\nEthics:")
         lines.append(f"  Virtue Score: {ethics.get('total_virtue', 0):.3f}")
         if ethics.get('manipulation_patterns'):
-            lines.append(f"  ⚠️  Manipulation detected")
+            lines.append("  ⚠️  Manipulation detected")
 
     lines.append("=" * 60)
     return "\n".join(lines)

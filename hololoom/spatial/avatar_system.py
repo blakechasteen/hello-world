@@ -8,12 +8,12 @@
 # - Inverse kinematics for tracked input
 # - Expression system
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime
 import math
 import uuid
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum, auto
+from typing import Any
 
 
 class AvatarStyle(Enum):
@@ -126,7 +126,7 @@ class Color:
         """Convert to hex string."""
         return f"#{int(self.r*255):02x}{int(self.g*255):02x}{int(self.b*255):02x}"
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {"r": self.r, "g": self.g, "b": self.b, "a": self.a}
 
     @classmethod
@@ -164,7 +164,7 @@ class Vector3:
     y: float = 0.0
     z: float = 0.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {"x": self.x, "y": self.y, "z": self.z}
 
     def magnitude(self) -> float:
@@ -185,7 +185,7 @@ class Quaternion:
     z: float = 0.0
     w: float = 1.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {"x": self.x, "y": self.y, "z": self.z, "w": self.w}
 
     @classmethod
@@ -229,7 +229,7 @@ class BodySettings:
     shirt_style: str = "casual"
     pants_style: str = "casual"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "body_type": self.body_type.name,
             "height": self.height,
@@ -266,11 +266,11 @@ class HeadSettings:
     mouth_size: float = 1.0
 
     # Accessories
-    glasses: Optional[str] = None
-    hat: Optional[str] = None
-    earrings: Optional[str] = None
+    glasses: str | None = None
+    hat: str | None = None
+    earrings: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "shape": self.shape.name,
             "scale": self.scale,
@@ -295,19 +295,19 @@ class HandSettings:
     size: float = 1.0
 
     # Appearance
-    skin_color: Optional[Color] = None  # None = match body
+    skin_color: Color | None = None  # None = match body
     glove_color: Color = field(default_factory=lambda: Color(0.2, 0.2, 0.2))
 
     # Accessories
-    rings: List[str] = field(default_factory=list)
-    bracelet: Optional[str] = None
-    watch: Optional[str] = None
+    rings: list[str] = field(default_factory=list)
+    bracelet: str | None = None
+    watch: str | None = None
 
     # Effects
     trail_enabled: bool = False
     trail_color: Color = field(default_factory=lambda: Color(0.5, 0.8, 1.0, 0.5))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "style": self.style.name,
             "size": self.size,
@@ -337,7 +337,7 @@ class Expression:
     mouth_open: float = 0.0
     lip_pucker: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "expression_type": self.expression_type.name,
             "intensity": self.intensity,
@@ -411,16 +411,16 @@ class IKState:
     right_hand_tracking: bool = False
 
     # Optional foot tracking (full body)
-    left_foot_position: Optional[Vector3] = None
-    left_foot_rotation: Optional[Quaternion] = None
-    right_foot_position: Optional[Vector3] = None
-    right_foot_rotation: Optional[Quaternion] = None
+    left_foot_position: Vector3 | None = None
+    left_foot_rotation: Quaternion | None = None
+    right_foot_position: Vector3 | None = None
+    right_foot_rotation: Quaternion | None = None
 
     # Hip tracking (for full body)
-    hip_position: Optional[Vector3] = None
-    hip_rotation: Optional[Quaternion] = None
+    hip_position: Vector3 | None = None
+    hip_rotation: Quaternion | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = {
             "head": {
                 "position": self.head_position.to_dict(),
@@ -461,7 +461,7 @@ class IKState:
 class NameTag:
     """Floating name tag above avatar."""
     display_name: str
-    title: Optional[str] = None  # e.g., "Team Lead", "Guest"
+    title: str | None = None  # e.g., "Team Lead", "Guest"
 
     # Appearance
     background_color: Color = field(default_factory=lambda: Color(0.1, 0.1, 0.1, 0.8))
@@ -476,7 +476,7 @@ class NameTag:
     visible: bool = True
     visible_distance: float = 20.0  # Fade out beyond this
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "display_name": self.display_name,
             "title": self.title,
@@ -494,7 +494,7 @@ class NameTag:
 class StatusIndicator:
     """Status indicator for avatar."""
     status: StatusType = StatusType.AVAILABLE
-    custom_message: Optional[str] = None
+    custom_message: str | None = None
 
     # Appearance
     show_indicator: bool = True
@@ -514,7 +514,7 @@ class StatusIndicator:
         }
         return colors.get(self.status, Color.white())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "status": self.status.name,
             "custom_message": self.custom_message,
@@ -535,7 +535,7 @@ class AnimationClip:
     blend_in: float = 0.2  # Transition time
     blend_out: float = 0.2
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "clip_id": self.clip_id,
             "name": self.name,
@@ -573,7 +573,7 @@ class Avatar:
     ik_enabled: bool = True
 
     # UI Elements
-    name_tag: Optional[NameTag] = None
+    name_tag: NameTag | None = None
     status: StatusIndicator = field(default_factory=StatusIndicator)
 
     # Visibility
@@ -590,7 +590,7 @@ class Avatar:
     created_at: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "avatar_id": self.avatar_id,
             "user_id": self.user_id,
@@ -620,8 +620,8 @@ class AvatarAnimator:
     """Manages avatar animations."""
 
     def __init__(self):
-        self.clips: Dict[str, AnimationClip] = {}
-        self.current_clip: Optional[AnimationClip] = None
+        self.clips: dict[str, AnimationClip] = {}
+        self.current_clip: AnimationClip | None = None
         self.blend_weight: float = 0.0
         self.playback_time: float = 0.0
 
@@ -658,7 +658,7 @@ class AvatarAnimator:
         self.blend_weight = 0.0
         return True
 
-    def update(self, delta_time: float) -> Optional[AnimationState]:
+    def update(self, delta_time: float) -> AnimationState | None:
         """Update animation playback."""
         if not self.current_clip:
             return None
@@ -683,7 +683,7 @@ class AvatarAnimator:
 
         return self.current_clip.state
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """Get current animation state."""
         return {
             "current_clip": self.current_clip.clip_id if self.current_clip else None,
@@ -706,7 +706,7 @@ class AvatarIKSolver:
         shoulder_pos: Vector3,
         target_pos: Vector3,
         is_left: bool
-    ) -> Tuple[Quaternion, Quaternion]:
+    ) -> tuple[Quaternion, Quaternion]:
         """
         Solve IK for arm from shoulder to hand target.
         Returns (upper_arm_rotation, forearm_rotation).
@@ -745,7 +745,7 @@ class AvatarIKSolver:
 
         return upper_rot, forearm_rot
 
-    def update_from_tracking(self, ik_state: IKState) -> Dict[str, Quaternion]:
+    def update_from_tracking(self, ik_state: IKState) -> dict[str, Quaternion]:
         """Update avatar bone rotations from IK state."""
         results = {}
 
@@ -795,10 +795,10 @@ class AvatarManager:
     """Manages multiple avatars in a session."""
 
     def __init__(self):
-        self.avatars: Dict[str, Avatar] = {}
-        self.animators: Dict[str, AvatarAnimator] = {}
-        self.ik_solvers: Dict[str, AvatarIKSolver] = {}
-        self.local_avatar_id: Optional[str] = None
+        self.avatars: dict[str, Avatar] = {}
+        self.animators: dict[str, AvatarAnimator] = {}
+        self.ik_solvers: dict[str, AvatarIKSolver] = {}
+        self.local_avatar_id: str | None = None
 
     def create_avatar(
         self,
@@ -826,11 +826,11 @@ class AvatarManager:
 
         return avatar
 
-    def get_avatar(self, avatar_id: str) -> Optional[Avatar]:
+    def get_avatar(self, avatar_id: str) -> Avatar | None:
         """Get avatar by ID."""
         return self.avatars.get(avatar_id)
 
-    def get_local_avatar(self) -> Optional[Avatar]:
+    def get_local_avatar(self) -> Avatar | None:
         """Get the local user's avatar."""
         if self.local_avatar_id:
             return self.avatars.get(self.local_avatar_id)
@@ -853,7 +853,7 @@ class AvatarManager:
         self,
         avatar_id: str,
         position: Vector3,
-        rotation: Optional[Quaternion] = None
+        rotation: Quaternion | None = None
     ) -> bool:
         """Update avatar position and rotation."""
         avatar = self.avatars.get(avatar_id)
@@ -917,7 +917,7 @@ class AvatarManager:
         self,
         avatar_id: str,
         status: StatusType,
-        custom_message: Optional[str] = None
+        custom_message: str | None = None
     ) -> bool:
         """Set avatar status."""
         avatar = self.avatars.get(avatar_id)
@@ -941,10 +941,10 @@ class AvatarManager:
     def customize_avatar(
         self,
         avatar_id: str,
-        body: Optional[BodySettings] = None,
-        head: Optional[HeadSettings] = None,
-        left_hand: Optional[HandSettings] = None,
-        right_hand: Optional[HandSettings] = None
+        body: BodySettings | None = None,
+        head: HeadSettings | None = None,
+        left_hand: HandSettings | None = None,
+        right_hand: HandSettings | None = None
     ) -> bool:
         """Customize avatar appearance."""
         avatar = self.avatars.get(avatar_id)
@@ -965,7 +965,7 @@ class AvatarManager:
         avatar.last_updated = datetime.now()
         return True
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export state for WebXR client."""
         return {
             "avatars": {

@@ -1,13 +1,19 @@
 """Jupyter Executor Skill - Run notebooks programmatically"""
 
-import asyncio
 import json
 import os
 import time
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 # Check for nbformat availability
 try:
@@ -20,7 +26,7 @@ except ImportError:
 # Check for nbconvert availability
 try:
     from nbconvert import HTMLExporter, PDFExporter, PythonExporter
-    from nbconvert.preprocessors import ExecutePreprocessor, CellExecutionError
+    from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
     NBCONVERT_AVAILABLE = True
 except ImportError:
     NBCONVERT_AVAILABLE = False
@@ -95,7 +101,7 @@ class JupyterExecutorSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _run_notebook(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _run_notebook(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute complete notebook."""
         notebook_path = params["notebook_path"]
         output_path = params.get("output_path")
@@ -103,7 +109,7 @@ class JupyterExecutorSkill(BaseSkill):
         kernel_name = params.get("kernel_name", "python3")
 
         # Read notebook
-        with open(notebook_path, 'r', encoding='utf-8') as f:
+        with open(notebook_path, encoding='utf-8') as f:
             nb = nbformat.read(f, as_version=4)
 
         # Create executor
@@ -114,7 +120,7 @@ class JupyterExecutorSkill(BaseSkill):
         try:
             ep.preprocess(nb, {'metadata': {'path': str(Path(notebook_path).parent)}})
             cells_errored = 0
-        except CellExecutionError as e:
+        except CellExecutionError:
             cells_errored = 1
 
         execution_time = time.time() - start_time
@@ -134,14 +140,14 @@ class JupyterExecutorSkill(BaseSkill):
             "kernel_used": kernel_name
         }
 
-    async def _run_cell(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _run_cell(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute a single cell."""
         notebook_path = params["notebook_path"]
         cell_index = params["cell_index"]
         timeout = params.get("timeout", 60)
 
         # Read notebook
-        with open(notebook_path, 'r', encoding='utf-8') as f:
+        with open(notebook_path, encoding='utf-8') as f:
             nb = nbformat.read(f, as_version=4)
 
         if cell_index >= len(nb.cells):
@@ -158,7 +164,7 @@ class JupyterExecutorSkill(BaseSkill):
             ep.preprocess_cell(cell, {'metadata': {'path': str(Path(notebook_path).parent)}}, cell_index)
             success = True
             outputs = cell.get('outputs', [])
-        except Exception as e:
+        except Exception:
             success = False
             outputs = []
 
@@ -174,13 +180,13 @@ class JupyterExecutorSkill(BaseSkill):
             "success": success
         }
 
-    async def _extract_outputs(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _extract_outputs(self, params: dict[str, Any]) -> dict[str, Any]:
         """Extract outputs from executed notebook."""
         notebook_path = params["notebook_path"]
         variables_to_extract = params.get("variables_to_extract", [])
 
         # Read notebook
-        with open(notebook_path, 'r', encoding='utf-8') as f:
+        with open(notebook_path, encoding='utf-8') as f:
             nb = nbformat.read(f, as_version=4)
 
         # Extract cell outputs
@@ -212,7 +218,7 @@ class JupyterExecutorSkill(BaseSkill):
         # which isn't available from static notebook files
         variables = {}
         if variables_to_extract:
-            variables = {var: "Variable extraction requires live kernel execution" for var in variables_to_extract}
+            variables = dict.fromkeys(variables_to_extract, "Variable extraction requires live kernel execution")
 
         return {
             "operation": "extract_outputs",
@@ -221,7 +227,7 @@ class JupyterExecutorSkill(BaseSkill):
             "variables": variables
         }
 
-    async def _parameterize(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _parameterize(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute notebook with parameters (like papermill)."""
         notebook_path = params["notebook_path"]
         output_path = params.get("output_path", "parameterized_output.ipynb")
@@ -229,7 +235,7 @@ class JupyterExecutorSkill(BaseSkill):
         timeout = params.get("timeout", 600)
 
         # Read notebook
-        with open(notebook_path, 'r', encoding='utf-8') as f:
+        with open(notebook_path, encoding='utf-8') as f:
             nb = nbformat.read(f, as_version=4)
 
         # Insert parameters cell at the beginning
@@ -250,7 +256,7 @@ class JupyterExecutorSkill(BaseSkill):
         try:
             ep.preprocess(nb, {'metadata': {'path': str(Path(notebook_path).parent)}})
             cells_errored = 0
-        except CellExecutionError as e:
+        except CellExecutionError:
             cells_errored = 1
 
         execution_time = time.time() - start_time
@@ -269,14 +275,14 @@ class JupyterExecutorSkill(BaseSkill):
             "total_execution_time_seconds": round(execution_time, 2)
         }
 
-    async def _convert(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _convert(self, params: dict[str, Any]) -> dict[str, Any]:
         """Convert notebook to different format."""
         notebook_path = params["notebook_path"]
         output_format = params["output_format"]  # html, pdf, python, markdown
         output_path = params.get("output_path")
 
         # Read notebook
-        with open(notebook_path, 'r', encoding='utf-8') as f:
+        with open(notebook_path, encoding='utf-8') as f:
             nb = nbformat.read(f, as_version=4)
 
         # Select exporter
@@ -316,4 +322,5 @@ class JupyterExecutorSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(JupyterExecutorSkill())

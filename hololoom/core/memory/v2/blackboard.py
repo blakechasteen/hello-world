@@ -19,7 +19,7 @@ import math
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -41,10 +41,10 @@ class WorkingMemory:
     Working memory entities inject into PPR as high-weight seeds,
     giving cross-turn continuity without modifying the knowledge graph.
     """
-    active_goals: List[str] = field(default_factory=list)
-    entity_focus: Dict[str, float] = field(default_factory=dict)
-    recent_corrections: List[str] = field(default_factory=list)
-    session_facts: Dict[str, str] = field(default_factory=dict)
+    active_goals: list[str] = field(default_factory=list)
+    entity_focus: dict[str, float] = field(default_factory=dict)
+    recent_corrections: list[str] = field(default_factory=list)
+    session_facts: dict[str, str] = field(default_factory=dict)
     turn_count: int = 0
 
     # Limits
@@ -66,7 +66,7 @@ class WorkingMemory:
         """Cognitive pressure: load / capacity. Can exceed 1.0."""
         return self.load / self.capacity
 
-    def evict(self, n: int = 1) -> List[str]:
+    def evict(self, n: int = 1) -> list[str]:
         """Remove n lowest-value items across all categories.
 
         Eviction priority (lowest priority evicted first):
@@ -75,7 +75,7 @@ class WorkingMemory:
           3. Session facts (alphabetical key order)
           4. Goals (FIFO — oldest first, highest priority to keep)
         """
-        evicted: List[str] = []
+        evicted: list[str] = []
         remaining = n
 
         # 1. Entities — lowest focus weight first
@@ -138,7 +138,7 @@ class WorkingMemory:
             overflow = self.load - self.capacity
             self.evict(overflow)
 
-    def attend(self, entity_ids: List[str], boost: float = 0.5):
+    def attend(self, entity_ids: list[str], boost: float = 0.5):
         """Focus attention on entities (from current query or retrieval)."""
         for eid in entity_ids:
             current = self.entity_focus.get(eid, 0.0)
@@ -162,7 +162,7 @@ class WorkingMemory:
             if len(self.active_goals) > self.max_goals:
                 self.active_goals.pop(0)
 
-    def focused_entity_ids(self, min_weight: float = 0.1) -> List[Tuple[str, float]]:
+    def focused_entity_ids(self, min_weight: float = 0.1) -> list[tuple[str, float]]:
         """Get entity IDs with focus above threshold, sorted by weight."""
         return sorted(
             [(eid, w) for eid, w in self.entity_focus.items() if w >= min_weight],
@@ -170,7 +170,7 @@ class WorkingMemory:
             reverse=True,
         )
 
-    def to_snapshot(self) -> Dict:
+    def to_snapshot(self) -> dict:
         """Serialize working memory state for persistence."""
         return {
             "active_goals": list(self.active_goals),
@@ -181,7 +181,7 @@ class WorkingMemory:
             "eviction_count": self.eviction_count,
         }
 
-    def from_snapshot(self, data: Dict):
+    def from_snapshot(self, data: dict):
         """Restore working memory state from a snapshot."""
         self.active_goals = list(data.get("active_goals", []))
         self.entity_focus = dict(data.get("entity_focus", {}))
@@ -228,15 +228,15 @@ class Blackboard:
 
     # Navigator signals
     seed_count: int = 0
-    seed_sources: Dict[str, int] = field(default_factory=dict)  # source_type → count
+    seed_sources: dict[str, int] = field(default_factory=dict)  # source_type → count
     ppr_entropy: float = 0.0
     ppr_converged: bool = False
-    active_entities: Set[str] = field(default_factory=set)
+    active_entities: set[str] = field(default_factory=set)
 
     # Confidence signals
-    confidence_trace: List[float] = field(default_factory=list)
-    structural_scores: List[float] = field(default_factory=list)
-    narrative_scores: List[float] = field(default_factory=list)
+    confidence_trace: list[float] = field(default_factory=list)
+    structural_scores: list[float] = field(default_factory=list)
+    narrative_scores: list[float] = field(default_factory=list)
     latest_decision: str = ""  # "sufficient", "verify", "flag"
 
     # Formatter signals
@@ -246,10 +246,10 @@ class Blackboard:
 
     # Shell execution signals
     shell_count: int = 0
-    shells_executed: List[str] = field(default_factory=list)  # ["prime", "verify"]
+    shells_executed: list[str] = field(default_factory=list)  # ["prime", "verify"]
 
     # Flags (any component can post signals)
-    flags: Dict[str, Any] = field(default_factory=dict)
+    flags: dict[str, Any] = field(default_factory=dict)
 
     # Timing
     start_time: float = field(default_factory=time.perf_counter)
@@ -259,10 +259,10 @@ class Blackboard:
     def post_navigation(
         self,
         seed_count: int,
-        seed_sources: Dict[str, int],
+        seed_sources: dict[str, int],
         ppr_entropy: float,
         ppr_converged: bool,
-        entity_ids: Set[str],
+        entity_ids: set[str],
     ):
         """Navigator posts retrieval signals."""
         self.seed_count = seed_count
@@ -346,7 +346,7 @@ class Blackboard:
             return 0.0
         return len(wm_entities & self.active_entities) / len(wm_entities)
 
-    def context_features(self) -> Dict[str, float]:
+    def context_features(self) -> dict[str, float]:
         """Extract feature vector for contextual bandits.
 
         6-dimensional context that characterizes the current query:
@@ -397,7 +397,7 @@ class ProductionRule:
             return False
 
 
-def default_skip_verify_rules() -> List[ProductionRule]:
+def default_skip_verify_rules() -> list[ProductionRule]:
     """Default production rules for skipping VERIFY shell.
 
     VERIFY is skipped when ALL of these are true:
@@ -421,7 +421,7 @@ def default_skip_verify_rules() -> List[ProductionRule]:
     ]
 
 
-def default_skip_flag_rules() -> List[ProductionRule]:
+def default_skip_flag_rules() -> list[ProductionRule]:
     """Default production rules for skipping FLAG shell.
 
     FLAG is skipped (stop at VERIFY) when ANY of these are true:
@@ -449,7 +449,7 @@ def default_skip_flag_rules() -> List[ProductionRule]:
 # Utilities
 # =============================================================================
 
-def compute_ppr_entropy(ppr_scores: List[float]) -> float:
+def compute_ppr_entropy(ppr_scores: list[float]) -> float:
     """Shannon entropy of PPR score distribution (normalized).
 
     Low entropy = focused retrieval (few high-scoring nodes)
@@ -469,9 +469,9 @@ def compute_ppr_entropy(ppr_scores: List[float]) -> float:
     return entropy / max_entropy if max_entropy > 0 else 0.0
 
 
-def extract_seed_sources(seeds) -> Dict[str, int]:
+def extract_seed_sources(seeds) -> dict[str, int]:
     """Count seeds by source type (alias, fuzzy, keyword, entity_extract)."""
-    counts: Dict[str, int] = {}
+    counts: dict[str, int] = {}
     for seed in seeds:
         source = getattr(seed, 'source', 'unknown')
         counts[source] = counts.get(source, 0) + 1

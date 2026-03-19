@@ -13,12 +13,13 @@ Status: Production Ready
 W9: Memory Retrieval Stub Remediation (SWOT Weakness)
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Callable, Awaitable, Union, Tuple, TYPE_CHECKING
-from enum import Enum
-from datetime import datetime
-import logging
 import asyncio
+import logging
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.protocols.types import MemoryShard
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
 from hololoom.memory.retrieval_result import (
     RetrievalResultEnhanced,
     RetrievalStatus,
-    ensure_retrieval_result
+    ensure_retrieval_result,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,11 +58,11 @@ class RetrieverInfo:
     priority: int  # Lower = higher priority (1 is highest)
     retrieve_fn: Callable[..., Awaitable[Any]]
     health: RetrieverHealth = RetrieverHealth.UNKNOWN
-    last_health_check: Optional[datetime] = None
+    last_health_check: datetime | None = None
     consecutive_failures: int = 0
     total_calls: int = 0
     total_successes: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def success_rate(self) -> float:
@@ -81,8 +82,8 @@ class FallbackResult:
     """Result of retrieval with fallback chain tracking."""
     result: RetrievalResultEnhanced
     retriever_used: str
-    fallback_path: List[str]  # Chain of retrievers tried
-    fallback_reasons: Dict[str, str]  # Why each retriever failed
+    fallback_path: list[str]  # Chain of retrievers tried
+    fallback_reasons: dict[str, str]  # Why each retriever failed
     total_time_ms: float
 
     @property
@@ -90,7 +91,7 @@ class FallbackResult:
         """True if primary retriever was not used."""
         return len(self.fallback_path) > 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "retriever_used": self.retriever_used,
@@ -132,8 +133,8 @@ class RetrieverRegistry:
             health_check_interval_seconds: Time between health checks
             enable_auto_recovery: Re-enable retrievers after cooldown
         """
-        self._retrievers: Dict[str, RetrieverInfo] = {}
-        self._priority_order: List[str] = []  # Sorted by priority
+        self._retrievers: dict[str, RetrieverInfo] = {}
+        self._priority_order: list[str] = []  # Sorted by priority
         self.max_consecutive_failures = max_consecutive_failures
         self.health_check_interval = health_check_interval_seconds
         self.enable_auto_recovery = enable_auto_recovery
@@ -145,7 +146,7 @@ class RetrieverRegistry:
         retrieve_fn: Callable[..., Awaitable[Any]],
         retriever_type: RetrieverType = RetrieverType.CUSTOM,
         priority: int = 10,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> None:
         """
         Register a retriever.
@@ -193,14 +194,14 @@ class RetrieverRegistry:
             key=lambda n: self._retrievers[n].priority
         )
 
-    def get_available_retrievers(self) -> List[str]:
+    def get_available_retrievers(self) -> list[str]:
         """Get list of available retrievers in priority order."""
         return [
             name for name in self._priority_order
             if self._retrievers[name].is_available
         ]
 
-    def get_retriever_info(self, name: str) -> Optional[RetrieverInfo]:
+    def get_retriever_info(self, name: str) -> RetrieverInfo | None:
         """Get information about a specific retriever."""
         return self._retrievers.get(name)
 
@@ -215,9 +216,9 @@ class RetrieverRegistry:
     async def retrieve(
         self,
         query: str,
-        memories: List["MemoryShard"],
+        memories: list["MemoryShard"],
         limit: int = 10,
-        preferred_retriever: Optional[str] = None,
+        preferred_retriever: str | None = None,
         **kwargs
     ) -> FallbackResult:
         """
@@ -237,8 +238,8 @@ class RetrieverRegistry:
             FallbackResult with complete fallback chain tracking
         """
         start_time = datetime.utcnow()
-        fallback_path: List[str] = []
-        fallback_reasons: Dict[str, str] = {}
+        fallback_path: list[str] = []
+        fallback_reasons: dict[str, str] = {}
 
         # Build retriever order
         retriever_order = self.get_available_retrievers()
@@ -367,7 +368,7 @@ class RetrieverRegistry:
         elif info.consecutive_failures > 0:
             info.health = RetrieverHealth.DEGRADED
 
-    async def health_check(self, retriever_name: Optional[str] = None) -> Dict[str, RetrieverHealth]:
+    async def health_check(self, retriever_name: str | None = None) -> dict[str, RetrieverHealth]:
         """
         Perform health check on retrievers.
 
@@ -404,7 +405,7 @@ class RetrieverRegistry:
 
         return results
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get statistics for all registered retrievers."""
         stats = {
             "total_retrievers": len(self._retrievers),

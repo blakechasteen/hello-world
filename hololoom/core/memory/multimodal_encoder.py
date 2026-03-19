@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Multimodal Encoder
 ==================
@@ -22,9 +22,10 @@ Usage:
     # Returns: {'clip': array(512), 'structural': {...}}
 """
 
-import numpy as np
-from typing import Dict, Optional, Tuple, Any
 from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 # Optional dependencies
 try:
@@ -55,10 +56,10 @@ class ImageEmbeddings:
         caption: Text embedding of caption (optional)
         metadata: Additional metadata
     """
-    clip: Optional[np.ndarray] = None
-    structural: Dict[str, float] = None
-    caption: Optional[np.ndarray] = None
-    metadata: Dict[str, Any] = None
+    clip: np.ndarray | None = None
+    structural: dict[str, float] = None
+    caption: np.ndarray | None = None
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         if self.structural is None:
@@ -132,7 +133,7 @@ class MultimodalEncoder:
     async def encode_image(
         self,
         image: np.ndarray,
-        caption: Optional[str] = None
+        caption: str | None = None
     ) -> ImageEmbeddings:
         """
         Encode image to multiple representations.
@@ -244,7 +245,7 @@ class MultimodalEncoder:
 
         return text_features.cpu().numpy()[0]
 
-    def _extract_structural_features(self, image: np.ndarray) -> Dict[str, float]:
+    def _extract_structural_features(self, image: np.ndarray) -> dict[str, float]:
         """
         Extract low-level structural features.
 
@@ -319,7 +320,7 @@ class MultimodalEncoder:
 
         return features
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Get encoding statistics."""
         return {
             'total_encoded': self.stats['total_encoded'],
@@ -371,8 +372,8 @@ class StructuralSimilarity:
 
     def compare(
         self,
-        features1: Dict[str, float],
-        features2: Dict[str, float]
+        features1: dict[str, float],
+        features2: dict[str, float]
     ) -> float:
         """
         Compare two sets of structural features.
@@ -421,7 +422,7 @@ class StructuralSimilarity:
 async def encode_image(
     image: np.ndarray,
     use_clip: bool = True,
-    caption: Optional[str] = None
+    caption: str | None = None
 ) -> ImageEmbeddings:
     """
     Convenience function for encoding images.

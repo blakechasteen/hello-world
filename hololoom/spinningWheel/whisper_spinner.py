@@ -24,20 +24,20 @@ Date: November 2025
 """
 
 import asyncio
-from pathlib import Path
-from typing import List, Optional, Dict, Any, AsyncIterator
-from dataclasses import dataclass, field
 import warnings
+from collections.abc import AsyncIterator
+from dataclasses import dataclass
 from datetime import timedelta
+from pathlib import Path
+from typing import Any
 
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
     SpinnerCapabilities,
-    ImportanceScore
+    SpinResult,
 )
-from hololoom.spinningWheel.importance import ImportanceScorer
-from hololoom.protocols.types import MemoryShard
 
 # Try to import whisper
 try:
@@ -59,7 +59,7 @@ class TimecodeSegment:
     end: float    # seconds
     text: str
     confidence: float = 0.0
-    speaker: Optional[str] = None  # For diarization
+    speaker: str | None = None  # For diarization
 
     @property
     def duration(self) -> float:
@@ -86,10 +86,10 @@ class AudioTranscription:
     file_path: Path
     language: str
     duration: float  # Total audio duration in seconds
-    segments: List[TimecodeSegment]
+    segments: list[TimecodeSegment]
     full_text: str
     model_size: str
-    word_timestamps: Optional[List[Dict[str, Any]]] = None  # Word-level timecodes
+    word_timestamps: list[dict[str, Any]] | None = None  # Word-level timecodes
 
     @property
     def segment_count(self) -> int:
@@ -99,7 +99,7 @@ class AudioTranscription:
         """Export as SRT subtitle file"""
         return "\n".join(seg.to_srt_format(i + 1) for i, seg in enumerate(self.segments))
 
-    def get_text_at_time(self, timestamp: float) -> Optional[str]:
+    def get_text_at_time(self, timestamp: float) -> str | None:
         """Get text at specific timestamp"""
         for seg in self.segments:
             if seg.start <= timestamp <= seg.end:
@@ -127,7 +127,7 @@ class WhisperSpinner(BaseSpinner):
         self,
         model_size: str = "base",
         importance_threshold: float = 0.3,
-        language: Optional[str] = None,  # Auto-detect if None
+        language: str | None = None,  # Auto-detect if None
         enable_word_timestamps: bool = True,
         chunk_duration: float = 300.0,  # 5 minutes
         device: str = "auto"  # "cpu", "cuda", or "auto"
@@ -171,13 +171,15 @@ class WhisperSpinner(BaseSpinner):
                 device = self.device
 
             self.model = whisper.load_model(self.model_size, device=device)
+            # Update self.device to the resolved value (cpu or cuda)
+            self.device = device
             print(f"Whisper model '{self.model_size}' loaded on {device}")
 
         except Exception as e:
             warnings.warn(f"Failed to load Whisper model: {e}")
             self.model = None
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Core transcription implementation.
 
@@ -248,7 +250,7 @@ class WhisperSpinner(BaseSpinner):
             word_timestamps=word_timestamps
         )
 
-    def _transcription_to_shards(self, transcription: AudioTranscription) -> List[MemoryShard]:
+    def _transcription_to_shards(self, transcription: AudioTranscription) -> list[MemoryShard]:
         """Convert transcription to MemoryShards"""
         shards = []
 
@@ -308,7 +310,7 @@ class WhisperSpinner(BaseSpinner):
                 }
             )
             return score.score
-        except Exception as e:
+        except Exception:
             # Gracefully handle scoring errors (regex issues, etc.)
             # Fall back to simple length-based scoring
             return min(len(transcription.full_text) / 1000, 1.0)
@@ -337,7 +339,7 @@ class WhisperSpinner(BaseSpinner):
                 score.score *= 0.8
 
             return min(1.0, score.score)
-        except Exception as e:
+        except Exception:
             # Gracefully handle scoring errors (regex issues, etc.)
             # Fall back to simple length and confidence-based scoring
             base_score = min(len(segment.text) / 100, 1.0)
@@ -369,19 +371,18 @@ class WhisperSpinner(BaseSpinner):
     def get_capabilities(self) -> SpinnerCapabilities:
         """Get spinner capabilities"""
         return SpinnerCapabilities(
-            streaming=True,
+            streaming=False,
             incremental=False,  # No incremental audio (would need chunking)
-            batch=False,
-            supported_formats=['wav', 'mp3', 'm4a', 'flac', 'ogg', 'opus'],
-            max_size_bytes=500 * 1024 * 1024,  # 500 MB limit
-            metadata={'model_sizes': ['tiny', 'base', 'small', 'medium', 'large']}
+            batch_processing=True,
+            supported_formats=['.wav', '.mp3', '.m4a', '.flac', '.ogg', '.opus'],
+            max_input_size=500 * 1024 * 1024,  # 500 MB limit
         )
 
     def is_available(self) -> bool:
         """Check if Whisper is available"""
         return WHISPER_AVAILABLE and self.model is not None
 
-    def export_srt(self, segments: List[TimecodeSegment], output_path: Path):
+    def export_srt(self, segments: list[TimecodeSegment], output_path: Path):
         """
         Export segments to SRT subtitle format.
 
@@ -402,7 +403,8 @@ class WhisperSpinner(BaseSpinner):
 async def transcribe_audio(
     audio_path: Path,
     model_size: str = "base",
-    language: Optional[str] = None
+    language: str | None = None,
+    importance_threshold: float = 0.2
 ) -> SpinResult:
     """
     Convenience function to transcribe audio.
@@ -411,6 +413,7 @@ async def transcribe_audio(
         audio_path: Path to audio file
         model_size: Whisper model size
         language: Target language (None for auto-detect)
+        importance_threshold: Minimum importance score to keep segments
 
     Returns:
         SpinResult with transcription shards
@@ -418,7 +421,7 @@ async def transcribe_audio(
     spinner = WhisperSpinner(
         model_size=model_size,
         language=language,
-        importance_threshold=0.2  # Lower threshold for convenience function
+        importance_threshold=importance_threshold
     )
 
     return await spinner.spin(audio_path)
@@ -427,7 +430,7 @@ async def transcribe_audio(
 async def transcribe_with_timecodes(
     audio_path: Path,
     export_srt: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Transcribe audio and export with timecodes.
 

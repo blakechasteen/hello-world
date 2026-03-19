@@ -12,8 +12,9 @@ import asyncio
 import json
 import logging
 import uuid
-from typing import Optional, Dict, Any, Callable, List
+from collections.abc import Callable
 from dataclasses import asdict
+from typing import Any
 
 try:
     import websockets
@@ -23,8 +24,7 @@ except ImportError:
     WEBSOCKETS_AVAILABLE = False
     print("Warning: websockets not available. Install with: pip install websockets")
 
-from .protocol import MCPRequest, MCPResponse, MCPNotification, MCPToolCall
-
+from .protocol import MCPRequest, MCPToolCall
 
 logger = logging.getLogger(__name__)
 
@@ -60,18 +60,18 @@ class MCPClient:
         self.reconnect = reconnect
         self.reconnect_delay = reconnect_delay
 
-        self.ws: Optional[WebSocketClientProtocol] = None
+        self.ws: WebSocketClientProtocol | None = None
         self.connected = False
 
         # Pending requests waiting for responses
-        self.pending_requests: Dict[str, asyncio.Future] = {}
+        self.pending_requests: dict[str, asyncio.Future] = {}
 
         # Notification handlers
-        self.notification_handlers: Dict[str, List[Callable]] = {}
+        self.notification_handlers: dict[str, list[Callable]] = {}
 
         # Background tasks
-        self.receive_task: Optional[asyncio.Task] = None
-        self.reconnect_task: Optional[asyncio.Task] = None
+        self.receive_task: asyncio.Task | None = None
+        self.reconnect_task: asyncio.Task | None = None
 
     async def connect(self) -> bool:
         """
@@ -142,7 +142,7 @@ class MCPClient:
 
         logger.info(f"Initialized MCP connection: {response}")
 
-    async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    async def call_tool(self, tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         """
         Call an MCP tool
 
@@ -173,7 +173,7 @@ class MCPClient:
 
         return result
 
-    async def list_tools(self) -> List[Dict[str, Any]]:
+    async def list_tools(self) -> list[dict[str, Any]]:
         """
         List available tools
 
@@ -186,7 +186,7 @@ class MCPClient:
         result = await self.call_method("tools/list", {})
         return result.get("tools", [])
 
-    async def call_method(self, method: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def call_method(self, method: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Call MCP method and wait for response
 
@@ -304,7 +304,7 @@ class MCPClient:
         except Exception as e:
             logger.error(f"Error handling message: {e}")
 
-    async def _handle_notification(self, data: Dict[str, Any]):
+    async def _handle_notification(self, data: dict[str, Any]):
         """Handle MCP notification"""
         method = data.get("method", "")
         params = data.get("params", {})
@@ -329,7 +329,7 @@ class MCPClient:
                 logger.info("Reconnected successfully")
                 break
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get client status"""
         return {
             "connected": self.connected,

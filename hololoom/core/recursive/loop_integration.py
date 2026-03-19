@@ -18,25 +18,20 @@ Author: Claude Code
 Date: 2025-10-29 (Phase 2 Implementation)
 """
 
-import asyncio
 import logging
-from typing import Dict, List, Any, Optional, Set, Tuple
-from dataclasses import dataclass, field
-from collections import defaultdict, Counter
-from datetime import datetime
 import time
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from typing import Any
+
+from hololoom.config import Config
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.protocols.types import MemoryShard, Query
 
 # HoloLoom components
-from hololoom.recursive.scratchpad_integration import (
-    ScratchpadOrchestrator,
-    ScratchpadConfig
-)
-from hololoom.fabric.spacetime import Spacetime
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.config import Config
+from hololoom.recursive.scratchpad_integration import ScratchpadConfig, ScratchpadOrchestrator
 
 # Scratchpad components (standalone, was from Promptly)
-from hololoom.recursive.scratchpad import Scratchpad
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +43,8 @@ logger = logging.getLogger(__name__)
 @dataclass
 class LearnedPattern:
     """A pattern learned from successful weaving cycles"""
-    motifs: List[str]  # Detected motifs
-    threads: List[str]  # Activated threads
+    motifs: list[str]  # Detected motifs
+    threads: list[str]  # Activated threads
     tool: str  # Tool selected
     adapter: str  # Adapter used
     confidence: float  # Confidence achieved
@@ -96,7 +91,7 @@ class PatternExtractor:
         self.confidence_threshold = confidence_threshold
         self.logger = logging.getLogger(f"{__name__}.PatternExtractor")
 
-    def extract(self, spacetime: Spacetime) -> Optional[LearnedPattern]:
+    def extract(self, spacetime: Spacetime) -> LearnedPattern | None:
         """
         Extract pattern from successful weaving cycle.
 
@@ -213,10 +208,10 @@ class PatternLearner:
         self.prune_confidence = prune_confidence
 
         # Pattern storage (pattern hash -> pattern)
-        self.patterns: Dict[int, LearnedPattern] = {}
+        self.patterns: dict[int, LearnedPattern] = {}
 
         # Index by query type for fast lookup
-        self.patterns_by_type: Dict[str, Set[int]] = defaultdict(set)
+        self.patterns_by_type: dict[str, set[int]] = defaultdict(set)
 
         # Statistics
         self.stats = LearningStats()
@@ -267,7 +262,7 @@ class PatternLearner:
                 p.avg_confidence for p in self.patterns.values()
             ) / len(self.patterns)
 
-    def get_hot_patterns(self, query_type: Optional[str] = None) -> List[LearnedPattern]:
+    def get_hot_patterns(self, query_type: str | None = None) -> list[LearnedPattern]:
         """
         Get hot patterns (frequently successful).
 
@@ -338,7 +333,7 @@ class PatternLearner:
 
         return len(to_remove)
 
-    def suggest_improvements(self, query_text: str) -> Dict[str, Any]:
+    def suggest_improvements(self, query_text: str) -> dict[str, Any]:
         """
         Suggest improvements for a query based on learned patterns.
 
@@ -425,10 +420,10 @@ class LearningLoopEngine:
     def __init__(
         self,
         cfg: Config,
-        shards: Optional[List[MemoryShard]] = None,
-        memory: Optional[Any] = None,
-        scratchpad_config: Optional[ScratchpadConfig] = None,
-        loop_config: Optional[LearningLoopConfig] = None
+        shards: list[MemoryShard] | None = None,
+        memory: Any | None = None,
+        scratchpad_config: ScratchpadConfig | None = None,
+        loop_config: LearningLoopConfig | None = None
     ):
         """
         Initialize learning loop engine.
@@ -447,7 +442,7 @@ class LearningLoopEngine:
         self.loop_config = loop_config or LearningLoopConfig()
 
         # Create components
-        self.orchestrator: Optional[ScratchpadOrchestrator] = None
+        self.orchestrator: ScratchpadOrchestrator | None = None
         self.pattern_extractor = PatternExtractor(
             confidence_threshold=self.loop_config.confidence_threshold
         )
@@ -541,11 +536,11 @@ class LearningLoopEngine:
 
         return spacetime
 
-    def get_hot_patterns(self, query_type: Optional[str] = None) -> List[LearnedPattern]:
+    def get_hot_patterns(self, query_type: str | None = None) -> list[LearnedPattern]:
         """Get hot patterns (frequently successful)"""
         return self.pattern_learner.get_hot_patterns(query_type)
 
-    def get_learning_stats(self) -> Dict[str, Any]:
+    def get_learning_stats(self) -> dict[str, Any]:
         """Get complete learning statistics"""
         orchestrator_stats = self.orchestrator.get_statistics() if self.orchestrator else {}
         learning_stats = self.pattern_learner.stats
@@ -571,7 +566,7 @@ class LearningLoopEngine:
             }
         }
 
-    def suggest_improvements(self, query_text: str) -> Dict[str, Any]:
+    def suggest_improvements(self, query_text: str) -> dict[str, Any]:
         """Suggest improvements based on learned patterns"""
         return self.pattern_learner.suggest_improvements(query_text)
 
@@ -583,9 +578,9 @@ class LearningLoopEngine:
 async def weave_with_learning(
     query: Query,
     cfg: Config,
-    shards: Optional[List[MemoryShard]] = None,
+    shards: list[MemoryShard] | None = None,
     enable_learning: bool = True
-) -> Tuple[Spacetime, Dict[str, Any]]:
+) -> tuple[Spacetime, dict[str, Any]]:
     """
     Convenience function for one-off weaving with learning.
 

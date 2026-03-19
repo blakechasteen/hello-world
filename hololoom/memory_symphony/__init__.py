@@ -10,19 +10,19 @@ Date: 2026-01-22
 
 # Re-export everything from canonical location
 from hololoom.memory.symphony import (
-    # Protocols
-    MemoryStrategy,
-    MemorySystem,
-    MemoryQuery,
-    MemoryResult,
-    MemoryCoordinationResult,
-    MemoryPerformanceMetrics,
-    MemoryConductorProtocol,
-    MemorySystemProtocol,
-    StrategySelectionCriteria,
     CoordinationPlan,
     # Implementations
     MemoryConductor,
+    MemoryConductorProtocol,
+    MemoryCoordinationResult,
+    MemoryPerformanceMetrics,
+    MemoryQuery,
+    MemoryResult,
+    # Protocols
+    MemoryStrategy,
+    MemorySystem,
+    MemorySystemProtocol,
+    StrategySelectionCriteria,
     create_memory_conductor,
 )
 

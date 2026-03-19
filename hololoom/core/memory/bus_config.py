@@ -2,9 +2,8 @@
 Memory Bus Configuration — spec §3, §6.2, §9.2, §10.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple
 
 
 class PressureTier(Enum):
@@ -52,7 +51,7 @@ class MemoryBusConfig:
     """
     # Neo4j connection
     neo4j_uri: str = "bolt://localhost:7687"
-    neo4j_auth: Tuple[str, str] = ("neo4j", "hololoom123")
+    neo4j_auth: tuple[str, str] = ("neo4j", "hololoom123")
     neo4j_database: str = "neo4j"
 
     # Postgres connection (separate DB from mem0)

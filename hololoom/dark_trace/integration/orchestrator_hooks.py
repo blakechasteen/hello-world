@@ -9,11 +9,11 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Callable, Awaitable, Union
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from enum import Enum
 from datetime import datetime
-import asyncio
+from enum import Enum
+from typing import Any
 
 import numpy as np
 
@@ -42,25 +42,25 @@ class HookPoint(Enum):
 class HookContext:
     """Context passed to hooks during weaving."""
     query_text: str
-    query_embedding: Optional[np.ndarray] = None
-    retrieved_memories: Optional[List[Any]] = None
-    activations: Optional[np.ndarray] = None
-    feature_names: Optional[List[str]] = None
-    decision_probabilities: Optional[np.ndarray] = None
-    selected_tool: Optional[str] = None
-    tool_result: Optional[Any] = None
+    query_embedding: np.ndarray | None = None
+    retrieved_memories: list[Any] | None = None
+    activations: np.ndarray | None = None
+    feature_names: list[str] | None = None
+    decision_probabilities: np.ndarray | None = None
+    selected_tool: str | None = None
+    tool_result: Any | None = None
     confidence: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class HookResult:
     """Result returned by a hook."""
     allow: bool = True                      # Whether to continue
-    modified_context: Optional[HookContext] = None  # Modified context
-    warnings: List[str] = field(default_factory=list)
-    recommendations: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    modified_context: HookContext | None = None  # Modified context
+    warnings: list[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # Hook type definitions
@@ -84,13 +84,13 @@ class MiddlewareConfig:
     analyze_outputs: bool = True            # Analyze final outputs
 
     # Feature monitoring
-    monitored_features: List[str] = field(default_factory=list)
-    blocked_features: List[str] = field(default_factory=list)
+    monitored_features: list[str] = field(default_factory=list)
+    blocked_features: list[str] = field(default_factory=list)
 
     # Callbacks
-    on_warning: Optional[Callable[[str, Dict], Awaitable[None]]] = None
-    on_block: Optional[Callable[[str, Dict], Awaitable[None]]] = None
-    on_analysis_complete: Optional[Callable[[Dict], Awaitable[None]]] = None
+    on_warning: Callable[[str, dict], Awaitable[None]] | None = None
+    on_block: Callable[[str, dict], Awaitable[None]] | None = None
+    on_analysis_complete: Callable[[dict], Awaitable[None]] | None = None
 
     # Performance
     enable_caching: bool = True
@@ -107,18 +107,18 @@ class DarkTraceMiddleware:
 
     def __init__(
         self,
-        config: Optional[MiddlewareConfig] = None,
-        safety_gate: Optional[Any] = None,  # DarkTraceSafetyGate
-        engine: Optional[Any] = None,       # DarkTraceEngine
+        config: MiddlewareConfig | None = None,
+        safety_gate: Any | None = None,  # DarkTraceSafetyGate
+        engine: Any | None = None,       # DarkTraceEngine
     ):
         self.config = config or MiddlewareConfig()
         self.safety_gate = safety_gate
         self.engine = engine
 
-        self._hooks: Dict[HookPoint, List[Callable]] = {
+        self._hooks: dict[HookPoint, list[Callable]] = {
             point: [] for point in HookPoint
         }
-        self._analysis_cache: Dict[str, Any] = {}
+        self._analysis_cache: dict[str, Any] = {}
         self._statistics = {
             "total_weaves": 0,
             "blocked_weaves": 0,
@@ -198,7 +198,7 @@ class DarkTraceMiddleware:
     async def post_retrieval(
         self,
         context: HookContext,
-        memories: List[Any]
+        memories: list[Any]
     ) -> HookResult:
         """
         Called after memory retrieval.
@@ -226,7 +226,7 @@ class DarkTraceMiddleware:
         self,
         context: HookContext,
         activations: np.ndarray,
-        feature_names: Optional[List[str]] = None
+        feature_names: list[str] | None = None
     ) -> HookResult:
         """
         Called before policy decision.
@@ -371,7 +371,7 @@ class DarkTraceMiddleware:
 
         return result
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get middleware statistics."""
         return {
             **self._statistics,
@@ -394,8 +394,8 @@ class DarkTraceIntegrator:
     def __init__(
         self,
         orchestrator: Any,  # WeavingOrchestrator
-        engine: Optional[Any] = None,  # DarkTraceEngine
-        safety_gate: Optional[Any] = None,  # DarkTraceSafetyGate
+        engine: Any | None = None,  # DarkTraceEngine
+        safety_gate: Any | None = None,  # DarkTraceSafetyGate
         mode: IntegrationMode = IntegrationMode.PASSIVE,
     ):
         self.orchestrator = orchestrator
@@ -411,7 +411,7 @@ class DarkTraceIntegrator:
 
         self._original_weave = None
         self._is_integrated = False
-        self._weave_history: List[Dict[str, Any]] = []
+        self._weave_history: list[dict[str, Any]] = []
 
     def integrate(self) -> None:
         """
@@ -524,7 +524,7 @@ class DarkTraceIntegrator:
         """Register a hook at a specific point."""
         self.middleware.register_hook(point, hook)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get integration statistics."""
         return {
             "is_integrated": self._is_integrated,
@@ -533,7 +533,7 @@ class DarkTraceIntegrator:
             "middleware": self.middleware.get_statistics(),
         }
 
-    def get_recent_weaves(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_recent_weaves(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent weave history."""
         return self._weave_history[-limit:]
 
@@ -545,8 +545,8 @@ class IntegrationBlockedError(Exception):
 
 async def create_integrator(
     orchestrator: Any,
-    engine: Optional[Any] = None,
-    safety_gate: Optional[Any] = None,
+    engine: Any | None = None,
+    safety_gate: Any | None = None,
     mode: IntegrationMode = IntegrationMode.PASSIVE,
     auto_integrate: bool = True,
 ) -> DarkTraceIntegrator:

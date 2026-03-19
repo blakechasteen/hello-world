@@ -12,18 +12,10 @@ This module provides:
 Status: Production Ready (December 2025)
 """
 
-from typing import Optional, Dict, Any, List, Callable
 import asyncio
 import logging
-from datetime import datetime
+from typing import Any
 
-from hololoom.apps.server.agent_manager_hub import AgentManagerHub, ThreadStatus
-from hololoom.apps.chatops.handlers.agent_manager_ws import (
-    AgentManagerWSManager,
-    AgentManagerMessageType,
-    AgentManagerMessage,
-    create_agent_manager_router as create_ws_router,
-)
 from hololoom.agentic.monitoring import (
     AgentMonitor,
     AgentStatus,
@@ -31,6 +23,15 @@ from hololoom.agentic.monitoring import (
     start_monitoring,
     stop_monitoring,
 )
+from hololoom.apps.chatops.handlers.agent_manager_ws import (
+    AgentManagerMessage,
+    AgentManagerMessageType,
+    AgentManagerWSManager,
+)
+from hololoom.apps.chatops.handlers.agent_manager_ws import (
+    create_agent_manager_router as create_ws_router,
+)
+from hololoom.apps.server.agent_manager_hub import AgentManagerHub
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +50,9 @@ class AgentManagerIntegration:
 
     def __init__(
         self,
-        hub: Optional[AgentManagerHub] = None,
-        ws_manager: Optional[AgentManagerWSManager] = None,
-        monitor: Optional[AgentMonitor] = None,
+        hub: AgentManagerHub | None = None,
+        ws_manager: AgentManagerWSManager | None = None,
+        monitor: AgentMonitor | None = None,
         enable_legacy_monitor: bool = True,
     ):
         """
@@ -75,7 +76,7 @@ class AgentManagerIntegration:
         self._handlers_registered = False
 
         # Background tasks
-        self._background_tasks: List[asyncio.Task] = []
+        self._background_tasks: list[asyncio.Task] = []
 
     async def start(self):
         """Start all integrated systems."""
@@ -166,7 +167,7 @@ class AgentManagerIntegration:
     # Thread Lifecycle Event Handlers
     # =========================================================================
 
-    async def _on_thread_created(self, event: Dict[str, Any]):
+    async def _on_thread_created(self, event: dict[str, Any]):
         """Handle thread created event."""
         thread_id = event.get("thread_id")
         project = event.get("project", "default")
@@ -197,7 +198,7 @@ class AgentManagerIntegration:
                 files=event.get("files", []),
             )
 
-    async def _on_thread_started(self, event: Dict[str, Any]):
+    async def _on_thread_started(self, event: dict[str, Any]):
         """Handle thread started event."""
         thread_id = event.get("thread_id")
 
@@ -214,7 +215,7 @@ class AgentManagerIntegration:
                 status=AgentStatus.RUNNING,
             )
 
-    async def _on_thread_paused(self, event: Dict[str, Any]):
+    async def _on_thread_paused(self, event: dict[str, Any]):
         """Handle thread paused event."""
         thread_id = event.get("thread_id")
 
@@ -231,7 +232,7 @@ class AgentManagerIntegration:
                 status=AgentStatus.WAITING,
             )
 
-    async def _on_thread_resumed(self, event: Dict[str, Any]):
+    async def _on_thread_resumed(self, event: dict[str, Any]):
         """Handle thread resumed event."""
         thread_id = event.get("thread_id")
 
@@ -248,7 +249,7 @@ class AgentManagerIntegration:
                 status=AgentStatus.RUNNING,
             )
 
-    async def _on_thread_completed(self, event: Dict[str, Any]):
+    async def _on_thread_completed(self, event: dict[str, Any]):
         """Handle thread completed event."""
         thread_id = event.get("thread_id")
 
@@ -266,7 +267,7 @@ class AgentManagerIntegration:
                 total_duration_ms=event.get("total_duration_ms", 0),
             )
 
-    async def _on_thread_cancelled(self, event: Dict[str, Any]):
+    async def _on_thread_cancelled(self, event: dict[str, Any]):
         """Handle thread cancelled event."""
         thread_id = event.get("thread_id")
 
@@ -283,7 +284,7 @@ class AgentManagerIntegration:
                 error="Thread cancelled by user",
             )
 
-    async def _on_thread_failed(self, event: Dict[str, Any]):
+    async def _on_thread_failed(self, event: dict[str, Any]):
         """Handle thread failed event."""
         thread_id = event.get("thread_id")
 
@@ -304,7 +305,7 @@ class AgentManagerIntegration:
     # Step Progress Event Handlers
     # =========================================================================
 
-    async def _on_step_started(self, event: Dict[str, Any]):
+    async def _on_step_started(self, event: dict[str, Any]):
         """Handle step started event."""
         thread_id = event.get("thread_id")
 
@@ -314,7 +315,7 @@ class AgentManagerIntegration:
             event,
         )
 
-    async def _on_step_progress(self, event: Dict[str, Any]):
+    async def _on_step_progress(self, event: dict[str, Any]):
         """Handle step progress event."""
         thread_id = event.get("thread_id")
 
@@ -344,7 +345,7 @@ class AgentManagerIntegration:
                 line2=event.get("detail_line", ""),
             )
 
-    async def _on_step_completed(self, event: Dict[str, Any]):
+    async def _on_step_completed(self, event: dict[str, Any]):
         """Handle step completed event."""
         thread_id = event.get("thread_id")
 
@@ -358,7 +359,7 @@ class AgentManagerIntegration:
     # Priority Event Handlers
     # =========================================================================
 
-    async def _on_priority_changed(self, event: Dict[str, Any]):
+    async def _on_priority_changed(self, event: dict[str, Any]):
         """Handle priority changed event."""
         thread_id = event.get("thread_id")
 
@@ -372,7 +373,7 @@ class AgentManagerIntegration:
     # Injection Event Handlers
     # =========================================================================
 
-    async def _on_mrf_injected(self, event: Dict[str, Any]):
+    async def _on_mrf_injected(self, event: dict[str, Any]):
         """Handle MRF injection event."""
         thread_id = event.get("thread_id")
 
@@ -382,7 +383,7 @@ class AgentManagerIntegration:
             event,
         )
 
-    async def _on_mcts_injected(self, event: Dict[str, Any]):
+    async def _on_mcts_injected(self, event: dict[str, Any]):
         """Handle MCTS injection event."""
         thread_id = event.get("thread_id")
 
@@ -396,7 +397,7 @@ class AgentManagerIntegration:
     # Swarm Event Handlers
     # =========================================================================
 
-    async def _on_swarm_created(self, event: Dict[str, Any]):
+    async def _on_swarm_created(self, event: dict[str, Any]):
         """Handle swarm created event."""
         swarm_id = event.get("swarm_id")
 
@@ -416,7 +417,7 @@ class AgentManagerIntegration:
         # Also broadcast to wildcard
         await self.ws_manager.broadcast_to_pattern("*", message)
 
-    async def _on_swarm_child_completed(self, event: Dict[str, Any]):
+    async def _on_swarm_child_completed(self, event: dict[str, Any]):
         """Handle swarm child completed event."""
         swarm_id = event.get("swarm_id")
 
@@ -430,7 +431,7 @@ class AgentManagerIntegration:
 
         await self.ws_manager.broadcast_to_pattern(f"swarm:{swarm_id}", message)
 
-    async def _on_swarm_merged(self, event: Dict[str, Any]):
+    async def _on_swarm_merged(self, event: dict[str, Any]):
         """Handle swarm merged event."""
         swarm_id = event.get("swarm_id")
 
@@ -448,7 +449,7 @@ class AgentManagerIntegration:
     # Git/Temporal Event Handlers
     # =========================================================================
 
-    async def _on_commit_created(self, event: Dict[str, Any]):
+    async def _on_commit_created(self, event: dict[str, Any]):
         """Handle git commit created event."""
         thread_id = event.get("thread_id")
 
@@ -458,7 +459,7 @@ class AgentManagerIntegration:
             event,
         )
 
-    async def _on_branch_created(self, event: Dict[str, Any]):
+    async def _on_branch_created(self, event: dict[str, Any]):
         """Handle git branch created event."""
         thread_id = event.get("thread_id")
 
@@ -468,7 +469,7 @@ class AgentManagerIntegration:
             event,
         )
 
-    async def _on_checkout_completed(self, event: Dict[str, Any]):
+    async def _on_checkout_completed(self, event: dict[str, Any]):
         """Handle git checkout completed event."""
         thread_id = event.get("thread_id")
 
@@ -486,7 +487,7 @@ class AgentManagerIntegration:
         self,
         thread_id: str,
         message_type: AgentManagerMessageType,
-        event: Dict[str, Any],
+        event: dict[str, Any],
     ):
         """Broadcast event to thread subscribers and wildcard."""
         # Extract specific fields from event for AgentManagerMessage
@@ -530,17 +531,17 @@ class AgentManagerIntegration:
 # Factory Functions
 # =============================================================================
 
-_global_integration: Optional[AgentManagerIntegration] = None
+_global_integration: AgentManagerIntegration | None = None
 
 
-def get_integration() -> Optional[AgentManagerIntegration]:
+def get_integration() -> AgentManagerIntegration | None:
     """Get the global integration instance."""
     return _global_integration
 
 
 async def create_integration(
-    hub: Optional[AgentManagerHub] = None,
-    ws_manager: Optional[AgentManagerWSManager] = None,
+    hub: AgentManagerHub | None = None,
+    ws_manager: AgentManagerWSManager | None = None,
     enable_legacy_monitor: bool = True,
 ) -> AgentManagerIntegration:
     """

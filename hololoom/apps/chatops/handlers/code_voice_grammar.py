@@ -20,11 +20,11 @@ Author: Claude Code
 Date: December 2025
 """
 
-import re
-from enum import Enum, auto
-from typing import Optional, Dict, List, Pattern
-from dataclasses import dataclass
 import logging
+import re
+from dataclasses import dataclass
+from enum import Enum, auto
+from re import Pattern
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class CodeCommandIntent:
         original_text: Original voice input
     """
     code_intent: CodeIntent
-    params: Dict[str, str]
+    params: dict[str, str]
     confidence: float
     original_text: str
 
@@ -71,12 +71,12 @@ class CodeCommandIntent:
         return self.code_intent != CodeIntent.QUERY
 
     @property
-    def request(self) -> Optional[str]:
+    def request(self) -> str | None:
         """Get the main request text."""
         return self.params.get('request')
 
     @property
-    def language(self) -> Optional[str]:
+    def language(self) -> str | None:
         """Get specified programming language if any."""
         return self.params.get('language')
 
@@ -109,7 +109,7 @@ class CodeVoiceGrammar:
             re.I
         )
 
-    def _build_patterns(self) -> Dict[CodeIntent, List[tuple[Pattern, float]]]:
+    def _build_patterns(self) -> dict[CodeIntent, list[tuple[Pattern, float]]]:
         """
         Build regex patterns for each code intent type.
 
@@ -315,7 +315,7 @@ class CodeVoiceGrammar:
         logger.debug(f"Code classified: '{text}' → {intent.code_intent.name} (confidence: {intent.confidence:.2f})")
         return intent
 
-    def get_examples(self, code_intent: CodeIntent) -> List[str]:
+    def get_examples(self, code_intent: CodeIntent) -> list[str]:
         """
         Get example phrases for a code intent type.
 

@@ -36,17 +36,16 @@ Date: 2025-10-29
 Upgraded: 2025-11-03 (Advanced ODE integrators)
 """
 
-from typing import Dict, List, Set, Optional, Tuple
 from dataclasses import dataclass, field
-import math
+
 import numpy as np
 
 # Import advanced integrators
 try:
     from hololoom.memory.integrators import (
-        IntegratorType,
         DynamicalState,
         ForceFunction,
+        IntegratorType,
         create_integrator,
     )
     _HAVE_ADVANCED_INTEGRATORS = True
@@ -90,7 +89,7 @@ class SpringConfig:
     integrator_type: str = "verlet"       # "verlet", "rk4", "rk45", "symplectic", "euler"
 
     # Edge type multipliers (different relationship types have different stiffness)
-    edge_type_multipliers: Dict[str, float] = field(default_factory=lambda: {
+    edge_type_multipliers: dict[str, float] = field(default_factory=lambda: {
         'IS_A': 1.2,          # Taxonomic relationships are strong
         'PART_OF': 1.1,       # Compositional relationships
         'USES': 0.9,          # Usage relationships
@@ -168,7 +167,7 @@ class _SpringForceFunction:
         self.dynamics = spring_dynamics
         self.node_list = list(spring_dynamics.node_states.keys())
 
-    def __call__(self, state: 'DynamicalState') -> Tuple[np.ndarray, np.ndarray]:
+    def __call__(self, state: 'DynamicalState') -> tuple[np.ndarray, np.ndarray]:
         """
         Compute Hamilton's equations for spring network.
 
@@ -257,7 +256,7 @@ class SpringDynamics:
         active_nodes = dynamics.get_active_nodes()
     """
 
-    def __init__(self, graph, config: Optional[SpringConfig] = None):
+    def __init__(self, graph, config: SpringConfig | None = None):
         """
         Initialize spring dynamics engine.
 
@@ -269,8 +268,8 @@ class SpringDynamics:
         self.config = config or SpringConfig()
 
         # Node states: {node_id: NodeState}
-        self.node_states: Dict[str, NodeState] = {}
-        self.seed_nodes: Dict[str, float] = {}
+        self.node_states: dict[str, NodeState] = {}
+        self.seed_nodes: dict[str, float] = {}
 
         # Initialize states for all graph nodes
         self._initialize_states()
@@ -308,7 +307,7 @@ class SpringDynamics:
         self.final_energy = 0.0
         self.seed_nodes.clear()
 
-    def activate_nodes(self, activations: Dict[str, float]):
+    def activate_nodes(self, activations: dict[str, float]):
         """
         Set initial activation for seed nodes.
 
@@ -520,7 +519,7 @@ class SpringDynamics:
             )
             self._use_advanced = False
 
-    def _compute_forces(self) -> Dict[str, float]:
+    def _compute_forces(self) -> dict[str, float]:
         """
         Compute spring forces for all nodes.
 
@@ -530,7 +529,7 @@ class SpringDynamics:
         Returns:
             {node_id: total_force}
         """
-        forces: Dict[str, float] = {nid: 0.0 for nid in self.node_states.keys()}
+        forces: dict[str, float] = dict.fromkeys(self.node_states.keys(), 0.0)
 
         # Iterate over all edges
         for u, v, edge_data in self.graph.G.edges(data=True):
@@ -594,7 +593,7 @@ class SpringDynamics:
 
         return energy
 
-    def _compute_energy_from_state(self, state: 'DynamicalState', node_list: List[str]) -> float:
+    def _compute_energy_from_state(self, state: 'DynamicalState', node_list: list[str]) -> float:
         """
         Compute total system energy from DynamicalState (used by advanced integrators).
 
@@ -633,7 +632,7 @@ class SpringDynamics:
 
         return energy
 
-    def get_active_nodes(self, threshold: Optional[float] = None) -> List[str]:
+    def get_active_nodes(self, threshold: float | None = None) -> list[str]:
         """
         Get nodes with activation above threshold.
 
@@ -675,8 +674,8 @@ class SpringPropagationResult:
     converged: bool                     # Did it reach equilibrium?
     final_energy: float                 # Final energy state
 
-    activated_nodes: List[str]          # Node IDs above threshold (sorted by activation)
-    node_activations: Dict[str, float]  # {node_id: activation_level}
+    activated_nodes: list[str]          # Node IDs above threshold (sorted by activation)
+    node_activations: dict[str, float]  # {node_id: activation_level}
 
     def __str__(self) -> str:
         status = "converged" if self.converged else "max iterations"

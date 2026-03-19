@@ -8,15 +8,16 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 import asyncio
 import logging
 import time
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
-    from hololoom.dark_trace.visualization.streaming_server import DarkTraceStreamingServer
     from hololoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.dark_trace.visualization.streaming_server import DarkTraceStreamingServer
 
 
 logger = logging.getLogger(__name__)
@@ -36,10 +37,10 @@ class HookConfig:
     broadcast_throttle_ms: float = 50.0
 
     # Layers to monitor (None = all layers)
-    monitored_layers: Optional[List[int]] = None
+    monitored_layers: list[int] | None = None
 
     # Features to monitor (None = all features)
-    monitored_features: Optional[List[int]] = None
+    monitored_features: list[int] | None = None
 
     # Activation threshold for broadcasting (only broadcast if max > threshold)
     activation_threshold: float = 0.01
@@ -68,13 +69,13 @@ class HookState:
     total_activations_recorded: int = 0
 
     # Current query being processed
-    current_query: Optional[str] = None
+    current_query: str | None = None
 
     # Current step in the pipeline
-    current_step: Optional[str] = None
+    current_step: str | None = None
 
     # Step timing information
-    step_timings: Dict[str, float] = field(default_factory=dict)
+    step_timings: dict[str, float] = field(default_factory=dict)
 
     # Step start time
     step_start_time: float = 0.0
@@ -101,7 +102,7 @@ class DarkTraceOrchestratorHook:
         self,
         engine: Optional["DarkTraceEngine"] = None,
         streaming_server: Optional["DarkTraceStreamingServer"] = None,
-        config: Optional[HookConfig] = None,
+        config: HookConfig | None = None,
     ):
         """
         Initialize the orchestrator hook.
@@ -117,9 +118,9 @@ class DarkTraceOrchestratorHook:
         self.state = HookState()
 
         # Callbacks for custom processing
-        self._pre_weave_callbacks: List[Callable] = []
-        self._post_weave_callbacks: List[Callable] = []
-        self._activation_callbacks: List[Callable] = []
+        self._pre_weave_callbacks: list[Callable] = []
+        self._post_weave_callbacks: list[Callable] = []
+        self._activation_callbacks: list[Callable] = []
 
     # =========================================================================
     # Lifecycle Hooks
@@ -128,7 +129,7 @@ class DarkTraceOrchestratorHook:
     async def on_weave_start(
         self,
         query: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> None:
         """
         Called when a weaving cycle starts.
@@ -251,9 +252,9 @@ class DarkTraceOrchestratorHook:
     async def on_activations(
         self,
         layer: int,
-        feature_indices: List[int],
-        activation_values: List[float],
-        metadata: Optional[Dict[str, Any]] = None,
+        feature_indices: list[int],
+        activation_values: list[float],
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Called when activations are computed.
@@ -353,7 +354,7 @@ class DarkTraceOrchestratorHook:
     # Statistics and State
     # =========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get hook statistics."""
         return {
             "total_broadcasts": self.state.total_broadcasts,
@@ -381,7 +382,7 @@ class DarkTraceOrchestratorHook:
     async def _broadcast_event(
         self,
         event_type: str,
-        data: Dict[str, Any],
+        data: dict[str, Any],
     ) -> None:
         """Broadcast a lifecycle event."""
         if not self.streaming_server:

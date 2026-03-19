@@ -20,12 +20,14 @@ Eliminates Parameters (12 total):
 - edge_type_multipliers (IS_A, PART_OF, USES, MENTIONS, RELATED_TO) - 5 params
 """
 
-from typing import Dict, Any, List, Optional
-from collections import deque, defaultdict
+from collections import deque
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+
 import numpy as np
-from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
+
+from hololoom.tuning.base import SafeParameter, ThompsonBandit, TuningAgent
 
 # Parameter value ranges (5 arms each for continuous params)
 STIFFNESS_VALUES = [0.10, 0.40, 0.70, 1.00, 1.30]  # Spring stiffness
@@ -116,7 +118,7 @@ class PhysicsTuner(TuningAgent):
         self.metrics_history: deque = deque(maxlen=1000)
 
         # Thompson Sampling bandits (one per parameter)
-        self.bandits: Dict[str, ThompsonBandit] = {
+        self.bandits: dict[str, ThompsonBandit] = {
             'stiffness': ThompsonBandit(n_arms=len(STIFFNESS_VALUES)),
             'damping': ThompsonBandit(n_arms=len(DAMPING_VALUES)),
             'decay': ThompsonBandit(n_arms=len(DECAY_VALUES)),
@@ -144,7 +146,7 @@ class PhysicsTuner(TuningAgent):
         }
 
         # Safe parameters
-        self.safe_params: Dict[str, SafeParameter] = {}
+        self.safe_params: dict[str, SafeParameter] = {}
         for param_name, baseline_value in BASELINE_PHYSICS.items():
             min_val, max_val = SAFE_RANGES[param_name]
             self.safe_params[param_name] = SafeParameter(
@@ -167,7 +169,7 @@ class PhysicsTuner(TuningAgent):
         }
         self.current_group_index = 0
 
-    def get_value_arms(self, param_name: str) -> List[float]:
+    def get_value_arms(self, param_name: str) -> list[float]:
         """Get value arms for a parameter."""
         if param_name == 'stiffness':
             return STIFFNESS_VALUES
@@ -194,7 +196,7 @@ class PhysicsTuner(TuningAgent):
         """
         return self.safe_params[param_name].current_value
 
-    async def measure_performance(self) -> Dict[str, Any]:
+    async def measure_performance(self) -> dict[str, Any]:
         """
         Measure physics performance metrics.
 
@@ -239,7 +241,7 @@ class PhysicsTuner(TuningAgent):
 
         return metrics
 
-    async def tune_parameters(self) -> Dict[str, Any]:
+    async def tune_parameters(self) -> dict[str, Any]:
         """
         Propose new physics parameters using Thompson Sampling.
 
@@ -294,7 +296,7 @@ class PhysicsTuner(TuningAgent):
         """
         self.metrics_history.append(metrics)
 
-    def update_bandits(self, baseline_metrics: Dict[str, Any], new_metrics: Dict[str, Any]):
+    def update_bandits(self, baseline_metrics: dict[str, Any], new_metrics: dict[str, Any]):
         """
         Update Thompson Sampling bandits based on quality change.
 
@@ -316,7 +318,7 @@ class PhysicsTuner(TuningAgent):
         for param_name, arm_idx in self.param_indices.items():
             self.bandits[param_name].update(arm_idx, success=success, confidence=confidence * 0.5)
 
-    async def run_tuning_cycle(self) -> Dict[str, Any]:
+    async def run_tuning_cycle(self) -> dict[str, Any]:
         """
         Run one tuning cycle.
 
@@ -350,7 +352,7 @@ class PhysicsTuner(TuningAgent):
             'bandit_stats': self.get_bandit_stats(),
         }
 
-    def _calculate_impact(self, baseline: Dict[str, Any], new: Dict[str, Any]) -> float:
+    def _calculate_impact(self, baseline: dict[str, Any], new: dict[str, Any]) -> float:
         """
         Calculate impact of tuning changes.
 
@@ -366,7 +368,7 @@ class PhysicsTuner(TuningAgent):
 
         return new_quality - baseline_quality
 
-    def get_bandit_stats(self) -> Dict[str, Any]:
+    def get_bandit_stats(self) -> dict[str, Any]:
         """
         Get Thompson Sampling bandit statistics.
 
@@ -402,7 +404,7 @@ class PhysicsTuner(TuningAgent):
         """Persist tuning state (handled by coordinator)."""
         pass
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """
         Get tuning state for persistence.
 
@@ -432,7 +434,7 @@ class PhysicsTuner(TuningAgent):
             },
         }
 
-    def load_state(self, state: Dict[str, Any]):
+    def load_state(self, state: dict[str, Any]):
         """
         Load tuning state from persistence.
 

@@ -4,9 +4,8 @@ In-Memory Store - Simple Implementation for Testing
 No external dependencies. Pure Python dict-based storage.
 """
 
-from typing import Dict, List
-from datetime import datetime
 import hashlib
+from datetime import datetime
 
 try:
     from ..protocol import Memory, MemoryQuery, RetrievalResult, Strategy
@@ -28,11 +27,11 @@ class InMemoryStore:
     - Production (no persistence)
     - Large datasets (no indexing)
     """
-    
+
     def __init__(self):
-        self._memories: Dict[str, Memory] = {}
-        self._user_index: Dict[str, List[str]] = {}  # user_id -> [memory_ids]
-    
+        self._memories: dict[str, Memory] = {}
+        self._user_index: dict[str, list[str]] = {}  # user_id -> [memory_ids]
+
     async def store(self, memory: Memory) -> str:
         """Store memory in dict."""
         # Generate ID if not provided
@@ -49,7 +48,7 @@ class InMemoryStore:
 
         return memory.id
 
-    async def store_many(self, memories: List[Memory]) -> List[str]:
+    async def store_many(self, memories: list[Memory]) -> list[str]:
         """
         Store multiple memories (batch operation).
 
@@ -88,7 +87,7 @@ class InMemoryStore:
         # Get user's memories
         user_mems = self._user_index.get(query.user_id, [])
         candidates = [self._memories[mid] for mid in user_mems if mid in self._memories]
-        
+
         if not candidates:
             return RetrievalResult(
                 memories=[],
@@ -96,7 +95,7 @@ class InMemoryStore:
                 strategy_used=strategy.value,
                 metadata={'total_memories': 0}
             )
-        
+
         # Apply strategy
         if strategy == Strategy.TEMPORAL:
             scored = self._score_temporal(candidates, query)
@@ -108,11 +107,11 @@ class InMemoryStore:
             scored = self._score_pattern(candidates, query)
         else:  # FUSED
             scored = self._score_fused(candidates, query)
-        
+
         # Sort and limit
         scored.sort(key=lambda x: x[1], reverse=True)
         top_k = scored[:query.limit]
-        
+
         return RetrievalResult(
             memories=[mem for mem, _ in top_k],
             scores=[score for _, score in top_k],
@@ -122,24 +121,24 @@ class InMemoryStore:
                 'matched': len(scored)
             }
         )
-    
+
     async def delete(self, memory_id: str) -> bool:
         """Delete a memory."""
         if memory_id in self._memories:
             mem = self._memories[memory_id]
             user_id = mem.metadata.get('user_id', 'default')
-            
+
             # Remove from storage
             del self._memories[memory_id]
-            
+
             # Remove from index
             if user_id in self._user_index:
                 self._user_index[user_id].remove(memory_id)
-            
+
             return True
         return False
-    
-    async def health_check(self) -> Dict:
+
+    async def health_check(self) -> dict:
         """Check store health."""
         return {
             'status': 'healthy',
@@ -148,12 +147,12 @@ class InMemoryStore:
             'user_count': len(self._user_index),
             'latency_ms': 0.1
         }
-    
+
     # ========================================================================
     # Internal Scoring Methods
     # ========================================================================
-    
-    def _score_temporal(self, memories: List[Memory], query: MemoryQuery) -> List[tuple]:
+
+    def _score_temporal(self, memories: list[Memory], query: MemoryQuery) -> list[tuple]:
         """Score by recency."""
         now = datetime.now()
         scored = []
@@ -164,17 +163,17 @@ class InMemoryStore:
             score = 1.0 / (1.0 + delta / 3600)  # Decay over hours
             scored.append((mem, score))
         return scored
-    
-    def _score_semantic(self, memories: List[Memory], query: MemoryQuery) -> List[tuple]:
+
+    def _score_semantic(self, memories: list[Memory], query: MemoryQuery) -> list[tuple]:
         """Score by text similarity (simplified substring matching)."""
         query_lower = query.text.lower()
         query_words = set(query_lower.split())
-        
+
         scored = []
         for mem in memories:
             mem_lower = mem.text.lower()
             mem_words = set(mem_lower.split())
-            
+
             # Jaccard similarity
             if len(query_words) == 0:
                 score = 0.0
@@ -182,31 +181,31 @@ class InMemoryStore:
                 intersection = len(query_words & mem_words)
                 union = len(query_words | mem_words)
                 score = intersection / union if union > 0 else 0.0
-            
+
             # Bonus for substring match
             if query_lower in mem_lower:
                 score += 0.2
-            
+
             scored.append((mem, min(score, 1.0)))
         return scored
-    
-    def _score_graph(self, memories: List[Memory], query: MemoryQuery) -> List[tuple]:
+
+    def _score_graph(self, memories: list[Memory], query: MemoryQuery) -> list[tuple]:
         """Score by graph connectivity (simplified - just return all)."""
         # In real implementation, would use Neo4j traversal
         # For now, uniform scores
         return [(mem, 0.5) for mem in memories]
-    
-    def _score_pattern(self, memories: List[Memory], query: MemoryQuery) -> List[tuple]:
+
+    def _score_pattern(self, memories: list[Memory], query: MemoryQuery) -> list[tuple]:
         """Score by patterns (simplified - random)."""
         # In real implementation, would use Hofstadter resonance
         import random
         return [(mem, random.random()) for mem in memories]
-    
-    def _score_fused(self, memories: List[Memory], query: MemoryQuery) -> List[tuple]:
+
+    def _score_fused(self, memories: list[Memory], query: MemoryQuery) -> list[tuple]:
         """Fused scoring: 50% temporal + 50% semantic."""
         temporal_scores = {mem.id: score for mem, score in self._score_temporal(memories, query)}
         semantic_scores = {mem.id: score for mem, score in self._score_semantic(memories, query)}
-        
+
         scored = []
         for mem in memories:
             t_score = temporal_scores.get(mem.id, 0.0)
@@ -214,7 +213,7 @@ class InMemoryStore:
             fused_score = 0.5 * t_score + 0.5 * s_score
             scored.append((mem, fused_score))
         return scored
-    
+
     def _generate_id(self, text: str) -> str:
         """Generate deterministic ID from text."""
         return hashlib.md5(text.encode()).hexdigest()[:16]

@@ -17,10 +17,9 @@ Date: November 2025
 """
 
 from hololoom.workflows.schema import (
+    NodeType,
     WorkflowDefinition,
     WorkflowNode,
-    NodeType,
-    RetryPolicy,
 )
 
 

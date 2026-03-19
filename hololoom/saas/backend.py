@@ -14,14 +14,13 @@ Phase 1: API-only (BYO backend) - 100 hours
 import asyncio
 import hashlib
 import json
+import logging
 import secrets
 import sqlite3
-from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
-from datetime import datetime, date, timedelta
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-import logging
+from typing import Any
 
 # Optional PostgreSQL support (graceful degradation)
 try:
@@ -91,8 +90,8 @@ class SaaSConfig:
     enable_audit_log: bool = True  # Log events for security
 
     # Stripe settings (only used if enable_billing=True)
-    stripe_api_key: Optional[str] = None
-    stripe_webhook_secret: Optional[str] = None
+    stripe_api_key: str | None = None
+    stripe_webhook_secret: str | None = None
 
     @classmethod
     def auth_only(
@@ -144,7 +143,7 @@ class SaaSConfig:
     def with_billing(
         cls,
         stripe_api_key: str,
-        stripe_webhook_secret: Optional[str] = None,
+        stripe_webhook_secret: str | None = None,
         host: str = "localhost",
         port: int = 5432,
         database: str = "hololoom_saas",
@@ -180,11 +179,11 @@ class Customer:
     customer_id: str
     email: str
     name: str
-    company: Optional[str] = None
-    stripe_customer_id: Optional[str] = None
+    company: str | None = None
+    stripe_customer_id: str | None = None
     status: str = "active"
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 @dataclass
@@ -193,16 +192,16 @@ class Subscription:
     subscription_id: str
     customer_id: str
     plan: str = "free"
-    stripe_subscription_id: Optional[str] = None
-    stripe_price_id: Optional[str] = None
+    stripe_subscription_id: str | None = None
+    stripe_price_id: str | None = None
     status: str = "active"
-    current_period_start: Optional[datetime] = None
-    current_period_end: Optional[datetime] = None
+    current_period_start: datetime | None = None
+    current_period_end: datetime | None = None
     queries_included: int = 0
-    price_per_query_cents: Optional[float] = None
+    price_per_query_cents: float | None = None
     cancel_at_period_end: bool = False
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 @dataclass
@@ -214,9 +213,9 @@ class APIKey:
     name: str = "Default"
     status: str = "active"
     rate_limit_qps: float = 10.0
-    created_at: Optional[datetime] = None
-    expires_at: Optional[datetime] = None
-    last_used: Optional[datetime] = None
+    created_at: datetime | None = None
+    expires_at: datetime | None = None
+    last_used: datetime | None = None
     request_count: int = 0
     # Note: key_hash is stored in DB but not exposed in this model
 
@@ -230,19 +229,19 @@ class UsageRecord:
     queries_count: int = 0
     tokens_used: int = 0
     reported_to_stripe: bool = False
-    stripe_usage_record_id: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    stripe_usage_record_id: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 @dataclass
 class QueryResult:
     """SQL query result with metadata"""
-    rows: List[Dict[str, Any]]
+    rows: list[dict[str, Any]]
     row_count: int
     latency_ms: float
     success: bool
-    error: Optional[str] = None
+    error: str | None = None
     backend: str = "postgresql"
 
 
@@ -267,10 +266,10 @@ class SaaSBackend:
     - SaaSConfig.with_billing(stripe_api_key) - Full SaaS
     """
 
-    def __init__(self, config: Optional[SaaSConfig] = None):
+    def __init__(self, config: SaaSConfig | None = None):
         self.config = config or SaaSConfig()
-        self.pool: Optional[Any] = None  # asyncpg pool or None
-        self.sqlite_conn: Optional[sqlite3.Connection] = None
+        self.pool: Any | None = None  # asyncpg pool or None
+        self.sqlite_conn: sqlite3.Connection | None = None
         self.backend_type: str = "uninitialized"
         self._closed = False
 
@@ -384,7 +383,7 @@ class SaaSBackend:
     async def execute_query(
         self,
         query: str,
-        params: Optional[List[Any]] = None
+        params: list[Any] | None = None
     ) -> QueryResult:
         """Execute SQL query and return results"""
         if self._closed:
@@ -426,8 +425,8 @@ class SaaSBackend:
     async def _execute_postgresql(
         self,
         query: str,
-        params: Optional[List[Any]] = None
-    ) -> List[Dict[str, Any]]:
+        params: list[Any] | None = None
+    ) -> list[dict[str, Any]]:
         """Execute query on PostgreSQL"""
         async with self.pool.acquire() as conn:
             if params:
@@ -440,8 +439,8 @@ class SaaSBackend:
     async def _execute_sqlite(
         self,
         query: str,
-        params: Optional[List[Any]] = None
-    ) -> List[Dict[str, Any]]:
+        params: list[Any] | None = None
+    ) -> list[dict[str, Any]]:
         """Execute query on SQLite (wrapped in asyncio)"""
         loop = asyncio.get_event_loop()
 
@@ -488,7 +487,7 @@ class SaaSBackend:
         """Hash API key secret with SHA256"""
         return hashlib.sha256(key_secret.encode()).hexdigest()
 
-    def _generate_api_key(self) -> Tuple[str, str, str]:
+    def _generate_api_key(self) -> tuple[str, str, str]:
         """
         Generate API key components
 
@@ -517,9 +516,9 @@ class SaaSBackend:
         email: str,
         name: str,
         password: str,
-        company: Optional[str] = None,
-        stripe_customer_id: Optional[str] = None
-    ) -> Tuple[Customer, str]:
+        company: str | None = None,
+        stripe_customer_id: str | None = None
+    ) -> tuple[Customer, str]:
         """
         Create new customer with subscription
 
@@ -564,7 +563,7 @@ class SaaSBackend:
 
         return customer, subscription_id
 
-    async def get_customer(self, customer_id: str) -> Optional[Customer]:
+    async def get_customer(self, customer_id: str) -> Customer | None:
         """Get customer by ID"""
         if self.backend_type == "postgresql":
             query = "SELECT * FROM customers WHERE customer_id = $1"
@@ -587,7 +586,7 @@ class SaaSBackend:
             updated_at=row.get("updated_at")
         )
 
-    async def get_customer_by_email(self, email: str) -> Optional[Customer]:
+    async def get_customer_by_email(self, email: str) -> Customer | None:
         """Get customer by email"""
         if self.backend_type == "postgresql":
             query = "SELECT * FROM customers WHERE email = $1"
@@ -610,7 +609,7 @@ class SaaSBackend:
             updated_at=row.get("updated_at")
         )
 
-    async def authenticate_customer(self, email: str, password: str) -> Optional[Customer]:
+    async def authenticate_customer(self, email: str, password: str) -> Customer | None:
         """Authenticate customer by email and password"""
         if self.backend_type == "postgresql":
             query = "SELECT * FROM customers WHERE email = $1 AND status = 'active'"
@@ -637,10 +636,10 @@ class SaaSBackend:
     async def update_customer(
         self,
         customer_id: str,
-        name: Optional[str] = None,
-        company: Optional[str] = None,
-        stripe_customer_id: Optional[str] = None
-    ) -> Optional[Customer]:
+        name: str | None = None,
+        company: str | None = None,
+        stripe_customer_id: str | None = None
+    ) -> Customer | None:
         """Update customer fields"""
         updates = []
         params = []
@@ -700,10 +699,10 @@ class SaaSBackend:
     async def insert_subscription(
         self,
         customer_id: str,
-        subscription_id: Optional[str] = None,
+        subscription_id: str | None = None,
         plan: str = "free",
-        stripe_subscription_id: Optional[str] = None,
-        stripe_price_id: Optional[str] = None
+        stripe_subscription_id: str | None = None,
+        stripe_price_id: str | None = None
     ) -> Subscription:
         """Create subscription for customer"""
         if subscription_id is None:
@@ -748,7 +747,7 @@ class SaaSBackend:
             price_per_query_cents=plan_config["price_per_query_cents"]
         )
 
-    def _get_plan_config(self, plan: str) -> Dict[str, Any]:
+    def _get_plan_config(self, plan: str) -> dict[str, Any]:
         """Get default configuration for a plan"""
         plans = {
             "free": {"queries_included": 0, "price_per_query_cents": 0.0, "rate_limit_qps": 1.0},
@@ -758,7 +757,7 @@ class SaaSBackend:
         }
         return plans.get(plan, plans["free"])
 
-    async def get_subscription(self, customer_id: str) -> Optional[Subscription]:
+    async def get_subscription(self, customer_id: str) -> Subscription | None:
         """Get active subscription for customer"""
         if self.backend_type == "postgresql":
             query = """
@@ -795,12 +794,12 @@ class SaaSBackend:
     async def update_subscription(
         self,
         subscription_id: str,
-        plan: Optional[str] = None,
-        status: Optional[str] = None,
-        stripe_subscription_id: Optional[str] = None,
-        current_period_start: Optional[datetime] = None,
-        current_period_end: Optional[datetime] = None,
-        cancel_at_period_end: Optional[bool] = None
+        plan: str | None = None,
+        status: str | None = None,
+        stripe_subscription_id: str | None = None,
+        current_period_start: datetime | None = None,
+        current_period_end: datetime | None = None,
+        cancel_at_period_end: bool | None = None
     ) -> QueryResult:
         """Update subscription fields"""
         updates = []
@@ -889,9 +888,9 @@ class SaaSBackend:
         self,
         customer_id: str,
         name: str = "Default",
-        rate_limit_qps: Optional[float] = None,
-        expires_in_days: Optional[int] = None
-    ) -> Tuple[APIKey, str]:
+        rate_limit_qps: float | None = None,
+        expires_in_days: int | None = None
+    ) -> tuple[APIKey, str]:
         """
         Create new API key for customer
 
@@ -943,7 +942,7 @@ class SaaSBackend:
 
         return api_key, key_secret
 
-    async def get_api_key_by_secret(self, key_secret: str) -> Optional[APIKey]:
+    async def get_api_key_by_secret(self, key_secret: str) -> APIKey | None:
         """Get API key by validating secret (for authentication)"""
         key_hash = self._hash_api_key(key_secret)
         key_prefix = key_secret[:8]
@@ -978,7 +977,7 @@ class SaaSBackend:
             request_count=row.get("request_count", 0)
         )
 
-    async def get_api_keys_for_customer(self, customer_id: str) -> List[APIKey]:
+    async def get_api_keys_for_customer(self, customer_id: str) -> list[APIKey]:
         """Get all API keys for customer"""
         if self.backend_type == "postgresql":
             query = "SELECT * FROM api_keys WHERE customer_id = $1 ORDER BY created_at DESC"
@@ -1045,7 +1044,7 @@ class SaaSBackend:
     async def record_usage(
         self,
         customer_id: str,
-        date_val: Optional[date] = None,
+        date_val: date | None = None,
         queries_delta: int = 1,
         tokens_delta: int = 0
     ) -> QueryResult:
@@ -1116,8 +1115,8 @@ class SaaSBackend:
         self,
         customer_id: str,
         start_date: date,
-        end_date: Optional[date] = None
-    ) -> List[UsageRecord]:
+        end_date: date | None = None
+    ) -> list[UsageRecord]:
         """
         Get usage records for a date range.
 
@@ -1161,7 +1160,7 @@ class SaaSBackend:
             for row in result.rows
         ]
 
-    async def get_unreported_usage(self) -> List[UsageRecord]:
+    async def get_unreported_usage(self) -> list[UsageRecord]:
         """
         Get all usage records not yet reported to Stripe.
 
@@ -1204,7 +1203,7 @@ class SaaSBackend:
     async def mark_usage_reported(
         self,
         usage_id: str,
-        stripe_usage_record_id: Optional[str] = None
+        stripe_usage_record_id: str | None = None
     ) -> QueryResult:
         """
         Mark usage record as reported to Stripe.
@@ -1240,7 +1239,7 @@ class SaaSBackend:
 
         return await self.execute_query(query, [usage_id, stripe_usage_record_id])
 
-    async def get_usage_for_date(self, customer_id: str, date_val: date) -> Optional[UsageRecord]:
+    async def get_usage_for_date(self, customer_id: str, date_val: date) -> UsageRecord | None:
         """
         Get usage record for a specific date.
 
@@ -1284,10 +1283,10 @@ class SaaSBackend:
     async def log_event(
         self,
         event_type: str,
-        customer_id: Optional[str] = None,
-        event_data: Optional[Dict[str, Any]] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None
+        customer_id: str | None = None,
+        event_data: dict[str, Any] | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None
     ) -> QueryResult:
         """
         Log an audit event.
@@ -1348,7 +1347,7 @@ class SaaSBackend:
 # Factory Function
 # ============================================================================
 
-def create_saas_backend(config: Optional[SaaSConfig] = None) -> SaaSBackend:
+def create_saas_backend(config: SaaSConfig | None = None) -> SaaSBackend:
     """
     Create SaaS backend with default or custom configuration
 

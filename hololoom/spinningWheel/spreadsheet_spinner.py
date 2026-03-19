@@ -29,19 +29,15 @@ Date: November 2025
 """
 
 import asyncio
-from pathlib import Path
-from typing import List, Optional, Dict, Any, AsyncIterator, Union
-from dataclasses import dataclass, field
 import warnings
-import re
+from collections.abc import AsyncIterator
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
-from hololoom.spinningWheel.protocol import (
-    BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities
-)
-from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.protocol import BaseSpinner, SpinnerCapabilities, SpinResult
 
 # Try to import pandas (required)
 try:
@@ -91,20 +87,20 @@ class SpreadsheetCell:
     row: int
     column: int
     value: Any
-    formula: Optional[str] = None
+    formula: str | None = None
     data_type: str = 'text'  # 'text', 'number', 'date', 'boolean', 'formula'
-    formatted_value: Optional[str] = None
+    formatted_value: str | None = None
 
 
 @dataclass
 class SpreadsheetTable:
     """Table/range of cells"""
     name: str
-    headers: List[str]
-    data: List[List[Any]]  # 2D array
+    headers: list[str]
+    data: list[list[Any]]  # 2D array
     start_row: int
     start_col: int
-    formulas: Dict[str, str] = field(default_factory=dict)  # cell_ref -> formula
+    formulas: dict[str, str] = field(default_factory=dict)  # cell_ref -> formula
 
     @property
     def row_count(self) -> int:
@@ -143,10 +139,10 @@ class SpreadsheetTable:
 class SpreadsheetSheet:
     """Single sheet/tab in spreadsheet"""
     name: str
-    tables: List[SpreadsheetTable]
+    tables: list[SpreadsheetTable]
     row_count: int
     column_count: int
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def table_count(self) -> int:
@@ -157,9 +153,9 @@ class SpreadsheetSheet:
 class Spreadsheet:
     """Complete spreadsheet document"""
     file_path: Path
-    sheets: List[SpreadsheetSheet]
+    sheets: list[SpreadsheetSheet]
     file_format: str  # 'xlsx', 'xls', 'csv', 'ods', 'google_sheets'
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def sheet_count(self) -> int:
@@ -417,7 +413,7 @@ class SpreadsheetParser:
         )
 
     @staticmethod
-    def _detect_headers(df: 'pd.DataFrame') -> tuple[Optional[int], List[str]]:
+    def _detect_headers(df: 'pd.DataFrame') -> tuple[int | None, list[str]]:
         """
         Auto-detect header row in DataFrame.
 
@@ -451,7 +447,7 @@ class SpreadsheetParser:
         return None, []
 
     @staticmethod
-    def _clean_data(data: List[List[Any]]) -> List[List[Any]]:
+    def _clean_data(data: list[list[Any]]) -> list[list[Any]]:
         """Remove trailing None rows"""
         # Remove rows that are completely None
         cleaned = []
@@ -501,7 +497,7 @@ class SpreadsheetSpinner(BaseSpinner):
         # Initialize importance scorer
         self.importance_scorer = ImportanceScorer()
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Core spreadsheet ingestion implementation.
 
@@ -531,7 +527,7 @@ class SpreadsheetSpinner(BaseSpinner):
         )
         return spreadsheet
 
-    def _spreadsheet_to_shards(self, spreadsheet: Spreadsheet) -> List[MemoryShard]:
+    def _spreadsheet_to_shards(self, spreadsheet: Spreadsheet) -> list[MemoryShard]:
         """Convert spreadsheet to MemoryShards"""
         shards = []
 
@@ -604,7 +600,7 @@ class SpreadsheetSpinner(BaseSpinner):
         spreadsheet: Spreadsheet,
         sheet: SpreadsheetSheet,
         table: SpreadsheetTable
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """Create shards for row chunks"""
         shards = []
         chunk_size = self.max_rows_per_shard
@@ -665,7 +661,7 @@ class SpreadsheetSpinner(BaseSpinner):
 
         return min(1.0, score.score)
 
-    def _score_chunk_importance(self, chunk_data: List[List[Any]]) -> float:
+    def _score_chunk_importance(self, chunk_data: list[list[Any]]) -> float:
         """Score importance of data chunk"""
         # Simple scoring based on non-null cells
         non_null_count = sum(

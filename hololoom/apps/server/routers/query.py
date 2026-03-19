@@ -9,21 +9,22 @@ Extracted from agentic_api.py (March 2026 Refactor).
 import logging
 from datetime import datetime
 from time import time
-from typing import Optional, List, Dict
 
 from fastapi import APIRouter, HTTPException
 
-from hololoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
-from hololoom.protocols.types import Query
-from hololoom.alignment.audit_trail import DecisionType, OutcomeType
-from hololoom.alignment.safety_guardrails import ActionRequest
-from hololoom.alignment.deception_detection import BehavioralProbe, ProbeType
+from hololoom.agentic import AgenticResult, ReasoningMode, create_agentic_orchestrator
 from hololoom.agentic.safety_adapter import create_safety_adapter
-
+from hololoom.alignment.audit_trail import DecisionType, OutcomeType
+from hololoom.alignment.deception_detection import BehavioralProbe, ProbeType
+from hololoom.alignment.safety_guardrails import ActionRequest
 from hololoom.apps.server.schemas import (
-    QueryRequest, VerificationResponse, ReasoningStepResponse, AgenticResponse,
+    AgenticResponse,
+    QueryRequest,
+    ReasoningStepResponse,
+    VerificationResponse,
 )
 from hololoom.apps.server.server_state import state
+from hololoom.protocols.types import Query
 
 # Lazy imports for optional governance
 try:
@@ -60,7 +61,7 @@ async def get_orchestrator():
     return state.orchestrator
 
 
-def _format_verification(verification) -> Optional[VerificationResponse]:
+def _format_verification(verification) -> VerificationResponse | None:
     """Format verification result for API response."""
     if verification is None:
         return None
@@ -74,7 +75,7 @@ def _format_verification(verification) -> Optional[VerificationResponse]:
     )
 
 
-def _format_steps(steps: List[Dict]) -> List[ReasoningStepResponse]:
+def _format_steps(steps: list[dict]) -> list[ReasoningStepResponse]:
     """Format reasoning steps for API response."""
     return [
         ReasoningStepResponse(
@@ -182,9 +183,8 @@ async def query_endpoint(request: QueryRequest):
 
         # RBAC / GOVERNANCE CHECK
         if state.governance_engine and GOVERNANCE_AVAILABLE:
-            from hololoom.agents.policy_governance import (
-                CommunicationRequest as GovRequest, Priority as GovPriority
-            )
+            from hololoom.agents.policy_governance import CommunicationRequest as GovRequest
+            from hololoom.agents.policy_governance import Priority as GovPriority
             gov_request = GovRequest(
                 from_agent=getattr(request, 'agent_id', 'anonymous'),
                 to_agent="hololoom_server",

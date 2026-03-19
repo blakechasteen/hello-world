@@ -48,19 +48,18 @@ Usage:
 """
 
 import logging
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any
 
-from .protocol import (
-    CompressionResult,
-    ActivationMap,
-    ImportanceMap,
-    ImportanceSignal,
-    ScaleAssignments
-)
-from .config import ContextPackerConfig
 from .activation_spreader import ActivationSpreader
-from .importance_scorer import ImportanceScorer
+from .config import ContextPackerConfig
 from .context_compressor import ContextCompressor
+from .importance_scorer import ImportanceScorer
+from .protocol import (
+    ActivationMap,
+    CompressionResult,
+    ImportanceMap,
+    ScaleAssignments,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -75,8 +74,8 @@ class ContextPacker:
 
     def __init__(
         self,
-        config: Optional[ContextPackerConfig] = None,
-        embedder: Optional[Any] = None
+        config: ContextPackerConfig | None = None,
+        embedder: Any | None = None
     ):
         """
         Initialize Context Packer.
@@ -94,7 +93,7 @@ class ContextPacker:
         self.context_compressor = ContextCompressor(self.config.compression)
 
         # Tracking
-        self._pack_history: List[CompressionResult] = []
+        self._pack_history: list[CompressionResult] = []
         self._stats = {
             'total_packs': 0,
             'avg_compression_ratio': 0.0,
@@ -104,10 +103,10 @@ class ContextPacker:
     def pack(
         self,
         query: str,
-        candidate_nodes: List[str],
+        candidate_nodes: list[str],
         graph: Any,
-        target_tokens: Optional[int] = None,
-        node_contents: Optional[Dict[str, str]] = None
+        target_tokens: int | None = None,
+        node_contents: dict[str, str] | None = None
     ) -> CompressionResult:
         """
         Pack context to fit within token budget.
@@ -222,11 +221,11 @@ class ContextPacker:
     def adaptive_pack(
         self,
         query: str,
-        candidate_nodes: List[str],
+        candidate_nodes: list[str],
         graph: Any,
-        min_tokens: Optional[int] = None,
-        max_tokens: Optional[int] = None,
-        node_contents: Optional[Dict[str, str]] = None
+        min_tokens: int | None = None,
+        max_tokens: int | None = None,
+        node_contents: dict[str, str] | None = None
     ) -> CompressionResult:
         """
         Adaptively pack context within range.
@@ -306,11 +305,11 @@ class ContextPacker:
     def pack_with_scales(
         self,
         query: str,
-        candidate_nodes: List[str],
+        candidate_nodes: list[str],
         graph: Any,
-        target_tokens: Optional[int] = None,
-        node_contents: Optional[Dict[str, str]] = None
-    ) -> Tuple[CompressionResult, ScaleAssignments]:
+        target_tokens: int | None = None,
+        node_contents: dict[str, str] | None = None
+    ) -> tuple[CompressionResult, ScaleAssignments]:
         """
         Pack context with Matryoshka scale assignments.
 
@@ -382,14 +381,14 @@ class ContextPacker:
     def pack_with_information_budget(
         self,
         query: str,
-        candidate_nodes: List[str],
+        candidate_nodes: list[str],
         graph: Any,
-        node_contents: Dict[str, str],
-        information_budget: Optional[float] = None,
-        token_budget: Optional[int] = None,
-        query_embedding: Optional[Any] = None,
-        node_embeddings: Optional[Dict[str, Any]] = None
-    ) -> Tuple[CompressionResult, ScaleAssignments, Dict[str, float]]:
+        node_contents: dict[str, str],
+        information_budget: float | None = None,
+        token_budget: int | None = None,
+        query_embedding: Any | None = None,
+        node_embeddings: dict[str, Any] | None = None
+    ) -> tuple[CompressionResult, ScaleAssignments, dict[str, float]]:
         """
         Pack context using Information Bottleneck principle (Phase 5).
 
@@ -527,7 +526,7 @@ class ContextPacker:
 
         return result, scale_assignments, mi_scores
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get packing statistics."""
         stats = self._stats.copy()
         stats['component_stats'] = {
@@ -549,7 +548,7 @@ class ContextPacker:
         self.importance_scorer.reset_stats()
         self.context_compressor.reset_stats()
 
-    def get_pack_history(self) -> List[CompressionResult]:
+    def get_pack_history(self) -> list[CompressionResult]:
         """Get history of pack operations."""
         return self._pack_history.copy()
 
@@ -604,11 +603,11 @@ class ContextPacker:
 
 def pack_context(
     query: str,
-    candidate_nodes: List[str],
+    candidate_nodes: list[str],
     graph: Any,
     target_tokens: int = 2000,
     preset: str = "balanced"
-) -> List[str]:
+) -> list[str]:
     """
     Quick context packing - returns just the compressed node list.
 
@@ -640,11 +639,11 @@ def pack_context(
 
 def adaptive_pack_context(
     query: str,
-    candidate_nodes: List[str],
+    candidate_nodes: list[str],
     graph: Any,
     min_tokens: int = 500,
     max_tokens: int = 4000
-) -> List[str]:
+) -> list[str]:
     """
     Adaptive context packing within token range.
 
@@ -669,12 +668,12 @@ def adaptive_pack_context(
 
 def information_budget_pack(
     query: str,
-    candidate_nodes: List[str],
+    candidate_nodes: list[str],
     graph: Any,
-    node_contents: Dict[str, str],
+    node_contents: dict[str, str],
     information_budget: float = 5.0,
-    token_budget: Optional[int] = None
-) -> Tuple[List[str], Dict[str, int], Dict[str, float]]:
+    token_budget: int | None = None
+) -> tuple[list[str], dict[str, int], dict[str, float]]:
     """
     Information-theoretic context packing (Phase 5).
 

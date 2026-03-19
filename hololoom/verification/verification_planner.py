@@ -11,9 +11,9 @@ they can be answered without knowing the original claim.
 Created: 2025-12-05
 """
 
-import re
 import logging
-from typing import Any, Dict, List, Optional
+import re
+from typing import Any
 
 from hololoom.verification.protocol import (
     ClaimType,
@@ -272,14 +272,14 @@ class RuleBasedVerificationPlanner:
     Fast and dependency-free, suitable for HEURISTIC degradation level.
     """
 
-    def __init__(self, config: Optional[VerificationConfig] = None):
+    def __init__(self, config: VerificationConfig | None = None):
         self.config = config or VerificationConfig()
 
     async def plan(
         self,
         claim: VerifiableClaim,
-        context: Optional[Dict[str, Any]] = None
-    ) -> List[VerificationQuestion]:
+        context: dict[str, Any] | None = None
+    ) -> list[VerificationQuestion]:
         """Generate verification questions using templates."""
         context = context or {}
         questions = []
@@ -302,7 +302,7 @@ class RuleBasedVerificationPlanner:
 
         return questions
 
-    def _get_templates(self, claim_type: ClaimType) -> List[str]:
+    def _get_templates(self, claim_type: ClaimType) -> list[str]:
         """Get question templates for a claim type."""
         type_templates = {
             ClaimType.FACTUAL: FACTUAL_TEMPLATES,
@@ -317,9 +317,9 @@ class RuleBasedVerificationPlanner:
 
     def _fill_templates(
         self,
-        templates: List[str],
+        templates: list[str],
         claim: VerifiableClaim
-    ) -> List[str]:
+    ) -> list[str]:
         """Fill template placeholders with extracted components."""
         filled = []
 
@@ -429,8 +429,8 @@ class LLMVerificationPlanner:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.llm_client = llm_client
@@ -439,8 +439,8 @@ class LLMVerificationPlanner:
     async def plan(
         self,
         claim: VerifiableClaim,
-        context: Optional[Dict[str, Any]] = None
-    ) -> List[VerificationQuestion]:
+        context: dict[str, Any] | None = None
+    ) -> list[VerificationQuestion]:
         """Generate verification questions using LLM."""
         context = context or {}
         if self.llm_client is None:
@@ -489,7 +489,7 @@ class LLMVerificationPlanner:
         self,
         response: str,
         claim: VerifiableClaim
-    ) -> List[VerificationQuestion]:
+    ) -> list[VerificationQuestion]:
         """Parse LLM response into verification questions."""
         import json
 
@@ -530,8 +530,8 @@ class LLMVerificationPlanner:
 # =============================================================================
 
 def create_verification_planner(
-    config: Optional[VerificationConfig] = None,
-    llm_client: Optional[Any] = None,
+    config: VerificationConfig | None = None,
+    llm_client: Any | None = None,
 ) -> VerificationPlannerProtocol:
     """
     Create appropriate verification planner based on configuration.

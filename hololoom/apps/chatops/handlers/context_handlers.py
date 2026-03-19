@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Context Handlers for Matrix ChatOps
 =====================================
@@ -25,7 +26,7 @@ Created: 2025-12-15
 
 import logging
 from datetime import datetime
-from typing import Optional, Dict, Any, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from hololoom.context_packing import ContextPacker
@@ -45,8 +46,8 @@ try:
     from hololoom.context_packing import (
         ContextPacker,
         ContextPackerConfig,
+        information_budget_pack,
         pack_context,
-        information_budget_pack
     )
     PACKER_AVAILABLE = True
 except ImportError:
@@ -76,10 +77,7 @@ except ImportError:
 
 # Adaptive expansion imports
 try:
-    from hololoom.memory.adaptive_expansion import (
-        AdaptiveExpander,
-        expand_context_adaptive
-    )
+    from hololoom.memory.adaptive_expansion import AdaptiveExpander, expand_context_adaptive
     ADAPTIVE_AVAILABLE = True
 except ImportError:
     ADAPTIVE_AVAILABLE = False
@@ -89,9 +87,9 @@ except ImportError:
 # Streaming expansion imports
 try:
     from hololoom.memory.streaming_expansion import (
+        ChunkYieldStrategy,
         StreamingContextBuilder,
         stream_context_expansion,
-        ChunkYieldStrategy
     )
     STREAMING_AVAILABLE = True
 except ImportError:
@@ -103,7 +101,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -120,7 +120,7 @@ logger = logging.getLogger(__name__)
 _context_packer: Optional['ContextPacker'] = None
 _activation_spreader: Optional['ActivationSpreader'] = None
 _importance_scorer: Optional['ImportanceScorer'] = None
-_knowledge_graph: Optional[Any] = None
+_knowledge_graph: Any | None = None
 
 
 def get_context_packer() -> Optional['ContextPacker']:
@@ -156,7 +156,7 @@ def set_importance_scorer(scorer: 'ImportanceScorer') -> None:
     _importance_scorer = scorer
 
 
-def get_knowledge_graph() -> Optional[Any]:
+def get_knowledge_graph() -> Any | None:
     """Get global knowledge graph instance."""
     return _knowledge_graph
 
@@ -174,7 +174,7 @@ def set_knowledge_graph(kg: Any) -> None:
 async def handle_context_pack(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
+    args: list[str],
     packer: Optional['ContextPacker'] = None
 ) -> str:
     """
@@ -265,7 +265,7 @@ async def handle_context_pack(
 async def handle_context_budget(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
+    args: list[str],
     packer: Optional['ContextPacker'] = None
 ) -> str:
     """
@@ -354,7 +354,7 @@ async def handle_context_budget(
 async def handle_context_expand(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
+    args: list[str],
     **kwargs
 ) -> str:
     """
@@ -445,7 +445,7 @@ async def handle_context_expand(
 async def handle_context_stream(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
+    args: list[str],
     **kwargs
 ) -> str:
     """
@@ -556,7 +556,7 @@ async def handle_context_stream(
 async def handle_context_spread(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
+    args: list[str],
     spreader: Optional['ActivationSpreader'] = None
 ) -> str:
     """
@@ -641,7 +641,7 @@ async def handle_context_spread(
 async def handle_context_importance(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
+    args: list[str],
     scorer: Optional['ImportanceScorer'] = None
 ) -> str:
     """
@@ -732,7 +732,7 @@ async def handle_context_importance(
 async def handle_context_stats(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
+    args: list[str],
     **kwargs
 ) -> str:
     """
@@ -802,7 +802,7 @@ async def handle_context_stats(
 async def handle_context_help(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
+    args: list[str],
     **kwargs
 ) -> str:
     """
@@ -856,7 +856,7 @@ class ContextHandlers:
         packer: Optional['ContextPacker'] = None,
         spreader: Optional['ActivationSpreader'] = None,
         scorer: Optional['ImportanceScorer'] = None,
-        knowledge_graph: Optional[Any] = None
+        knowledge_graph: Any | None = None
     ):
         """
         Initialize context handlers.
@@ -882,35 +882,35 @@ class ContextHandlers:
         if knowledge_graph:
             set_knowledge_graph(knowledge_graph)
 
-    async def handle_pack(self, room, event, args: List[str]) -> str:
+    async def handle_pack(self, room, event, args: list[str]) -> str:
         """Handle !context pack command."""
         return await handle_context_pack(room, event, args, self.packer)
 
-    async def handle_budget(self, room, event, args: List[str]) -> str:
+    async def handle_budget(self, room, event, args: list[str]) -> str:
         """Handle !context budget command."""
         return await handle_context_budget(room, event, args, self.packer)
 
-    async def handle_expand(self, room, event, args: List[str]) -> str:
+    async def handle_expand(self, room, event, args: list[str]) -> str:
         """Handle !context expand command."""
         return await handle_context_expand(room, event, args)
 
-    async def handle_stream(self, room, event, args: List[str]) -> str:
+    async def handle_stream(self, room, event, args: list[str]) -> str:
         """Handle !context stream command."""
         return await handle_context_stream(room, event, args)
 
-    async def handle_spread(self, room, event, args: List[str]) -> str:
+    async def handle_spread(self, room, event, args: list[str]) -> str:
         """Handle !context spread command."""
         return await handle_context_spread(room, event, args, self.spreader)
 
-    async def handle_importance(self, room, event, args: List[str]) -> str:
+    async def handle_importance(self, room, event, args: list[str]) -> str:
         """Handle !context importance command."""
         return await handle_context_importance(room, event, args, self.scorer)
 
-    async def handle_stats(self, room, event, args: List[str]) -> str:
+    async def handle_stats(self, room, event, args: list[str]) -> str:
         """Handle !context stats command."""
         return await handle_context_stats(room, event, args)
 
-    async def handle_help(self, room, event, args: List[str]) -> str:
+    async def handle_help(self, room, event, args: list[str]) -> str:
         """Handle !context help command."""
         return await handle_context_help(room, event, args)
 
@@ -924,7 +924,7 @@ def register_context_handlers(
     context_packer: Optional['ContextPacker'] = None,
     activation_spreader: Optional['ActivationSpreader'] = None,
     importance_scorer: Optional['ImportanceScorer'] = None,
-    knowledge_graph: Optional[Any] = None
+    knowledge_graph: Any | None = None
 ) -> ContextHandlers:
     """
     Register context packing handlers with Matrix bot.

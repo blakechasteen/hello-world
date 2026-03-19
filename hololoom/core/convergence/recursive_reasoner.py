@@ -11,23 +11,20 @@ Integration: Promptly → HoloLoom convergence layer
 """
 
 import time
-from typing import Optional
-from datetime import datetime
 
-from hololoom.protocols.types import Query, Features
 from hololoom.fabric.spacetime import Spacetime
 from hololoom.protocols.recursive_reasoning import (
-    RecursiveReasoningProtocol,
-    RecursiveConfig,
-    ReasoningJournal,
-    ReasoningTrace,
-    ReasoningStrategy,
-    StopCondition,
     QualityScoringProtocol,
+    ReasoningJournal,
     ReasoningResult,
+    ReasoningStrategy,
+    ReasoningTrace,
+    RecursiveConfig,
+    RefinementResult,
+    StopCondition,
     StopDecision,
-    RefinementResult
 )
+from hololoom.protocols.types import Features, Query
 
 
 class BaseRecursiveReasoner:
@@ -44,7 +41,7 @@ class BaseRecursiveReasoner:
     def __init__(
         self,
         weaving_fn: callable,  # async (Query) -> Spacetime
-        quality_scorer: Optional[QualityScoringProtocol] = None
+        quality_scorer: QualityScoringProtocol | None = None
     ):
         """
         Initialize recursive reasoner.
@@ -185,8 +182,8 @@ Original query: {previous_spacetime.metadata.get('original_query', '')}
         trace = ReasoningTrace(
             iteration=len(journal.traces) + 1,
             thought="Refining previous response for better quality",
-            action=f"weave(refinement_query)",
-            observation=f"Generated improved response",
+            action="weave(refinement_query)",
+            observation="Generated improved response",
             confidence=0.0,  # Will be scored by caller
             features_extracted=improved.metadata.get('features', None)
         )
@@ -504,7 +501,7 @@ Then provide an improved answer that incorporates this meta-level understanding.
 def create_recursive_reasoner(
     strategy: ReasoningStrategy,
     weaving_fn: callable,
-    quality_scorer: Optional[QualityScoringProtocol] = None
+    quality_scorer: QualityScoringProtocol | None = None
 ) -> BaseRecursiveReasoner:
     """
     Factory to create appropriate reasoner for strategy.

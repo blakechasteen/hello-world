@@ -6,11 +6,10 @@ Status: Phase 3 TUI (2025-12-05)
 """
 
 import json
-import os
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -19,7 +18,7 @@ class SessionMessage:
     content: str
     message_type: str  # "user", "proto", "system", "error"
     timestamp: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -39,12 +38,12 @@ class SessionData:
     created_at: str
     updated_at: str
     mode: str = "ask"
-    messages: List[SessionMessage] = field(default_factory=list)
-    context_files: List[SessionContext] = field(default_factory=list)
-    command_history: List[str] = field(default_factory=list)
-    settings: Dict[str, Any] = field(default_factory=dict)
+    messages: list[SessionMessage] = field(default_factory=list)
+    context_files: list[SessionContext] = field(default_factory=list)
+    command_history: list[str] = field(default_factory=list)
+    settings: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "session_id": self.session_id,
@@ -58,7 +57,7 @@ class SessionData:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "SessionData":
+    def from_dict(cls, data: dict[str, Any]) -> "SessionData":
         """Create from dictionary."""
         return cls(
             session_id=data.get("session_id", ""),
@@ -81,7 +80,7 @@ class SessionManager:
 
     DEFAULT_SESSION_DIR = ".proto_sessions"
 
-    def __init__(self, session_dir: Optional[str] = None):
+    def __init__(self, session_dir: str | None = None):
         """Initialize session manager.
 
         Args:
@@ -93,9 +92,9 @@ class SessionManager:
             self.session_dir = Path.home() / self.DEFAULT_SESSION_DIR
 
         self.session_dir.mkdir(parents=True, exist_ok=True)
-        self.current_session: Optional[SessionData] = None
+        self.current_session: SessionData | None = None
 
-    def create_session(self, session_id: Optional[str] = None) -> SessionData:
+    def create_session(self, session_id: str | None = None) -> SessionData:
         """Create a new session."""
         if session_id is None:
             session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -108,7 +107,7 @@ class SessionManager:
         )
         return self.current_session
 
-    def save_session(self, session: Optional[SessionData] = None) -> bool:
+    def save_session(self, session: SessionData | None = None) -> bool:
         """Save session to disk."""
         session = session or self.current_session
         if session is None:
@@ -125,14 +124,14 @@ class SessionManager:
             print(f"Failed to save session: {e}")
             return False
 
-    def load_session(self, session_id: str) -> Optional[SessionData]:
+    def load_session(self, session_id: str) -> SessionData | None:
         """Load session from disk."""
         session_path = self.session_dir / f"{session_id}.json"
         if not session_path.exists():
             return None
 
         try:
-            with open(session_path, "r", encoding="utf-8") as f:
+            with open(session_path, encoding="utf-8") as f:
                 data = json.load(f)
             self.current_session = SessionData.from_dict(data)
             return self.current_session
@@ -140,7 +139,7 @@ class SessionManager:
             print(f"Failed to load session: {e}")
             return None
 
-    def get_latest_session(self) -> Optional[SessionData]:
+    def get_latest_session(self) -> SessionData | None:
         """Get the most recently modified session."""
         sessions = list(self.session_dir.glob("*.json"))
         if not sessions:
@@ -149,7 +148,7 @@ class SessionManager:
         latest = max(sessions, key=lambda p: p.stat().st_mtime)
         return self.load_session(latest.stem)
 
-    def list_sessions(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def list_sessions(self, limit: int = 10) -> list[dict[str, Any]]:
         """List recent sessions."""
         sessions = list(self.session_dir.glob("*.json"))
         sessions.sort(key=lambda p: p.stat().st_mtime, reverse=True)
@@ -157,7 +156,7 @@ class SessionManager:
         result = []
         for session_path in sessions[:limit]:
             try:
-                with open(session_path, "r", encoding="utf-8") as f:
+                with open(session_path, encoding="utf-8") as f:
                     data = json.load(f)
                 result.append({
                     "session_id": data.get("session_id"),
@@ -189,7 +188,7 @@ class SessionManager:
         self,
         content: str,
         message_type: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> None:
         """Add a message to the current session."""
         if self.current_session is None:
@@ -315,9 +314,9 @@ class SessionManager:
 
         for msg in self.current_session.messages:
             if msg.message_type == "user":
-                lines.append(f"### You")
+                lines.append("### You")
             elif msg.message_type == "proto":
-                lines.append(f"### Proto")
+                lines.append("### Proto")
             else:
                 lines.append(f"### {msg.message_type.title()}")
 
@@ -337,6 +336,6 @@ class SessionManager:
 
 
 # Convenience function
-def create_session_manager(session_dir: Optional[str] = None) -> SessionManager:
+def create_session_manager(session_dir: str | None = None) -> SessionManager:
     """Create a session manager instance."""
     return SessionManager(session_dir)

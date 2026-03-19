@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Node Daemon - Per-device WASM job executor.
 
@@ -24,27 +25,24 @@ import argparse
 import asyncio
 import socket
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-from uuid import uuid4
-from enum import Enum
+from datetime import datetime
 
 import httpx
-from fastapi import FastAPI, HTTPException, Header, Depends, BackgroundTasks
+from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
-from .config import NodeConfig, load_config
-from .wasm_runner import WasmRunner
-from .module_registry import ModuleRegistry
+from ..shared.logging import configure_logging, get_logger
 from ..shared.types import (
-    NodeCapabilities,
-    NodeRegistration,
     JobRequest,
     JobResult,
     JobStatus,
     ModuleManifest,
+    NodeCapabilities,
+    NodeRegistration,
 )
-from ..shared.logging import configure_logging, get_logger
+from .config import NodeConfig, load_config
+from .module_registry import ModuleRegistry
+from .wasm_runner import WasmRunner
 
 # Try to import psutil for system metrics
 try:
@@ -54,15 +52,15 @@ except ImportError:
     PSUTIL_AVAILABLE = False
 
 # Global instances
-config: Optional[NodeConfig] = None
-wasm_runner: Optional[WasmRunner] = None
-module_registry: Optional[ModuleRegistry] = None
+config: NodeConfig | None = None
+wasm_runner: WasmRunner | None = None
+module_registry: ModuleRegistry | None = None
 logger = get_logger(__name__, component="node")
 
 # Job tracking
-_jobs: Dict[str, JobResult] = {}
-_job_semaphore: Optional[asyncio.Semaphore] = None
-_heartbeat_task: Optional[asyncio.Task] = None
+_jobs: dict[str, JobResult] = {}
+_job_semaphore: asyncio.Semaphore | None = None
+_heartbeat_task: asyncio.Task | None = None
 
 
 # Async job tracking for non-blocking execution
@@ -86,17 +84,17 @@ class AsyncJobTracker:
     status: JobStatus
     submitted_at: datetime
     timeout_seconds: int = 60
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    result: Optional[JobResult] = None
-    task: Optional[asyncio.Task] = field(default=None, repr=False)
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    result: JobResult | None = None
+    task: asyncio.Task | None = field(default=None, repr=False)
     progress: JobProgress = field(default_factory=JobProgress)
     cancelled: bool = False
 
 
-_async_jobs: Dict[str, AsyncJobTracker] = {}
-_cleanup_task: Optional[asyncio.Task] = None
-_timeout_monitor_task: Optional[asyncio.Task] = None
+_async_jobs: dict[str, AsyncJobTracker] = {}
+_cleanup_task: asyncio.Task | None = None
+_timeout_monitor_task: asyncio.Task | None = None
 
 # Configuration for job lifecycle
 JOB_EXPIRY_SECONDS = 3600  # 1 hour - completed jobs expire after this
@@ -106,8 +104,8 @@ JOB_PERSIST_INTERVAL_SECONDS = 30  # 30 seconds - persist job state to disk
 
 # Persistence configuration
 _persistence_enabled: bool = False
-_persistence_path: Optional[str] = None
-_persistence_task: Optional[asyncio.Task] = None
+_persistence_path: str | None = None
+_persistence_task: asyncio.Task | None = None
 
 
 def enable_persistence(path: str = ".job_state.json") -> None:
@@ -516,7 +514,7 @@ async def lifespan(app: FastAPI):
     logger.info("Node Daemon shutting down")
 
 
-def create_app(node_config: Optional[NodeConfig] = None) -> FastAPI:
+def create_app(node_config: NodeConfig | None = None) -> FastAPI:
     """Create FastAPI application with optional config."""
     global config
     if node_config:
@@ -535,6 +533,7 @@ def create_app(node_config: Optional[NodeConfig] = None) -> FastAPI:
 
 # Router
 from fastapi import APIRouter
+
 router = APIRouter()
 
 _start_time = datetime.utcnow()
@@ -825,9 +824,9 @@ class JobStatusWithProgress(BaseModel):
     """Extended job status with progress tracking."""
     job_id: str
     status: str
-    progress: Optional[JobProgressResponse] = None
-    elapsed_seconds: Optional[float] = None
-    error: Optional[str] = None
+    progress: JobProgressResponse | None = None
+    elapsed_seconds: float | None = None
+    error: str | None = None
 
 
 class CancelJobResponse(BaseModel):
@@ -840,15 +839,15 @@ class CancelJobResponse(BaseModel):
 
 class BatchJobRequest(BaseModel):
     """Request for batch job submission."""
-    jobs: List[JobRequest]
+    jobs: list[JobRequest]
 
 
 class BatchJobResponse(BaseModel):
     """Response for batch job submission."""
     submitted: int
     failed: int
-    job_ids: List[str]
-    errors: List[str]
+    job_ids: list[str]
+    errors: list[str]
 
 
 @router.post("/jobs/async", response_model=AsyncJobResponse)
@@ -1060,7 +1059,7 @@ async def get_job_progress(
     )
 
 
-@router.get("/modules", response_model=List[ModuleManifest])
+@router.get("/modules", response_model=list[ModuleManifest])
 async def list_modules(_: str = Depends(verify_secret)):
     """List available WASM modules."""
     if not module_registry:

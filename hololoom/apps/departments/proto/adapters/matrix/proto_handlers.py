@@ -31,14 +31,14 @@ Integration:
 Status: Production ready (2025-12-04)
 """
 
-import asyncio
 import logging
 import re
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Callable, Awaitable
+from typing import Any
 
-from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+from hololoom.apps.departments.proto.core import ProtoConfig, ProtoEngine
 from hololoom.apps.departments.proto.domain import CodeContext
 
 logger = logging.getLogger("proto.matrix")
@@ -52,8 +52,8 @@ class MatrixMessage:
     content: str
     event_id: str
     timestamp: datetime = field(default_factory=datetime.now)
-    reply_to: Optional[str] = None
-    attachments: List[str] = field(default_factory=list)
+    reply_to: str | None = None
+    attachments: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -62,9 +62,9 @@ class ProtoSession:
     room_id: str
     created_at: datetime = field(default_factory=datetime.now)
     last_activity: datetime = field(default_factory=datetime.now)
-    context_file: Optional[str] = None
-    history: List[Dict[str, str]] = field(default_factory=list)
-    user_preferences: Dict[str, Any] = field(default_factory=dict)
+    context_file: str | None = None
+    history: list[dict[str, str]] = field(default_factory=list)
+    user_preferences: dict[str, Any] = field(default_factory=dict)
 
     def add_exchange(self, user_msg: str, proto_response: str) -> None:
         """Add a message exchange to history."""
@@ -136,8 +136,8 @@ class ProtoMatrixHandlers:
 
     def __init__(
         self,
-        config: Optional[ProtoConfig] = None,
-        engine: Optional[ProtoEngine] = None,
+        config: ProtoConfig | None = None,
+        engine: ProtoEngine | None = None,
         enable_audit: bool = True,
     ):
         """Initialize Proto Matrix handlers.
@@ -152,16 +152,16 @@ class ProtoMatrixHandlers:
         self.enable_audit = enable_audit
 
         # Session storage (room_id -> ProtoSession)
-        self.sessions: Dict[str, ProtoSession] = {}
+        self.sessions: dict[str, ProtoSession] = {}
 
         # Command handlers (command -> handler function)
-        self.handlers: Dict[str, Callable[[MatrixMessage, str], Awaitable[str]]] = {}
+        self.handlers: dict[str, Callable[[MatrixMessage, str], Awaitable[str]]] = {}
 
         # Message send callback (set by Matrix client)
-        self._send_message: Optional[Callable[[str, str], Awaitable[None]]] = None
+        self._send_message: Callable[[str, str], Awaitable[None]] | None = None
 
         # Audit trail
-        self._audit_log: List[Dict[str, Any]] = []
+        self._audit_log: list[dict[str, Any]] = []
 
         self._register_handlers()
 
@@ -219,7 +219,7 @@ class ProtoMatrixHandlers:
 
         logger.info(f"Registered Proto handlers with prefix '{self.PREFIX}'")
 
-    async def handle_message(self, message: MatrixMessage) -> Optional[str]:
+    async def handle_message(self, message: MatrixMessage) -> str | None:
         """Handle incoming Matrix message.
 
         Args:
@@ -431,7 +431,7 @@ class ProtoMatrixHandlers:
             lines = [
                 f"**Test Results: {target}** {status}",
                 "",
-                f"**Summary:**",
+                "**Summary:**",
                 f"- Passed: {summary.get('passed', 'N/A')}",
                 f"- Failed: {summary.get('failed', 'N/A')}",
                 f"- Skipped: {summary.get('skipped', 'N/A')}",
@@ -484,7 +484,7 @@ class ProtoMatrixHandlers:
             lines = [
                 f"**Security Scan: {file_path}**",
                 "",
-                f"**Summary:**",
+                "**Summary:**",
                 f"- Critical: {severity_counts.get('CRITICAL', 0)}",
                 f"- High: {severity_counts.get('HIGH', 0)}",
                 f"- Medium: {severity_counts.get('MEDIUM', 0)}",
@@ -660,7 +660,7 @@ class ProtoMatrixHandlers:
     # Utility Methods
     # =========================================================================
 
-    def get_audit_log(self, limit: int = 100) -> List[Dict[str, Any]]:
+    def get_audit_log(self, limit: int = 100) -> list[dict[str, Any]]:
         """Get recent audit log entries.
 
         Args:
@@ -671,7 +671,7 @@ class ProtoMatrixHandlers:
         """
         return self._audit_log[-limit:]
 
-    def get_session_stats(self) -> Dict[str, Any]:
+    def get_session_stats(self) -> dict[str, Any]:
         """Get statistics about active sessions.
 
         Returns:
@@ -696,7 +696,7 @@ class ProtoMatrixHandlers:
 
 # Factory function
 def create_proto_handlers(
-    config: Optional[ProtoConfig] = None,
+    config: ProtoConfig | None = None,
     enable_audit: bool = True,
 ) -> ProtoMatrixHandlers:
     """Create Proto Matrix handlers instance.

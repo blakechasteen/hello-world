@@ -22,29 +22,23 @@ Or:
 """
 
 import asyncio
-import sys
 import os
+import sys
 from datetime import datetime
-from typing import List, Dict, Any
 
 # Add parent to path if running directly
 if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+from hololoom.visualization.jenny_actions import ActionStatus
 from hololoom.visualization.jenny_runtime import (
-    JennyRuntime,
     JennyConfig,
     JennyPanel,
-    jenny_session,
+    JennyRuntime,
 )
 from hololoom.visualization.jenny_spec import (
     LifecycleStage,
-    BindingMode,
-    PanelTypeJenny,
 )
-from hololoom.visualization.jenny_actions import ActionStatus
-from hololoom.visualization.jenny_streaming import StreamUpdate
-
 
 # ============================================================================
 # Demo Configuration
@@ -161,7 +155,7 @@ async def demo_lifecycle_states(jenny: JennyRuntime) -> None:
         "How does garbage collection work?",
     ]
 
-    panels: List[JennyPanel] = []
+    panels: list[JennyPanel] = []
     for query in queries:
         panel = await jenny.ask(query)
         panels.append(panel)

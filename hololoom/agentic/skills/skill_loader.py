@@ -12,12 +12,11 @@ Features:
 
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
-from hololoom.agentic.skills.templates import get_all_templates, get_template
-
+from hololoom.agentic.skills.templates import get_all_templates
 
 logger = logging.getLogger(__name__)
 
@@ -71,14 +70,14 @@ class SkillMetadata:
         created_at: Creation timestamp
     """
     runtime: str = "claude"
-    tags: List[str] = field(default_factory=list)
-    model: Optional[str] = None
-    requires: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
+    model: str | None = None
+    requires: list[str] = field(default_factory=list)
     version: str = "1.0.0"
-    author: Optional[str] = None
+    author: str | None = None
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "runtime": self.runtime,
@@ -105,25 +104,25 @@ class Skill:
     name: str
     description: str
     metadata: SkillMetadata
-    files: Dict[str, SkillFile] = field(default_factory=dict)
+    files: dict[str, SkillFile] = field(default_factory=dict)
 
-    def get_file(self, filename: str) -> Optional[SkillFile]:
+    def get_file(self, filename: str) -> SkillFile | None:
         """Get a specific file from the skill."""
         return self.files.get(filename)
 
-    def get_markdown_files(self) -> List[SkillFile]:
+    def get_markdown_files(self) -> list[SkillFile]:
         """Get all markdown documentation files."""
         return [f for f in self.files.values() if f.is_markdown]
 
-    def get_python_files(self) -> List[SkillFile]:
+    def get_python_files(self) -> list[SkillFile]:
         """Get all Python code files."""
         return [f for f in self.files.values() if f.is_python]
 
-    def get_config_files(self) -> List[SkillFile]:
+    def get_config_files(self) -> list[SkillFile]:
         """Get all YAML config files."""
         return [f for f in self.files.values() if f.is_yaml]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "name": self.name,
@@ -182,7 +181,7 @@ class SkillLoader:
 
         return self._load_from_template(skill_name, template)
 
-    def _load_from_template(self, skill_name: str, template: Dict[str, Any]) -> Skill:
+    def _load_from_template(self, skill_name: str, template: dict[str, Any]) -> Skill:
         """Load skill from template dict."""
         # Extract metadata
         template_metadata = template.get("metadata", {})
@@ -222,8 +221,8 @@ class SkillLoader:
         self,
         name: str,
         description: str,
-        files: Dict[str, str],
-        metadata: Optional[SkillMetadata] = None
+        files: dict[str, str],
+        metadata: SkillMetadata | None = None
     ) -> Skill:
         """
         Create a custom skill.
@@ -263,7 +262,7 @@ class SkillLoader:
         logger.info(f"Created custom skill '{name}' with {len(files)} files")
         return skill
 
-    def list_available(self) -> List[str]:
+    def list_available(self) -> list[str]:
         """
         List all available skill templates.
 
@@ -272,7 +271,7 @@ class SkillLoader:
         """
         return list(self._templates.keys())
 
-    def get_skill_info(self, skill_name: str) -> Dict[str, Any]:
+    def get_skill_info(self, skill_name: str) -> dict[str, Any]:
         """
         Get information about a skill without loading it.
 
@@ -297,7 +296,7 @@ class SkillLoader:
             "file_count": len(template.get("files", {}))
         }
 
-    def search_by_tag(self, tag: str) -> List[str]:
+    def search_by_tag(self, tag: str) -> list[str]:
         """
         Search for skills by tag.
 
@@ -315,7 +314,7 @@ class SkillLoader:
 
         return matching
 
-    def validate_skill(self, skill: Skill) -> List[str]:
+    def validate_skill(self, skill: Skill) -> list[str]:
         """
         Validate a skill and return any issues.
 
@@ -367,7 +366,7 @@ def load_skill(skill_name: str) -> Skill:
     return loader.load(skill_name)
 
 
-def list_skills() -> List[str]:
+def list_skills() -> list[str]:
     """
     Quick list all available skills.
 

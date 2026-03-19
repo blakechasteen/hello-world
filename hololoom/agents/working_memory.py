@@ -13,14 +13,12 @@ The three levels interact naturally:
 - Results → update semantic focus (loop)
 """
 
-from typing import Dict, List, Optional, Set, Tuple
 import numpy as np
-from pathlib import Path
 
-from hololoom.agents.types import WorkingMemoryState, AgentProfile
-from hololoom.memory.graph import KG
-from hololoom.protocols.types import Query, MemoryShard
+from hololoom.agents.types import AgentProfile, WorkingMemoryState
 from hololoom.fabric.spacetime import Spacetime
+from hololoom.memory.graph import KG
+from hololoom.protocols.types import MemoryShard, Query
 from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
 
 
@@ -37,7 +35,7 @@ class AgentWorkingMemory:
         profile: AgentProfile,
         yarn_graph: KG,
         embedding_model,
-        matryoshka_scale: Optional[int] = None
+        matryoshka_scale: int | None = None
     ):
         self.profile = profile
         self.yarn = yarn_graph  # Persistent symbolic memory
@@ -67,16 +65,16 @@ class AgentWorkingMemory:
         )
 
         # Warp space (computational substrate) - created on demand
-        self.warp: Optional['WarpSpace'] = None
+        self.warp: WarpSpace | None = None
 
         # For learning (populated during attend_to)
-        self._pending_snapshot: Optional[Dict] = None
+        self._pending_snapshot: dict | None = None
 
     async def attend_to(
         self,
         query: Query,
         apply_learned_patterns: bool = True
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Process query through all three levels:
         1. Shift semantic focus (geometric)
@@ -148,7 +146,7 @@ class AgentWorkingMemory:
         # RETRIEVAL: Get memories from all three views
         return await self._unified_retrieval(query)
 
-    def _compute_distances_to_focus(self) -> Dict[str, float]:
+    def _compute_distances_to_focus(self) -> dict[str, float]:
         """Compute semantic distance from each node to focus vector"""
         distances = {}
 
@@ -190,7 +188,7 @@ class AgentWorkingMemory:
 
         self.state.activation_map = new_activations
 
-    async def _unified_retrieval(self, query: Query) -> List[MemoryShard]:
+    async def _unified_retrieval(self, query: Query) -> list[MemoryShard]:
         """
         Retrieve using all three substrates:
         - Semantic: Near focus vector
@@ -266,7 +264,7 @@ class AgentWorkingMemory:
         if concept_node:
             self.state.tension_profile[concept_node] = weight
 
-    def _find_node_by_content(self, content: str) -> Optional[str]:
+    def _find_node_by_content(self, content: str) -> str | None:
         """Find graph node by content similarity"""
         concept_vector = self.emb.encode_scales([content], size=self.embedding_dim)[0]
 
@@ -325,7 +323,7 @@ class AgentWorkingMemory:
         pinned = set(self.state.tension_profile.keys())
         self.state.tensioned_threads = pinned
 
-    def get_state_summary(self) -> Dict:
+    def get_state_summary(self) -> dict:
         """Human-readable summary of working memory"""
         # Get top semantic dimensions
         top_dims_idx = np.argsort(np.abs(self.state.focus_vector))[-5:]

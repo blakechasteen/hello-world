@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Temporal Handlers for Matrix ChatOps
 =====================================
@@ -22,7 +23,7 @@ Created: 2025-12-06
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, TYPE_CHECKING, List, Dict, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hololoom.memory.unified import UnifiedMemory
@@ -35,7 +36,7 @@ except ImportError:
 
 # UnifiedMemory imports
 try:
-    from hololoom.memory.unified import UnifiedMemory, Memory
+    from hololoom.memory.unified import Memory, UnifiedMemory
     UNIFIED_MEMORY_AVAILABLE = True
 except ImportError:
     UNIFIED_MEMORY_AVAILABLE = False
@@ -45,7 +46,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -58,7 +61,7 @@ logger = logging.getLogger(__name__)
 # Timestamp Parsing Helpers
 # ============================================================================
 
-def parse_timestamp(timestamp_str: str) -> Optional[datetime]:
+def parse_timestamp(timestamp_str: str) -> datetime | None:
     """
     Parse timestamp string to datetime.
 

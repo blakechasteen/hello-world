@@ -6,9 +6,9 @@ Loads from YAML file with environment variable overrides.
 
 import os
 from pathlib import Path
-from typing import Optional
-from pydantic import BaseModel, Field
+
 import yaml
+from pydantic import BaseModel, Field
 
 
 class PortalConfig(BaseModel):
@@ -30,7 +30,7 @@ class PortalConfig(BaseModel):
     log_json: bool = Field(default=True, description="Use JSON logging")
 
 
-def load_config(config_path: Optional[str] = None) -> PortalConfig:
+def load_config(config_path: str | None = None) -> PortalConfig:
     """
     Load Portal configuration from YAML file with env overrides.
 

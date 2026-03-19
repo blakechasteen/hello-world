@@ -7,29 +7,26 @@ timeout enforcement, and graceful degradation.
 Created: 2025-01-21
 """
 
-from dataclasses import dataclass, field
-from typing import Protocol, List, Dict, Any, Optional
-import time
 import logging
+import time
+from dataclasses import dataclass, field
+from typing import Any, Protocol
 
-from .config import ShuttleConfig, ShuttleMode
+from .config import ShuttleConfig
+from .entity_extraction import Anchor, EntityExtractionFactory
 from .exceptions import (
+    EntityExtractionError,
     ShuttleError,
     TimeoutError,
     WarpSearchError,
     YarnTraversalError,
-    EntityExtractionError,
-    BackendUnavailableError,
 )
-from .entity_extraction import Anchor, EntityExtractionFactory
+from .mcts import MCTSState, NeighborMap, run_mcts_search
 from .trajectories import (
-    TraversalConfig,
-    TrajectoryStrategy,
     ALL_TRAJECTORIES,
     TRAJECTORY_BY_NAME,
 )
-from .trajectory_bandit import TrajectoryBandit, RewardCalculator
-from .mcts import MCTSState, NeighborMap, run_mcts_search
+from .trajectory_bandit import RewardCalculator, TrajectoryBandit
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +46,8 @@ class WarpInterface(Protocol):
         self,
         query: str,
         top_k: int = 10,
-        timeout_ms: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+        timeout_ms: int | None = None
+    ) -> list[dict[str, Any]]:
         """
         Semantic search for anchor points.
 
@@ -78,12 +75,12 @@ class YarnInterface(Protocol):
 
     def build_neighbor_map(
         self,
-        anchors: List[str],
-        allowed_edge_types: List[str],
+        anchors: list[str],
+        allowed_edge_types: list[str],
         max_depth: int,
         max_nodes: int,
-        timeout_ms: Optional[int] = None
-    ) -> tuple[NeighborMap, List[str]]:
+        timeout_ms: int | None = None
+    ) -> tuple[NeighborMap, list[str]]:
         """
         Build neighbor map for MCTS from anchor nodes.
 
@@ -105,8 +102,8 @@ class YarnInterface(Protocol):
 
     def describe_nodes(
         self,
-        node_ids: List[str],
-        timeout_ms: Optional[int] = None
+        node_ids: list[str],
+        timeout_ms: int | None = None
     ) -> str:
         """
         Get human-readable description of nodes.
@@ -137,24 +134,24 @@ class WeaveResult:
     along with complete metadata for debugging and analysis.
     """
     query: str
-    fuzzy_evidence: List[Dict[str, Any]]  # Warp search results
+    fuzzy_evidence: list[dict[str, Any]]  # Warp search results
     structural_claims: str  # Yarn graph description
-    selected_nodes: List[str]  # Nodes selected by MCTS
+    selected_nodes: list[str]  # Nodes selected by MCTS
     trajectory_used: str  # Which trajectory was selected
     reward: float  # Calculated reward
     search_time_ms: float  # Total execution time
 
     # Detailed timing breakdown
-    timing: Dict[str, float] = field(default_factory=dict)
+    timing: dict[str, float] = field(default_factory=dict)
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Error tracking
-    errors: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
     degraded: bool = False  # True if graceful degradation occurred
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dict for logging."""
         return {
             "query": self.query,
@@ -196,7 +193,7 @@ class Shuttle:
         self,
         warp: WarpInterface,
         yarn: YarnInterface,
-        config: Optional[ShuttleConfig] = None,
+        config: ShuttleConfig | None = None,
     ):
         """
         Args:
@@ -226,7 +223,7 @@ class Shuttle:
     def intersect(
         self,
         query: str,
-        trajectory_name: Optional[str] = None,
+        trajectory_name: str | None = None,
     ) -> WeaveResult:
         """
         Main query execution with error handling.
@@ -524,11 +521,11 @@ class Shuttle:
             result.search_time_ms = (time.time() - start_time) * 1000
             return result
 
-    def get_trajectory_statistics(self) -> Dict[str, Dict]:
+    def get_trajectory_statistics(self) -> dict[str, dict]:
         """Get Thompson Sampling statistics for all trajectories."""
         return self.trajectory_bandit.get_statistics()
 
-    def get_best_trajectories(self, top_k: int = 3) -> List[tuple[str, float]]:
+    def get_best_trajectories(self, top_k: int = 3) -> list[tuple[str, float]]:
         """Get top-k trajectories by mean reward."""
         return self.trajectory_bandit.get_best_policies(top_k)
 
@@ -542,7 +539,7 @@ class Shuttle:
         warp: WarpInterface,
         yarn: YarnInterface,
         filepath: str,
-        config: Optional[ShuttleConfig] = None,
+        config: ShuttleConfig | None = None,
     ) -> "Shuttle":
         """
         Create shuttle with loaded bandit state.
@@ -571,7 +568,7 @@ class Shuttle:
 def create_shuttle(
     warp: WarpInterface,
     yarn: YarnInterface,
-    config: Optional[ShuttleConfig] = None,
+    config: ShuttleConfig | None = None,
 ) -> Shuttle:
     """
     Convenience function to create a Shuttle instance.

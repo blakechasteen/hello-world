@@ -9,7 +9,7 @@ Side-effect stage — no context writes.
 """
 
 import logging
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -30,8 +30,8 @@ class ReflectionStage:
 
     def __init__(
         self,
-        reflection_buffer: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
+        reflection_buffer: Any | None = None,
+        logger: logging.Logger | None = None,
     ):
         self.reflection_buffer = reflection_buffer
         self.logger = logger or logging.getLogger(__name__)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Verification Department - Cross-department fact-checking and validation.
 
@@ -20,18 +19,19 @@ Supported Tasks:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime
-from dataclasses import dataclass
+
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 from ..base import BaseDepartment
 from ..protocol import (
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
     VerificationResult,
-    ConfidenceMetadata,
-    DepartmentConfig
 )
 
 logger = logging.getLogger(__name__)
@@ -46,9 +46,9 @@ class CrossCheckResult:
     """Result of cross-checking across departments."""
     consistent: bool
     confidence_agreement: float
-    conflicting_claims: List[Dict[str, Any]]
+    conflicting_claims: list[dict[str, Any]]
     agreement_level: str  # "full", "partial", "conflict"
-    evidence: Dict[str, Any]
+    evidence: dict[str, Any]
 
 
 @dataclass
@@ -56,7 +56,7 @@ class InconsistencyReport:
     """Report of detected inconsistencies."""
     inconsistency_type: str
     severity: str  # "low", "medium", "high", "critical"
-    departments_involved: List[str]
+    departments_involved: list[str]
     details: str
     recommended_action: str
 
@@ -105,10 +105,10 @@ class VerificationDepartment(BaseDepartment):
 
     def __init__(
         self,
-        registry: Optional[Any] = None,
+        registry: Any | None = None,
         confidence_threshold: float = 0.75,
         consistency_threshold: float = 0.80,
-        dept_config: Optional[DepartmentConfig] = None
+        dept_config: DepartmentConfig | None = None
     ):
         """
         Initialize Verification Department.
@@ -138,10 +138,10 @@ class VerificationDepartment(BaseDepartment):
         self.consistency_threshold = consistency_threshold
 
         # Verification history
-        self._verification_history: List[Dict[str, Any]] = []
+        self._verification_history: list[dict[str, Any]] = []
 
         # Inconsistency tracking
-        self._detected_inconsistencies: List[InconsistencyReport] = []
+        self._detected_inconsistencies: list[InconsistencyReport] = []
 
         logger.info("Verification Department initialized")
 
@@ -288,7 +288,7 @@ class VerificationDepartment(BaseDepartment):
     async def _verify_response(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Verify a single department response."""
         response_data = request.parameters.get("response")
 
@@ -339,7 +339,7 @@ class VerificationDepartment(BaseDepartment):
     async def _cross_check(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Cross-check across multiple departments."""
         query = request.parameters.get("query")
         departments = request.parameters.get("departments", [])
@@ -431,7 +431,7 @@ class VerificationDepartment(BaseDepartment):
     async def _validate_confidence(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Validate confidence calibration."""
         responses = request.parameters.get("responses", [])
 
@@ -483,7 +483,7 @@ class VerificationDepartment(BaseDepartment):
     async def _detect_inconsistencies(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Detect inconsistencies across departments."""
         responses = request.parameters.get("responses", {})
 
@@ -544,9 +544,9 @@ class VerificationDepartment(BaseDepartment):
 
     def _build_reasoning(
         self,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         request: DepartmentRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Build reasoning dict for response."""
         return {
             "task_type": request.task_type,
@@ -556,9 +556,9 @@ class VerificationDepartment(BaseDepartment):
 
     async def _build_session_state(
         self,
-        session_id: Optional[str],
-        result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        session_id: str | None,
+        result: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Build session state update."""
         if not session_id:
             return None
@@ -567,11 +567,11 @@ class VerificationDepartment(BaseDepartment):
             "last_verification": result
         }
 
-    def get_verification_history(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_verification_history(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent verification history."""
         return self._verification_history[-limit:]
 
-    def get_inconsistencies(self, severity: Optional[str] = None) -> List[InconsistencyReport]:
+    def get_inconsistencies(self, severity: str | None = None) -> list[InconsistencyReport]:
         """Get detected inconsistencies."""
         if severity:
             return [inc for inc in self._detected_inconsistencies if inc.severity == severity]

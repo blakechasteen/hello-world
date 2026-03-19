@@ -14,15 +14,13 @@ Author: Claude Code
 Date: 2025-12-09
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
-from enum import Enum
-import math
-import random
 import json
 import os
+import random
+from dataclasses import dataclass, field
 from datetime import datetime
-
+from enum import Enum
+from typing import Any
 
 # ============================================================================
 # Data Types
@@ -44,9 +42,9 @@ class BudgetOutcome:
     budget_used: float
     quality_score: float  # 0.0-1.0
     confidence: float     # Model confidence 0.0-1.0
-    feedback: Optional[float] = None  # User feedback 0.0-1.0
+    feedback: float | None = None  # User feedback 0.0-1.0
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -57,7 +55,7 @@ class BudgetRecommendation:
     confidence: float  # Confidence in recommendation
     expected_quality: float  # Expected quality at this budget
     reasoning: str
-    alternatives: List[Tuple[float, float]] = field(default_factory=list)  # [(budget, expected_quality)]
+    alternatives: list[tuple[float, float]] = field(default_factory=list)  # [(budget, expected_quality)]
 
 
 # ============================================================================
@@ -94,7 +92,7 @@ class ThompsonSampler:
         self.quality_threshold = quality_threshold
 
         # Track outcomes
-        self._outcomes: List[BudgetOutcome] = []
+        self._outcomes: list[BudgetOutcome] = []
         self._total_queries = 0
         self._total_successes = 0
 
@@ -166,7 +164,7 @@ class ThompsonSampler:
             return 0.5  # Prior
         return self._total_successes / self._total_queries
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get sampler statistics."""
         return {
             "base_budget": self.base_budget,
@@ -179,7 +177,7 @@ class ThompsonSampler:
             "total_successes": self._total_successes,
         }
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary for persistence."""
         return {
             "base_budget": self.base_budget,
@@ -191,7 +189,7 @@ class ThompsonSampler:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ThompsonSampler":
+    def from_dict(cls, data: dict[str, Any]) -> "ThompsonSampler":
         """Deserialize from dictionary."""
         sampler = cls(
             base_budget=data["base_budget"],
@@ -263,7 +261,7 @@ class AdaptiveBudgetLearner:
         self.exploration_rate = exploration_rate
 
         # Create Thompson Samplers for each complexity level
-        self.samplers: Dict[QueryComplexity, ThompsonSampler] = {}
+        self.samplers: dict[QueryComplexity, ThompsonSampler] = {}
         for complexity, base_budget in self.DEFAULT_BUDGETS.items():
             self.samplers[complexity] = ThompsonSampler(
                 base_budget=base_budget,
@@ -272,7 +270,7 @@ class AdaptiveBudgetLearner:
 
         # Global statistics
         self._total_updates = 0
-        self._outcome_history: List[BudgetOutcome] = []
+        self._outcome_history: list[BudgetOutcome] = []
 
     def get_budget(self, complexity: QueryComplexity) -> float:
         """
@@ -361,8 +359,8 @@ class AdaptiveBudgetLearner:
         budget_used: float,
         quality_score: float,
         confidence: float = 1.0,
-        feedback: Optional[float] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        feedback: float | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Update learner with query outcome.
@@ -397,7 +395,7 @@ class AdaptiveBudgetLearner:
         if len(self._outcome_history) > 1000:
             self._outcome_history = self._outcome_history[-1000:]
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get comprehensive learning statistics."""
         stats = {
             "total_updates": self._total_updates,
@@ -454,7 +452,7 @@ class AdaptiveBudgetLearner:
         if not os.path.exists(path):
             return  # No state to load
 
-        with open(path, "r") as f:
+        with open(path) as f:
             state = json.load(f)
 
         self.quality_threshold = state.get("quality_threshold", 0.7)
@@ -472,7 +470,7 @@ class AdaptiveBudgetLearner:
 # ============================================================================
 
 # Global learner instance
-_global_learner: Optional[AdaptiveBudgetLearner] = None
+_global_learner: AdaptiveBudgetLearner | None = None
 
 
 def get_learner() -> AdaptiveBudgetLearner:
@@ -505,7 +503,7 @@ def record_outcome(
     budget_used: float,
     quality_score: float,
     confidence: float = 1.0,
-    feedback: Optional[float] = None,
+    feedback: float | None = None,
 ) -> None:
     """
     Record query outcome for learning.
@@ -530,6 +528,6 @@ def record_outcome(
     )
 
 
-def get_learning_statistics() -> Dict[str, Any]:
+def get_learning_statistics() -> dict[str, Any]:
     """Get global learning statistics."""
     return get_learner().get_statistics()

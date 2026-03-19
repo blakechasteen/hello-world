@@ -16,11 +16,10 @@ Author: Claude Code
 Date: October 29, 2025
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Tuple
-from enum import Enum
 import math
-
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # ============================================================================
 # Data Analysis
@@ -51,11 +50,11 @@ class DataColumn:
     """Analyzed column information."""
     name: str
     data_type: DataType
-    values: List[Any]
-    min_val: Optional[float] = None
-    max_val: Optional[float] = None
-    mean: Optional[float] = None
-    std: Optional[float] = None
+    values: list[Any]
+    min_val: float | None = None
+    max_val: float | None = None
+    mean: float | None = None
+    std: float | None = None
     unique_count: int = 0
     null_count: int = 0
 
@@ -78,7 +77,7 @@ class DataAnalyzer:
     """
 
     @staticmethod
-    def analyze_column(name: str, values: List[Any]) -> DataColumn:
+    def analyze_column(name: str, values: list[Any]) -> DataColumn:
         """
         Analyze a single column to detect type and statistics.
 
@@ -113,7 +112,7 @@ class DataAnalyzer:
         )
 
     @staticmethod
-    def _detect_type(values: List[Any]) -> DataType:
+    def _detect_type(values: list[Any]) -> DataType:
         """Detect data type from values."""
         non_null = [v for v in values if v is not None]
         if not non_null:
@@ -145,7 +144,7 @@ class DataAnalyzer:
         return DataType.TEXT
 
     @staticmethod
-    def _std(values: List[float]) -> float:
+    def _std(values: list[float]) -> float:
         """Calculate standard deviation."""
         if not values:
             return 0.0
@@ -154,7 +153,7 @@ class DataAnalyzer:
         return math.sqrt(variance)
 
     @staticmethod
-    def detect_patterns(columns: List[DataColumn]) -> List[DataPattern]:
+    def detect_patterns(columns: list[DataColumn]) -> list[DataPattern]:
         """
         Detect high-level patterns in the dataset.
 
@@ -201,7 +200,7 @@ class DataAnalyzer:
         return patterns
 
     @staticmethod
-    def _has_trend(values: List[float]) -> bool:
+    def _has_trend(values: list[float]) -> bool:
         """Check if values show a trend (simple linear check)."""
         if len(values) < 3:
             return False
@@ -275,7 +274,7 @@ class DataAnalyzer:
 # Visualization Selection
 # ============================================================================
 
-from .dashboard import PanelType, PanelSize
+from .dashboard import PanelSize, PanelType
 
 
 @dataclass
@@ -284,7 +283,7 @@ class VisualizationRecommendation:
     panel_type: PanelType
     priority: int  # 0-100, higher = more important
     reasoning: str
-    data_mapping: Dict[str, str]  # 'x' -> 'column_name', etc.
+    data_mapping: dict[str, str]  # 'x' -> 'column_name', etc.
     size: PanelSize = PanelSize.LARGE
 
 
@@ -297,9 +296,9 @@ class VisualizationSelector:
 
     @staticmethod
     def recommend_visualizations(
-        columns: List[DataColumn],
-        patterns: List[DataPattern]
-    ) -> List[VisualizationRecommendation]:
+        columns: list[DataColumn],
+        patterns: list[DataPattern]
+    ) -> list[VisualizationRecommendation]:
         """
         Recommend visualizations for the dataset.
 
@@ -392,7 +391,7 @@ class GeneratedInsight:
     title: str
     message: str
     confidence: float  # 0.0 to 1.0
-    details: Dict[str, Any]
+    details: dict[str, Any]
     priority: int = 50
 
 
@@ -406,9 +405,9 @@ class InsightGenerator:
 
     @staticmethod
     def generate_insights(
-        columns: List[DataColumn],
-        patterns: List[DataPattern]
-    ) -> List[GeneratedInsight]:
+        columns: list[DataColumn],
+        patterns: list[DataPattern]
+    ) -> list[GeneratedInsight]:
         """
         Generate all possible insights from analyzed data.
 
@@ -457,7 +456,7 @@ class InsightGenerator:
         return insights
 
     @staticmethod
-    def _generate_trend_insight(col: DataColumn) -> Optional[GeneratedInsight]:
+    def _generate_trend_insight(col: DataColumn) -> GeneratedInsight | None:
         """Generate trend insight for a column."""
         if col.mean is None or len(col.values) < 3:
             return None
@@ -498,7 +497,7 @@ class InsightGenerator:
     def _generate_correlation_insight(
         col1: DataColumn,
         col2: DataColumn
-    ) -> Optional[GeneratedInsight]:
+    ) -> GeneratedInsight | None:
         """Generate correlation insight between two columns."""
         corr = DataAnalyzer.calculate_correlation(col1, col2)
 
@@ -523,7 +522,7 @@ class InsightGenerator:
         )
 
     @staticmethod
-    def _generate_outlier_insight(col: DataColumn) -> Optional[GeneratedInsight]:
+    def _generate_outlier_insight(col: DataColumn) -> GeneratedInsight | None:
         """Generate outlier insight for a column."""
         if col.mean is None or col.std is None or col.std == 0:
             return None
@@ -555,7 +554,7 @@ class InsightGenerator:
         )
 
     @staticmethod
-    def _generate_summary_insight(col: DataColumn) -> Optional[GeneratedInsight]:
+    def _generate_summary_insight(col: DataColumn) -> GeneratedInsight | None:
         """Generate statistical summary insight."""
         if col.mean is None:
             return None
@@ -579,7 +578,7 @@ class InsightGenerator:
 # Widget Builder (Main Orchestrator)
 # ============================================================================
 
-from .dashboard import Panel, Dashboard, LayoutType, ComplexityLevel
+from .dashboard import ComplexityLevel, Dashboard, LayoutType, Panel
 
 
 class WidgetBuilder:
@@ -604,7 +603,7 @@ class WidgetBuilder:
 
     def build_from_data(
         self,
-        data: Dict[str, List[Any]],
+        data: dict[str, list[Any]],
         title: str = "Auto-Generated Dashboard",
         max_panels: int = 12,
         spacetime: Any = None
@@ -679,7 +678,7 @@ class WidgetBuilder:
                 tool_used: str = "widget_builder"
                 confidence: float = 0.95
                 trace: Any = None
-                metadata: Dict[str, Any] = field(default_factory=dict)
+                metadata: dict[str, Any] = field(default_factory=dict)
 
                 def to_dict(self):
                     return {'query': self.query_text}
@@ -705,10 +704,10 @@ class WidgetBuilder:
     def _build_panel_from_recommendation(
         self,
         rec: VisualizationRecommendation,
-        columns: List[DataColumn],
-        data: Dict[str, List[Any]],
+        columns: list[DataColumn],
+        data: dict[str, list[Any]],
         panel_idx: int
-    ) -> Optional[Panel]:
+    ) -> Panel | None:
         """Build a Panel from a visualization recommendation."""
 
         panel_id = f"panel_{panel_idx}"

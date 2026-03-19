@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Proto Interactive REPL
 ======================
@@ -11,9 +12,7 @@ Features:
 - Colored output (optional, via Rich)
 """
 
-import sys
 import asyncio
-from typing import Optional
 from pathlib import Path
 
 # Try Rich for pretty output
@@ -68,7 +67,7 @@ def clear_screen():
 
 async def start_repl():
     """Start the interactive REPL."""
-    from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+    from hololoom.apps.departments.proto.core import ProtoConfig, ProtoEngine
     from hololoom.apps.departments.proto.domain import CodeContext, ProtoSession
 
     # Initialize
@@ -78,7 +77,7 @@ async def start_repl():
     await engine.startup()
 
     session = ProtoSession()
-    context_file: Optional[Path] = None
+    context_file: Path | None = None
     history = []
 
     try:

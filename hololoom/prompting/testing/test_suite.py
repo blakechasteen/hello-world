@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Main Prompt Test Suite - Orchestrates all testing workflows.
 
 Provides a unified interface for running:
@@ -14,29 +15,27 @@ Updated: December 2025 - LLMJudge integration
 
 import asyncio
 import sys
-from dataclasses import field
-from typing import Dict, List, Optional, Any
 from datetime import datetime
+from typing import Optional
 
+from hololoom.prompting.testing.golden_dataset import GoldenDatasetManager
+from hololoom.prompting.testing.metrics_collector import MetricsCollector, MetricType
+from hololoom.prompting.testing.mutation_testing import MutationTester
 from hololoom.prompting.testing.protocol import (
     PromptTestCase,
-    PromptTestResult,
-    PromptTestReport,
     PromptTestConfig,
+    PromptTestReport,
+    PromptTestResult,
     TestStatus,
-    TestType,
 )
-from hololoom.prompting.testing.golden_dataset import GoldenDatasetManager
-from hololoom.prompting.testing.mutation_testing import MutationTester
 from hololoom.prompting.testing.regression_testing import RegressionDetector
-from hololoom.prompting.testing.metrics_collector import MetricsCollector, MetricType
 
 # LLM Judge integration (December 2025)
 try:
     from hololoom.chaining.evaluation import (
-        LLMJudge,
-        JudgeCriteria,
         JudgeConfig,
+        JudgeCriteria,
+        LLMJudge,
         create_judge,
     )
     LLM_JUDGE_AVAILABLE = True
@@ -53,7 +52,7 @@ class PromptTestSuite:
     def __init__(
         self,
         config: PromptTestConfig,
-        golden_dataset: Optional[GoldenDatasetManager] = None,
+        golden_dataset: GoldenDatasetManager | None = None,
         llm_judge: Optional["LLMJudge"] = None,
     ):
         """Initialize test suite.
@@ -68,7 +67,7 @@ class PromptTestSuite:
         self.mutation_tester = MutationTester(config)
         self.regression_detector = RegressionDetector(config)
         self.metrics_collector = MetricsCollector()
-        self.results: List[PromptTestResult] = []
+        self.results: list[PromptTestResult] = []
 
         # Initialize LLM Judge if configured and available
         self.llm_judge = llm_judge
@@ -124,7 +123,7 @@ class PromptTestSuite:
 
         return self._generate_report(self.results)
 
-    async def run_golden_tests(self) -> List[PromptTestResult]:
+    async def run_golden_tests(self) -> list[PromptTestResult]:
         """Run tests against golden dataset.
 
         Returns:
@@ -148,7 +147,7 @@ class PromptTestSuite:
         self.metrics_collector.record("golden_tests_executed", float(len(results)), MetricType.PASS_RATE)
         return results
 
-    async def run_mutation_tests(self, prompts: Optional[List[str]] = None) -> List[PromptTestResult]:
+    async def run_mutation_tests(self, prompts: list[str] | None = None) -> list[PromptTestResult]:
         """Test prompt robustness to mutations.
 
         Args:
@@ -172,7 +171,7 @@ class PromptTestSuite:
         self.metrics_collector.record("mutation_tests_executed", float(len(results)), MetricType.MUTATION_ROBUSTNESS)
         return results
 
-    async def run_regression_tests(self, baseline_path: Optional[str] = None) -> List[PromptTestResult]:
+    async def run_regression_tests(self, baseline_path: str | None = None) -> list[PromptTestResult]:
         """Detect quality regressions against baseline.
 
         Args:
@@ -269,9 +268,9 @@ class PromptTestSuite:
     async def _evaluate_with_llm_judge(
         self,
         response: str,
-        expected: Optional[str],
+        expected: str | None,
         test_case: PromptTestCase,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Evaluate response using LLM Judge.
 
         Args:
@@ -336,8 +335,8 @@ class PromptTestSuite:
             raise
 
     def _calculate_quality_score(
-        self, response: str, expected: Optional[str] = None
-    ) -> Dict[str, float]:
+        self, response: str, expected: str | None = None
+    ) -> dict[str, float]:
         """Calculate quality score for response.
 
         Simple implementation using:
@@ -379,7 +378,7 @@ class PromptTestSuite:
 
         return scores
 
-    def _generate_report(self, results: List[PromptTestResult]) -> PromptTestReport:
+    def _generate_report(self, results: list[PromptTestResult]) -> PromptTestReport:
         """Generate aggregated test report.
 
         Args:
@@ -429,7 +428,7 @@ class PromptTestSuite:
 
 
 def create_test_suite(
-    config: Optional[PromptTestConfig] = None,
+    config: PromptTestConfig | None = None,
     llm_judge: Optional["LLMJudge"] = None,
 ) -> PromptTestSuite:
     """Factory function for creating a test suite.

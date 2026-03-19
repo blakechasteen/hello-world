@@ -24,25 +24,21 @@ import asyncio
 import inspect
 import logging
 import time
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Union,
-    get_type_hints,
-)
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import wraps
+from typing import (
+    Any,
+    get_type_hints,
+)
 
 from hololoom.skills.base import (
     BaseSkill,
+    SkillCategory,
     SkillInput,
+    SkillMetadata,
     SkillOutput,
     SkillStatus,
-    SkillMetadata,
-    SkillCategory,
     register_skill,
 )
 
@@ -67,8 +63,8 @@ class FunctionSkill(BaseSkill):
         category: SkillCategory,
         version: str = "1.0.0",
         author: str = "hololoom",
-        description: Optional[str] = None,
-        tags: Optional[List[str]] = None,
+        description: str | None = None,
+        tags: list[str] | None = None,
         requires_network: bool = False,
         requires_filesystem_read: bool = False,
         requires_filesystem_write: bool = False,
@@ -123,7 +119,7 @@ class FunctionSkill(BaseSkill):
         self._execution_count = 0
         self._total_time_ms = 0.0
 
-    def _extract_params(self, func: Callable) -> Dict[str, Any]:
+    def _extract_params(self, func: Callable) -> dict[str, Any]:
         """Extract parameter info from function signature."""
         sig = inspect.signature(func)
         params = {}
@@ -201,11 +197,11 @@ class FunctionSkill(BaseSkill):
 # ============================================================================
 
 def skill(
-    name: Optional[str] = None,
-    category: Union[str, SkillCategory] = "domain",
+    name: str | None = None,
+    category: str | SkillCategory = "domain",
     version: str = "1.0.0",
-    description: Optional[str] = None,
-    tags: Optional[List[str]] = None,
+    description: str | None = None,
+    tags: list[str] | None = None,
     requires_network: bool = False,
     requires_filesystem_read: bool = False,
     requires_filesystem_write: bool = False,
@@ -307,7 +303,7 @@ def skill(
 # ============================================================================
 
 def code_skill(
-    name: Optional[str] = None,
+    name: str | None = None,
     **kwargs
 ) -> Callable:
     """
@@ -322,7 +318,7 @@ def code_skill(
 
 
 def domain_skill(
-    name: Optional[str] = None,
+    name: str | None = None,
     **kwargs
 ) -> Callable:
     """
@@ -337,7 +333,7 @@ def domain_skill(
 
 
 def testing_skill(
-    name: Optional[str] = None,
+    name: str | None = None,
     **kwargs
 ) -> Callable:
     """
@@ -352,7 +348,7 @@ def testing_skill(
 
 
 def web_skill(
-    name: Optional[str] = None,
+    name: str | None = None,
     **kwargs
 ) -> Callable:
     """
@@ -368,7 +364,7 @@ def web_skill(
 
 
 def system_skill(
-    name: Optional[str] = None,
+    name: str | None = None,
     **kwargs
 ) -> Callable:
     """
@@ -401,12 +397,12 @@ class SkillBuilder:
             .tags(["tag1", "tag2"])
             .build())
     """
-    _name: Optional[str] = None
+    _name: str | None = None
     _category: SkillCategory = SkillCategory.DOMAIN
     _version: str = "1.0.0"
-    _description: Optional[str] = None
-    _tags: List[str] = field(default_factory=list)
-    _handler: Optional[Callable] = None
+    _description: str | None = None
+    _tags: list[str] = field(default_factory=list)
+    _handler: Callable | None = None
     _requires_network: bool = False
     _requires_filesystem_read: bool = False
     _requires_filesystem_write: bool = False
@@ -418,7 +414,7 @@ class SkillBuilder:
         self._name = name
         return self
 
-    def category(self, category: Union[str, SkillCategory]) -> "SkillBuilder":
+    def category(self, category: str | SkillCategory) -> "SkillBuilder":
         """Set skill category."""
         if isinstance(category, str):
             self._category = SkillCategory(category)
@@ -436,7 +432,7 @@ class SkillBuilder:
         self._description = description
         return self
 
-    def tags(self, tags: List[str]) -> "SkillBuilder":
+    def tags(self, tags: list[str]) -> "SkillBuilder":
         """Set skill tags."""
         self._tags = tags
         return self

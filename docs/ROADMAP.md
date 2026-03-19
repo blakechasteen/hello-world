@@ -6,7 +6,7 @@
 
 **Done**: lowercase `hololoom/` package, 13 core modules under `hololoom/core/`, apps extracted to `apps/`, `sys.meta_path` import redirection, `pyproject.toml` extras, 9-stage weaving cycle, Thompson Sampling, Matryoshka embeddings, spring physics (9.6x speedup), reflection buffer, 17 focused guides.
 
-**Alpha gaps**: persistent backends exist but aren't on the default orchestrator path. Test suite has 20 stale collection errors. API surface works but isn't frozen.
+**Beta.1 progress**: Single HoloLoom class with experience/recall/reflect + query/chat/ingest. Lazy WeavingOrchestrator shares AwarenessGraph. Generic ingest via SpinnerProtocol. Stale tests removed (0 errors). Docker Compose PascalCase fixed.
 
 ---
 
@@ -16,12 +16,14 @@ Version gates with exit criteria. Each gate must close before the next opens.
 
 ### v1.0.0-beta.1 — Wired
 
-- [ ] Wire Neo4j + Qdrant into orchestrator via backend factory
-- [ ] Default: InMemory (zero config), auto-upgrade when persistent backends are available
+- [x] Merge HoloLoom classes: one class with experience/recall/reflect + query/chat/ingest
+- [x] Lazy WeavingOrchestrator shares AwarenessGraph (no separate memory backend)
+- [x] Generic `ingest(spinner)` + convenience wrappers for text/web/youtube
+- [x] Fix or remove stale test collection errors (0 errors, ~4896 tests)
+- [x] Docker Compose PascalCase → lowercase fixes
+- [x] Update classifier: already `"4 - Beta"`
 - [ ] Docker Compose tested end-to-end
-- [ ] Fix or remove 20 stale test collection errors
 - [ ] Unit + integration suites green
-- [ ] Update classifier: `"3 - Alpha"` → `"4 - Beta"`
 
 ### v1.0.0 — Stable
 

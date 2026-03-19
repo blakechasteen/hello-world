@@ -21,11 +21,10 @@ Lifecycle:
 
 import logging
 import time as _time
-import numpy as np
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
+from typing import Any
 
-from hololoom.dark_trace.sae.activation_buffer import get_activation_buffer, ActivationSample
+import numpy as np
 
 from hololoom.alignment.safety_guardrails import (
     ActionCategory,
@@ -34,6 +33,7 @@ from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     create_guardrails,
 )
+from hololoom.dark_trace.sae.activation_buffer import ActivationSample, get_activation_buffer
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class FeatureThread:
     name: str  # "motif", "embedding", "spectral"
     features: Any  # Extracted features
     weight: float = 1.0  # Contribution weight (0-1)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -88,8 +88,8 @@ class ResonanceShed:
         semantic_calculus=None,
         interference_mode: str = "weighted_sum",
         max_feature_density: float = 1.0,
-        target_scale: Optional[int] = None,
-        guardrails: Optional[SafetyGuardrails] = None,
+        target_scale: int | None = None,
+        guardrails: SafetyGuardrails | None = None,
     ):
         """
         Initialize Resonance Shed.
@@ -115,7 +115,7 @@ class ResonanceShed:
         self.guardrails_enabled = self.guardrails is not None
 
         # Active threads
-        self.threads: List[FeatureThread] = []
+        self.threads: list[FeatureThread] = []
         self.is_lifted = False
 
         # Pressure tracking
@@ -123,18 +123,18 @@ class ResonanceShed:
         self.pressure_relief_count = 0
 
         # Guardrail tracking
-        self._guardrail_decisions: Dict[str, Optional[SafetyDecision]] = {
+        self._guardrail_decisions: dict[str, SafetyDecision | None] = {
             "weave": None,
             "lift": None,
             "interfere": None,
         }
-        self._last_guardrail_snapshot: Dict[str, Optional[SafetyDecision]] = {}
+        self._last_guardrail_snapshot: dict[str, SafetyDecision | None] = {}
         self._last_text_input: str = ""
 
         logger.info(f"ResonanceShed initialized (mode={interference_mode}, max_density={max_feature_density:.2f}, semantic_flow={semantic_calculus is not None})")
 
     @staticmethod
-    def _decision_to_dict(decision: Optional[SafetyDecision]) -> Optional[Dict[str, Any]]:
+    def _decision_to_dict(decision: SafetyDecision | None) -> dict[str, Any] | None:
         return decision.to_dict() if decision else None
 
     def _evaluate_guardrails(
@@ -143,9 +143,9 @@ class ResonanceShed:
         *,
         action: str,
         category: ActionCategory,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         text_input: str = "",
-    ) -> Optional[SafetyDecision]:
+    ) -> SafetyDecision | None:
         if not self.guardrails_enabled:
             return None
 
@@ -176,8 +176,8 @@ class ResonanceShed:
         self,
         text: str,
         context_graph=None,
-        thread_weights: Optional[Dict[str, float]] = None
-    ) -> Dict[str, Any]:
+        thread_weights: dict[str, float] | None = None
+    ) -> dict[str, Any]:
         """
         Complete weaving cycle: lift → interfere → lower.
 
@@ -237,7 +237,7 @@ class ResonanceShed:
         self,
         text: str,
         context_graph=None,
-        thread_weights: Optional[Dict[str, float]] = None
+        thread_weights: dict[str, float] | None = None
     ) -> None:
         """
         Lift feature extraction threads.
@@ -299,7 +299,7 @@ class ResonanceShed:
                 else:
                     # Fallback: Use standard encode() (returns full dimension)
                     embeddings = self.embedder.encode([text])
-                    logger.debug(f"  Using standard encode() (full dimension)")
+                    logger.debug("  Using standard encode() (full dimension)")
 
                 embedding = embeddings[0] if len(embeddings) > 0 else []
 
@@ -386,7 +386,7 @@ class ResonanceShed:
 
         logger.info(f"Lifted {len(self.threads)} feature threads (density={self.current_density:.2f})")
 
-    def interfere(self) -> Dict[str, Any]:
+    def interfere(self) -> dict[str, Any]:
         """
         Create feature interference patterns.
 
@@ -470,12 +470,12 @@ class ResonanceShed:
 
     def _fuse_weighted_sum(
         self,
-        plasma: Dict[str, Any],
-        motif_thread: Optional[FeatureThread],
-        embedding_thread: Optional[FeatureThread],
-        spectral_thread: Optional[FeatureThread],
-        semantic_flow_thread: Optional[FeatureThread]
-    ) -> Dict[str, Any]:
+        plasma: dict[str, Any],
+        motif_thread: FeatureThread | None,
+        embedding_thread: FeatureThread | None,
+        spectral_thread: FeatureThread | None,
+        semantic_flow_thread: FeatureThread | None
+    ) -> dict[str, Any]:
         """
         Weighted sum fusion: Combine features using thread weights.
 
@@ -530,12 +530,12 @@ class ResonanceShed:
 
     def _fuse_attention(
         self,
-        plasma: Dict[str, Any],
-        motif_thread: Optional[FeatureThread],
-        embedding_thread: Optional[FeatureThread],
-        spectral_thread: Optional[FeatureThread],
-        semantic_flow_thread: Optional[FeatureThread]
-    ) -> Dict[str, Any]:
+        plasma: dict[str, Any],
+        motif_thread: FeatureThread | None,
+        embedding_thread: FeatureThread | None,
+        spectral_thread: FeatureThread | None,
+        semantic_flow_thread: FeatureThread | None
+    ) -> dict[str, Any]:
         """
         Attention-based fusion: Cross-attention between modalities.
 
@@ -646,12 +646,12 @@ class ResonanceShed:
 
     def _fuse_concat(
         self,
-        plasma: Dict[str, Any],
-        motif_thread: Optional[FeatureThread],
-        embedding_thread: Optional[FeatureThread],
-        spectral_thread: Optional[FeatureThread],
-        semantic_flow_thread: Optional[FeatureThread]
-    ) -> Dict[str, Any]:
+        plasma: dict[str, Any],
+        motif_thread: FeatureThread | None,
+        embedding_thread: FeatureThread | None,
+        spectral_thread: FeatureThread | None,
+        semantic_flow_thread: FeatureThread | None
+    ) -> dict[str, Any]:
         """
         Concatenation fusion: Stack all feature vectors.
 
@@ -766,9 +766,9 @@ class ResonanceShed:
         self.threads = []
         self.is_lifted = False
         self.current_density = 0.0
-        self._guardrail_decisions = {stage: None for stage in self._guardrail_decisions}
+        self._guardrail_decisions = dict.fromkeys(self._guardrail_decisions)
 
-    def get_trace(self) -> Dict[str, Any]:
+    def get_trace(self) -> dict[str, Any]:
         """
         Get extraction trace without lowering.
 
@@ -809,7 +809,7 @@ def create_resonance_shed(
     spectral_fusion=None,
     semantic_calculus=None,
     mode: str = "weighted_sum",
-    guardrails: Optional[SafetyGuardrails] = None,
+    guardrails: SafetyGuardrails | None = None,
 ) -> ResonanceShed:
     """
     Create Resonance Shed with specified extractors.

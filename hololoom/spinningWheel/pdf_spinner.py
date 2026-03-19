@@ -27,11 +27,11 @@ Usage:
     result = await spinner.spin("/path/to/scanned.pdf")
 """
 
+import re
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Dict, Any, Optional, AsyncIterator
-import hashlib
-import re
+from typing import Any
 
 # Try multiple PDF libraries (graceful degradation)
 PDF_AVAILABLE = False
@@ -58,14 +58,14 @@ except ImportError:
     pass
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities,
     ImportanceScore,
-    ImportanceSignals
+    ImportanceSignals,
+    SpinnerCapabilities,
+    SpinResult,
 )
-from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass
@@ -73,10 +73,10 @@ class PDFPage:
     """Parsed PDF page"""
     page_number: int
     text: str
-    tables: List[List[List[str]]] = field(default_factory=list)  # List of tables
-    images: List[str] = field(default_factory=list)  # Image paths
-    sections: List[Dict[str, str]] = field(default_factory=list)  # Detected sections
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tables: list[list[list[str]]] = field(default_factory=list)  # List of tables
+    images: list[str] = field(default_factory=list)  # Image paths
+    sections: list[dict[str, str]] = field(default_factory=list)  # Detected sections
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def has_content(self) -> bool:
@@ -93,10 +93,10 @@ class PDFPage:
 class PDFDocument:
     """Parsed PDF document"""
     file_path: Path
-    title: Optional[str]
-    author: Optional[str]
-    pages: List[PDFPage]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    title: str | None
+    author: str | None
+    pages: list[PDFPage]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def total_pages(self) -> int:
@@ -234,7 +234,7 @@ class PDFParser:
         )
 
     @staticmethod
-    def _detect_sections(text: str) -> List[Dict[str, str]]:
+    def _detect_sections(text: str) -> list[dict[str, str]]:
         """
         Detect sections in text (headers, paragraphs)
 
@@ -289,7 +289,7 @@ class PDFParser:
         return sections
 
     @staticmethod
-    def extract_citations(text: str) -> List[str]:
+    def extract_citations(text: str) -> list[str]:
         """
         Extract citation patterns (academic papers)
 
@@ -329,7 +329,7 @@ class PDFSpinner(BaseSpinner):
         enable_ocr: bool = False,
         extract_tables: bool = True,
         chunk_by_page: bool = False,
-        max_pages: Optional[int] = None
+        max_pages: int | None = None
     ):
         """
         Initialize PDFSpinner
@@ -381,7 +381,7 @@ class PDFSpinner(BaseSpinner):
         """Check if PDF dependencies are available"""
         return PDF_AVAILABLE or PDFPLUMBER_AVAILABLE
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Spin PDF file(s) into MemoryShards
 
@@ -443,7 +443,7 @@ class PDFSpinner(BaseSpinner):
             for shard in batch:
                 yield shard
 
-    def _document_to_shards(self, document: PDFDocument) -> List[MemoryShard]:
+    def _document_to_shards(self, document: PDFDocument) -> list[MemoryShard]:
         """
         Convert PDFDocument to MemoryShards
 
@@ -569,7 +569,7 @@ class PDFSpinner(BaseSpinner):
 
         return '\n'.join(parts)
 
-    def _extract_page_entities(self, page: PDFPage, document: PDFDocument) -> List[str]:
+    def _extract_page_entities(self, page: PDFPage, document: PDFDocument) -> list[str]:
         """Extract entities from page"""
         entities = []
 
@@ -586,7 +586,7 @@ class PDFSpinner(BaseSpinner):
 
         return list(set(entities))
 
-    def _extract_document_entities(self, document: PDFDocument) -> List[str]:
+    def _extract_document_entities(self, document: PDFDocument) -> list[str]:
         """Extract entities from document"""
         entities = []
 
@@ -604,7 +604,7 @@ class PDFSpinner(BaseSpinner):
 
         return list(set(entities))
 
-    def _extract_page_motifs(self, page: PDFPage) -> List[str]:
+    def _extract_page_motifs(self, page: PDFPage) -> list[str]:
         """Extract motifs from page"""
         motifs = []
 
@@ -625,7 +625,7 @@ class PDFSpinner(BaseSpinner):
 
         return motifs
 
-    def _extract_document_motifs(self, document: PDFDocument) -> List[str]:
+    def _extract_document_motifs(self, document: PDFDocument) -> list[str]:
         """Extract motifs from document"""
         motifs = []
 

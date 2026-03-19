@@ -17,10 +17,8 @@ understanding and sophisticated decision-making.
 """
 
 import logging
+
 import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass
-import warnings
 
 logger = logging.getLogger(__name__)
 
@@ -269,8 +267,8 @@ class TensorDecomposer:
     @staticmethod
     def tucker_decomposition(
         tensor: np.ndarray,
-        ranks: Optional[List[int]] = None
-    ) -> Tuple[np.ndarray, List[np.ndarray]]:
+        ranks: list[int] | None = None
+    ) -> tuple[np.ndarray, list[np.ndarray]]:
         """
         Tucker decomposition: T ≈ C ×₁ U₁ ×₂ U₂ ×₃ U₃
 
@@ -356,7 +354,7 @@ class TensorDecomposer:
         rank: int,
         max_iter: int = 100,
         tol: float = 1e-6
-    ) -> List[np.ndarray]:
+    ) -> list[np.ndarray]:
         """
         CP (CANDECOMP/PARAFAC) decomposition.
 
@@ -403,7 +401,7 @@ class TensorDecomposer:
         return factors
 
     @staticmethod
-    def _khatri_rao(matrices: List[np.ndarray]) -> np.ndarray:
+    def _khatri_rao(matrices: list[np.ndarray]) -> np.ndarray:
         """Khatri-Rao product (column-wise Kronecker product)."""
         result = matrices[0]
         for matrix in matrices[1:]:
@@ -429,7 +427,7 @@ class QuantumWarpOperations:
     """
 
     @staticmethod
-    def superposition(states: List[np.ndarray], amplitudes: Optional[np.ndarray] = None) -> np.ndarray:
+    def superposition(states: list[np.ndarray], amplitudes: np.ndarray | None = None) -> np.ndarray:
         """
         Create superposition of multiple states.
 
@@ -474,9 +472,9 @@ class QuantumWarpOperations:
     @staticmethod
     def measure(
         state: np.ndarray,
-        observables: List[np.ndarray],
+        observables: list[np.ndarray],
         collapse: bool = True
-    ) -> Tuple[int, float, Optional[np.ndarray]]:
+    ) -> tuple[int, float, np.ndarray | None]:
         """
         Measure quantum state in given basis.
 
@@ -542,7 +540,7 @@ class FisherInformationGeometry:
     @staticmethod
     def fisher_information_matrix(
         distribution: np.ndarray,
-        parameter_gradients: List[np.ndarray]
+        parameter_gradients: list[np.ndarray]
     ) -> np.ndarray:
         """
         Compute Fisher information matrix.

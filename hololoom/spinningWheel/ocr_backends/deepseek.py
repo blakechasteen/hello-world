@@ -17,16 +17,15 @@ Requirements:
 - CUDA 11.8+
 """
 
-from typing import Union, Any, List
-from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 from hololoom.spinningWheel.ocr_protocol import (
     BaseOCRBackend,
-    OCRResult,
+    OCROutputFormat,
     OCRQuality,
-    OCROutputFormat
+    OCRResult,
 )
 
 
@@ -74,12 +73,12 @@ class DeepSeekOCRBackend(BaseOCRBackend):
         """Check if DeepSeek dependencies are available."""
         try:
             if self.config.backend_type == DeepSeekBackendType.VLLM:
-                import vllm
                 import torch
+                import vllm
                 return torch.cuda.is_available()
             else:
-                import transformers
                 import torch
+                import transformers
                 return True
         except ImportError:
             return False
@@ -140,10 +139,10 @@ class DeepSeekOCRBackend(BaseOCRBackend):
 
     async def batch_extract(
         self,
-        images: List[Any],
+        images: list[Any],
         output_format: OCROutputFormat = OCROutputFormat.TEXT,
         **kwargs
-    ) -> List[OCRResult]:
+    ) -> list[OCRResult]:
         """
         Batch extract (vLLM supports efficient batching).
 
@@ -194,8 +193,8 @@ class DeepSeekOCRBackend(BaseOCRBackend):
 
     def _load_transformers(self):
         """Load model with transformers backend."""
-        from transformers import AutoModel, AutoProcessor, AutoTokenizer
         import torch
+        from transformers import AutoModel, AutoProcessor, AutoTokenizer
 
         print(f"[DeepSeekOCRBackend] Loading model with transformers: {self.config.model_name}")
 
@@ -273,10 +272,10 @@ class DeepSeekOCRBackend(BaseOCRBackend):
 
     async def _batch_extract_vllm(
         self,
-        images: List[Any],
+        images: list[Any],
         output_format: OCROutputFormat,
         **kwargs
-    ) -> List[OCRResult]:
+    ) -> list[OCRResult]:
         """Batch extract using vLLM (efficient batching)."""
         from vllm import SamplingParams
 

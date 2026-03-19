@@ -18,10 +18,9 @@ Returns:
 """
 
 import time
-from typing import Optional, Dict, Any
 from dataclasses import dataclass, field
 from enum import Enum
-
+from typing import Any
 
 # ============================================================================
 # Health Status
@@ -44,8 +43,8 @@ class ComponentCheck:
     name: str
     healthy: bool
     status: HealthStatus
-    message: Optional[str] = None
-    details: Dict[str, Any] = field(default_factory=dict)
+    message: str | None = None
+    details: dict[str, Any] = field(default_factory=dict)
     timestamp: float = field(default_factory=time.time)
 
     def to_dict(self) -> dict:
@@ -69,7 +68,7 @@ class HealthCheckResult:
     """Overall health check result"""
     healthy: bool
     status: HealthStatus
-    checks: Dict[str, ComponentCheck]
+    checks: dict[str, ComponentCheck]
     timestamp: float = field(default_factory=time.time)
 
     def to_dict(self) -> dict:
@@ -359,7 +358,7 @@ class HealthChecker:
 
     def _determine_overall_status(
         self,
-        checks: Dict[str, ComponentCheck]
+        checks: dict[str, ComponentCheck]
     ) -> HealthStatus:
         """Determine overall health status from component checks"""
         if all(check.healthy for check in checks.values()):

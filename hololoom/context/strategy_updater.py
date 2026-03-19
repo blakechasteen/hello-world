@@ -17,12 +17,10 @@ Update Strategies:
 Validated in Demo 5 (strategy updates improve accuracy over time)
 """
 
-import time
 import logging
-from typing import Dict, List, Optional
+import time
 from dataclasses import dataclass
 from datetime import datetime
-
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +33,7 @@ logger = logging.getLogger(__name__)
 class StrategyUpdate:
     """Single strategy update event"""
     update_type: str  # "weight_adjustment", "refinement_threshold", "calibration"
-    backend: Optional[str]
+    backend: str | None
     old_value: float
     new_value: float
     reason: str
@@ -100,7 +98,7 @@ class StrategyUpdater:
 
         # State
         self.last_update = time.time()
-        self.update_history: List[StrategyUpdate] = []
+        self.update_history: list[StrategyUpdate] = []
         self.update_count = 0
 
         # Rollback tracking
@@ -167,7 +165,7 @@ class StrategyUpdater:
 
         logger.info(f"Strategy update complete (update #{self.update_count})")
 
-    async def _update_backend_weights(self, backend_perf: Dict):
+    async def _update_backend_weights(self, backend_perf: dict):
         """
         Update backend routing weights based on performance
 
@@ -229,7 +227,7 @@ class StrategyUpdater:
                 f"({reason})"
             )
 
-    async def _update_refinement_threshold(self, overall_perf: Dict):
+    async def _update_refinement_threshold(self, overall_perf: dict):
         """
         Tune refinement threshold based on overall quality
 
@@ -307,7 +305,7 @@ class StrategyUpdater:
             )
             self.update_history.append(update)
 
-    async def _update_fallback_strategy(self, backend_perf: Dict):
+    async def _update_fallback_strategy(self, backend_perf: dict):
         """
         Adapt fallback strategy based on backend reliability
 
@@ -340,7 +338,7 @@ class StrategyUpdater:
         Returns:
             Human-readable summary
         """
-        summary = f"Strategy Update Summary:\n"
+        summary = "Strategy Update Summary:\n"
         summary += f"  Total updates: {self.update_count}\n"
         summary += f"  Last update: {datetime.fromtimestamp(self.last_update).isoformat()}\n"
         summary += f"  Update interval: {self.update_interval:.0f}s\n"
@@ -348,7 +346,7 @@ class StrategyUpdater:
 
         # Recent updates
         if self.update_history:
-            summary += f"Recent Updates (last 10):\n"
+            summary += "Recent Updates (last 10):\n"
             for update in self.update_history[-10:]:
                 summary += f"  [{update.update_type}] {update.backend or 'overall'}: "
                 summary += f"{update.old_value:.3f} → {update.new_value:.3f} "
@@ -356,7 +354,7 @@ class StrategyUpdater:
 
         return summary
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """
         Get strategy updater statistics
 

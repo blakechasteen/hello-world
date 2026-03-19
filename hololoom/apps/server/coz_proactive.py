@@ -15,8 +15,7 @@ Created: 2026-03-13
 import json
 import logging
 import os
-from datetime import datetime, date
-from typing import List, Optional
+from datetime import date, datetime
 
 import httpx
 from fastapi import APIRouter
@@ -45,10 +44,10 @@ class Insight(BaseModel):
 
 
 class ProactiveBrief(BaseModel):
-    insights: List[Insight]
+    insights: list[Insight]
     status: str  # ok | coz_unavailable | llm_unavailable
     generated_at: str
-    vault_proposal: Optional[str] = None
+    vault_proposal: str | None = None
 
 
 async def generate_proactive_brief() -> ProactiveBrief:
@@ -114,7 +113,7 @@ async def generate_proactive_brief() -> ProactiveBrief:
 
 async def _generate_insights(
     brief: dict, inventory: dict, history_context: str,
-) -> List[Insight]:
+) -> list[Insight]:
     """Single LLM pass to produce 3-5 actionable insights."""
     # Format data for the prompt
     alerts = inventory.get("alerts", [])
@@ -197,10 +196,10 @@ Example format:
     )]
 
 
-def _maybe_propose_weekly_note(insights: List[Insight]) -> Optional[str]:
+def _maybe_propose_weekly_note(insights: list[Insight]) -> str | None:
     """On Sundays, propose a weekly summary note to the vault."""
     try:
-        from hololoom.apps.server.vault_bridge import propose_note, get_tracker
+        from hololoom.apps.server.vault_bridge import get_tracker, propose_note
 
         tracker = get_tracker()
         if not tracker.should_propose("coz"):

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Integral Geometry for Semantic Space
 
@@ -23,13 +24,14 @@ Applications:
 This is how we recover FULL semantic structure from partial observations.
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Dict
 import warnings
+from collections.abc import Callable
+
+import numpy as np
 
 try:
-    from scipy.ndimage import gaussian_filter
     from scipy.interpolate import RegularGridInterpolator
+    from scipy.ndimage import gaussian_filter
     _SCIPY_AVAILABLE = True
 except ImportError:
     _SCIPY_AVAILABLE = False
@@ -58,7 +60,7 @@ class RadonTransform:
     def project_along_line(self, field: Callable[[np.ndarray], float],
                           direction: np.ndarray,
                           offset: float,
-                          bounds: Tuple[float, float] = (-2.0, 2.0),
+                          bounds: tuple[float, float] = (-2.0, 2.0),
                           n_samples: int = 100) -> float:
         """
         Integrate field along a line
@@ -342,9 +344,9 @@ class SemanticTomography:
         self.inverse_radon = InverseRadonTransform(n_dims=2)  # 2D for visualization
 
     def collect_projections(self, word: str,
-                           contexts: List[str],
+                           contexts: list[str],
                            embed_fn: Callable,
-                           spectrum) -> List[np.ndarray]:
+                           spectrum) -> list[np.ndarray]:
         """
         Observe word in multiple contexts to get different "views"
 
@@ -374,7 +376,7 @@ class SemanticTomography:
 
         return projections
 
-    def reconstruct_semantic_field(self, trajectories: List[np.ndarray],
+    def reconstruct_semantic_field(self, trajectories: list[np.ndarray],
                                   grid_size: int = 50) -> np.ndarray:
         """
         Reconstruct 2D semantic potential field from multiple trajectories
@@ -445,8 +447,8 @@ class SemanticTomography:
 
 
 def visualize_tomographic_reconstruction(V_field: np.ndarray,
-                                        trajectories_2d: List[np.ndarray],
-                                        save_path: Optional[str] = None):
+                                        trajectories_2d: list[np.ndarray],
+                                        save_path: str | None = None):
     """
     Visualize reconstructed semantic potential with overlaid trajectories
     """

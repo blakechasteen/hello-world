@@ -27,7 +27,6 @@ Created: December 2025
 """
 
 import logging
-from typing import Dict, Type, List, Optional
 
 from hololoom.tapestry.protocol import FabricSignal
 
@@ -47,10 +46,10 @@ class SignalRegistry:
     instantiated on-demand via get_all() or get().
     """
 
-    _signals: Dict[str, Type[FabricSignal]] = {}
+    _signals: dict[str, type[FabricSignal]] = {}
 
     @classmethod
-    def register(cls, signal_cls: Type[FabricSignal]) -> Type[FabricSignal]:
+    def register(cls, signal_cls: type[FabricSignal]) -> type[FabricSignal]:
         """
         Decorator for registering signals.
 
@@ -83,7 +82,7 @@ class SignalRegistry:
         return signal_cls
 
     @classmethod
-    def get_all(cls) -> List[FabricSignal]:
+    def get_all(cls) -> list[FabricSignal]:
         """
         Get all registered signals as instances.
 
@@ -93,7 +92,7 @@ class SignalRegistry:
         return [sig() for sig in cls._signals.values()]
 
     @classmethod
-    def get(cls, name: str) -> Optional[FabricSignal]:
+    def get(cls, name: str) -> FabricSignal | None:
         """
         Get signal by name.
 
@@ -107,7 +106,7 @@ class SignalRegistry:
         return sig_cls() if sig_cls else None
 
     @classmethod
-    def get_names(cls) -> List[str]:
+    def get_names(cls) -> list[str]:
         """Get all registered signal names."""
         return list(cls._signals.keys())
 
@@ -133,7 +132,7 @@ class SignalRegistry:
         return name in cls._signals
 
     @classmethod
-    def get_weights(cls) -> Dict[str, float]:
+    def get_weights(cls) -> dict[str, float]:
         """Get mapping of signal names to weights."""
         return {name: sig.weight for name, sig in cls._signals.items()
                 for sig in [sig()]}

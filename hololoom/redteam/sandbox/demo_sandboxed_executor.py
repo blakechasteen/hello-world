@@ -21,10 +21,8 @@ Date: 2025-12-05
 import asyncio
 import logging
 import time
-from typing import List
 
 from hololoom.redteam.sandbox import (
-    SandboxedExecutor,
     SandboxConfig,
     SandboxMode,
     create_sandboxed_executor,
@@ -32,8 +30,8 @@ from hololoom.redteam.sandbox import (
     sandboxed_attack_execution,
 )
 from hololoom.redteam.strategies import (
-    AttackStrategy,
     AttackPayload,
+    AttackStrategy,
 )
 
 # Configure logging

@@ -12,10 +12,9 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass, field
 import re
-import json
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -24,10 +23,10 @@ class UIComponent:
     id: str
     component_type: str  # 'button', 'input', 'card', 'navbar', etc.
     label: str
-    props: Dict[str, Any] = field(default_factory=dict)
-    children: List['UIComponent'] = field(default_factory=list)
-    position: Dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0})
-    size: Dict[str, float] = field(default_factory=lambda: {"w": 100, "h": 40})
+    props: dict[str, Any] = field(default_factory=dict)
+    children: list['UIComponent'] = field(default_factory=list)
+    position: dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0})
+    size: dict[str, float] = field(default_factory=lambda: {"w": 100, "h": 40})
 
 
 @dataclass
@@ -35,7 +34,7 @@ class UIScreen:
     """A complete UI screen/page."""
     id: str
     name: str
-    components: List[UIComponent]
+    components: list[UIComponent]
     layout: str = "vertical"  # 'vertical', 'horizontal', 'grid', 'absolute'
     background: str = "#ffffff"
     width: int = 375  # Mobile-first default
@@ -364,7 +363,7 @@ class UIExtractor:
         'header': r'header\s+(?:with|saying)\s+["\']?([^"\']+)["\']?',
     }
 
-    def extract_components(self, text: str) -> List[UIComponent]:
+    def extract_components(self, text: str) -> list[UIComponent]:
         """Extract UI components from text description."""
         components = []
         text_lower = text.lower()
@@ -390,7 +389,7 @@ class UIExtractor:
 
         return components
 
-    def _infer_components(self, text: str) -> List[UIComponent]:
+    def _infer_components(self, text: str) -> list[UIComponent]:
         """Infer components when no explicit patterns match."""
         components = []
 
@@ -437,7 +436,7 @@ class UIExtractor:
 class UISceneBuilder:
     """Build 3D scene data for UI visualization."""
 
-    def build_scene(self, screen: UIScreen) -> Dict[str, Any]:
+    def build_scene(self, screen: UIScreen) -> dict[str, Any]:
         """Convert UI screen to 3D scene representation."""
         elements = []
         y_offset = 0
@@ -492,7 +491,7 @@ class UISceneBuilder:
             }
         }
 
-    def _render_component_html(self, comp: UIComponent, template: Dict) -> str:
+    def _render_component_html(self, comp: UIComponent, template: dict) -> str:
         """Render component to HTML string."""
         html_template = template.get('html', '<div>{label}</div>')
 
@@ -517,7 +516,7 @@ class UISceneBuilder:
         return html
 
 
-def extract_ui_from_text(text: str) -> Dict[str, Any]:
+def extract_ui_from_text(text: str) -> dict[str, Any]:
     """Main entry point: extract UI and build scene from text."""
     extractor = UIExtractor()
     builder = UISceneBuilder()

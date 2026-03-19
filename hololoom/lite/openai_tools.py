@@ -29,7 +29,7 @@ Date: December 2025
 """
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # ============================================================================
 # OpenAI Function Schemas for HoloLoom Lite's 6 Methods
@@ -214,8 +214,8 @@ HOLOLOOM_LITE_TOOLS = [
 async def execute_tool(
     loom,
     tool_name: str,
-    arguments: str | Dict[str, Any]
-) -> Dict[str, Any]:
+    arguments: str | dict[str, Any]
+) -> dict[str, Any]:
     """
     Execute a HoloLoom Lite tool call.
 
@@ -348,12 +348,12 @@ async def execute_tool(
 # Convenience Functions
 # ============================================================================
 
-def get_tools_for_openai() -> List[Dict[str, Any]]:
+def get_tools_for_openai() -> list[dict[str, Any]]:
     """Get tools in OpenAI format."""
     return HOLOLOOM_LITE_TOOLS
 
 
-def get_tools_for_anthropic() -> List[Dict[str, Any]]:
+def get_tools_for_anthropic() -> list[dict[str, Any]]:
     """
     Get tools in Anthropic Claude format.
 
@@ -369,12 +369,12 @@ def get_tools_for_anthropic() -> List[Dict[str, Any]]:
     ]
 
 
-def get_tool_names() -> List[str]:
+def get_tool_names() -> list[str]:
     """Get list of tool names."""
     return [tool["function"]["name"] for tool in HOLOLOOM_LITE_TOOLS]
 
 
-def get_tool_descriptions() -> Dict[str, str]:
+def get_tool_descriptions() -> dict[str, str]:
     """Get tool name -> description mapping."""
     return {
         tool["function"]["name"]: tool["function"]["description"]

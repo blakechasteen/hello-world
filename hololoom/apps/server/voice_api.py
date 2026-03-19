@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Voice & Multimodal API
 ======================
@@ -15,13 +15,14 @@ Features:
 Created: 2025-01-20
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
 import base64
-import tempfile
-import os
 import logging
+import os
+import tempfile
+from typing import Any
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/voice", tags=["voice"])
 logger = logging.getLogger(__name__)
@@ -46,10 +47,10 @@ except ImportError as e:
     logger.warning(f"⚠ HoloLoom components not available: {e}")
 
 # Global HoloLoom instance
-hololoom_instance: Optional[Any] = None
+hololoom_instance: Any | None = None
 
 # Session storage (in production, use Redis)
-voice_sessions: Dict[str, List[Dict]] = {}
+voice_sessions: dict[str, list[dict]] = {}
 
 
 async def get_hololoom():
@@ -69,7 +70,7 @@ class TranscribeResponse(BaseModel):
     text: str
     language: str
     confidence: float
-    segments: List[Dict[str, Any]]
+    segments: list[dict[str, Any]]
 
 
 @router.post("/transcribe", response_model=TranscribeResponse)
@@ -119,16 +120,16 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 # ============== 2. CONVERSATIONAL VOICE CHAT ==============
 
 class VoiceChatRequest(BaseModel):
-    audio_base64: Optional[str] = None  # Base64 encoded audio
-    text: Optional[str] = None          # Or direct text input
+    audio_base64: str | None = None  # Base64 encoded audio
+    text: str | None = None          # Or direct text input
     session_id: str
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 class VoiceChatResponse(BaseModel):
     text_response: str
-    suggestions: List[str]
-    context_updated: Dict[str, Any]
+    suggestions: list[str]
+    context_updated: dict[str, Any]
 
 
 @router.post("/chat", response_model=VoiceChatResponse)

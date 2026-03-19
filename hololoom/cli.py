@@ -13,19 +13,18 @@ Usage:
     hololoom cluster status
 """
 
-import asyncio
 import argparse
+import asyncio
 import json
 import sys
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+
+from hololoom.cli_client import HTTPX_AVAILABLE, HypervisorClient
 
 # Core imports
 from hololoom.config import Config
-from hololoom.weaving_orchestrator import WeavingOrchestrator
 from hololoom.protocols.types import Query
-from hololoom.cli_client import HypervisorClient, APIConfig, HTTPX_AVAILABLE
-
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # ============================================================================
 # Color Output (Windows-compatible ASCII)
@@ -353,8 +352,8 @@ async def cmd_agent_status(args):
         else:
             print(f"  Hypervisor:    {Colors.YELLOW}offline{Colors.ENDC}")
             print(f"\n{Colors.DIM}Start servers with:{Colors.ENDC}")
-            print(f"  uvicorn HoloLoom.apps.server.agentic_api:app --port 8000")
-            print(f"  uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002")
+            print("  uvicorn HoloLoom.apps.server.agentic_api:app --port 8000")
+            print("  uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002")
             return
 
         # Get detailed stats from Agent Manager
@@ -405,7 +404,7 @@ async def cmd_agent_logs(args):
         health = await client.check_agentic_health()
         if health.get("status") != "ok":
             print(f"  {Colors.YELLOW}Agentic API offline{Colors.ENDC}")
-            print(f"\n  Start with: uvicorn HoloLoom.apps.server.agentic_api:app --port 8000")
+            print("\n  Start with: uvicorn HoloLoom.apps.server.agentic_api:app --port 8000")
             return
 
         # Get audit trail
@@ -450,7 +449,7 @@ async def cmd_nexus_mcp(args):
     """Launch HoloLoom MCP Server."""
     print_banner()
     print_info("Launching HoloLoom Nexus (MCP Bridge)...")
-    
+
     try:
         from hololoom.integrations.mcp_server import main as mcp_main
         await mcp_main()
@@ -482,12 +481,12 @@ async def cmd_cluster_status(args):
             print(f"  Eggroll:       {Colors.YELLOW}Not running{Colors.ENDC}")
 
             print(f"\n{Colors.DIM}Start Agent Manager server:{Colors.ENDC}")
-            print(f"  uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002")
+            print("  uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002")
 
             print(f"\n{Colors.DIM}To enable distributed mode:{Colors.ENDC}")
-            print(f"  1. Configure federation in config.yaml")
-            print(f"  2. Start eggroll workers: hololoom cluster start-workers")
-            print(f"  3. Join federation: hololoom cluster join <peer-address>")
+            print("  1. Configure federation in config.yaml")
+            print("  2. Start eggroll workers: hololoom cluster start-workers")
+            print("  3. Join federation: hololoom cluster join <peer-address>")
             return
 
         # Cluster is running
@@ -515,7 +514,7 @@ async def cmd_cluster_nodes(args):
 
         if not nodes:
             print(f"  {Colors.DIM}No cluster nodes - running in standalone mode{Colors.ENDC}")
-            print(f"\n  Start Agent Manager: uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002")
+            print("\n  Start Agent Manager: uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002")
             return
 
         # Display nodes
@@ -551,23 +550,23 @@ async def cmd_studio(args):
     """Launch HoloLoom Studio (Dashboard)."""
     print_banner()
     print_info("Launching HoloLoom Studio...")
-    
+
     try:
-        from hololoom.studio_server import start_studio
-        
         # Check if dashboard exists
         import os
         from pathlib import Path
-        
+
+        from hololoom.studio_server import start_studio
+
         base_dir = Path(__file__).parent.resolve()
         dist_dir = base_dir / "dist"
-        
+
         if not dist_dir.exists():
             print_warning("Dashboard assets not found in HoloLoom/dist/")
             print_info("To build the dashboard, run:")
             print("  cd HoloLoom/hololoom-dashboard && npm install && npm run build")
             print()
-            
+
         start_studio(
             host=args.host,
             port=args.port,

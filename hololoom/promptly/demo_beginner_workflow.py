@@ -11,8 +11,10 @@ Shows step-by-step how a beginner (non-coder) would use the DSPy integration:
 This simulates the real-world workflow for non-technical users.
 """
 
-from beginner_prompts import generate_hololoom_qa_prompt
 import textwrap
+
+from beginner_prompts import generate_hololoom_qa_prompt
+
 
 def print_section(title: str, content: str):
     """Print a formatted section"""

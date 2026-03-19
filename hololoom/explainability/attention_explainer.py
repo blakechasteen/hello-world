@@ -12,8 +12,8 @@ Research:
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Tuple
 from enum import Enum
+from typing import Any
 
 try:
     import torch
@@ -42,15 +42,15 @@ class AttentionPattern(Enum):
 @dataclass
 class AttentionHeatmap:
     """Attention heatmap visualization data"""
-    queries: List[str]  # Query elements
-    keys: List[str]  # Key elements
-    weights: List[List[float]]  # Attention weights [queries x keys]
+    queries: list[str]  # Query elements
+    keys: list[str]  # Key elements
+    weights: list[list[float]]  # Attention weights [queries x keys]
 
     # Metadata
     pattern: AttentionPattern
-    head_id: Optional[int] = None  # Multi-head attention head ID
-    layer_id: Optional[int] = None  # Layer ID
-    entropy: Optional[float] = None  # Attention entropy (uncertainty)
+    head_id: int | None = None  # Multi-head attention head ID
+    layer_id: int | None = None  # Layer ID
+    entropy: float | None = None  # Attention entropy (uncertainty)
     max_weight: float = 1.0
     min_weight: float = 0.0
 
@@ -68,7 +68,7 @@ class AttentionHeatmap:
                 entropies.append(entropy)
             self.entropy = float(np.mean(entropies))
 
-    def top_k_attended(self, k: int = 5) -> List[Tuple[str, str, float]]:
+    def top_k_attended(self, k: int = 5) -> list[tuple[str, str, float]]:
         """Return top-k most attended (query, key, weight) pairs"""
         attended = []
         for i, query in enumerate(self.queries):
@@ -90,7 +90,7 @@ class AttentionExplainer:
 
     def __init__(
         self,
-        model: Optional[Any] = None,
+        model: Any | None = None,
         num_heads: int = 8,
         num_layers: int = 6
     ):
@@ -107,11 +107,11 @@ class AttentionExplainer:
 
     def extract_attention(
         self,
-        input_tokens: List[str],
-        output_tokens: Optional[List[str]] = None,
-        layer: Optional[int] = None,
-        head: Optional[int] = None
-    ) -> List[AttentionHeatmap]:
+        input_tokens: list[str],
+        output_tokens: list[str] | None = None,
+        layer: int | None = None,
+        head: int | None = None
+    ) -> list[AttentionHeatmap]:
         """
         Extract attention weights from model.
 
@@ -136,11 +136,11 @@ class AttentionExplainer:
 
     def _extract_from_pytorch(
         self,
-        input_tokens: List[str],
-        output_tokens: Optional[List[str]],
-        layer: Optional[int],
-        head: Optional[int]
-    ) -> List[AttentionHeatmap]:
+        input_tokens: list[str],
+        output_tokens: list[str] | None,
+        layer: int | None,
+        head: int | None
+    ) -> list[AttentionHeatmap]:
         """Extract attention from PyTorch model"""
         # Assume model exposes attention_weights attribute
         # Shape: [batch, num_layers, num_heads, seq_len, seq_len]
@@ -182,9 +182,9 @@ class AttentionExplainer:
 
     def _synthetic_attention(
         self,
-        input_tokens: List[str],
-        output_tokens: Optional[List[str]] = None
-    ) -> List[AttentionHeatmap]:
+        input_tokens: list[str],
+        output_tokens: list[str] | None = None
+    ) -> list[AttentionHeatmap]:
         """
         Generate synthetic attention for demonstration.
 
@@ -249,7 +249,7 @@ class AttentionExplainer:
 
         return [heatmap1, heatmap2, heatmap3]
 
-    def _normalize_attention(self, weights: List[List[float]]) -> List[List[float]]:
+    def _normalize_attention(self, weights: list[list[float]]) -> list[list[float]]:
         """Normalize attention weights to sum to 1 per query"""
         normalized = []
         for row in weights:
@@ -260,7 +260,7 @@ class AttentionExplainer:
                 normalized.append([1.0 / len(row)] * len(row))
         return normalized
 
-    def _classify_attention_pattern(self, weights: List[List[float]]) -> AttentionPattern:
+    def _classify_attention_pattern(self, weights: list[list[float]]) -> AttentionPattern:
         """Classify attention pattern based on weight distribution"""
         if not NUMPY_AVAILABLE:
             return AttentionPattern.UNIFORM
@@ -348,8 +348,8 @@ class AttentionExplainer:
 
     def analyze_attention_flow(
         self,
-        heatmaps: List[AttentionHeatmap]
-    ) -> Dict[str, Any]:
+        heatmaps: list[AttentionHeatmap]
+    ) -> dict[str, Any]:
         """
         Analyze attention flow across layers/heads.
 
@@ -396,9 +396,9 @@ class AttentionExplainer:
 
 
 def visualize_attention(
-    input_tokens: List[str],
-    output_tokens: Optional[List[str]] = None,
-    model: Optional[Any] = None
+    input_tokens: list[str],
+    output_tokens: list[str] | None = None,
+    model: Any | None = None
 ) -> str:
     """
     Convenience function to visualize attention.

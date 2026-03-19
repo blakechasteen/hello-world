@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Learning Handlers for Matrix ChatOps
 =====================================
@@ -24,8 +25,7 @@ Created: 2025-12-15
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from hololoom.recursive import FullLearningEngine, HotPatternTracker
@@ -41,18 +41,18 @@ except ImportError:
 # Learning system imports with graceful degradation
 try:
     from hololoom.recursive import (
-        FullLearningEngine,
-        ThompsonPriors,
-        PolicyWeights,
-        HotPatternTracker,
-        HotPatternFeedbackEngine,
-        HotPatternConfig,
-        UsageRecord,
         AdvancedRefiner,
-        RefinementStrategy,
-        RefinementResult,
-        PatternLearner,
+        FullLearningEngine,
+        HotPatternConfig,
+        HotPatternFeedbackEngine,
+        HotPatternTracker,
         LearnedPattern,
+        PatternLearner,
+        PolicyWeights,
+        RefinementResult,
+        RefinementStrategy,
+        ThompsonPriors,
+        UsageRecord,
     )
     LEARNING_AVAILABLE = True
 except ImportError:
@@ -81,7 +81,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -497,11 +499,10 @@ async def handle_learn_refine(
 
     try:
         # Create refiner and run refinement
-        from hololoom.protocols.types import Query
 
         # This is a simplified version - actual implementation would use orchestrator
         output = [
-            f"**🔧 Query Refinement**\n",
+            "**🔧 Query Refinement**\n",
             f"**Original:** {query_text}",
             "",
             "**Available Strategies:**",

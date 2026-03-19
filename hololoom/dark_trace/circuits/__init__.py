@@ -63,49 +63,48 @@ Usage:
 """
 
 # Circuit tracing
-from hololoom.dark_trace.circuits.tracer import (
-    CircuitTracer,
-    TracerConfig,
-    CircuitTrace,
-    TraceNode,
-    TraceEdge,
-    TraceDirection,
-)
-
 # Circuit graph representation
 from hololoom.dark_trace.circuits.graph import (
+    CircuitEdge,
     CircuitGraph,
     CircuitNode,
-    CircuitEdge,
-    NodeType,
-    EdgeType,
     CircuitPath,
+    EdgeType,
+    NodeType,
 )
 
 # Pattern detection
 from hololoom.dark_trace.circuits.patterns import (
+    AnomalyDetector,
     CircuitPatternMatcher,
     KnownPattern,
-    PatternMatch,
     PatternLibrary,
-    AnomalyDetector,
+    PatternMatch,
 )
-
-# Vulnerability analysis
-from hololoom.dark_trace.circuits.vulnerability import (
-    VulnerabilityAnalyzer,
-    VulnerabilityReport,
-    Vulnerability,
-    VulnerabilityType,
-    SafetyCriticalPath,
-    SinglePointOfFailure,
+from hololoom.dark_trace.circuits.tracer import (
+    CircuitTrace,
+    CircuitTracer,
+    TraceDirection,
+    TraceEdge,
+    TraceNode,
+    TracerConfig,
 )
 
 # Visualization
 from hololoom.dark_trace.circuits.visualizer import (
-    CircuitVisualizer,
     CircuitDiagram,
     CircuitVisualizationConfig,
+    CircuitVisualizer,
+)
+
+# Vulnerability analysis
+from hololoom.dark_trace.circuits.vulnerability import (
+    SafetyCriticalPath,
+    SinglePointOfFailure,
+    Vulnerability,
+    VulnerabilityAnalyzer,
+    VulnerabilityReport,
+    VulnerabilityType,
 )
 
 __all__ = [

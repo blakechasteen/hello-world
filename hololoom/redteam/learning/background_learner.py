@@ -20,15 +20,13 @@ Date: 2025-12-03
 """
 
 import asyncio
+import json
 import logging
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Protocol
-import json
-
-from .learning_protocols import LearningResult, HeatScore
-
+from typing import Any, Protocol
 
 # =============================================================================
 # Logging
@@ -69,7 +67,7 @@ class LearningEvent:
     """
     timestamp: str
     event_type: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
 
     @classmethod
     def attack_result(
@@ -77,8 +75,8 @@ class LearningEvent:
         strategy: str,
         success: bool,
         severity: float = 0.0,
-        payload_id: Optional[str] = None,
-        context: Optional[Dict[str, str]] = None,
+        payload_id: str | None = None,
+        context: dict[str, str] | None = None,
     ) -> 'LearningEvent':
         """Create an attack result event."""
         return cls(
@@ -102,7 +100,7 @@ class LearningEvent:
             data={}
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'timestamp': self.timestamp,
@@ -129,8 +127,8 @@ class BackgroundLearnerConfig:
     decay_interval: float = 300.0  # 5 minutes
     save_interval: float = 600.0   # 10 minutes
     event_buffer_size: int = 100
-    log_path: Optional[Path] = None
-    state_path: Optional[Path] = None
+    log_path: Path | None = None
+    state_path: Path | None = None
     enable_logging: bool = True
 
 
@@ -152,13 +150,13 @@ class BackgroundLearnerStats:
     total_events_processed: int = 0
     total_update_cycles: int = 0
     total_decay_cycles: int = 0
-    last_update: Optional[str] = None
-    last_decay: Optional[str] = None
-    last_save: Optional[str] = None
+    last_update: str | None = None
+    last_decay: str | None = None
+    last_save: str | None = None
     is_running: bool = False
     uptime_seconds: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'total_events_processed': self.total_events_processed,
@@ -201,11 +199,11 @@ class BackgroundLearner:
 
     def __init__(
         self,
-        config: Optional[BackgroundLearnerConfig] = None,
-        on_update: Optional[Callable[[List[LearningEvent]], None]] = None,
-        on_decay: Optional[Callable[[], None]] = None,
-        on_save: Optional[Callable[[Path], None]] = None,
-        updateables: Optional[List[UpdateableProtocol]] = None,
+        config: BackgroundLearnerConfig | None = None,
+        on_update: Callable[[list[LearningEvent]], None] | None = None,
+        on_decay: Callable[[], None] | None = None,
+        on_save: Callable[[Path], None] | None = None,
+        updateables: list[UpdateableProtocol] | None = None,
     ):
         """
         Initialize background learner.
@@ -223,11 +221,11 @@ class BackgroundLearner:
         self.on_save = on_save
         self.updateables = updateables or []
 
-        self._event_buffer: List[LearningEvent] = []
+        self._event_buffer: list[LearningEvent] = []
         self._stats = BackgroundLearnerStats()
         self._running = False
-        self._tasks: List[asyncio.Task] = []
-        self._start_time: Optional[datetime] = None
+        self._tasks: list[asyncio.Task] = []
+        self._start_time: datetime | None = None
         self._lock = asyncio.Lock()
 
     # -------------------------------------------------------------------------
@@ -318,8 +316,8 @@ class BackgroundLearner:
         strategy: str,
         success: bool,
         severity: float = 0.0,
-        payload_id: Optional[str] = None,
-        context: Optional[Dict[str, str]] = None,
+        payload_id: str | None = None,
+        context: dict[str, str] | None = None,
     ) -> None:
         """
         Convenience method to queue an attack result.
@@ -488,9 +486,9 @@ def create_background_learner(
     update_interval: float = 60.0,
     decay_interval: float = 300.0,
     save_interval: float = 600.0,
-    log_path: Optional[str] = None,
-    state_path: Optional[str] = None,
-    on_update: Optional[Callable[[List[LearningEvent]], None]] = None,
+    log_path: str | None = None,
+    state_path: str | None = None,
+    on_update: Callable[[list[LearningEvent]], None] | None = None,
 ) -> BackgroundLearner:
     """
     Create a background learner with common configuration.

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Jenny Renderer Module
 ======================
@@ -19,29 +20,28 @@ Author: HoloLoom Team
 Date: 2025-12-01 (Jenny MVP Week 2)
 """
 
-from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional, TYPE_CHECKING
-from datetime import datetime
+import html
 import json
 import logging
-import html
+from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import Any
+
+from hololoom.protocols.jenny import RenderTarget
 
 from .jenny_spec import (
     JennySpec,
     LifecycleStage,
-    PanelTypeJenny,
     PanelSizeJenny,
-    BindingMode,
-    DissolutionTrigger,
+    PanelTypeJenny,
 )
-from hololoom.protocols.jenny import RenderTarget, JennyRendererProtocol
 
 # Try to import accessibility layer (Phase M3)
 try:
     from .jenny_accessibility import (
-        JennyAccessibilityLayer,
-        AriaRole,
         AriaAttributes,
+        AriaRole,
+        JennyAccessibilityLayer,
         create_accessibility_layer,
     )
     ACCESSIBILITY_AVAILABLE = True
@@ -101,7 +101,7 @@ class JennyRendererBase(ABC):
 
     @property
     @abstractmethod
-    def supported_targets(self) -> List[RenderTarget]:
+    def supported_targets(self) -> list[RenderTarget]:
         """Return list of supported render targets."""
         ...
 
@@ -133,9 +133,9 @@ class JennyRendererBase(ABC):
 
     async def render(
         self,
-        specs: List[JennySpec],
+        specs: list[JennySpec],
         target: RenderTarget = RenderTarget.HTML,
-        options: Optional[Dict[str, Any]] = None
+        options: dict[str, Any] | None = None
     ) -> str:
         """
         Render multiple JennySpecs to output format.
@@ -170,7 +170,7 @@ class JennyRendererBase(ABC):
         self,
         spec: JennySpec,
         target: RenderTarget = RenderTarget.HTML,
-        options: Optional[Dict[str, Any]] = None
+        options: dict[str, Any] | None = None
     ) -> str:
         """
         Render a single JennySpec panel.
@@ -223,9 +223,9 @@ class JennyRendererBase(ABC):
     @abstractmethod
     async def _render_multiple(
         self,
-        specs: List[JennySpec],
+        specs: list[JennySpec],
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Internal: Render multiple specs."""
         ...
@@ -235,7 +235,7 @@ class JennyRendererBase(ABC):
         self,
         spec: JennySpec,
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Internal: Render single spec."""
         ...
@@ -278,20 +278,20 @@ class HTMLRenderer(JennyRendererBase):
         super().__init__()
 
         # Initialize accessibility layer (Phase M3)
-        self._a11y: Optional[JennyAccessibilityLayer] = None
+        self._a11y: JennyAccessibilityLayer | None = None
         if ACCESSIBILITY_AVAILABLE:
             self._a11y = create_accessibility_layer()
             self.logger.info("Accessibility layer enabled (WCAG 2.1 AA)")
 
     @property
-    def supported_targets(self) -> List[RenderTarget]:
+    def supported_targets(self) -> list[RenderTarget]:
         return [RenderTarget.HTML]
 
     async def _render_multiple(
         self,
-        specs: List[JennySpec],
+        specs: list[JennySpec],
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Render multiple specs to HTML dashboard."""
         include_styles = options.get('include_styles', True)
@@ -358,9 +358,9 @@ class HTMLRenderer(JennyRendererBase):
         self,
         spec: JennySpec,
         target: RenderTarget,
-        options: Dict[str, Any],
-        position: Optional[int] = None,
-        total: Optional[int] = None
+        options: dict[str, Any],
+        position: int | None = None,
+        total: int | None = None
     ) -> str:
         """
         Render single spec to HTML panel.
@@ -873,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
 {self._a11y.live_announcer.generate_announce_script()}
 '''
 
-    def _get_a11y_scripts(self, panel_ids: List[str]) -> str:
+    def _get_a11y_scripts(self, panel_ids: list[str]) -> str:
         """
         Get accessibility JavaScript for keyboard navigation.
 
@@ -938,14 +938,14 @@ class TerminalRenderer(JennyRendererBase):
     }
 
     @property
-    def supported_targets(self) -> List[RenderTarget]:
+    def supported_targets(self) -> list[RenderTarget]:
         return [RenderTarget.TERMINAL]
 
     async def _render_multiple(
         self,
-        specs: List[JennySpec],
+        specs: list[JennySpec],
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Render multiple specs to terminal output."""
         compact = options.get('compact', False)
@@ -975,7 +975,7 @@ class TerminalRenderer(JennyRendererBase):
         self,
         spec: JennySpec,
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Render single spec to terminal box."""
         width = options.get('width', 60)
@@ -1014,7 +1014,7 @@ class TerminalRenderer(JennyRendererBase):
 
         return '\n'.join(lines)
 
-    def _render_terminal_content(self, spec: JennySpec, max_width: int) -> List[str]:
+    def _render_terminal_content(self, spec: JennySpec, max_width: int) -> list[str]:
         """Render content for terminal display."""
         content = spec.content
         lines = []
@@ -1077,7 +1077,7 @@ class TerminalRenderer(JennyRendererBase):
 
         return lines or ["(empty)"]
 
-    def _render_compact(self, specs: List[JennySpec], no_color: bool) -> str:
+    def _render_compact(self, specs: list[JennySpec], no_color: bool) -> str:
         """Render specs in compact single-line format."""
         lines = []
         for spec in specs:
@@ -1115,14 +1115,14 @@ class JSONRenderer(JennyRendererBase):
     """
 
     @property
-    def supported_targets(self) -> List[RenderTarget]:
+    def supported_targets(self) -> list[RenderTarget]:
         return [RenderTarget.JSON]
 
     async def _render_multiple(
         self,
-        specs: List[JennySpec],
+        specs: list[JennySpec],
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Render specs to JSON array."""
         indent = options.get('indent', 2)
@@ -1141,7 +1141,7 @@ class JSONRenderer(JennyRendererBase):
         self,
         spec: JennySpec,
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Render single spec to JSON."""
         indent = options.get('indent', 2)
@@ -1199,14 +1199,14 @@ class ReactRenderer(JennyRendererBase):
     }
 
     @property
-    def supported_targets(self) -> List[RenderTarget]:
+    def supported_targets(self) -> list[RenderTarget]:
         return [RenderTarget.REACT]
 
     async def _render_multiple(
         self,
-        specs: List[JennySpec],
+        specs: list[JennySpec],
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Render specs to React props JSON."""
         indent = options.get('indent', 2)
@@ -1267,9 +1267,9 @@ class ReactRenderer(JennyRendererBase):
         self,
         spec: JennySpec,
         target: RenderTarget,
-        options: Dict[str, Any],
-        position: Optional[int] = None,
-        total: Optional[int] = None
+        options: dict[str, Any],
+        position: int | None = None,
+        total: int | None = None
     ) -> str:
         """Render single spec to React props JSON."""
         indent = options.get('indent', 2)
@@ -1293,7 +1293,7 @@ class ReactRenderer(JennyRendererBase):
         total: int,
         include_handlers: bool = True,
         include_accessibility: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Convert JennySpec to React component props."""
         # Get component type
         component = self.PANEL_COMPONENTS.get(
@@ -1382,7 +1382,7 @@ class ReactRenderer(JennyRendererBase):
 
         return props
 
-    def _get_content_props(self, spec: JennySpec) -> Dict[str, Any]:
+    def _get_content_props(self, spec: JennySpec) -> dict[str, Any]:
         """Get type-specific content props for React components."""
         content = spec.content
         panel_type = spec.panel_type
@@ -1540,9 +1540,9 @@ class ARRenderer(JennyRendererBase):
 
     async def _render_multiple(
         self,
-        specs: List[JennySpec],
+        specs: list[JennySpec],
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Render multiple specs to AR scene JSON."""
 
@@ -1569,7 +1569,7 @@ class ARRenderer(JennyRendererBase):
         self,
         spec: JennySpec,
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: dict[str, Any]
     ) -> str:
         """Render a single spec to AR panel JSON."""
         panel = self._spec_to_ar_panel(spec, options)
@@ -1587,8 +1587,8 @@ class ARRenderer(JennyRendererBase):
     def _spec_to_ar_panel(
         self,
         spec: JennySpec,
-        options: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        options: dict[str, Any]
+    ) -> dict[str, Any]:
         """Convert JennySpec to AR panel specification."""
 
         # Calculate transform
@@ -1621,8 +1621,8 @@ class ARRenderer(JennyRendererBase):
     def _calculate_transform(
         self,
         spec: JennySpec,
-        options: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        options: dict[str, Any]
+    ) -> dict[str, Any]:
         """Calculate 3D transform from spec position and size."""
 
         # Position from spec (x, y, z tuple)
@@ -1650,7 +1650,7 @@ class ARRenderer(JennyRendererBase):
             "scale": dict(scale),  # Copy to avoid mutation
         }
 
-    def _get_ar_content(self, spec: JennySpec) -> Dict[str, Any]:
+    def _get_ar_content(self, spec: JennySpec) -> dict[str, Any]:
         """Get AR-optimized content from spec."""
         content = dict(spec.content)
         panel_type = spec.panel_type
@@ -1694,8 +1694,8 @@ class ARRenderer(JennyRendererBase):
     def _get_behavior(
         self,
         spec: JennySpec,
-        options: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        options: dict[str, Any]
+    ) -> dict[str, Any]:
         """Calculate AR behavior settings."""
 
         # Determine billboard mode (panel faces user)
@@ -1738,7 +1738,7 @@ class ARRenderer(JennyRendererBase):
             "dissolution": dissolution,
         }
 
-    def _get_accessibility(self, spec: JennySpec) -> Dict[str, Any]:
+    def _get_accessibility(self, spec: JennySpec) -> dict[str, Any]:
         """Generate AR accessibility features."""
 
         # Spatial audio description
@@ -1818,7 +1818,7 @@ def get_default_renderer() -> JennyRendererBase:
     return create_renderer(RenderTarget.HTML)
 
 
-def get_renderer_by_name(name: str) -> Optional[JennyRendererBase]:
+def get_renderer_by_name(name: str) -> JennyRendererBase | None:
     """
     Get a renderer by its unique name.
 
@@ -1835,7 +1835,7 @@ def get_renderer_by_name(name: str) -> Optional[JennyRendererBase]:
         return None
 
 
-def list_available_renderers() -> List[Dict[str, Any]]:
+def list_available_renderers() -> list[dict[str, Any]]:
     """
     List all registered renderers.
 
@@ -1878,6 +1878,7 @@ def _auto_register_renderers():
 # Defer registration to avoid import-time issues
 # Will be triggered on first registry access
 import atexit
+
 atexit.register(lambda: None)  # Ensure clean shutdown
 
 

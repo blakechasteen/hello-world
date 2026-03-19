@@ -7,12 +7,12 @@ Audio cues help users navigate and understand
 spatial relationships between concepts.
 """
 
+import json
+import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Callable, Any
-import json
-import math
 
 
 class AudioType(Enum):
@@ -53,7 +53,7 @@ class Vector3:
             return Vector3(0, 0, 1)
         return Vector3(self.x/length, self.y/length, self.z/length)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {"x": self.x, "y": self.y, "z": self.z}
 
 
@@ -66,7 +66,7 @@ class AudioSource:
 
     # Audio file/stream
     audio_url: str = ""
-    audio_buffer_id: Optional[str] = None  # For pre-loaded buffers
+    audio_buffer_id: str | None = None  # For pre-loaded buffers
 
     # Playback state
     state: AudioState = AudioState.STOPPED
@@ -85,16 +85,16 @@ class AudioSource:
     cone_outer_gain: float = 0.0           # Volume outside cone
 
     # Direction (for directional audio)
-    direction: Optional[Vector3] = None
+    direction: Vector3 | None = None
 
     # Linked node (for knowledge graph)
-    linked_node_id: Optional[str] = None
+    linked_node_id: str | None = None
 
     # Metadata
     created_at: datetime = field(default_factory=datetime.now)
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "source_id": self.source_id,
             "audio_type": self.audio_type.value,
@@ -124,9 +124,9 @@ class AudioListener:
     master_volume: float = 1.0
 
     # Per-type volume
-    type_volumes: Dict[str, float] = field(default_factory=dict)
+    type_volumes: dict[str, float] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "position": self.position.to_dict(),
             "forward": self.forward.to_dict(),
@@ -189,16 +189,16 @@ class SpatialAudioManager:
     }
 
     def __init__(self):
-        self.sources: Dict[str, AudioSource] = {}
+        self.sources: dict[str, AudioSource] = {}
         self.listener = AudioListener()
-        self.effects: Dict[str, SoundEffect] = dict(self.DEFAULT_EFFECTS)
+        self.effects: dict[str, SoundEffect] = dict(self.DEFAULT_EFFECTS)
         self._source_counter = 0
 
         # Callbacks for WebXR client sync
-        self.on_source_created: Optional[Callable[[AudioSource], None]] = None
-        self.on_source_updated: Optional[Callable[[AudioSource], None]] = None
-        self.on_source_removed: Optional[Callable[[str], None]] = None
-        self.on_effect_played: Optional[Callable[[str, Vector3, float], None]] = None
+        self.on_source_created: Callable[[AudioSource], None] | None = None
+        self.on_source_updated: Callable[[AudioSource], None] | None = None
+        self.on_source_removed: Callable[[str], None] | None = None
+        self.on_effect_played: Callable[[str, Vector3, float], None] | None = None
 
     def _generate_source_id(self) -> str:
         self._source_counter += 1
@@ -215,7 +215,7 @@ class SpatialAudioManager:
         loop: bool = False,
         spatial: bool = True,
         linked_node_id: str = None,
-        tags: List[str] = None
+        tags: list[str] = None
     ) -> AudioSource:
         """Create a new audio source."""
         source_id = self._generate_source_id()
@@ -251,11 +251,11 @@ class SpatialAudioManager:
 
         return True
 
-    def get_source(self, source_id: str) -> Optional[AudioSource]:
+    def get_source(self, source_id: str) -> AudioSource | None:
         """Get a source by ID."""
         return self.sources.get(source_id)
 
-    def get_sources_for_node(self, node_id: str) -> List[AudioSource]:
+    def get_sources_for_node(self, node_id: str) -> list[AudioSource]:
         """Get all audio sources linked to a knowledge node."""
         return [s for s in self.sources.values() if s.linked_node_id == node_id]
 
@@ -340,7 +340,7 @@ class SpatialAudioManager:
         effect_id: str,
         position: Vector3 = None,
         volume: float = None
-    ) -> Optional[AudioSource]:
+    ) -> AudioSource | None:
         """Play a one-shot sound effect."""
         effect = self.effects.get(effect_id)
         if not effect:
@@ -448,7 +448,7 @@ class SpatialAudioManager:
         pan = (to_source.x * right.x + to_source.y * right.y + to_source.z * right.z) / distance
         return max(-1.0, min(1.0, pan))
 
-    def get_audible_sources(self) -> List[AudioSource]:
+    def get_audible_sources(self) -> list[AudioSource]:
         """Get all sources that should be audible."""
         audible = []
         for source in self.sources.values():
@@ -526,7 +526,7 @@ class SpatialAudioManager:
         }
         return json.dumps(data, indent=2)
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get audio system statistics."""
         playing = sum(1 for s in self.sources.values() if s.state == AudioState.PLAYING)
         by_type = {}

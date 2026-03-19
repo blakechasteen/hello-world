@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Default Implementations of Component Protocols
 ================================================
@@ -40,30 +39,21 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import logging
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
-
-from .components import (
-    PatternSelectorProtocol,
-    ThreadSelectorProtocol,
-    FeatureExtractorProtocol,
-    ConvergenceProtocol,
-    ToolExecutorProtocol,
-    SpacetimeAssemblerProtocol,
-)
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
+    from hololoom.chrono.trigger import TemporalWindow
+    from hololoom.config import Config
+    from hololoom.convergence.engine import CollapseResult, ConvergenceEngine
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.fabric.spacetime import Spacetime
     from hololoom.loom.command import LoomCommand
     from hololoom.loom.protocol import PatternSpec
     from hololoom.memory.graph import KG
-    from hololoom.chrono.trigger import TemporalWindow
-    from hololoom.protocols.types import Query, MemoryShard
-    from hololoom.convergence.engine import ConvergenceEngine, CollapseResult
+    from hololoom.orchestrator.context import WeavingContext
+    from hololoom.protocols.types import MemoryShard, Query
     from hololoom.resonance.shed import ResonanceShed
     from hololoom.tools.executor import ToolExecutor
-    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
-    from hololoom.embedding.spectral import MatryoshkaEmbeddings
-    from hololoom.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -88,9 +78,9 @@ class DefaultPatternSelector:
 
     def __init__(
         self,
-        loom_command: 'LoomCommand',
+        loom_command: LoomCommand,
         enable_complexity_detect: bool = True,
-        logger: Optional[logging.Logger] = None
+        logger: logging.Logger | None = None
     ):
         """
         Initialize pattern selector.
@@ -107,8 +97,8 @@ class DefaultPatternSelector:
     def select_pattern(
         self,
         query_text: str,
-        user_preference: Optional[str] = None
-    ) -> 'PatternSpec':
+        user_preference: str | None = None
+    ) -> PatternSpec:
         """
         Select pattern card based on query characteristics.
 
@@ -163,10 +153,10 @@ class DefaultThreadSelector:
 
     def __init__(
         self,
-        yarn_graph: 'KG',
+        yarn_graph: KG,
         enable_shuttle: bool = False,
-        shuttle_stage: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None
+        shuttle_stage: Any | None = None,
+        logger: logging.Logger | None = None
     ):
         """
         Initialize thread selector.
@@ -184,10 +174,10 @@ class DefaultThreadSelector:
 
     async def select_threads(
         self,
-        temporal_window: 'TemporalWindow',
-        query: 'Query',
+        temporal_window: TemporalWindow,
+        query: Query,
         limit: int = 10
-    ) -> List['MemoryShard']:
+    ) -> list[MemoryShard]:
         """
         Select memory threads from knowledge graph.
 
@@ -208,10 +198,10 @@ class DefaultThreadSelector:
 
     def _yarn_graph_select(
         self,
-        temporal_window: 'TemporalWindow',
-        query: 'Query',
+        temporal_window: TemporalWindow,
+        query: Query,
         limit: int
-    ) -> List['MemoryShard']:
+    ) -> list[MemoryShard]:
         """Select threads using YarnGraph (simple recency-based)."""
         # Get recent nodes from graph
         nodes = self.yarn_graph.get_recent_nodes(
@@ -223,10 +213,10 @@ class DefaultThreadSelector:
 
     async def _shuttle_select(
         self,
-        temporal_window: 'TemporalWindow',
-        query: 'Query',
+        temporal_window: TemporalWindow,
+        query: Query,
         limit: int
-    ) -> List['MemoryShard']:
+    ) -> list[MemoryShard]:
         """Select threads using Shuttle (advanced selection)."""
         # Delegate to shuttle stage
         return await self.shuttle_stage.select_threads(
@@ -237,9 +227,9 @@ class DefaultThreadSelector:
 
     async def expand_context(
         self,
-        threads: List['MemoryShard'],
+        threads: list[MemoryShard],
         max_hops: int = 2
-    ) -> List['MemoryShard']:
+    ) -> list[MemoryShard]:
         """
         Expand context by traversing graph connections.
 
@@ -288,10 +278,10 @@ class DefaultFeatureExtractor:
 
     def __init__(
         self,
-        embedder: 'MatryoshkaEmbeddings',
-        cfg: 'Config',
-        resonance_shed: Optional['ResonanceShed'] = None,
-        logger: Optional[logging.Logger] = None
+        embedder: MatryoshkaEmbeddings,
+        cfg: Config,
+        resonance_shed: ResonanceShed | None = None,
+        logger: logging.Logger | None = None
     ):
         """
         Initialize feature extractor.
@@ -309,9 +299,9 @@ class DefaultFeatureExtractor:
 
     async def extract(
         self,
-        query: 'Query',
-        threads: List['MemoryShard']
-    ) -> Dict[str, Any]:
+        query: Query,
+        threads: list[MemoryShard]
+    ) -> dict[str, Any]:
         """
         Extract features from query and context.
 
@@ -341,7 +331,7 @@ class DefaultFeatureExtractor:
 
         return features
 
-    def _extract_motifs(self, query_text: str) -> List[str]:
+    def _extract_motifs(self, query_text: str) -> list[str]:
         """Extract motif patterns from query text."""
         # Simple heuristic motif detection
         motifs = []
@@ -355,7 +345,7 @@ class DefaultFeatureExtractor:
             motifs.append('comparative')
         return motifs if motifs else ['general']
 
-    def _extract_spectral(self, threads: List['MemoryShard']) -> List[float]:
+    def _extract_spectral(self, threads: list[MemoryShard]) -> list[float]:
         """Extract spectral features from memory threads."""
         # Simple spectral features based on thread count and connectivity
         return [float(len(threads)), 0.0, 0.0, 0.0, 0.0, 0.0]  # 6D spectral
@@ -384,10 +374,10 @@ class DefaultConvergence:
 
     def __init__(
         self,
-        engine: Optional['ConvergenceEngine'] = None,
+        engine: ConvergenceEngine | None = None,
         n_tools: int = 4,
         epsilon: float = 0.1,
-        logger: Optional[logging.Logger] = None
+        logger: logging.Logger | None = None
     ):
         """
         Initialize convergence.
@@ -411,7 +401,7 @@ class DefaultConvergence:
         self,
         probs: Any,
         strategy: str = "bayesian_blend"
-    ) -> 'CollapseResult':
+    ) -> CollapseResult:
         """
         Collapse probability distribution to discrete decision.
 
@@ -458,7 +448,7 @@ class DefaultConvergence:
             tool_index: int
             confidence: float
             strategy: str
-            metadata: Dict[str, Any]
+            metadata: dict[str, Any]
 
         return SimpleCollapseResult(
             tool_index=tool_index,
@@ -509,10 +499,10 @@ class DefaultToolExecutor:
 
     def __init__(
         self,
-        tool_executor: Optional['ToolExecutor'] = None,
-        guardrails: Optional[Any] = None,
-        tools: Optional[List[str]] = None,
-        logger: Optional[logging.Logger] = None
+        tool_executor: ToolExecutor | None = None,
+        guardrails: Any | None = None,
+        tools: list[str] | None = None,
+        logger: logging.Logger | None = None
     ):
         """
         Initialize tool executor.
@@ -531,9 +521,9 @@ class DefaultToolExecutor:
     async def execute(
         self,
         tool: str,
-        query: 'Query',
-        context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        query: Query,
+        context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Execute selected tool with safety gating.
 
@@ -570,34 +560,36 @@ class DefaultToolExecutor:
     async def _check_safety(
         self,
         tool: str,
-        query: 'Query',
-        context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        query: Query,
+        context: dict[str, Any]
+    ) -> dict[str, Any]:
         """Check safety with guardrails."""
         try:
-            from hololoom.alignment.safety_guardrails import ActionRequest
+            from hololoom.alignment.safety_guardrails import ActionCategory, ActionRequest
 
+            query_text = query.text if hasattr(query, 'text') else str(query)
             request = ActionRequest(
-                action=tool,
-                query=query.text if hasattr(query, 'text') else str(query),
+                action_id=tool,
+                category=ActionCategory.QUERY,
+                description=query_text,
                 context=context
             )
-            decision = await self.guardrails.evaluate(request)
+            decision = self.guardrails.evaluate(request)
             return {
                 'allowed': decision.allowed,
                 'reason': decision.reason if hasattr(decision, 'reason') else None
             }
-        except Exception as e:
-            self.logger.warning(f"Safety check failed: {e}")
-            return {'allowed': True}  # Fail open for now
+        except (ConnectionError, TimeoutError, OSError) as e:
+            self.logger.warning(f"Safety check failed (service unavailable): {e}")
+            return {'allowed': True}  # Fail open on infrastructure errors
 
-    def get_available_tools(self) -> List[str]:
+    def get_available_tools(self) -> list[str]:
         """Get list of available tools."""
         if self.tool_executor:
             return self.tool_executor.get_available_tools()
         return self._tools
 
-    async def validate_tool(self, tool: str, context: Dict[str, Any]) -> bool:
+    async def validate_tool(self, tool: str, context: dict[str, Any]) -> bool:
         """Validate if tool can be executed in given context."""
         return tool in self.get_available_tools()
 
@@ -620,9 +612,9 @@ class DefaultSpacetimeAssembler:
 
     def __init__(
         self,
-        cfg: 'Config',
-        semantic_cache: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None
+        cfg: Config,
+        semantic_cache: Any | None = None,
+        logger: logging.Logger | None = None
     ):
         """
         Initialize spacetime assembler.
@@ -636,7 +628,7 @@ class DefaultSpacetimeAssembler:
         self.semantic_cache = semantic_cache
         self.logger = logger or logging.getLogger(__name__)
 
-    def assemble(self, ctx: 'WeavingContext') -> 'Spacetime':
+    def assemble(self, ctx: WeavingContext) -> Spacetime:
         """
         Assemble final Spacetime output with provenance.
 
@@ -697,7 +689,7 @@ class DefaultSpacetimeAssembler:
             metadata=metadata
         )
 
-    def create_trace(self, ctx: 'WeavingContext') -> Any:
+    def create_trace(self, ctx: WeavingContext) -> Any:
         """
         Create WeavingTrace from context.
 
@@ -708,6 +700,7 @@ class DefaultSpacetimeAssembler:
             WeavingTrace object with complete provenance
         """
         from datetime import datetime
+
         from hololoom.fabric.spacetime import WeavingTrace
 
         # Calculate timing from context or use defaults
@@ -724,7 +717,7 @@ class DefaultSpacetimeAssembler:
             embedding_scales_used=[384],  # Default scale
         )
 
-    def calculate_confidence(self, ctx: 'WeavingContext') -> float:
+    def calculate_confidence(self, ctx: WeavingContext) -> float:
         """
         Calculate final confidence score.
 
@@ -750,7 +743,7 @@ class DefaultSpacetimeAssembler:
         confidence = base_confidence + thread_boost - error_penalty
         return max(0.0, min(1.0, confidence))
 
-    def _get_cache_stats(self) -> Dict[str, Any]:
+    def _get_cache_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         if self.semantic_cache and hasattr(self.semantic_cache, 'get_stats'):
             return self.semantic_cache.get_stats()

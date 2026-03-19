@@ -24,14 +24,8 @@ Pass 3 (BEAUTY): Add grace
 
 import logging
 import re
-from typing import List, Dict, Any
 
-from ..core.protocol import (
-    RefinerProtocol,
-    RefinementPass,
-    RefinementStrategy,
-    WritingContext
-)
+from ..core.protocol import RefinementPass, WritingContext
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +85,7 @@ class EleganceRefiner:
             duration_ms=0.0  # Will be filled by composer
         )
 
-    def _refine_clarity(self, text: str) -> tuple[str, List[str]]:
+    def _refine_clarity(self, text: str) -> tuple[str, list[str]]:
         """
         Pass 1: Clarity - Make understandable.
 
@@ -174,7 +168,7 @@ class EleganceRefiner:
 
         return refined, improvements
 
-    def _refine_simplicity(self, text: str) -> tuple[str, List[str]]:
+    def _refine_simplicity(self, text: str) -> tuple[str, list[str]]:
         """
         Pass 2: Simplicity - Remove unnecessary.
 
@@ -242,7 +236,7 @@ class EleganceRefiner:
 
         return refined, improvements
 
-    def _refine_beauty(self, text: str) -> tuple[str, List[str]]:
+    def _refine_beauty(self, text: str) -> tuple[str, list[str]]:
         """
         Pass 3: Beauty - Add grace.
 
@@ -336,6 +330,6 @@ class EleganceRefiner:
         return "elegance"
 
     @property
-    def passes(self) -> List[str]:
+    def passes(self) -> list[str]:
         """List of focus areas for each pass."""
         return self._passes.copy()

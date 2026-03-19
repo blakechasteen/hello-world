@@ -21,19 +21,14 @@ From Graphiti:
 - Temporal invalidation: Update facts without losing history
 """
 
-from typing import List, Dict, Optional, Any, Callable
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-import asyncio
 import logging
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
-from hololoom.protocols.types import MemoryShard, Query
-from hololoom.memory.lifecycle_manager import (
-    ContextStreamManager,
-    MemoryScope,
-    LifeCycle
-)
 from hololoom.memory.graph import KG, KGEdge
+from hololoom.memory.lifecycle_manager import ContextStreamManager, LifeCycle, MemoryScope
+from hololoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 
@@ -45,11 +40,11 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MemorySearchResult:
     """Result from memory search operation."""
-    memories: List[MemoryShard]
+    memories: list[MemoryShard]
     total_found: int
     search_time_ms: float
     search_strategy: str  # "semantic", "bm25", "graph", "hybrid"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -108,7 +103,7 @@ class AgentMemoryTools:
     def __init__(
         self,
         stream_manager: ContextStreamManager,
-        knowledge_graph: Optional[KG] = None,
+        knowledge_graph: KG | None = None,
         enable_archival: bool = True
     ):
         """
@@ -134,10 +129,10 @@ class AgentMemoryTools:
     async def store(
         self,
         content: str,
-        scope: Optional[MemoryScope] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        entities: Optional[List[str]] = None,
-        motifs: Optional[List[str]] = None,
+        scope: MemoryScope | None = None,
+        metadata: dict[str, Any] | None = None,
+        entities: list[str] | None = None,
+        motifs: list[str] | None = None,
         importance: float = 0.5
     ) -> MemoryStoreResult:
         """
@@ -224,8 +219,8 @@ class AgentMemoryTools:
     async def search(
         self,
         query: str,
-        scopes: Optional[List[MemoryScope]] = None,
-        lifecycles: Optional[List[LifeCycle]] = None,
+        scopes: list[MemoryScope] | None = None,
+        lifecycles: list[LifeCycle] | None = None,
         limit: int = 10,
         min_importance: float = 0.0,
         strategy: str = "hybrid"  # "semantic", "bm25", "graph", "hybrid"
@@ -306,7 +301,7 @@ class AgentMemoryTools:
         self,
         memory_id: str,
         new_content: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> MemoryUpdateResult:
         """
         Agent updates existing memory (using temporal invalidation).
@@ -470,7 +465,7 @@ class AgentMemoryTools:
             message=f"Deleted (archived: {self.enable_archival})"
         )
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get memory usage statistics across all streams."""
         base_stats = self.stream_manager.get_statistics()
 

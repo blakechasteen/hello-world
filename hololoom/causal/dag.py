@@ -6,8 +6,9 @@ Implements directed acyclic graphs with d-separation for conditional independenc
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Optional, Tuple, Any
 from enum import Enum
+from typing import Any
+
 import networkx as nx
 
 
@@ -33,9 +34,9 @@ class CausalNode:
     """
     name: str
     node_type: NodeType = NodeType.OBSERVABLE
-    domain: Optional[List[Any]] = None
+    domain: list[Any] | None = None
     description: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __hash__(self):
         return hash(self.name)
@@ -67,7 +68,7 @@ class CausalEdge:
     strength: float = 1.0
     mechanism: str = ""
     confidence: float = 1.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __repr__(self):
         return f"CausalEdge({self.source} → {self.target}, strength={self.strength:.2f})"
@@ -92,8 +93,8 @@ class CausalDAG:
 
     def __init__(self):
         """Initialize empty causal DAG."""
-        self.nodes: Dict[str, CausalNode] = {}
-        self.edges: Dict[Tuple[str, str], CausalEdge] = {}
+        self.nodes: dict[str, CausalNode] = {}
+        self.edges: dict[tuple[str, str], CausalEdge] = {}
         self.graph = nx.DiGraph()
 
     def add_node(self, node: CausalNode) -> None:
@@ -139,23 +140,23 @@ class CausalDAG:
             del self.edges[(source, target)]
             self.graph.remove_edge(source, target)
 
-    def parents(self, node: str) -> Set[str]:
+    def parents(self, node: str) -> set[str]:
         """Get direct parents (causes) of node."""
         return set(self.graph.predecessors(node))
 
-    def children(self, node: str) -> Set[str]:
+    def children(self, node: str) -> set[str]:
         """Get direct children (effects) of node."""
         return set(self.graph.successors(node))
 
-    def ancestors(self, node: str) -> Set[str]:
+    def ancestors(self, node: str) -> set[str]:
         """Get all ancestors (transitive causes) of node."""
         return nx.ancestors(self.graph, node)
 
-    def descendants(self, node: str) -> Set[str]:
+    def descendants(self, node: str) -> set[str]:
         """Get all descendants (transitive effects) of node."""
         return nx.descendants(self.graph, node)
 
-    def markov_blanket(self, node: str) -> Set[str]:
+    def markov_blanket(self, node: str) -> set[str]:
         """
         Get Markov blanket of node.
 
@@ -172,7 +173,7 @@ class CausalDAG:
 
         return parents | children | co_parents
 
-    def topological_order(self) -> List[str]:
+    def topological_order(self) -> list[str]:
         """
         Get topological ordering of nodes.
 
@@ -181,7 +182,7 @@ class CausalDAG:
         """
         return list(nx.topological_sort(self.graph))
 
-    def is_d_separated(self, X: Set[str], Y: Set[str], Z: Set[str]) -> bool:
+    def is_d_separated(self, X: set[str], Y: set[str], Z: set[str]) -> bool:
         """
         Check if X and Y are d-separated given Z.
 
@@ -196,9 +197,9 @@ class CausalDAG:
         Returns:
             True if X and Y are d-separated by Z
         """
-        return nx.d_separated(self.graph, X, Y, Z)
+        return nx.is_d_separator(self.graph, X, Y, Z)
 
-    def get_paths(self, source: str, target: str) -> List[List[str]]:
+    def get_paths(self, source: str, target: str) -> list[list[str]]:
         """
         Get all paths from source to target.
 
@@ -209,7 +210,7 @@ class CausalDAG:
         except nx.NetworkXNoPath:
             return []
 
-    def find_colliders(self) -> List[str]:
+    def find_colliders(self) -> list[str]:
         """
         Find all colliders in the graph.
 
@@ -222,7 +223,7 @@ class CausalDAG:
                 colliders.append(node)
         return colliders
 
-    def find_confounders(self, X: str, Y: str) -> Set[str]:
+    def find_confounders(self, X: str, Y: str) -> set[str]:
         """
         Find confounders between X and Y.
 
@@ -235,7 +236,7 @@ class CausalDAG:
         # Common ancestors are potential confounders
         return X_ancestors & Y_ancestors - {X, Y}
 
-    def find_mediators(self, X: str, Y: str) -> Set[str]:
+    def find_mediators(self, X: str, Y: str) -> set[str]:
         """
         Find mediators between X and Y.
 
@@ -253,7 +254,7 @@ class CausalDAG:
 
         return mediators
 
-    def backdoor_paths(self, X: str, Y: str) -> List[List[str]]:
+    def backdoor_paths(self, X: str, Y: str) -> list[list[str]]:
         """
         Find backdoor paths from X to Y.
 
@@ -276,7 +277,7 @@ class CausalDAG:
 
         return backdoor
 
-    def satisfies_backdoor_criterion(self, X: str, Y: str, Z: Set[str]) -> bool:
+    def satisfies_backdoor_criterion(self, X: str, Y: str, Z: set[str]) -> bool:
         """
         Check if Z satisfies backdoor criterion for causal effect of X on Y.
 
@@ -309,10 +310,10 @@ class CausalDAG:
                     prev_node = path[i - 1]
                     next_node = path[i + 1]
 
-                    # Collider: both arrows point into node
+                    # Collider: both arrows point into node (prev → node ← next)
                     is_collider = (
-                        (prev_node in self.children(node) or node in self.parents(prev_node)) and
-                        (next_node in self.children(node) or node in self.parents(next_node))
+                        (prev_node in self.parents(node) or node in self.children(prev_node)) and
+                        (next_node in self.parents(node) or node in self.children(next_node))
                     )
 
                     if is_collider:
@@ -332,7 +333,7 @@ class CausalDAG:
 
         return True  # All backdoor paths blocked
 
-    def frontdoor_paths(self, X: str, Y: str) -> List[List[str]]:
+    def frontdoor_paths(self, X: str, Y: str) -> list[list[str]]:
         """
         Find frontdoor paths from X to Y.
 
@@ -364,7 +365,7 @@ class CausalDAG:
 
         return frontdoor
 
-    def satisfies_frontdoor_criterion(self, X: str, Y: str, Z: Set[str]) -> bool:
+    def satisfies_frontdoor_criterion(self, X: str, Y: str, Z: set[str]) -> bool:
         """
         Check if Z satisfies frontdoor criterion for causal effect of X on Y.
 
@@ -394,7 +395,7 @@ class CausalDAG:
 
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize DAG to dictionary."""
         return {
             'nodes': [
@@ -421,7 +422,7 @@ class CausalDAG:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'CausalDAG':
+    def from_dict(cls, data: dict[str, Any]) -> 'CausalDAG':
         """Deserialize DAG from dictionary."""
         dag = cls()
 

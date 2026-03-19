@@ -16,12 +16,12 @@ Or programmatically:
     dashboard.stop()
 """
 
-import time
 import sys
 import threading
-from typing import Optional
+import time
 from datetime import datetime, timedelta
-from hololoom.alignment.monitoring import AlignmentMonitor, AlertLevel
+
+from hololoom.alignment.monitoring import AlertLevel, AlignmentMonitor
 
 
 class LiveDashboard:
@@ -48,7 +48,7 @@ class LiveDashboard:
 
         # Control flags
         self.running = False
-        self.thread: Optional[threading.Thread] = None
+        self.thread: threading.Thread | None = None
 
     def start(self):
         """Start dashboard in background thread."""
@@ -266,7 +266,6 @@ def main():
     input("Press Enter to start...")
 
     # Create production system
-    from hololoom.alignment import create_guardrails, create_detector, create_guard, create_audit_trail
 
     print("\n🔧 Initializing alignment framework...")
 
@@ -293,7 +292,7 @@ def main():
             with monitor.track("pipeline"):
                 # Track individual components
                 with monitor.track("guardrails"):
-                    from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+                    from hololoom.alignment.safety_guardrails import ActionCategory, ActionRequest
                     request = ActionRequest(action_id=query_text, category=ActionCategory.QUERY)
                     decision = system.guardrails.evaluate(request, text_input=query_text)
 

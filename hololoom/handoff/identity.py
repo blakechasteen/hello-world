@@ -11,24 +11,23 @@ from __future__ import annotations
 import hashlib
 import json
 import secrets
-from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 from .types import (
     DeviceManifest,
-    DeviceStatus,
-    HandoffRequest,
-    SignedOp,
     DeviceNotFoundError,
     DeviceRevokedError,
+    DeviceStatus,
+    HandoffRequest,
     InvalidSignatureError,
+    SignedOp,
 )
 
 # Import federation identity for Ed25519 operations
 try:
-    from ..federation.identity import Identity, SignedMessage, HAS_CRYPTOGRAPHY
+    from ..federation.identity import HAS_CRYPTOGRAPHY, Identity, SignedMessage
 except ImportError:
     # Fallback if federation not available
     HAS_CRYPTOGRAPHY = False
@@ -77,9 +76,9 @@ class UnifiedIdentity:
     def __init__(
         self,
         nickname: str,
-        identity: "Identity",
-        devices: Optional[Dict[str, DeviceManifest]] = None,
-        current_device_id: Optional[str] = None,
+        identity: Identity,
+        devices: dict[str, DeviceManifest] | None = None,
+        current_device_id: str | None = None,
     ):
         """
         Initialize unified identity.
@@ -92,7 +91,7 @@ class UnifiedIdentity:
         """
         self.nickname = nickname
         self._identity = identity
-        self.devices: Dict[str, DeviceManifest] = devices or {}
+        self.devices: dict[str, DeviceManifest] = devices or {}
         self._current_device_id = current_device_id
         self._revoked_nonces: set = set()  # For replay protection
 
@@ -127,12 +126,12 @@ class UnifiedIdentity:
         return self._identity.public_key
 
     @property
-    def current_device_id(self) -> Optional[str]:
+    def current_device_id(self) -> str | None:
         """Current device's ID."""
         return self._current_device_id
 
     @property
-    def active_devices(self) -> List[DeviceManifest]:
+    def active_devices(self) -> list[DeviceManifest]:
         """List of active (non-revoked) devices."""
         return [d for d in self.devices.values() if d.is_active()]
 
@@ -144,8 +143,8 @@ class UnifiedIdentity:
     def create(
         cls,
         nickname: str,
-        device_name: Optional[str] = None,
-    ) -> "UnifiedIdentity":
+        device_name: str | None = None,
+    ) -> UnifiedIdentity:
         """
         Create a new identity with optional first device.
 
@@ -181,7 +180,7 @@ class UnifiedIdentity:
         return unified
 
     @classmethod
-    def load(cls, path: str | Path) -> "UnifiedIdentity":
+    def load(cls, path: str | Path) -> UnifiedIdentity:
         """
         Load identity from disk.
 
@@ -260,7 +259,7 @@ class UnifiedIdentity:
         self,
         device_name: str,
         public_key: bytes,
-        capabilities: Optional[set] = None,
+        capabilities: set | None = None,
     ) -> DeviceManifest:
         """
         Add a new device to the identity.
@@ -312,7 +311,7 @@ class UnifiedIdentity:
         """
         if device_id not in self.devices:
             raise DeviceNotFoundError(
-                f"Device not found",
+                "Device not found",
                 device_id=device_id,
                 suggestion="Check device ID or re-pair the device",
             )
@@ -330,7 +329,7 @@ class UnifiedIdentity:
         """
         if device_id not in self.devices:
             raise DeviceNotFoundError(
-                f"Cannot revoke unknown device",
+                "Cannot revoke unknown device",
                 device_id=device_id,
             )
 
@@ -346,7 +345,7 @@ class UnifiedIdentity:
         """
         if device_id not in self.devices:
             raise DeviceNotFoundError(
-                f"Cannot suspend unknown device",
+                "Cannot suspend unknown device",
                 device_id=device_id,
             )
 
@@ -364,14 +363,14 @@ class UnifiedIdentity:
         """
         if device_id not in self.devices:
             raise DeviceNotFoundError(
-                f"Cannot reactivate unknown device",
+                "Cannot reactivate unknown device",
                 device_id=device_id,
             )
 
         manifest = self.devices[device_id]
         if manifest.is_revoked():
             raise DeviceRevokedError(
-                f"Cannot reactivate revoked device",
+                "Cannot reactivate revoked device",
                 device_id=device_id,
                 suggestion="Revocation is permanent. Pair a new device instead.",
             )
@@ -578,7 +577,7 @@ class UnifiedIdentity:
         }
         return json.dumps(data).encode("utf-8")
 
-    def verify_pairing_payload(self, payload: bytes) -> Dict[str, Any]:
+    def verify_pairing_payload(self, payload: bytes) -> dict[str, Any]:
         """
         Verify and parse QR code payload from another device.
 
@@ -636,7 +635,7 @@ class UnifiedIdentity:
 def get_or_create_identity(
     path: str | Path = "~/.hololoom/identity",
     nickname: str = "default",
-    device_name: Optional[str] = None,
+    device_name: str | None = None,
 ) -> UnifiedIdentity:
     """
     Get existing identity or create new one.

@@ -23,8 +23,7 @@ Usage:
         f.write(html)
 """
 
-from typing import Dict, Any, List
-import json
+from typing import Any
 
 
 def _format_duration(ms: float) -> str:
@@ -44,7 +43,7 @@ def _format_rate(rate: float) -> str:
     return f"{rate*100:.1f}%"
 
 
-def _render_summary_card(summary: Dict[str, Any]) -> str:
+def _render_summary_card(summary: dict[str, Any]) -> str:
     """Render overall summary card."""
     html = f"""
     <div class="summary-card">
@@ -100,7 +99,7 @@ def _get_cache_class(rate: float) -> str:
         return "error"
 
 
-def _render_skills_table(skills: Dict[str, Dict[str, Any]]) -> str:
+def _render_skills_table(skills: dict[str, dict[str, Any]]) -> str:
     """Render skills performance table."""
     if not skills:
         return "<p>No skill executions recorded yet.</p>"
@@ -156,7 +155,7 @@ def _render_skills_table(skills: Dict[str, Dict[str, Any]]) -> str:
     return html
 
 
-def _render_top_skills(skills: Dict[str, Dict[str, Any]]) -> str:
+def _render_top_skills(skills: dict[str, dict[str, Any]]) -> str:
     """Render top skills by various metrics."""
     if not skills:
         return ""
@@ -209,7 +208,7 @@ def _render_top_skills(skills: Dict[str, Dict[str, Any]]) -> str:
     return html
 
 
-def _render_problem_areas(skills: Dict[str, Dict[str, Any]]) -> str:
+def _render_problem_areas(skills: dict[str, dict[str, Any]]) -> str:
     """Render problem area detection."""
     if not skills:
         return ""
@@ -245,7 +244,7 @@ def _render_problem_areas(skills: Dict[str, Dict[str, Any]]) -> str:
         </div>
         """
 
-    html = f"""
+    html = """
     <div class="problem-areas">
         <h2>Problem Areas</h2>
         <div class="problem-grid">
@@ -297,7 +296,7 @@ def _render_problem_areas(skills: Dict[str, Dict[str, Any]]) -> str:
     return html
 
 
-def render_dashboard(metrics_json: Dict[str, Any], title: str = "Skills Metrics Dashboard") -> str:
+def render_dashboard(metrics_json: dict[str, Any], title: str = "Skills Metrics Dashboard") -> str:
     """
     Render complete HTML dashboard from metrics JSON.
 

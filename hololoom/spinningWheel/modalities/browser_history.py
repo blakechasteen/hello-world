@@ -15,14 +15,13 @@ Supports:
 - Brave
 """
 
-import sqlite3
-import shutil
 import logging
-from pathlib import Path
-from typing import List, Optional, Dict
-from datetime import datetime, timedelta
-from dataclasses import dataclass
+import shutil
+import sqlite3
 import tempfile
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +89,8 @@ class BrowserHistoryReader:
         cls,
         days_back: int = 7,
         min_duration: int = 0,
-        profile_path: Optional[Path] = None
-    ) -> List[BrowserVisit]:
+        profile_path: Path | None = None
+    ) -> list[BrowserVisit]:
         """
         Read Chrome browser history.
 
@@ -176,7 +175,7 @@ class BrowserHistoryReader:
         cls,
         days_back: int = 7,
         min_duration: int = 0
-    ) -> List[BrowserVisit]:
+    ) -> list[BrowserVisit]:
         """
         Read Microsoft Edge history.
 
@@ -198,7 +197,7 @@ class BrowserHistoryReader:
         cls,
         days_back: int = 7,
         min_duration: int = 0
-    ) -> List[BrowserVisit]:
+    ) -> list[BrowserVisit]:
         """
         Read Brave browser history.
 
@@ -220,7 +219,7 @@ class BrowserHistoryReader:
         cls,
         days_back: int = 7,
         min_duration: int = 0
-    ) -> List[BrowserVisit]:
+    ) -> list[BrowserVisit]:
         """
         Read Firefox browser history.
 
@@ -301,7 +300,7 @@ class BrowserHistoryReader:
         cls,
         days_back: int = 7,
         min_duration: int = 0
-    ) -> Dict[str, List[BrowserVisit]]:
+    ) -> dict[str, list[BrowserVisit]]:
         """
         Read history from all available browsers.
 
@@ -332,10 +331,10 @@ class BrowserHistoryReader:
     @classmethod
     def filter_meaningful_visits(
         cls,
-        visits: List[BrowserVisit],
+        visits: list[BrowserVisit],
         min_duration: int = 30,
-        exclude_patterns: Optional[List[str]] = None
-    ) -> List[BrowserVisit]:
+        exclude_patterns: list[str] | None = None
+    ) -> list[BrowserVisit]:
         """
         Filter to only meaningful visits.
 
@@ -377,7 +376,7 @@ def get_recent_history(
     days_back: int = 7,
     min_duration: int = 30,
     browser: str = 'chrome'
-) -> List[BrowserVisit]:
+) -> list[BrowserVisit]:
     """
     Get recent meaningful browser history.
 

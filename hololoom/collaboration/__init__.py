@@ -14,74 +14,74 @@ Team knowledge management with:
 """
 
 # Original modules
-from hololoom.collaboration.user_manager import UserManager, User, UserRole
-from hololoom.collaboration.contribution_tracker import ContributionTracker
-from hololoom.collaboration.access_control import AccessController, Permission, AccessLevel
-from hololoom.collaboration.knowledge_sharing import KnowledgeSharing, SharedKnowledge
-
-# New session management (November 2025)
-from hololoom.collaboration.session import (
-    Session,
-    SessionManager,
-    SessionState,
-    SessionType,
-    SessionSettings,
-    Participant,
-    ParticipantRole,
-    JoinRequest,
-    create_session_manager,
-)
-
-# Real-time presence tracking
-from hololoom.collaboration.presence import (
-    UserPresence,
-    PresenceManager,
-    ActivityStatus,
-    FocusType,
-    CursorPosition,
-    SelectionState,
-    TypingIndicator,
-    create_presence_manager,
-)
-
-# State synchronization with CRDT-inspired conflict resolution
-from hololoom.collaboration.sync import (
-    StateSynchronizer,
-    Operation,
-    OperationType,
-    SyncState,
-    Conflict,
-    ConflictResolution,
-    OperationBuffer,
-    create_state_synchronizer,
-)
+from hololoom.collaboration.access_control import AccessController, AccessLevel, Permission
 
 # Enhanced attribution tracking
 from hololoom.collaboration.attribution import (
+    AttributionContext,
     AttributionManager,
     Contribution,
     ContributionType,
     QualityRating,
     UserContributionStats,
-    AttributionContext,
     create_attribution_manager,
 )
+from hololoom.collaboration.contribution_tracker import ContributionTracker
+from hololoom.collaboration.knowledge_sharing import KnowledgeSharing, SharedKnowledge
+
+# Real-time presence tracking
+from hololoom.collaboration.presence import (
+    ActivityStatus,
+    CursorPosition,
+    FocusType,
+    PresenceManager,
+    SelectionState,
+    TypingIndicator,
+    UserPresence,
+    create_presence_manager,
+)
+
+# New session management (November 2025)
+from hololoom.collaboration.session import (
+    JoinRequest,
+    Participant,
+    ParticipantRole,
+    Session,
+    SessionManager,
+    SessionSettings,
+    SessionState,
+    SessionType,
+    create_session_manager,
+)
+
+# State synchronization with CRDT-inspired conflict resolution
+from hololoom.collaboration.sync import (
+    Conflict,
+    ConflictResolution,
+    Operation,
+    OperationBuffer,
+    OperationType,
+    StateSynchronizer,
+    SyncState,
+    create_state_synchronizer,
+)
+from hololoom.collaboration.user_manager import User, UserManager, UserRole
 
 # WebRTC voice/video communication
 from hololoom.collaboration.voice import (
-    VoiceRoom,
-    VoiceManager,
-    VoiceRoomSettings,
-    VoiceRoomParticipant,
-    PeerConnection,
+    ConnectionState,
     MediaTrack,
     MediaType,
-    StreamQuality,
-    ConnectionState,
+    PeerConnection,
     SignalingMessage,
     SignalingType,
-    create_voice_room,
+    StreamQuality,
+    VoiceManager,
+    VoiceRoom,
+    VoiceRoomParticipant,
+    VoiceRoomSettings,
     create_voice_manager,
+    create_voice_room,
 )
 
 __all__ = [

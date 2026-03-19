@@ -7,10 +7,9 @@ Created: 2025-12-23
 Part of HoloLoom Workflow Builder production integration.
 """
 
-import asyncio
-from typing import Optional, Dict, List, Any
-from dataclasses import dataclass, field
 import logging
+from dataclasses import dataclass, field
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +18,10 @@ logger = logging.getLogger(__name__)
 class AgentResult:
     """Result from an agent execution."""
     success: bool
-    data: Dict[str, Any]
-    error: Optional[str] = None
+    data: dict[str, Any]
+    error: str | None = None
     latency_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class WorkflowAgentExecutor:
@@ -60,12 +59,13 @@ class WorkflowAgentExecutor:
 
         try:
             # Import HoloLoom components
-            from hololoom.config import Config
+            from hololoom.embedding.spectral import MatryoshkaEmbeddings
             from hololoom.memory.backend_factory import create_memory_backend
             from hololoom.memory.unified import UnifiedMemory
+            from hololoom.policy.thompson_sampling import BanditStrategy, TSBandit
+
+            from hololoom.config import Config
             from hololoom.weaving_orchestrator import WeavingOrchestrator
-            from hololoom.embedding.spectral import MatryoshkaEmbeddings
-            from hololoom.policy.thompson_sampling import TSBandit, BanditStrategy
 
             # Use FAST config for balanced performance
             self._config = Config.fast()
@@ -849,7 +849,7 @@ class WorkflowAgentExecutor:
             )
 
         try:
-            from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
+            from hololoom.convergence.engine import CollapseStrategy, ConvergenceEngine
 
             strategy_map = {
                 "argmax": CollapseStrategy.ARGMAX,
@@ -1026,8 +1026,8 @@ class WorkflowAgentExecutor:
         Returns:
             AgentResult with formatted output
         """
-        import time
         import json
+        import time
         start = time.perf_counter()
 
         output_format = config.get("format", "json")
@@ -1234,7 +1234,7 @@ class WorkflowAgentExecutor:
 
     # ==================== Helper Methods ====================
 
-    def _generate_sub_queries(self, query: str, num: int) -> List[str]:
+    def _generate_sub_queries(self, query: str, num: int) -> list[str]:
         """Generate sub-queries for multi-query agent.
 
         Simple heuristic approach. In production, use LLM for better decomposition.
@@ -1298,7 +1298,7 @@ async def execute_agent(
     agent_type: str,
     config: dict,
     input_data: dict,
-    executor: Optional[WorkflowAgentExecutor] = None
+    executor: WorkflowAgentExecutor | None = None
 ) -> AgentResult:
     """Execute an agent by type.
 

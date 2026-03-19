@@ -17,12 +17,12 @@ Date: November 16, 2025
 Phase: 4 (Multi-Language Support)
 """
 
-import os
-import yaml
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
+from typing import Any, Optional
+
+import yaml
 
 try:
     import structlog
@@ -35,7 +35,7 @@ except ImportError:
 
 # Language detection
 try:
-    from langdetect import detect, DetectorFactory, LangDetectException
+    from langdetect import DetectorFactory, LangDetectException, detect
     # Set seed for reproducibility
     DetectorFactory.seed = 0
     LANGDETECT_AVAILABLE = True
@@ -67,7 +67,7 @@ class LanguageCode(Enum):
         return None
 
     @classmethod
-    def all_codes(cls) -> List[str]:
+    def all_codes(cls) -> list[str]:
         """Get all supported language codes"""
         return [lang.value for lang in cls]
 
@@ -88,7 +88,7 @@ class LanguageVariant:
     fallback_voice: str
     name: str = ""
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         return {
             'code': self.code,
             'voice_id': self.voice_id,
@@ -116,14 +116,14 @@ class LanguageProfile:
     code: str
     name: str
     native_name: str
-    variants: List[LanguageVariant] = field(default_factory=list)
+    variants: list[LanguageVariant] = field(default_factory=list)
     default_voice: str = "alloy"
     fallback_voice: str = "alloy"
     rtl: bool = False
-    ui_strings: Dict[str, str] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    ui_strings: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def get_voice_for_variant(self, variant_code: Optional[str] = None) -> str:
+    def get_voice_for_variant(self, variant_code: str | None = None) -> str:
         """Get voice for specific variant or default"""
         if variant_code:
             for variant in self.variants:
@@ -135,7 +135,7 @@ class LanguageProfile:
         """Get localized UI string"""
         return self.ui_strings.get(key, default)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
             'code': self.code,
@@ -152,7 +152,7 @@ class LanguageProfile:
     @classmethod
     def from_yaml(cls, yaml_path: Path) -> 'LanguageProfile':
         """Load language profile from YAML file"""
-        with open(yaml_path, 'r', encoding='utf-8') as f:
+        with open(yaml_path, encoding='utf-8') as f:
             data = yaml.safe_load(f)
 
         # Parse variants
@@ -195,11 +195,11 @@ class ConversationLanguageState:
     """
     session_id: str
     language_code: str = "en"
-    variant_code: Optional[str] = None
+    variant_code: str | None = None
     confidence: float = 1.0
     auto_detect: bool = True
-    force_language: Optional[str] = None
-    history: List[Dict[str, Any]] = field(default_factory=list)
+    force_language: str | None = None
+    history: list[dict[str, Any]] = field(default_factory=list)
 
     def record_language_change(self, new_language: str, reason: str, confidence: float = 1.0):
         """Record language change event"""
@@ -213,7 +213,7 @@ class ConversationLanguageState:
         self.language_code = new_language
         self.confidence = confidence
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
             'session_id': self.session_id,
@@ -243,7 +243,7 @@ class LanguageDetector:
         if not self.available:
             logger.warning("Language detection unavailable - install langdetect: pip install langdetect")
 
-    def detect(self, text: str) -> Optional[str]:
+    def detect(self, text: str) -> str | None:
         """
         Detect language from text
 
@@ -267,7 +267,7 @@ class LanguageDetector:
             logger.warning(f"Language detection failed: {e}")
             return None
 
-    def detect_with_confidence(self, text: str) -> tuple[Optional[str], float]:
+    def detect_with_confidence(self, text: str) -> tuple[str | None, float]:
         """
         Detect language with confidence score
 
@@ -312,7 +312,7 @@ class LanguageManager:
     - Conversation language persistence
     """
 
-    def __init__(self, languages_dir: Optional[Path] = None):
+    def __init__(self, languages_dir: Path | None = None):
         """
         Initialize language manager
 
@@ -320,9 +320,9 @@ class LanguageManager:
             languages_dir: Directory containing language YAML files
         """
         self.languages_dir = languages_dir or self._get_default_languages_dir()
-        self.languages: Dict[str, LanguageProfile] = {}
+        self.languages: dict[str, LanguageProfile] = {}
         self.detector = LanguageDetector()
-        self.conversation_states: Dict[str, ConversationLanguageState] = {}
+        self.conversation_states: dict[str, ConversationLanguageState] = {}
 
         # Load all languages
         self._load_languages()
@@ -375,11 +375,11 @@ class LanguageManager:
             }
         )
 
-    def get_language(self, code: str) -> Optional[LanguageProfile]:
+    def get_language(self, code: str) -> LanguageProfile | None:
         """Get language profile by code"""
         return self.languages.get(code)
 
-    def get_supported_languages(self) -> List[str]:
+    def get_supported_languages(self) -> list[str]:
         """Get list of supported language codes"""
         return list(self.languages.keys())
 
@@ -387,7 +387,7 @@ class LanguageManager:
         """Check if language is supported"""
         return code in self.languages
 
-    def detect_language(self, text: str) -> Optional[str]:
+    def detect_language(self, text: str) -> str | None:
         """
         Detect language from text
 
@@ -425,7 +425,7 @@ class LanguageManager:
         # Fallback to English with low confidence
         return ('en', 0.5)
 
-    def get_voice_for_language(self, language_code: str, variant_code: Optional[str] = None) -> str:
+    def get_voice_for_language(self, language_code: str, variant_code: str | None = None) -> str:
         """
         Get appropriate voice for language/variant
 
@@ -479,7 +479,7 @@ class LanguageManager:
         self.conversation_states[session_id] = state
         return state
 
-    def get_conversation_state(self, session_id: str) -> Optional[ConversationLanguageState]:
+    def get_conversation_state(self, session_id: str) -> ConversationLanguageState | None:
         """Get conversation language state"""
         return self.conversation_states.get(session_id)
 
@@ -487,7 +487,7 @@ class LanguageManager:
         self,
         session_id: str,
         text: str,
-        force_language: Optional[str] = None
+        force_language: str | None = None
     ) -> ConversationLanguageState:
         """
         Update conversation language based on input text
@@ -543,7 +543,7 @@ class LanguageManager:
         if new_language != state.language_code:
             state.record_language_change(new_language, reason, 1.0)
 
-    def get_language_statistics(self) -> Dict[str, Any]:
+    def get_language_statistics(self) -> dict[str, Any]:
         """Get language usage statistics across all conversations"""
         stats = {
             'total_conversations': len(self.conversation_states),
@@ -563,7 +563,7 @@ class LanguageManager:
 # Utility Functions
 # ============================================================================
 
-def create_language_manager(languages_dir: Optional[Path] = None) -> LanguageManager:
+def create_language_manager(languages_dir: Path | None = None) -> LanguageManager:
     """
     Create language manager instance
 

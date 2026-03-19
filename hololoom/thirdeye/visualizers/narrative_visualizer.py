@@ -12,10 +12,10 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, Any, List, Optional, Tuple
-from dataclasses import dataclass, field
 import re
+from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class CharacterMood(Enum):
@@ -43,10 +43,10 @@ class Character:
     name: str
     role: str = "character"  # 'protagonist', 'antagonist', 'supporting', 'background'
     mood: CharacterMood = CharacterMood.NEUTRAL
-    position: Dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0, "z": 0})
+    position: dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0, "z": 0})
     color: str = "#3b82f6"  # Silhouette color
     speaking: bool = False
-    current_line: Optional[str] = None
+    current_line: str | None = None
 
 
 @dataclass
@@ -57,8 +57,8 @@ class Environment:
     time_of_day: str = "day"  # 'dawn', 'day', 'dusk', 'night'
     weather: str = "clear"  # 'clear', 'cloudy', 'rain', 'storm', 'snow', 'fog'
     mood: str = "neutral"  # 'peaceful', 'tense', 'mysterious', 'dramatic', 'romantic'
-    colors: List[str] = field(default_factory=lambda: ["#87ceeb", "#4a90d9"])  # Sky gradient
-    props: List[str] = field(default_factory=list)  # Objects in scene
+    colors: list[str] = field(default_factory=lambda: ["#87ceeb", "#4a90d9"])  # Sky gradient
+    props: list[str] = field(default_factory=list)  # Objects in scene
 
 
 @dataclass
@@ -66,13 +66,13 @@ class NarrativeScene:
     """A single scene in the narrative."""
     id: str
     scene_type: SceneType
-    characters: List[Character]
-    environment: Optional[Environment]
-    dialogue: List[Dict[str, str]] = field(default_factory=list)  # [{"character": "name", "line": "text"}]
-    action: Optional[str] = None
-    narration: Optional[str] = None
+    characters: list[Character]
+    environment: Environment | None
+    dialogue: list[dict[str, str]] = field(default_factory=list)  # [{"character": "name", "line": "text"}]
+    action: str | None = None
+    narration: str | None = None
     camera_angle: str = "medium"  # 'wide', 'medium', 'close', 'extreme_close'
-    camera_movement: Optional[str] = None  # 'pan_left', 'pan_right', 'dolly_in', 'dolly_out', 'track'
+    camera_movement: str | None = None  # 'pan_left', 'pan_right', 'dolly_in', 'dolly_out', 'track'
 
 
 # Environment presets
@@ -213,7 +213,7 @@ class NarrativeExtractor:
             camera_movement=self._suggest_camera_movement(scene_type)
         )
 
-    def _extract_characters(self, text: str) -> List[Character]:
+    def _extract_characters(self, text: str) -> list[Character]:
         """Extract character names from text."""
         characters = {}
 
@@ -235,7 +235,7 @@ class NarrativeExtractor:
 
         return list(characters.values())
 
-    def _extract_dialogue(self, text: str) -> List[Dict[str, str]]:
+    def _extract_dialogue(self, text: str) -> list[dict[str, str]]:
         """Extract dialogue from text."""
         dialogue = []
         matches = re.findall(self.DIALOGUE_PATTERN, text)
@@ -249,7 +249,7 @@ class NarrativeExtractor:
 
         return dialogue
 
-    def _detect_environment(self, text: str) -> Optional[Environment]:
+    def _detect_environment(self, text: str) -> Environment | None:
         """Detect environment from context."""
         text_lower = text.lower()
 
@@ -299,7 +299,7 @@ class NarrativeExtractor:
 
         return CharacterMood.NEUTRAL
 
-    def _extract_action(self, text: str) -> Optional[str]:
+    def _extract_action(self, text: str) -> str | None:
         """Extract action descriptions."""
         action_patterns = [
             r'([A-Z][a-z]+\s+(?:ran|walked|jumped|fought|grabbed|threw|opened|closed)[^.]+\.)',
@@ -312,7 +312,7 @@ class NarrativeExtractor:
 
         return None
 
-    def _extract_narration(self, text: str) -> Optional[str]:
+    def _extract_narration(self, text: str) -> str | None:
         """Extract narration (non-dialogue, non-action)."""
         # Remove dialogue
         narration = re.sub(r'"[^"]+"', '', text)
@@ -325,7 +325,7 @@ class NarrativeExtractor:
 
         return None
 
-    def _position_characters(self, characters: List[Character]) -> None:
+    def _position_characters(self, characters: list[Character]) -> None:
         """Position characters in scene for visual layout."""
         n = len(characters)
         if n == 0:
@@ -346,7 +346,7 @@ class NarrativeExtractor:
 class NarrativeSceneBuilder:
     """Build 3D scene data for narrative visualization."""
 
-    def build_scene(self, narrative: NarrativeScene) -> Dict[str, Any]:
+    def build_scene(self, narrative: NarrativeScene) -> dict[str, Any]:
         """Convert narrative scene to 3D scene representation."""
         elements = []
 
@@ -388,7 +388,7 @@ class NarrativeSceneBuilder:
             'animation': self._get_animation(narrative)
         }
 
-    def _build_environment(self, env: Environment) -> Dict[str, Any]:
+    def _build_environment(self, env: Environment) -> dict[str, Any]:
         """Build environment backdrop element."""
         return {
             'id': 'environment',
@@ -404,7 +404,7 @@ class NarrativeSceneBuilder:
             'size': {'w': 60, 'h': 30, 'd': 1}
         }
 
-    def _build_character(self, char: Character) -> Dict[str, Any]:
+    def _build_character(self, char: Character) -> dict[str, Any]:
         """Build character element."""
         return {
             'id': char.id,
@@ -421,8 +421,8 @@ class NarrativeSceneBuilder:
             }
         }
 
-    def _build_dialogue_bubble(self, dialogue: Dict[str, str], index: int,
-                               characters: List[Character]) -> Dict[str, Any]:
+    def _build_dialogue_bubble(self, dialogue: dict[str, str], index: int,
+                               characters: list[Character]) -> dict[str, Any]:
         """Build dialogue bubble element."""
         # Find character position
         char_name = dialogue.get('character', '')
@@ -446,7 +446,7 @@ class NarrativeSceneBuilder:
             }
         }
 
-    def _get_camera_settings(self, narrative: NarrativeScene) -> Dict[str, Any]:
+    def _get_camera_settings(self, narrative: NarrativeScene) -> dict[str, Any]:
         """Get camera settings based on scene type."""
         if narrative.camera_angle == 'wide':
             return {
@@ -481,7 +481,7 @@ class NarrativeSceneBuilder:
 
         return 'soft'
 
-    def _get_background(self, env: Optional[Environment]) -> Dict[str, Any]:
+    def _get_background(self, env: Environment | None) -> dict[str, Any]:
         """Get background settings."""
         if env:
             return {
@@ -493,7 +493,7 @@ class NarrativeSceneBuilder:
             'colors': ['#e2e8f0', '#94a3b8']
         }
 
-    def _get_animation(self, narrative: NarrativeScene) -> Optional[Dict[str, Any]]:
+    def _get_animation(self, narrative: NarrativeScene) -> dict[str, Any] | None:
         """Get animation settings based on scene."""
         if narrative.scene_type == SceneType.ACTION:
             return {
@@ -517,7 +517,7 @@ class NarrativeSceneBuilder:
             return 'wide'
         return 'medium'
 
-    def _suggest_camera_movement(self, scene_type: SceneType) -> Optional[str]:
+    def _suggest_camera_movement(self, scene_type: SceneType) -> str | None:
         """Suggest camera movement if appropriate."""
         if scene_type == SceneType.ACTION:
             return 'track'
@@ -526,7 +526,7 @@ class NarrativeSceneBuilder:
         return None
 
 
-def extract_narrative_from_text(text: str) -> Dict[str, Any]:
+def extract_narrative_from_text(text: str) -> dict[str, Any]:
     """Main entry point: extract narrative and build scene from text."""
     extractor = NarrativeExtractor()
     builder = NarrativeSceneBuilder()

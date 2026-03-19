@@ -31,25 +31,25 @@ Usage:
 """
 
 import asyncio
-from typing import Dict, List, Optional, Any, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
-from enum import Enum
+from typing import Any
 
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.memory.graph import KG
+
+from hololoom.agents.adversarial_agents import (
+    AdversarialNegotiationSystem,
+    CreativeAgent,
+    QualityControlAgent,
+)
 from hololoom.apps.workflow_builder.agent_orchestration import (
     AgentOrchestrationSystem,
+    AgentTask,
     PersistentAgent,
     TaskPriority,
     TaskType,
-    AgentTask
 )
-from hololoom.agents.adversarial_agents import (
-    CreativeAgent,
-    QualityControlAgent,
-    AdversarialNegotiationSystem
-)
-from hololoom.memory.graph import KG
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
-
 
 # ============================================================================
 # Extended Task with Negotiation
@@ -68,8 +68,8 @@ class NegotiatedTask(AgentTask):
     strictness_level: float = 0.8  # 0-1
 
     # Negotiation results
-    negotiation_outcome: Optional[str] = None  # 'creative_win', 'qc_win', 'compromise'
-    final_strategy: Optional[Dict[str, Any]] = None
+    negotiation_outcome: str | None = None  # 'creative_win', 'qc_win', 'compromise'
+    final_strategy: dict[str, Any] | None = None
     negotiation_rounds: int = 0
 
 
@@ -99,9 +99,9 @@ class AdversarialOrchestrationSystem(AgentOrchestrationSystem):
         self.default_strictness = default_strictness
 
         # Adversarial agents (one set per agent type)
-        self.creative_agents: Dict[str, CreativeAgent] = {}
-        self.qc_agents: Dict[str, QualityControlAgent] = {}
-        self.negotiation_systems: Dict[str, AdversarialNegotiationSystem] = {}
+        self.creative_agents: dict[str, CreativeAgent] = {}
+        self.qc_agents: dict[str, QualityControlAgent] = {}
+        self.negotiation_systems: dict[str, AdversarialNegotiationSystem] = {}
 
         # Statistics
         self.total_negotiated_tasks = 0
@@ -151,12 +151,12 @@ class AdversarialOrchestrationSystem(AgentOrchestrationSystem):
         task_fn: Callable,
         priority: TaskPriority = TaskPriority.NORMAL,
         task_type: TaskType = TaskType.USER_QUERY,
-        context: Optional[Dict[str, Any]] = None,
-        depends_on: Optional[List[str]] = None,
-        scheduled_for: Optional[float] = None,
+        context: dict[str, Any] | None = None,
+        depends_on: list[str] | None = None,
+        scheduled_for: float | None = None,
         enable_negotiation: bool = True,
-        creativity_level: Optional[float] = None,
-        strictness_level: Optional[float] = None
+        creativity_level: float | None = None,
+        strictness_level: float | None = None
     ) -> str:
         """
         Queue task with optional adversarial negotiation.
@@ -273,7 +273,7 @@ class AdversarialOrchestrationSystem(AgentOrchestrationSystem):
                 quality_maintained=quality_maintained
             )
 
-    def get_negotiation_stats(self, agent_name: Optional[str] = None) -> Dict[str, Any]:
+    def get_negotiation_stats(self, agent_name: str | None = None) -> dict[str, Any]:
         """Get adversarial negotiation statistics"""
         if agent_name:
             # Stats for specific agent
@@ -322,7 +322,7 @@ class AdversarialOrchestrationSystem(AgentOrchestrationSystem):
                 }
             }
 
-    def get_global_stats(self) -> Dict[str, Any]:
+    def get_global_stats(self) -> dict[str, Any]:
         """Get global statistics (override to include negotiation stats)"""
         base_stats = super().get_global_stats()
 
@@ -382,8 +382,8 @@ async def example_adversarial_orchestration():
     3. High creativity task
     4. High strictness task
     """
-    from hololoom.memory.graph import KG
     from hololoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.memory.graph import KG
     from hololoom.protocols.types import Query
 
     # Create system
@@ -398,7 +398,7 @@ async def example_adversarial_orchestration():
     )
 
     # Example 1: Normal task (no negotiation)
-    async def simple_query(agent: PersistentAgent, context: Dict):
+    async def simple_query(agent: PersistentAgent, context: dict):
         query = Query(text=context['query_text'])
         result = await agent.agent_instance.query(query, use_mcts=True)
         return result

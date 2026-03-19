@@ -26,11 +26,10 @@ Public API:
     KnowledgeTransferer: Transfers facts/rules via mapping
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Set, Tuple, Callable
-from collections import defaultdict
 import logging
-import math
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +51,8 @@ class Entity:
         entity_type: Category (optional)
     """
     name: str
-    properties: Dict[str, Any] = field(default_factory=dict)
-    entity_type: Optional[str] = None
+    properties: dict[str, Any] = field(default_factory=dict)
+    entity_type: str | None = None
 
     def __hash__(self):
         return hash(self.name)
@@ -79,8 +78,8 @@ class Relation:
         properties: Relation properties (optional)
     """
     relation_type: str
-    entities: Tuple[Entity, ...]
-    properties: Dict[str, Any] = field(default_factory=dict)
+    entities: tuple[Entity, ...]
+    properties: dict[str, Any] = field(default_factory=dict)
 
     def __hash__(self):
         return hash((self.relation_type, self.entities))
@@ -109,9 +108,9 @@ class Domain:
         facts: Additional factual knowledge
     """
     name: str
-    entities: Set[Entity] = field(default_factory=set)
-    relations: Set[Relation] = field(default_factory=set)
-    facts: Dict[str, Any] = field(default_factory=dict)
+    entities: set[Entity] = field(default_factory=set)
+    relations: set[Relation] = field(default_factory=set)
+    facts: dict[str, Any] = field(default_factory=dict)
 
     def add_entity(self, entity: Entity):
         """Add entity to domain."""
@@ -121,14 +120,14 @@ class Domain:
         """Add relation to domain."""
         self.relations.add(relation)
 
-    def get_entity(self, name: str) -> Optional[Entity]:
+    def get_entity(self, name: str) -> Entity | None:
         """Find entity by name."""
         for e in self.entities:
             if e.name == name:
                 return e
         return None
 
-    def get_relations_for(self, entity: Entity) -> List[Relation]:
+    def get_relations_for(self, entity: Entity) -> list[Relation]:
         """Find all relations involving entity."""
         return [r for r in self.relations if entity in r.entities]
 
@@ -153,16 +152,16 @@ class AnalogicalMapping:
     """
     source_domain: str
     target_domain: str
-    entity_mappings: Dict[Entity, Entity] = field(default_factory=dict)
-    relation_mappings: Dict[str, str] = field(default_factory=dict)
+    entity_mappings: dict[Entity, Entity] = field(default_factory=dict)
+    relation_mappings: dict[str, str] = field(default_factory=dict)
     score: float = 0.0
-    justification: List[str] = field(default_factory=list)
+    justification: list[str] = field(default_factory=list)
 
-    def map_entity(self, source: Entity) -> Optional[Entity]:
+    def map_entity(self, source: Entity) -> Entity | None:
         """Map source entity to target."""
         return self.entity_mappings.get(source)
 
-    def map_relation(self, source_relation_type: str) -> Optional[str]:
+    def map_relation(self, source_relation_type: str) -> str | None:
         """Map source relation type to target."""
         return self.relation_mappings.get(source_relation_type)
 
@@ -201,8 +200,8 @@ class StructureMapper:
     """
 
     def __init__(self,
-                 semantic_similarity: Optional[Callable[[Entity, Entity], float]] = None,
-                 relation_similarity: Optional[Callable[[str, str], float]] = None):
+                 semantic_similarity: Callable[[Entity, Entity], float] | None = None,
+                 relation_similarity: Callable[[str, str], float] | None = None):
         """
         Initialize structure mapper.
 
@@ -216,7 +215,7 @@ class StructureMapper:
     def find_mapping(self,
                     source: Domain,
                     target: Domain,
-                    max_mappings: int = 1) -> List[AnalogicalMapping]:
+                    max_mappings: int = 1) -> list[AnalogicalMapping]:
         """
         Find structural mappings between domains.
 
@@ -265,7 +264,7 @@ class StructureMapper:
 
     def _generate_candidate_entity_mappings(self,
                                            source: Domain,
-                                           target: Domain) -> List[Dict[Entity, Entity]]:
+                                           target: Domain) -> list[dict[Entity, Entity]]:
         """
         Generate candidate entity correspondences.
 
@@ -306,7 +305,7 @@ class StructureMapper:
     def _find_relation_mapping(self,
                               source: Domain,
                               target: Domain,
-                              entity_mapping: Dict[Entity, Entity]) -> Optional[Dict[str, str]]:
+                              entity_mapping: dict[Entity, Entity]) -> dict[str, str] | None:
         """
         Find relation mapping consistent with entity mapping.
 
@@ -340,8 +339,8 @@ class StructureMapper:
 
     def _find_corresponding_relation(self,
                                     target: Domain,
-                                    entities: Tuple[Entity, ...],
-                                    source_relation_type: str) -> Optional[Relation]:
+                                    entities: tuple[Entity, ...],
+                                    source_relation_type: str) -> Relation | None:
         """Find target relation matching entity pattern."""
         for target_rel in target.relations:
             if target_rel.entities == entities:
@@ -391,7 +390,7 @@ class StructureMapper:
     def _generate_justification(self,
                                mapping: AnalogicalMapping,
                                source: Domain,
-                               target: Domain) -> List[str]:
+                               target: Domain) -> list[str]:
         """Generate human-readable justification for mapping."""
         justifications = []
 
@@ -457,8 +456,8 @@ class KnowledgeTransferer:
     """
 
     def transfer_fact(self,
-                     source_fact: Dict[str, Any],
-                     mapping: AnalogicalMapping) -> Optional[Dict[str, Any]]:
+                     source_fact: dict[str, Any],
+                     mapping: AnalogicalMapping) -> dict[str, Any] | None:
         """
         Transfer single fact via mapping.
 
@@ -487,7 +486,7 @@ class KnowledgeTransferer:
 
     def transfer_relation(self,
                          source_relation: Relation,
-                         mapping: AnalogicalMapping) -> Optional[Relation]:
+                         mapping: AnalogicalMapping) -> Relation | None:
         """
         Transfer relation via mapping.
 
@@ -564,9 +563,9 @@ class Case:
         context: Additional context
     """
     problem: Domain
-    solution: Dict[str, Any]
+    solution: dict[str, Any]
     outcome: float = 1.0  # Success measure [0, 1]
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
 
 
 class CaseLibrary:
@@ -577,7 +576,7 @@ class CaseLibrary:
     """
 
     def __init__(self):
-        self.cases: List[Case] = []
+        self.cases: list[Case] = []
 
     def add_case(self, case: Case):
         """Add case to library."""
@@ -586,7 +585,7 @@ class CaseLibrary:
     def find_similar(self,
                     problem: Domain,
                     mapper: StructureMapper,
-                    max_cases: int = 5) -> List[Tuple[Case, AnalogicalMapping]]:
+                    max_cases: int = 5) -> list[tuple[Case, AnalogicalMapping]]:
         """
         Find similar past cases.
 
@@ -637,7 +636,7 @@ class AnalogicalReasoner:
 
     def find_analogy(self,
                     source: Domain,
-                    target: Domain) -> Optional[AnalogicalMapping]:
+                    target: Domain) -> AnalogicalMapping | None:
         """
         Find best analogical mapping between domains.
 
@@ -668,7 +667,7 @@ class AnalogicalReasoner:
 
     def solve_by_analogy(self,
                         problem: Domain,
-                        max_adaptations: int = 3) -> Optional[Dict[str, Any]]:
+                        max_adaptations: int = 3) -> dict[str, Any] | None:
         """
         Solve new problem using similar past cases.
 

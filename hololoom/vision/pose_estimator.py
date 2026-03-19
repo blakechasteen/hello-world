@@ -14,10 +14,10 @@ Features:
 Created: 2025-11-22 (Phase 5)
 """
 
-from typing import Optional, List, Dict, Any, Tuple
-import numpy as np
-from datetime import datetime
 import logging
+from datetime import datetime
+
+import numpy as np
 
 try:
     import mediapipe as mp
@@ -32,9 +32,9 @@ except ImportError:
     CV2_AVAILABLE = False
 
 from hololoom.vision.protocol import (
-    VisionProcessor,
-    Keypoint,
     BodyPose,
+    Keypoint,
+    VisionProcessor,
 )
 
 logger = logging.getLogger(__name__)
@@ -226,7 +226,7 @@ class PoseEstimator(VisionProcessor):
         self,
         frame: np.ndarray,
         return_visualization: bool = False
-    ) -> Tuple[BodyPose, Optional[np.ndarray]]:
+    ) -> tuple[BodyPose, np.ndarray | None]:
         """
         Estimate pose and optionally return visualization.
 
@@ -254,7 +254,7 @@ class PoseEstimator(VisionProcessor):
         self.initialized = False
         logger.info("🧹 Pose estimation cleaned up")
 
-    def get_capabilities(self) -> Dict[str, bool]:
+    def get_capabilities(self) -> dict[str, bool]:
         """Get processor capabilities"""
         return {
             "pose_estimation": True,
@@ -288,7 +288,7 @@ class PoseEstimator(VisionProcessor):
 
 def draw_pose_skeleton(
     pose: BodyPose,
-    image: Optional[np.ndarray] = None,
+    image: np.ndarray | None = None,
     keypoint_radius: int = 5,
     line_thickness: int = 2,
 ) -> np.ndarray:
@@ -380,7 +380,7 @@ def get_joint_angle(
     joint_idx: int,
     prev_idx: int,
     next_idx: int,
-) -> Optional[float]:
+) -> float | None:
     """
     Calculate angle at a joint (e.g., elbow angle).
 
@@ -424,7 +424,7 @@ def get_joint_angle(
     return float(angle_deg)
 
 
-def detect_gesture(pose: BodyPose) -> Optional[str]:
+def detect_gesture(pose: BodyPose) -> str | None:
     """
     Detect common gestures from pose.
 
@@ -492,7 +492,7 @@ def detect_gesture(pose: BodyPose) -> Optional[str]:
     return "standing"
 
 
-def get_body_orientation(pose: BodyPose) -> Optional[str]:
+def get_body_orientation(pose: BodyPose) -> str | None:
     """
     Determine body orientation (front, back, left, right).
 
@@ -567,7 +567,7 @@ def create_pose_estimator(
 
 
 # Singleton instance
-_pose_estimator_instance: Optional[PoseEstimator] = None
+_pose_estimator_instance: PoseEstimator | None = None
 
 
 def get_pose_estimator(model_complexity: int = 1) -> PoseEstimator:

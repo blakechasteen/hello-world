@@ -18,20 +18,17 @@ import asyncio
 import logging
 from pathlib import Path
 
-from hololoom.infrastructure.sql import SQLConfig, create_sql_backend, load_mock_data
 from hololoom.infrastructure.mcp import (
-    MCPServer,
+    ErrorCode,
     MCPRequest,
-    MCPResponse,
     RequestType,
     ResponseStatus,
-    ErrorCode,
     ToolName,
+    create_mcp_server,
     generate_request_id,
     generate_session_id,
-    create_mcp_server
 )
-
+from hololoom.infrastructure.sql import SQLConfig, load_mock_data
 
 logger = logging.getLogger(__name__)
 
@@ -72,10 +69,10 @@ async def test_tool_list():
             # Validate query_sql tool
             query_sql = next((t for t in tools if t["name"] == ToolName.QUERY_SQL), None)
             if query_sql:
-                print(f"[PASS] query_sql tool found")
+                print("[PASS] query_sql tool found")
                 print(f"  Parameters: {len(query_sql['parameters'])}")
             else:
-                print(f"[FAIL] query_sql tool not found")
+                print("[FAIL] query_sql tool not found")
                 return False
         else:
             print(f"[FAIL] Tool list request failed: {response.error}")
@@ -112,15 +109,15 @@ async def test_query_sql_success():
         # Validate response
         if response.status == ResponseStatus.SUCCESS:
             result = response.result
-            print(f"[PASS] Query executed successfully")
+            print("[PASS] Query executed successfully")
             print(f"  Rows returned: {result['row_count']}")
             print(f"  Latency: {result['latency_ms']:.2f}ms")
             print(f"  Backend: {result['backend']}")
 
             if result['row_count'] > 0:
-                print(f"[PASS] Query returned expected data")
+                print("[PASS] Query returned expected data")
             else:
-                print(f"[FAIL] Query returned no data")
+                print("[FAIL] Query returned no data")
                 return False
         else:
             print(f"[FAIL] Query failed: {response.error}")
@@ -152,12 +149,12 @@ async def test_query_sql_errors():
         if response.status == ResponseStatus.ERROR:
             error = response.error
             if error["code"] == ErrorCode.INVALID_PARAMETERS:
-                print(f"[PASS] Invalid SQL rejected (DELETE not allowed)")
+                print("[PASS] Invalid SQL rejected (DELETE not allowed)")
             else:
                 print(f"[FAIL] Wrong error code: {error['code']}")
                 return False
         else:
-            print(f"[FAIL] Invalid SQL should have been rejected")
+            print("[FAIL] Invalid SQL should have been rejected")
             return False
 
         # Test 3b: Missing required parameter
@@ -174,12 +171,12 @@ async def test_query_sql_errors():
         if response.status == ResponseStatus.ERROR:
             error = response.error
             if error["code"] == ErrorCode.MISSING_PARAMETER:
-                print(f"[PASS] Missing parameter detected")
+                print("[PASS] Missing parameter detected")
             else:
                 print(f"[FAIL] Wrong error code: {error['code']}")
                 return False
         else:
-            print(f"[FAIL] Missing parameter should have been detected")
+            print("[FAIL] Missing parameter should have been detected")
             return False
 
         # Test 3c: Invalid table
@@ -198,12 +195,12 @@ async def test_query_sql_errors():
         if response.status == ResponseStatus.ERROR:
             error = response.error
             if error["code"] == ErrorCode.SQL_ERROR:
-                print(f"[PASS] SQL error handled gracefully")
+                print("[PASS] SQL error handled gracefully")
             else:
                 print(f"[FAIL] Wrong error code: {error['code']}")
                 return False
         else:
-            print(f"[FAIL] SQL error should have been returned")
+            print("[FAIL] SQL error should have been returned")
             return False
 
     return True
@@ -246,13 +243,13 @@ async def test_session_management():
         print(f"Total requests: {stats['total_requests']}")
 
         if stats['total_sessions'] == 2:
-            print(f"[PASS] Session tracking working (2 sessions)")
+            print("[PASS] Session tracking working (2 sessions)")
         else:
             print(f"[FAIL] Expected 2 sessions, got {stats['total_sessions']}")
             return False
 
         if stats['total_requests'] == 5:
-            print(f"[PASS] Request counting working (5 requests)")
+            print("[PASS] Request counting working (5 requests)")
         else:
             print(f"[FAIL] Expected 5 requests, got {stats['total_requests']}")
             return False
@@ -262,15 +259,15 @@ async def test_session_management():
         session_2_obj = server.sessions.get(session_2)
 
         if session_1_obj and session_1_obj.request_count == 3:
-            print(f"[PASS] Session 1 request count: 3")
+            print("[PASS] Session 1 request count: 3")
         else:
-            print(f"[FAIL] Session 1 request count incorrect")
+            print("[FAIL] Session 1 request count incorrect")
             return False
 
         if session_2_obj and session_2_obj.request_count == 2:
-            print(f"[PASS] Session 2 request count: 2")
+            print("[PASS] Session 2 request count: 2")
         else:
-            print(f"[FAIL] Session 2 request count incorrect")
+            print("[FAIL] Session 2 request count incorrect")
             return False
 
     return True
@@ -300,13 +297,13 @@ async def test_error_escalation():
         if response.status == ResponseStatus.ESCALATE:
             error = response.error
             if error["code"] == ErrorCode.TIMEOUT and error.get("escalate_to") == "context":
-                print(f"[PASS] Timeout escalated to Context Department")
+                print("[PASS] Timeout escalated to Context Department")
             else:
                 print(f"[FAIL] Wrong escalation: {error}")
                 return False
         else:
             # Timeout might succeed if query is fast enough
-            print(f"[WARN] Timeout test inconclusive (query completed quickly)")
+            print("[WARN] Timeout test inconclusive (query completed quickly)")
 
     return True
 
@@ -361,11 +358,11 @@ async def test_performance():
                 print(f"\n[PASS] Performance target met (p95: {p95_latency:.2f}ms < 50ms)")
             else:
                 print(f"\n[WARN] Performance target exceeded (p95: {p95_latency:.2f}ms > 50ms)")
-                print(f"[INFO] Still acceptable for development environment")
+                print("[INFO] Still acceptable for development environment")
 
             return True
         else:
-            print(f"[FAIL] No successful queries to measure")
+            print("[FAIL] No successful queries to measure")
             return False
 
 
@@ -386,7 +383,7 @@ async def test_health_check():
 
         if response.status == ResponseStatus.SUCCESS:
             health = response.result
-            print(f"[PASS] Health check successful")
+            print("[PASS] Health check successful")
             print(f"  Status: {health['status']}")
             print(f"  Backend: {health['backend_type']}")
             print(f"  Requests: {health['request_count']}")
@@ -394,9 +391,9 @@ async def test_health_check():
             print(f"  Sessions: {health['session_count']}")
 
             if health['status'] == "healthy":
-                print(f"[PASS] Server is healthy")
+                print("[PASS] Server is healthy")
             else:
-                print(f"[FAIL] Server is unhealthy")
+                print("[FAIL] Server is unhealthy")
                 return False
         else:
             print(f"[FAIL] Health check failed: {response.error}")

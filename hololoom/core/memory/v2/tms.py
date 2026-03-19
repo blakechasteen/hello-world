@@ -18,9 +18,9 @@ No external dependencies.
 """
 
 import logging
-from collections import defaultdict, deque
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from collections import deque
+from dataclasses import dataclass
+from typing import Any
 
 from .confidence import find_contradicting_pairs
 from .knowledge_source import Phase
@@ -52,7 +52,7 @@ class JustificationRecord:
     """
     belief_id: str
     seed_id: str
-    path: List[str]       # Node IDs from seed to belief
+    path: list[str]       # Node IDs from seed to belief
     ppr_score: float
     seed_weight: float
     query_id: str
@@ -102,12 +102,12 @@ class TruthMaintenanceSystem:
     def __init__(
         self,
         activation_adapter=None,
-        config: Optional[TMSConfig] = None,
+        config: TMSConfig | None = None,
     ):
         self._activation = activation_adapter  # Optional ACT-R integration
         self._config = config or TMSConfig()
         # Query-scoped justification index (rebuilt each query)
-        self._justifications: Dict[str, List[JustificationRecord]] = {}
+        self._justifications: dict[str, list[JustificationRecord]] = {}
 
     @property
     def name(self) -> str:
@@ -121,7 +121,7 @@ class TruthMaintenanceSystem:
         """Always active — justification recording is lightweight."""
         return 1.0
 
-    def contribute(self, blackboard: Any, graph: Any, context: Dict[str, Any]) -> None:
+    def contribute(self, blackboard: Any, graph: Any, context: dict[str, Any]) -> None:
         """Route to the appropriate phase handler."""
         # POST_NAVIGATE: has nav_result but no confidence
         if "nav_result" in context and "confidence" not in context:
@@ -144,7 +144,7 @@ class TruthMaintenanceSystem:
             4. Post to blackboard.flags["justifications"]
         """
         seed_ids = {s.node_id: s for s in nav_result.seed_nodes}
-        justifications: Dict[str, List[JustificationRecord]] = {}
+        justifications: dict[str, list[JustificationRecord]] = {}
 
         query_id = ""
         if blackboard is not None:
@@ -202,7 +202,7 @@ class TruthMaintenanceSystem:
 
     def _find_path(
         self, graph, source: str, target: str, max_depth: int,
-    ) -> Optional[List[str]]:
+    ) -> list[str] | None:
         """BFS from source to target, return path if found within max_depth."""
         if source == target:
             return [source]
@@ -210,7 +210,7 @@ class TruthMaintenanceSystem:
         if not graph.has_node(source) or not graph.has_node(target):
             return None
 
-        visited: Set[str] = {source}
+        visited: set[str] = {source}
         queue: deque = deque([(source, [source])])
 
         while queue:
@@ -281,7 +281,7 @@ class TruthMaintenanceSystem:
         if not contradicting:
             return
 
-        retractions: List[Retraction] = []
+        retractions: list[Retraction] = []
         for node_a, node_b in contradicting:
             strength_a = self._node_strength(node_a)
             strength_b = self._node_strength(node_b)
@@ -332,7 +332,7 @@ class TruthMaintenanceSystem:
 
     def _find_contradicting_pairs(
         self, nav_result, graph=None,
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """Find contradicting node pairs via entity-anchored semantic analysis.
 
         Delegates to the shared find_contradicting_pairs() function which
@@ -369,7 +369,7 @@ class TruthMaintenanceSystem:
             )
         return "; ".join(chains)
 
-    def explain_node(self, node_id: str) -> Dict[str, Any]:
+    def explain_node(self, node_id: str) -> dict[str, Any]:
         """Full justification report for a node (for debugging/UI)."""
         records = self._justifications.get(node_id, [])
         return {
@@ -388,7 +388,7 @@ class TruthMaintenanceSystem:
             "explanation": self._explain(node_id),
         }
 
-    def report(self) -> Dict[str, Any]:
+    def report(self) -> dict[str, Any]:
         """Diagnostic info about current TMS state."""
         total_justified = sum(
             1 for records in self._justifications.values() if records

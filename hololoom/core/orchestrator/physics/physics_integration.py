@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Physics Integration
 ===================
@@ -21,24 +20,23 @@ Date: 2025-11-22
 from __future__ import annotations
 
 import logging
-from typing import Optional, Dict, Any, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
     from hololoom.physics.unified_physics import UnifiedPhysicsResult
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from hololoom.protocols.types import Query
 from hololoom.fabric.spacetime import Spacetime
-
+from hololoom.protocols.types import Query
 
 logger = logging.getLogger(__name__)
 
 
 async def weave_with_physics(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     query: Query,
     track_provenance: bool = True
-) -> Tuple[Spacetime, Optional['UnifiedPhysicsResult']]:
+) -> tuple[Spacetime, UnifiedPhysicsResult | None]:
     """
     Physics-enhanced weaving with complete unified physics integration.
 

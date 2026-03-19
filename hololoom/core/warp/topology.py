@@ -23,18 +23,18 @@ of how concepts are connected and separated.
 """
 
 import logging
-import numpy as np
-from typing import List, Dict, Any, Tuple, Optional
-from dataclasses import dataclass, field
 from collections import defaultdict
-import warnings
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
 # Optional: Use scikit-tda for advanced persistent homology
 try:
     import ripser
-    from persim import plot_diagrams, bottleneck, wasserstein
+    from persim import bottleneck, plot_diagrams, wasserstein
     HAS_RIPSER = True
     logger.info("Ripser available for fast persistent homology")
 except ImportError:
@@ -78,7 +78,7 @@ class PersistenceDiagram:
     Points far from diagonal = persistent features (signal).
     Points near diagonal = short-lived features (noise).
     """
-    intervals: List[PersistenceInterval]
+    intervals: list[PersistenceInterval]
     dimension: int
 
     def filter_by_persistence(self, threshold: float) -> 'PersistenceDiagram':
@@ -89,7 +89,7 @@ class PersistenceDiagram:
         ]
         return PersistenceDiagram(filtered, self.dimension)
 
-    def get_most_persistent(self, k: int = 5) -> List[PersistenceInterval]:
+    def get_most_persistent(self, k: int = 5) -> list[PersistenceInterval]:
         """Get k most persistent features."""
         sorted_intervals = sorted(
             self.intervals,
@@ -147,7 +147,7 @@ class VietorisRipsComplex:
 
         return distances
 
-    def build_filtration(self, radii: np.ndarray) -> List[Dict[str, Any]]:
+    def build_filtration(self, radii: np.ndarray) -> list[dict[str, Any]]:
         """
         Build filtered simplicial complex at multiple scales.
 
@@ -169,7 +169,7 @@ class VietorisRipsComplex:
 
         return filtration
 
-    def _build_complex_at_radius(self, radius: float) -> Dict[int, List]:
+    def _build_complex_at_radius(self, radius: float) -> dict[int, list]:
         """Build simplicial complex at given radius."""
         simplices = defaultdict(list)
 
@@ -201,7 +201,7 @@ class VietorisRipsComplex:
 
         return simplices
 
-    def _compute_betti(self, simplices: Dict[int, List]) -> List[int]:
+    def _compute_betti(self, simplices: dict[int, list]) -> list[int]:
         """
         Compute Betti numbers (simplified).
 
@@ -256,9 +256,9 @@ class PersistentHomology:
     def compute(
         self,
         points: np.ndarray,
-        max_scale: Optional[float] = None,
+        max_scale: float | None = None,
         use_ripser: bool = True
-    ) -> Dict[int, PersistenceDiagram]:
+    ) -> dict[int, PersistenceDiagram]:
         """
         Compute persistent homology.
 
@@ -278,8 +278,8 @@ class PersistentHomology:
     def _compute_ripser(
         self,
         points: np.ndarray,
-        max_scale: Optional[float]
-    ) -> Dict[int, PersistenceDiagram]:
+        max_scale: float | None
+    ) -> dict[int, PersistenceDiagram]:
         """Compute using Ripser (fast C++ implementation)."""
         logger.info(f"Computing persistent homology with Ripser (dim ≤ {self.max_dimension})")
 
@@ -310,8 +310,8 @@ class PersistentHomology:
     def _compute_manual(
         self,
         points: np.ndarray,
-        max_scale: Optional[float]
-    ) -> Dict[int, PersistenceDiagram]:
+        max_scale: float | None
+    ) -> dict[int, PersistenceDiagram]:
         """Compute using manual implementation (slower but no dependencies)."""
         logger.info("Computing persistent homology (manual implementation)")
 
@@ -334,9 +334,9 @@ class PersistentHomology:
 
     def _track_features(
         self,
-        filtration: List[Dict],
+        filtration: list[dict],
         radii: np.ndarray
-    ) -> Dict[int, PersistenceDiagram]:
+    ) -> dict[int, PersistenceDiagram]:
         """
         Track when features appear and disappear.
 
@@ -426,8 +426,8 @@ class MapperAlgorithm:
     def fit(
         self,
         points: np.ndarray,
-        lens_function: Optional[np.ndarray] = None
-    ) -> Dict[str, Any]:
+        lens_function: np.ndarray | None = None
+    ) -> dict[str, Any]:
         """
         Compute Mapper graph.
 
@@ -513,7 +513,7 @@ class MapperAlgorithm:
 
         return projection
 
-    def _create_cover(self, lens_values: np.ndarray) -> List[Dict]:
+    def _create_cover(self, lens_values: np.ndarray) -> list[dict]:
         """Create overlapping cover of lens range."""
         min_val, max_val = np.min(lens_values), np.max(lens_values)
         interval_width = (max_val - min_val) / self.n_intervals
@@ -534,7 +534,7 @@ class MapperAlgorithm:
 
         return cover
 
-    def _cluster_points(self, points: np.ndarray) -> List[np.ndarray]:
+    def _cluster_points(self, points: np.ndarray) -> list[np.ndarray]:
         """Cluster points (simplified single-linkage)."""
         if len(points) <= 1:
             return [np.arange(len(points))]
@@ -564,8 +564,8 @@ class TopologicalFeatureExtractor:
 
     @staticmethod
     def extract_features(
-        diagrams: Dict[int, PersistenceDiagram],
-        scales: Optional[List[float]] = None
+        diagrams: dict[int, PersistenceDiagram],
+        scales: list[float] | None = None
     ) -> np.ndarray:
         """
         Extract feature vector from persistence diagrams.
@@ -610,9 +610,9 @@ class TopologicalFeatureExtractor:
 
     @staticmethod
     def _betti_at_scale(
-        diagrams: Dict[int, PersistenceDiagram],
+        diagrams: dict[int, PersistenceDiagram],
         scale: float
-    ) -> List[int]:
+    ) -> list[int]:
         """Compute Betti numbers at given scale."""
         betti = []
 
@@ -671,7 +671,7 @@ if __name__ == "__main__":
 
     print(f"Nodes: {len(graph['nodes'])}")
     print(f"Edges: {len(graph['edges'])}")
-    print(f"Graph captures topological structure (loop in circle)")
+    print("Graph captures topological structure (loop in circle)")
 
     # 3. Topological Features
     print("\n3. Topological Feature Extraction")

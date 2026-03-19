@@ -30,12 +30,12 @@ Usage:
 import asyncio
 import json
 import logging
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from pathlib import Path
-from collections import defaultdict, Counter
 import re
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -46,18 +46,18 @@ class Interaction:
     user_id: str
     query: str
     response: str
-    context: Dict[str, Any]
+    context: dict[str, Any]
 
     # Quality metrics
     quality_score: float
-    user_feedback: Optional[str] = None
+    user_feedback: str | None = None
     follow_up_questions: int = 0
-    resolution_time: Optional[float] = None
+    resolution_time: float | None = None
 
     # Classification
     query_type: str = "general"
     complexity: str = "medium"  # simple, medium, complex
-    topics: List[str] = field(default_factory=list)
+    topics: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -66,8 +66,8 @@ class TrainingExample:
     example_id: str
     query: str
     response: str
-    context: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    context: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Quality indicators
     quality_score: float = 0.0
@@ -82,19 +82,19 @@ class BestPractice:
     title: str
     description: str
     category: str
-    examples: List[str] = field(default_factory=list)
+    examples: list[str] = field(default_factory=list)
     evidence_count: int = 0
     confidence: float = 0.0
-    expert_sources: List[str] = field(default_factory=list)
+    expert_sources: list[str] = field(default_factory=list)
 
 
 @dataclass
 class ExpertKnowledge:
     """Expert knowledge profile"""
     user_id: str
-    expertise_areas: Dict[str, float]  # topic -> confidence score
-    best_responses: List[str] = field(default_factory=list)
-    teaching_patterns: List[str] = field(default_factory=list)
+    expertise_areas: dict[str, float]  # topic -> confidence score
+    best_responses: list[str] = field(default_factory=list)
+    teaching_patterns: list[str] = field(default_factory=list)
     contribution_count: int = 0
     avg_quality_score: float = 0.0
 
@@ -113,17 +113,17 @@ class TeamLearningSystem:
     def __init__(
         self,
         min_quality_threshold: float = 0.8,
-        storage_path: Optional[Path] = None
+        storage_path: Path | None = None
     ):
         self.min_quality_threshold = min_quality_threshold
         self.storage_path = storage_path or Path("./chatops_data/team_learning")
         self.storage_path.mkdir(parents=True, exist_ok=True)
 
         # Storage
-        self.interactions: Dict[str, Interaction] = {}
-        self.training_examples: Dict[str, TrainingExample] = {}
-        self.best_practices: Dict[str, BestPractice] = {}
-        self.expert_profiles: Dict[str, ExpertKnowledge] = {}
+        self.interactions: dict[str, Interaction] = {}
+        self.training_examples: dict[str, TrainingExample] = {}
+        self.best_practices: dict[str, BestPractice] = {}
+        self.expert_profiles: dict[str, ExpertKnowledge] = {}
 
         # Statistics
         self.stats = {
@@ -142,9 +142,9 @@ class TeamLearningSystem:
     async def mine_conversations(
         self,
         room_id: str,
-        date_range: Optional[Tuple[datetime, datetime]] = None,
-        min_quality: Optional[float] = None
-    ) -> Dict[str, Any]:
+        date_range: tuple[datetime, datetime] | None = None,
+        min_quality: float | None = None
+    ) -> dict[str, Any]:
         """
         Mine conversations for learning opportunities.
 
@@ -196,8 +196,8 @@ class TeamLearningSystem:
 
     def _extract_training_examples(
         self,
-        interactions: List[Interaction]
-    ) -> List[TrainingExample]:
+        interactions: list[Interaction]
+    ) -> list[TrainingExample]:
         """Extract training examples from interactions"""
 
         examples = []
@@ -231,8 +231,8 @@ class TeamLearningSystem:
 
     def _identify_best_practices(
         self,
-        interactions: List[Interaction]
-    ) -> List[BestPractice]:
+        interactions: list[Interaction]
+    ) -> list[BestPractice]:
         """Identify best practices from interactions"""
 
         practices = []
@@ -268,8 +268,8 @@ class TeamLearningSystem:
 
     def _find_common_patterns(
         self,
-        interactions: List[Interaction]
-    ) -> List[Dict[str, Any]]:
+        interactions: list[Interaction]
+    ) -> list[dict[str, Any]]:
         """Find common patterns in interactions"""
 
         patterns = []
@@ -290,8 +290,8 @@ class TeamLearningSystem:
 
     def _extract_incident_patterns(
         self,
-        interactions: List[Interaction]
-    ) -> List[Dict[str, Any]]:
+        interactions: list[Interaction]
+    ) -> list[dict[str, Any]]:
         """Extract incident response patterns"""
 
         patterns = []
@@ -334,8 +334,8 @@ class TeamLearningSystem:
 
     def _extract_review_patterns(
         self,
-        interactions: List[Interaction]
-    ) -> List[Dict[str, Any]]:
+        interactions: list[Interaction]
+    ) -> list[dict[str, Any]]:
         """Extract code review patterns"""
 
         patterns = []
@@ -361,8 +361,8 @@ class TeamLearningSystem:
 
     def _extract_explanation_patterns(
         self,
-        interactions: List[Interaction]
-    ) -> List[Dict[str, Any]]:
+        interactions: list[Interaction]
+    ) -> list[dict[str, Any]]:
         """Extract explanation patterns"""
 
         patterns = []
@@ -385,7 +385,7 @@ class TeamLearningSystem:
 
         return patterns
 
-    def _update_expert_profiles(self, interactions: List[Interaction]):
+    def _update_expert_profiles(self, interactions: list[Interaction]):
         """Update expert knowledge profiles"""
 
         # Group by user
@@ -422,10 +422,10 @@ class TeamLearningSystem:
 
     def get_training_examples(
         self,
-        min_quality: Optional[float] = None,
-        query_type: Optional[str] = None,
-        limit: Optional[int] = None
-    ) -> List[TrainingExample]:
+        min_quality: float | None = None,
+        query_type: str | None = None,
+        limit: int | None = None
+    ) -> list[TrainingExample]:
         """
         Get training examples for fine-tuning or few-shot learning.
 
@@ -464,7 +464,7 @@ class TeamLearningSystem:
         self,
         query: str,
         n: int = 3
-    ) -> List[TrainingExample]:
+    ) -> list[TrainingExample]:
         """
         Get few-shot examples similar to query.
 
@@ -499,7 +499,7 @@ class TeamLearningSystem:
         self,
         topic: str,
         min_examples: int = 5
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Generate documentation from conversations.
 
@@ -581,7 +581,7 @@ class TeamLearningSystem:
         self,
         topic: str,
         limit: int = 5
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Find experts on a topic.
 
@@ -613,7 +613,7 @@ class TeamLearningSystem:
 
         return [user_id for _, user_id in scored_experts[:limit]]
 
-    def get_expert_profile(self, user_id: str) -> Optional[ExpertKnowledge]:
+    def get_expert_profile(self, user_id: str) -> ExpertKnowledge | None:
         """Get expert profile for user"""
         return self.expert_profiles.get(user_id)
 
@@ -661,7 +661,7 @@ class TeamLearningSystem:
 
         logging.info(f"Exported {len(examples)} training examples to {output_path}")
 
-    def _extract_common_sequences(self, interactions: List[Interaction]) -> List[str]:
+    def _extract_common_sequences(self, interactions: list[Interaction]) -> list[str]:
         """Extract common response sequences"""
 
         sequences = []
@@ -692,7 +692,7 @@ class TeamLearningSystem:
         else:
             return "general"
 
-    def _format_context(self, context: Dict[str, Any]) -> str:
+    def _format_context(self, context: dict[str, Any]) -> str:
         """Format context for training example"""
         if not context:
             return ""
@@ -707,8 +707,8 @@ class TeamLearningSystem:
     async def _fetch_interactions(
         self,
         room_id: str,
-        date_range: Optional[Tuple[datetime, datetime]]
-    ) -> List[Interaction]:
+        date_range: tuple[datetime, datetime] | None
+    ) -> list[Interaction]:
         """Fetch interactions from storage (stub)"""
 
         # This would integrate with conversation memory
@@ -767,21 +767,21 @@ class TeamLearningSystem:
             # Load training examples
             examples_file = self.storage_path / "training_examples.json"
             if examples_file.exists():
-                with open(examples_file, 'r') as f:
+                with open(examples_file) as f:
                     examples_data = json.load(f)
                     self.stats["training_examples_created"] = len(examples_data)
 
             # Load best practices
             practices_file = self.storage_path / "best_practices.json"
             if practices_file.exists():
-                with open(practices_file, 'r') as f:
+                with open(practices_file) as f:
                     practices_data = json.load(f)
                     self.stats["best_practices_identified"] = len(practices_data)
 
             # Load expert profiles
             experts_file = self.storage_path / "expert_profiles.json"
             if experts_file.exists():
-                with open(experts_file, 'r') as f:
+                with open(experts_file) as f:
                     experts_data = json.load(f)
                     self.stats["experts_profiled"] = len(experts_data)
 

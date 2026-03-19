@@ -13,8 +13,7 @@ Each template includes:
 - Template files (markdown docs, code examples, configs)
 """
 
-from typing import Dict, List, Any
-
+from typing import Any
 
 # ============================================================================
 # Base Templates (8 templates)
@@ -952,7 +951,7 @@ Identify security vulnerabilities and recommend fixes.
 # Helper Functions
 # ============================================================================
 
-def get_all_templates() -> Dict[str, Dict[str, Any]]:
+def get_all_templates() -> dict[str, dict[str, Any]]:
     """
     Get all skill templates (base + extended).
 
@@ -962,7 +961,7 @@ def get_all_templates() -> Dict[str, Dict[str, Any]]:
     return {**TEMPLATES, **EXTENDED_TEMPLATES}
 
 
-def list_templates() -> List[Dict[str, Any]]:
+def list_templates() -> list[dict[str, Any]]:
     """
     List all available templates with metadata.
 
@@ -982,7 +981,7 @@ def list_templates() -> List[Dict[str, Any]]:
     ]
 
 
-def get_template(name: str) -> Dict[str, Any]:
+def get_template(name: str) -> dict[str, Any]:
     """
     Get a specific skill template by name.
 

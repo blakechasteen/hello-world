@@ -21,6 +21,9 @@ from typing import List
 from unittest.mock import Mock, patch, MagicMock
 
 # Import HoloLoom types and configs
+# hololoom must be imported first to install the _CoreRedirectFinder meta path hook
+# that redirects hololoom.protocols -> hololoom.core.protocols (and 12 other core modules)
+import hololoom  # noqa: F401
 from hololoom.config import Config, ExecutionMode
 from hololoom.protocols.types import Query, MemoryShard, Context, Features
 
@@ -54,7 +57,7 @@ def set_random_seeds():
         torch.manual_seed(42)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(42)
-    except ImportError:
+    except (ImportError, RuntimeError):
         pass
 
     yield

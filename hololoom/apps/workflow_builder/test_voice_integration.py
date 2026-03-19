@@ -6,9 +6,9 @@ Run this BEFORE full dashboard integration to catch issues early.
 """
 
 import asyncio
+import io
 import sys
 from pathlib import Path
-import io
 
 # Fix Windows encoding for Unicode characters
 if sys.platform == 'win32':
@@ -190,7 +190,7 @@ async def test_voice_integration():
             print(f"  Response: '{response_data['response']}'")
             print(f"  Confidence: {response_data['confidence']}")
             print(f"  Mode: {response_data['mode']}")
-            print(f"  Expected delivery: neutral (confidence 0.5-0.85)")
+            print("  Expected delivery: neutral (confidence 0.5-0.85)")
 
             audio_bytes = await voice.speak_response(response_data)
 

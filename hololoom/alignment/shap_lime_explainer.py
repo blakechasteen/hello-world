@@ -17,13 +17,15 @@ References:
 - LIME: Ribeiro et al. (2016) "Why Should I Trust You?"
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable
-from enum import Enum
-import numpy as np
-from pathlib import Path
-import json
 import asyncio
+import json
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import Any
+
+import numpy as np
 
 
 class ExplanationType(Enum):
@@ -67,19 +69,19 @@ class SHAPExplanation:
     predicted_confidence: float
 
     # Feature attributions (Shapley values)
-    attributions: List[FeatureAttribution] = field(default_factory=list)
+    attributions: list[FeatureAttribution] = field(default_factory=list)
 
     # Base value (expected value with no features)
     base_value: float = 0.5
 
     # Interaction effects (optional)
-    interaction_effects: Optional[Dict[Tuple[str, str], float]] = None
+    interaction_effects: dict[tuple[str, str], float] | None = None
 
     # Metadata
     timestamp: float = 0.0
     computation_time_ms: float = 0.0
 
-    def top_positive_features(self, n: int = 5) -> List[FeatureAttribution]:
+    def top_positive_features(self, n: int = 5) -> list[FeatureAttribution]:
         """Get top N features that increased confidence."""
         return sorted(
             [a for a in self.attributions if a.attribution_score > 0],
@@ -87,14 +89,14 @@ class SHAPExplanation:
             reverse=True
         )[:n]
 
-    def top_negative_features(self, n: int = 5) -> List[FeatureAttribution]:
+    def top_negative_features(self, n: int = 5) -> list[FeatureAttribution]:
         """Get top N features that decreased confidence."""
         return sorted(
             [a for a in self.attributions if a.attribution_score < 0],
             key=lambda x: x.attribution_score
         )[:n]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "query_id": self.query_id,
@@ -126,7 +128,7 @@ class LIMEExplanation:
     predicted_confidence: float
 
     # Local linear model coefficients
-    linear_coefficients: Dict[str, float] = field(default_factory=dict)
+    linear_coefficients: dict[str, float] = field(default_factory=dict)
 
     # R² score of local approximation
     local_fidelity: float = 0.0
@@ -141,7 +143,7 @@ class LIMEExplanation:
     timestamp: float = 0.0
     computation_time_ms: float = 0.0
 
-    def get_top_features(self, n: int = 10) -> List[Tuple[str, float]]:
+    def get_top_features(self, n: int = 10) -> list[tuple[str, float]]:
         """Get top N features by absolute coefficient value."""
         return sorted(
             self.linear_coefficients.items(),
@@ -149,7 +151,7 @@ class LIMEExplanation:
             reverse=True
         )[:n]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "query_id": self.query_id,
@@ -176,10 +178,10 @@ class SHAPExplainer:
     def __init__(
         self,
         predict_fn: Callable[[np.ndarray], float],
-        feature_names: List[str],
-        feature_types: Optional[List[FeatureType]] = None,
+        feature_names: list[str],
+        feature_types: list[FeatureType] | None = None,
         num_samples: int = 1000,
-        background_data: Optional[np.ndarray] = None
+        background_data: np.ndarray | None = None
     ):
         """
         Initialize SHAP explainer.
@@ -374,7 +376,7 @@ class LIMEExplainer:
     def __init__(
         self,
         predict_fn: Callable[[np.ndarray], float],
-        feature_names: List[str],
+        feature_names: list[str],
         num_samples: int = 1000,
         perturbation_radius: float = 0.1
     ):
@@ -476,7 +478,7 @@ class LIMEExplainer:
         samples: np.ndarray,
         predictions: np.ndarray,
         weights: np.ndarray
-    ) -> Tuple[np.ndarray, float]:
+    ) -> tuple[np.ndarray, float]:
         """
         Fit weighted linear regression.
 
@@ -511,8 +513,8 @@ class UnifiedExplainer:
     def __init__(
         self,
         predict_fn: Callable[[np.ndarray], float],
-        feature_names: List[str],
-        feature_types: Optional[List[FeatureType]] = None,
+        feature_names: list[str],
+        feature_types: list[FeatureType] | None = None,
         shap_samples: int = 1000,
         lime_samples: int = 1000,
         perturbation_radius: float = 0.1
@@ -543,7 +545,7 @@ class UnifiedExplainer:
         predicted_tool: str,
         predicted_confidence: float,
         explanation_type: ExplanationType = ExplanationType.BOTH
-    ) -> Tuple[Optional[SHAPExplanation], Optional[LIMEExplanation]]:
+    ) -> tuple[SHAPExplanation | None, LIMEExplanation | None]:
         """
         Generate explanations using SHAP and/or LIME.
 
@@ -576,10 +578,10 @@ class UnifiedExplainer:
 
     async def batch_explain(
         self,
-        queries: List[Tuple[str, str, np.ndarray, str, float]],
+        queries: list[tuple[str, str, np.ndarray, str, float]],
         explanation_type: ExplanationType = ExplanationType.BOTH,
         max_concurrent: int = 5
-    ) -> List[Tuple[Optional[SHAPExplanation], Optional[LIMEExplanation]]]:
+    ) -> list[tuple[SHAPExplanation | None, LIMEExplanation | None]]:
         """
         Generate explanations for multiple queries concurrently.
 
@@ -604,7 +606,7 @@ class UnifiedExplainer:
 
 
 def save_explanations(
-    explanations: List[Tuple[Optional[SHAPExplanation], Optional[LIMEExplanation]]],
+    explanations: list[tuple[SHAPExplanation | None, LIMEExplanation | None]],
     output_dir: Path
 ):
     """

@@ -13,9 +13,7 @@ Key Features:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 from enum import Enum
-import numpy as np
 
 
 class ExplanationDepth(Enum):
@@ -34,17 +32,17 @@ class StepExplanation:
     confidence: float
 
     # Feature attributions (lightweight)
-    top_contributing_features: List[tuple] = field(default_factory=list)  # (feature, score)
-    top_inhibiting_features: List[tuple] = field(default_factory=list)
+    top_contributing_features: list[tuple] = field(default_factory=list)  # (feature, score)
+    top_inhibiting_features: list[tuple] = field(default_factory=list)
 
     # Causal reasoning
     why_this_tool: str = ""  # Human-readable explanation
-    alternative_tools: List[str] = field(default_factory=list)
+    alternative_tools: list[str] = field(default_factory=list)
 
     # Metadata
     decision_time_ms: float = 0.0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "step": self.step_number,
             "query": self.query_text,
@@ -65,18 +63,18 @@ class ReasoningExplanation:
     final_confidence: float
 
     # Step-by-step explanations
-    step_explanations: List[StepExplanation] = field(default_factory=list)
+    step_explanations: list[StepExplanation] = field(default_factory=list)
 
     # Overall reasoning flow
     reasoning_flow: str = ""  # Natural language summary
-    key_decisions: List[str] = field(default_factory=list)
-    confidence_trajectory: List[float] = field(default_factory=list)
+    key_decisions: list[str] = field(default_factory=list)
+    confidence_trajectory: list[float] = field(default_factory=list)
 
     # Causal analysis
-    critical_path: List[int] = field(default_factory=list)  # Step indices on critical path
-    bottleneck_steps: List[int] = field(default_factory=list)  # Steps with low confidence
+    critical_path: list[int] = field(default_factory=list)  # Step indices on critical path
+    bottleneck_steps: list[int] = field(default_factory=list)  # Steps with low confidence
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "session_id": self.session_id,
             "mode": self.reasoning_mode,
@@ -100,22 +98,22 @@ class ReasoningExplanation:
             print(f"Steps: {self.total_steps} | Final confidence: {self.final_confidence:.3f}")
             return
 
-        print(f"\nOverall Flow:")
+        print("\nOverall Flow:")
         print(f"  {self.reasoning_flow}")
 
-        print(f"\nKey Decisions:")
+        print("\nKey Decisions:")
         for i, decision in enumerate(self.key_decisions, 1):
             print(f"  {i}. {decision}")
 
         if depth == ExplanationDepth.COMPREHENSIVE:
-            print(f"\nStep-by-Step Analysis:")
+            print("\nStep-by-Step Analysis:")
             for step in self.step_explanations:
                 print(f"\n  Step {step.step_number}: {step.query_text[:60]}...")
                 print(f"    Tool: {step.tool_used} (confidence: {step.confidence:.3f})")
                 print(f"    Why: {step.why_this_tool}")
 
                 if step.top_contributing_features:
-                    print(f"    Top features:")
+                    print("    Top features:")
                     for feat, score in step.top_contributing_features[:3]:
                         print(f"      • {feat}: {score:+.3f}")
 
@@ -150,7 +148,7 @@ class AgenticExplainer:
         self,
         session_id: str,
         reasoning_mode: str,
-        steps_taken: List[Dict],
+        steps_taken: list[dict],
         final_confidence: float
     ) -> ReasoningExplanation:
         """
@@ -223,7 +221,7 @@ class AgenticExplainer:
             bottleneck_steps=bottleneck_steps
         )
 
-    def _extract_features(self, step: Dict) -> tuple:
+    def _extract_features(self, step: dict) -> tuple:
         """
         Extract top contributing and inhibiting features from step metadata.
 
@@ -251,7 +249,7 @@ class AgenticExplainer:
 
         return contributing, inhibiting
 
-    def _generate_why_explanation(self, step: Dict, mode: str) -> str:
+    def _generate_why_explanation(self, step: dict, mode: str) -> str:
         """Generate human-readable 'why' explanation for a step."""
         tool = step.get('tool', 'unknown')
         confidence = step.get('confidence', 0.0)
@@ -265,10 +263,10 @@ class AgenticExplainer:
 
         return explanations.get(tool, f"Used {tool} tool (confidence {confidence:.1%})")
 
-    def _generate_reasoning_flow(self, mode: str, steps: List[Dict]) -> str:
+    def _generate_reasoning_flow(self, mode: str, steps: list[dict]) -> str:
         """Generate natural language summary of reasoning flow."""
         if mode == 'DIRECT':
-            return f"Single-pass query → answer (no refinement needed)"
+            return "Single-pass query → answer (no refinement needed)"
 
         elif mode == 'VERIFY':
             return (f"Initial answer → {len(steps)-1} verification queries → "
@@ -284,7 +282,7 @@ class AgenticExplainer:
 
         return f"{len(steps)} reasoning steps"
 
-    def _extract_key_decisions(self, steps: List[Dict], mode: str) -> List[str]:
+    def _extract_key_decisions(self, steps: list[dict], mode: str) -> list[str]:
         """Extract key decision points from reasoning session."""
         key_decisions = []
 
@@ -308,7 +306,7 @@ class AgenticExplainer:
 
         return key_decisions
 
-    def _compute_critical_path(self, steps: List[Dict]) -> List[int]:
+    def _compute_critical_path(self, steps: list[dict]) -> list[int]:
         """
         Compute critical path through reasoning graph.
 

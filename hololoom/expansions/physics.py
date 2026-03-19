@@ -17,15 +17,15 @@ Usage:
 Date: December 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from dataclasses import dataclass
+from typing import Any
 
 try:
     from hololoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:
-        def get_settings(self) -> Dict[str, Any]:
+        def get_settings(self) -> dict[str, Any]:
             raise NotImplementedError
 
 
@@ -118,7 +118,7 @@ class PhysicsConfig(ExpansionBundle):
     flow_wave_speed: float = 1.0
     """Wave speed for wave equation."""
 
-    def get_settings(self) -> Dict[str, Any]:
+    def get_settings(self) -> dict[str, Any]:
         """Return dictionary of settings to merge into config."""
         return {
             # GP Bandits

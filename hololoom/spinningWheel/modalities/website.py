@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 WebsiteSpinner - Process web content into memory shards.
 
@@ -16,10 +17,9 @@ Use cases:
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
 from datetime import datetime
 from urllib.parse import urlparse
-from dataclasses import dataclass
 
 try:
     import requests
@@ -49,7 +49,7 @@ class WebsiteSpinnerConfig(SpinnerConfig):
     max_content_length: int = 100000
 
     # Chunking options (passed to TextSpinner)
-    chunk_by: Optional[str] = "paragraph"  # paragraph, sentence, fixed
+    chunk_by: str | None = "paragraph"  # paragraph, sentence, fixed
     chunk_size: int = 500
 
     # Auto-tagging
@@ -58,7 +58,7 @@ class WebsiteSpinnerConfig(SpinnerConfig):
 
     # Multimodal options (NEW!)
     extract_images: bool = True           # Extract meaningful images
-    image_storage_dir: Optional[str] = None  # Where to save images (None = temp)
+    image_storage_dir: str | None = None  # Where to save images (None = temp)
     max_images: int = 10                  # Max images per page
     min_image_width: int = 200            # Minimum image dimensions
     min_image_height: int = 200
@@ -76,7 +76,7 @@ class WebsiteSpinner(BaseSpinner):
     - Visit statistics (if provided)
     """
 
-    def __init__(self, config: Optional[WebsiteSpinnerConfig] = None):
+    def __init__(self, config: WebsiteSpinnerConfig | None = None):
         self.config = config or WebsiteSpinnerConfig()
 
         if not SCRAPING_AVAILABLE:
@@ -85,7 +85,7 @@ class WebsiteSpinner(BaseSpinner):
                 "pip install requests beautifulsoup4"
             )
 
-    async def spin(self, raw_data: Dict) -> List:
+    async def spin(self, raw_data: dict) -> list:
         """
         Process webpage into MemoryShards.
 
@@ -217,7 +217,7 @@ class WebsiteSpinner(BaseSpinner):
         logger.info(f"✓ Spun {len(shards)} shards from {url}")
         return shards
 
-    async def _extract_images(self, url: str, html_content: str) -> List:
+    async def _extract_images(self, url: str, html_content: str) -> list:
         """
         Extract meaningful images from webpage.
 
@@ -225,9 +225,10 @@ class WebsiteSpinner(BaseSpinner):
             List of ImageInfo objects
         """
         try:
-            from .image_utils import ImageExtractor
-            from pathlib import Path
             import tempfile
+            from pathlib import Path
+
+            from .image_utils import ImageExtractor
 
             # Determine storage directory
             storage_dir = None
@@ -270,7 +271,7 @@ class WebsiteSpinner(BaseSpinner):
             logger.error(f"Error extracting images: {e}")
             return []
 
-    async def _scrape_content(self, url: str) -> Tuple[str, str]:
+    async def _scrape_content(self, url: str) -> tuple[str, str]:
         """
         Scrape main content from webpage.
 
@@ -369,11 +370,11 @@ class WebsiteSpinner(BaseSpinner):
 # Convenience function for simple usage
 async def spin_webpage(
     url: str,
-    title: Optional[str] = None,
-    content: Optional[str] = None,
-    tags: Optional[List[str]] = None,
-    visited_at: Optional[datetime] = None,
-    duration: Optional[int] = None
+    title: str | None = None,
+    content: str | None = None,
+    tags: list[str] | None = None,
+    visited_at: datetime | None = None,
+    duration: int | None = None
 ):
     """
     Quick function to spin a webpage into memory shards.

@@ -18,20 +18,20 @@ import asyncio
 import logging
 import time
 import uuid
-from typing import Dict, List, Any, Optional, Set
 from datetime import datetime
+from typing import Any
 
+from hololoom.config import Config
+from hololoom.departments import get_department
+from hololoom.workflows.integrations import ChainExecutor, RecursiveExecutor
 from hololoom.workflows.schema import (
+    ExecutionTrace,
+    NodeType,
     WorkflowDefinition,
     WorkflowNode,
     WorkflowResult,
-    ExecutionTrace,
-    NodeType,
 )
-from hololoom.workflows.state import StateBackend, InMemoryState, CheckpointManager
-from hololoom.workflows.integrations import ChainExecutor, RecursiveExecutor
-from hololoom.config import Config
-from hololoom.departments import get_department
+from hololoom.workflows.state import CheckpointManager, InMemoryState, StateBackend
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +59,8 @@ class WorkflowExecutor:
     def __init__(
         self,
         workflow: WorkflowDefinition,
-        config: Optional[Config] = None,
-        state_backend: Optional[StateBackend] = None,
+        config: Config | None = None,
+        state_backend: StateBackend | None = None,
         enable_parallel: bool = True,
         max_concurrent: int = 5,
         checkpoint_frequency: int = 10,  # Save checkpoint every N nodes
@@ -85,10 +85,10 @@ class WorkflowExecutor:
 
         # Execution state
         self.execution_id = str(uuid.uuid4())
-        self.state: Dict[str, Any] = {}  # Node outputs
-        self.executed_nodes: Set[str] = set()
-        self.trace: List[ExecutionTrace] = []
-        self.errors: List[Dict[str, Any]] = []
+        self.state: dict[str, Any] = {}  # Node outputs
+        self.executed_nodes: set[str] = set()
+        self.trace: list[ExecutionTrace] = []
+        self.errors: list[dict[str, Any]] = []
 
         # Checkpoint manager
         self.checkpoint_manager = CheckpointManager(self.state_backend)
@@ -98,7 +98,7 @@ class WorkflowExecutor:
         self.recursive_executor = RecursiveExecutor(config=self.config)
 
         # Department cache
-        self._departments: Dict[str, Any] = {}
+        self._departments: dict[str, Any] = {}
 
         logger.info(f"WorkflowExecutor initialized: {workflow.name} (id={self.execution_id[:8]})")
 
@@ -118,7 +118,7 @@ class WorkflowExecutor:
             if hasattr(dept, '__aexit__'):
                 await dept.__aexit__(None, None, None)
 
-    async def execute(self, inputs: Dict[str, Any]) -> WorkflowResult:
+    async def execute(self, inputs: dict[str, Any]) -> WorkflowResult:
         """
         Execute complete workflow.
 
@@ -196,7 +196,7 @@ class WorkflowExecutor:
                 trace=self.trace,
             )
 
-    async def _execute_node(self, node_id: str, inputs: Dict[str, Any]) -> Any:
+    async def _execute_node(self, node_id: str, inputs: dict[str, Any]) -> Any:
         """Execute single node with retry logic and error handling."""
         if node_id in self.executed_nodes:
             # Already executed, return cached result
@@ -320,7 +320,7 @@ class WorkflowExecutor:
 
                     return None
 
-    async def _execute_node_impl(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Any:
+    async def _execute_node_impl(self, node: WorkflowNode, inputs: dict[str, Any]) -> Any:
         """
         Execute specific node type.
 
@@ -414,7 +414,7 @@ class WorkflowExecutor:
 
     # ===== Node Type Implementations =====
 
-    async def _execute_query_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_query_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Execute RAG query node."""
         query = inputs.get("query", node.params.get("query", ""))
         mode = node.params.get("mode", "verify")
@@ -436,7 +436,7 @@ class WorkflowExecutor:
             "confidence": response.confidence.score,
         }
 
-    async def _execute_search_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_search_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Execute memory search node."""
         query = inputs.get("query", node.params.get("query", ""))
         k = node.params.get("k", 5)
@@ -446,7 +446,7 @@ class WorkflowExecutor:
         # Implementation would call memory search directly
         return {"results": [], "count": 0}
 
-    async def _execute_multiquery_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_multiquery_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Break query into sub-queries."""
         query = inputs.get("query", node.params.get("query", ""))
         max_subqueries = node.params.get("max_subqueries", 3)
@@ -456,9 +456,9 @@ class WorkflowExecutor:
 
         return {"subqueries": subqueries, "original_query": query}
 
-    async def _execute_verify_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_verify_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Verify response using DS-STAR."""
-        from hololoom.protocols.department import DepartmentResponse, ConfidenceMetadata
+        from hololoom.protocols.department import ConfidenceMetadata, DepartmentResponse
 
         # Create mock response for verification
         response = DepartmentResponse(
@@ -478,7 +478,7 @@ class WorkflowExecutor:
             "recommendations": verification.recommendations,
         }
 
-    async def _execute_refine_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_refine_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Refine low-confidence responses."""
         strategy = node.params.get("strategy", "refine")
         max_iterations = node.params.get("max_iterations", 3)
@@ -493,7 +493,7 @@ class WorkflowExecutor:
 
         return refined
 
-    async def _execute_synthesize_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_synthesize_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Extract entities and motifs."""
         text = inputs.get("text", inputs.get("answer", ""))
 
@@ -503,7 +503,7 @@ class WorkflowExecutor:
 
         return {"entities": entities, "motifs": motifs, "text": text}
 
-    async def _execute_embed_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_embed_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Generate embeddings."""
         text = inputs.get("text", "")
         scales = node.params.get("scales", [96, 192, 384])
@@ -511,29 +511,29 @@ class WorkflowExecutor:
         # Would use Matryoshka embeddings
         return {"embeddings": {}, "scales": scales}
 
-    async def _execute_store_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_store_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Store in memory."""
         return {"stored": True, "memory_id": str(uuid.uuid4())}
 
-    async def _execute_retrieve_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_retrieve_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Retrieve context."""
         return {"context": [], "count": 0}
 
-    async def _execute_fusion_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_fusion_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Multi-hop graph traversal."""
         return {"expanded_context": [], "depth": 0}
 
-    async def _execute_thompson_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_thompson_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Thompson Sampling decision."""
         options = inputs.get("options", node.params.get("options", []))
         return {"selected": options[0] if options else None, "confidence": 0.85}
 
-    async def _execute_convergence_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_convergence_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Decision convergence."""
         strategy = node.params.get("strategy", "epsilon_greedy")
         return {"decision": "action_1", "strategy": strategy}
 
-    async def _execute_safety_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_safety_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Safety guardrails check."""
         from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
@@ -548,7 +548,7 @@ class WorkflowExecutor:
             "reason": result.reason,
         }
 
-    async def _execute_chain_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_chain_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Execute prompt chain."""
         chain_name = node.params.get("chain_name", "default")
         chain_input = inputs.get("query", inputs.get("text", ""))
@@ -556,7 +556,7 @@ class WorkflowExecutor:
         result = await self.chain_executor.execute(chain_name, chain_input)
         return result
 
-    async def _execute_recursive_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_recursive_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Execute recursive reasoning."""
         query = inputs.get("query", node.params.get("query", ""))
         max_depth = node.params.get("max_depth", 5)
@@ -564,7 +564,7 @@ class WorkflowExecutor:
         result = await self.recursive_executor.reason(query, max_depth=max_depth)
         return result
 
-    async def _execute_condition_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_condition_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Conditional branching."""
         condition_type = node.params.get("condition_type", "confidence")
         threshold = node.params.get("threshold", 0.75)
@@ -583,7 +583,7 @@ class WorkflowExecutor:
 
         return {"branch": branch, "condition": condition_type, "threshold": threshold}
 
-    async def _execute_loop_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_loop_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Loop iteration."""
         max_iterations = node.params.get("max_iterations", 10)
         condition_node = node.params.get("condition_node")
@@ -608,7 +608,7 @@ class WorkflowExecutor:
 
         return {"iterations": iteration, "results": results}
 
-    async def _execute_parallel_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_parallel_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Execute nodes in parallel."""
         if not self.enable_parallel:
             logger.warning("Parallel execution disabled, falling back to sequential")
@@ -629,7 +629,7 @@ class WorkflowExecutor:
 
         return {"results": list(results), "count": len(results)}
 
-    async def _execute_merge_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_merge_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Merge parallel results."""
         results = inputs.get("results", [])
         merge_strategy = node.params.get("merge_strategy", "concat")
@@ -644,7 +644,7 @@ class WorkflowExecutor:
 
         return merged
 
-    async def _execute_response_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_response_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Generate response."""
         format_type = node.params.get("format", "text")
         template = node.params.get("template", "{answer}")
@@ -653,7 +653,7 @@ class WorkflowExecutor:
 
         return {"response": response, "format": format_type}
 
-    async def _execute_format_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_format_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Format output."""
         import json
         output_format = node.params.get("output_format", "json")
@@ -667,19 +667,19 @@ class WorkflowExecutor:
 
         return {"formatted": formatted, "format": output_format}
 
-    async def _execute_human_in_loop_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_human_in_loop_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Human approval node."""
         logger.warning("Human-in-loop node: Waiting for approval (auto-approved in demo)")
         # In production, would pause and wait for human input
         return {"approved": True, "timestamp": datetime.now().isoformat()}
 
-    async def _execute_tool_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_tool_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """Execute external tool."""
         tool_name = node.params.get("tool_name", "unknown")
         logger.info(f"Executing tool: {tool_name}")
         return {"tool_result": f"Result from {tool_name}", "success": True}
 
-    async def _execute_api_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_api_node(self, node: WorkflowNode, inputs: dict[str, Any]) -> dict[str, Any]:
         """HTTP API call."""
         import aiohttp
 

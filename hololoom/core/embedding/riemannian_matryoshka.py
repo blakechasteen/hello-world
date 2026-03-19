@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Riemannian Matryoshka Embeddings
 =================================
@@ -18,7 +19,7 @@ Date: 2025-11-03
 
 import warnings
 from dataclasses import dataclass, field
-from typing import Optional, Union, Dict, List
+
 import numpy as np
 
 # Import base embedder
@@ -26,9 +27,7 @@ from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Import Riemannian geometry for geodesic distance support
 try:
-    from hololoom.warp.riemannian_geometry import (
-        ProductManifold, ManifoldConfig, ManifoldType
-    )
+    from hololoom.warp.riemannian_geometry import ManifoldConfig, ManifoldType, ProductManifold
     _HAVE_RIEMANNIAN = True
 except ImportError:
     ProductManifold = None
@@ -122,7 +121,7 @@ class RiemannianMatryoshka:
             # Create product manifold
             self.manifold = ProductManifold(config)
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts using base embedder.
 
@@ -136,9 +135,9 @@ class RiemannianMatryoshka:
 
     def encode_scales(
         self,
-        texts: List[str],
-        size: Optional[int] = None
-    ) -> Union[Dict[int, np.ndarray], np.ndarray]:
+        texts: list[str],
+        size: int | None = None
+    ) -> dict[int, np.ndarray] | np.ndarray:
         """
         Encode texts at one or all scales (delegates to base embedder).
 
@@ -179,7 +178,7 @@ class RiemannianMatryoshka:
     def pairwise_distances(
         self,
         X: np.ndarray,
-        Y: Optional[np.ndarray] = None
+        Y: np.ndarray | None = None
     ) -> np.ndarray:
         """
         Compute pairwise distances between sets of embeddings.
@@ -281,11 +280,11 @@ class RiemannianMatryoshka:
 
 def create_riemannian_embedder(
     use_riemannian: bool = False,
-    sizes: List[int] = [768],
+    sizes: list[int] = [768],
     hyperbolic_dim: int = 256,
     spherical_dim: int = 256,
     euclidean_dim: int = 256,
-    base_model_name: Optional[str] = None
+    base_model_name: str | None = None
 ) -> RiemannianMatryoshka:
     """
     Factory function to create Riemannian embedder.

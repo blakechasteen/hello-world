@@ -24,41 +24,33 @@ Author: HoloLoom Team
 """
 
 import asyncio
-import json
 import logging
+from collections.abc import Callable
 from contextlib import asynccontextmanager
-from typing import Dict, List, Optional, Set, Callable, Any
 from dataclasses import dataclass
+from typing import Any
 
+import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-import uvicorn
 
-from hololoom.thirdeye.concept import Concept, ConceptWorld
 from hololoom.thirdeye.chat_bridge import (
     ChatBridge,
     ConceptExtraction,
     create_chat_bridge,
 )
+from hololoom.thirdeye.renderer_protocol import RenderConfig, RenderQuality
+from hololoom.thirdeye.renderers.webgl import create_webgl_renderer
 from hololoom.thirdeye.thoughtspace import (
-    Thoughtspace,
     ThoughtspaceState,
     create_thoughtspace,
 )
-from hololoom.thirdeye.renderers.webgl import WebGLRenderer, create_webgl_renderer
-from hololoom.thirdeye.renderer_protocol import RenderConfig, RenderQuality
 
 # Import the new scene composer
-from hololoom.thirdeye.visualizers import (
-    VisualizationMode,
-    detect_visualization_mode,
-)
 from hololoom.thirdeye.visualizers.scene_composer import (
-    SceneComposer,
-    get_composer,
     compose_scene,
+    get_composer,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -93,13 +85,13 @@ class ThirdEyeServer:
     def __init__(
         self,
         chat_ws_url: str = "ws://localhost:8002",
-        embedder: Optional[Callable[[str], List[float]]] = None,
+        embedder: Callable[[str], list[float]] | None = None,
     ):
         self.chat_ws_url = chat_ws_url
         self.embedder = embedder
 
         # Components
-        self.chat_bridge: Optional[ChatBridge] = None
+        self.chat_bridge: ChatBridge | None = None
         self.thoughtspace = create_thoughtspace(on_state_change=self._on_state_change)
         self.renderer = create_webgl_renderer(RenderConfig(quality=RenderQuality.MEDIUM))
 
@@ -107,13 +99,13 @@ class ThirdEyeServer:
         self.scene_composer = get_composer()
 
         # Connected clients
-        self.clients: Dict[str, ClientConnection] = {}
+        self.clients: dict[str, ClientConnection] = {}
         self._client_counter = 0
 
         # State
         self._running = False
-        self._chat_listener_task: Optional[asyncio.Task] = None
-        self._current_scene: Optional[Dict[str, Any]] = None
+        self._chat_listener_task: asyncio.Task | None = None
+        self._current_scene: dict[str, Any] | None = None
 
     async def start(self) -> None:
         """Start the server and connect to chat."""
@@ -326,7 +318,7 @@ class ThirdEyeServer:
 
 
 # Global server instance
-_server: Optional[ThirdEyeServer] = None
+_server: ThirdEyeServer | None = None
 
 
 def get_server() -> ThirdEyeServer:
@@ -374,7 +366,7 @@ async def get_state():
 class ComposeRequest(BaseModel):
     """Request body for scene composition."""
     text: str
-    force_mode: Optional[str] = None
+    force_mode: str | None = None
 
 
 @app.post("/compose")

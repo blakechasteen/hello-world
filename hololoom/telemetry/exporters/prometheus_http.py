@@ -11,7 +11,6 @@ import logging
 import threading
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Optional
 
 from hololoom.telemetry.metrics.prometheus import PrometheusRegistry, get_registry
 
@@ -26,7 +25,7 @@ logger = logging.getLogger(__name__)
 class MetricsHandler(BaseHTTPRequestHandler):
     """HTTP handler for Prometheus metrics endpoint."""
 
-    registry: Optional[PrometheusRegistry] = None
+    registry: PrometheusRegistry | None = None
 
     def do_GET(self) -> None:
         """Handle GET requests."""
@@ -76,11 +75,11 @@ class PrometheusHTTPServer:
 
     host: str = "0.0.0.0"
     port: int = 9090
-    registry: Optional[PrometheusRegistry] = None
+    registry: PrometheusRegistry | None = None
 
     # Internal state
-    _server: Optional[HTTPServer] = field(default=None, init=False)
-    _thread: Optional[threading.Thread] = field(default=None, init=False)
+    _server: HTTPServer | None = field(default=None, init=False)
+    _thread: threading.Thread | None = field(default=None, init=False)
     _running: bool = field(default=False, init=False)
 
     def start(self) -> None:
@@ -144,7 +143,7 @@ class PrometheusHTTPServer:
 
 def create_prometheus_server(
     port: int = 9090,
-    registry: Optional[PrometheusRegistry] = None,
+    registry: PrometheusRegistry | None = None,
 ) -> PrometheusHTTPServer:
     """Create a Prometheus HTTP server."""
     return PrometheusHTTPServer(
@@ -156,7 +155,7 @@ def create_prometheus_server(
 
 def start_metrics_server(
     port: int = 9090,
-    registry: Optional[PrometheusRegistry] = None,
+    registry: PrometheusRegistry | None = None,
 ) -> PrometheusHTTPServer:
     """Create and start a Prometheus HTTP server."""
     server = create_prometheus_server(port, registry)
@@ -171,7 +170,7 @@ def start_metrics_server(
 
 async def run_metrics_server_async(
     port: int = 9090,
-    registry: Optional[PrometheusRegistry] = None,
+    registry: PrometheusRegistry | None = None,
 ) -> PrometheusHTTPServer:
     """Start metrics server and return immediately (async wrapper).
 

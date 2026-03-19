@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Metrics Collection
 ==================
@@ -22,7 +21,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Dict, Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
@@ -31,7 +30,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def get_reflection_metrics(orchestrator: 'WeavingOrchestrator') -> Optional[Dict[str, Any]]:
+def get_reflection_metrics(orchestrator: WeavingOrchestrator) -> dict[str, Any] | None:
     """
     Get reflection metrics if reflection is enabled.
 
@@ -60,7 +59,7 @@ def get_reflection_metrics(orchestrator: 'WeavingOrchestrator') -> Optional[Dict
     }
 
 
-def get_recursive_learning_stats(orchestrator: 'WeavingOrchestrator') -> Optional[Dict[str, Any]]:
+def get_recursive_learning_stats(orchestrator: WeavingOrchestrator) -> dict[str, Any] | None:
     """
     Get comprehensive recursive learning statistics.
 
@@ -137,7 +136,7 @@ def get_recursive_learning_stats(orchestrator: 'WeavingOrchestrator') -> Optiona
     return stats
 
 
-def get_metrics(orchestrator: 'WeavingOrchestrator') -> Optional[Dict[str, Any]]:
+def get_metrics(orchestrator: WeavingOrchestrator) -> dict[str, Any] | None:
     """
     Get production monitoring metrics.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 ChatOps Bridge
 ==============
@@ -25,18 +25,18 @@ Dependencies:
 
 import asyncio
 import logging
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 # HoloLoom imports
 try:
-    from hololoom.protocols.types import Query, Context, Features, MemoryShard
+    from hololoom.config import Config
     from hololoom.fabric.spacetime import Spacetime, WeavingTrace
     from hololoom.memory.graph import KG
+    from hololoom.protocols.types import Context, Features, MemoryShard, Query
     from hololoom.weaving_orchestrator import WeavingOrchestrator
-    from hololoom.config import Config
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:
     HOLOLOOM_AVAILABLE = False
@@ -44,6 +44,7 @@ except ImportError as e:
 
 # Matrix bot imports (use TYPE_CHECKING to avoid circular imports)
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from hololoom.apps.chatops.core.matrix_bot import MatrixBot
 
@@ -71,17 +72,17 @@ class ConversationContext:
     """
     room_id: str
     room_name: str
-    participants: List[str] = field(default_factory=list)
-    message_history: List[Dict[str, Any]] = field(default_factory=list)
+    participants: list[str] = field(default_factory=list)
+    message_history: list[dict[str, Any]] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
     last_activity: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Knowledge graph node IDs for this conversation
-    conversation_node_id: Optional[str] = None
-    message_node_ids: List[str] = field(default_factory=list)
+    conversation_node_id: str | None = None
+    message_node_ids: list[str] = field(default_factory=list)
 
-    def add_message(self, sender: str, text: str, timestamp: Optional[datetime] = None) -> None:
+    def add_message(self, sender: str, text: str, timestamp: datetime | None = None) -> None:
         """Add a message to history."""
         msg = {
             "sender": sender,
@@ -95,7 +96,7 @@ class ConversationContext:
         if sender not in self.participants:
             self.participants.append(sender)
 
-    def get_recent_messages(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_recent_messages(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent messages."""
         return self.message_history[-limit:]
 
@@ -141,7 +142,7 @@ class ChatOpsOrchestrator:
 
     def __init__(
         self,
-        hololoom_config: Optional[Any] = None,
+        hololoom_config: Any | None = None,
         memory_store_path: str = "./chatops_memory",
         context_limit: int = 10,
         enable_memory_storage: bool = True
@@ -172,10 +173,10 @@ class ChatOpsOrchestrator:
         self.enable_memory_storage = enable_memory_storage
 
         # Conversation tracking
-        self.conversations: Dict[str, ConversationContext] = {}
+        self.conversations: dict[str, ConversationContext] = {}
 
         # Matrix bot reference
-        self.bot: Optional[MatrixBot] = None
+        self.bot: MatrixBot | None = None
 
         # Promptly integration (optional)
         self.promptly_available = False
@@ -341,7 +342,7 @@ This is a demo response. Full HoloLoom integration will provide:
     def _get_context_shards(
         self,
         conversation: ConversationContext
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Convert conversation history to memory shards.
 
@@ -525,7 +526,7 @@ To enable full functionality:
     # Statistics & Monitoring
     # ========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get chatops statistics.
 

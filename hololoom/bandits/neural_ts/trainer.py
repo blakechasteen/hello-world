@@ -5,11 +5,11 @@ Handles periodic batch updates of the posterior (Bootstrap ensemble or MC-Dropou
 Uses simple MSE loss with Adam optimizer.
 """
 
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from typing import Literal
-from hololoom.bandits.neural_ts.models import MLP
+
 from hololoom.bandits.neural_ts.posterior import BootstrapPosterior, MCDropoutPosterior
 from hololoom.bandits.neural_ts.replay import ReplayBuffer
 

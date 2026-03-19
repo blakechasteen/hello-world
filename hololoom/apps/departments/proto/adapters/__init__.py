@@ -33,31 +33,33 @@ Status: CLI + Matrix + TUI production ready (2025-12-05)
 
 from hololoom.apps.departments.proto.adapters.cli import cli
 from hololoom.apps.departments.proto.adapters.matrix import (
-    ProtoMatrixHandlers,
     MatrixMessage,
+    ProtoMatrixHandlers,
     ProtoSession,
     create_proto_handlers,
 )
 from hololoom.apps.departments.proto.adapters.tui import (
-    # Main app
-    ProtoTUI,
-    WaveHeader,
-    WaveFooter,
-    main as tui_main,
-    # Wave animation
-    WaveGenerator,
-    WaveConfig,
-    WaveTheme,
-    WaveState,
-    SemanticWaveController,
-    create_wave_system,
+    ContextPanel,
     # Panels
     InputPanel,
+    # Main app
+    ProtoTUI,
     ResponsePanel,
-    ContextPanel,
+    SemanticWaveController,
     # Session
     SessionManager,
+    WaveConfig,
+    WaveFooter,
+    # Wave animation
+    WaveGenerator,
+    WaveHeader,
+    WaveState,
+    WaveTheme,
     create_session_manager,
+    create_wave_system,
+)
+from hololoom.apps.departments.proto.adapters.tui import (
+    main as tui_main,
 )
 
 __all__ = [

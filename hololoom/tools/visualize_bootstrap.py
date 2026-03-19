@@ -7,9 +7,10 @@ Since the JSON save had issues, this reconstructs the learning from
 the successful console output.
 """
 
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-from pathlib import Path
 
 # Data from bootstrap console output
 results = {

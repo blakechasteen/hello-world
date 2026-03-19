@@ -25,11 +25,11 @@ except ImportError:
     sys.exit(1)
 
 from hololoom.context_packing import (
+    ActivationSpreader,
+    ContextCompressor,
     ContextPacker,
     ContextPackerConfig,
-    ActivationSpreader,
     ImportanceScorer,
-    ContextCompressor,
 )
 
 
@@ -182,7 +182,7 @@ def demo_compression():
 
     print(f"Original nodes: {len(nodes)}")
     print(f"Target ratio: {compressor.config.target_ratio} (keep 50%)")
-    print(f"Compressing...\n")
+    print("Compressing...\n")
 
     result = compressor.compress(
         nodes=nodes,
@@ -233,7 +233,7 @@ def demo_full_pipeline():
 
     print(f"Query: {query}")
     print(f"Initial candidates: {candidate_nodes}")
-    print(f"Target budget: 2000 tokens\n")
+    print("Target budget: 2000 tokens\n")
 
     results = []
 
@@ -260,7 +260,7 @@ def demo_full_pipeline():
             f"{result.token_savings:>4} tokens"
         )
 
-    print(f"\n[OK] Full pipeline complete")
+    print("\n[OK] Full pipeline complete")
 
 
 def demo_adaptive_packing():
@@ -277,7 +277,7 @@ def demo_adaptive_packing():
 
     print(f"Query: {query}")
     print(f"Candidates: {len(candidate_nodes)} nodes")
-    print(f"Token budget: 500-2000 tokens\n")
+    print("Token budget: 500-2000 tokens\n")
 
     result = packer.adaptive_pack(
         query=query,
@@ -295,7 +295,7 @@ def demo_adaptive_packing():
     print(f"Compression ratio: {result.compression_ratio:.1%}")
     print(f"Token savings: {result.token_savings} tokens")
 
-    print(f"\n[OK] Adaptive packing complete: Budget satisfied!")
+    print("\n[OK] Adaptive packing complete: Budget satisfied!")
 
 
 def main():

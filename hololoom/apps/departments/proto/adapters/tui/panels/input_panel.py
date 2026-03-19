@@ -6,16 +6,16 @@ Status: Phase 3 TUI (2025-12-05)
 """
 
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional
-from textual.widgets import Input, Static
+
 from textual.containers import Container
 from textual.message import Message
+from textual.widgets import Input, Static
 
 
 @dataclass
 class CommandHistory:
     """Manages command history with navigation."""
-    commands: List[str] = field(default_factory=list)
+    commands: list[str] = field(default_factory=list)
     index: int = -1
     max_size: int = 100
 
@@ -27,7 +27,7 @@ class CommandHistory:
                 self.commands.pop(0)
         self.index = -1
 
-    def previous(self) -> Optional[str]:
+    def previous(self) -> str | None:
         """Get previous command in history."""
         if not self.commands:
             return None
@@ -35,7 +35,7 @@ class CommandHistory:
             self.index += 1
         return self.commands[-(self.index + 1)]
 
-    def next(self) -> Optional[str]:
+    def next(self) -> str | None:
         """Get next command in history."""
         if not self.commands:
             return None
@@ -66,7 +66,7 @@ class CommandInput(Input):
         super().__init__(placeholder=placeholder)
         self.history = CommandHistory()
         self.mode = mode
-        self._completions: List[str] = []
+        self._completions: list[str] = []
 
     def on_key(self, event) -> None:
         """Handle special keys."""
@@ -138,8 +138,8 @@ class InputPanel(Container):
     def __init__(self, mode: str = "ask"):
         super().__init__()
         self.mode = mode
-        self._input: Optional[CommandInput] = None
-        self._prompt: Optional[Static] = None
+        self._input: CommandInput | None = None
+        self._prompt: Static | None = None
 
     def compose(self):
         """Compose the input panel."""

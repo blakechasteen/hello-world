@@ -21,57 +21,26 @@ Status: Phase 2.1 Integration Demo
 import asyncio
 import time
 from datetime import datetime
-from typing import Dict, Any, List
 
 # Import swarm components
 from hololoom.redteam.swarm import (
-    # Coordinator
-    SwarmCoordinator,
-    CampaignPhase,
-    SwarmMetrics,
-    SwarmCampaignResult,
-    # Communication
+    # A/B Testing
+    AgentMessage,
+    AuditEventType,
+    AuthorizationError,
+    HierarchicalLearningCoordinator,
     MessageBus,
     MessagePriority,
-    AgentMessage,
-    # Safety
     SafetyGate,
-    AuthorizationToken,
-    AuthorizationManager,
-    ScopeValidator,
-    RateLimiter,
-    AuditLogger,
-    AnomalyDetector,
-    SeverityLevel,
-    AuditEventType,
-    create_safety_gate,
-    create_authorization_token,
-    AuthorizationError,
-    ScopeViolationError,
-    RateLimitExceededError,
-    # Agents
-    ScoutAgent,
-    AttackerAgent,
-    ExploiterAgent,
-    CoordinatorAgent,
-    AgentRole,
-    create_scout_agent,
-    create_attacker_agent,
-    create_exploiter_agent,
-    create_coordinator_agent,
-    AttackStrategyType,
-    # Learning
-    HierarchicalLearningCoordinator,
-    create_learning_coordinator,
-    LearningTimescale,
-    PayloadHeat,
-    # A/B Testing
-    ABTestManager,
-    ExperimentStatus,
+    SwarmCampaignResult,
+    # Coordinator
+    SwarmCoordinator,
     create_ab_test_manager,
+    create_authorization_token,
     create_experiment_config,
+    create_learning_coordinator,
+    create_safety_gate,
 )
-
 
 # =============================================================================
 # Demo Utilities
@@ -429,7 +398,7 @@ async def demo_campaign_phases(
         num_attackers=2,
         num_exploiters=1,
     )
-    print_success(f"Swarm coordinator created with 2 scouts, 2 attackers, 1 exploiter")
+    print_success("Swarm coordinator created with 2 scouts, 2 attackers, 1 exploiter")
 
     # Start swarm coordinator
     await swarm.start()

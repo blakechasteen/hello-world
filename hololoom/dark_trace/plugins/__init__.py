@@ -53,62 +53,12 @@ Example Usage:
 """
 
 # Plugin protocol and types
-from hololoom.dark_trace.plugins.plugin_protocol import (
-    # Enums
-    PluginCategory,
-    PluginStatus,
-
-    # Data classes
-    PluginMetadata,
-    PluginSignature,
-    PluginRating,
-
-    # Base classes
-    DarkTracePlugin,
-    LensPlugin,
-    ValidatorPlugin,
-    AnalyzerPlugin,
-    VisualizerPlugin,
-    SafetyPlugin,
-    SteeringPlugin,
-    DatasetPlugin,
-    ModelAdapterPlugin,
-
-    # Types
-    PluginFactory,
-
-    # Factory functions
-    create_plugin_metadata,
-)
-
-# Signing and verification
-from hololoom.dark_trace.plugins.plugin_signing import (
-    # Enums
-    SigningAlgorithm,
-
-    # Data classes
-    KeyPair,
-    PluginManifest,
-    SignedManifest,
-
-    # Classes
-    PluginSigner,
-    PluginVerifier,
-
-    # Factory functions
-    create_signer,
-    create_verifier,
-    generate_key_pair,
-)
-
 # Plugin loader with hot reload
 from hololoom.dark_trace.plugins.plugin_loader import (
     # Data classes
     LoadedPlugin,
-
     # Classes
     PluginLoader,
-
     # Factory functions
     create_loader,
     load_plugin,
@@ -116,21 +66,57 @@ from hololoom.dark_trace.plugins.plugin_loader import (
 
 # Marketplace
 from hololoom.dark_trace.plugins.plugin_marketplace import (
-    # Enums
-    SortOrder,
-
+    MarketplacePlugin,
     # Data classes
     PluginDownloadStats,
-    MarketplacePlugin,
-
     # Classes
     PluginMarketplace,
-
+    # Enums
+    SortOrder,
     # Factory functions
     create_marketplace,
     get_default_marketplace,
 )
+from hololoom.dark_trace.plugins.plugin_protocol import (
+    AnalyzerPlugin,
+    # Base classes
+    DarkTracePlugin,
+    DatasetPlugin,
+    LensPlugin,
+    ModelAdapterPlugin,
+    # Enums
+    PluginCategory,
+    # Types
+    PluginFactory,
+    # Data classes
+    PluginMetadata,
+    PluginRating,
+    PluginSignature,
+    PluginStatus,
+    SafetyPlugin,
+    SteeringPlugin,
+    ValidatorPlugin,
+    VisualizerPlugin,
+    # Factory functions
+    create_plugin_metadata,
+)
 
+# Signing and verification
+from hololoom.dark_trace.plugins.plugin_signing import (
+    # Data classes
+    KeyPair,
+    PluginManifest,
+    # Classes
+    PluginSigner,
+    PluginVerifier,
+    SignedManifest,
+    # Enums
+    SigningAlgorithm,
+    # Factory functions
+    create_signer,
+    create_verifier,
+    generate_key_pair,
+)
 
 __all__ = [
     # Protocol enums

@@ -24,37 +24,34 @@ Usage:
     python -m HoloLoom.lsp.server [--port 8080] [--log-level DEBUG]
 """
 
-import asyncio
-import logging
-import sys
-import re
-from typing import Optional, List, Dict, Any
-from pathlib import Path
 import argparse
-from datetime import datetime
+import logging
+import re
+import sys
+from typing import Any
 
-from pygls.lsp.server import LanguageServer
 from lsprotocol.types import (
-    InitializeParams,
-    InitializeResult,
-    ServerCapabilities,
-    TextDocumentSyncKind,
     CompletionItem,
     CompletionItemKind,
     CompletionList,
     CompletionParams,
+    DefinitionParams,
     Hover,
     HoverParams,
+    InitializeParams,
+    InitializeResult,
+    Location,
     MarkupContent,
     MarkupKind,
-    Location,
-    DefinitionParams,
-    WorkspaceSymbolParams,
+    Position,
+    Range,
+    ServerCapabilities,
     SymbolInformation,
     SymbolKind,
-    Range,
-    Position,
+    TextDocumentSyncKind,
+    WorkspaceSymbolParams,
 )
+from pygls.lsp.server import LanguageServer
 
 # ============================================================================
 # LOGGING SETUP
@@ -99,7 +96,7 @@ class HoloLoomLanguageServer(LanguageServer):
     def __init__(self, name: str, version: str, **kwargs):
         super().__init__(name, version, **kwargs)
         self.hololoom = None
-        self.config: Dict[str, Any] = {}
+        self.config: dict[str, Any] = {}
         self.logger = logging.getLogger("hololoom-lsp")
 
 
@@ -391,7 +388,7 @@ async def completion(params: CompletionParams) -> CompletionList:
 
 
 @server.feature("textDocument/hover")
-async def hover(params: HoverParams) -> Optional[Hover]:
+async def hover(params: HoverParams) -> Hover | None:
     """Provide hover information for symbols.
 
     Called when the user hovers over a symbol.
@@ -469,7 +466,7 @@ async def hover(params: HoverParams) -> Optional[Hover]:
 
 
 @server.feature("textDocument/definition")
-async def definition(params: DefinitionParams) -> Optional[List[Location]]:
+async def definition(params: DefinitionParams) -> list[Location] | None:
     """Provide go-to-definition functionality.
 
     Called when the user requests "Go to Definition" (Ctrl+Click, etc.).
@@ -561,7 +558,7 @@ async def definition(params: DefinitionParams) -> Optional[List[Location]]:
 
 
 @server.feature("workspace/symbol")
-async def workspace_symbol(params: WorkspaceSymbolParams) -> List[SymbolInformation]:
+async def workspace_symbol(params: WorkspaceSymbolParams) -> list[SymbolInformation]:
     """Search for symbols in the workspace.
 
     Called when the user searches for symbols (Ctrl+T in VSCode, etc.).
@@ -702,7 +699,7 @@ Examples:
     logger.info("=" * 70)
     logger.info("HoloLoom Language Server (LSP) v0.1.0")
     logger.info("=" * 70)
-    logger.info(f"Starting server...")
+    logger.info("Starting server...")
     logger.info(f"Log level: {args.log_level}")
 
     # Store config in server

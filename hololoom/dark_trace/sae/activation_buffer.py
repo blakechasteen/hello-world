@@ -17,7 +17,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Any
 
 import numpy as np
 
@@ -32,11 +32,11 @@ class ActivationSample:
     activation: np.ndarray  # the raw activation vector
     query_text: str = ""
     # Governance labels (filled by governance checkpoints)
-    safety_score: Optional[float] = None
-    deception_score: Optional[float] = None
-    rbac_decision: Optional[str] = None  # "ALLOW", "DENY", "ESCALATE"
-    tool_selected: Optional[str] = None  # for neural_core: which tool was chosen
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    safety_score: float | None = None
+    deception_score: float | None = None
+    rbac_decision: str | None = None  # "ALLOW", "DENY", "ESCALATE"
+    tool_selected: str | None = None  # for neural_core: which tool was chosen
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class ActivationBuffer:
@@ -59,7 +59,7 @@ class ActivationBuffer:
         self._flush_count = 0
 
         # Per-source buffers for scale-specific SAE training
-        self._source_counts: Dict[str, int] = {}
+        self._source_counts: dict[str, int] = {}
 
     async def record(self, sample: ActivationSample) -> None:
         """Record an activation sample. Non-blocking."""
@@ -83,7 +83,7 @@ class ActivationBuffer:
         self.flush_dir.mkdir(parents=True, exist_ok=True)
 
         # Group by source
-        by_source: Dict[str, List[ActivationSample]] = {}
+        by_source: dict[str, list[ActivationSample]] = {}
         while self.buffer:
             sample = self.buffer.popleft()
             by_source.setdefault(sample.source, []).append(sample)
@@ -138,7 +138,7 @@ class ActivationBuffer:
     def stop(self) -> None:
         self._running = False
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         return {
             "buffer_size": len(self.buffer),
             "samples_flushed": self._samples_flushed,
@@ -156,10 +156,10 @@ class ActivationBuffer:
 # same object is reachable from both server_state and tap-point code.
 # ---------------------------------------------------------------------------
 
-_global_buffer: Optional[ActivationBuffer] = None
+_global_buffer: ActivationBuffer | None = None
 
 
-def get_activation_buffer() -> Optional[ActivationBuffer]:
+def get_activation_buffer() -> ActivationBuffer | None:
     """Return the shared ActivationBuffer (or None if not yet initialized)."""
     return _global_buffer
 

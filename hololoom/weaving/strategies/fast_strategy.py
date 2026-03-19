@@ -11,7 +11,7 @@ Steps:
 5. Quick Decision + Response
 """
 
-from typing import List, Dict, Any
+from typing import Any
 
 from hololoom.protocols import ComplexityLevel
 from hololoom.weaving.strategies.base import BaseStrategy
@@ -29,7 +29,7 @@ class FastStrategy(BaseStrategy):
         """Get the complexity level this strategy handles."""
         return ComplexityLevel.FAST
 
-    def get_stage_names(self) -> List[str]:
+    def get_stage_names(self) -> list[str]:
         """
         Get the ordered list of stages for FAST execution.
 
@@ -54,7 +54,7 @@ class FastStrategy(BaseStrategy):
     def should_skip_stage(
         self,
         stage_name: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
     ) -> bool:
         """
         Check if a stage should be skipped for FAST execution.
@@ -94,7 +94,7 @@ class FastStrategy(BaseStrategy):
         self,
         stage_name: str,
         result: Any,
-        context: Dict[str, Any],
+        context: dict[str, Any],
     ) -> bool:
         """
         Check if execution should terminate early.

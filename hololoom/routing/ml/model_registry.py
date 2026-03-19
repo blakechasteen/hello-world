@@ -13,12 +13,12 @@ Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from enum import Enum
-import time
 import json
+import time
+from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
+from typing import Any
 
 
 class ModelStage(Enum):
@@ -45,10 +45,10 @@ class ModelMetadata:
 
     # Training info
     training_duration_seconds: float
-    hyperparameters: Dict[str, Any] = field(default_factory=dict)
+    hyperparameters: dict[str, Any] = field(default_factory=dict)
 
     # Deployment info
-    deployed_at: Optional[float] = None
+    deployed_at: float | None = None
     deployed_by: str = "system"
 
 
@@ -87,7 +87,7 @@ class ModelRegistry:
             registry_path: Path to registry JSON file
         """
         self.registry_path = Path(registry_path)
-        self.models: Dict[str, ModelMetadata] = {}
+        self.models: dict[str, ModelMetadata] = {}
 
         # Load existing registry
         if self.registry_path.exists():
@@ -174,7 +174,7 @@ class ModelRegistry:
             if model.stage == ModelStage.PRODUCTION:
                 model.stage = ModelStage.ARCHIVED
 
-    def get_production_model(self) -> Optional[ModelMetadata]:
+    def get_production_model(self) -> ModelMetadata | None:
         """
         Get current production model.
 
@@ -186,7 +186,7 @@ class ModelRegistry:
                 return model
         return None
 
-    def get_model(self, version: str) -> Optional[ModelMetadata]:
+    def get_model(self, version: str) -> ModelMetadata | None:
         """
         Get model by version.
 
@@ -200,8 +200,8 @@ class ModelRegistry:
 
     def list_models(
         self,
-        stage: Optional[ModelStage] = None
-    ) -> List[ModelMetadata]:
+        stage: ModelStage | None = None
+    ) -> list[ModelMetadata]:
         """
         List all models, optionally filtered by stage.
 
@@ -221,7 +221,7 @@ class ModelRegistry:
 
         return models
 
-    def rollback_production(self) -> Optional[ModelMetadata]:
+    def rollback_production(self) -> ModelMetadata | None:
         """
         Rollback to previous production model.
 
@@ -275,7 +275,7 @@ class ModelRegistry:
 
     def _load_registry(self):
         """Load registry from disk"""
-        with open(self.registry_path, "r") as f:
+        with open(self.registry_path) as f:
             registry_dict = json.load(f)
 
         for version, model_dict in registry_dict.items():

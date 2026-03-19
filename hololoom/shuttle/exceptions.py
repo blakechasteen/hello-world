@@ -7,7 +7,6 @@ and graceful degradation support.
 Created: 2025-01-21
 """
 
-from typing import Optional
 
 
 class ShuttleError(Exception):
@@ -18,7 +17,7 @@ class ShuttleError(Exception):
     targeted exception handling.
     """
 
-    def __init__(self, message: str, details: Optional[dict] = None):
+    def __init__(self, message: str, details: dict | None = None):
         self.message = message
         self.details = details or {}
         super().__init__(self.message)
@@ -58,7 +57,7 @@ class BackendUnavailableError(ShuttleError):
         self,
         backend_name: str,
         reason: str,
-        fallback_mode: Optional[str] = None
+        fallback_mode: str | None = None
     ):
         self.backend_name = backend_name
         self.reason = reason
@@ -92,7 +91,7 @@ class TimeoutError(ShuttleError):
         self,
         operation: str,
         timeout_ms: int,
-        elapsed_ms: Optional[float] = None
+        elapsed_ms: float | None = None
     ):
         self.operation = operation
         self.timeout_ms = timeout_ms
@@ -125,7 +124,7 @@ class EntityExtractionError(ShuttleError):
     def __init__(
         self,
         reason: str,
-        extraction_method: Optional[str] = None,
+        extraction_method: str | None = None,
         fallback_available: bool = False
     ):
         self.reason = reason

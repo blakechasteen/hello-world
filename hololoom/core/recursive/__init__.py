@@ -14,57 +14,52 @@ Vision: Self-improving knowledge system that learns from usage patterns
 and maintains long-term goals across sessions.
 """
 
-from .scratchpad_integration import (
-    ScratchpadOrchestrator,
-    ScratchpadConfig,
-    ProvenanceTracker,
-    RecursiveRefiner,
-    weave_with_scratchpad,
+from .action_items import (
+    ActionCategory,
+    ActionItem,
+    ActionItemTracker,
+    ActionStatus,
+    PriorityModel,
+    create_action_tracker,
+    extract_action_items_from_text,
 )
-
-from .loop_integration import (
-    LearningLoopEngine,
-    LearningLoopConfig,
-    PatternExtractor,
-    PatternLearner,
-    LearnedPattern,
-    weave_with_learning,
-)
-
-from .hot_patterns import (
-    HotPatternFeedbackEngine,
-    HotPatternConfig,
-    HotPatternTracker,
-    AdaptiveRetriever,
-    UsageRecord,
-)
-
 from .advanced_refinement import (
     AdvancedRefiner,
-    RefinementStrategy,
-    RefinementResult,
     QualityMetrics,
     RefinementPattern,
+    RefinementResult,
+    RefinementStrategy,
     refine_with_strategy,
 )
-
 from .full_learning_loop import (
-    FullLearningEngine,
-    ThompsonPriors,
-    PolicyWeights,
     BackgroundLearner,
+    FullLearningEngine,
     LearningMetrics,
+    PolicyWeights,
+    ThompsonPriors,
     weave_with_full_learning,
 )
-
-from .action_items import (
-    ActionItemTracker,
-    ActionItem,
-    ActionStatus,
-    ActionCategory,
-    PriorityModel,
-    extract_action_items_from_text,
-    create_action_tracker,
+from .hot_patterns import (
+    AdaptiveRetriever,
+    HotPatternConfig,
+    HotPatternFeedbackEngine,
+    HotPatternTracker,
+    UsageRecord,
+)
+from .loop_integration import (
+    LearnedPattern,
+    LearningLoopConfig,
+    LearningLoopEngine,
+    PatternExtractor,
+    PatternLearner,
+    weave_with_learning,
+)
+from .scratchpad_integration import (
+    ProvenanceTracker,
+    RecursiveRefiner,
+    ScratchpadConfig,
+    ScratchpadOrchestrator,
+    weave_with_scratchpad,
 )
 
 __all__ = [

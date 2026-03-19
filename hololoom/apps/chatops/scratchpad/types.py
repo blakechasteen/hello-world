@@ -14,13 +14,12 @@ audit trail integration, and content-addressed storage.
 Created: December 2025
 """
 
-import secrets
 import hashlib
+import secrets
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Any, Optional
-
+from typing import Any
 
 # ============================================================================
 # Enums
@@ -112,16 +111,16 @@ class ScratchArtifact:
     # Lifecycle
     created_at: datetime = field(default_factory=datetime.now)
     accessed_at: datetime = field(default_factory=datetime.now)
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
     access_count: int = 0
     status: ArtifactStatus = ArtifactStatus.ACTIVE
 
     # Provenance
-    source_spacetime_id: Optional[str] = None
-    source_session_id: Optional[str] = None
+    source_spacetime_id: str | None = None
+    source_session_id: str | None = None
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Set default expiration if not provided."""
@@ -199,7 +198,7 @@ class ScratchArtifact:
         if self.scope == ArtifactScope.USER:
             self.scope = ArtifactScope.ROOM
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to serializable dictionary."""
         return {
             'artifact_id': self.artifact_id,
@@ -221,7 +220,7 @@ class ScratchArtifact:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ScratchArtifact':
+    def from_dict(cls, data: dict[str, Any]) -> 'ScratchArtifact':
         """Create from dictionary."""
         return cls(
             artifact_id=data['artifact_id'],
@@ -272,7 +271,7 @@ class ArtifactReference:
             created_at=artifact.created_at
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to serializable dictionary."""
         return {
             'artifact_id': self.artifact_id,
@@ -326,7 +325,7 @@ class ScratchPadConfig:
     auto_store_artifacts: bool = True
     auto_store_min_size_bytes: int = 100  # Don't auto-store tiny artifacts
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """
         Validate configuration.
 
@@ -406,13 +405,13 @@ class AuditEvent:
     timestamp: datetime
     user_id: str
     room_id: str
-    artifact_id: Optional[str] = None
-    artifact_name: Optional[str] = None
-    details: Dict[str, Any] = field(default_factory=dict)
+    artifact_id: str | None = None
+    artifact_name: str | None = None
+    details: dict[str, Any] = field(default_factory=dict)
     success: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to serializable dictionary for JSON Lines format."""
         return {
             'event_type': self.event_type.value,
@@ -435,8 +434,8 @@ class AuditEvent:
 class StoreResult:
     """Result of a store operation."""
     success: bool
-    artifact: Optional[ScratchArtifact] = None
-    error: Optional[str] = None
+    artifact: ScratchArtifact | None = None
+    error: str | None = None
     deduplicated: bool = False  # True if content already existed (CAS hit)
 
 
@@ -444,28 +443,28 @@ class StoreResult:
 class RetrieveResult:
     """Result of a retrieve operation."""
     success: bool
-    artifact: Optional[ScratchArtifact] = None
-    content: Optional[bytes] = None
-    error: Optional[str] = None
+    artifact: ScratchArtifact | None = None
+    content: bytes | None = None
+    error: str | None = None
 
 
 @dataclass
 class ListResult:
     """Result of a list operation."""
     success: bool
-    artifacts: List[ArtifactReference] = field(default_factory=list)
+    artifacts: list[ArtifactReference] = field(default_factory=list)
     total_count: int = 0
     total_size_bytes: int = 0
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
 class DeleteResult:
     """Result of a delete operation."""
     success: bool
-    artifact_id: Optional[str] = None
+    artifact_id: str | None = None
     archived: bool = False
-    error: Optional[str] = None
+    error: str | None = None
 
 
 # ============================================================================
@@ -483,9 +482,9 @@ class SessionArtifactContext:
     session_id: str
     user_id: str
     room_id: str
-    artifact_references: List[ArtifactReference] = field(default_factory=list)
-    last_spacetime_id: Optional[str] = None
-    last_query: Optional[str] = None
+    artifact_references: list[ArtifactReference] = field(default_factory=list)
+    last_spacetime_id: str | None = None
+    last_query: str | None = None
 
     def add_reference(self, ref: ArtifactReference) -> None:
         """Add an artifact reference to the context."""
@@ -505,7 +504,7 @@ class SessionArtifactContext:
             lines.append(f"  - {ref.name} ({ref.artifact_type.value}, {size_kb:.1f}KB)")
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to serializable dictionary."""
         return {
             'session_id': self.session_id,

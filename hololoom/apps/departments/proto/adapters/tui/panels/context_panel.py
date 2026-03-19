@@ -8,10 +8,9 @@ Status: Phase 3 TUI (2025-12-05)
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
 
+from textual.containers import Container
 from textual.widgets import Static
-from textual.containers import Container, Vertical
 
 
 @dataclass
@@ -58,7 +57,7 @@ class FileInfo:
         if p.exists():
             size = p.stat().st_size
             try:
-                with open(p, "r", encoding="utf-8", errors="ignore") as f:
+                with open(p, encoding="utf-8", errors="ignore") as f:
                     lines = sum(1 for _ in f)
             except Exception:
                 pass
@@ -164,8 +163,8 @@ class ContextPanel(Container):
     def __init__(self, mode: str = "ask"):
         super().__init__()
         self.mode = mode
-        self.context_files: List[FileInfo] = []
-        self.active_file: Optional[str] = None
+        self.context_files: list[FileInfo] = []
+        self.active_file: str | None = None
 
     def compose(self):
         """Compose the context panel."""
@@ -251,11 +250,11 @@ class ContextPanel(Container):
         if mode_display:
             mode_display.update(f"  [yellow]{mode}[/]")
 
-    def get_context_files(self) -> List[FileInfo]:
+    def get_context_files(self) -> list[FileInfo]:
         """Get list of context files."""
         return self.context_files.copy()
 
-    def get_context_paths(self) -> List[str]:
+    def get_context_paths(self) -> list[str]:
         """Get list of context file paths."""
         return [f.path for f in self.context_files]
 

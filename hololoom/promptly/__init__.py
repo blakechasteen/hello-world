@@ -11,19 +11,19 @@ from .workflow_store import WorkflowStore
 try:
     from .dspy_bridge import (
         DSPyHoloLoom,
-        DSPySignature,
         DSPyProgram,
-        create_signature,
-        QuestionAnswering,
+        DSPySignature,
         MemorySynthesis,
-        ReasoningChain
+        QuestionAnswering,
+        ReasoningChain,
+        create_signature,
     )
     from .dspy_workflow_adapter import (
-        DSPyWorkflowAdapter,
         DSPyWorkflow,
+        DSPyWorkflowAdapter,
         DSPyWorkflowStep,
         create_qa_workflow,
-        create_research_workflow
+        create_research_workflow,
     )
 
     __all__ = [

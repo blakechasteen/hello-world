@@ -21,15 +21,14 @@ the blind spots it contains, and what evidence would change it."
 """
 
 # Core Fabric (existing)
-from .spacetime import Spacetime, WeavingTrace, FabricCollection
-
 # Multi-Loom Fabric (December 2025)
 from .fabric import (
     Fabric,
-    Tension,
-    Resolution,
     MultiFabricCollection,
+    Resolution,
+    Tension,
 )
+from .spacetime import FabricCollection, Spacetime, WeavingTrace
 
 __all__ = [
     # ===== Core Fabric =====

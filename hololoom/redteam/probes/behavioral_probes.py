@@ -24,12 +24,11 @@ Based on research from:
 """
 
 import logging
-import re
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Any, Optional, Tuple, Callable
+from typing import Any
 
 logger = logging.getLogger("hololoom.redteam.probes")
 
@@ -76,17 +75,17 @@ class AttackProbe:
     payload: str
     expected_behavior: str
     severity: int = 3  # 1-5 scale
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     description: str = ""
-    success_indicators: List[str] = field(default_factory=list)
-    context: Dict[str, Any] = field(default_factory=dict)
+    success_indicators: list[str] = field(default_factory=list)
+    context: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate severity is in valid range."""
         if not 1 <= self.severity <= 5:
             raise ValueError(f"Severity must be 1-5, got {self.severity}")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "probe_type": self.probe_type.value,
@@ -121,7 +120,7 @@ class ProbeResult:
     confidence: float = 0.0  # 0.0-1.0
     duration_ms: float = 0.0
     vulnerability_found: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
     def __post_init__(self):
@@ -129,7 +128,7 @@ class ProbeResult:
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError(f"Confidence must be 0.0-1.0, got {self.confidence}")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "probe_type": self.probe.probe_type.value,
@@ -160,10 +159,10 @@ class VulnerabilityProbeReport:
 
     total_probes: int = 0
     successful_probes: int = 0
-    vulnerabilities: List[ProbeResult] = field(default_factory=list)
-    by_type: Dict[str, int] = field(default_factory=dict)
-    by_severity: Dict[int, int] = field(default_factory=dict)
-    recommendations: List[str] = field(default_factory=list)
+    vulnerabilities: list[ProbeResult] = field(default_factory=list)
+    by_type: dict[str, int] = field(default_factory=dict)
+    by_severity: dict[int, int] = field(default_factory=dict)
+    recommendations: list[str] = field(default_factory=list)
     timestamp: datetime = field(default_factory=datetime.now)
     duration_ms: float = 0.0
 
@@ -184,7 +183,7 @@ class VulnerabilityProbeReport:
         """Count of high severity vulnerabilities."""
         return sum(1 for v in self.vulnerabilities if v.probe.severity == 4)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "total_probes": self.total_probes,
@@ -241,7 +240,7 @@ class AttackProber:
     Supports filtering by type/severity, custom analysis, and comprehensive reporting.
     """
 
-    def __init__(self, executor: Optional[Any] = None):
+    def __init__(self, executor: Any | None = None):
         """
         Initialize attack prober.
 
@@ -249,11 +248,11 @@ class AttackProber:
             executor: Optional attack executor for running probes (default: None for dry-run)
         """
         self.executor = executor
-        self._probe_cache: Dict[AttackProbeType, List[AttackProbe]] = {}
+        self._probe_cache: dict[AttackProbeType, list[AttackProbe]] = {}
 
     def get_probe_suite(
-        self, probe_types: Optional[List[AttackProbeType]] = None
-    ) -> List[AttackProbe]:
+        self, probe_types: list[AttackProbeType] | None = None
+    ) -> list[AttackProbe]:
         """
         Get complete probe suite or filtered subset.
 
@@ -334,7 +333,7 @@ class AttackProber:
     async def run_probe_suite(
         self,
         target: str,
-        probe_types: Optional[List[AttackProbeType]] = None,
+        probe_types: list[AttackProbeType] | None = None,
     ) -> VulnerabilityProbeReport:
         """
         Run complete probe suite against target.
@@ -363,7 +362,7 @@ class AttackProber:
         report = self._generate_report(results, time.time() - start_time)
         return report
 
-    def _generate_probes(self, probe_type: AttackProbeType) -> List[AttackProbe]:
+    def _generate_probes(self, probe_type: AttackProbeType) -> list[AttackProbe]:
         """
         Generate probes for specific attack type.
 
@@ -395,7 +394,7 @@ class AttackProber:
         else:
             return []
 
-    def _generate_prompt_injection_probes(self) -> List[AttackProbe]:
+    def _generate_prompt_injection_probes(self) -> list[AttackProbe]:
         """Generate prompt injection attack probes."""
         return [
             AttackProbe(
@@ -484,7 +483,7 @@ class AttackProber:
             ),
         ]
 
-    def _generate_jailbreak_probes(self) -> List[AttackProbe]:
+    def _generate_jailbreak_probes(self) -> list[AttackProbe]:
         """Generate jailbreak constraint circumvention probes."""
         return [
             AttackProbe(
@@ -570,7 +569,7 @@ class AttackProber:
             ),
         ]
 
-    def _generate_context_overflow_probes(self) -> List[AttackProbe]:
+    def _generate_context_overflow_probes(self) -> list[AttackProbe]:
         """Generate context overflow and buffer exhaustion probes."""
         return [
             AttackProbe(
@@ -650,7 +649,7 @@ class AttackProber:
             ),
         ]
 
-    def _generate_hierarchy_bypass_probes(self) -> List[AttackProbe]:
+    def _generate_hierarchy_bypass_probes(self) -> list[AttackProbe]:
         """Generate permission/hierarchy bypass probes."""
         return [
             AttackProbe(
@@ -735,7 +734,7 @@ class AttackProber:
             ),
         ]
 
-    def _generate_cot_exploit_probes(self) -> List[AttackProbe]:
+    def _generate_cot_exploit_probes(self) -> list[AttackProbe]:
         """Generate chain-of-thought reasoning exploitation probes."""
         return [
             AttackProbe(
@@ -834,7 +833,7 @@ class AttackProber:
             ),
         ]
 
-    def _generate_tool_abuse_probes(self) -> List[AttackProbe]:
+    def _generate_tool_abuse_probes(self) -> list[AttackProbe]:
         """Generate tool misuse and capability abuse probes."""
         return [
             AttackProbe(
@@ -919,7 +918,7 @@ class AttackProber:
             ),
         ]
 
-    def _generate_extraction_probes(self) -> List[AttackProbe]:
+    def _generate_extraction_probes(self) -> list[AttackProbe]:
         """Generate information extraction and leakage probes."""
         return [
             AttackProbe(
@@ -1113,7 +1112,7 @@ class AttackProber:
         )
 
     def _generate_report(
-        self, results: List[ProbeResult], duration_seconds: float
+        self, results: list[ProbeResult], duration_seconds: float
     ) -> VulnerabilityProbeReport:
         """
         Generate comprehensive vulnerability report.
@@ -1159,7 +1158,7 @@ class AttackProber:
 
         return report
 
-    def _generate_recommendations(self, results: List[ProbeResult]) -> List[str]:
+    def _generate_recommendations(self, results: list[ProbeResult]) -> list[str]:
         """
         Generate remediation recommendations based on findings.
 

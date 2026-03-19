@@ -14,17 +14,15 @@ Author: HoloLoom Team
 Date: 2025-12-03
 """
 
-import asyncio
-import logging
-from typing import Dict, Any, List, Optional, Union
-from datetime import datetime
 import json
+import logging
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
-from .judgment import Voice, Concern, Judgment, Wisdom, quiet_judgment
-from .protocol import ConscienceLens, WitnessProtocol, LearnerProtocol
-from .lenses import CompositeLens, HarmLens, DeceptionLens, PowerLens, standard
-
+from .judgment import Concern, Judgment, Voice, Wisdom, quiet_judgment
+from .lenses import CompositeLens, standard
+from .protocol import ConscienceLens, LearnerProtocol, WitnessProtocol
 
 logger = logging.getLogger("hololoom.conscience")
 
@@ -47,16 +45,16 @@ class MemoryWitness:
         Args:
             max_records: Maximum records to keep in memory
         """
-        self._records: List[Dict[str, Any]] = []
+        self._records: list[dict[str, Any]] = []
         self._max_records = max_records
         self._record_counter = 0
 
     async def record(
         self,
         action: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         judgment: Judgment,
-        result: Optional[Dict[str, Any]] = None
+        result: dict[str, Any] | None = None
     ) -> str:
         """
         Record an action and its judgment.
@@ -108,9 +106,9 @@ class MemoryWitness:
 
     async def query(
         self,
-        filters: Dict[str, Any],
+        filters: dict[str, Any],
         limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Query past records.
 
@@ -166,7 +164,7 @@ class MemoryWitness:
 
         return results
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get statistics about witnessed actions."""
         if not self._records:
             return {
@@ -204,14 +202,14 @@ class ThompsonLearner:
     Learns optimal thresholds and responses based on outcomes.
     """
 
-    def __init__(self, persist_path: Optional[Path] = None):
+    def __init__(self, persist_path: Path | None = None):
         """
         Initialize Thompson learner.
 
         Args:
             persist_path: Optional path for persisting learned wisdom
         """
-        self._wisdom: Dict[str, Wisdom] = {}
+        self._wisdom: dict[str, Wisdom] = {}
         self._persist_path = persist_path
 
         # Load persisted wisdom if available
@@ -256,13 +254,13 @@ class ThompsonLearner:
 
         return wisdom
 
-    async def get_wisdom(self, pattern_id: str) -> Optional[Wisdom]:
+    async def get_wisdom(self, pattern_id: str) -> Wisdom | None:
         """Get learned wisdom for a pattern."""
         return self._wisdom.get(pattern_id)
 
     async def suggest_threshold(
         self,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> float:
         """
         Suggest a threshold based on learned patterns.
@@ -315,7 +313,7 @@ class ThompsonLearner:
             return
 
         try:
-            with open(self._persist_path, "r") as f:
+            with open(self._persist_path) as f:
                 data = json.load(f)
 
             for pattern_id, wisdom_data in data.items():
@@ -397,10 +395,10 @@ class Conscience:
 
     def __init__(
         self,
-        lens: Optional[Union[CompositeLens, ConscienceLens]] = None,
-        witness: Optional[WitnessProtocol] = None,
-        learner: Optional[LearnerProtocol] = None,
-        persist_path: Optional[Path] = None,
+        lens: CompositeLens | ConscienceLens | None = None,
+        witness: WitnessProtocol | None = None,
+        learner: LearnerProtocol | None = None,
+        persist_path: Path | None = None,
         auto_learn: bool = True,
     ):
         """
@@ -452,7 +450,7 @@ class Conscience:
     async def consider(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> Judgment:
         """
         Consider an action before execution.
@@ -496,9 +494,9 @@ class Conscience:
     async def witness(
         self,
         action: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         judgment: Judgment,
-        result: Optional[Dict[str, Any]] = None
+        result: dict[str, Any] | None = None
     ) -> str:
         """
         Witness an action and its outcome.
@@ -535,7 +533,7 @@ class Conscience:
 
     async def learn(
         self,
-        feedback: Dict[str, Any]
+        feedback: dict[str, Any]
     ) -> None:
         """
         Learn from feedback.
@@ -578,7 +576,7 @@ class Conscience:
     # Helper Methods
     # =========================================================================
 
-    def _concerns_to_judgment(self, concerns: List[Concern]) -> Judgment:
+    def _concerns_to_judgment(self, concerns: list[Concern]) -> Judgment:
         """Convert a list of concerns to a judgment."""
         if not concerns:
             return quiet_judgment()
@@ -596,7 +594,7 @@ class Conscience:
             voice = Voice.QUIET
 
         # Generate summary
-        by_category: Dict[str, int] = {}
+        by_category: dict[str, int] = {}
         for concern in concerns:
             by_category[concern.category] = by_category.get(concern.category, 0) + 1
 
@@ -624,11 +622,11 @@ class Conscience:
             guidance=guidance,
         )
 
-    async def suggest_threshold(self, context: Dict[str, Any]) -> float:
+    async def suggest_threshold(self, context: dict[str, Any]) -> float:
         """Suggest a threshold based on learned patterns."""
         return await self._learner.suggest_threshold(context)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get statistics about conscience activity."""
         witness_stats = {}
         if isinstance(self._witness, MemoryWitness):
@@ -648,7 +646,7 @@ class Conscience:
     async def is_safe(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         max_voice: Voice = Voice.VOICE
     ) -> bool:
         """
@@ -668,9 +666,9 @@ class Conscience:
     async def gate(
         self,
         action: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         execute_fn=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Gate an action through conscience with automatic execution.
 
@@ -723,7 +721,7 @@ class Conscience:
 
 def create_conscience(
     preset: str = "standard",
-    persist_path: Optional[Path] = None,
+    persist_path: Path | None = None,
     auto_learn: bool = True,
 ) -> Conscience:
     """
@@ -737,7 +735,7 @@ def create_conscience(
     Returns:
         Configured Conscience instance
     """
-    from .lenses import standard, paranoid, research
+    from .lenses import paranoid, research, standard
 
     presets = {
         "standard": standard,
@@ -759,7 +757,7 @@ def create_conscience(
 
 async def consider(
     action: str,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     preset: str = "standard"
 ) -> Judgment:
     """

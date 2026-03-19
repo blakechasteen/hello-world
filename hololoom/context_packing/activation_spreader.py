@@ -18,10 +18,9 @@ Author: Claude Code
 Date: 2025-11-22
 """
 
-import math
-from typing import Dict, List, Any, Optional, Set, Tuple
-from collections import defaultdict, deque
 import logging
+from collections import deque
+from typing import Any
 
 try:
     import networkx as nx
@@ -29,8 +28,8 @@ try:
 except ImportError:
     NETWORKX_AVAILABLE = False
 
-from .protocol import BetaWave, ActivationMap, ActivationState
 from .config import BetaWaveConfig
+from .protocol import ActivationMap, ActivationState, BetaWave
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,7 @@ class ActivationSpreader:
     physics-based wave propagation dynamics.
     """
 
-    def __init__(self, config: Optional[BetaWaveConfig] = None):
+    def __init__(self, config: BetaWaveConfig | None = None):
         """
         Initialize activation spreader.
 
@@ -54,7 +53,7 @@ class ActivationSpreader:
         self.config.validate()
 
         # Tracking
-        self.activation_history: List[Dict[str, float]] = []
+        self.activation_history: list[dict[str, float]] = []
         self._stats = {
             'total_spreads': 0,
             'avg_hops': 0.0,
@@ -63,11 +62,11 @@ class ActivationSpreader:
 
     def spread_activation(
         self,
-        source_nodes: List[str],
+        source_nodes: list[str],
         graph: Any,
         initial_activation: float = 1.0,
-        max_hops: Optional[int] = None,
-        decay_rate: Optional[float] = None
+        max_hops: int | None = None,
+        decay_rate: float | None = None
     ) -> ActivationMap:
         """
         Spread activation from source nodes across graph.
@@ -88,8 +87,8 @@ class ActivationSpreader:
         decay_rate = decay_rate or self.config.decay_rate
 
         # Initialize activation map
-        activation: Dict[str, float] = {}
-        visited: Set[str] = set()
+        activation: dict[str, float] = {}
+        visited: set[str] = set()
 
         # BFS queue: (node_id, current_activation, hop_count)
         queue: deque = deque()
@@ -180,10 +179,10 @@ class ActivationSpreader:
 
     def multi_frequency_spread(
         self,
-        source_nodes: List[str],
+        source_nodes: list[str],
         graph: Any,
-        frequencies: List[float] = [15.0, 20.0, 25.0]
-    ) -> Dict[float, ActivationMap]:
+        frequencies: list[float] = [15.0, 20.0, 25.0]
+    ) -> dict[float, ActivationMap]:
         """
         Spread activation at multiple frequencies simultaneously.
 
@@ -222,9 +221,9 @@ class ActivationSpreader:
 
     def directional_spread(
         self,
-        source_nodes: List[str],
+        source_nodes: list[str],
         graph: Any,
-        edge_weights: Optional[Dict[Tuple[str, str], float]] = None
+        edge_weights: dict[tuple[str, str], float] | None = None
     ) -> ActivationMap:
         """
         Spread activation following edge semantics.
@@ -254,8 +253,8 @@ class ActivationSpreader:
             'OCCURRED_AT': 0.65
         }
 
-        activation: Dict[str, float] = {}
-        visited: Set[str] = set()
+        activation: dict[str, float] = {}
+        visited: set[str] = set()
         queue: deque = deque()
 
         # Initialize sources
@@ -302,7 +301,7 @@ class ActivationSpreader:
     def get_activation_states(
         self,
         activation_map: ActivationMap
-    ) -> Dict[str, ActivationState]:
+    ) -> dict[str, ActivationState]:
         """
         Convert activation map to full ActivationState objects.
 
@@ -328,7 +327,7 @@ class ActivationSpreader:
 
         return states
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get spreading statistics."""
         return self._stats.copy()
 
@@ -343,7 +342,7 @@ class ActivationSpreader:
 
     # Helper methods
 
-    def _get_neighbors(self, node: str, graph: Any) -> List[str]:
+    def _get_neighbors(self, node: str, graph: Any) -> list[str]:
         """Get neighbors of a node from graph."""
         if NETWORKX_AVAILABLE and isinstance(graph, nx.MultiDiGraph):
             return list(graph.successors(node))
@@ -367,7 +366,7 @@ class ActivationSpreader:
         self,
         node: str,
         graph: Any
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """Get neighbors with edge types."""
         if NETWORKX_AVAILABLE and isinstance(graph, nx.MultiDiGraph):
             neighbors = []
@@ -388,9 +387,9 @@ class ActivationSpreader:
 # Convenience functions
 
 def spread_from_query(
-    query_nodes: List[str],
+    query_nodes: list[str],
     graph: Any,
-    config: Optional[BetaWaveConfig] = None
+    config: BetaWaveConfig | None = None
 ) -> ActivationMap:
     """
     Quick activation spread from query-relevant nodes.
@@ -408,10 +407,10 @@ def spread_from_query(
 
 
 def multi_scale_spread(
-    query_nodes: List[str],
+    query_nodes: list[str],
     graph: Any,
-    scales: List[int] = [1, 2, 3]
-) -> Dict[int, ActivationMap]:
+    scales: list[int] = [1, 2, 3]
+) -> dict[int, ActivationMap]:
     """
     Spread activation at multiple scales (hop distances).
 

@@ -9,8 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, FrozenSet, List, Optional, Set
-
+from typing import Any
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  ENUMS - The language of the network
@@ -79,9 +78,9 @@ class Query:
     request_id: str
     requester: str                           # Node ID
     level: VerificationLevel = VerificationLevel.STANDARD
-    guild: Optional[str] = None              # Preferred guild
+    guild: str | None = None              # Preferred guild
     timeout_ms: int = 5000
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
 
 
@@ -95,7 +94,7 @@ class Response:
     confidence: float                        # 0.0-1.0
     latency_ms: float
     signature: bytes = b""                   # Ed25519 signature
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
 
 
@@ -107,9 +106,9 @@ class Verification:
     verified: bool
     confidence: float                        # Agreement level
     consensus_response: str                  # Merged/selected answer
-    verifiers: FrozenSet[str]               # Node IDs that verified
-    dissenting: FrozenSet[str] = frozenset() # Nodes that disagreed
-    scores: Dict[str, float] = field(default_factory=dict)  # DS-STAR scores
+    verifiers: frozenset[str]               # Node IDs that verified
+    dissenting: frozenset[str] = frozenset() # Nodes that disagreed
+    scores: dict[str, float] = field(default_factory=dict)  # DS-STAR scores
     created_at: datetime = field(default_factory=datetime.utcnow)
 
     @property
@@ -130,13 +129,13 @@ class FederationNode:
     node_id: str                             # SHA256(public_key)[:20]
     public_key: bytes                        # Ed25519 public key
     endpoint: str                            # host:port
-    capabilities: Set[Capability] = field(default_factory=set)
-    guilds: Set[str] = field(default_factory=set)
+    capabilities: set[Capability] = field(default_factory=set)
+    guilds: set[str] = field(default_factory=set)
     trust_score: float = 0.5                 # 0.0-1.0, starts neutral
     version: str = "1.0.0"
     status: NodeStatus = NodeStatus.ONLINE
     last_seen: datetime = field(default_factory=datetime.utcnow)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __hash__(self) -> int:
         return hash(self.node_id)
@@ -156,10 +155,10 @@ class Guild:
     domain: str
     trust_level: GuildTrustLevel = GuildTrustLevel.STARTER
     admission: AdmissionPolicy = AdmissionPolicy.OPEN
-    members: Set[str] = field(default_factory=set)        # Node IDs
-    reputation: Dict[str, float] = field(default_factory=dict)
+    members: set[str] = field(default_factory=set)        # Node IDs
+    reputation: dict[str, float] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def quorum(self) -> int:
@@ -229,7 +228,7 @@ class TraceStep:
     action: str                              # "route", "verify", "respond", etc.
     node_id: str
     duration_ms: float
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
 
@@ -238,9 +237,9 @@ class QueryTrace:
     """Complete trace of a query's journey."""
 
     request_id: str
-    steps: List[TraceStep] = field(default_factory=list)
+    steps: list[TraceStep] = field(default_factory=list)
     started_at: datetime = field(default_factory=datetime.utcnow)
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
     def add(
         self,
@@ -289,8 +288,8 @@ class FederationError(Exception):
         self,
         message: str,
         *,
-        node_id: Optional[str] = None,
-        suggestion: Optional[str] = None,
+        node_id: str | None = None,
+        suggestion: str | None = None,
     ):
         self.node_id = node_id
         self.suggestion = suggestion

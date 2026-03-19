@@ -14,10 +14,11 @@ Key Metrics:
 - Efficiency: Is it concise without sacrificing quality?
 """
 
-from typing import Dict, List, Callable, Any, Optional
+import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import re
+from typing import Any
 
 
 class MetricType(Enum):
@@ -39,7 +40,7 @@ class MetricResult:
     score: float  # 0.0 to 1.0
     max_score: float = 1.0
     explanation: str = ""
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
     def percentage(self) -> float:
         """Get score as percentage"""
@@ -50,18 +51,18 @@ class MetricResult:
 class EvaluationResult:
     """Complete evaluation result"""
     overall_score: float
-    metric_results: List[MetricResult]
+    metric_results: list[MetricResult]
     passed: bool
     feedback: str = ""
 
-    def get_metric(self, metric_type: MetricType) -> Optional[MetricResult]:
+    def get_metric(self, metric_type: MetricType) -> MetricResult | None:
         """Get result for specific metric"""
         for result in self.metric_results:
             if result.metric_type == metric_type:
                 return result
         return None
 
-    def lowest_scoring_metric(self) -> Optional[MetricResult]:
+    def lowest_scoring_metric(self) -> MetricResult | None:
         """Get the lowest scoring metric"""
         if not self.metric_results:
             return None
@@ -73,7 +74,7 @@ class MetricsEvaluator:
 
     def __init__(
         self,
-        metrics: List[MetricType],
+        metrics: list[MetricType],
         threshold: float = 0.7
     ):
         """
@@ -87,7 +88,7 @@ class MetricsEvaluator:
         self.threshold = threshold
 
         # Map metrics to evaluation functions
-        self.metric_functions: Dict[MetricType, Callable] = {
+        self.metric_functions: dict[MetricType, Callable] = {
             MetricType.FUNCTIONALITY: self.evaluate_functionality,
             MetricType.FORMAT: self.evaluate_format,
             MetricType.COMPLETENESS: self.evaluate_completeness,
@@ -102,7 +103,7 @@ class MetricsEvaluator:
         self,
         example: Any,
         prediction: Any,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> EvaluationResult:
         """
         Evaluate a prediction against expected output.
@@ -144,7 +145,7 @@ class MetricsEvaluator:
         self,
         example: Any,
         prediction: Any,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MetricResult:
         """Evaluate if output accomplishes the task"""
         # Check if prediction has expected fields
@@ -186,7 +187,7 @@ class MetricsEvaluator:
         self,
         example: Any,
         prediction: Any,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MetricResult:
         """Evaluate if output matches expected format"""
         score = 0.0
@@ -241,7 +242,7 @@ class MetricsEvaluator:
         self,
         example: Any,
         prediction: Any,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MetricResult:
         """Evaluate if output includes all necessary information"""
         score = 0.0
@@ -301,7 +302,7 @@ class MetricsEvaluator:
         self,
         example: Any,
         prediction: Any,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MetricResult:
         """Evaluate factual accuracy"""
         # This is a placeholder - real accuracy checking would need
@@ -351,7 +352,7 @@ class MetricsEvaluator:
         self,
         example: Any,
         prediction: Any,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MetricResult:
         """Evaluate clarity and readability"""
         score = 0.0
@@ -402,7 +403,7 @@ class MetricsEvaluator:
         self,
         example: Any,
         prediction: Any,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MetricResult:
         """Evaluate if output is concise without sacrificing quality"""
         score = 0.0
@@ -444,7 +445,7 @@ class MetricsEvaluator:
         self,
         example: Any,
         prediction: Any,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MetricResult:
         """Evaluate if output is relevant to the task"""
         # Similar to completeness but focused on staying on-topic
@@ -461,7 +462,7 @@ class MetricsEvaluator:
         self,
         example: Any,
         prediction: Any,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MetricResult:
         """Evaluate if output is safe (no harmful content)"""
         score = 1.0  # Default to safe
@@ -502,7 +503,7 @@ class MetricsEvaluator:
 
     def _generate_feedback(
         self,
-        metric_results: List[MetricResult],
+        metric_results: list[MetricResult],
         overall_score: float,
         passed: bool
     ) -> str:
@@ -533,7 +534,7 @@ class MetricsEvaluator:
 
 # Convenience function for DSPy integration
 def create_hololoom_metric(
-    metric_types: List[MetricType] = None,
+    metric_types: list[MetricType] = None,
     threshold: float = 0.7
 ) -> Callable:
     """

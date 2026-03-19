@@ -28,30 +28,22 @@ Architecture:
     - HybridRetriever (Week 4)
 """
 
-from typing import List, Dict, Optional, Any
-from dataclasses import dataclass, field
-from datetime import datetime
-import asyncio
 import logging
+from dataclasses import dataclass
+from typing import Any
 
-from hololoom.protocols.types import MemoryShard
-from hololoom.memory.lifecycle_manager import (
-    ContextStreamManager,
-    MemoryScope,
-    LifeCycle
-)
 from hololoom.agentic.memory_tools import AgentMemoryTools, MemorySearchResult
 from hololoom.memory.consolidation import (
-    MemoryConsolidator,
+    ConsolidationResult,
     ConsolidationStrategy,
-    ConsolidationResult
-)
-from hololoom.memory.hybrid_retrieval import (
-    HybridRetriever,
-    create_hybrid_retriever,
-    RetrievalResult
+    MemoryConsolidator,
 )
 from hololoom.memory.graph import KG
+from hololoom.memory.hybrid_retrieval import (
+    RetrievalResult,
+    create_hybrid_retriever,
+)
+from hololoom.memory.lifecycle_manager import ContextStreamManager, LifeCycle, MemoryScope
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +57,9 @@ class IntegratedMemoryConfig:
     """Configuration for integrated memory system."""
 
     # Week 3: LLM consolidation
-    llm_provider: Optional[str] = None  # "openai", "anthropic", "ollama", None
-    llm_model: Optional[str] = None
-    llm_api_key: Optional[str] = None
+    llm_provider: str | None = None  # "openai", "anthropic", "ollama", None
+    llm_model: str | None = None
+    llm_api_key: str | None = None
     consolidation_interval_minutes: int = 60
     enable_consolidation: bool = False  # Opt-in
 
@@ -99,9 +91,9 @@ class IntegratedMemorySystem:
 
     def __init__(
         self,
-        config: Optional[IntegratedMemoryConfig] = None,
-        stream_manager: Optional[ContextStreamManager] = None,
-        knowledge_graph: Optional[KG] = None
+        config: IntegratedMemoryConfig | None = None,
+        stream_manager: ContextStreamManager | None = None,
+        knowledge_graph: KG | None = None
     ):
         """
         Initialize integrated memory system.
@@ -176,10 +168,10 @@ class IntegratedMemorySystem:
     async def store(
         self,
         content: str,
-        scope: Optional[MemoryScope] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        entities: Optional[List[str]] = None,
-        motifs: Optional[List[str]] = None,
+        scope: MemoryScope | None = None,
+        metadata: dict[str, Any] | None = None,
+        entities: list[str] | None = None,
+        motifs: list[str] | None = None,
         importance: float = 0.5
     ):
         """
@@ -205,7 +197,7 @@ class IntegratedMemorySystem:
             importance=importance
         )
 
-    async def update(self, memory_id: str, new_content: str, metadata: Optional[Dict[str, Any]] = None):
+    async def update(self, memory_id: str, new_content: str, metadata: dict[str, Any] | None = None):
         """Update memory (Week 2 - temporal invalidation)."""
         return await self.agent_tools.update(memory_id, new_content, metadata)
 
@@ -220,8 +212,8 @@ class IntegratedMemorySystem:
     async def retrieve(
         self,
         query: str,
-        scopes: Optional[List[MemoryScope]] = None,
-        lifecycles: Optional[List[LifeCycle]] = None,
+        scopes: list[MemoryScope] | None = None,
+        lifecycles: list[LifeCycle] | None = None,
         limit: int = 10,
         min_importance: float = 0.0
     ) -> RetrievalResult:
@@ -268,7 +260,7 @@ class IntegratedMemorySystem:
     async def search_simple(
         self,
         query: str,
-        scopes: Optional[List[MemoryScope]] = None,
+        scopes: list[MemoryScope] | None = None,
         limit: int = 10,
         min_importance: float = 0.0
     ) -> MemorySearchResult:
@@ -340,7 +332,7 @@ class IntegratedMemorySystem:
     # Performance Enhancements
     # ========================================================================
 
-    def enable_spring_physics(self, config: Optional[Any] = None):
+    def enable_spring_physics(self, config: Any | None = None):
         """
         Enable spring physics for graph retrieval (9.6× faster!).
 
@@ -368,7 +360,7 @@ class IntegratedMemorySystem:
         """
         try:
             from hololoom.memory.spring_graph_retriever import (
-                enable_spring_physics as _enable_spring
+                enable_spring_physics as _enable_spring,
             )
             _enable_spring(self, config=config)
         except ImportError:
@@ -382,7 +374,7 @@ class IntegratedMemorySystem:
     # Statistics and Monitoring
     # ========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get comprehensive system statistics."""
         # Week 1: Stream manager stats
         stream_stats = self.stream_manager.get_statistics()
@@ -437,7 +429,7 @@ class IntegratedMemorySystem:
 # ============================================================================
 
 def create_integrated_memory_system(
-    llm_provider: Optional[str] = None,
+    llm_provider: str | None = None,
     enable_consolidation: bool = False,
     enable_all_retrieval: bool = True
 ) -> IntegratedMemorySystem:

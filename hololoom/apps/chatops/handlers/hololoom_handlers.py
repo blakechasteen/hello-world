@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 HoloLoom Matrix Bot Handlers
 =============================
@@ -17,10 +18,10 @@ Commands:
 import asyncio
 import logging
 import uuid
-from typing import Optional, Dict, Any
+from dataclasses import dataclass
 from datetime import datetime
-from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -28,24 +29,27 @@ except ImportError:
     pass
 
 # Import HoloLoom components
-import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sys
 
-from hololoom.weaving_shuttle import WeavingShuttle
-from hololoom.config import Config
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.loom.command import PatternCard
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Handler registry (decorator-based registration)
 from hololoom.apps.chatops.handlers.handler_registry import (
-    HandlerRegistry, HandlerCategory, chatops_handler
+    HandlerCategory,
+    HandlerRegistry,
+    chatops_handler,
 )
+from hololoom.config import Config
+from hololoom.protocols.types import MemoryShard, Query
+from hololoom.weaving_shuttle import WeavingShuttle
 
 # WebSocket progress streaming (optional, graceful degradation)
 try:
     from hololoom.apps.chatops.handlers.websocket_progress import (
-        JobProgressBroadcaster, JobProgressManager, get_global_broadcaster
+        JobProgressBroadcaster,
+        JobProgressManager,
+        get_global_broadcaster,
     )
     WEBSOCKET_AVAILABLE = True
 except ImportError:
@@ -56,7 +60,8 @@ except ImportError:
 # Prometheus metrics (optional, graceful degradation)
 try:
     from hololoom.apps.chatops.handlers.prometheus_metrics import (
-        JobMetricsCollector, get_metrics_collector
+        JobMetricsCollector,
+        get_metrics_collector,
     )
     METRICS_AVAILABLE = True
 except ImportError:
@@ -66,9 +71,9 @@ except ImportError:
 
 # Alignment framework imports (graceful degradation if unavailable)
 try:
-    from hololoom.alignment import create_guardrails, create_audit_trail
-    from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+    from hololoom.alignment import create_audit_trail, create_guardrails
     from hololoom.alignment.audit_trail import DecisionType, OutcomeType
+    from hololoom.alignment.safety_guardrails import ActionCategory, ActionRequest
     ALIGNMENT_AVAILABLE = True
 except ImportError:
     ALIGNMENT_AVAILABLE = False
@@ -108,11 +113,11 @@ class PendingWeaveJob:
     room_id: str
     user_id: str
     submitted_at: datetime
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    spacetime: Optional[Any] = None  # Result when completed
-    error: Optional[str] = None
-    task: Optional[asyncio.Task] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    spacetime: Any | None = None  # Result when completed
+    error: str | None = None
+    task: asyncio.Task | None = None
     progress_step: int = 0
     progress_total: int = 9  # 9-step weaving cycle
     progress_message: str = "Queued"
@@ -129,7 +134,7 @@ class HoloLoomMatrixHandlers:
     - Analytics and monitoring
     """
 
-    def __init__(self, bot, config_mode: str = "fast", memory_shards: Optional[list] = None, enable_alignment: bool = True):
+    def __init__(self, bot, config_mode: str = "fast", memory_shards: list | None = None, enable_alignment: bool = True):
         """
         Initialize handlers with HoloLoom weaving shuttle.
 
@@ -184,14 +189,14 @@ class HoloLoomMatrixHandlers:
                 logger.warning("Alignment requested but not available - running without safety gating")
 
         # Track spacetime artifacts by query hash
-        self.spacetime_history: Dict[str, Any] = {}
+        self.spacetime_history: dict[str, Any] = {}
 
         # Async job tracking (Moonshot pattern)
-        self._pending_jobs: Dict[str, PendingWeaveJob] = {}
+        self._pending_jobs: dict[str, PendingWeaveJob] = {}
         self._max_concurrent_jobs = 10  # Limit concurrent weave jobs
 
         # WebSocket progress broadcasting (optional)
-        self._progress_broadcaster: Optional[JobProgressBroadcaster] = None
+        self._progress_broadcaster: JobProgressBroadcaster | None = None
         if WEBSOCKET_AVAILABLE:
             try:
                 self._progress_broadcaster = get_global_broadcaster()
@@ -200,7 +205,7 @@ class HoloLoomMatrixHandlers:
                 logger.debug(f"WebSocket broadcaster not initialized: {e}")
 
         # Prometheus metrics collection (optional)
-        self._metrics_collector: Optional[JobMetricsCollector] = None
+        self._metrics_collector: JobMetricsCollector | None = None
         if METRICS_AVAILABLE:
             try:
                 self._metrics_collector = get_metrics_collector()
@@ -213,7 +218,7 @@ class HoloLoomMatrixHandlers:
         # Run startup diagnostics (P0 fix: warn about missing components)
         self._startup_diagnostics = self._run_startup_diagnostics()
 
-    def _run_startup_diagnostics(self) -> Dict[str, Any]:
+    def _run_startup_diagnostics(self) -> dict[str, Any]:
         """
         Run startup diagnostics and warn about missing optional components.
 
@@ -276,7 +281,7 @@ class HoloLoomMatrixHandlers:
 
         return diagnostics
 
-    def get_startup_diagnostics(self) -> Dict[str, Any]:
+    def get_startup_diagnostics(self) -> dict[str, Any]:
         """Get startup diagnostics for display via !status or similar."""
         return self._startup_diagnostics
 
@@ -808,7 +813,7 @@ Processing in background. You'll receive a notification when complete.
                     duration = (job.completed_at - job.submitted_at).total_seconds() if job.completed_at else 0
                     response += f"• {icon} `{job.job_id}` ({duration:.1f}s) - {job.query[:40]}...\n"
 
-            response += f"\n*Use `!status <job_id>` for details*"
+            response += "\n*Use `!status <job_id>` for details*"
 
             await self.bot.send_message(room.room_id, response, markdown=True)
 

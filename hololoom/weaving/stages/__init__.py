@@ -10,11 +10,11 @@ Each stage is a self-contained unit that:
 - Is reusable across different complexity strategies
 """
 
-from .pattern_selection import PatternSelectionStage
-from .temporal_control import TemporalControlStage
+from .decision_collapse import DecisionCollapseStage
 from .feature_extraction import FeatureExtractionStage
 from .memory_retrieval import MemoryRetrievalStage
-from .decision_collapse import DecisionCollapseStage
+from .pattern_selection import PatternSelectionStage
+from .temporal_control import TemporalControlStage
 
 __all__ = [
     "PatternSelectionStage",

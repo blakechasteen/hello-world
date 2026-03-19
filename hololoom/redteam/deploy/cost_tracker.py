@@ -19,9 +19,9 @@ import json
 import logging
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 logger = logging.getLogger("carts-deploy.cost")
 
@@ -35,9 +35,9 @@ class CostEntry:
     cpu_cores: float
     memory_gb: float
     cost_usd: float
-    labels: Dict[str, str] = field(default_factory=dict)
+    labels: dict[str, str] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "job_id": self.job_id,
@@ -88,7 +88,7 @@ class CostTracker:
         self.rate = rate or CostRate()
         self.budget_usd = budget_usd
         self.persist_path = persist_path
-        self.entries: List[CostEntry] = []
+        self.entries: list[CostEntry] = []
         self._load()
 
     def _load(self) -> None:
@@ -124,7 +124,7 @@ class CostTracker:
         cpu_cores: float,
         memory_mb: int,
         network_bytes: int = 0,
-        labels: Dict[str, str] = None,
+        labels: dict[str, str] = None,
     ) -> CostEntry:
         """Record cost for a job execution."""
         memory_gb = memory_mb / 1024
@@ -169,18 +169,18 @@ class CostTracker:
         """Get total cost of all recorded entries."""
         return sum(e.cost_usd for e in self.entries)
 
-    def get_cost_by_label(self, label_key: str) -> Dict[str, float]:
+    def get_cost_by_label(self, label_key: str) -> dict[str, float]:
         """Get costs grouped by label value."""
-        costs: Dict[str, float] = {}
+        costs: dict[str, float] = {}
         for entry in self.entries:
             label_value = entry.labels.get(label_key, "unknown")
             costs[label_value] = costs.get(label_value, 0) + entry.cost_usd
         return costs
 
-    def get_cost_by_date(self, days: int = 30) -> Dict[str, float]:
+    def get_cost_by_date(self, days: int = 30) -> dict[str, float]:
         """Get costs grouped by date for last N days."""
         cutoff = time.time() - (days * 24 * 3600)
-        costs: Dict[str, float] = {}
+        costs: dict[str, float] = {}
 
         for entry in self.entries:
             if entry.timestamp >= cutoff:
@@ -193,7 +193,7 @@ class CostTracker:
         self,
         start_time: float = None,
         end_time: float = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get cost summary for time range."""
         entries = self.entries
 
@@ -287,7 +287,7 @@ class CostTracker:
 
 
 # Global tracker instance
-_tracker: Optional[CostTracker] = None
+_tracker: CostTracker | None = None
 
 
 def init_cost_tracking(
@@ -305,7 +305,7 @@ def init_cost_tracking(
     return _tracker
 
 
-def get_cost_tracker() -> Optional[CostTracker]:
+def get_cost_tracker() -> CostTracker | None:
     """Get global cost tracker."""
     return _tracker
 
@@ -315,8 +315,8 @@ def record_cost(
     duration_seconds: float,
     cpu_cores: float,
     memory_mb: int,
-    labels: Dict[str, str] = None,
-) -> Optional[CostEntry]:
+    labels: dict[str, str] = None,
+) -> CostEntry | None:
     """Record cost on global tracker."""
     if _tracker:
         return _tracker.record(job_id, duration_seconds, cpu_cores, memory_mb, labels=labels)

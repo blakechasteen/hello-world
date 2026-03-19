@@ -24,8 +24,8 @@ Date: 2025-12-03
 
 from .base import BaseLens
 from .composite import CompositeLens, create_composite
-from .harm import HarmLens
 from .deception import DeceptionLens
+from .harm import HarmLens
 from .power import PowerLens
 
 __all__ = [

@@ -18,13 +18,13 @@ Date: 2025-12-01
 """
 
 import json
-import random
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Any
 
 from hololoom.bandits.beta_arm import BetaArm
+
 from .strategies import AttackStrategy
 
 
@@ -47,7 +47,7 @@ class BanditArm:
     _arm: BetaArm = field(default_factory=BetaArm)
     total_pulls: int = 0
     total_rewards: float = 0.0
-    last_updated: Optional[str] = None
+    last_updated: str | None = None
 
     @property
     def alpha(self) -> float:
@@ -104,7 +104,7 @@ class BanditArm:
         """Uncertainty (variance of Beta distribution)."""
         return self._arm.variance()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'strategy': self.strategy.value,
@@ -119,7 +119,7 @@ class BanditArm:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'BanditArm':
+    def from_dict(cls, data: dict[str, Any]) -> 'BanditArm':
         """Create from dictionary."""
         return cls(
             strategy=AttackStrategy(data['strategy']),
@@ -136,7 +136,7 @@ class SelectionResult:
 
     strategy: AttackStrategy
     sampled_value: float
-    all_samples: Dict[AttackStrategy, float]
+    all_samples: dict[AttackStrategy, float]
     arm: BanditArm
 
 
@@ -178,9 +178,9 @@ class RedTeamBandit:
             initial_beta: Initial beta for all arms
             decay_rate: Decay rate for priors (0 = no decay)
         """
-        self.arms: Dict[AttackStrategy, BanditArm] = {}
+        self.arms: dict[AttackStrategy, BanditArm] = {}
         self.decay_rate = decay_rate
-        self.selection_history: List[SelectionResult] = []
+        self.selection_history: list[SelectionResult] = []
 
         # Initialize arm for each strategy
         for strategy in AttackStrategy:
@@ -223,7 +223,7 @@ class RedTeamBandit:
 
         return selected
 
-    def select_top_k(self, k: int = 3) -> List[AttackStrategy]:
+    def select_top_k(self, k: int = 3) -> list[AttackStrategy]:
         """
         Select top-k strategies by Thompson Sampling.
 
@@ -261,7 +261,7 @@ class RedTeamBandit:
         if strategy in self.arms:
             self.arms[strategy].update(success, severity if success else 0.0)
 
-    def update_batch(self, results: List[Tuple[AttackStrategy, bool, float]]):
+    def update_batch(self, results: list[tuple[AttackStrategy, bool, float]]):
         """
         Update bandit with multiple results.
 
@@ -271,7 +271,7 @@ class RedTeamBandit:
         for strategy, success, severity in results:
             self.update(strategy, success, severity)
 
-    def get_expected_rewards(self) -> Dict[AttackStrategy, float]:
+    def get_expected_rewards(self) -> dict[AttackStrategy, float]:
         """Get expected rewards for all strategies."""
         return {
             strategy: arm.expected_reward
@@ -286,7 +286,7 @@ class RedTeamBandit:
     def get_exploration_candidates(
         self,
         uncertainty_threshold: float = 0.1
-    ) -> List[AttackStrategy]:
+    ) -> list[AttackStrategy]:
         """
         Get strategies with high uncertainty (worth exploring).
 
@@ -302,7 +302,7 @@ class RedTeamBandit:
             if arm.uncertainty > uncertainty_threshold
         ]
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get comprehensive bandit statistics."""
         total_pulls = sum(arm.total_pulls for arm in self.arms.values())
         total_rewards = sum(arm.total_rewards for arm in self.arms.values())
@@ -326,7 +326,7 @@ class RedTeamBandit:
             }
         }
 
-    def get_arm_summary(self) -> List[Dict[str, Any]]:
+    def get_arm_summary(self) -> list[dict[str, Any]]:
         """Get summary of all arms sorted by expected reward."""
         summaries = [
             {
@@ -374,7 +374,7 @@ class RedTeamBandit:
         if not path.exists():
             return
 
-        with open(path, 'r') as f:
+        with open(path) as f:
             state = json.load(f)
 
         self.decay_rate = state.get('decay_rate', 0.0)
@@ -407,7 +407,7 @@ def create_bandit(
     initial_alpha: float = 1.0,
     initial_beta: float = 1.0,
     decay_rate: float = 0.0,
-    state_path: Optional[Path] = None
+    state_path: Path | None = None
 ) -> RedTeamBandit:
     """
     Create a RedTeamBandit, optionally loading saved state.

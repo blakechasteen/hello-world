@@ -28,16 +28,14 @@ This is Phase 5 + Matryoshka = SUPER-POWERED RETRIEVAL 🚀
 """
 
 import logging
-import numpy as np
-from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
-from hololoom.embedding.matryoshka_gate import (
-    MatryoshkaGate, GateConfig, GateResult, GateStrategy
-)
-from hololoom.performance.compositional_cache import CompositionalCache
+import numpy as np
+
+from hololoom.embedding.matryoshka_gate import GateConfig, GateResult, GateStrategy, MatryoshkaGate
 from hololoom.motif.xbar_chunker import UniversalGrammarChunker, XBarNode
+from hololoom.performance.compositional_cache import CompositionalCache
 
 logger = logging.getLogger(__name__)
 
@@ -105,9 +103,9 @@ class LinguisticMatryoshkaGate(MatryoshkaGate):
     def __init__(
         self,
         embedder,
-        config: Optional[LinguisticGateConfig] = None,
-        ug_chunker: Optional[UniversalGrammarChunker] = None,
-        compositional_cache: Optional[CompositionalCache] = None
+        config: LinguisticGateConfig | None = None,
+        ug_chunker: UniversalGrammarChunker | None = None,
+        compositional_cache: CompositionalCache | None = None
     ):
         """
         Initialize linguistic matryoshka gate.
@@ -176,9 +174,9 @@ class LinguisticMatryoshkaGate(MatryoshkaGate):
     async def gate(
         self,
         query: str,
-        candidates: List[str],
+        candidates: list[str],
         final_k: int = 10
-    ) -> Tuple[List[int], List[GateResult]]:
+    ) -> tuple[list[int], list[GateResult]]:
         """
         Gate candidates with linguistic features and compositional caching.
 
@@ -320,8 +318,8 @@ class LinguisticMatryoshkaGate(MatryoshkaGate):
     async def _linguistic_prefilter(
         self,
         query: str,
-        candidates: List[str]
-    ) -> List[int]:
+        candidates: list[str]
+    ) -> list[int]:
         """
         Filter candidates by syntactic compatibility.
 
@@ -453,7 +451,7 @@ class LinguisticMatryoshkaGate(MatryoshkaGate):
     # Embedder Protocol Compatibility
     # ========================================================================
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts into embeddings.
 
@@ -479,8 +477,8 @@ class LinguisticMatryoshkaGate(MatryoshkaGate):
 
     def encode_scales(
         self,
-        texts: List[str],
-        size: Optional[int] = None
+        texts: list[str],
+        size: int | None = None
     ):
         """
         Encode texts at specific matryoshka scales.
@@ -523,7 +521,7 @@ class LinguisticMatryoshkaGate(MatryoshkaGate):
     # Statistics
     # ========================================================================
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get comprehensive statistics."""
         stats = super().get_statistics()
 
@@ -552,6 +550,7 @@ class LinguisticMatryoshkaGate(MatryoshkaGate):
 
 if __name__ == "__main__":
     import asyncio
+
     from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     async def demo():
@@ -631,13 +630,13 @@ if __name__ == "__main__":
 
         stats = gate.get_statistics()
 
-        print(f"\nLinguistic filter:")
+        print("\nLinguistic filter:")
         print(f"  Mode: {stats['linguistic_filter']['mode']}")
         print(f"  Total filtered: {stats['linguistic_filter']['total_filtered']}")
 
         if "compositional_cache" in stats:
             cache_stats = stats["compositional_cache"]
-            print(f"\nCompositional cache:")
+            print("\nCompositional cache:")
             print(f"  Parse hit rate: {cache_stats['parse_cache']['hit_rate']:.1%}")
             print(f"  Merge hit rate: {cache_stats['merge_cache']['hit_rate']:.1%}")
             print(f"  Overall: {cache_stats['overall_hit_rate']:.1%}")

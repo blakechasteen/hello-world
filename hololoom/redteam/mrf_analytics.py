@@ -17,20 +17,19 @@ Author: CARTS Team
 Date: 2025-12-03
 """
 
-import json
-import time
-import logging
 import hashlib
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+import json
+import logging
+import statistics
+import time
+from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-from collections import defaultdict
-import statistics
+from typing import Any
 
-from .strategies import AttackStrategy, AttackPayload
 from .mrf_payloads import EnhancementType
+from .strategies import AttackStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,7 @@ class EnhancementMetric:
     severity_after: float  # 0.0-1.0
     enhancement_confidence: float  # MRF enhancement confidence
     payload_id: str  # Hash of payload for deduplication
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def improved(self) -> bool:
@@ -82,7 +81,7 @@ class EnhancementMetric:
         """Convert to datetime."""
         return datetime.fromtimestamp(self.timestamp)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             'timestamp': self.timestamp,
@@ -114,7 +113,7 @@ class StrategyImpact:
     avg_enhancement_confidence: float = 0.0
     success_rate_before: float = 0.0
     success_rate_after: float = 0.0
-    enhancement_type_usage: Dict[str, int] = field(default_factory=dict)
+    enhancement_type_usage: dict[str, int] = field(default_factory=dict)
 
     @property
     def improvement_rate(self) -> float:
@@ -135,7 +134,7 @@ class StrategyImpact:
             return 0.0 if self.success_rate_after == 0 else 1.0
         return (self.success_rate_after - self.success_rate_before) / self.success_rate_before
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             'strategy': self.strategy.value,
@@ -164,7 +163,7 @@ class EnhancementTypeImpact:
     improvements: int = 0
     degradations: int = 0
     avg_effectiveness_delta: float = 0.0
-    strategy_success: Dict[str, float] = field(default_factory=dict)
+    strategy_success: dict[str, float] = field(default_factory=dict)
 
     @property
     def improvement_rate(self) -> float:
@@ -182,7 +181,7 @@ class EnhancementTypeImpact:
         """
         return 0.7 * self.improvement_rate + 0.3 * max(0, self.avg_effectiveness_delta)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             'enhancement_type': self.enhancement_type.value,
@@ -216,7 +215,7 @@ class ABTestResult:
     severity: float
     user_id: str  # For consistent assignment
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             'timestamp': self.timestamp,
@@ -268,7 +267,7 @@ class MRFImpactAnalytics:
 
     def __init__(
         self,
-        persist_path: Optional[Path] = None,
+        persist_path: Path | None = None,
         enable_ab_testing: bool = True,
         ab_traffic_split: float = 0.2  # 20% treatment
     ):
@@ -287,26 +286,26 @@ class MRFImpactAnalytics:
         self.ab_traffic_split = ab_traffic_split
 
         # Metrics storage
-        self.metrics: List[EnhancementMetric] = []
+        self.metrics: list[EnhancementMetric] = []
 
         # Aggregated impact by strategy
-        self.strategy_impact: Dict[AttackStrategy, StrategyImpact] = {
+        self.strategy_impact: dict[AttackStrategy, StrategyImpact] = {
             strategy: StrategyImpact(strategy=strategy)
             for strategy in AttackStrategy
         }
 
         # Aggregated impact by enhancement type
-        self.enhancement_impact: Dict[EnhancementType, EnhancementTypeImpact] = {
+        self.enhancement_impact: dict[EnhancementType, EnhancementTypeImpact] = {
             etype: EnhancementTypeImpact(enhancement_type=etype)
             for etype in EnhancementType
         }
 
         # A/B testing
-        self.ab_results: Dict[ABGroup, List[ABTestResult]] = {
+        self.ab_results: dict[ABGroup, list[ABTestResult]] = {
             ABGroup.CONTROL: [],
             ABGroup.TREATMENT: []
         }
-        self.ab_assignments: Dict[str, ABGroup] = {}
+        self.ab_assignments: dict[str, ABGroup] = {}
 
         # Load persisted data
         self._load_data()
@@ -325,7 +324,7 @@ class MRFImpactAnalytics:
         severity_after: float,
         enhancement_confidence: float,
         payload_id: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> EnhancementMetric:
         """
         Log an MRF enhancement event with before/after effectiveness.
@@ -377,7 +376,7 @@ class MRFImpactAnalytics:
         success: bool,
         severity: float,
         user_id: str,
-        force_group: Optional[ABGroup] = None
+        force_group: ABGroup | None = None
     ) -> ABTestResult:
         """
         Log an A/B test observation.
@@ -431,7 +430,7 @@ class MRFImpactAnalytics:
         """Get aggregated impact for a specific enhancement type."""
         return self.enhancement_impact[enhancement_type]
 
-    def get_best_strategies(self, limit: int = 5) -> List[StrategyImpact]:
+    def get_best_strategies(self, limit: int = 5) -> list[StrategyImpact]:
         """
         Get strategies with highest improvement rates.
 
@@ -448,7 +447,7 @@ class MRFImpactAnalytics:
         impacts.sort(key=lambda x: x.improvement_rate, reverse=True)
         return impacts[:limit]
 
-    def get_best_enhancement_types(self, limit: int = 5) -> List[EnhancementTypeImpact]:
+    def get_best_enhancement_types(self, limit: int = 5) -> list[EnhancementTypeImpact]:
         """
         Get enhancement types with highest expected reward.
 
@@ -465,7 +464,7 @@ class MRFImpactAnalytics:
         impacts.sort(key=lambda x: x.expected_reward, reverse=True)
         return impacts[:limit]
 
-    def get_ab_analysis(self, min_samples: int = 30) -> Dict[str, Any]:
+    def get_ab_analysis(self, min_samples: int = 30) -> dict[str, Any]:
         """
         Analyze A/B test results.
 
@@ -559,7 +558,7 @@ class MRFImpactAnalytics:
 
         return result
 
-    def get_overall_statistics(self) -> Dict[str, Any]:
+    def get_overall_statistics(self) -> dict[str, Any]:
         """
         Get overall analytics statistics.
 
@@ -698,7 +697,7 @@ class MRFImpactAnalytics:
 
         return '\n'.join(lines)
 
-    def export_json_report(self) -> Dict[str, Any]:
+    def export_json_report(self) -> dict[str, Any]:
         """
         Export comprehensive JSON report.
 
@@ -838,7 +837,7 @@ class MRFImpactAnalytics:
 
         return '\n'.join(html_parts)
 
-    def save_dashboard(self, path: Optional[Path] = None) -> Path:
+    def save_dashboard(self, path: Path | None = None) -> Path:
         """
         Save HTML dashboard to file.
 
@@ -1017,7 +1016,7 @@ class MRFImpactAnalytics:
 # =============================================================================
 
 def create_analytics(
-    persist_path: Optional[Path] = None,
+    persist_path: Path | None = None,
     enable_ab_testing: bool = True
 ) -> MRFImpactAnalytics:
     """

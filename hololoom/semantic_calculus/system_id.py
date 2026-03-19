@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Semantic System Identification via DE + Linear + Regression
 
@@ -17,15 +18,16 @@ we LEARN them from examples!
 Key insight: Combine statistical learning with geometric/dynamic structure.
 """
 
-import numpy as np
-from typing import List, Dict, Tuple, Optional, Callable
-from dataclasses import dataclass
 import warnings
+from collections.abc import Callable
+from dataclasses import dataclass
+
+import numpy as np
 
 try:
-    from sklearn.linear_model import Ridge, LinearRegression
-    from sklearn.preprocessing import PolynomialFeatures
     from sklearn.decomposition import PCA, FastICA
+    from sklearn.linear_model import LinearRegression, Ridge
+    from sklearn.preprocessing import PolynomialFeatures
     _SKLEARN_AVAILABLE = True
 except ImportError:
     _SKLEARN_AVAILABLE = False
@@ -56,9 +58,9 @@ class LearnedSemanticSystem:
     mass: float = 1.0
     damping: float = 0.1
     stiffness: float = 0.01
-    equilibrium: Optional[np.ndarray] = None
+    equilibrium: np.ndarray | None = None
 
-    def predict_trajectory(self, q0: np.ndarray, t_span: Tuple[float, float],
+    def predict_trajectory(self, q0: np.ndarray, t_span: tuple[float, float],
                           dt: float = 0.1) -> np.ndarray:
         """
         Predict future trajectory using learned dynamics
@@ -124,9 +126,9 @@ class SemanticSystemIdentification:
         self.n_semantic_dims = n_semantic_dims
         self.polynomial_degree = polynomial_degree
 
-        self.learned_system: Optional[LearnedSemanticSystem] = None
+        self.learned_system: LearnedSemanticSystem | None = None
 
-    def fit(self, trajectories: List[np.ndarray], verbose: bool = True) -> LearnedSemanticSystem:
+    def fit(self, trajectories: list[np.ndarray], verbose: bool = True) -> LearnedSemanticSystem:
         """
         Learn semantic system from observed trajectories
 
@@ -197,8 +199,8 @@ class SemanticSystemIdentification:
 
         return self.learned_system
 
-    def _learn_dimensions(self, trajectories: List[np.ndarray],
-                         verbose: bool) -> Tuple[np.ndarray, List[str]]:
+    def _learn_dimensions(self, trajectories: list[np.ndarray],
+                         verbose: bool) -> tuple[np.ndarray, list[str]]:
         """
         Stage 1: Learn semantic dimensions via ICA
 
@@ -223,8 +225,8 @@ class SemanticSystemIdentification:
 
         return P, dim_names
 
-    def _learn_gradient_field(self, semantic_trajs: List[np.ndarray],
-                              verbose: bool) -> Tuple[Callable, float]:
+    def _learn_gradient_field(self, semantic_trajs: list[np.ndarray],
+                              verbose: bool) -> tuple[Callable, float]:
         """
         Stage 2: Learn gradV via polynomial regression
 
@@ -297,8 +299,8 @@ class SemanticSystemIdentification:
 
         return gradient_field, best_gamma
 
-    def _fit_dynamic_parameters(self, semantic_trajs: List[np.ndarray],
-                                verbose: bool) -> Dict:
+    def _fit_dynamic_parameters(self, semantic_trajs: list[np.ndarray],
+                                verbose: bool) -> dict:
         """
         Stage 3: Fit (m, gamma, k) via least squares
 
@@ -373,8 +375,8 @@ class SemanticSystemIdentification:
         t_span = (0, n_steps * dt)
         return self.learned_system.predict_trajectory(trajectory_start, t_span, dt)
 
-    def evaluate_prediction(self, test_trajectories: List[np.ndarray],
-                           prediction_horizon: int = 10) -> Dict:
+    def evaluate_prediction(self, test_trajectories: list[np.ndarray],
+                           prediction_horizon: int = 10) -> dict:
         """
         Evaluate learned system on held-out trajectories
 
@@ -416,10 +418,10 @@ class SemanticSystemIdentification:
         }
 
 
-def visualize_system_identification(true_trajectories: List[np.ndarray],
-                                   predicted_trajectories: List[np.ndarray],
+def visualize_system_identification(true_trajectories: list[np.ndarray],
+                                   predicted_trajectories: list[np.ndarray],
                                    learned_system: LearnedSemanticSystem,
-                                   save_path: Optional[str] = None):
+                                   save_path: str | None = None):
     """
     Visualize learned system vs ground truth
     """

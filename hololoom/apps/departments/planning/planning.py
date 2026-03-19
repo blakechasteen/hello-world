@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Planning Department - Goal decomposition and action planning.
 
@@ -20,21 +19,20 @@ Supported Tasks:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional, Tuple, Set
-from datetime import datetime
-from dataclasses import dataclass, field
-from enum import Enum
+
 import logging
-import asyncio
-from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 from ..base import BaseDepartment
 from ..protocol import (
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
     VerificationResult,
-    ConfidenceMetadata,
-    DepartmentConfig
 )
 
 logger = logging.getLogger(__name__)
@@ -67,12 +65,12 @@ class Goal:
     id: str
     description: str
     status: GoalStatus = GoalStatus.PENDING
-    parent_goal_id: Optional[str] = None
-    sub_goals: List[str] = field(default_factory=list)
-    required_actions: List[str] = field(default_factory=list)
-    success_criteria: List[str] = field(default_factory=list)
+    parent_goal_id: str | None = None
+    sub_goals: list[str] = field(default_factory=list)
+    required_actions: list[str] = field(default_factory=list)
+    success_criteria: list[str] = field(default_factory=list)
     priority: float = 0.5  # 0.0 to 1.0
-    deadline: Optional[datetime] = None
+    deadline: datetime | None = None
 
 
 @dataclass
@@ -80,11 +78,11 @@ class Action:
     """An action step in a plan."""
     id: str
     description: str
-    preconditions: List[str] = field(default_factory=list)
-    effects: List[str] = field(default_factory=list)
+    preconditions: list[str] = field(default_factory=list)
+    effects: list[str] = field(default_factory=list)
     duration_estimate: float = 1.0  # in arbitrary time units
     cost: float = 1.0  # relative cost
-    required_resources: List[str] = field(default_factory=list)
+    required_resources: list[str] = field(default_factory=list)
     confidence: float = 0.8
 
 
@@ -94,7 +92,7 @@ class Constraint:
     id: str
     type: ConstraintType
     description: str
-    affected_actions: List[str] = field(default_factory=list)
+    affected_actions: list[str] = field(default_factory=list)
     violation_penalty: float = 1.0
     is_hard: bool = True  # Hard constraint vs soft constraint
 
@@ -104,8 +102,8 @@ class Plan:
     """A plan to achieve a goal."""
     id: str
     goal_id: str
-    actions: List[Action]
-    constraints: List[Constraint] = field(default_factory=list)
+    actions: list[Action]
+    constraints: list[Constraint] = field(default_factory=list)
     total_duration: float = 0.0
     total_cost: float = 0.0
     feasibility_score: float = 0.0
@@ -151,7 +149,7 @@ class GoalDecomposer:
         self.max_depth = max_depth
         self.max_sub_goals = max_sub_goals
 
-        self._goal_registry: Dict[str, Goal] = {}
+        self._goal_registry: dict[str, Goal] = {}
         self._goal_counter = 0
 
         logger.info(f"GoalDecomposer initialized (max_depth={max_depth})")
@@ -159,7 +157,7 @@ class GoalDecomposer:
     def decompose(
         self,
         goal_description: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         depth: int = 0
     ) -> Goal:
         """
@@ -201,7 +199,7 @@ class GoalDecomposer:
 
         return goal
 
-    def get_execution_order(self, goal: Goal) -> List[Goal]:
+    def get_execution_order(self, goal: Goal) -> list[Goal]:
         """
         Get execution order for goal and sub-goals (depth-first).
 
@@ -227,7 +225,7 @@ class GoalDecomposer:
         traverse(goal)
         return execution_order
 
-    def estimate_complexity(self, goal: Goal) -> Dict[str, Any]:
+    def estimate_complexity(self, goal: Goal) -> dict[str, Any]:
         """
         Estimate goal complexity metrics.
 
@@ -286,8 +284,8 @@ class GoalDecomposer:
     def _generate_sub_goals(
         self,
         goal_description: str,
-        context: Dict[str, Any]
-    ) -> List[str]:
+        context: dict[str, Any]
+    ) -> list[str]:
         """
         Generate sub-goals for a complex goal.
 
@@ -364,7 +362,7 @@ class ActionPlanner:
         """
         self.planning_horizon = planning_horizon
 
-        self._action_library: Dict[str, Action] = {}
+        self._action_library: dict[str, Action] = {}
         self._action_counter = 0
 
         logger.info(f"ActionPlanner initialized (horizon={planning_horizon})")
@@ -372,8 +370,8 @@ class ActionPlanner:
     def create_plan(
         self,
         goal: Goal,
-        initial_state: Dict[str, Any],
-        available_actions: Optional[List[Action]] = None
+        initial_state: dict[str, Any],
+        available_actions: list[Action] | None = None
     ) -> Plan:
         """
         Create action plan for goal.
@@ -412,9 +410,9 @@ class ActionPlanner:
     def _forward_plan(
         self,
         goal: Goal,
-        current_state: Dict[str, Any],
-        available_actions: List[Action]
-    ) -> List[Action]:
+        current_state: dict[str, Any],
+        available_actions: list[Action]
+    ) -> list[Action]:
         """
         Forward planning: current state → goal state.
 
@@ -449,7 +447,7 @@ class ActionPlanner:
     def _are_preconditions_met(
         self,
         action: Action,
-        state: Dict[str, Any]
+        state: dict[str, Any]
     ) -> bool:
         """Check if action preconditions are met in current state."""
         for precondition in action.preconditions:
@@ -460,13 +458,13 @@ class ActionPlanner:
     def _apply_action_effects(
         self,
         action: Action,
-        state: Dict[str, Any]
+        state: dict[str, Any]
     ):
         """Apply action effects to state."""
         for effect in action.effects:
             state[effect] = True
 
-    def _is_goal_achieved(self, goal: Goal, state: Dict[str, Any]) -> bool:
+    def _is_goal_achieved(self, goal: Goal, state: dict[str, Any]) -> bool:
         """Check if goal success criteria are met."""
         if not goal.success_criteria:
             return False
@@ -479,9 +477,9 @@ class ActionPlanner:
 
     def _select_best_action(
         self,
-        applicable_actions: List[Action],
+        applicable_actions: list[Action],
         goal: Goal,
-        state: Dict[str, Any]
+        state: dict[str, Any]
     ) -> Action:
         """Select action that best progresses toward goal."""
         # Score actions based on:
@@ -501,7 +499,7 @@ class ActionPlanner:
 
         return max(applicable_actions, key=score_action)
 
-    def _calculate_plan_confidence(self, actions: List[Action]) -> float:
+    def _calculate_plan_confidence(self, actions: list[Action]) -> float:
         """Calculate overall plan confidence."""
         if not actions:
             return 0.0
@@ -541,7 +539,7 @@ class ConstraintSolver:
 
     def __init__(self):
         """Initialize constraint solver."""
-        self._constraint_registry: Dict[str, Constraint] = {}
+        self._constraint_registry: dict[str, Constraint] = {}
 
         logger.info("ConstraintSolver initialized")
 
@@ -552,8 +550,8 @@ class ConstraintSolver:
     def validate_plan(
         self,
         plan: Plan,
-        resources: Optional[Dict[str, Any]] = None
-    ) -> Tuple[bool, List[str]]:
+        resources: dict[str, Any] | None = None
+    ) -> tuple[bool, list[str]]:
         """
         Validate plan against constraints.
 
@@ -582,7 +580,7 @@ class ConstraintSolver:
         self,
         constraint: Constraint,
         plan: Plan,
-        resources: Dict[str, Any]
+        resources: dict[str, Any]
     ) -> bool:
         """Check if single constraint is satisfied."""
         if constraint.type == ConstraintType.TEMPORAL:
@@ -609,7 +607,7 @@ class ConstraintSolver:
         self,
         constraint: Constraint,
         plan: Plan,
-        resources: Dict[str, Any]
+        resources: dict[str, Any]
     ) -> bool:
         """Check resource availability constraints."""
         # Check if required resources are available
@@ -708,9 +706,9 @@ class PlanValidator:
     def validate(
         self,
         plan: Plan,
-        resources: Optional[Dict[str, Any]] = None,
-        budget: Optional[float] = None
-    ) -> Tuple[float, Dict[str, Any]]:
+        resources: dict[str, Any] | None = None,
+        budget: float | None = None
+    ) -> tuple[float, dict[str, Any]]:
         """
         Validate plan feasibility.
 
@@ -757,7 +755,7 @@ class PlanValidator:
     def _check_resource_availability(
         self,
         plan: Plan,
-        resources: Optional[Dict[str, Any]]
+        resources: dict[str, Any] | None
     ) -> bool:
         """Check if all required resources are available."""
         if resources is None:
@@ -821,10 +819,10 @@ class PlanningDepartment(BaseDepartment):
 
     def __init__(
         self,
-        registry: Optional[Any] = None,
+        registry: Any | None = None,
         max_depth: int = 4,
         planning_horizon: int = 10,
-        dept_config: Optional[DepartmentConfig] = None
+        dept_config: DepartmentConfig | None = None
     ):
         """
         Initialize Planning Department.
@@ -1008,7 +1006,7 @@ class PlanningDepartment(BaseDepartment):
     async def _decompose_goal(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Decompose goal into sub-goals."""
         goal_description = request.parameters.get("goal")
         max_depth = request.parameters.get("max_depth", 3)
@@ -1056,7 +1054,7 @@ class PlanningDepartment(BaseDepartment):
     async def _create_plan(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Create action plan for goal."""
         goal_description = request.parameters.get("goal")
         initial_state = request.parameters.get("initial_state", {})
@@ -1110,7 +1108,7 @@ class PlanningDepartment(BaseDepartment):
     async def _validate_plan(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Validate plan feasibility."""
         plan_data = request.parameters.get("plan")
         resources = request.parameters.get("resources", {})
@@ -1148,7 +1146,7 @@ class PlanningDepartment(BaseDepartment):
     async def _optimize_plan(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Optimize plan efficiency."""
         plan_data = request.parameters.get("plan")
 
@@ -1178,9 +1176,9 @@ class PlanningDepartment(BaseDepartment):
 
     def _build_reasoning(
         self,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         request: DepartmentRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Build reasoning dict for response."""
         return {
             "task_type": request.task_type,
@@ -1189,9 +1187,9 @@ class PlanningDepartment(BaseDepartment):
 
     async def _build_session_state(
         self,
-        session_id: Optional[str],
-        result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        session_id: str | None,
+        result: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Build session state update."""
         if not session_id:
             return None

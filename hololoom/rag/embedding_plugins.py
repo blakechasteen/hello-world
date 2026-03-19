@@ -21,7 +21,8 @@ Key Features:
 """
 
 import logging
-from typing import List, Protocol, Optional, runtime_checkable
+from typing import Protocol, runtime_checkable
+
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -52,7 +53,7 @@ class EmbeddingProvider(Protocol):
         """
         ...
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts to embeddings.
 
@@ -111,7 +112,7 @@ class MatryoshkaEmbedding:
             logger.error(f"Failed to initialize MatryoshkaEmbedding: {e}")
             raise
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts to Matryoshka embeddings.
 
@@ -182,7 +183,7 @@ class HuggingFaceEmbedding:
             logger.error(f"Failed to initialize HuggingFaceEmbedding: {e}")
             raise
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts to embeddings.
 
@@ -230,7 +231,7 @@ class OpenAIEmbedding:
         Consider costs: ~$0.02-$0.13 per 1M tokens.
     """
 
-    def __init__(self, model: str = "text-embedding-3-small", api_key: Optional[str] = None):
+    def __init__(self, model: str = "text-embedding-3-small", api_key: str | None = None):
         """
         Initialize OpenAI Embedding.
 
@@ -270,7 +271,7 @@ class OpenAIEmbedding:
             logger.error(f"Failed to initialize OpenAIEmbedding: {e}")
             raise
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts to embeddings via OpenAI API.
 
@@ -329,7 +330,7 @@ class CohereEmbedding:
         Requires Cohere API key and internet connection.
     """
 
-    def __init__(self, model: str = "embed-english-v3.0", api_key: Optional[str] = None):
+    def __init__(self, model: str = "embed-english-v3.0", api_key: str | None = None):
         """
         Initialize Cohere Embedding.
 
@@ -365,7 +366,7 @@ class CohereEmbedding:
             logger.error(f"Failed to initialize CohereEmbedding: {e}")
             raise
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts to embeddings via Cohere API.
 

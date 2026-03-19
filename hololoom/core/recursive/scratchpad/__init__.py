@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Hofstadter Scratchpad System
 =============================
@@ -48,33 +47,29 @@ Usage:
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
+from hololoom.recursive.scratchpad.internal_dialogue import (
+    DialogueMode,
+    DialogueStep,
+    InternalDialogue,
+)
+from hololoom.recursive.scratchpad.persistence import (
+    SessionManager,
+    ThoughtPersistence,
+)
 from hololoom.recursive.scratchpad.recursive_scratchpad import (
+    DialogueTree,
     RecursiveScratchpad,
     Thought,
     ThoughtType,
-    DialogueTree,
 )
-
-from hololoom.recursive.scratchpad.internal_dialogue import (
-    InternalDialogue,
-    DialogueStep,
-    DialogueMode,
-)
-
 from hololoom.recursive.scratchpad.strange_loops import (
-    StrangeLoop,
-    LoopDetector,
     LevelCrossing,
+    LoopDetector,
+    StrangeLoop,
 )
-
-from hololoom.recursive.scratchpad.persistence import (
-    ThoughtPersistence,
-    SessionManager,
-)
-
 
 # ============================================================================
 # Backward-Compatible Simple Scratchpad (for scratchpad_integration.py)
@@ -94,10 +89,10 @@ class ScratchpadEntry:
     thought: str
     action: str
     observation: str
-    score: Optional[float] = None
-    iteration: Optional[int] = None
-    timestamp: Optional[float] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    score: float | None = None
+    iteration: int | None = None
+    timestamp: float | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class Scratchpad:
@@ -112,8 +107,8 @@ class Scratchpad:
     - .capacity property
     """
 
-    def __init__(self, capacity: Optional[int] = None):
-        self.entries: List[ScratchpadEntry] = []
+    def __init__(self, capacity: int | None = None):
+        self.entries: list[ScratchpadEntry] = []
         self.capacity = capacity
 
     def add_entry(
@@ -121,9 +116,9 @@ class Scratchpad:
         thought: str,
         action: str,
         observation: str,
-        score: Optional[float] = None,
-        iteration: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        score: float | None = None,
+        iteration: int | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> ScratchpadEntry:
         """Add an entry to the scratchpad."""
         entry = ScratchpadEntry(
@@ -142,7 +137,7 @@ class Scratchpad:
 
         return entry
 
-    def get_history(self, max_entries: Optional[int] = None) -> List[ScratchpadEntry]:
+    def get_history(self, max_entries: int | None = None) -> list[ScratchpadEntry]:
         """Get copy of entries list."""
         entries_to_show = self.entries
         if max_entries:
@@ -150,7 +145,7 @@ class Scratchpad:
         # Return a copy, not the original
         return list(entries_to_show)
 
-    def get_last_n(self, n: int) -> List[ScratchpadEntry]:
+    def get_last_n(self, n: int) -> list[ScratchpadEntry]:
         """Get last N entries."""
         return list(self.entries[-n:])
 
@@ -191,7 +186,7 @@ class LoopResult:
     iterations: int = 0
     final_quality: float = 0.0
     improvement: float = 0.0
-    history: List[ScratchpadEntry] = field(default_factory=list)
+    history: list[ScratchpadEntry] = field(default_factory=list)
 
     def summary(self) -> str:
         """Generate a summary string of the loop result."""
@@ -206,7 +201,7 @@ class LoopResult:
 class RecursiveEngine:
     """Recursive loop engine (stub for backward compatibility)."""
 
-    def __init__(self, config: Optional[LoopConfig] = None):
+    def __init__(self, config: LoopConfig | None = None):
         self.config = config or LoopConfig()
         self.scratchpad = Scratchpad()
 

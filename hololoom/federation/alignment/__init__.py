@@ -44,25 +44,74 @@ Example Usage:
 """
 
 # Protocol definitions
-from .protocol import (
-    # Enums
-    AlignmentLayer,
-    AlignmentStatus,
-    DeceptionFlag,
-    # Result types
-    AlignmentVerification,
-    ConsensusAlignmentResult,
-    # Protocol and ABC
-    FederationAlignmentProtocol,
-    AlignmentVerifierBase,
+# Configuration
+from .config import (
+    # Mode enum
+    AlignmentMode,
+    DeceptionConfig,
+    # Main config
+    FederationAlignmentConfig,
+    # Layer configs
+    L1Config,
+    L2Config,
+    L3Config,
+    ResourceConfig,
+    # Component configs
+    TrustConfig,
+    # Factory
+    create_alignment_config,
+)
+
+# Consensus engine
+from .consensus_engine import (
+    AlignmentConsensusEngine,
+    AlignmentVote,
+    ConsensusOutcome,
+    ConsensusResult,
+    ConsensusStrategy,
+    create_consensus_engine,
+    get_quorum_for_trust_level,
 )
 
 # Metadata types
 from .metadata import (
-    ResourceUsage,
+    AlignedResponse,
     AlignmentMetadata,
     AlignmentProof,
-    AlignedResponse,
+    ResourceUsage,
+)
+
+# Node profiles and trust
+from .node_profile import (
+    DECEPTION_PENALTY,
+    # Constants
+    INITIAL_TRUST_SCORE,
+    RESOURCE_VIOLATION_PENALTY,
+    TRUST_THRESHOLD,
+    VERIFIED_RESPONSE_BONUS,
+    # Data classes
+    AlignmentEvent,
+    # Enums
+    AlignmentEventType,
+    NodeAlignmentProfile,
+    # Registry
+    NodeProfileRegistry,
+    TrustLevel,
+    # Factory functions
+    create_profile_registry,
+    get_recommended_verification_level,
+)
+from .protocol import (
+    # Enums
+    AlignmentLayer,
+    AlignmentStatus,
+    # Result types
+    AlignmentVerification,
+    AlignmentVerifierBase,
+    ConsensusAlignmentResult,
+    DeceptionFlag,
+    # Protocol and ABC
+    FederationAlignmentProtocol,
 )
 
 # Verifier implementation
@@ -70,57 +119,6 @@ from .verifier import (
     AlignmentVerifier,
     create_alignment_verifier,
 )
-
-# Consensus engine
-from .consensus_engine import (
-    ConsensusStrategy,
-    ConsensusOutcome,
-    AlignmentVote,
-    AlignmentConsensusEngine,
-    ConsensusResult,
-    create_consensus_engine,
-    get_quorum_for_trust_level,
-)
-
-# Node profiles and trust
-from .node_profile import (
-    # Constants
-    INITIAL_TRUST_SCORE,
-    DECEPTION_PENALTY,
-    RESOURCE_VIOLATION_PENALTY,
-    VERIFIED_RESPONSE_BONUS,
-    TRUST_THRESHOLD,
-    # Enums
-    AlignmentEventType,
-    TrustLevel,
-    # Data classes
-    AlignmentEvent,
-    NodeAlignmentProfile,
-    # Registry
-    NodeProfileRegistry,
-    # Factory functions
-    create_profile_registry,
-    get_recommended_verification_level,
-)
-
-# Configuration
-from .config import (
-    # Mode enum
-    AlignmentMode,
-    # Layer configs
-    L1Config,
-    L2Config,
-    L3Config,
-    # Component configs
-    TrustConfig,
-    DeceptionConfig,
-    ResourceConfig,
-    # Main config
-    FederationAlignmentConfig,
-    # Factory
-    create_alignment_config,
-)
-
 
 __all__ = [
     # ─────────────────────────────────────────────────────────────────────

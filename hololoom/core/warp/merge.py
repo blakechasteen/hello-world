@@ -23,11 +23,12 @@ Types of Merge:
 3. Parallel Merge: Merge multiple items simultaneously
 """
 
-import numpy as np
-from typing import List, Dict, Optional, Tuple, Any
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
-import logging
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -64,12 +65,12 @@ class MergedObject:
         metadata: Additional merge information
     """
     embedding: np.ndarray
-    components: List[str]
+    components: list[str]
     head: str
     merge_type: MergeType
     label: str
-    children: List['MergedObject'] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    children: list['MergedObject'] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __repr__(self) -> str:
         comp_str = "+".join(self.components)
@@ -301,8 +302,8 @@ class MergeOperator:
 
     def parallel_merge(
         self,
-        embeddings: List[np.ndarray],
-        components: List[str],
+        embeddings: list[np.ndarray],
+        components: list[str],
         head_index: int,
         label: str = "PHRASE"
     ) -> MergedObject:
@@ -361,9 +362,9 @@ class MergeOperator:
 
     def recursive_merge(
         self,
-        embeddings: List[np.ndarray],
-        words: List[str],
-        structure: List[Tuple[int, int, str, str]]
+        embeddings: list[np.ndarray],
+        words: list[str],
+        structure: list[tuple[int, int, str, str]]
     ) -> MergedObject:
         """
         Recursive Merge: Build hierarchical structure bottom-up.

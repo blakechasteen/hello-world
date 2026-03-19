@@ -31,9 +31,9 @@ The HEAD determines everything:
 """
 
 import logging
-from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -100,11 +100,11 @@ class XBarNode:
     category: Category
     level: int  # 0=X, 1=X', 2=XP
     head: str
-    head_token: Optional[object] = None  # spaCy token
+    head_token: object | None = None  # spaCy token
     specifier: Optional['XBarNode'] = None
     complement: Optional['XBarNode'] = None
-    adjuncts: List['XBarNode'] = field(default_factory=list)
-    features: Dict[str, str] = field(default_factory=dict)
+    adjuncts: list['XBarNode'] = field(default_factory=list)
+    features: dict[str, str] = field(default_factory=dict)
 
     @property
     def label(self) -> str:
@@ -117,7 +117,7 @@ class XBarNode:
             return f"{self.category.value}P"  # NP, VP, AP, PP, DP, CP, TP
 
     @property
-    def span(self) -> Tuple[int, int]:
+    def span(self) -> tuple[int, int]:
         """Character span (start, end) of this phrase."""
         if self.head_token:
             # Get span from all children
@@ -212,7 +212,7 @@ class UniversalGrammarChunker:
         else:
             logger.warning("spaCy not available - chunker will not work")
 
-    def chunk(self, text: str) -> List[XBarNode]:
+    def chunk(self, text: str) -> list[XBarNode]:
         """
         Chunk text into X-bar phrase structures.
 
@@ -248,7 +248,7 @@ class UniversalGrammarChunker:
     # Clause Building (CP, TP)
     # ========================================================================
 
-    def _build_clause(self, verb, doc) -> Optional[XBarNode]:
+    def _build_clause(self, verb, doc) -> XBarNode | None:
         """
         Build clause structure (CP → TP → VP).
 
@@ -328,7 +328,7 @@ class UniversalGrammarChunker:
     # Phrase Building (VP, NP, PP, AP)
     # ========================================================================
 
-    def _build_vp(self, verb, doc) -> Optional[XBarNode]:
+    def _build_vp(self, verb, doc) -> XBarNode | None:
         """
         Build VP (Verb Phrase) using X-bar theory.
 
@@ -375,7 +375,7 @@ class UniversalGrammarChunker:
 
         return vp
 
-    def _build_np(self, noun, doc) -> Optional[XBarNode]:
+    def _build_np(self, noun, doc) -> XBarNode | None:
         """
         Build NP (Noun Phrase) using X-bar theory.
 
@@ -473,7 +473,7 @@ class UniversalGrammarChunker:
 
         return np
 
-    def _build_pp(self, prep, doc) -> Optional[XBarNode]:
+    def _build_pp(self, prep, doc) -> XBarNode | None:
         """
         Build PP (Prepositional Phrase).
 
@@ -530,7 +530,7 @@ class UniversalGrammarChunker:
                 return child
         return None
 
-    def _find_complement(self, verb, doc) -> Optional[XBarNode]:
+    def _find_complement(self, verb, doc) -> XBarNode | None:
         """Find complement of verb (object, clausal complement, etc.)."""
         for child in verb.children:
             if child.dep_ == "dobj":  # Direct object
@@ -543,7 +543,7 @@ class UniversalGrammarChunker:
                 return self._build_pp(child, doc)
         return None
 
-    def _find_vp_specifier(self, verb, doc) -> Optional[XBarNode]:
+    def _find_vp_specifier(self, verb, doc) -> XBarNode | None:
         """Find specifier of VP (adverbs)."""
         for child in verb.children:
             if child.dep_ == "advmod":
@@ -563,7 +563,7 @@ class UniversalGrammarChunker:
                 return child
         return None
 
-    def _find_adjectives(self, noun) -> List:
+    def _find_adjectives(self, noun) -> list:
         """Find adjectives modifying noun."""
         adjectives = []
         for child in noun.children:

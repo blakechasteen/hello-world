@@ -17,10 +17,9 @@ Transitions triggered by:
 - User preferences (default mode)
 """
 
-from enum import Enum, auto
-from typing import Optional, Dict
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from enum import Enum, auto
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,7 @@ class VoiceModeTransition:
         trigger: What triggered the transition
         confidence: Confidence in classification (0.0-1.0)
     """
-    from_mode: Optional[VoiceMode]
+    from_mode: VoiceMode | None
     to_mode: VoiceMode
     trigger: str  # "explicit", "pattern_detected", "preference"
     confidence: float = 1.0
@@ -145,7 +144,7 @@ class VoiceModeStateMachine:
         """Get last n transitions."""
         return self.transition_history[-n:]
 
-    def get_mode_defaults(self) -> Dict[str, any]:
+    def get_mode_defaults(self) -> dict[str, any]:
         """
         Get default settings for current mode.
 

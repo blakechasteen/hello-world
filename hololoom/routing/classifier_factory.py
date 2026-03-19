@@ -12,7 +12,6 @@ Author: Claude Code
 Date: November 13, 2025
 """
 
-from typing import Optional
 import logging
 
 logger = logging.getLogger(__name__)

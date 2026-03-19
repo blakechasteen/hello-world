@@ -15,11 +15,11 @@ import asyncio
 import logging
 import random
 import time
-from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any
 
 # OpenTelemetry tracing (optional)
 try:
@@ -41,13 +41,14 @@ except ImportError:
     record_gossip_message = None
     record_membership_change = None
 
-from .protocols import MembershipProtocol
-from .types import FederationNode, NodeStatus
 from .transport import (
     BaseTransport,
-    MessageType as TransportMessageType,
     TransportMessage,
 )
+from .transport import (
+    MessageType as TransportMessageType,
+)
+from .types import FederationNode, NodeStatus
 
 logger = logging.getLogger(__name__)
 
@@ -78,10 +79,10 @@ class GossipMessage:
     sender: str                               # Node ID
     target: str                               # Target node ID
     incarnation: int = 0                      # Lamport-style counter
-    payload: Dict[str, Any] = field(default_factory=dict)
+    payload: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
     # W3C Trace Context for distributed tracing
-    trace_context: Optional[Dict[str, str]] = None
+    trace_context: dict[str, str] | None = None
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -97,7 +98,7 @@ class MemberState:
     status: NodeStatus = NodeStatus.ONLINE
     incarnation: int = 0                      # Version counter
     last_update: float = field(default_factory=time.time)
-    suspect_timeout: Optional[float] = None   # When to declare dead
+    suspect_timeout: float | None = None   # When to declare dead
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -130,14 +131,14 @@ class SwimMembership:
         self,
         local_node: FederationNode,
         *,
-        transport: Optional[BaseTransport] = None,
+        transport: BaseTransport | None = None,
         ping_interval_ms: int = 1000,
         ping_timeout_ms: int = 500,
         suspicion_multiplier: int = 5,
         indirect_probes: int = 3,
         max_gossip_nodes: int = 5,
-        on_join: Optional[Callable[[FederationNode], None]] = None,
-        on_leave: Optional[Callable[[str], None]] = None,
+        on_join: Callable[[FederationNode], None] | None = None,
+        on_leave: Callable[[str], None] | None = None,
     ):
         self._local = local_node
         self._incarnation = 0
@@ -151,23 +152,23 @@ class SwimMembership:
         self._max_gossip = max_gossip_nodes
 
         # State
-        self._members: Dict[str, MemberState] = {}
-        self._pending_pings: Dict[str, asyncio.Future] = {}
-        self._update_queue: List[GossipMessage] = []
+        self._members: dict[str, MemberState] = {}
+        self._pending_pings: dict[str, asyncio.Future] = {}
+        self._update_queue: list[GossipMessage] = []
 
         # Callbacks
         self._on_join = on_join
         self._on_leave = on_leave
 
         # Background tasks
-        self._protocol_task: Optional[asyncio.Task] = None
+        self._protocol_task: asyncio.Task | None = None
         self._running = False
 
     # ───────────────────────────────────────────────────────────────────────
     #  LIFECYCLE
     # ───────────────────────────────────────────────────────────────────────
 
-    async def join(self, bootstrap_nodes: List[str]) -> bool:
+    async def join(self, bootstrap_nodes: list[str]) -> bool:
         """
         Join the network via bootstrap nodes.
 
@@ -309,7 +310,7 @@ class SwimMembership:
     async def ping_req(
         self,
         target: str,
-        intermediaries: List[str],
+        intermediaries: list[str],
     ) -> bool:
         """
         Indirect probe via intermediaries.
@@ -487,16 +488,16 @@ class SwimMembership:
     #  MEMBERSHIP QUERIES
     # ───────────────────────────────────────────────────────────────────────
 
-    def get_members(self) -> List[FederationNode]:
+    def get_members(self) -> list[FederationNode]:
         """Get all known members."""
         return [m.node for m in self._members.values() if m.status == NodeStatus.ONLINE]
 
-    def get_random_members(self, k: int) -> List[FederationNode]:
+    def get_random_members(self, k: int) -> list[FederationNode]:
         """Get k random healthy members."""
         healthy = self.get_members()
         return random.sample(healthy, min(k, len(healthy)))
 
-    def get_member(self, node_id: str) -> Optional[FederationNode]:
+    def get_member(self, node_id: str) -> FederationNode | None:
         """Get a specific member."""
         if node_id in self._members:
             return self._members[node_id].node

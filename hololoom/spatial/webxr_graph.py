@@ -6,11 +6,10 @@ Immersive 3D knowledge graph visualization for AR/VR.
 Supports WebXR for browser-based spatial computing.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
-from enum import Enum
 import json
 import math
+from dataclasses import dataclass, field
+from enum import Enum
 
 
 class XRMode(Enum):
@@ -35,7 +34,7 @@ class Vector3:
     y: float = 0.0
     z: float = 0.0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {"x": self.x, "y": self.y, "z": self.z}
 
     def distance_to(self, other: 'Vector3') -> float:
@@ -82,9 +81,9 @@ class XRNode:
 
     # Metadata
     content: str = ""
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "id": self.node_id,
             "label": self.label,
@@ -118,7 +117,7 @@ class XREdge:
     opacity: float = 0.6
     animated: bool = False  # Pulse animation for active connections
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "source": self.source_id,
             "target": self.target_id,
@@ -144,7 +143,7 @@ class XRAnchor:
 
     # World position (relative to anchor origin)
     position: Vector3 = field(default_factory=Vector3)
-    orientation: Tuple[float, float, float, float] = (0, 0, 0, 1)  # Quaternion
+    orientation: tuple[float, float, float, float] = (0, 0, 0, 1)  # Quaternion
 
     # Persistence
     created_at: str = ""
@@ -155,7 +154,7 @@ class XRAnchor:
     # Context
     location_hint: str = ""  # "desk", "whiteboard", "shelf"
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "anchor_id": self.anchor_id,
             "node_id": self.node_id,
@@ -211,23 +210,23 @@ class WebXRKnowledgeGraph:
     }
 
     def __init__(self):
-        self.nodes: Dict[str, XRNode] = {}
-        self.edges: List[XREdge] = []
-        self.anchors: Dict[str, XRAnchor] = {}
+        self.nodes: dict[str, XRNode] = {}
+        self.edges: list[XREdge] = []
+        self.anchors: dict[str, XRAnchor] = {}
 
         # Layout state
         self.center = Vector3(0, 1.5, -2)  # Default viewing position
         self.scale = 1.0  # Overall scale
 
         # Interaction state
-        self.selected_nodes: List[str] = []
-        self.focused_node: Optional[str] = None
+        self.selected_nodes: list[str] = []
+        self.focused_node: str | None = None
 
     def add_node(self, node_id: str, label: str,
                  importance: float = 0.5,
                  node_type: str = "concept",
                  content: str = "",
-                 position: Optional[Vector3] = None) -> XRNode:
+                 position: Vector3 | None = None) -> XRNode:
         """Add a knowledge node to the graph."""
         node = XRNode(
             node_id=node_id,
@@ -247,7 +246,7 @@ class WebXRKnowledgeGraph:
 
     def add_edge(self, source_id: str, target_id: str,
                  edge_type: str = "RELATED",
-                 weight: float = 1.0) -> Optional[XREdge]:
+                 weight: float = 1.0) -> XREdge | None:
         """Add an edge between nodes."""
         if source_id not in self.nodes or target_id not in self.nodes:
             return None
@@ -451,7 +450,7 @@ class WebXRKnowledgeGraph:
             roots = [list(self.nodes.keys())[0]]
 
         # BFS level assignment
-        levels: Dict[str, int] = {}
+        levels: dict[str, int] = {}
         queue = [(r, 0) for r in roots]
         visited = set(roots)
 
@@ -473,7 +472,7 @@ class WebXRKnowledgeGraph:
                 levels[nid] = max(levels.values()) + 1 if levels else 0
 
         # Position by level
-        level_counts: Dict[int, int] = {}
+        level_counts: dict[int, int] = {}
         for node_id, level in levels.items():
             count = level_counts.get(level, 0)
             level_counts[level] = count + 1
@@ -539,7 +538,7 @@ class WebXRKnowledgeGraph:
             node.position.z += self.center.z - cz
 
     def create_anchor(self, anchor_id: str, node_id: str,
-                      position: Vector3, location_hint: str = "") -> Optional[XRAnchor]:
+                      position: Vector3, location_hint: str = "") -> XRAnchor | None:
         """Create a spatial anchor for AR persistence."""
         if node_id not in self.nodes:
             return None
@@ -576,7 +575,7 @@ class WebXRKnowledgeGraph:
         if node_id in self.nodes:
             self.focused_node = node_id
 
-    def get_nearby_nodes(self, position: Vector3, radius: float = 0.5) -> List[XRNode]:
+    def get_nearby_nodes(self, position: Vector3, radius: float = 0.5) -> list[XRNode]:
         """Find nodes within radius of a position (for hand interaction)."""
         nearby = []
         for node in self.nodes.values():
@@ -584,7 +583,7 @@ class WebXRKnowledgeGraph:
                 nearby.append(node)
         return sorted(nearby, key=lambda n: n.position.distance_to(position))
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Export graph state as dictionary."""
         return {
             "nodes": [n.to_dict() for n in self.nodes.values()],

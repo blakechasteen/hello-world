@@ -13,11 +13,11 @@ Strategy:
 - Adapt to system load (CPU usage)
 """
 
-import asyncio
 import logging
 from collections import defaultdict, deque
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 
 try:
@@ -26,7 +26,7 @@ try:
 except ImportError:
     PSUTIL_AVAILABLE = False
 
-from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter, create_safe_parameter
+from hololoom.tuning.base import SafeParameter, ThompsonBandit, TuningAgent, create_safe_parameter
 
 logger = logging.getLogger(__name__)
 
@@ -76,10 +76,10 @@ class TimeoutTuner(TuningAgent):
         super().__init__('timeout_tuner')
 
         # Latency measurements per stage (last 1000 samples)
-        self.latencies: Dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
+        self.latencies: dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
 
         # Thompson Sampling bandits per load state
-        self.bandits: Dict[str, ThompsonBandit] = {
+        self.bandits: dict[str, ThompsonBandit] = {
             'low_load': ThompsonBandit(n_arms=len(SAFETY_MARGINS)),
             'medium_load': ThompsonBandit(n_arms=len(SAFETY_MARGINS)),
             'high_load': ThompsonBandit(n_arms=len(SAFETY_MARGINS)),
@@ -89,10 +89,10 @@ class TimeoutTuner(TuningAgent):
         self.load_state = LoadState()
 
         # Timeout outcomes tracking
-        self.timeout_outcomes: Dict[str, List[bool]] = defaultdict(lambda: deque(maxlen=100))
+        self.timeout_outcomes: dict[str, list[bool]] = defaultdict(lambda: deque(maxlen=100))
 
         # Safe parameters
-        self.parameters: Dict[str, SafeParameter] = {
+        self.parameters: dict[str, SafeParameter] = {
             'pipeline': create_safe_parameter('pipeline_timeout', DEFAULT_TIMEOUTS['pipeline']),
             'retrieval': create_safe_parameter('retrieval_timeout', DEFAULT_TIMEOUTS['retrieval']),
             'features': create_safe_parameter('stage_timeout', DEFAULT_TIMEOUTS['features']),
@@ -101,10 +101,10 @@ class TimeoutTuner(TuningAgent):
         }
 
         # Last margin used per stage (for feedback)
-        self.last_margin_used: Dict[str, int] = {}
-        self.last_timeout_used: Dict[str, float] = {}
+        self.last_margin_used: dict[str, int] = {}
+        self.last_timeout_used: dict[str, float] = {}
 
-    async def measure_performance(self) -> Dict[str, float]:
+    async def measure_performance(self) -> dict[str, float]:
         """
         Measure current timeout performance.
 
@@ -153,7 +153,7 @@ class TimeoutTuner(TuningAgent):
 
         return metrics
 
-    async def tune_parameters(self) -> Dict[str, Any]:
+    async def tune_parameters(self) -> dict[str, Any]:
         """
         Tune timeouts based on current performance.
 
@@ -298,7 +298,7 @@ class TimeoutTuner(TuningAgent):
 
         return DEFAULT_TIMEOUTS.get(stage, 5.0)
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """Serialize agent state for persistence."""
         return {
             'total_tuning_cycles': self.total_tuning_cycles,
@@ -321,7 +321,7 @@ class TimeoutTuner(TuningAgent):
             },
         }
 
-    def load_state(self, state: Dict[str, Any]):
+    def load_state(self, state: dict[str, Any]):
         """Restore agent from serialized state."""
         self.total_tuning_cycles = state.get('total_tuning_cycles', 0)
         self.successful_tunings = state.get('successful_tunings', 0)

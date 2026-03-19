@@ -13,12 +13,12 @@ Usage:
     print(metrics.get_summary())
 """
 
-import time
-import threading
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, field
-from collections import deque, defaultdict
 import statistics
+import threading
+import time
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from typing import Any
 
 # Optional: psutil for system metrics
 try:
@@ -34,7 +34,7 @@ class Metric:
     name: str
     value: float
     timestamp: float
-    tags: Dict[str, str] = field(default_factory=dict)
+    tags: dict[str, str] = field(default_factory=dict)
 
 
 class MetricsCollector:
@@ -55,8 +55,8 @@ class MetricsCollector:
             window_size: Number of recent samples to keep per metric
         """
         self.window_size = window_size
-        self.metrics: Dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
-        self.counters: Dict[str, int] = defaultdict(int)
+        self.metrics: dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
+        self.counters: dict[str, int] = defaultdict(int)
         self.lock = threading.Lock()
 
         # System metrics
@@ -64,7 +64,7 @@ class MetricsCollector:
         self._last_system_check = 0
         self._system_cache = {}
 
-    def record_latency(self, name: str, duration_ms: float, tags: Optional[Dict[str, str]] = None):
+    def record_latency(self, name: str, duration_ms: float, tags: dict[str, str] | None = None):
         """
         Record a latency measurement.
 
@@ -93,7 +93,7 @@ class MetricsCollector:
         with self.lock:
             self.counters[name] += count
 
-    def record_gauge(self, name: str, value: float, tags: Optional[Dict[str, str]] = None):
+    def record_gauge(self, name: str, value: float, tags: dict[str, str] | None = None):
         """
         Record a gauge value (point-in-time measurement).
 
@@ -116,7 +116,7 @@ class MetricsCollector:
         with self.lock:
             self.counters[name] += value
 
-    def get_latency_stats(self, name: str) -> Dict[str, float]:
+    def get_latency_stats(self, name: str) -> dict[str, float]:
         """
         Get latency statistics (p50, p95, p99).
 
@@ -173,7 +173,7 @@ class MetricsCollector:
         with self.lock:
             return self.counters.get(name, 0)
 
-    def get_system_metrics(self) -> Dict[str, float]:
+    def get_system_metrics(self) -> dict[str, float]:
         """
         Get current system resource usage.
 
@@ -215,7 +215,7 @@ class MetricsCollector:
 
         return self._system_cache
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """
         Get comprehensive metrics summary.
 
@@ -272,9 +272,9 @@ class MetricsCollector:
 
         # System metrics
         system = self.get_system_metrics()
-        lines.append(f"# TYPE hololoom_cpu_percent gauge")
+        lines.append("# TYPE hololoom_cpu_percent gauge")
         lines.append(f"hololoom_cpu_percent {system['cpu_percent']}")
-        lines.append(f"# TYPE hololoom_memory_mb gauge")
+        lines.append("# TYPE hololoom_memory_mb gauge")
         lines.append(f"hololoom_memory_mb {system['memory_mb']}")
 
         return "\n".join(lines)

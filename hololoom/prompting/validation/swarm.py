@@ -15,18 +15,15 @@ import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any
 
 from .pipeline import (
-    ValidationPipeline,
-    ValidationPhase,
-    Validator,
-    QualityValidator,
     LatencyValidator,
-    UserSatisfactionValidator,
+    PipelineResults,
+    QualityValidator,
     StatisticalValidator,
-    PipelineResults
+    ValidationPhase,
+    ValidationPipeline,
 )
 
 
@@ -50,19 +47,19 @@ class SwarmAgent:
 
     agent_id: str
     dimension: SwarmDimension
-    config: Dict[str, Any]
+    config: dict[str, Any]
     pipeline: ValidationPipeline
 
     # Results
-    results: Optional[PipelineResults] = None
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
+    results: PipelineResults | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
     duration_seconds: float = 0.0
 
     async def run(
         self,
-        baseline_queries: List[Dict[str, Any]],
-        mrf_queries: List[Dict[str, Any]]
+        baseline_queries: list[dict[str, Any]],
+        mrf_queries: list[dict[str, Any]]
     ) -> PipelineResults:
         """Run validation pipeline for this agent."""
         self.start_time = datetime.now()
@@ -83,7 +80,7 @@ class SwarmAgent:
 
         return self.results
 
-    def _filter_queries(self, queries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _filter_queries(self, queries: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Filter queries based on agent config."""
         # Apply dimension-specific filtering
         if self.dimension == SwarmDimension.MODEL:
@@ -122,7 +119,7 @@ class SwarmAgent:
 class SwarmResults:
     """Aggregated results from all swarm agents."""
 
-    agents: List[SwarmAgent]
+    agents: list[SwarmAgent]
     total_duration_seconds: float = 0.0
 
     # Aggregated metrics
@@ -130,11 +127,11 @@ class SwarmResults:
     pass_rate: float = 0.0
 
     # Dimension-specific results
-    by_dimension: Dict[SwarmDimension, List[SwarmAgent]] = field(default_factory=dict)
+    by_dimension: dict[SwarmDimension, list[SwarmAgent]] = field(default_factory=dict)
 
     # Best/worst performers
-    best_agent: Optional[SwarmAgent] = None
-    worst_agent: Optional[SwarmAgent] = None
+    best_agent: SwarmAgent | None = None
+    worst_agent: SwarmAgent | None = None
 
     def calculate_statistics(self):
         """Calculate aggregated statistics."""
@@ -202,14 +199,14 @@ class MoonshotSwarm:
     """
 
     def __init__(self):
-        self.agents: List[SwarmAgent] = []
+        self.agents: list[SwarmAgent] = []
 
     def add_agent(self, agent: SwarmAgent):
         """Add an agent to the swarm."""
         self.agents.append(agent)
         return self
 
-    def add_model_agents(self, model_providers: List[str]):
+    def add_model_agents(self, model_providers: list[str]):
         """
         Add agents for different model providers.
 
@@ -231,7 +228,7 @@ class MoonshotSwarm:
 
         return self
 
-    def add_system_agents(self, systems: List[str]):
+    def add_system_agents(self, systems: list[str]):
         """
         Add agents for different HoloLoom systems.
 
@@ -254,7 +251,7 @@ class MoonshotSwarm:
 
         return self
 
-    def add_complexity_agents(self, complexities: List[str]):
+    def add_complexity_agents(self, complexities: list[str]):
         """
         Add agents for different query complexities.
 
@@ -321,8 +318,8 @@ class MoonshotSwarm:
 
     async def run(
         self,
-        baseline_queries: List[Dict[str, Any]],
-        mrf_queries: List[Dict[str, Any]],
+        baseline_queries: list[dict[str, Any]],
+        mrf_queries: list[dict[str, Any]],
         max_concurrent: int = 10
     ) -> SwarmResults:
         """
@@ -373,12 +370,12 @@ class MoonshotSwarm:
         print("MOONSHOT SWARM RESULTS")
         print("="*60)
 
-        print(f"\nOverall:")
+        print("\nOverall:")
         print(f"  Total agents: {len(results.agents)}")
         print(f"  Pass rate: {results.pass_rate:.1%}")
         print(f"  Duration: {results.total_duration_seconds:.1f}s")
 
-        print(f"\nBy Dimension:")
+        print("\nBy Dimension:")
         for dimension, agents in results.by_dimension.items():
             passed = sum(1 for a in agents if a.results and a.results.passed)
             print(f"  {dimension.value}: {passed}/{len(agents)} passed")
@@ -387,11 +384,11 @@ class MoonshotSwarm:
             best_improvement = results.best_agent.results.validator_results['quality'].get('improvement_pct', 0)
             worst_improvement = results.worst_agent.results.validator_results['quality'].get('improvement_pct', 0)
 
-            print(f"\nPerformance:")
+            print("\nPerformance:")
             print(f"  Best: {results.best_agent.agent_id} (+{best_improvement:.1f}%)")
             print(f"  Worst: {results.worst_agent.agent_id} (+{worst_improvement:.1f}%)")
 
-        print(f"\nRecommendation:")
+        print("\nRecommendation:")
         print(f"  {results.get_recommendation()}")
 
         print("\n" + "="*60)

@@ -7,10 +7,10 @@ Implements key metrics for bandit performance analysis:
 - Reward tracking: Online performance monitoring
 """
 
+from dataclasses import dataclass
+
 import numpy as np
 import numpy.typing as npt
-from typing import Literal
-from dataclasses import dataclass, field
 
 
 @dataclass

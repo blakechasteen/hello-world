@@ -14,7 +14,6 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import numpy as np
 import torch
@@ -51,7 +50,7 @@ def load_activation_batches(
 
 def load_governance_labels(
     labels_dir: str,
-) -> List[Dict]:
+) -> list[dict]:
     """Load governance label JSON files produced by GovernanceFeedbackCollector.
 
     Returns a flat list of labeled samples, each containing 'text',
@@ -67,7 +66,7 @@ def load_governance_labels(
         logger.warning(f"Labels directory not found: {labels_path}")
         return []
 
-    all_samples: List[Dict] = []
+    all_samples: list[dict] = []
     for json_file in sorted(labels_path.glob("labels_*.json")):
         with open(json_file) as f:
             batch = json.load(f)
@@ -125,7 +124,7 @@ def train_sae(
 def train_multi_scale(
     activation_dir: str,
     output_dir: str,
-    scales: List[int] = None,
+    scales: list[int] = None,
     expansion_factor: int = 16,
     **train_kwargs,
 ) -> dict:
@@ -136,7 +135,7 @@ def train_multi_scale(
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
-    results: Dict[str, dict] = {}
+    results: dict[str, dict] = {}
     for scale in scales:
         source = f"embedding_{scale}"
         logger.info(f"Training SAE for {source} (dim={scale})")

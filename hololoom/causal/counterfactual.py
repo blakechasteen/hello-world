@@ -16,13 +16,14 @@ Three steps of counterfactual inference:
 3. Prediction: P(Y|U, do(X=x)) - compute counterfactual outcome
 """
 
-from typing import Dict, Any, Optional, Set, Tuple
-import numpy as np
 from dataclasses import dataclass
+from typing import Any
 
-from .dag import CausalDAG, CausalNode, NodeType
-from .query import CausalQuery, CausalAnswer, QueryType
+import numpy as np
+
+from .dag import CausalDAG
 from .intervention import InterventionEngine
+from .query import CausalAnswer, CausalQuery, QueryType
 
 
 @dataclass
@@ -38,10 +39,10 @@ class TwinNetwork:
     """
     factual_dag: CausalDAG      # Original DAG
     counterfactual_dag: CausalDAG  # Mutilated DAG after intervention
-    shared_exogenous: Set[str]  # Shared U variables
-    factual_values: Dict[str, Any]  # Observed values
-    counterfactual_values: Dict[str, Any]  # Alternative values
-    abduced_exogenous: Dict[str, Any]  # Inferred U from observations
+    shared_exogenous: set[str]  # Shared U variables
+    factual_values: dict[str, Any]  # Observed values
+    counterfactual_values: dict[str, Any]  # Alternative values
+    abduced_exogenous: dict[str, Any]  # Inferred U from observations
 
 
 @dataclass
@@ -60,10 +61,10 @@ class CounterfactualResult:
     factual_outcome: Any
     counterfactual_outcome: Any
     probability: float
-    necessity: Optional[float] = None
-    sufficiency: Optional[float] = None
+    necessity: float | None = None
+    sufficiency: float | None = None
     explanation: str = ""
-    twin_network: Optional[TwinNetwork] = None
+    twin_network: TwinNetwork | None = None
 
 
 class CounterfactualEngine:
@@ -107,8 +108,8 @@ class CounterfactualEngine:
 
     def counterfactual(
         self,
-        intervention: Dict[str, Any],
-        evidence: Dict[str, Any],
+        intervention: dict[str, Any],
+        evidence: dict[str, Any],
         query: str
     ) -> CounterfactualResult:
         """
@@ -180,7 +181,7 @@ class CounterfactualEngine:
             twin_network=twin
         )
 
-    def _abduction(self, evidence: Dict[str, Any]) -> Dict[str, Any]:
+    def _abduction(self, evidence: dict[str, Any]) -> dict[str, Any]:
         """
         Abduction step: Infer exogenous variables U from evidence E.
 
@@ -219,7 +220,7 @@ class CounterfactualEngine:
     def _prediction(
         self,
         query: str,
-        exogenous: Dict[str, Any],
+        exogenous: dict[str, Any],
         dag: CausalDAG
     ) -> Any:
         """
@@ -251,7 +252,7 @@ class CounterfactualEngine:
         self,
         query: str,
         value: Any,
-        exogenous: Dict[str, Any],
+        exogenous: dict[str, Any],
         dag: CausalDAG
     ) -> float:
         """
@@ -276,7 +277,7 @@ class CounterfactualEngine:
         self,
         treatment: str,
         outcome: str,
-        evidence: Dict[str, Any]
+        evidence: dict[str, Any]
     ) -> float:
         """
         Compute Probability of Necessity (PN).
@@ -318,7 +319,7 @@ class CounterfactualEngine:
         self,
         treatment: str,
         outcome: str,
-        evidence: Dict[str, Any]
+        evidence: dict[str, Any]
     ) -> float:
         """
         Compute Probability of Sufficiency (PS).
@@ -386,8 +387,8 @@ class CounterfactualEngine:
 
     def _explain_counterfactual(
         self,
-        intervention: Dict[str, Any],
-        evidence: Dict[str, Any],
+        intervention: dict[str, Any],
+        evidence: dict[str, Any],
         query: str,
         counterfactual_value: Any,
         factual_value: Any
@@ -425,7 +426,7 @@ class CounterfactualEngine:
     def query(
         self,
         query: CausalQuery,
-        data: Optional[np.ndarray] = None
+        data: np.ndarray | None = None
     ) -> CausalAnswer:
         """
         Answer counterfactual query.
@@ -508,7 +509,7 @@ class CounterfactualEngine:
         self,
         treatment: str,
         outcome: str,
-        evidence: Dict[str, Any],
+        evidence: dict[str, Any],
         intervention_value: Any
     ) -> str:
         """

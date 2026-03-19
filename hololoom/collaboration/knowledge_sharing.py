@@ -6,12 +6,11 @@ Export, share, and distribute knowledge between users and teams.
 Supports multiple export formats and sharing workflows.
 """
 
+import hashlib
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Any, Tuple
-import json
-import hashlib
 
 
 class ExportFormat(Enum):
@@ -39,13 +38,13 @@ class SharedKnowledge:
     title: str
     description: str = ""
     scope: ShareScope = ShareScope.TEAM
-    target_ids: Set[str] = field(default_factory=set)  # User/team IDs depending on scope
-    node_ids: Set[str] = field(default_factory=set)    # Knowledge nodes included
+    target_ids: set[str] = field(default_factory=set)  # User/team IDs depending on scope
+    node_ids: set[str] = field(default_factory=set)    # Knowledge nodes included
     created_at: datetime = field(default_factory=datetime.now)
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
     access_count: int = 0
-    access_token: Optional[str] = None  # For public links
-    metadata: Dict = field(default_factory=dict)
+    access_token: str | None = None  # For public links
+    metadata: dict = field(default_factory=dict)
 
     def is_expired(self) -> bool:
         """Check if share has expired."""
@@ -53,7 +52,7 @@ class SharedKnowledge:
             return datetime.now() > self.expires_at
         return False
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "share_id": self.share_id,
@@ -81,7 +80,7 @@ class ExportResult:
     size_bytes: int
     checksum: str
     created_at: datetime = field(default_factory=datetime.now)
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
 
 class KnowledgeSharing:
@@ -95,7 +94,7 @@ class KnowledgeSharing:
     - Manage share expiration
     """
 
-    def __init__(self, storage_path: Optional[str] = None):
+    def __init__(self, storage_path: str | None = None):
         """
         Initialize knowledge sharing.
 
@@ -103,8 +102,8 @@ class KnowledgeSharing:
             storage_path: Path to persist data
         """
         self.storage_path = storage_path
-        self.shares: Dict[str, SharedKnowledge] = {}
-        self._token_to_share: Dict[str, str] = {}  # token -> share_id
+        self.shares: dict[str, SharedKnowledge] = {}
+        self._token_to_share: dict[str, str] = {}  # token -> share_id
         self._counter = 0
 
         # External dependencies (set by integrator)
@@ -132,7 +131,7 @@ class KnowledgeSharing:
 
     # === Export ===
 
-    def export_nodes(self, node_ids: List[str], format: ExportFormat = ExportFormat.JSON,
+    def export_nodes(self, node_ids: list[str], format: ExportFormat = ExportFormat.JSON,
                      user_id: str = None, include_edges: bool = True) -> ExportResult:
         """
         Export knowledge nodes to specified format.
@@ -186,7 +185,7 @@ class KnowledgeSharing:
             checksum=self._compute_checksum(output)
         )
 
-    def _export_json(self, nodes: List[Dict], edges: List) -> str:
+    def _export_json(self, nodes: list[dict], edges: list) -> str:
         """Export as JSON."""
         return json.dumps({
             "nodes": nodes,
@@ -196,7 +195,7 @@ class KnowledgeSharing:
             "exported_at": datetime.now().isoformat()
         }, indent=2)
 
-    def _export_jsonld(self, nodes: List[Dict], edges: List) -> str:
+    def _export_jsonld(self, nodes: list[dict], edges: list) -> str:
         """Export as JSON-LD."""
         graph = []
         for node in nodes:
@@ -216,7 +215,7 @@ class KnowledgeSharing:
             "@graph": graph
         }, indent=2)
 
-    def _export_markdown(self, nodes: List[Dict], edges: List) -> str:
+    def _export_markdown(self, nodes: list[dict], edges: list) -> str:
         """Export as Markdown."""
         lines = []
         lines.append("# HoloLoom Knowledge Export")
@@ -247,7 +246,7 @@ class KnowledgeSharing:
 
         return "\n".join(lines)
 
-    def _export_csv(self, nodes: List[Dict], edges: List) -> str:
+    def _export_csv(self, nodes: list[dict], edges: list) -> str:
         """Export as CSV."""
         lines = []
         # Nodes
@@ -266,7 +265,7 @@ class KnowledgeSharing:
 
         return "\n".join(lines)
 
-    def _export_rdf(self, nodes: List[Dict], edges: List) -> str:
+    def _export_rdf(self, nodes: list[dict], edges: list) -> str:
         """Export as RDF/N-Triples."""
         lines = []
         prefix = "https://hololoom.ai/node/"
@@ -288,9 +287,9 @@ class KnowledgeSharing:
 
     # === Sharing ===
 
-    def share(self, node_ids: List[str], owner_id: str, title: str,
+    def share(self, node_ids: list[str], owner_id: str, title: str,
               scope: ShareScope = ShareScope.TEAM,
-              target_ids: List[str] = None,
+              target_ids: list[str] = None,
               description: str = "",
               expires_at: datetime = None) -> SharedKnowledge:
         """
@@ -331,14 +330,14 @@ class KnowledgeSharing:
         self._save()
         return share
 
-    def get_share(self, share_id: str) -> Optional[SharedKnowledge]:
+    def get_share(self, share_id: str) -> SharedKnowledge | None:
         """Get share by ID."""
         share = self.shares.get(share_id)
         if share and not share.is_expired():
             return share
         return None
 
-    def get_share_by_token(self, token: str) -> Optional[SharedKnowledge]:
+    def get_share_by_token(self, token: str) -> SharedKnowledge | None:
         """Get share by public token."""
         share_id = self._token_to_share.get(token)
         if share_id:
@@ -370,7 +369,7 @@ class KnowledgeSharing:
 
         return False
 
-    def access_share(self, share_id: str, user_id: str) -> Optional[ExportResult]:
+    def access_share(self, share_id: str, user_id: str) -> ExportResult | None:
         """Access a share and return its content."""
         share = self.shares.get(share_id)
         if not share or share.is_expired():
@@ -390,14 +389,14 @@ class KnowledgeSharing:
             user_id=share.owner_id  # Use owner for access check
         )
 
-    def list_shares_by_user(self, user_id: str) -> List[SharedKnowledge]:
+    def list_shares_by_user(self, user_id: str) -> list[SharedKnowledge]:
         """List shares created by user."""
         return [
             share for share in self.shares.values()
             if share.owner_id == user_id and not share.is_expired()
         ]
 
-    def list_shares_for_user(self, user_id: str) -> List[SharedKnowledge]:
+    def list_shares_for_user(self, user_id: str) -> list[SharedKnowledge]:
         """List shares accessible to user."""
         return [
             share for share in self.shares.values()
@@ -418,7 +417,7 @@ class KnowledgeSharing:
 
     # === Import ===
 
-    def import_json(self, json_content: str, user_id: str) -> Tuple[int, int]:
+    def import_json(self, json_content: str, user_id: str) -> tuple[int, int]:
         """
         Import knowledge from JSON.
 
@@ -458,7 +457,7 @@ class KnowledgeSharing:
             return
 
         try:
-            with open(self.storage_path, 'r') as f:
+            with open(self.storage_path) as f:
                 data = json.load(f)
 
             self._counter = data.get("counter", 0)

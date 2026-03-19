@@ -25,10 +25,11 @@ Date: December 2025
 import asyncio
 import json
 import logging
-from dataclasses import dataclass, asdict, field
+from collections.abc import Callable
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Optional, Set, Any, List, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -96,9 +97,9 @@ class AgentManagerMessage:
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
     # Thread fields
-    thread_id: Optional[str] = None
-    thread_name: Optional[str] = None
-    thread_status: Optional[str] = None
+    thread_id: str | None = None
+    thread_name: str | None = None
+    thread_status: str | None = None
 
     # Progress fields
     current_step: int = 0
@@ -114,51 +115,51 @@ class AgentManagerMessage:
 
     # Priority
     priority: int = 0
-    old_priority: Optional[int] = None
+    old_priority: int | None = None
 
     # Swarm fields
-    swarm_id: Optional[str] = None
-    child_thread_ids: Optional[List[str]] = None
-    merge_strategy: Optional[str] = None
+    swarm_id: str | None = None
+    child_thread_ids: list[str] | None = None
+    merge_strategy: str | None = None
 
     # Injection fields
-    strategy_name: Optional[str] = None
-    mcts_budget: Optional[int] = None
-    step_id: Optional[str] = None
+    strategy_name: str | None = None
+    mcts_budget: int | None = None
+    step_id: str | None = None
 
     # Files
-    files: Optional[List[str]] = None
-    file_action: Optional[str] = None  # "read", "write", "delete"
+    files: list[str] | None = None
+    file_action: str | None = None  # "read", "write", "delete"
 
     # Temporal (git) fields
-    commit_sha: Optional[str] = None
-    commit_message: Optional[str] = None
-    parent_sha: Optional[str] = None
-    branch_name: Optional[str] = None
-    from_branch: Optional[str] = None
-    to_branch: Optional[str] = None
+    commit_sha: str | None = None
+    commit_message: str | None = None
+    parent_sha: str | None = None
+    branch_name: str | None = None
+    from_branch: str | None = None
+    to_branch: str | None = None
 
     # Cost fields
     tokens_input: int = 0
     tokens_output: int = 0
     cost_usd: float = 0.0
-    provider: Optional[str] = None
-    model: Optional[str] = None
+    provider: str | None = None
+    model: str | None = None
     is_local: bool = False
 
     # Timing
     duration_ms: float = 0.0
     elapsed_ms: float = 0.0
-    eta_ms: Optional[float] = None
+    eta_ms: float | None = None
 
     # Error
-    error: Optional[str] = None
-    error_type: Optional[str] = None
+    error: str | None = None
+    error_type: str | None = None
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         d = asdict(self)
         d['type'] = self.type.value
@@ -195,26 +196,26 @@ class AgentManagerWSManager:
             heartbeat_interval: Seconds between heartbeat messages
         """
         # WebSocket connections by connection_id
-        self._connections: Dict[str, Any] = {}
+        self._connections: dict[str, Any] = {}
 
         # Subscriptions: connection_id -> set of patterns
         # Patterns: "thread:{id}", "swarm:{id}", "project:{id}", "*"
-        self._subscriptions: Dict[str, Set[str]] = {}
+        self._subscriptions: dict[str, set[str]] = {}
 
         # Reverse index: pattern -> set of connection_ids
-        self._pattern_subscribers: Dict[str, Set[str]] = {}
+        self._pattern_subscribers: dict[str, set[str]] = {}
 
         # Heartbeat task
         self._heartbeat_interval = heartbeat_interval
-        self._heartbeat_task: Optional[asyncio.Task] = None
+        self._heartbeat_task: asyncio.Task | None = None
         self._running = False
 
         # Message queue for buffering during disconnects
-        self._message_buffer: Dict[str, List[AgentManagerMessage]] = {}
+        self._message_buffer: dict[str, list[AgentManagerMessage]] = {}
         self._buffer_size = 100
 
         # Event handlers (for hub integration)
-        self._event_handlers: Dict[str, List[Callable]] = {}
+        self._event_handlers: dict[str, list[Callable]] = {}
 
         logger.info("AgentManagerWSManager initialized")
 
@@ -374,10 +375,10 @@ class AgentManagerWSManager:
 
     def _get_subscribers(
         self,
-        thread_id: Optional[str] = None,
-        swarm_id: Optional[str] = None,
-        project_id: Optional[str] = None
-    ) -> Set[str]:
+        thread_id: str | None = None,
+        swarm_id: str | None = None,
+        project_id: str | None = None
+    ) -> set[str]:
         """Get all connection_ids that should receive updates."""
         subscribers = set()
 
@@ -405,9 +406,9 @@ class AgentManagerWSManager:
     async def broadcast(
         self,
         message: AgentManagerMessage,
-        thread_id: Optional[str] = None,
-        swarm_id: Optional[str] = None,
-        project_id: Optional[str] = None,
+        thread_id: str | None = None,
+        swarm_id: str | None = None,
+        project_id: str | None = None,
         buffer: bool = True
     ) -> int:
         """
@@ -557,7 +558,7 @@ class AgentManagerWSManager:
         if pattern in self._message_buffer:
             del self._message_buffer[pattern]
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get manager statistics."""
         return {
             "active_connections": len(self._connections),
@@ -599,7 +600,7 @@ class AgentManagerBroadcaster:
         query: str,
         mode: str,
         priority: int = 0,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast thread creation."""
         msg = AgentManagerMessage(
@@ -623,7 +624,7 @@ class AgentManagerBroadcaster:
         self,
         thread_id: str,
         thread_name: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast thread start."""
         msg = AgentManagerMessage(
@@ -641,7 +642,7 @@ class AgentManagerBroadcaster:
         self,
         thread_id: str,
         thread_name: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast thread pause."""
         msg = AgentManagerMessage(
@@ -659,7 +660,7 @@ class AgentManagerBroadcaster:
         self,
         thread_id: str,
         thread_name: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast thread resume."""
         msg = AgentManagerMessage(
@@ -680,7 +681,7 @@ class AgentManagerBroadcaster:
         confidence: float,
         duration_ms: float,
         response_preview: str = "",
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
         cost_usd: float = 0.0
     ) -> None:
         """Broadcast thread completion."""
@@ -704,7 +705,7 @@ class AgentManagerBroadcaster:
         self,
         thread_id: str,
         thread_name: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast thread cancellation."""
         msg = AgentManagerMessage(
@@ -725,7 +726,7 @@ class AgentManagerBroadcaster:
         thread_name: str,
         error: str,
         error_type: str = "RuntimeError",
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast thread error."""
         msg = AgentManagerMessage(
@@ -753,7 +754,7 @@ class AgentManagerBroadcaster:
         total_steps: int,
         step_name: str,
         step_type: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast step start."""
         msg = AgentManagerMessage(
@@ -779,9 +780,9 @@ class AgentManagerBroadcaster:
         confidence: float = 0.0,
         epistemic_confidence: float = 0.0,
         elapsed_ms: float = 0.0,
-        eta_ms: Optional[float] = None,
-        project_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        eta_ms: float | None = None,
+        project_id: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> None:
         """Broadcast step progress."""
         msg = AgentManagerMessage(
@@ -810,8 +811,8 @@ class AgentManagerBroadcaster:
         step_type: str,
         duration_ms: float,
         confidence: float = 0.0,
-        project_id: Optional[str] = None,
-        finding: Optional[str] = None
+        project_id: str | None = None,
+        finding: str | None = None
     ) -> None:
         """Broadcast step completion."""
         msg = AgentManagerMessage(
@@ -841,7 +842,7 @@ class AgentManagerBroadcaster:
         thread_name: str,
         new_priority: int,
         old_priority: int,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast priority change."""
         msg = AgentManagerMessage(
@@ -866,7 +867,7 @@ class AgentManagerBroadcaster:
         parent_thread_id: str,
         fan_out_count: int,
         merge_strategy: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast swarm creation."""
         msg = AgentManagerMessage(
@@ -884,8 +885,8 @@ class AgentManagerBroadcaster:
     async def swarm_spawned(
         self,
         swarm_id: str,
-        child_thread_ids: List[str],
-        project_id: Optional[str] = None
+        child_thread_ids: list[str],
+        project_id: str | None = None
     ) -> None:
         """Broadcast swarm child spawn."""
         msg = AgentManagerMessage(
@@ -903,7 +904,7 @@ class AgentManagerBroadcaster:
         swarm_id: str,
         child_thread_id: str,
         confidence: float,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast swarm child completion."""
         msg = AgentManagerMessage(
@@ -923,7 +924,7 @@ class AgentManagerBroadcaster:
         merged_thread_id: str,
         merge_strategy: str,
         confidence: float,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast swarm merge completion."""
         msg = AgentManagerMessage(
@@ -947,7 +948,7 @@ class AgentManagerBroadcaster:
         thread_id: str,
         step_id: str,
         strategy_name: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast MRF injection."""
         msg = AgentManagerMessage(
@@ -967,7 +968,7 @@ class AgentManagerBroadcaster:
         step_id: str,
         mcts_budget: int,
         exploration_constant: float = 1.41,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast MCTS injection."""
         msg = AgentManagerMessage(
@@ -989,9 +990,9 @@ class AgentManagerBroadcaster:
     async def file_activity(
         self,
         thread_id: str,
-        files: List[str],
+        files: list[str],
         action: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast file activity."""
         msg = AgentManagerMessage(
@@ -1014,8 +1015,8 @@ class AgentManagerBroadcaster:
         thread_id: str,
         commit_sha: str,
         commit_message: str,
-        parent_sha: Optional[str] = None,
-        project_id: Optional[str] = None
+        parent_sha: str | None = None,
+        project_id: str | None = None
     ) -> None:
         """Broadcast commit creation."""
         msg = AgentManagerMessage(
@@ -1035,7 +1036,7 @@ class AgentManagerBroadcaster:
         thread_id: str,
         branch_name: str,
         from_sha: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast branch creation."""
         msg = AgentManagerMessage(
@@ -1053,7 +1054,7 @@ class AgentManagerBroadcaster:
         self,
         thread_id: str,
         branch_name: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast branch deletion."""
         msg = AgentManagerMessage(
@@ -1071,7 +1072,7 @@ class AgentManagerBroadcaster:
         thread_id: str,
         target: str,
         is_branch: bool = True,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast checkout completion."""
         msg = AgentManagerMessage(
@@ -1090,7 +1091,7 @@ class AgentManagerBroadcaster:
         thread_id: str,
         target_sha: str,
         mode: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast reset completion."""
         msg = AgentManagerMessage(
@@ -1110,7 +1111,7 @@ class AgentManagerBroadcaster:
         source_branch: str,
         target_branch: str,
         merge_sha: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast merge completion."""
         msg = AgentManagerMessage(
@@ -1130,7 +1131,7 @@ class AgentManagerBroadcaster:
         thread_id: str,
         source_sha: str,
         new_sha: str,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast cherry-pick completion."""
         msg = AgentManagerMessage(
@@ -1157,7 +1158,7 @@ class AgentManagerBroadcaster:
         provider: str,
         model: str,
         is_local: bool = False,
-        project_id: Optional[str] = None
+        project_id: str | None = None
     ) -> None:
         """Broadcast cost update."""
         msg = AgentManagerMessage(
@@ -1191,7 +1192,7 @@ def create_agent_manager_router(manager: AgentManagerWSManager):
         FastAPI APIRouter
     """
     try:
-        from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+        from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
     except ImportError:
         logger.warning("FastAPI not available, WebSocket router not created")
         return None
@@ -1302,7 +1303,7 @@ def create_agent_manager_router(manager: AgentManagerWSManager):
 # Singleton for Easy Access
 # ============================================================================
 
-_global_manager: Optional[AgentManagerWSManager] = None
+_global_manager: AgentManagerWSManager | None = None
 
 
 def get_global_manager() -> AgentManagerWSManager:

@@ -5,7 +5,6 @@ GovernancePipeline — builds and executes the middleware chain.
 from __future__ import annotations
 
 import logging
-from typing import List
 
 from .context import GovernanceContext
 from .protocol import GovernanceMiddleware, NextFn
@@ -29,9 +28,9 @@ class GovernancePipeline:
     """
 
     def __init__(self) -> None:
-        self._middleware: List[GovernanceMiddleware] = []
+        self._middleware: list[GovernanceMiddleware] = []
 
-    def add(self, mw: GovernanceMiddleware) -> "GovernancePipeline":
+    def add(self, mw: GovernanceMiddleware) -> GovernancePipeline:
         """Append middleware to the chain. Returns self for fluent API."""
         self._middleware.append(mw)
         logger.debug(f"Governance middleware added: {mw.name}")

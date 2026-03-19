@@ -18,14 +18,14 @@ Unlike vector memory (which captures similarity), the graph captures
 explicit relationships, hierarchies, and dependencies.
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Protocol, Set
 import json
 import logging
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Optional, Protocol
 
-import numpy as np
 import networkx as nx
+import numpy as np
 
 from hololoom.utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
 
@@ -62,8 +62,8 @@ class KGEdge:
     dst: str                    # Destination entity
     type: str                   # Relationship type (e.g., IS_A, USES, MENTIONS)
     weight: float = 1.0         # Edge weight/confidence
-    span_id: Optional[str] = None  # Optional: link to source span/shard
-    metadata: Dict = field(default_factory=dict)  # Additional properties
+    span_id: str | None = None  # Optional: link to source span/shard
+    metadata: dict = field(default_factory=dict)  # Additional properties
 
     # Bi-temporal fields (from Graphiti research)
     event_time: Optional['datetime'] = None      # When event occurred
@@ -89,8 +89,8 @@ class KGEdge:
             self.valid_from = self.ingestion_time
 
         # valid_to = None means edge is still valid
-    
-    def to_dict(self) -> Dict:
+
+    def to_dict(self) -> dict:
         """Serialize edge for persistence (includes bi-temporal fields)."""
         result = {
             "src": self.src,
@@ -114,7 +114,7 @@ class KGEdge:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'KGEdge':
+    def from_dict(cls, data: dict) -> 'KGEdge':
         """Deserialize edge from storage (includes bi-temporal fields)."""
         from datetime import datetime
 
@@ -187,16 +187,16 @@ class KGEdge:
 
 class KGStore(Protocol):
     """Protocol for knowledge graph implementations."""
-    
+
     def add_edge(self, edge: KGEdge) -> None:
         """Add an edge to the graph."""
         ...
-    
-    def subgraph_for_entities(self, entities: List[str]) -> nx.MultiDiGraph:
+
+    def subgraph_for_entities(self, entities: list[str]) -> nx.MultiDiGraph:
         """Get subgraph containing entities and their neighborhoods."""
         ...
-    
-    def get_neighbors(self, entity: str, direction: str = "both") -> List[str]:
+
+    def get_neighbors(self, entity: str, direction: str = "both") -> list[str]:
         """Get neighboring entities."""
         ...
 
@@ -222,11 +222,11 @@ class KG:
     - Reasoning over structured knowledge
     - Spectral analysis of knowledge structure
     """
-    
+
     def __init__(self):
         self.G = nx.MultiDiGraph()
-        self._entity_index: Dict[str, Set[str]] = {}  # Fast neighbor lookup
-    
+        self._entity_index: dict[str, set[str]] = {}  # Fast neighbor lookup
+
     def add_edge(self, edge: KGEdge) -> None:
         """
         Add an edge to the knowledge graph.
@@ -242,7 +242,7 @@ class KG:
             self.G.add_node(edge.src)
         if edge.dst not in self.G:
             self.G.add_node(edge.dst)
-        
+
         # Add edge with all metadata
         # Note: NetworkX uses 'key' as edge identifier in MultiDiGraph,
         # so we need to handle it specially if present in metadata
@@ -259,21 +259,21 @@ class KG:
                 edge_attrs[k] = v
 
         self.G.add_edge(edge.src, edge.dst, **edge_attrs)
-        
+
         # Update entity index for fast lookups
         if edge.src not in self._entity_index:
             self._entity_index[edge.src] = set()
         if edge.dst not in self._entity_index:
             self._entity_index[edge.dst] = set()
-        
+
         self._entity_index[edge.src].add(edge.dst)
         self._entity_index[edge.dst].add(edge.src)
-    
-    def add_edges(self, edges: List[KGEdge]) -> None:
+
+    def add_edges(self, edges: list[KGEdge]) -> None:
         """Bulk add edges (more efficient than individual adds)."""
         for edge in edges:
             self.add_edge(edge)
-    
+
     def connect_entity_to_time(
         self,
         entity: str,
@@ -333,7 +333,7 @@ class KG:
         entity: str,
         direction: str = "both",
         max_hops: int = 1
-    ) -> Set[str]:
+    ) -> set[str]:
         """
         Get neighboring entities.
         
@@ -347,9 +347,9 @@ class KG:
         """
         if entity not in self.G:
             return set()
-        
+
         neighbors = set()
-        
+
         if max_hops == 1:
             # Fast path: direct neighbors only
             if direction in ("out", "both"):
@@ -360,7 +360,7 @@ class KG:
             # Multi-hop traversal (BFS)
             visited = {entity}
             current_level = {entity}
-            
+
             for _ in range(max_hops):
                 next_level = set()
                 for node in current_level:
@@ -368,19 +368,19 @@ class KG:
                         next_level.update(n for n in self.G.successors(node) if n not in visited)
                     if direction in ("in", "both"):
                         next_level.update(n for n in self.G.predecessors(node) if n not in visited)
-                
+
                 neighbors.update(next_level)
                 visited.update(next_level)
                 current_level = next_level
-                
+
                 if not current_level:
                     break
-        
+
         return neighbors
-    
+
     def subgraph_for_entities(
         self,
-        entities: List[str],
+        entities: list[str],
         expand: bool = True,
         max_hops: int = 1
     ) -> nx.MultiDiGraph:
@@ -399,24 +399,24 @@ class KG:
             MultiDiGraph containing the subgraph
         """
         nodes = set()
-        
+
         # Add requested entities
         for entity in entities:
             if entity in self.G:
                 nodes.add(entity)
-                
+
                 # Optionally expand to neighbors
                 if expand:
                     neighbors = self.get_neighbors(entity, direction="both", max_hops=max_hops)
                     nodes.update(neighbors)
-        
+
         # Extract subgraph
         if not nodes:
             return nx.MultiDiGraph()
-        
+
         return self.G.subgraph(nodes).copy()
-    
-    def get_edge_types(self, src: str, dst: str) -> List[str]:
+
+    def get_edge_types(self, src: str, dst: str) -> list[str]:
         """
         Get all edge types between two entities.
         
@@ -431,13 +431,13 @@ class KG:
         if edge_dict is None:
             return []
         return [data.get("type", "unknown") for data in edge_dict.values()]
-    
+
     def get_paths(
         self,
         src: str,
         dst: str,
         max_length: int = 3
-    ) -> List[List[str]]:
+    ) -> list[list[str]]:
         """
         Find paths between two entities.
         
@@ -453,7 +453,7 @@ class KG:
         """
         if src not in self.G or dst not in self.G:
             return []
-        
+
         try:
             # Find all simple paths up to max_length
             paths = list(nx.all_simple_paths(
@@ -465,13 +465,13 @@ class KG:
             return paths
         except nx.NetworkXNoPath:
             return []
-    
+
     def get_related_by_type(
         self,
         entity: str,
         edge_type: str,
         direction: str = "out"
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get entities related by a specific edge type.
         
@@ -489,9 +489,9 @@ class KG:
         """
         if entity not in self.G:
             return []
-        
+
         related = []
-        
+
         if direction == "out":
             for _, dst, data in self.G.out_edges(entity, data=True):
                 if data.get("type") == edge_type:
@@ -500,10 +500,10 @@ class KG:
             for src, _, data in self.G.in_edges(entity, data=True):
                 if data.get("type") == edge_type:
                     related.append(src)
-        
+
         return related
-    
-    def stats(self) -> Dict:
+
+    def stats(self) -> dict:
         """Get graph statistics."""
         return {
             "num_nodes": self.G.number_of_nodes(),
@@ -568,10 +568,10 @@ class KG:
 
     def get_valid_edges(
         self,
-        src: Optional[str] = None,
-        dst: Optional[str] = None,
+        src: str | None = None,
+        dst: str | None = None,
         timestamp: Optional['datetime'] = None
-    ) -> List[KGEdge]:
+    ) -> list[KGEdge]:
         """
         Get edges valid at given timestamp.
 
@@ -642,8 +642,8 @@ class KG:
         self,
         src: str,
         dst: str,
-        edge_type: Optional[str] = None
-    ) -> List[KGEdge]:
+        edge_type: str | None = None
+    ) -> list[KGEdge]:
         """
         Get complete history of edges between entities (including invalidated).
 
@@ -739,7 +739,7 @@ class KG:
             return np.eye(self.G.number_of_nodes())
 
         try:
-            from hololoom.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
+            from hololoom.warp.spectral_methods import DiffusionMap, GraphLaplacian, LaplacianType
 
             # Compute diffusion map
             laplacian = GraphLaplacian(self, laplacian_type=LaplacianType.RANDOM_WALK)
@@ -764,7 +764,7 @@ class KG:
             warnings.warn("scipy not available - diffusion maps require scipy. Returning identity.")
             return np.eye(min(n_dims, self.G.number_of_nodes()))
 
-    def get_diffusion_coordinates(self, entity: str, n_dims: int = 32) -> Optional[np.ndarray]:
+    def get_diffusion_coordinates(self, entity: str, n_dims: int = 32) -> np.ndarray | None:
         """
         Get diffusion map coordinates for a specific entity.
 
@@ -793,7 +793,7 @@ class KG:
         self,
         n_clusters: int,
         method: str = 'spectral'
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """
         Cluster graph nodes using spectral methods.
 
@@ -811,7 +811,11 @@ class KG:
             return {}
 
         try:
-            from hololoom.warp.spectral_methods import GraphLaplacian, spectral_clustering, LaplacianType
+            from hololoom.warp.spectral_methods import (
+                GraphLaplacian,
+                LaplacianType,
+                spectral_clustering,
+            )
 
             # Compute spectral clustering
             laplacian = GraphLaplacian(self, laplacian_type=LaplacianType.NORMALIZED)
@@ -846,7 +850,7 @@ class KG:
     # ========================================================================
     # Persistence
     # ========================================================================
-    
+
     def save(self, path: str) -> None:
         """
         Save graph to disk (JSONL format).
@@ -856,7 +860,7 @@ class KG:
         """
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
-        
+
         with p.open('w', encoding='utf-8') as f:
             for src, dst, key, data in self.G.edges(keys=True, data=True):
                 edge = KGEdge(
@@ -868,7 +872,7 @@ class KG:
                     metadata={k: v for k, v in data.items() if k not in ["type", "weight", "span_id"]}
                 )
                 f.write(json.dumps(edge.to_dict()) + "\n")
-    
+
     @classmethod
     def load(cls, path: str) -> 'KG':
         """
@@ -882,10 +886,10 @@ class KG:
         """
         kg = cls()
         p = Path(path)
-        
+
         if not p.exists():
             return kg
-        
+
         with p.open('r', encoding='utf-8') as f:
             for line in f:
                 try:
@@ -895,9 +899,9 @@ class KG:
                 except Exception as e:
                     import warnings
                     warnings.warn(f"Failed to load edge: {e}")
-        
+
         return kg
-    
+
     def merge(self, other: 'KG') -> None:
         """
         Merge another KG into this one.
@@ -968,7 +972,7 @@ class KG:
 
         return memory.id
 
-    async def store_many(self, memories: List, user_id: str = "default") -> List[str]:
+    async def store_many(self, memories: list, user_id: str = "default") -> list[str]:
         """
         Batch store multiple memories.
 
@@ -1006,8 +1010,9 @@ class KG:
         Returns:
             RetrievalResult with memories, scores, and metadata
         """
-        from hololoom.memory.protocol import Memory, RetrievalResult
         from datetime import datetime
+
+        from hololoom.memory.protocol import Memory, RetrievalResult
 
         query_text = query.text if hasattr(query, 'text') else str(query)
 
@@ -1092,8 +1097,9 @@ class KG:
         Returns:
             List[MemoryShard]: Selected threads from the graph
         """
-        from hololoom.protocols.types import MemoryShard
         from datetime import datetime
+
+        from hololoom.protocols.types import MemoryShard
 
         query_text = query.text if hasattr(query, 'text') else str(query)
 
@@ -1198,7 +1204,6 @@ class KG:
             >>> kg.add_photo_node(photo)
             'photo_abc'
         """
-        from datetime import datetime
 
         # Convert PhotoToken to node attributes
         node_data = photo_token.to_yarn_node()
@@ -1325,7 +1330,7 @@ class KG:
         self,
         entity: str,
         edge_type: str = "DEPICTS"
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get all photos depicting an entity.
 
@@ -1351,7 +1356,7 @@ class KG:
 
         return photos
 
-    def get_photos_by_tag(self, tag: str) -> List[str]:
+    def get_photos_by_tag(self, tag: str) -> list[str]:
         """
         Get all photos with a specific tag.
 
@@ -1370,10 +1375,10 @@ class KG:
     async def search_multimodal(
         self,
         query: str,
-        return_types: List[str] = None,
+        return_types: list[str] = None,
         k: int = 10,
         photo_memory=None
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Search across text and photo memories (multimodal retrieval).
 
@@ -1515,7 +1520,7 @@ class KG:
 # Entity Extraction Helpers
 # ============================================================================
 
-def extract_entities_simple(text: str) -> List[str]:
+def extract_entities_simple(text: str) -> list[str]:
     """
     Simple entity extraction: capitalized words.
     
@@ -1529,20 +1534,20 @@ def extract_entities_simple(text: str) -> List[str]:
     """
     words = text.split()
     entities = []
-    
+
     for word in words:
         # Remove punctuation
         cleaned = word.strip('.,!?;:()[]{}"\'-')
         # Check if starts with capital
         if cleaned and cleaned[0].isupper() and len(cleaned) > 1:
             entities.append(cleaned)
-    
+
     return entities
 
 
 def build_kg_from_text(
     text: str,
-    entities: Optional[List[str]] = None,
+    entities: list[str] | None = None,
     context_entity: str = "query"
 ) -> KG:
     """
@@ -1560,10 +1565,10 @@ def build_kg_from_text(
         KG with MENTIONS relationships
     """
     kg = KG()
-    
+
     if entities is None:
         entities = extract_entities_simple(text)
-    
+
     # Create edges: entity → MENTIONS → context
     for entity in entities[:10]:  # Limit to avoid huge graphs
         kg.add_edge(KGEdge(
@@ -1572,7 +1577,7 @@ def build_kg_from_text(
             type="MENTIONS",
             weight=1.0
         ))
-    
+
     return kg
 
 
@@ -1633,10 +1638,10 @@ class LegacyShardsAdapter:
 
 if __name__ == "__main__":
     print("=== Knowledge Graph Demo ===\n")
-    
+
     # Create knowledge graph
     kg = KG()
-    
+
     # Add domain knowledge
     edges = [
         KGEdge("attention", "transformer", "USES", 1.0),
@@ -1647,40 +1652,40 @@ if __name__ == "__main__":
         KGEdge("multi-head attention", "attention", "IS_A", 1.0),
         KGEdge("self-attention", "attention", "IS_A", 1.0),
     ]
-    
+
     kg.add_edges(edges)
-    
+
     # Graph statistics
     print("Graph stats:")
     stats = kg.stats()
     for key, value in stats.items():
         print(f"  {key}: {value}")
-    
+
     # Query: Get subgraph for entities
     print("\nSubgraph for ['attention', 'BERT']:")
     subgraph = kg.subgraph_for_entities(["attention", "BERT"], expand=True)
     print(f"  Nodes: {list(subgraph.nodes())}")
     print(f"  Edges: {subgraph.number_of_edges()}")
-    
+
     # Find relationships
     print("\nWhat is BERT?")
     is_a = kg.get_related_by_type("BERT", "IS_A", direction="out")
     print(f"  BERT IS_A {is_a}")
-    
+
     print("\nWhat uses attention?")
     uses = kg.get_related_by_type("attention", "USES", direction="in")
     print(f"  {uses} USES attention")
-    
+
     # Find paths
     print("\nPath from 'BERT' to 'neural_network':")
     paths = kg.get_paths("BERT", "neural_network", max_length=3)
     for path in paths:
         print(f"  {' → '.join(path)}")
-    
+
     # Persistence
     print("\nSaving and loading...")
     kg.save("demo_kg.jsonl")
     kg2 = KG.load("demo_kg.jsonl")
     print(f"  Loaded graph has {kg2.G.number_of_nodes()} nodes")
-    
+
     print("\n✓ Demo complete!")

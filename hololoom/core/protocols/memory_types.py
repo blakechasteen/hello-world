@@ -11,11 +11,10 @@ Author: HoloLoom Architecture Team
 Date: 2025-01-12 (Phase 0, Task 7: Protocol Consolidation)
 """
 
-from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
-from enum import Enum
 from datetime import datetime
-
+from enum import Enum
+from typing import Any, Optional
 
 # ============================================================================
 # Core Memory Types
@@ -32,12 +31,12 @@ class Memory:
     id: str
     text: str
     timestamp: datetime
-    context: Dict[str, Any]
-    metadata: Dict[str, Any]
-    embedding: Optional[Any] = None  # Vector embedding (numpy array or list)
+    context: dict[str, Any]
+    metadata: dict[str, Any]
+    embedding: Any | None = None  # Vector embedding (numpy array or list)
 
     @classmethod
-    def from_shard(cls, shard: Any, timestamp: Optional[datetime] = None) -> 'Memory':
+    def from_shard(cls, shard: Any, timestamp: datetime | None = None) -> 'Memory':
         """Create Memory from MemoryShard (SpinningWheel output)."""
         return cls(
             id=shard.id,
@@ -51,7 +50,7 @@ class Memory:
             metadata=getattr(shard, 'metadata', None) or {}
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         result = {
             'id': self.id,
@@ -70,7 +69,7 @@ class Memory:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Memory':
+    def from_dict(cls, data: dict[str, Any]) -> 'Memory':
         """Create Memory from dictionary."""
         data = data.copy()
         if isinstance(data['timestamp'], str):
@@ -93,7 +92,7 @@ class MemoryQuery:
     text: str
     user_id: str = "default"
     limit: int = 5
-    filters: Optional[Dict[str, Any]] = None
+    filters: dict[str, Any] | None = None
     strategy: Optional['Strategy'] = None
 
 
@@ -112,10 +111,10 @@ class MemoryRetrievalResult:
     Note: This is different from StrategyRetrievalResult which is used
     by RetrievalStrategy protocol for strategy pattern.
     """
-    memories: List[Memory]
-    scores: List[float]
+    memories: list[Memory]
+    scores: list[float]
     strategy_used: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 # ============================================================================
@@ -144,7 +143,7 @@ class QueryMode(Enum):
 # Helper Functions
 # ============================================================================
 
-def shards_to_memories(shards: List[Any], timestamp: Optional[datetime] = None) -> List[Memory]:
+def shards_to_memories(shards: list[Any], timestamp: datetime | None = None) -> list[Memory]:
     """
     Convert SpinningWheel shards to Memory objects.
 

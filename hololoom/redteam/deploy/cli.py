@@ -31,18 +31,14 @@ import argparse
 import asyncio
 import json
 import logging
-import os
 import sys
 import time
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Any
 
 from .config import (
     DeploymentConfig,
     DeploymentTarget,
-    DeploymentEnvironment,
-    ResourceLimits,
-    NetworkConfig,
 )
 
 # Configure logging
@@ -70,17 +66,17 @@ class DeploymentState:
         """Ensure state directory exists."""
         self.state_dir.mkdir(parents=True, exist_ok=True)
 
-    def load(self) -> Dict[str, Any]:
+    def load(self) -> dict[str, Any]:
         """Load current state."""
         if self.state_file.exists():
             return json.loads(self.state_file.read_text())
         return {"deployments": {}, "active": None}
 
-    def save(self, state: Dict[str, Any]) -> None:
+    def save(self, state: dict[str, Any]) -> None:
         """Save state to file."""
         self.state_file.write_text(json.dumps(state, indent=2))
 
-    def get_active(self) -> Optional[Dict[str, Any]]:
+    def get_active(self) -> dict[str, Any] | None:
         """Get active deployment info."""
         state = self.load()
         active_name = state.get("active")
@@ -88,7 +84,7 @@ class DeploymentState:
             return state["deployments"].get(active_name)
         return None
 
-    def set_active(self, name: str, info: Dict[str, Any]) -> None:
+    def set_active(self, name: str, info: dict[str, Any]) -> None:
         """Set active deployment."""
         state = self.load()
         state["deployments"][name] = info
@@ -121,15 +117,15 @@ class BaseDeployer:
         """Setup deployment environment. Returns True on success."""
         raise NotImplementedError
 
-    async def start(self) -> Dict[str, Any]:
+    async def start(self) -> dict[str, Any]:
         """Start sandbox deployment. Returns deployment info."""
         raise NotImplementedError
 
-    async def execute(self, command: List[str], env: Dict[str, str] = None) -> Dict[str, Any]:
+    async def execute(self, command: list[str], env: dict[str, str] = None) -> dict[str, Any]:
         """Execute command in sandbox. Returns result."""
         raise NotImplementedError
 
-    async def status(self) -> Dict[str, Any]:
+    async def status(self) -> dict[str, Any]:
         """Get deployment status."""
         raise NotImplementedError
 
@@ -188,7 +184,7 @@ class DockerDeployer(BaseDeployer):
         logger.info("Docker setup complete")
         return True
 
-    async def start(self) -> Dict[str, Any]:
+    async def start(self) -> dict[str, Any]:
         """Start Docker container for sandbox."""
         import subprocess
 
@@ -244,7 +240,7 @@ class DockerDeployer(BaseDeployer):
             logger.error(f"Failed to start container: {e}")
             return {"success": False, "error": str(e)}
 
-    async def execute(self, command: List[str], env: Dict[str, str] = None) -> Dict[str, Any]:
+    async def execute(self, command: list[str], env: dict[str, str] = None) -> dict[str, Any]:
         """Execute command in running container."""
         import subprocess
 
@@ -287,7 +283,7 @@ class DockerDeployer(BaseDeployer):
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def status(self) -> Dict[str, Any]:
+    async def status(self) -> dict[str, Any]:
         """Get container status."""
         import subprocess
 
@@ -456,9 +452,10 @@ class KubernetesDeployer(BaseDeployer):
         logger.info("Kubernetes setup complete")
         return True
 
-    async def start(self) -> Dict[str, Any]:
+    async def start(self) -> dict[str, Any]:
         """Deploy sandbox to Kubernetes."""
         import subprocess
+
         import yaml
 
         logger.info(f"Deploying to Kubernetes: {self.config.name}")
@@ -495,7 +492,7 @@ class KubernetesDeployer(BaseDeployer):
             logger.error(f"Failed to deploy: {e}")
             return {"success": False, "error": str(e)}
 
-    def _generate_job_manifest(self) -> Dict[str, Any]:
+    def _generate_job_manifest(self) -> dict[str, Any]:
         """Generate Kubernetes Job manifest."""
         limits = self.config.resources.to_k8s_limits()
 
@@ -543,7 +540,7 @@ class KubernetesDeployer(BaseDeployer):
             },
         }
 
-    async def execute(self, command: List[str], env: Dict[str, str] = None) -> Dict[str, Any]:
+    async def execute(self, command: list[str], env: dict[str, str] = None) -> dict[str, Any]:
         """Execute command in K8s pod."""
         import subprocess
 
@@ -595,7 +592,7 @@ class KubernetesDeployer(BaseDeployer):
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def status(self) -> Dict[str, Any]:
+    async def status(self) -> dict[str, Any]:
         """Get K8s job status."""
         import subprocess
 

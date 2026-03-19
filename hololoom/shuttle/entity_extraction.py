@@ -9,9 +9,9 @@ Provides multiple strategies for extracting anchors from Warp search results:
 Created: 2025-01-21
 """
 
-from typing import List, Dict, Any, Protocol, Optional
-import re
 import logging
+import re
+from typing import Any, Protocol
 
 from .exceptions import EntityExtractionError
 
@@ -34,7 +34,7 @@ class Anchor:
         self,
         name: str,
         type: str,
-        node_id: Optional[str] = None,
+        node_id: str | None = None,
         confidence: float = 1.0,
         source: str = "unknown"
     ):
@@ -47,7 +47,7 @@ class Anchor:
     def __repr__(self) -> str:
         return f"Anchor(name='{self.name}', type='{self.type}', id={self.node_id})"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dict."""
         return {
             "name": self.name,
@@ -72,9 +72,9 @@ class EntityExtractor(Protocol):
 
     def extract(
         self,
-        warp_results: List[Dict[str, Any]],
+        warp_results: list[dict[str, Any]],
         max_anchors: int = 10
-    ) -> List[Anchor]:
+    ) -> list[Anchor]:
         """
         Extract anchors from Warp search results.
 
@@ -108,9 +108,9 @@ class PayloadExtractor:
 
     def extract(
         self,
-        warp_results: List[Dict[str, Any]],
+        warp_results: list[dict[str, Any]],
         max_anchors: int = 10
-    ) -> List[Anchor]:
+    ) -> list[Anchor]:
         """
         Extract anchors from payload "entities" field.
 
@@ -204,9 +204,9 @@ class RegexExtractor:
 
     def extract(
         self,
-        warp_results: List[Dict[str, Any]],
+        warp_results: list[dict[str, Any]],
         max_anchors: int = 10
-    ) -> List[Anchor]:
+    ) -> list[Anchor]:
         """
         Extract anchors using regex patterns.
 
@@ -293,9 +293,9 @@ class SpacyExtractor:
 
     def extract(
         self,
-        warp_results: List[Dict[str, Any]],
+        warp_results: list[dict[str, Any]],
         max_anchors: int = 10
-    ) -> List[Anchor]:
+    ) -> list[Anchor]:
         """
         Extract anchors using spaCy NER.
 
@@ -425,9 +425,9 @@ class ChainedExtractor:
 
     def extract(
         self,
-        warp_results: List[Dict[str, Any]],
+        warp_results: list[dict[str, Any]],
         max_anchors: int = 10
-    ) -> List[Anchor]:
+    ) -> list[Anchor]:
         """
         Try extractors in sequence until one succeeds.
 

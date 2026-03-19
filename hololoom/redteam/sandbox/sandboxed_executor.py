@@ -54,31 +54,28 @@ import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
-from typing import Dict, List, Any, Optional
+from typing import Any
 
-from .protocols import (
-    SandboxMode,
-    SandboxConfig,
-    SandboxResult,
-    ProcessIsolationProtocol,
-    NetworkPolicyProtocol,
-    FilesystemSandboxProtocol,
-    select_best_sandbox_mode,
-    validate_sandbox_config,
-    get_sandbox_mode_availability,
-)
-from .monitor import (
-    ResourceMonitor,
-    ResourceSample,
-    ResourceSummary,
-)
 from ..executor import (
     AttackExecutor,
-    AttackResult,
     AttackOutcome,
+    AttackResult,
 )
-from ..strategies import AttackStrategy, AttackPayload
+from ..strategies import AttackPayload, AttackStrategy
+from .monitor import (
+    ResourceMonitor,
+    ResourceSummary,
+)
+from .protocols import (
+    FilesystemSandboxProtocol,
+    NetworkPolicyProtocol,
+    ProcessIsolationProtocol,
+    SandboxConfig,
+    SandboxMode,
+    get_sandbox_mode_availability,
+    select_best_sandbox_mode,
+    validate_sandbox_config,
+)
 
 logger = logging.getLogger("hololoom.redteam.sandbox.sandboxed_executor")
 
@@ -113,8 +110,8 @@ class ResourceSummary:
     io_operations: int
 
     # Optional fields with defaults
-    peak_memory_timestamp: Optional[datetime] = None
-    network_violations: List[str] = field(default_factory=list)
+    peak_memory_timestamp: datetime | None = None
+    network_violations: list[str] = field(default_factory=list)
     blocked_connections: int = 0
     samples_collected: int = 0
     monitoring_overhead_percent: float = 0.0
@@ -145,8 +142,8 @@ class SandboxedExecutor:
 
     def __init__(
         self,
-        config: Optional[SandboxConfig] = None,
-        executor: Optional[AttackExecutor] = None,
+        config: SandboxConfig | None = None,
+        executor: AttackExecutor | None = None,
         **executor_kwargs
     ):
         """
@@ -180,13 +177,13 @@ class SandboxedExecutor:
         self._startup_time = 0.0
         self._execution_time = 0.0
         self._cleanup_time = 0.0
-        self._start_timestamp: Optional[datetime] = None
-        self._end_timestamp: Optional[datetime] = None
+        self._start_timestamp: datetime | None = None
+        self._end_timestamp: datetime | None = None
 
         # Isolation components (created in _setup_sandbox)
-        self._process_isolator: Optional[ProcessIsolationProtocol] = None
-        self._network_policy: Optional[NetworkPolicyProtocol] = None
-        self._filesystem_sandbox: Optional[FilesystemSandboxProtocol] = None
+        self._process_isolator: ProcessIsolationProtocol | None = None
+        self._network_policy: NetworkPolicyProtocol | None = None
+        self._filesystem_sandbox: FilesystemSandboxProtocol | None = None
 
         # Statistics
         self.stats = {
@@ -287,7 +284,7 @@ class SandboxedExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> AttackResult:
         """
         Execute attack payload within sandbox.
@@ -389,10 +386,10 @@ class SandboxedExecutor:
 
     async def execute_batch(
         self,
-        attacks: List[AttackPayload],
+        attacks: list[AttackPayload],
         parallel: bool = False,
         max_parallel: int = 4
-    ) -> List[AttackResult]:
+    ) -> list[AttackResult]:
         """
         Execute multiple attacks within sandbox.
 
@@ -475,7 +472,7 @@ class SandboxedExecutor:
             sandbox_mode_used=self._sandbox_mode,
         )
 
-    def get_blocked_network_attempts(self) -> List[Dict[str, Any]]:
+    def get_blocked_network_attempts(self) -> list[dict[str, Any]]:
         """
         Get list of blocked network connection attempts.
 
@@ -486,7 +483,7 @@ class SandboxedExecutor:
             return self._network_policy.get_violations()
         return []
 
-    def get_execution_stats(self) -> Dict[str, Any]:
+    def get_execution_stats(self) -> dict[str, Any]:
         """
         Get execution statistics.
 
@@ -642,8 +639,8 @@ class SandboxedExecutor:
 # =============================================================================
 
 async def create_sandboxed_executor(
-    config: Optional[SandboxConfig] = None,
-    executor: Optional[AttackExecutor] = None,
+    config: SandboxConfig | None = None,
+    executor: AttackExecutor | None = None,
     **executor_kwargs
 ) -> SandboxedExecutor:
     """
@@ -674,8 +671,8 @@ async def create_sandboxed_executor(
 
 
 def create_sandboxed_executor_sync(
-    config: Optional[SandboxConfig] = None,
-    executor: Optional[AttackExecutor] = None,
+    config: SandboxConfig | None = None,
+    executor: AttackExecutor | None = None,
     **executor_kwargs
 ) -> SandboxedExecutor:
     """
@@ -707,8 +704,8 @@ def create_sandboxed_executor_sync(
 async def sandboxed_attack_execution(
     strategy: AttackStrategy,
     payload: str,
-    context: Optional[Dict[str, Any]] = None,
-    config: Optional[SandboxConfig] = None,
+    context: dict[str, Any] | None = None,
+    config: SandboxConfig | None = None,
 ) -> AttackResult:
     """
     Execute single attack with automatic sandbox setup/cleanup.

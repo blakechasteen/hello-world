@@ -28,25 +28,30 @@ Phase 3 - Alignment Supremacy (December 2025):
 """
 
 # Phase 1: Core Safety
-from .safety_guardrails import (
-    SafetyGuardrails,
-    RiskLevel,
-    ActionCategory,
-    ActionRequest,
-    SafetyDecision,
-    create_guardrails,  # Factory function
+# Phase 2: Advanced Interpretability
+from .agentic_explainability import (
+    AgenticExplainer,
+    ExplanationDepth,
+    ReasoningExplanation,
+    StepExplanation,
+    explain_agentic_result,
 )
-from .deception_detection import (
-    DeceptionDetector,
-    BehavioralProbe,
-    GoalTransparency,
-    create_detector,  # Factory function
+from .alerting import (
+    Alert as WebhookAlert,  # Rename to avoid conflict with monitoring.Alert
 )
-from .instrumental_convergence import (
-    InstrumentalConvergenceGuard,
-    AutonomyLimit,
-    ResourceBounds,
-    create_guard,  # Factory function
+
+# E2.3: Webhook Alerting (December 2025)
+from .alerting import (
+    AlertChannel,
+    AlertConfig,
+    AlertDispatcher,
+    AlertSeverity,
+    alert_convergence_violation,
+    alert_deception_detected,
+    alert_high_risk_action,
+    dispatch_alignment_alert,
+    get_alert_dispatcher,
+    set_alert_dispatcher,
 )
 from .audit_trail import (
     AuditTrail,
@@ -56,147 +61,147 @@ from .audit_trail import (
     ProvenanceTracer,
     create_audit_trail,  # Factory function
 )
+from .automated_auditor import (
+    AdaptiveThresholdSelector,  # Thompson Sampling: adaptive threshold selection
+    AlertCallbackProtocol,  # Extensibility: type-safe alert callbacks
+    AlignmentFailure,
+    AlignmentFailureType,
+    AuditReport,
+    AuditSeverity,
+    AutomatedAlignmentAuditor,
+    BehavioralTrajectoryAnalyzer,
+    DecisionPoint,
+    RootCauseAnalyzer,
+    RootCauseAnalyzerProtocol,  # Extensibility: custom root cause detection
+    RootCauseCategory,
+    SuperAgentAuditor,
+    SuperAgentProtocol,  # Extensibility: custom super-agent auditors
+    ThresholdPrior,  # Thompson Sampling: Beta distribution prior
+    # Phase 3 Refinements (December 2025)
+    TrajectoryAnalyzerProtocol,  # Extensibility: custom trajectory analysis
+    create_auditor,
+    create_decision_point,
+)
+from .constitutional_critique import (
+    AdaptivePrincipleWeighter,  # Thompson Sampling: adaptive principle weighting
+    Constitution,
+    ConstitutionalAI,
+    ConstitutionalPrinciple,
+    # Phase 3 Refinements (December 2025)
+    CritiqueEngineProtocol,  # Extensibility: custom critique engines
+    CritiqueResult,
+    CritiqueType,
+    PreferenceModelProtocol,  # Extensibility: custom preference models
+    PreferencePair,
+    PrincipleCategory,
+    PrincipleProviderProtocol,  # Extensibility: custom principle sources
+    PrincipleWeightPrior,  # Thompson Sampling: Beta distribution prior
+    RevisionEngineProtocol,  # Extensibility: custom revision engines
+    RevisionResult,
+    RLAIFTrainer,
+    SelfCritique,
+    ValueAlignmentVerifier,
+    ViolationSeverity,
+    create_constitution,
+    create_constitutional_ai,
+    quick_critique,
+)
+from .deception_detection import (
+    BehavioralProbe,
+    DeceptionDetector,
+    GoalTransparency,
+    create_detector,  # Factory function
+)
+from .instrumental_convergence import (
+    AutonomyLimit,
+    InstrumentalConvergenceGuard,
+    ResourceBounds,
+    create_guard,  # Factory function
+)
+from .modern_attack_defenses import (
+    AttackSignature,
+    AttackType,
+    CrescendoDefense,
+    DefenseAction,
+    EncodingAttackDefense,
+    ManyShotDefense,
+    PromptInjectionDefense,
+    SkeletonKeyDefense,
+    ThreatLevel,
+    ToolAbuseDefense,
+    UnifiedAttackDefense,
+    create_attack_defense,
+    quick_scan,
+)
+from .modern_attack_defenses import (
+    DetectionResult as AttackDetectionResult,  # Renamed to avoid conflict
+)
 
 # E2.1: Monitoring & Prometheus Metrics (December 2025)
 from .monitoring import (
-    AlignmentMonitor,
-    AlignmentMetrics,
-    AlertLevel,
     Alert,
-    LatencyMetrics,
-    SafetyRiskLevel,
-    DeceptionFlagType,
-    ConvergenceViolationType,
+    AlertLevel,
+    AlignmentMetrics,
+    AlignmentMonitor,
     AutonomyStepType,
+    ConvergenceViolationType,
+    DeceptionFlagType,
+    LatencyMetrics,
     ResourceMetricType,
+    SafetyRiskLevel,
     get_global_monitor,
     set_global_monitor,
 )
-
-# E2.3: Webhook Alerting (December 2025)
-from .alerting import (
-    AlertDispatcher,
-    AlertConfig,
-    AlertSeverity,
-    AlertChannel,
-    Alert as WebhookAlert,  # Rename to avoid conflict with monitoring.Alert
-    get_alert_dispatcher,
-    set_alert_dispatcher,
-    dispatch_alignment_alert,
-    alert_deception_detected,
-    alert_convergence_violation,
-    alert_high_risk_action,
+from .safety_guardrails import (
+    ActionCategory,
+    ActionRequest,
+    RiskLevel,
+    SafetyDecision,
+    SafetyGuardrails,
+    create_guardrails,  # Factory function
 )
-
-# Phase 2: Advanced Interpretability
-from .agentic_explainability import (
-    AgenticExplainer,
-    StepExplanation,
-    ReasoningExplanation,
-    ExplanationDepth,
-    explain_agentic_result,
+from .sandbagging_detection import (
+    CapabilityElicitor,
+    CapabilityTest,
+    CapabilityTestProviderProtocol,  # Extensibility: domain-specific test suites
+    ConsistencyAnalyzer,
+    # Phase 3 Refinements (December 2025)
+    ElicitationMethodProtocol,  # Extensibility: custom elicitation strategies
+    ElicitationStrategy,
+    EvaluationAwarenessTester,
+    EvaluationContext,
+    EvaluationFunctionProtocol,  # Extensibility: custom response evaluation
+    SandbaggingDetectionResult,
+    SandbaggingDetector,
+    SandbaggingSignal,
+    StrategyPrior,  # Thompson Sampling Beta distribution prior
+    ThompsonStrategySelector,  # Adaptive elicitation strategy selection
+    WeightNoiseInjector,
+    WeightPerturbationProtocol,  # Extensibility: custom weight perturbation methods
+    create_sandbagging_detector,
 )
 
 # Phase 3: Alignment Supremacy (December 2025)
 from .sleeper_detection import (
-    SleeperAgentDetector,
-    LinearDeceptionProbe,
-    HoneypotScenario,
-    InterviewProtocol,
-    SleeperDetectionResult,
-    BackdoorProbeResult,
     ActivationProbeResult,
-    HoneypotResult,
-    InterviewResult,
-    TriggerType,
+    BackdoorProbeResult,
     DeceptionSignal,
-    ProbeResult as SleeperProbeResult,  # Renamed to avoid conflict
-    create_sleeper_detector,
     # Phase 3 Refinements (December 2025)
     DetectionMethodProtocol,  # Extensibility: custom detection methods
     EmbeddingProviderProtocol,  # Extensibility: custom embeddings
+    HoneypotResult,
+    HoneypotScenario,
+    InterviewProtocol,
+    InterviewResult,
+    LinearDeceptionProbe,
+    SleeperAgentDetector,
+    SleeperDetectionResult,
     SmoothLLMPerturbation,  # SmoothLLM adversarial robustness testing
+    TriggerType,
+    create_sleeper_detector,
 )
-from .sandbagging_detection import (
-    SandbaggingDetector,
-    WeightNoiseInjector,
-    EvaluationAwarenessTester,
-    CapabilityElicitor,
-    ConsistencyAnalyzer,
-    SandbaggingDetectionResult,
-    SandbaggingSignal,
-    ElicitationStrategy,
-    EvaluationContext,
-    CapabilityTest,
-    create_sandbagging_detector,
-    # Phase 3 Refinements (December 2025)
-    ElicitationMethodProtocol,  # Extensibility: custom elicitation strategies
-    EvaluationFunctionProtocol,  # Extensibility: custom response evaluation
-    CapabilityTestProviderProtocol,  # Extensibility: domain-specific test suites
-    WeightPerturbationProtocol,  # Extensibility: custom weight perturbation methods
-    StrategyPrior,  # Thompson Sampling Beta distribution prior
-    ThompsonStrategySelector,  # Adaptive elicitation strategy selection
-)
-from .automated_auditor import (
-    AutomatedAlignmentAuditor,
-    BehavioralTrajectoryAnalyzer,
-    RootCauseAnalyzer,
-    SuperAgentAuditor,
-    AlignmentFailure,
-    AuditReport,
-    DecisionPoint,
-    AlignmentFailureType,
-    RootCauseCategory,
-    AuditSeverity,
-    create_auditor,
-    create_decision_point,
-    # Phase 3 Refinements (December 2025)
-    TrajectoryAnalyzerProtocol,  # Extensibility: custom trajectory analysis
-    RootCauseAnalyzerProtocol,   # Extensibility: custom root cause detection
-    SuperAgentProtocol,          # Extensibility: custom super-agent auditors
-    AlertCallbackProtocol,       # Extensibility: type-safe alert callbacks
-    ThresholdPrior,              # Thompson Sampling: Beta distribution prior
-    AdaptiveThresholdSelector,   # Thompson Sampling: adaptive threshold selection
-)
-from .constitutional_critique import (
-    ConstitutionalAI,
-    Constitution,
-    SelfCritique,
-    RLAIFTrainer,
-    ValueAlignmentVerifier,
-    ConstitutionalPrinciple,
-    CritiqueResult,
-    RevisionResult,
-    PreferencePair,
-    PrincipleCategory,
-    ViolationSeverity,
-    CritiqueType,
-    create_constitution,
-    create_constitutional_ai,
-    quick_critique,
-    # Phase 3 Refinements (December 2025)
-    CritiqueEngineProtocol,      # Extensibility: custom critique engines
-    RevisionEngineProtocol,       # Extensibility: custom revision engines
-    PrincipleProviderProtocol,    # Extensibility: custom principle sources
-    PreferenceModelProtocol,      # Extensibility: custom preference models
-    PrincipleWeightPrior,         # Thompson Sampling: Beta distribution prior
-    AdaptivePrincipleWeighter,    # Thompson Sampling: adaptive principle weighting
-)
-from .modern_attack_defenses import (
-    UnifiedAttackDefense,
-    CrescendoDefense,
-    ManyShotDefense,
-    PromptInjectionDefense,
-    EncodingAttackDefense,
-    ToolAbuseDefense,
-    SkeletonKeyDefense,
-    DetectionResult as AttackDetectionResult,  # Renamed to avoid conflict
-    AttackSignature,
-    AttackType,
-    ThreatLevel,
-    DefenseAction,
-    create_attack_defense,
-    quick_scan,
+from .sleeper_detection import (
+    ProbeResult as SleeperProbeResult,  # Renamed to avoid conflict
 )
 
 __all__ = [

@@ -94,65 +94,64 @@ Created: 2025-12-28
 """
 
 # Layer SAE management
-from hololoom.dark_trace.multilayer.layer_sae import (
-    LayerSAEManager,
-    LayerSAEConfig,
-    LayerSAE,
-    LayerActivations,
-    MultiLayerFeatures,
-)
-
-# Feature hierarchy analysis
-from hololoom.dark_trace.multilayer.hierarchy import (
-    FeatureHierarchyAnalyzer,
-    AbstractionLevel,
-    FeatureEvolution,
-    HierarchyNode,
-    HierarchyEdge,
-    AbstractionLadder,
-)
-
-# Information flow analysis
-from hololoom.dark_trace.multilayer.flow import (
-    InformationFlowAnalyzer,
-    FlowConfig,
-    LayerFlow,
-    CrossLayerFlow,
-    FlowBottleneck,
-    ResidualContribution,
-)
-
-# Hierarchy visualization
-from hololoom.dark_trace.multilayer.visualizer import (
-    HierarchyVisualizer,
-    VisualizationConfig,
-    HierarchyDiagram,
-    FlowDiagram,
-    EvolutionPlot,
+# Causal metrics (Phase 2)
+from hololoom.dark_trace.multilayer.causal_metrics import (
+    CausalStrengthEstimator,
+    CausalStrengthResult,
+    TransferEntropyEstimator,
+    TransferEntropyResult,
 )
 
 # Cross-layer correlation tracking (Phase 2)
 from hololoom.dark_trace.multilayer.correlation_tracker import (
-    CorrelationTracker,
     CorrelationConfig,
-    LayerCorrelation,
     CorrelationPair,
+    CorrelationTracker,
+    LayerCorrelation,
     WelfordCorrelator,
+)
+
+# Information flow analysis
+from hololoom.dark_trace.multilayer.flow import (
+    CrossLayerFlow,
+    FlowBottleneck,
+    FlowConfig,
+    InformationFlowAnalyzer,
+    LayerFlow,
+    ResidualContribution,
+)
+
+# Feature hierarchy analysis
+from hololoom.dark_trace.multilayer.hierarchy import (
+    AbstractionLadder,
+    AbstractionLevel,
+    FeatureEvolution,
+    FeatureHierarchyAnalyzer,
+    HierarchyEdge,
+    HierarchyNode,
+)
+from hololoom.dark_trace.multilayer.layer_sae import (
+    LayerActivations,
+    LayerSAE,
+    LayerSAEConfig,
+    LayerSAEManager,
+    MultiLayerFeatures,
 )
 
 # Feature propagation analysis (Phase 2)
 from hololoom.dark_trace.multilayer.propagation_analyzer import (
+    CircuitCandidate,
     PropagationAnalyzer,
     PropagationPath,
-    CircuitCandidate,
 )
 
-# Causal metrics (Phase 2)
-from hololoom.dark_trace.multilayer.causal_metrics import (
-    CausalStrengthEstimator,
-    TransferEntropyEstimator,
-    CausalStrengthResult,
-    TransferEntropyResult,
+# Hierarchy visualization
+from hololoom.dark_trace.multilayer.visualizer import (
+    EvolutionPlot,
+    FlowDiagram,
+    HierarchyDiagram,
+    HierarchyVisualizer,
+    VisualizationConfig,
 )
 
 __all__ = [

@@ -14,13 +14,11 @@ import ipaddress
 import logging
 import os
 import platform
-import re
 import socket
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Protocol, Set, Tuple
+from typing import Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +34,7 @@ class NetworkAccessType(Enum):
 class NetworkEndpoint:
     """Network endpoint (host:port)."""
     host: str
-    port: Optional[int] = None  # None = all ports
+    port: int | None = None  # None = all ports
 
     def __post_init__(self):
         """Validate endpoint."""
@@ -48,7 +46,7 @@ class NetworkEndpoint:
                 # Treat as domain name
                 pass
 
-    def matches(self, host: str, port: Optional[int] = None) -> bool:
+    def matches(self, host: str, port: int | None = None) -> bool:
         """
         Check if endpoint matches host:port.
 
@@ -82,8 +80,8 @@ class NetworkEndpoint:
 @dataclass
 class NetworkPolicyConfig:
     """Network policy configuration."""
-    allowlist: List[NetworkEndpoint] = field(default_factory=list)
-    denylist: List[NetworkEndpoint] = field(default_factory=list)
+    allowlist: list[NetworkEndpoint] = field(default_factory=list)
+    denylist: list[NetworkEndpoint] = field(default_factory=list)
     enable_dns: bool = False  # Allow DNS queries
     enable_logging: bool = True
     default_action: NetworkAccessType = NetworkAccessType.BLOCK
@@ -114,7 +112,7 @@ class BlockedAttempt:
         host: str,
         port: int,
         timestamp: float,
-        process_name: Optional[str] = None
+        process_name: str | None = None
     ):
         self.host = host
         self.port = port
@@ -122,7 +120,7 @@ class BlockedAttempt:
         self.process_name = process_name
         self.count = 1
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
             "host": self.host,
@@ -150,7 +148,7 @@ class NetworkPolicy:
         self.config = config
         self.platform = self._get_platform()
         self.applied = False
-        self.blocked_attempts: Dict[Tuple[str, int], BlockedAttempt] = {}
+        self.blocked_attempts: dict[tuple[str, int], BlockedAttempt] = {}
 
         # Add common DNS endpoints if DNS enabled
         if self.config.enable_dns:
@@ -384,7 +382,7 @@ class NetworkPolicy:
             logger.error(f"iptables restore error: {e}")
             return False
 
-    async def _run_iptables(self, args: List[str]) -> bool:
+    async def _run_iptables(self, args: list[str]) -> bool:
         """
         Run iptables command with elevated privileges.
 
@@ -573,7 +571,7 @@ class NetworkPolicy:
             logger.error(f"Windows Firewall removal error: {e}")
             return False
 
-    async def _run_netsh(self, args: List[str]) -> bool:
+    async def _run_netsh(self, args: list[str]) -> bool:
         """
         Run netsh command with elevated privileges.
 
@@ -598,7 +596,7 @@ class NetworkPolicy:
             logger.error(f"netsh execution error: {e}")
             return False
 
-    def get_blocked_attempts(self) -> List[Dict]:
+    def get_blocked_attempts(self) -> list[dict]:
         """
         Get list of blocked network attempts.
 
@@ -614,7 +612,7 @@ class NetworkPolicy:
         """Clear blocked attempts history."""
         self.blocked_attempts.clear()
 
-    def get_policy_status(self) -> Dict:
+    def get_policy_status(self) -> dict:
         """
         Get network policy status.
 
@@ -653,7 +651,7 @@ async def test_network_policy():
     print(f"Status: {policy.get_policy_status()}")
 
     # Check some addresses
-    print(f"\nChecking access:")
+    print("\nChecking access:")
     print(f"  google.com:443 -> {await policy.check_egress('8.8.8.8', 443)}")
     print(f"  example.com:80 -> {await policy.check_egress('93.184.216.34', 80)}")
 

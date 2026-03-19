@@ -11,14 +11,13 @@ Provides comprehensive monitoring for the Context Department:
 - Human-readable summaries
 """
 
-import time
 import os
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field
-from collections import defaultdict
-from enum import Enum
-import json
+import time
 import warnings
+from collections import defaultdict
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # Optional dependencies
 try:
@@ -48,7 +47,7 @@ class MetricType(Enum):
 @dataclass
 class LatencyHistogram:
     """Histogram of latency measurements"""
-    measurements: List[float] = field(default_factory=list)
+    measurements: list[float] = field(default_factory=list)
     max_size: int = 10000  # Keep last 10k measurements
 
     def add(self, latency_ms: float):
@@ -75,7 +74,7 @@ class LatencyHistogram:
         import statistics
         return statistics.quantiles(self.measurements, n=100)[int(percentile) - 1]
 
-    def get_percentiles(self) -> Dict[str, float]:
+    def get_percentiles(self) -> dict[str, float]:
         """Get common percentiles"""
         if not self.measurements:
             return {"p50": 0.0, "p90": 0.0, "p95": 0.0, "p99": 0.0}
@@ -141,7 +140,7 @@ class PerformanceMonitor:
     def record_query(
         self,
         latency_ms: float,
-        error: Optional[str] = None,
+        error: str | None = None,
         cache_hit: bool = False,
         fallback_used: bool = False
     ):
@@ -195,7 +194,7 @@ class PerformanceMonitor:
             return 0.0
         return self.fallback_count / self.query_count
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """
         Get all performance metrics
 
@@ -279,7 +278,7 @@ class ResourceMonitor:
             # Fallback: return 0 (not available)
             return 0.0
 
-    def get_metrics(self) -> Dict[str, float]:
+    def get_metrics(self) -> dict[str, float]:
         """
         Get all resource metrics
 
@@ -324,7 +323,7 @@ class LearningMetricsMonitor:
         if len(self.calibration_ece_history) > 1000:
             self.calibration_ece_history = self.calibration_ece_history[-1000:]
 
-    def record_strategy_update(self, weight_changes: Dict[str, float]):
+    def record_strategy_update(self, weight_changes: dict[str, float]):
         """
         Record strategy update
 
@@ -346,7 +345,7 @@ class LearningMetricsMonitor:
         if len(self.weight_adjustments) > 1000:
             self.weight_adjustments = self.weight_adjustments[-1000:]
 
-    def get_current_ece(self) -> Optional[float]:
+    def get_current_ece(self) -> float | None:
         """Get most recent calibration ECE"""
         if not self.calibration_ece_history:
             return None
@@ -361,7 +360,7 @@ class LearningMetricsMonitor:
         changes = [abs(adj["change"]) for adj in self.weight_adjustments]
         return statistics.mean(changes)
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """
         Get all learning metrics
 
@@ -398,7 +397,7 @@ class SystemMonitor:
         self.resources = ResourceMonitor()
         self.learning = LearningMetricsMonitor()
 
-    def get_all_metrics(self) -> Dict[str, Any]:
+    def get_all_metrics(self) -> dict[str, Any]:
         """
         Get all system metrics
 
@@ -423,48 +422,48 @@ class SystemMonitor:
 
         # Performance metrics
         perf = self.performance.get_metrics()
-        lines.append(f"# HELP context_queries_total Total number of queries processed")
-        lines.append(f"# TYPE context_queries_total counter")
+        lines.append("# HELP context_queries_total Total number of queries processed")
+        lines.append("# TYPE context_queries_total counter")
         lines.append(f"context_queries_total {perf['query_count']}")
 
-        lines.append(f"# HELP context_qps Queries per second")
-        lines.append(f"# TYPE context_qps gauge")
+        lines.append("# HELP context_qps Queries per second")
+        lines.append("# TYPE context_qps gauge")
         lines.append(f"context_qps {perf['qps']:.2f}")
 
-        lines.append(f"# HELP context_latency_seconds Query latency percentiles")
-        lines.append(f"# TYPE context_latency_seconds summary")
+        lines.append("# HELP context_latency_seconds Query latency percentiles")
+        lines.append("# TYPE context_latency_seconds summary")
         lines.append(f"context_latency_seconds{{quantile=\"0.5\"}} {perf['latency_p50']/1000:.6f}")
         lines.append(f"context_latency_seconds{{quantile=\"0.9\"}} {perf['latency_p90']/1000:.6f}")
         lines.append(f"context_latency_seconds{{quantile=\"0.95\"}} {perf['latency_p95']/1000:.6f}")
         lines.append(f"context_latency_seconds{{quantile=\"0.99\"}} {perf['latency_p99']/1000:.6f}")
 
-        lines.append(f"# HELP context_error_rate Query error rate")
-        lines.append(f"# TYPE context_error_rate gauge")
+        lines.append("# HELP context_error_rate Query error rate")
+        lines.append("# TYPE context_error_rate gauge")
         lines.append(f"context_error_rate {perf['error_rate']:.4f}")
 
-        lines.append(f"# HELP context_cache_hit_rate Cache hit rate")
-        lines.append(f"# TYPE context_cache_hit_rate gauge")
+        lines.append("# HELP context_cache_hit_rate Cache hit rate")
+        lines.append("# TYPE context_cache_hit_rate gauge")
         lines.append(f"context_cache_hit_rate {perf['cache_hit_rate']:.4f}")
 
         # Resource metrics
         res = self.resources.get_metrics()
-        lines.append(f"# HELP context_memory_mb Memory usage in MB")
-        lines.append(f"# TYPE context_memory_mb gauge")
+        lines.append("# HELP context_memory_mb Memory usage in MB")
+        lines.append("# TYPE context_memory_mb gauge")
         lines.append(f"context_memory_mb {res['memory_mb']:.2f}")
 
-        lines.append(f"# HELP context_cpu_percent CPU usage percentage")
-        lines.append(f"# TYPE context_cpu_percent gauge")
+        lines.append("# HELP context_cpu_percent CPU usage percentage")
+        lines.append("# TYPE context_cpu_percent gauge")
         lines.append(f"context_cpu_percent {res['cpu_percent']:.2f}")
 
         # Learning metrics
         learn = self.learning.get_metrics()
         if learn["calibration_ece"] is not None:
-            lines.append(f"# HELP context_calibration_ece Calibration ECE")
-            lines.append(f"# TYPE context_calibration_ece gauge")
+            lines.append("# HELP context_calibration_ece Calibration ECE")
+            lines.append("# TYPE context_calibration_ece gauge")
             lines.append(f"context_calibration_ece {learn['calibration_ece']:.4f}")
 
-        lines.append(f"# HELP context_strategy_updates_total Strategy update count")
-        lines.append(f"# TYPE context_strategy_updates_total counter")
+        lines.append("# HELP context_strategy_updates_total Strategy update count")
+        lines.append("# TYPE context_strategy_updates_total counter")
         lines.append(f"context_strategy_updates_total {learn['strategy_update_count']}")
 
         return "\n".join(lines) + "\n"
@@ -501,7 +500,7 @@ class SystemMonitor:
         if learn["calibration_ece"] is not None:
             lines.append(f"  Calibration ECE: {learn['calibration_ece']:.4f}")
         else:
-            lines.append(f"  Calibration: Not yet calibrated")
+            lines.append("  Calibration: Not yet calibrated")
         lines.append(f"  Strategy updates: {learn['strategy_update_count']}")
         lines.append(f"  Mean weight adjustment: {learn['mean_weight_adjustment']:.3f}")
 

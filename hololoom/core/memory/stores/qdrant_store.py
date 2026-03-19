@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Qdrant Memory Store - Production-Grade Vector Search with Connection Pooling
 ============================================================================
@@ -13,15 +14,16 @@ Features:
 - Horizontal scaling
 """
 
+import hashlib
 import logging
 import os
 import time
-from threading import Lock
-from typing import Dict, List, Optional, TYPE_CHECKING, Any
 from datetime import datetime
-import hashlib
+from threading import Lock
+from typing import TYPE_CHECKING, Any
 
 from hololoom.utils.security import sanitize_uri
+
 from ..protocol import Memory, MemoryQuery, RetrievalResult, Strategy
 
 # Optional qdrant import
@@ -30,8 +32,15 @@ if TYPE_CHECKING:
 
 try:
     from qdrant_client import QdrantClient
-    from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
     from qdrant_client.http.exceptions import ResponseHandlingException, UnexpectedResponse
+    from qdrant_client.models import (
+        Distance,
+        FieldCondition,
+        Filter,
+        MatchValue,
+        PointStruct,
+        VectorParams,
+    )
     _HAVE_QDRANT = True
 except ImportError:
     QdrantClient = None
@@ -84,8 +93,8 @@ class QdrantMemoryStore:
     """
 
     # Class-level client singleton with thread-safe lock
-    _client_instance: Optional[QdrantClient] = None
-    _embedder_instance: Optional[SentenceTransformer] = None
+    _client_instance: QdrantClient | None = None
+    _embedder_instance: SentenceTransformer | None = None
     _client_lock = Lock()
     _connection_metrics = {
         'total_requests': 0,
@@ -97,15 +106,15 @@ class QdrantMemoryStore:
 
     def __init__(
         self,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        url: Optional[str] = None,
-        api_key: Optional[str] = None,
+        host: str | None = None,
+        port: int | None = None,
+        url: str | None = None,
+        api_key: str | None = None,
         collection_prefix: str = "memories",
         embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
-        scales: List[int] = [96, 192, 384],
-        timeout: Optional[float] = None,
-        prefer_grpc: Optional[bool] = None,
+        scales: list[int] = [96, 192, 384],
+        timeout: float | None = None,
+        prefer_grpc: bool | None = None,
         enable_metrics: bool = True
     ):
         if not _HAVE_QDRANT:
@@ -235,7 +244,7 @@ class QdrantMemoryStore:
 
             self.embedder = QdrantMemoryStore._embedder_instance
             self.embedding_dim = self.embedder.get_sentence_embedding_dimension()
-    
+
     def _setup_collections(self):
         """Create collections for multi-scale vectors."""
         for scale in self.scales:
@@ -297,13 +306,13 @@ class QdrantMemoryStore:
                 else:
                     raise
 
-            except Exception as e:
+            except Exception:
                 # Non-retryable error
                 if self.enable_metrics:
                     QdrantMemoryStore._connection_metrics['failed_requests'] += 1
                 raise
 
-    def health_check(self) -> Dict[str, Any]:
+    def health_check(self) -> dict[str, Any]:
         """
         Perform health check on Qdrant connection.
 
@@ -354,7 +363,7 @@ class QdrantMemoryStore:
 
         return health
 
-    def get_connection_metrics(self) -> Dict[str, Any]:
+    def get_connection_metrics(self) -> dict[str, Any]:
         """
         Get connection metrics for monitoring.
 
@@ -383,7 +392,7 @@ class QdrantMemoryStore:
             metrics['warning'] = f"High retry rate detected ({metrics['retry_count']} retries). Check network stability."
 
         return metrics
-    
+
     async def store(self, memory: Memory, user_id: str = "default") -> str:
         """
         Store memory with multi-scale vector embeddings.
@@ -456,14 +465,14 @@ class QdrantMemoryStore:
         # Final Validation
         # ============================================================
         if scales_stored == 0:
-            raise RuntimeError(f"Failed to store memory at any scale")
+            raise RuntimeError("Failed to store memory at any scale")
 
         logger.info(
             f"✓ Stored {mem_id[:8]}... at {scales_stored}/{len(self.scales)} scales"
         )
         return mem_id
 
-    async def store_many(self, memories: List[Memory], user_id: str = "default") -> List[str]:
+    async def store_many(self, memories: list[Memory], user_id: str = "default") -> list[str]:
         """
         Store multiple memories in batch.
 
@@ -491,26 +500,26 @@ class QdrantMemoryStore:
         )
         return memory_ids
 
-    async def get_by_id(self, memory_id: str) -> Optional[Memory]:
+    async def get_by_id(self, memory_id: str) -> Memory | None:
         """Get a specific memory by ID."""
         # Try to retrieve from the largest scale collection first
         largest_scale = max(self.scales)
         collection_name = f"{self.collection_prefix}_{largest_scale}"
-        
+
         try:
             result = self.client.retrieve(
                 collection_name=collection_name,
                 ids=[memory_id],
                 with_payload=True
             )
-            
+
             if result and len(result) > 0:
                 point = result[0]
                 payload = point.payload
-                
+
                 # Parse timestamp
                 timestamp = datetime.fromisoformat(payload['timestamp'])
-                
+
                 # Extract context (remove metadata fields)
                 context = {}
                 metadata = {}
@@ -521,7 +530,7 @@ class QdrantMemoryStore:
                         metadata[key] = value
                     else:
                         context[key] = value
-                
+
                 return Memory(
                     id=memory_id,
                     text=payload['text'],
@@ -531,9 +540,9 @@ class QdrantMemoryStore:
                 )
         except Exception as e:
             self.logger.warning(f"Failed to get memory {memory_id}: {e}")
-        
+
         return None
-    
+
     async def retrieve(
         self,
         query: MemoryQuery,
@@ -549,7 +558,7 @@ class QdrantMemoryStore:
         """
         # Generate query embedding
         query_embedding = self.embedder.encode(query.text).tolist()
-        
+
         # Build filter
         filter_conditions = [
             FieldCondition(
@@ -557,7 +566,7 @@ class QdrantMemoryStore:
                 match=MatchValue(value=query.user_id)
             )
         ]
-        
+
         # Add filters from query
         if query.filters:
             for key, value in query.filters.items():
@@ -567,51 +576,51 @@ class QdrantMemoryStore:
                         match=MatchValue(value=value)
                     )
                 )
-        
+
         query_filter = Filter(must=filter_conditions) if filter_conditions else None
-        
+
         if strategy == Strategy.TEMPORAL:
             # Use smallest scale (fastest) and filter by time
             results = self._search_single_scale(
                 96, query_embedding[:96], query.limit, query_filter
             )
             return self._results_to_retrieval(results, 'temporal_96d')
-        
+
         elif strategy == Strategy.SEMANTIC:
             # Use largest scale (most accurate)
             results = self._search_single_scale(
                 384, query_embedding[:384], query.limit, query_filter
             )
             return self._results_to_retrieval(results, 'semantic_384d')
-        
+
         else:  # FUSED
             # Multi-scale search and fusion
             return self._multi_scale_search(query_embedding, query.limit, query_filter)
-    
+
     def _search_single_scale(
         self,
         scale: int,
-        vector: List[float],
+        vector: list[float],
         limit: int,
-        query_filter: Optional[Filter]
-    ) -> List:
+        query_filter: Filter | None
+    ) -> list:
         """Search at single scale."""
         collection_name = f"{self.collection_prefix}_{scale}"
-        
+
         results = self.client.search(
             collection_name=collection_name,
             query_vector=vector,
             limit=limit,
             query_filter=query_filter
         )
-        
+
         return results
-    
+
     def _multi_scale_search(
         self,
-        full_embedding: List[float],
+        full_embedding: list[float],
         limit: int,
-        query_filter: Optional[Filter]
+        query_filter: Filter | None
     ) -> RetrievalResult:
         """
         Search at multiple scales and fuse results.
@@ -622,18 +631,18 @@ class QdrantMemoryStore:
         - 384d: 50% weight (precise)
         """
         weights = {96: 0.2, 192: 0.3, 384: 0.5}
-        
+
         # Search at each scale
         all_results = {}
         for scale in self.scales:
             vector = full_embedding[:scale]
             results = self._search_single_scale(scale, vector, limit * 2, query_filter)
-            
+
             # Weight scores
             for result in results:
                 mem_id = result.id
                 score = result.score * weights[scale]
-                
+
                 if mem_id not in all_results:
                     all_results[mem_id] = {
                         'result': result,
@@ -643,18 +652,18 @@ class QdrantMemoryStore:
                 else:
                     all_results[mem_id]['score'] += score
                     all_results[mem_id]['scales'].append(scale)
-        
+
         # Sort by fused score
         sorted_results = sorted(
             all_results.values(),
             key=lambda x: x['score'],
             reverse=True
         )[:limit]
-        
+
         # Convert to memories
         memories = []
         scores = []
-        
+
         for item in sorted_results:
             result = item['result']
             mem = Memory(
@@ -670,7 +679,7 @@ class QdrantMemoryStore:
             )
             memories.append(mem)
             scores.append(item['score'])
-        
+
         return RetrievalResult(
             memories=memories,
             scores=scores,
@@ -682,12 +691,12 @@ class QdrantMemoryStore:
                 'total_candidates': len(all_results)
             }
         )
-    
-    def _results_to_retrieval(self, results: List, strategy_name: str) -> RetrievalResult:
+
+    def _results_to_retrieval(self, results: list, strategy_name: str) -> RetrievalResult:
         """Convert Qdrant results to RetrievalResult."""
         memories = []
         scores = []
-        
+
         for result in results:
             mem = Memory(
                 id=str(result.id),
@@ -701,14 +710,14 @@ class QdrantMemoryStore:
             )
             memories.append(mem)
             scores.append(result.score)
-        
+
         return RetrievalResult(
             memories=memories,
             scores=scores,
             strategy_used=strategy_name,
             metadata={'backend': 'qdrant', 'result_count': len(memories)}
         )
-    
+
     async def delete(self, memory_id: str) -> bool:
         """Delete memory from all scale collections."""
         try:
@@ -718,14 +727,14 @@ class QdrantMemoryStore:
                     collection_name=collection_name,
                     points_selector=[memory_id]
                 )
-            
+
             self.logger.info(f"Deleted memory {memory_id} from all scales")
             return True
         except Exception as e:
             self.logger.error(f"Failed to delete {memory_id}: {e}")
             return False
-    
-    async def health_check(self) -> Dict:
+
+    async def health_check(self) -> dict:
         """Check Qdrant connection and collection status."""
         try:
             collection_stats = {}
@@ -736,7 +745,7 @@ class QdrantMemoryStore:
                     'points': info.points_count,
                     'vectors': info.vectors_count
                 }
-            
+
             return {
                 'status': 'healthy',
                 'backend': 'qdrant',
@@ -764,7 +773,7 @@ class QdrantMemoryStore:
     # Helper Methods
     # ============================================================
 
-    def _get_or_generate_embedding(self, memory: Memory) -> List[float]:
+    def _get_or_generate_embedding(self, memory: Memory) -> list[float]:
         """
         Extract embedding from Memory or generate if missing.
 
@@ -832,7 +841,7 @@ class QdrantMemoryStore:
         mem_id: str,
         memory: Memory,
         user_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Build Qdrant point payload with metadata.
 
@@ -857,12 +866,12 @@ class QdrantMemoryStore:
         """Generate deterministic ID from text and timestamp."""
         content = f"{text}_{timestamp.isoformat()}"
         return hashlib.md5(content.encode()).hexdigest()
-    
-    def _parse_timestamp(self, timestamp_str: Optional[str]) -> datetime:
+
+    def _parse_timestamp(self, timestamp_str: str | None) -> datetime:
         """Parse timestamp string."""
         if not timestamp_str:
             return datetime.now()
-        
+
         try:
             return datetime.fromisoformat(timestamp_str)
         except Exception:

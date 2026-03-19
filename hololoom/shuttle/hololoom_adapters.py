@@ -4,9 +4,9 @@ HoloLoom Shuttle - HoloLoom-Specific Adapters
 Adapters for connecting Shuttle to HoloLoom's Warp (Qdrant) and Yarn (Neo4j/KG) backends.
 """
 
-from typing import List, Dict, Any, Optional, Tuple
-from .mcts import NeighborMap
+from typing import Any
 
+from .mcts import NeighborMap
 
 # ============================================================================
 # Warp Adapter (Qdrant Vector Search)
@@ -28,7 +28,7 @@ class HoloLoomWarp:
         self.client = qdrant_client
         self.collection_name = collection_name
 
-    def search(self, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
+    def search(self, query: str, top_k: int = 10) -> list[dict[str, Any]]:
         """
         Semantic search for anchor points.
 
@@ -74,7 +74,7 @@ class HoloLoomWarp:
             print(f"Warp search error: {e}")
             return self._mock_search(query, top_k)
 
-    def _mock_search(self, query: str, top_k: int) -> List[Dict[str, Any]]:
+    def _mock_search(self, query: str, top_k: int) -> list[dict[str, Any]]:
         """Mock search results for testing without Qdrant."""
         # Return mock anchors based on query keywords
         query_lower = query.lower()
@@ -137,11 +137,11 @@ class HoloLoomYarn:
 
     def build_neighbor_map(
         self,
-        anchors: List[str],
-        allowed_edge_types: List[str],
+        anchors: list[str],
+        allowed_edge_types: list[str],
         max_depth: int,
         max_nodes: int,
-    ) -> Tuple[NeighborMap, List[str]]:
+    ) -> tuple[NeighborMap, list[str]]:
         """
         Build neighbor map for MCTS from anchor nodes.
 
@@ -167,11 +167,11 @@ class HoloLoomYarn:
 
     def _neo4j_build_neighbor_map(
         self,
-        anchors: List[str],
-        allowed_edge_types: List[str],
+        anchors: list[str],
+        allowed_edge_types: list[str],
         max_depth: int,
         max_nodes: int,
-    ) -> Tuple[NeighborMap, List[str]]:
+    ) -> tuple[NeighborMap, list[str]]:
         """Build neighbor map using Neo4j driver."""
         neighbor_map: NeighborMap = {}
         visited_nodes = set()
@@ -216,13 +216,12 @@ class HoloLoomYarn:
 
     def _kg_build_neighbor_map(
         self,
-        anchors: List[str],
-        allowed_edge_types: List[str],
+        anchors: list[str],
+        allowed_edge_types: list[str],
         max_depth: int,
         max_nodes: int,
-    ) -> Tuple[NeighborMap, List[str]]:
+    ) -> tuple[NeighborMap, list[str]]:
         """Build neighbor map using HoloLoom KG (NetworkX)."""
-        from hololoom.memory.graph import KG
 
         neighbor_map: NeighborMap = {}
         visited_nodes = set()
@@ -264,11 +263,11 @@ class HoloLoomYarn:
 
     def _mock_build_neighbor_map(
         self,
-        anchors: List[str],
-        allowed_edge_types: List[str],
+        anchors: list[str],
+        allowed_edge_types: list[str],
         max_depth: int,
         max_nodes: int,
-    ) -> Tuple[NeighborMap, List[str]]:
+    ) -> tuple[NeighborMap, list[str]]:
         """Mock neighbor map for testing."""
         # Create a simple mock graph based on common patterns
         neighbor_map: NeighborMap = {}
@@ -291,7 +290,7 @@ class HoloLoomYarn:
         all_nodes = list(neighbor_map.keys())
         return neighbor_map, all_nodes
 
-    def describe_nodes(self, node_ids: List[str]) -> str:
+    def describe_nodes(self, node_ids: list[str]) -> str:
         """
         Get human-readable description of nodes.
 
@@ -308,7 +307,7 @@ class HoloLoomYarn:
         else:
             return self._mock_describe_nodes(node_ids)
 
-    def _neo4j_describe_nodes(self, node_ids: List[str]) -> str:
+    def _neo4j_describe_nodes(self, node_ids: list[str]) -> str:
         """Describe nodes using Neo4j driver."""
         with self.driver.session() as session:
             query = """
@@ -336,7 +335,7 @@ class HoloLoomYarn:
 
             return "\n".join(descriptions)
 
-    def _kg_describe_nodes(self, node_ids: List[str]) -> str:
+    def _kg_describe_nodes(self, node_ids: list[str]) -> str:
         """Describe nodes using HoloLoom KG."""
         descriptions = []
 
@@ -362,7 +361,7 @@ class HoloLoomYarn:
 
         return "\n".join(descriptions) if descriptions else "No nodes found"
 
-    def _mock_describe_nodes(self, node_ids: List[str]) -> str:
+    def _mock_describe_nodes(self, node_ids: list[str]) -> str:
         """Mock node descriptions for testing."""
         descriptions = []
 

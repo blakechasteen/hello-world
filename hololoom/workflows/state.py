@@ -17,8 +17,8 @@ import json
 import logging
 import sqlite3
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any
 from pathlib import Path
+from typing import Any
 
 from hololoom.utils.security import sanitize_uri
 
@@ -29,17 +29,17 @@ class StateBackend(ABC):
     """Abstract state backend interface."""
 
     @abstractmethod
-    async def save_state(self, execution_id: str, state: Dict[str, Any]) -> None:
+    async def save_state(self, execution_id: str, state: dict[str, Any]) -> None:
         """Save execution state."""
         pass
 
     @abstractmethod
-    async def load_state(self, execution_id: str) -> Optional[Dict[str, Any]]:
+    async def load_state(self, execution_id: str) -> dict[str, Any] | None:
         """Load execution state."""
         pass
 
     @abstractmethod
-    async def list_executions(self) -> List[str]:
+    async def list_executions(self) -> list[str]:
         """List all execution IDs."""
         pass
 
@@ -53,17 +53,17 @@ class InMemoryState(StateBackend):
     """In-memory state backend (no persistence)."""
 
     def __init__(self):
-        self._storage: Dict[str, Dict[str, Any]] = {}
+        self._storage: dict[str, dict[str, Any]] = {}
         logger.info("InMemoryState initialized")
 
-    async def save_state(self, execution_id: str, state: Dict[str, Any]) -> None:
+    async def save_state(self, execution_id: str, state: dict[str, Any]) -> None:
         self._storage[execution_id] = state
         logger.debug(f"State saved: {execution_id}")
 
-    async def load_state(self, execution_id: str) -> Optional[Dict[str, Any]]:
+    async def load_state(self, execution_id: str) -> dict[str, Any] | None:
         return self._storage.get(execution_id)
 
-    async def list_executions(self) -> List[str]:
+    async def list_executions(self) -> list[str]:
         return list(self._storage.keys())
 
     async def delete_state(self, execution_id: str) -> None:
@@ -90,7 +90,7 @@ class SQLiteState(StateBackend):
             """)
             conn.commit()
 
-    async def save_state(self, execution_id: str, state: Dict[str, Any]) -> None:
+    async def save_state(self, execution_id: str, state: dict[str, Any]) -> None:
         state_json = json.dumps(state)
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -100,7 +100,7 @@ class SQLiteState(StateBackend):
             conn.commit()
         logger.debug(f"State saved to SQLite: {execution_id}")
 
-    async def load_state(self, execution_id: str) -> Optional[Dict[str, Any]]:
+    async def load_state(self, execution_id: str) -> dict[str, Any] | None:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 "SELECT state FROM workflow_state WHERE execution_id = ?",
@@ -109,7 +109,7 @@ class SQLiteState(StateBackend):
             row = cursor.fetchone()
             return json.loads(row[0]) if row else None
 
-    async def list_executions(self) -> List[str]:
+    async def list_executions(self) -> list[str]:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute("SELECT execution_id FROM workflow_state ORDER BY timestamp DESC")
             return [row[0] for row in cursor.fetchall()]
@@ -134,16 +134,16 @@ class RedisState(StateBackend):
             logger.error("Redis not installed. Install with: pip install redis")
             raise
 
-    async def save_state(self, execution_id: str, state: Dict[str, Any]) -> None:
+    async def save_state(self, execution_id: str, state: dict[str, Any]) -> None:
         state_json = json.dumps(state)
         await self.redis.set(f"workflow:{execution_id}", state_json)
         logger.debug(f"State saved to Redis: {execution_id}")
 
-    async def load_state(self, execution_id: str) -> Optional[Dict[str, Any]]:
+    async def load_state(self, execution_id: str) -> dict[str, Any] | None:
         state_json = await self.redis.get(f"workflow:{execution_id}")
         return json.loads(state_json) if state_json else None
 
-    async def list_executions(self) -> List[str]:
+    async def list_executions(self) -> list[str]:
         keys = await self.redis.keys("workflow:*")
         return [key.decode().replace("workflow:", "") for key in keys]
 
@@ -162,7 +162,7 @@ class CheckpointManager:
         self,
         execution_id: str,
         node_id: str,
-        state: Dict[str, Any]
+        state: dict[str, Any]
     ) -> str:
         """Save checkpoint at specific node."""
         checkpoint_id = f"{execution_id}:{node_id}"
@@ -181,7 +181,7 @@ class CheckpointManager:
         self,
         execution_id: str,
         node_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Restore state from checkpoint."""
         checkpoint_id = f"{execution_id}:{node_id}"
         checkpoint_data = await self.state_backend.load_state(checkpoint_id)
@@ -192,7 +192,7 @@ class CheckpointManager:
         logger.info(f"✓ Checkpoint restored: {checkpoint_id}")
         return checkpoint_data["state"]
 
-    async def list_checkpoints(self, execution_id: str) -> List[str]:
+    async def list_checkpoints(self, execution_id: str) -> list[str]:
         """List all checkpoints for execution."""
         all_executions = await self.state_backend.list_executions()
         return [e for e in all_executions if e.startswith(f"{execution_id}:")]

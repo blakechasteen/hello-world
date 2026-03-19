@@ -45,24 +45,20 @@ Author: Claude Code
 Date: January 2025
 """
 
-import asyncio
 import time
-import hashlib
-from typing import List, Optional, Dict, Any, Union
-from pathlib import Path
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
+from typing import Any
 
+from hololoom.protocols.types import MemoryShard
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
+    ImportanceScore,
+    ImportanceSignals,
     SpinnerCapabilities,
     SpinnerStatus,
-    SpinResult,
-    ImportanceSignals,
-    ImportanceScore
 )
-from hololoom.protocols.types import MemoryShard
-
 
 # ============================================================================
 # Configuration
@@ -147,8 +143,8 @@ class DeepSeekOCRSpinner(BaseSpinner):
 
     def __init__(
         self,
-        config: Optional[DeepSeekOCRConfig] = None,
-        checkpoint_dir: Optional[Path] = None
+        config: DeepSeekOCRConfig | None = None,
+        checkpoint_dir: Path | None = None
     ):
         """
         Initialize DeepSeek OCR spinner.
@@ -218,9 +214,9 @@ class DeepSeekOCRSpinner(BaseSpinner):
 
     async def _spin_impl(
         self,
-        source: Union[str, Path, List[Union[str, Path]]],
+        source: str | Path | list[str | Path],
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Core OCR implementation.
 
@@ -259,7 +255,7 @@ class DeepSeekOCRSpinner(BaseSpinner):
         self,
         image_path: Path,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """Process single image."""
         # Extract text via OCR
         text, confidence = await self._extract_text(image_path)
@@ -300,7 +296,7 @@ class DeepSeekOCRSpinner(BaseSpinner):
         self,
         pdf_path: Path,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """Process multi-page PDF."""
         # Extract pages
         pages = await self._extract_pdf_pages(pdf_path)
@@ -533,7 +529,7 @@ class DeepSeekOCRSpinner(BaseSpinner):
     # PDF Processing
     # ========================================================================
 
-    async def _extract_pdf_pages(self, pdf_path: Path) -> List[tuple[int, bytes]]:
+    async def _extract_pdf_pages(self, pdf_path: Path) -> list[tuple[int, bytes]]:
         """
         Extract pages from PDF as images.
 
@@ -570,7 +566,7 @@ class DeepSeekOCRSpinner(BaseSpinner):
     # Enrichment
     # ========================================================================
 
-    async def _enrich_content(self, text: str) -> tuple[List[str], List[str]]:
+    async def _enrich_content(self, text: str) -> tuple[list[str], list[str]]:
         """
         Extract entities and motifs using Ollama.
 
@@ -646,7 +642,7 @@ Topics:"""
     def _score_document_importance(
         self,
         text: str,
-        source_path: Optional[Path] = None
+        source_path: Path | None = None
     ) -> ImportanceScore:
         """
         Score importance of OCR'd document.
@@ -724,15 +720,15 @@ Topics:"""
         """Check if DeepSeek dependencies are available."""
         if self.config.backend == OCRBackend.VLLM:
             try:
-                import vllm
                 import torch
+                import vllm
                 return torch.cuda.is_available()
             except ImportError:
                 return False
         elif self.config.backend == OCRBackend.TRANSFORMERS:
             try:
-                import transformers
                 import torch
+                import transformers
                 return True
             except ImportError:
                 return False
@@ -773,8 +769,8 @@ Topics:"""
 
     def _load_transformers_model(self):
         """Load model using transformers backend."""
-        from transformers import AutoModel, AutoProcessor, AutoTokenizer
         import torch
+        from transformers import AutoModel, AutoProcessor, AutoTokenizer
 
         print(f"[DeepSeekOCRSpinner] Loading model with transformers: {self.config.model_name}")
 
@@ -843,7 +839,7 @@ Topics:"""
 # ============================================================================
 
 async def extract_text_from_image(
-    image_path: Union[str, Path],
+    image_path: str | Path,
     output_format: str = "markdown",
     backend: str = "vllm",
     resolution: int = 1024
@@ -880,11 +876,11 @@ async def extract_text_from_image(
 
 
 async def extract_text_from_pdf(
-    pdf_path: Union[str, Path],
+    pdf_path: str | Path,
     output_format: str = "markdown",
     backend: str = "vllm",
     pages_per_chunk: int = 10
-) -> List[str]:
+) -> list[str]:
     """
     Quick utility to extract text from PDF.
 

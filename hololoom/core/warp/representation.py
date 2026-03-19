@@ -29,11 +29,12 @@ Author: HoloLoom Team
 Date: 2025-10-25
 """
 
-import numpy as np
-from typing import Any, Dict, List, Set, Tuple, Callable, Optional
-from dataclasses import dataclass, field
-from collections import defaultdict
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -55,10 +56,10 @@ class Group:
 
     def __init__(self, name: str = "G"):
         self.name = name
-        self.elements: Set[Any] = set()
-        self.identity: Optional[Any] = None
-        self.multiplication_table: Dict[Tuple[Any, Any], Any] = {}
-        self.inverse_map: Dict[Any, Any] = {}
+        self.elements: set[Any] = set()
+        self.identity: Any | None = None
+        self.multiplication_table: dict[tuple[Any, Any], Any] = {}
+        self.inverse_map: dict[Any, Any] = {}
 
         logger.info(f"Group {name} initialized")
 
@@ -197,7 +198,7 @@ class Representation:
     """
     group: Group
     dimension: int
-    matrices: Dict[Any, np.ndarray] = field(default_factory=dict)
+    matrices: dict[Any, np.ndarray] = field(default_factory=dict)
     name: str = "ρ"
 
     def __post_init__(self):
@@ -236,7 +237,7 @@ class Representation:
 
         return True
 
-    def character(self) -> Dict[Any, complex]:
+    def character(self) -> dict[Any, complex]:
         """
         Compute character χ(g) = Tr(ρ(g)) for all g.
 
@@ -259,7 +260,7 @@ class Representation:
         # Irreducible iff <χ, χ> = 1
         return np.isclose(inner, 1.0, atol=1e-6)
 
-    def decompose_into_irreps(self) -> Dict[str, int]:
+    def decompose_into_irreps(self) -> dict[str, int]:
         """
         Decompose representation into irreducible representations.
 
@@ -358,8 +359,8 @@ class CharacterTable:
 
     def __init__(self, group: Group):
         self.group = group
-        self.conjugacy_classes: List[Set[Any]] = []
-        self.irreps: List[Representation] = []
+        self.conjugacy_classes: list[set[Any]] = []
+        self.irreps: list[Representation] = []
         self.table: np.ndarray = None
 
         self._compute_conjugacy_classes()
@@ -579,7 +580,7 @@ if __name__ == "__main__":
 
     reg = regular_representation(C3)
     print(f"Dimension: {reg.dimension}")
-    print(f"ρ(1) =")
+    print("ρ(1) =")
     print(reg(1))
     print(f"Homomorphism verified: {reg.verify_homomorphism()}")
 

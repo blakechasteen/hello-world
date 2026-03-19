@@ -15,14 +15,14 @@ Author: HoloLoom Architecture Team
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from hololoom.loom.weave_house import WeaveHouse, WeaveResult
-from hololoom.loom.consensus import LoomConsensus, create_loom_consensus
-from hololoom.loom.core_looms.recall_loom import RecallLoom
+from hololoom.loom.consensus import create_loom_consensus
 from hololoom.loom.core_looms.reason_loom import ReasonLoom
+from hololoom.loom.core_looms.recall_loom import RecallLoom
 from hololoom.loom.core_looms.reflect_loom import ReflectLoom
 from hololoom.loom.core_looms.refuse_loom import RefuseLoom
+from hololoom.loom.weave_house import WeaveHouse, WeaveResult
 
 
 @dataclass
@@ -76,7 +76,7 @@ class CodeReviewHouse(WeaveHouse):
 
     def __init__(
         self,
-        config: Optional[CodeReviewConfig] = None,
+        config: CodeReviewConfig | None = None,
         **kwargs
     ):
         """
@@ -105,7 +105,7 @@ class CodeReviewHouse(WeaveHouse):
             **kwargs
         )
 
-    def _create_code_looms(self) -> List:
+    def _create_code_looms(self) -> list:
         """Create looms configured for code review."""
         return [
             # RECALL: Find similar code patterns
@@ -141,8 +141,8 @@ class CodeReviewHouse(WeaveHouse):
     async def review(
         self,
         code: str,
-        context: Optional[Dict[str, Any]] = None,
-        focus: Optional[List[str]] = None
+        context: dict[str, Any] | None = None,
+        focus: list[str] | None = None
     ) -> "CodeReviewResult":
         """
         Review code from multiple perspectives.
@@ -167,8 +167,8 @@ class CodeReviewHouse(WeaveHouse):
     def _build_review_query(
         self,
         code: str,
-        context: Optional[Dict[str, Any]],
-        focus: Optional[List[str]]
+        context: dict[str, Any] | None,
+        focus: list[str] | None
     ) -> str:
         """Build a query for code review."""
         parts = ["Review the following code:\n\n```\n", code, "\n```\n"]
@@ -204,7 +204,7 @@ class CodeReviewHouse(WeaveHouse):
             metadata=result.metadata,
         )
 
-    def _extract_issues(self, result: WeaveResult) -> List[Dict[str, Any]]:
+    def _extract_issues(self, result: WeaveResult) -> list[dict[str, Any]]:
         """Extract issues from review result."""
         issues = []
 
@@ -233,7 +233,7 @@ class CodeReviewHouse(WeaveHouse):
 
         return issues
 
-    def _extract_suggestions(self, result: WeaveResult) -> List[str]:
+    def _extract_suggestions(self, result: WeaveResult) -> list[str]:
         """Extract suggestions from review result."""
         suggestions = []
 
@@ -260,11 +260,11 @@ class CodeReviewResult:
     summary: str
     confidence: float
     epistemic_confidence: float
-    issues: List[Dict[str, Any]] = field(default_factory=list)
-    suggestions: List[str] = field(default_factory=list)
-    perspectives: Dict[str, str] = field(default_factory=dict)
-    tensions: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    issues: list[dict[str, Any]] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
+    perspectives: dict[str, str] = field(default_factory=dict)
+    tensions: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def has_security_issues(self) -> bool:
@@ -276,13 +276,13 @@ class CodeReviewResult:
         """Total number of issues found."""
         return len(self.issues)
 
-    def issues_by_severity(self, severity: str) -> List[Dict[str, Any]]:
+    def issues_by_severity(self, severity: str) -> list[dict[str, Any]]:
         """Get issues by severity level."""
         return [i for i in self.issues if i.get("severity") == severity]
 
 
 def create_code_review_house(
-    config: Optional[CodeReviewConfig] = None,
+    config: CodeReviewConfig | None = None,
     **kwargs
 ) -> CodeReviewHouse:
     """

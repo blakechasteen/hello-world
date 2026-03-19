@@ -18,29 +18,26 @@ Integration with HoloLoom:
 """
 
 import asyncio
-from typing import Optional, List, Dict, Any
-from dataclasses import dataclass, field
 import json
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 from hololoom.config import Config
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.weaving_orchestrator import WeavingOrchestrator
 from hololoom.memory.graph import KG, KGEdge
+from hololoom.protocols.types import MemoryShard, Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 from . import (
-    WorldEntity,
-    NarrativeEvent,
-    WorldState,
+    ConsistencyLevel,
     ConsistencyRule,
-    NarrativeThread,
     EntityType,
     EventType,
-    ConsistencyLevel,
     GenerationMode,
-    WorldBuilderProtocol,
-    ConsistencyCheckerProtocol,
-    GeneratorProtocol,
+    NarrativeEvent,
+    NarrativeThread,
+    WorldEntity,
+    WorldState,
 )
 
 
@@ -50,7 +47,7 @@ class DreamWeaverConfig:
 
     # World persistence
     world_id: str = "default_world"
-    save_path: Optional[str] = None
+    save_path: str | None = None
     auto_save: bool = True
     auto_save_interval: int = 300  # 5 minutes
 
@@ -71,8 +68,8 @@ class DreamWeaverConfig:
     exploration_epsilon: float = 0.15
 
     # LLM settings (optional)
-    llm_provider: Optional[str] = None  # "openai", "anthropic", "local"
-    llm_model: Optional[str] = None
+    llm_provider: str | None = None  # "openai", "anthropic", "local"
+    llm_model: str | None = None
     llm_temperature: float = 0.8
 
     # Safety
@@ -124,7 +121,7 @@ class DreamWeaver:
         self,
         config: DreamWeaverConfig,
         hololoom_config: Config,
-        knowledge_graph: Optional[KG] = None,
+        knowledge_graph: KG | None = None,
     ):
         """
         Initialize DreamWeaver.
@@ -138,20 +135,20 @@ class DreamWeaver:
         self.hololoom_config = hololoom_config
 
         # Core components (initialized in __aenter__)
-        self.orchestrator: Optional[WeavingOrchestrator] = None
+        self.orchestrator: WeavingOrchestrator | None = None
         self.kg: KG = knowledge_graph or KG()
 
         # World state
-        self.current_world_state: Optional[WorldState] = None
-        self.world_history: List[WorldState] = []
+        self.current_world_state: WorldState | None = None
+        self.world_history: list[WorldState] = []
 
         # Consistency rules
-        self.consistency_rules: List[ConsistencyRule] = []
+        self.consistency_rules: list[ConsistencyRule] = []
         self._load_default_rules()
 
         # Background tasks
-        self._background_tasks: List[asyncio.Task] = []
-        self._auto_save_task: Optional[asyncio.Task] = None
+        self._background_tasks: list[asyncio.Task] = []
+        self._auto_save_task: asyncio.Task | None = None
 
         # Metrics
         self.metrics = {
@@ -205,8 +202,8 @@ class DreamWeaver:
     async def bootstrap_world(
         self,
         seed_prompt: str,
-        initial_entities: Optional[List[WorldEntity]] = None,
-        initial_rules: Optional[List[ConsistencyRule]] = None
+        initial_entities: list[WorldEntity] | None = None,
+        initial_rules: list[ConsistencyRule] | None = None
     ) -> WorldState:
         """
         Bootstrap a new world from a seed prompt.
@@ -259,7 +256,7 @@ class DreamWeaver:
 
         return world_state
 
-    async def load_world(self, world_id: str, load_path: Optional[str] = None) -> WorldState:
+    async def load_world(self, world_id: str, load_path: str | None = None) -> WorldState:
         """
         Load existing world from disk.
 
@@ -278,7 +275,7 @@ class DreamWeaver:
         import os
         filepath = os.path.join(path, f"{world_id}.json")
 
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, encoding='utf-8') as f:
             data = json.load(f)
 
         world_state = self._deserialize_world_state(data)
@@ -291,7 +288,7 @@ class DreamWeaver:
 
         return world_state
 
-    async def save_world(self, world_state: WorldState, save_path: Optional[str] = None):
+    async def save_world(self, world_state: WorldState, save_path: str | None = None):
         """
         Save world to disk.
 
@@ -317,8 +314,8 @@ class DreamWeaver:
     async def step(
         self,
         user_input: str,
-        world_state: Optional[WorldState] = None,
-        mode: Optional[GenerationMode] = None
+        world_state: WorldState | None = None,
+        mode: GenerationMode | None = None
     ) -> WorldState:
         """
         Evolve world state forward with user input.
@@ -379,7 +376,7 @@ class DreamWeaver:
     async def query_world(
         self,
         query: str,
-        world_state: Optional[WorldState] = None
+        world_state: WorldState | None = None
     ) -> str:
         """
         Query world state without modifying it.
@@ -417,8 +414,8 @@ class DreamWeaver:
     async def generate_entity(
         self,
         entity_type: EntityType,
-        context: Dict[str, Any],
-        constraints: Optional[Dict[str, Any]] = None
+        context: dict[str, Any],
+        constraints: dict[str, Any] | None = None
     ) -> WorldEntity:
         """
         Generate a new world entity.
@@ -452,9 +449,9 @@ class DreamWeaver:
     async def generate_event(
         self,
         event_type: EventType,
-        participants: List[str],
-        context: Dict[str, Any],
-        constraints: Optional[Dict[str, Any]] = None
+        participants: list[str],
+        context: dict[str, Any],
+        constraints: dict[str, Any] | None = None
     ) -> NarrativeEvent:
         """
         Generate a narrative event.
@@ -497,8 +494,8 @@ class DreamWeaver:
     async def check_consistency(
         self,
         world_state: WorldState,
-        rules: Optional[List[ConsistencyRule]] = None
-    ) -> List[Dict[str, Any]]:
+        rules: list[ConsistencyRule] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Check world state against consistency rules.
 
@@ -514,8 +511,8 @@ class DreamWeaver:
     async def resolve_contradiction(
         self,
         world_state: WorldState,
-        violation: Dict[str, Any]
-    ) -> Optional[WorldState]:
+        violation: dict[str, Any]
+    ) -> WorldState | None:
         """
         Attempt to resolve a consistency violation.
 
@@ -550,8 +547,8 @@ class DreamWeaver:
         self,
         thread_type: str,
         title: str,
-        participants: List[str],
-        world_state: Optional[WorldState] = None
+        participants: list[str],
+        world_state: WorldState | None = None
     ) -> NarrativeThread:
         """Create a new narrative thread."""
         world_state = world_state or self.current_world_state
@@ -572,7 +569,7 @@ class DreamWeaver:
 
         return thread
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get current metrics."""
         return {
             **self.metrics,
@@ -616,7 +613,7 @@ class DreamWeaver:
             auto_fix=False
         ))
 
-    def _create_initial_shards(self) -> List[MemoryShard]:
+    def _create_initial_shards(self) -> list[MemoryShard]:
         """Create initial memory shards for HoloLoom."""
         # Seed with world building knowledge
         return [
@@ -632,7 +629,7 @@ class DreamWeaver:
         self,
         query: str,
         world_state: WorldState
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Retrieve relevant world context for a query."""
         # Use KG to find relevant entities/events
         # (Simplified - in production, use full retrieval pipeline)
@@ -647,7 +644,7 @@ class DreamWeaver:
         self,
         text: str,
         context: str
-    ) -> List[WorldEntity]:
+    ) -> list[WorldEntity]:
         """Extract entities from generated text."""
         # Placeholder - in production, use NER + LLM
         return []
@@ -657,7 +654,7 @@ class DreamWeaver:
         response: str,
         user_input: str,
         world_state: WorldState
-    ) -> List[NarrativeEvent]:
+    ) -> list[NarrativeEvent]:
         """Extract narrative events from response."""
         # Placeholder
         return []
@@ -665,7 +662,7 @@ class DreamWeaver:
     async def _apply_events(
         self,
         world_state: WorldState,
-        events: List[NarrativeEvent]
+        events: list[NarrativeEvent]
     ) -> WorldState:
         """Apply events to world state."""
         # Clone state
@@ -681,8 +678,8 @@ class DreamWeaver:
     async def _check_consistency(
         self,
         world_state: WorldState,
-        rules: Optional[List[ConsistencyRule]] = None
-    ) -> List[Dict[str, Any]]:
+        rules: list[ConsistencyRule] | None = None
+    ) -> list[dict[str, Any]]:
         """Check consistency rules."""
         rules = rules or self.consistency_rules
         violations = []
@@ -718,7 +715,7 @@ class DreamWeaver:
             if self.current_world_state:
                 await self.save_world(self.current_world_state)
 
-    def _serialize_world_state(self, world_state: WorldState) -> Dict[str, Any]:
+    def _serialize_world_state(self, world_state: WorldState) -> dict[str, Any]:
         """Serialize world state to JSON."""
         # Placeholder - use proper serialization
         return {
@@ -726,7 +723,7 @@ class DreamWeaver:
             "entity_count": len(world_state.entities),
         }
 
-    def _deserialize_world_state(self, data: Dict[str, Any]) -> WorldState:
+    def _deserialize_world_state(self, data: dict[str, Any]) -> WorldState:
         """Deserialize world state from JSON."""
         # Placeholder
         return WorldState(
@@ -742,8 +739,8 @@ class DreamWeaver:
     def _build_entity_generation_prompt(
         self,
         entity_type: EntityType,
-        context: Dict[str, Any],
-        constraints: Optional[Dict[str, Any]]
+        context: dict[str, Any],
+        constraints: dict[str, Any] | None
     ) -> str:
         """Build prompt for entity generation."""
         return f"Generate a {entity_type.value} for the world."
@@ -751,9 +748,9 @@ class DreamWeaver:
     def _build_event_generation_prompt(
         self,
         event_type: EventType,
-        participants: List[str],
-        context: Dict[str, Any],
-        constraints: Optional[Dict[str, Any]]
+        participants: list[str],
+        context: dict[str, Any],
+        constraints: dict[str, Any] | None
     ) -> str:
         """Build prompt for event generation."""
         return f"Generate a {event_type.value} event involving {len(participants)} participants."
@@ -762,7 +759,7 @@ class DreamWeaver:
         self,
         text: str,
         entity_type: EntityType,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> WorldEntity:
         """Parse entity from generated text."""
         # Placeholder
@@ -781,8 +778,8 @@ class DreamWeaver:
         self,
         text: str,
         event_type: EventType,
-        participants: List[str],
-        context: Dict[str, Any]
+        participants: list[str],
+        context: dict[str, Any]
     ) -> NarrativeEvent:
         """Parse event from generated text."""
         # Placeholder

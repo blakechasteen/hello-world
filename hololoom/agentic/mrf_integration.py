@@ -30,16 +30,14 @@ Example:
 """
 
 import logging
-from typing import Optional, Dict, Any, List
-from enum import Enum
+from typing import Any
 
+from hololoom.agentic.core import ReasoningMode
 from hololoom.prompting.unified_mrf import (
-    UnifiedMRF,
     MetapromptConfig,
     ModelProvider,
-    RefinementStrategyType
+    UnifiedMRF,
 )
-from hololoom.agentic.core import ReasoningMode
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +50,8 @@ def create_agentic_mrf_prompt(
     query: str,
     mode: ReasoningMode,
     model_provider: str = "claude",
-    context: Optional[Dict[str, Any]] = None,
-    constraints: Optional[List[str]] = None
+    context: dict[str, Any] | None = None,
+    constraints: list[str] | None = None
 ) -> str:
     """
     Create UnifiedMRF-enhanced prompt for agentic reasoning.
@@ -106,8 +104,8 @@ def _map_model_provider(provider_str: str) -> ModelProvider:
 def _create_direct_prompt(
     query: str,
     provider: ModelProvider,
-    context: Dict[str, Any],
-    constraints: List[str]
+    context: dict[str, Any],
+    constraints: list[str]
 ) -> str:
     """Create DIRECT mode prompt with MRF."""
     sources = context.get("sources", [])
@@ -152,8 +150,8 @@ def _create_direct_prompt(
 def _create_verify_prompt(
     query: str,
     provider: ModelProvider,
-    context: Dict[str, Any],
-    constraints: List[str]
+    context: dict[str, Any],
+    constraints: list[str]
 ) -> str:
     """Create VERIFY mode prompt with MRF."""
     initial_answer = context.get("initial_answer", "")
@@ -208,8 +206,8 @@ def _create_verify_prompt(
 def _create_research_prompt(
     query: str,
     provider: ModelProvider,
-    context: Dict[str, Any],
-    constraints: List[str]
+    context: dict[str, Any],
+    constraints: list[str]
 ) -> str:
     """Create RESEARCH mode prompt with MRF."""
     previous_findings = context.get("previous_findings", [])
@@ -265,8 +263,8 @@ def _create_research_prompt(
 def _create_plan_execute_prompt(
     query: str,
     provider: ModelProvider,
-    context: Dict[str, Any],
-    constraints: List[str]
+    context: dict[str, Any],
+    constraints: list[str]
 ) -> str:
     """Create PLAN_EXECUTE mode prompt with MRF."""
     current_goal = context.get("current_goal", query)
@@ -327,7 +325,7 @@ def _create_plan_execute_prompt(
 def assess_agentic_quality(
     response: str,
     mode: ReasoningMode,
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 ) -> float:
     """
     Assess quality of MRF-enhanced agentic response.
@@ -356,7 +354,7 @@ def assess_agentic_quality(
         return min(1.0, len(response) / 500.0)
 
 
-def _assess_direct_quality(response: str, context: Dict[str, Any]) -> float:
+def _assess_direct_quality(response: str, context: dict[str, Any]) -> float:
     """Assess DIRECT mode quality."""
     # Factors: completeness, conciseness, source citations
     completeness = min(1.0, len(response) / 300.0)  # 2-4 sentences ~300 chars
@@ -369,7 +367,7 @@ def _assess_direct_quality(response: str, context: Dict[str, Any]) -> float:
     return 0.6 * completeness + 0.4 * citation_score
 
 
-def _assess_verify_quality(response: str, context: Dict[str, Any]) -> float:
+def _assess_verify_quality(response: str, context: dict[str, Any]) -> float:
     """Assess VERIFY mode quality."""
     # Check for verification structure
     has_verified = "verified" in response.lower()
@@ -383,7 +381,7 @@ def _assess_verify_quality(response: str, context: Dict[str, Any]) -> float:
     return 0.7 * structure_score + 0.3 * completeness
 
 
-def _assess_research_quality(response: str, context: Dict[str, Any]) -> float:
+def _assess_research_quality(response: str, context: dict[str, Any]) -> float:
     """Assess RESEARCH mode quality."""
     # Check for research structure
     has_gaps = "gap" in response.lower()
@@ -399,7 +397,7 @@ def _assess_research_quality(response: str, context: Dict[str, Any]) -> float:
     return 0.5 * structure_score + 0.5 * question_score
 
 
-def _assess_plan_execute_quality(response: str, context: Dict[str, Any]) -> float:
+def _assess_plan_execute_quality(response: str, context: dict[str, Any]) -> float:
     """Assess PLAN_EXECUTE mode quality."""
     # Check for planning structure
     has_subgoals = "sub" in response.lower() and "goal" in response.lower()

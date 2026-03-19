@@ -6,8 +6,8 @@ Thread-safe registry with heartbeat tracking and status management.
 
 import asyncio
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-from ..shared.types import NodeRecord, NodeCapabilities, NodeStatus, LoomStatus
+
+from ..shared.types import LoomStatus, NodeCapabilities, NodeRecord, NodeStatus
 
 
 class NodeRegistry:
@@ -21,7 +21,7 @@ class NodeRegistry:
     def __init__(self, loom_id: str, node_timeout_seconds: int = 90):
         self.loom_id = loom_id
         self.node_timeout_seconds = node_timeout_seconds
-        self._nodes: Dict[str, NodeRecord] = {}
+        self._nodes: dict[str, NodeRecord] = {}
         self._lock = asyncio.Lock()
         self._start_time = datetime.utcnow()
 
@@ -63,7 +63,7 @@ class NodeRegistry:
 
             return node
 
-    async def heartbeat(self, node_id: str) -> Optional[NodeRecord]:
+    async def heartbeat(self, node_id: str) -> NodeRecord | None:
         """
         Update node heartbeat timestamp.
 
@@ -81,18 +81,18 @@ class NodeRegistry:
                 return node
             return None
 
-    async def get(self, node_id: str) -> Optional[NodeRecord]:
+    async def get(self, node_id: str) -> NodeRecord | None:
         """Get a node by ID."""
         async with self._lock:
             return self._nodes.get(node_id)
 
-    async def list_all(self) -> List[NodeRecord]:
+    async def list_all(self) -> list[NodeRecord]:
         """List all registered nodes with updated status."""
         await self._update_status()
         async with self._lock:
             return list(self._nodes.values())
 
-    async def list_online(self) -> List[NodeRecord]:
+    async def list_online(self) -> list[NodeRecord]:
         """List only online nodes."""
         await self._update_status()
         async with self._lock:

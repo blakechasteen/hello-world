@@ -39,10 +39,10 @@ Message Types:
 import asyncio
 import json
 import logging
-from dataclasses import dataclass, asdict, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Optional, Set, Any, Callable, List
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -86,18 +86,18 @@ class JobProgressMessage:
     room_id: str = ""
 
     # Result fields (for JOB_COMPLETED)
-    tool_used: Optional[str] = None
-    confidence: Optional[float] = None
-    duration_ms: Optional[float] = None
-    response_preview: Optional[str] = None
+    tool_used: str | None = None
+    confidence: float | None = None
+    duration_ms: float | None = None
+    response_preview: str | None = None
 
     # Error fields (for JOB_FAILED)
-    error: Optional[str] = None
+    error: str | None = None
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         d = asdict(self)
         d['type'] = self.type.value
@@ -134,22 +134,22 @@ class JobProgressManager:
             heartbeat_interval: Seconds between heartbeat messages
         """
         # WebSocket connections by connection_id
-        self._connections: Dict[str, Any] = {}  # connection_id -> WebSocket
+        self._connections: dict[str, Any] = {}  # connection_id -> WebSocket
 
         # Subscriptions: connection_id -> set of patterns
         # Patterns: "job:{job_id}", "room:{room_id}", "user:{user_id}", "*"
-        self._subscriptions: Dict[str, Set[str]] = {}
+        self._subscriptions: dict[str, set[str]] = {}
 
         # Reverse index: pattern -> set of connection_ids
-        self._pattern_subscribers: Dict[str, Set[str]] = {}
+        self._pattern_subscribers: dict[str, set[str]] = {}
 
         # Heartbeat task
         self._heartbeat_interval = heartbeat_interval
-        self._heartbeat_task: Optional[asyncio.Task] = None
+        self._heartbeat_task: asyncio.Task | None = None
         self._running = False
 
         # Message queue for buffering during disconnects
-        self._message_buffer: Dict[str, List[JobProgressMessage]] = {}
+        self._message_buffer: dict[str, list[JobProgressMessage]] = {}
         self._buffer_size = 100  # Max buffered messages per pattern
 
         logger.info("JobProgressManager initialized")
@@ -342,7 +342,7 @@ class JobProgressManager:
             await self.disconnect(connection_id)
             raise
 
-    def _get_subscribers_for_job(self, job_id: str, room_id: str = "", user_id: str = "") -> Set[str]:
+    def _get_subscribers_for_job(self, job_id: str, room_id: str = "", user_id: str = "") -> set[str]:
         """Get all connection_ids that should receive updates for a job."""
         subscribers = set()
 
@@ -380,12 +380,12 @@ class JobProgressManager:
         step_name: str = "",
         message: str = "",
         query: str = "",
-        tool_used: Optional[str] = None,
-        confidence: Optional[float] = None,
-        duration_ms: Optional[float] = None,
-        response_preview: Optional[str] = None,
-        error: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        tool_used: str | None = None,
+        confidence: float | None = None,
+        duration_ms: float | None = None,
+        response_preview: str | None = None,
+        error: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> int:
         """
         Broadcast a progress update to all subscribers.
@@ -456,7 +456,7 @@ class JobProgressManager:
         logger.debug(f"Broadcast {message_type.value} for job {job_id} to {sent_count} subscribers")
         return sent_count
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get manager statistics."""
         return {
             "active_connections": len(self._connections),
@@ -488,7 +488,7 @@ def create_progress_router(manager: JobProgressManager):
         FastAPI APIRouter
     """
     try:
-        from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+        from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
     except ImportError:
         logger.warning("FastAPI not available, WebSocket router not created")
         return None
@@ -657,7 +657,7 @@ class JobProgressBroadcaster:
         room_id: str = "",
         user_id: str = "",
         query: str = "",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> None:
         """Broadcast job progress update."""
         await self.manager.broadcast_progress(
@@ -683,7 +683,7 @@ class JobProgressBroadcaster:
         room_id: str = "",
         user_id: str = "",
         query: str = "",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> None:
         """Broadcast that a job has completed."""
         await self.manager.broadcast_progress(
@@ -753,7 +753,7 @@ class JobProgressBroadcaster:
 # Singleton for Easy Access
 # ============================================================================
 
-_global_manager: Optional[JobProgressManager] = None
+_global_manager: JobProgressManager | None = None
 
 
 def get_global_manager() -> JobProgressManager:

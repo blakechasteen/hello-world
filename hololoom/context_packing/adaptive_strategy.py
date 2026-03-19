@@ -16,10 +16,9 @@ Author: Claude Code
 Date: 2025-12-09
 """
 
+import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, Optional, Tuple
-import re
 
 from .config import ContextPackerConfig
 
@@ -132,8 +131,8 @@ class AdaptiveCompressionStrategy:
         self._enable_learning = enable_learning
 
         # Statistics for learning (Phase 6.4)
-        self._selection_counts: Dict[AdaptiveComplexity, int] = {c: 0 for c in AdaptiveComplexity}
-        self._outcome_scores: Dict[AdaptiveComplexity, list] = {c: [] for c in AdaptiveComplexity}
+        self._selection_counts: dict[AdaptiveComplexity, int] = dict.fromkeys(AdaptiveComplexity, 0)
+        self._outcome_scores: dict[AdaptiveComplexity, list] = {c: [] for c in AdaptiveComplexity}
 
     def select_strategy(self, query: str) -> StrategySelection:
         """
@@ -282,7 +281,7 @@ class AdaptiveCompressionStrategy:
         selection = self.select_strategy(query)
         return selection.mi_budget
 
-    def get_statistics(self) -> Dict[str, any]:
+    def get_statistics(self) -> dict[str, any]:
         """Get selection statistics for monitoring."""
         total = sum(self._selection_counts.values())
         return {
@@ -341,7 +340,7 @@ def get_adaptive_mi_budget(query: str) -> float:
     return strategy.get_mi_budget(query)
 
 
-def get_adaptive_config(query: str) -> Tuple[ContextPackerConfig, float]:
+def get_adaptive_config(query: str) -> tuple[ContextPackerConfig, float]:
     """
     Get adaptive ContextPackerConfig and MI budget for query.
 

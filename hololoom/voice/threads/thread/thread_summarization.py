@@ -4,12 +4,12 @@ Thread Summarization
 Enables automatic summarization of conversation threads with multiple styles.
 """
 
+import hashlib
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional, Dict, Any
 from enum import Enum, auto
-import logging
-import hashlib
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +32,9 @@ class ThreadSummary:
     summary: str
     message_count: int
     timestamp: float = field(default_factory=lambda: datetime.now().timestamp())
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
             'thread_id': self.thread_id,
@@ -61,7 +61,7 @@ class ThreadSummarizer:
     def __init__(
         self,
         thread_manager: Any,  # elle.ThreadManager
-        llm_client: Optional[Any] = None,  # LLM client for synthesis
+        llm_client: Any | None = None,  # LLM client for synthesis
         enable_caching: bool = True,
         cache_ttl_seconds: float = 300.0,  # 5 minutes
         default_style: SummaryStyle = SummaryStyle.BULLET_POINTS
@@ -83,7 +83,7 @@ class ThreadSummarizer:
         self.default_style = default_style
 
         # Cache: {cache_key: (summary, timestamp)}
-        self._cache: Dict[str, tuple[ThreadSummary, float]] = {}
+        self._cache: dict[str, tuple[ThreadSummary, float]] = {}
 
         logger.info(
             f"ThreadSummarizer initialized: "
@@ -96,8 +96,8 @@ class ThreadSummarizer:
     async def summarize_thread(
         self,
         thread_id: str,
-        style: Optional[SummaryStyle] = None,
-        custom_prompt: Optional[str] = None,
+        style: SummaryStyle | None = None,
+        custom_prompt: str | None = None,
         force_refresh: bool = False
     ) -> ThreadSummary:
         """
@@ -302,8 +302,8 @@ Conversation:
             Enhanced prompt
         """
         try:
-            from hololoom.prompting import create_metaprompt
             from hololoom.config import Config
+            from hololoom.prompting import create_metaprompt
 
             config = Config.fast()
             config.llm_provider = "anthropic"
@@ -364,7 +364,7 @@ Conversation:
         self,
         thread_id: str,
         style: SummaryStyle
-    ) -> Optional[ThreadSummary]:
+    ) -> ThreadSummary | None:
         """
         Get cached summary if valid.
 
@@ -410,7 +410,7 @@ Conversation:
         self._cache[cache_key] = (summary, datetime.now().timestamp())
         logger.debug(f"Cached summary for thread '{thread_id}' ({style.name})")
 
-    def clear_cache(self, thread_id: Optional[str] = None) -> int:
+    def clear_cache(self, thread_id: str | None = None) -> int:
         """
         Clear summary cache.
 
@@ -441,7 +441,7 @@ Conversation:
         logger.info(f"Cleared cache for thread '{thread_id}' ({cleared} entries)")
         return cleared
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """
         Get cache statistics.
 

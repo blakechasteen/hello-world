@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Ingestion Handlers for Matrix ChatOps
 ======================================
@@ -27,9 +28,9 @@ Created: 2025-12-09
 import logging
 import re
 import time
-from typing import Optional, TYPE_CHECKING, Dict, Any, List
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     pass
@@ -43,7 +44,9 @@ except ImportError:
 # Handler registry
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -57,7 +60,7 @@ except ImportError:
     SPIN_AVAILABLE = False
 
 try:
-    from hololoom.spinningWheel.protocol import SpinResult, SpinnerCapabilities
+    from hololoom.spinningWheel.protocol import SpinnerCapabilities, SpinResult
     PROTOCOL_AVAILABLE = True
 except ImportError:
     PROTOCOL_AVAILABLE = False
@@ -229,7 +232,7 @@ async def handle_ingest(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
     args: str,
-    memory: Optional[Any] = None
+    memory: Any | None = None
 ) -> str:
     """
     Handle !ingest command - Auto-detect and ingest any source.
@@ -282,7 +285,7 @@ async def handle_ingest_youtube(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
     args: str,
-    memory: Optional[Any] = None
+    memory: Any | None = None
 ) -> str:
     """
     Handle !ingest youtube command - YouTube video transcript.
@@ -337,7 +340,7 @@ async def handle_ingest_pdf(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
     args: str,
-    memory: Optional[Any] = None
+    memory: Any | None = None
 ) -> str:
     """
     Handle !ingest pdf command - PDF document extraction.
@@ -392,7 +395,7 @@ async def handle_ingest_url(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
     args: str,
-    memory: Optional[Any] = None
+    memory: Any | None = None
 ) -> str:
     """
     Handle !ingest url command - Web page content extraction.
@@ -467,7 +470,7 @@ async def handle_ingest_git(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
     args: str,
-    memory: Optional[Any] = None
+    memory: Any | None = None
 ) -> str:
     """
     Handle !ingest git command - Git repository analysis.
@@ -522,7 +525,7 @@ async def handle_ingest_image(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
     args: str,
-    memory: Optional[Any] = None
+    memory: Any | None = None
 ) -> str:
     """
     Handle !ingest image command - Image with CLIP embeddings.
@@ -731,7 +734,7 @@ def _format_ingestion_result(
 
 def register_ingestion_handlers(
     bot,
-    memory: Optional[Any] = None
+    memory: Any | None = None
 ) -> None:
     """
     Register all ingestion command handlers.
@@ -782,7 +785,7 @@ class IngestionHandlers:
         registry.register_instance(handlers)
     """
 
-    def __init__(self, memory: Optional[Any] = None):
+    def __init__(self, memory: Any | None = None):
         """
         Initialize with optional memory backend.
 

@@ -18,10 +18,10 @@ Dark Trace Mission:
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Protocol, runtime_checkable, Union
 from enum import Enum, auto
-import torch
+from typing import Any, Protocol, runtime_checkable
 
+import torch
 
 # =============================================================================
 # Core Enums and Types
@@ -71,9 +71,9 @@ class Feature:
     index: int                           # Numeric index within the source
 
     # Interpretation
-    label: Optional[str] = None          # Human-readable label (auto-generated or manual)
-    description: Optional[str] = None    # Detailed description
-    exemplars: List[str] = field(default_factory=list)  # Example activations
+    label: str | None = None          # Human-readable label (auto-generated or manual)
+    description: str | None = None    # Detailed description
+    exemplars: list[str] = field(default_factory=list)  # Example activations
 
     # Statistics
     activation_mean: float = 0.0         # Mean activation across dataset
@@ -84,7 +84,7 @@ class Feature:
     safety_flag: SafetyFlag = SafetyFlag.SAFE
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate and normalize feature ID."""
@@ -93,7 +93,7 @@ class Feature:
 
     @classmethod
     def from_sae(cls, index: int, activation_value: float = 0.0,
-                 label: Optional[str] = None) -> "Feature":
+                 label: str | None = None) -> "Feature":
         """Create a feature from SAE index."""
         return cls(
             id=f"sae.{index}",
@@ -105,8 +105,8 @@ class Feature:
 
     @classmethod
     def from_semantic(cls, name: str, index: int,
-                      positive_exemplars: List[str] = None,
-                      negative_exemplars: List[str] = None) -> "Feature":
+                      positive_exemplars: list[str] = None,
+                      negative_exemplars: list[str] = None) -> "Feature":
         """Create a feature from semantic axis."""
         return cls(
             id=f"semantic.{name}",
@@ -129,8 +129,8 @@ class FeatureActivation:
     confidence: float = 1.0     # Confidence in this activation (for uncertainty)
 
     # Context
-    position: Optional[int] = None      # Token position (if applicable)
-    layer: Optional[str] = None         # Layer name (if applicable)
+    position: int | None = None      # Token position (if applicable)
+    layer: str | None = None         # Layer name (if applicable)
 
     def __lt__(self, other: "FeatureActivation"):
         """Enable sorting by activation strength."""
@@ -146,11 +146,11 @@ class SteeringVector:
     or semantic axis projections.
     """
     vector: torch.Tensor                 # The actual steering vector [dim]
-    features: Dict[str, float]           # Feature contributions {feature_id: strength}
+    features: dict[str, float]           # Feature contributions {feature_id: strength}
     source: LensType                     # Which lens generated this
 
     # Metadata
-    target_description: Optional[str] = None  # What behavior we're steering toward
+    target_description: str | None = None  # What behavior we're steering toward
     safety_validated: bool = False       # Has this been validated for safety?
 
     def __post_init__(self):
@@ -204,8 +204,8 @@ class TraceLens(Protocol):
         self,
         activations: torch.Tensor,
         threshold: float = 0.0,
-        top_k: Optional[int] = None
-    ) -> List[FeatureActivation]:
+        top_k: int | None = None
+    ) -> list[FeatureActivation]:
         """
         Get active features above threshold.
 
@@ -221,8 +221,8 @@ class TraceLens(Protocol):
 
     def steer(
         self,
-        goals: Dict[str, float],
-        input_dim: Optional[int] = None
+        goals: dict[str, float],
+        input_dim: int | None = None
     ) -> SteeringVector:
         """
         Generate steering vector for goals.
@@ -240,7 +240,7 @@ class TraceLens(Protocol):
         self,
         activations: torch.Tensor,
         verbosity: int = 1,
-        include_features: Optional[List[str]] = None
+        include_features: list[str] | None = None
     ) -> str:
         """
         Generate human-readable explanation of activations.
@@ -272,7 +272,7 @@ class BaseLens(ABC):
         input_dim: int,
         n_features: int,
         lens_type: LensType,
-        name: Optional[str] = None
+        name: str | None = None
     ):
         self._input_dim = input_dim
         self._n_features = n_features
@@ -280,7 +280,7 @@ class BaseLens(ABC):
         self._name = name or f"{lens_type.name}Lens"
 
         # Feature registry (populated by subclasses)
-        self._features: Dict[str, Feature] = {}
+        self._features: dict[str, Feature] = {}
 
     @property
     def lens_type(self) -> LensType:
@@ -298,7 +298,7 @@ class BaseLens(ABC):
     def name(self) -> str:
         return self._name
 
-    def get_feature(self, feature_id: str) -> Optional[Feature]:
+    def get_feature(self, feature_id: str) -> Feature | None:
         """Get feature by ID."""
         return self._features.get(feature_id)
 
@@ -306,7 +306,7 @@ class BaseLens(ABC):
         """Register a feature in this lens."""
         self._features[feature.id] = feature
 
-    def list_features(self) -> List[Feature]:
+    def list_features(self) -> list[Feature]:
         """List all registered features."""
         return list(self._features.values())
 
@@ -320,16 +320,16 @@ class BaseLens(ABC):
         self,
         activations: torch.Tensor,
         threshold: float = 0.0,
-        top_k: Optional[int] = None
-    ) -> List[FeatureActivation]:
+        top_k: int | None = None
+    ) -> list[FeatureActivation]:
         """Get active features."""
         pass
 
     @abstractmethod
     def steer(
         self,
-        goals: Dict[str, float],
-        input_dim: Optional[int] = None
+        goals: dict[str, float],
+        input_dim: int | None = None
     ) -> SteeringVector:
         """Generate steering vector."""
         pass
@@ -338,7 +338,7 @@ class BaseLens(ABC):
         self,
         activations: torch.Tensor,
         verbosity: int = 1,
-        include_features: Optional[List[str]] = None
+        include_features: list[str] | None = None
     ) -> str:
         """
         Default explanation implementation.
@@ -399,7 +399,7 @@ class CausalValidator(Protocol):
     def ablate(
         self,
         activations: torch.Tensor,
-        feature_ids: List[str]
+        feature_ids: list[str]
     ) -> torch.Tensor:
         """
         Remove specific features from activations.
@@ -416,7 +416,7 @@ class CausalValidator(Protocol):
     def inject(
         self,
         activations: torch.Tensor,
-        feature_values: Dict[str, float]
+        feature_values: dict[str, float]
     ) -> torch.Tensor:
         """
         Inject specific feature values into activations.
@@ -434,7 +434,7 @@ class CausalValidator(Protocol):
         self,
         source_activations: torch.Tensor,
         target_activations: torch.Tensor,
-        feature_ids: List[str]
+        feature_ids: list[str]
     ) -> torch.Tensor:
         """
         Patch features from source to target activations.
@@ -458,8 +458,8 @@ class CausalValidator(Protocol):
 Activations = torch.Tensor  # [batch, seq, dim] or [batch, dim] or [dim]
 
 # Feature mapping types
-FeatureMap = Dict[str, float]  # {feature_id: activation}
-GoalMap = Dict[str, float]     # {feature_id: target_strength}
+FeatureMap = dict[str, float]  # {feature_id: activation}
+GoalMap = dict[str, float]     # {feature_id: target_strength}
 
 # Result types
-ActiveFeatures = List[FeatureActivation]
+ActiveFeatures = list[FeatureActivation]

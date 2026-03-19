@@ -25,28 +25,26 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
+from .communication import MessageBus
 from .protocols import (
+    AgentMessage,
+    AgentResult,
     AgentRole,
     AgentState,
-    AgentMessage,
     AgentTask,
-    AgentResult,
-    AgentProtocol,
     MessagePriority,
 )
-from .communication import MessageBus
 from .safety import (
-    SafetyGate,
-    AuthorizationToken,
-    SeverityLevel,
     AuditEventType,
     AuthorizationError,
-    ScopeViolationError,
+    AuthorizationToken,
     RateLimitExceededError,
+    SafetyGate,
+    ScopeViolationError,
+    SeverityLevel,
 )
-
 
 # ============================================================================
 # Discovery Types (Scout outputs)
@@ -84,13 +82,13 @@ class Discovery:
 
     discovery_type: DiscoveryType
     target: str
-    details: Dict[str, Any]
+    details: dict[str, Any]
     confidence: float = 0.5
     severity_hint: SeverityLevel = SeverityLevel.MEDIUM
     timestamp: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize discovery to dict."""
         return {
             "discovery_type": self.discovery_type.value,
@@ -153,7 +151,7 @@ class BaseAgent:
         self._discoveries_made = 0
 
         # Background task for message handling
-        self._message_handler_task: Optional[asyncio.Task] = None
+        self._message_handler_task: asyncio.Task | None = None
         self._running = False
 
     @property
@@ -258,7 +256,7 @@ class BaseAgent:
                     target="message_handler",
                 )
 
-    async def handle_message(self, message: AgentMessage) -> Optional[AgentMessage]:
+    async def handle_message(self, message: AgentMessage) -> AgentMessage | None:
         """Process incoming message.
 
         Subclasses should override to handle role-specific messages.
@@ -306,7 +304,7 @@ class BaseAgent:
         """
         raise NotImplementedError("Subclasses must implement execute_task")
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get agent metrics."""
         return {
             "agent_id": self._agent_id,
@@ -388,11 +386,11 @@ class ScoutAgent(BaseAgent):
         )
 
         self._max_concurrent_probes = max_concurrent_probes
-        self._active_probes: Set[str] = set()
+        self._active_probes: set[str] = set()
         self._probe_semaphore = asyncio.Semaphore(max_concurrent_probes)
 
         # Discovery buffer (sent to coordinator periodically)
-        self._pending_discoveries: List[Discovery] = []
+        self._pending_discoveries: list[Discovery] = []
 
     async def execute_task(self, task: AgentTask) -> AgentResult:
         """Execute a probing task.
@@ -438,7 +436,7 @@ class ScoutAgent(BaseAgent):
                 )
 
             # Execute probe based on task type
-            discoveries: List[Discovery] = []
+            discoveries: list[Discovery] = []
 
             if task.task_type == "probe_surface":
                 discoveries = await self._probe_surface(
@@ -525,8 +523,8 @@ class ScoutAgent(BaseAgent):
     async def _probe_surface(
         self,
         target: str,
-        parameters: Dict[str, Any],
-    ) -> List[Discovery]:
+        parameters: dict[str, Any],
+    ) -> list[Discovery]:
         """Comprehensive surface probe.
 
         Runs multiple probe types to discover attack surface.
@@ -538,12 +536,12 @@ class ScoutAgent(BaseAgent):
         Returns:
             List of discoveries
         """
-        discoveries: List[Discovery] = []
+        discoveries: list[Discovery] = []
 
         # Run probe types in parallel (within semaphore limits)
         probe_types = parameters.get("probe_types", list(self.PROBE_TYPES))
 
-        async def run_probe(probe_type: str) -> List[Discovery]:
+        async def run_probe(probe_type: str) -> list[Discovery]:
             async with self._probe_semaphore:
                 self._active_probes.add(probe_type)
                 try:
@@ -587,8 +585,8 @@ class ScoutAgent(BaseAgent):
     async def _port_scan(
         self,
         target: str,
-        ports: List[int],
-    ) -> List[Discovery]:
+        ports: list[int],
+    ) -> list[Discovery]:
         """Scan for open ports.
 
         NOTE: This is a SIMULATED implementation for the framework.
@@ -601,7 +599,7 @@ class ScoutAgent(BaseAgent):
         Returns:
             List of port discoveries
         """
-        discoveries: List[Discovery] = []
+        discoveries: list[Discovery] = []
 
         # SIMULATION: In production, this would do actual port scanning
         # For now, we simulate discoveries for framework testing
@@ -629,8 +627,8 @@ class ScoutAgent(BaseAgent):
     async def _api_discovery(
         self,
         target: str,
-        parameters: Dict[str, Any],
-    ) -> List[Discovery]:
+        parameters: dict[str, Any],
+    ) -> list[Discovery]:
         """Discover API endpoints.
 
         NOTE: Simulated implementation for framework testing.
@@ -642,7 +640,7 @@ class ScoutAgent(BaseAgent):
         Returns:
             List of API discoveries
         """
-        discoveries: List[Discovery] = []
+        discoveries: list[Discovery] = []
 
         # SIMULATION: Would probe common API paths in production
         # Common paths to check (in production, this would be configurable)
@@ -675,8 +673,8 @@ class ScoutAgent(BaseAgent):
     async def _version_probe(
         self,
         target: str,
-        parameters: Dict[str, Any],
-    ) -> List[Discovery]:
+        parameters: dict[str, Any],
+    ) -> list[Discovery]:
         """Probe for version information.
 
         NOTE: Simulated implementation for framework testing.
@@ -688,7 +686,7 @@ class ScoutAgent(BaseAgent):
         Returns:
             List of version discoveries
         """
-        discoveries: List[Discovery] = []
+        discoveries: list[Discovery] = []
 
         # SIMULATION: Would extract version info from headers/responses
         discoveries.append(Discovery(
@@ -708,8 +706,8 @@ class ScoutAgent(BaseAgent):
     async def _header_analysis(
         self,
         target: str,
-        parameters: Dict[str, Any],
-    ) -> List[Discovery]:
+        parameters: dict[str, Any],
+    ) -> list[Discovery]:
         """Analyze HTTP headers for security issues.
 
         NOTE: Simulated implementation for framework testing.
@@ -721,7 +719,7 @@ class ScoutAgent(BaseAgent):
         Returns:
             List of header-related discoveries
         """
-        discoveries: List[Discovery] = []
+        discoveries: list[Discovery] = []
 
         # SIMULATION: Would analyze actual response headers
         # Check for missing security headers
@@ -750,8 +748,8 @@ class ScoutAgent(BaseAgent):
     async def _dns_enumeration(
         self,
         target: str,
-        parameters: Dict[str, Any],
-    ) -> List[Discovery]:
+        parameters: dict[str, Any],
+    ) -> list[Discovery]:
         """Enumerate DNS records.
 
         NOTE: Simulated implementation for framework testing.
@@ -763,7 +761,7 @@ class ScoutAgent(BaseAgent):
         Returns:
             List of DNS discoveries
         """
-        discoveries: List[Discovery] = []
+        discoveries: list[Discovery] = []
 
         # SIMULATION: Would do actual DNS lookups
         discoveries.append(Discovery(
@@ -783,8 +781,8 @@ class ScoutAgent(BaseAgent):
     async def _certificate_check(
         self,
         target: str,
-        parameters: Dict[str, Any],
-    ) -> List[Discovery]:
+        parameters: dict[str, Any],
+    ) -> list[Discovery]:
         """Check TLS certificate.
 
         NOTE: Simulated implementation for framework testing.
@@ -796,7 +794,7 @@ class ScoutAgent(BaseAgent):
         Returns:
             List of certificate discoveries
         """
-        discoveries: List[Discovery] = []
+        discoveries: list[Discovery] = []
 
         # SIMULATION: Would check actual TLS certificate
         discoveries.append(Discovery(
@@ -814,7 +812,7 @@ class ScoutAgent(BaseAgent):
 
         return discoveries
 
-    def get_pending_discoveries(self) -> List[Discovery]:
+    def get_pending_discoveries(self) -> list[Discovery]:
         """Get pending discoveries and clear buffer.
 
         Returns:
@@ -834,7 +832,7 @@ def create_scout_agent(
     message_bus: MessageBus,
     safety_gate: SafetyGate,
     authorization_token: AuthorizationToken,
-    agent_id: Optional[str] = None,
+    agent_id: str | None = None,
 ) -> ScoutAgent:
     """Create a Scout agent.
 
@@ -896,7 +894,7 @@ class AttackStrategy:
     strategy_type: AttackStrategyType
     name: str
     description: str
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
     alpha: float = 1.0  # Thompson Sampling success prior
     beta: float = 1.0   # Thompson Sampling failure prior
 
@@ -950,12 +948,12 @@ class AttackOutcome:
     target: str
     success: bool
     severity: SeverityLevel
-    response: Optional[str] = None
+    response: str | None = None
     confidence: float = 0.5
     execution_time_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize outcome to dict."""
         return {
             "strategy_type": self.strategy_type.value,
@@ -1073,7 +1071,7 @@ class AttackerAgent(BaseAgent):
         message_bus: MessageBus,
         safety_gate: SafetyGate,
         authorization_token: AuthorizationToken,
-        strategies: Optional[List[AttackStrategy]] = None,
+        strategies: list[AttackStrategy] | None = None,
         exploration_rate: float = 0.1,
     ):
         """Initialize Attacker agent.
@@ -1112,11 +1110,11 @@ class AttackerAgent(BaseAgent):
         # Attack metrics
         self._attacks_executed = 0
         self._attacks_successful = 0
-        self._strategy_usage: Dict[AttackStrategyType, int] = {}
+        self._strategy_usage: dict[AttackStrategyType, int] = {}
 
     def select_strategy(
         self,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> AttackStrategy:
         """Select attack strategy using Thompson Sampling.
 
@@ -1282,7 +1280,7 @@ class AttackerAgent(BaseAgent):
         self,
         strategy: AttackStrategy,
         target: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
     ) -> AttackOutcome:
         """Execute a specific attack strategy.
 
@@ -1332,7 +1330,7 @@ class AttackerAgent(BaseAgent):
         self,
         strategy: AttackStrategy,
         target: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
     ) -> AttackOutcome:
         """Simulate attack execution for framework testing.
 
@@ -1395,7 +1393,7 @@ class AttackerAgent(BaseAgent):
 
     def _select_strategy_for_discovery(
         self,
-        discovery: Dict[str, Any],
+        discovery: dict[str, Any],
     ) -> AttackStrategy:
         """Select appropriate strategy based on discovery type.
 
@@ -1430,7 +1428,7 @@ class AttackerAgent(BaseAgent):
             list(self._strategies.values())[0]  # Fallback to first
         )
 
-    def get_strategy_stats(self) -> Dict[str, Any]:
+    def get_strategy_stats(self) -> dict[str, Any]:
         """Get statistics about strategy performance.
 
         Returns:
@@ -1447,7 +1445,7 @@ class AttackerAgent(BaseAgent):
             }
         return stats
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get agent metrics including attack statistics."""
         base_metrics = super().get_metrics()
         base_metrics.update({
@@ -1465,8 +1463,8 @@ def create_attacker_agent(
     message_bus: MessageBus,
     safety_gate: SafetyGate,
     authorization_token: AuthorizationToken,
-    agent_id: Optional[str] = None,
-    strategies: Optional[List[AttackStrategy]] = None,
+    agent_id: str | None = None,
+    strategies: list[AttackStrategy] | None = None,
 ) -> AttackerAgent:
     """Create an Attacker agent.
 
@@ -1532,13 +1530,13 @@ class ExploitResult:
     target: str
     success: bool
     severity: SeverityLevel
-    access_gained: Optional[str] = None
+    access_gained: str | None = None
     confidence: float = 0.5
     execution_time_ms: float = 0.0
     requires_human_review: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize result to dict."""
         return {
             "exploitation_type": self.exploitation_type.value,
@@ -1568,7 +1566,7 @@ class ExploitationTechnique:
     exploitation_type: ExploitationType
     name: str
     description: str
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
     risk_level: SeverityLevel = SeverityLevel.MEDIUM
 
 
@@ -1670,7 +1668,7 @@ class ExploiterAgent(BaseAgent):
         message_bus: MessageBus,
         safety_gate: SafetyGate,
         authorization_token: AuthorizationToken,
-        techniques: Optional[List[ExploitationTechnique]] = None,
+        techniques: list[ExploitationTechnique] | None = None,
         require_human_review_for_critical: bool = True,
     ):
         """Initialize Exploiter agent.
@@ -1710,10 +1708,10 @@ class ExploiterAgent(BaseAgent):
         self._exploitations_successful = 0
         self._critical_findings = 0
         self._human_reviews_pending = 0
-        self._technique_usage: Dict[ExploitationType, int] = {}
+        self._technique_usage: dict[ExploitationType, int] = {}
 
         # Pending vulnerabilities queue (from Attacker)
-        self._pending_vulnerabilities: List[Dict[str, Any]] = []
+        self._pending_vulnerabilities: list[dict[str, Any]] = []
 
     async def execute_task(self, task: AgentTask) -> AgentResult:
         """Execute an exploitation task.
@@ -1856,8 +1854,8 @@ class ExploiterAgent(BaseAgent):
     async def _exploit_vulnerability(
         self,
         target: str,
-        vulnerability: Dict[str, Any],
-        parameters: Dict[str, Any],
+        vulnerability: dict[str, Any],
+        parameters: dict[str, Any],
     ) -> ExploitResult:
         """Exploit a specific vulnerability.
 
@@ -1949,7 +1947,7 @@ class ExploiterAgent(BaseAgent):
     async def _attempt_privilege_escalation(
         self,
         target: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
     ) -> ExploitResult:
         """Attempt privilege escalation.
 
@@ -1974,7 +1972,7 @@ class ExploiterAgent(BaseAgent):
     async def _attempt_lateral_movement(
         self,
         target: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
     ) -> ExploitResult:
         """Attempt lateral movement.
 
@@ -1999,7 +1997,7 @@ class ExploiterAgent(BaseAgent):
     async def _assess_exploitation_options(
         self,
         target: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
     ) -> ExploitResult:
         """Assess available exploitation options.
 
@@ -2051,8 +2049,8 @@ class ExploiterAgent(BaseAgent):
         self,
         technique: ExploitationTechnique,
         target: str,
-        vulnerability: Dict[str, Any],
-        parameters: Dict[str, Any],
+        vulnerability: dict[str, Any],
+        parameters: dict[str, Any],
     ) -> ExploitResult:
         """Simulate exploitation for framework testing.
 
@@ -2120,7 +2118,7 @@ class ExploiterAgent(BaseAgent):
 
     def _select_technique_for_vulnerability(
         self,
-        vulnerability: Dict[str, Any],
+        vulnerability: dict[str, Any],
     ) -> ExploitationTechnique:
         """Select appropriate technique based on vulnerability type.
 
@@ -2159,7 +2157,7 @@ class ExploiterAgent(BaseAgent):
             list(self._techniques.values())[0]  # Fallback to first
         )
 
-    def queue_vulnerability(self, vulnerability: Dict[str, Any]) -> None:
+    def queue_vulnerability(self, vulnerability: dict[str, Any]) -> None:
         """Queue a vulnerability for exploitation.
 
         Called by Coordinator when Attacker finds confirmed vulnerability.
@@ -2169,7 +2167,7 @@ class ExploiterAgent(BaseAgent):
         """
         self._pending_vulnerabilities.append(vulnerability)
 
-    def get_pending_vulnerabilities(self) -> List[Dict[str, Any]]:
+    def get_pending_vulnerabilities(self) -> list[dict[str, Any]]:
         """Get pending vulnerabilities and clear queue.
 
         Returns:
@@ -2179,7 +2177,7 @@ class ExploiterAgent(BaseAgent):
         self._pending_vulnerabilities.clear()
         return vulns
 
-    def get_technique_stats(self) -> Dict[str, Any]:
+    def get_technique_stats(self) -> dict[str, Any]:
         """Get statistics about technique usage.
 
         Returns:
@@ -2194,7 +2192,7 @@ class ExploiterAgent(BaseAgent):
             }
         return stats
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get agent metrics including exploitation statistics."""
         base_metrics = super().get_metrics()
         base_metrics.update({
@@ -2214,8 +2212,8 @@ def create_exploiter_agent(
     message_bus: MessageBus,
     safety_gate: SafetyGate,
     authorization_token: AuthorizationToken,
-    agent_id: Optional[str] = None,
-    techniques: Optional[List[ExploitationTechnique]] = None,
+    agent_id: str | None = None,
+    techniques: list[ExploitationTechnique] | None = None,
     require_human_review_for_critical: bool = True,
 ) -> ExploiterAgent:
     """Create an Exploiter agent.
@@ -2279,16 +2277,16 @@ class CampaignStatus:
     """
 
     phase: CampaignPhase
-    targets: List[str]
+    targets: list[str]
     discoveries_count: int = 0
     attacks_executed: int = 0
     exploitations_attempted: int = 0
     critical_findings: int = 0
     start_time: float = field(default_factory=time.time)
     phase_start_time: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize status to dict."""
         return {
             "phase": self.phase.value,
@@ -2322,7 +2320,7 @@ class TaskAssignment:
     agent_role: AgentRole
     assigned_at: float = field(default_factory=time.time)
     completed: bool = False
-    result: Optional[AgentResult] = None
+    result: AgentResult | None = None
 
 
 # ============================================================================
@@ -2378,7 +2376,7 @@ class CoordinatorAgent(BaseAgent):
         message_bus: MessageBus,
         safety_gate: SafetyGate,
         authorization_token: AuthorizationToken,
-        targets: Optional[List[str]] = None,
+        targets: list[str] | None = None,
         auto_phase_transition: bool = True,
         phase_transition_threshold: int = 5,
     ):
@@ -2411,19 +2409,19 @@ class CoordinatorAgent(BaseAgent):
         self._phase_transition_threshold = phase_transition_threshold
 
         # Agent registry (agents register with coordinator)
-        self._registered_agents: Dict[str, Dict[str, Any]] = {}
+        self._registered_agents: dict[str, dict[str, Any]] = {}
 
         # Task tracking
-        self._pending_tasks: Dict[str, TaskAssignment] = {}
-        self._completed_tasks: List[TaskAssignment] = []
+        self._pending_tasks: dict[str, TaskAssignment] = {}
+        self._completed_tasks: list[TaskAssignment] = []
 
         # Discovery aggregation
-        self._all_discoveries: List[Dict[str, Any]] = []
-        self._all_attacks: List[Dict[str, Any]] = []
-        self._all_exploitations: List[Dict[str, Any]] = []
+        self._all_discoveries: list[dict[str, Any]] = []
+        self._all_attacks: list[dict[str, Any]] = []
+        self._all_exploitations: list[dict[str, Any]] = []
 
         # Critical findings requiring human review
-        self._critical_findings: List[Dict[str, Any]] = []
+        self._critical_findings: list[dict[str, Any]] = []
 
         # Phase-specific counters
         self._phase_discoveries = 0
@@ -2516,7 +2514,7 @@ class CoordinatorAgent(BaseAgent):
                 )
 
             # Execute based on task type
-            result: Dict[str, Any]
+            result: dict[str, Any]
 
             if task.task_type == "register_agent":
                 result = await self._register_agent(task.parameters)
@@ -2587,7 +2585,7 @@ class CoordinatorAgent(BaseAgent):
                 execution_time_ms=(time.time() - start_time) * 1000,
             )
 
-    async def _register_agent(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _register_agent(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """Register an agent with the coordinator.
 
         Args:
@@ -2628,7 +2626,7 @@ class CoordinatorAgent(BaseAgent):
             "current_phase": self._campaign_status.phase.value,
         }
 
-    async def _dispatch_task(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _dispatch_task(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """Dispatch a task to an appropriate agent.
 
         Coordinator decides WHAT and WHEN, agent decides HOW.
@@ -2720,7 +2718,7 @@ class CoordinatorAgent(BaseAgent):
             "assigned_to": agent_id,
         }
 
-    async def _process_result(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _process_result(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """Process a result reported by an agent.
 
         Aggregates results, tracks progress, and handles phase transitions.
@@ -2845,8 +2843,8 @@ class CoordinatorAgent(BaseAgent):
 
     async def _transition_phase(
         self,
-        target_phase: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        target_phase: str | None = None,
+    ) -> dict[str, Any]:
         """Transition to a new campaign phase.
 
         Args:
@@ -2909,7 +2907,7 @@ class CoordinatorAgent(BaseAgent):
             "to_phase": new_phase.value,
         }
 
-    def _select_agent_by_role(self, role: AgentRole) -> Optional[str]:
+    def _select_agent_by_role(self, role: AgentRole) -> str | None:
         """Select an agent by role.
 
         Args:
@@ -2923,7 +2921,7 @@ class CoordinatorAgent(BaseAgent):
                 return agent_id
         return None
 
-    def _auto_select_agent(self, task_type: str) -> Optional[str]:
+    def _auto_select_agent(self, task_type: str) -> str | None:
         """Auto-select agent based on task type.
 
         Maps task types to appropriate agent roles.
@@ -2957,7 +2955,7 @@ class CoordinatorAgent(BaseAgent):
             return self._select_agent_by_role(role)
         return None
 
-    def _get_aggregated_results(self) -> Dict[str, Any]:
+    def _get_aggregated_results(self) -> dict[str, Any]:
         """Get aggregated results from campaign.
 
         Returns:
@@ -3003,13 +3001,13 @@ class CoordinatorAgent(BaseAgent):
             },
         }
 
-    def _group_discoveries_by_type(self) -> Dict[str, int]:
+    def _group_discoveries_by_type(self) -> dict[str, int]:
         """Group discoveries by type.
 
         Returns:
             Dict mapping discovery type to count
         """
-        grouped: Dict[str, int] = {}
+        grouped: dict[str, int] = {}
         for discovery in self._all_discoveries:
             d_type = discovery.get("discovery_type", "unknown")
             grouped[d_type] = grouped.get(d_type, 0) + 1
@@ -3023,7 +3021,7 @@ class CoordinatorAgent(BaseAgent):
         """
         return self._campaign_status
 
-    def get_critical_findings(self) -> List[Dict[str, Any]]:
+    def get_critical_findings(self) -> list[dict[str, Any]]:
         """Get critical findings requiring human review.
 
         Returns:
@@ -3031,7 +3029,7 @@ class CoordinatorAgent(BaseAgent):
         """
         return self._critical_findings.copy()
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get coordinator metrics."""
         base_metrics = super().get_metrics()
         base_metrics.update({
@@ -3054,8 +3052,8 @@ def create_coordinator_agent(
     message_bus: MessageBus,
     safety_gate: SafetyGate,
     authorization_token: AuthorizationToken,
-    agent_id: Optional[str] = None,
-    targets: Optional[List[str]] = None,
+    agent_id: str | None = None,
+    targets: list[str] | None = None,
     auto_phase_transition: bool = True,
 ) -> CoordinatorAgent:
     """Create a Coordinator agent.

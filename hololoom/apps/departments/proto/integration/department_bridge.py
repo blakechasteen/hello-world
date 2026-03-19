@@ -25,18 +25,17 @@ Status: Production ready (2025-12-02)
 
 import logging
 import time
-from typing import Dict, Any, Optional
 from datetime import datetime
+from typing import Any
 
 from hololoom.apps.departments.protocol import (
-    Department,
-    DepartmentRequest,
-    DepartmentResponse,
-    VerificationResult,
-    VerificationCheck,
-    VerificationStatus,
     ConfidenceMetadata,
     DepartmentConfig,
+    DepartmentRequest,
+    DepartmentResponse,
+    VerificationCheck,
+    VerificationResult,
+    VerificationStatus,
 )
 
 logger = logging.getLogger("proto.department")
@@ -69,7 +68,7 @@ class ProtoDepartment:
             response = await proto_dept.refine(response)
     """
 
-    def __init__(self, proto_engine: Optional[Any] = None):
+    def __init__(self, proto_engine: Any | None = None):
         """Initialize Proto department.
 
         Args:
@@ -261,7 +260,7 @@ class ProtoDepartment:
         # - Request additional context
         return response
 
-    async def update_strategy(self, feedback: Dict[str, Any]) -> None:
+    async def update_strategy(self, feedback: dict[str, Any]) -> None:
         """Learn from feedback (Department method 4/7).
 
         Called after task execution with feedback signal.
@@ -280,7 +279,7 @@ class ProtoDepartment:
         # TODO: Update strategy weights based on feedback
         # TODO: Calibrate confidence estimates
 
-    async def get_capabilities(self) -> Dict[str, Any]:
+    async def get_capabilities(self) -> dict[str, Any]:
         """Report Proto's capabilities (Department method 5/7).
 
         Returns capabilities dictionary that can be queried by orchestrator.
@@ -298,7 +297,7 @@ class ProtoDepartment:
             "max_latency_ms": self._config.max_latency_ms
         }
 
-    async def get_metrics(self) -> Dict[str, Any]:
+    async def get_metrics(self) -> dict[str, Any]:
         """Return Proto's performance metrics (Department method 6/7).
 
         Computes aggregate metrics from tracked data.

@@ -39,11 +39,11 @@ Author: HoloLoom Spectral Theory Team
 Date: 2025-11-03
 """
 
-from typing import List, Tuple, Optional, Dict, Any, Union
+import warnings
 from dataclasses import dataclass
 from enum import Enum
+
 import numpy as np
-import warnings
 
 try:
     from scipy.sparse import csr_matrix, diags
@@ -113,7 +113,7 @@ class GraphLaplacian:
         self._eigenvalues = None
         self._eigenvectors = None
 
-    def _build_adjacency(self) -> Union[np.ndarray, csr_matrix]:
+    def _build_adjacency(self) -> np.ndarray | csr_matrix:
         """Build adjacency matrix."""
         if self.n == 0:
             return np.zeros((0, 0))
@@ -142,7 +142,7 @@ class GraphLaplacian:
                 A[r, c] += w
             return A
 
-    def _build_degree(self) -> Union[np.ndarray, csr_matrix]:
+    def _build_degree(self) -> np.ndarray | csr_matrix:
         """Build degree matrix."""
         if _HAVE_SCIPY and hasattr(self.A, 'toarray'):
             degrees = np.asarray(self.A.sum(axis=1)).ravel()
@@ -151,7 +151,7 @@ class GraphLaplacian:
             degrees = self.A.sum(axis=1)
             return np.diag(degrees)
 
-    def _build_laplacian(self) -> Union[np.ndarray, csr_matrix]:
+    def _build_laplacian(self) -> np.ndarray | csr_matrix:
         """Build Laplacian matrix."""
         if self.laplacian_type == LaplacianType.COMBINATORIAL:
             # L = D - A
@@ -185,9 +185,9 @@ class GraphLaplacian:
 
     def compute_spectrum(
         self,
-        k: Optional[int] = None,
+        k: int | None = None,
         which: str = 'SM'
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Compute Laplacian eigenvalues and eigenvectors.
 
@@ -320,7 +320,7 @@ class SpectralWavelet:
         self,
         signal: np.ndarray,
         kernel: str = 'heat'
-    ) -> Dict[float, np.ndarray]:
+    ) -> dict[float, np.ndarray]:
         """
         Multi-scale wavelet transform.
 
@@ -423,7 +423,7 @@ class DiffusionMap:
 def spectral_clustering(
     laplacian: GraphLaplacian,
     n_clusters: int,
-    n_components: Optional[int] = None
+    n_components: int | None = None
 ) -> np.ndarray:
     """
     Spectral clustering using normalized Laplacian.
@@ -469,7 +469,7 @@ def spectral_clustering(
 def heat_kernel(
     laplacian: GraphLaplacian,
     t: float,
-    source_nodes: Optional[List[int]] = None
+    source_nodes: list[int] | None = None
 ) -> np.ndarray:
     """
     Compute heat kernel diffusion.

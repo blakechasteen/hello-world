@@ -18,13 +18,14 @@ Demonstrates Wave 2 capabilities:
 import asyncio
 import sys
 from datetime import datetime
+
 from tabulate import tabulate
 
-from hololoom.redteam.refinement.attack_refinement import (
-    AttackRefiner,
-    AttackRefinementStrategy,
-)
 from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
+from hololoom.redteam.refinement.attack_refinement import (
+    AttackRefinementStrategy,
+    AttackRefiner,
+)
 from hololoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
 
 
@@ -185,8 +186,8 @@ async def demo_4_single_refinement():
 
     print_subheader("Refinement Process")
     print(f"Original Payload: {payload}\n")
-    print(f"Max Iterations: 3")
-    print(f"Quality Threshold: 0.75\n")
+    print("Max Iterations: 3")
+    print("Quality Threshold: 0.75\n")
 
     result = await refiner.refine(payload)
 
@@ -301,7 +302,7 @@ async def demo_6_scratchpad_integration():
 
     # Scratchpad summary
     summary = scratchpad.summarize()
-    print(f"\nScratchpad Summary:")
+    print("\nScratchpad Summary:")
     summary_data = [
         ["Total Attacks", summary['total_attacks']],
         ["Successful", summary['successful']],
@@ -336,7 +337,7 @@ async def demo_7_statistics_tracking():
     # Statistics
     stats = refiner.get_refinement_stats()
 
-    print(f"\nRefinement Statistics:")
+    print("\nRefinement Statistics:")
     stats_data = [
         ["Total Refinements", stats['total_refinements']],
         ["Avg Improvement", f"{stats['avg_improvement']:+.1%}"],
@@ -351,7 +352,7 @@ async def demo_7_statistics_tracking():
 
     # Strategy-specific stats
     strategy_stats = refiner.get_strategy_stats()
-    print(f"\nStrategy-Specific Statistics:")
+    print("\nStrategy-Specific Statistics:")
 
     strategy_data = [
         [

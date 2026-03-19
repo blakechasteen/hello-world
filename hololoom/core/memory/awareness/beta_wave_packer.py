@@ -12,9 +12,10 @@ Core Principle: "Activation IS Importance"
 Just trust the springs.
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any
 import time
+from dataclasses import dataclass, field
+from typing import Any
+
 import numpy as np
 
 
@@ -38,7 +39,7 @@ class ContextElement:
     activation: float  # Direct from beta wave spreading (0.0-1.0)
     token_count: int
     source: str  # "query", "memory", "creative_insight", "awareness"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def importance(self) -> float:
@@ -64,7 +65,7 @@ class PackedContext:
     max_activation: float
 
     packing_time_ms: float
-    activation_stats: Dict[str, Any]
+    activation_stats: dict[str, Any]
 
     def format_for_llm(self, include_metadata: bool = False) -> str:
         """Format packed context for LLM prompt"""
@@ -130,7 +131,7 @@ class BetaWaveContextPacker:
     def __init__(
         self,
         spring_engine,  # SpringDynamicsEngine instance
-        token_budget: Optional[TokenBudget] = None,
+        token_budget: TokenBudget | None = None,
         activation_threshold: float = 0.3,  # Exclude below this
         compression_threshold: float = 0.7  # Compress below this
     ):
@@ -294,7 +295,7 @@ class BetaWaveContextPacker:
             activation_stats=activation_stats
         )
 
-    def _create_awareness_elements(self, awareness_context) -> List[ContextElement]:
+    def _create_awareness_elements(self, awareness_context) -> list[ContextElement]:
         """Create awareness elements with moderate activation"""
         elements = []
 
@@ -342,7 +343,7 @@ class BetaWaveContextPacker:
         """Rough token estimation (4 chars per token)"""
         return len(text) // 4
 
-    def _activation_distribution(self, activations: List[float]) -> Dict[str, int]:
+    def _activation_distribution(self, activations: list[float]) -> dict[str, int]:
         """Calculate activation distribution for analysis"""
         if not activations:
             return {}
@@ -353,7 +354,7 @@ class BetaWaveContextPacker:
             'low (<0.3)': sum(1 for a in activations if a < 0.3)
         }
 
-    def _assemble_sections(self, elements: List[ContextElement]) -> Dict[str, str]:
+    def _assemble_sections(self, elements: list[ContextElement]) -> dict[str, str]:
         """Assemble elements into formatted sections"""
         sections = {
             'query': [],

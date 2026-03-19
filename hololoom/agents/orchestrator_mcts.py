@@ -10,18 +10,17 @@ Agent powered by MCTS at EVERY decision point:
 Philosophy: "Monte Carlo all the way down"
 """
 
-from typing import Optional, Dict, List
-from pathlib import Path
 import time
+from pathlib import Path
 
-from hololoom.agents.orchestrator import AgentOrchestrator
-from hololoom.agents.working_memory_mcts import MCTSWorkingMemory
 from hololoom.agents.learner_mcts import MCTSLearner
+from hololoom.agents.orchestrator import AgentOrchestrator
 from hololoom.agents.types import AgentProfile, AgentStats
+from hololoom.agents.working_memory_mcts import MCTSWorkingMemory
+from hololoom.config import Config
+from hololoom.fabric.spacetime import Spacetime
 from hololoom.memory.graph import KG
 from hololoom.protocols.types import Query
-from hololoom.fabric.spacetime import Spacetime
-from hololoom.config import Config
 
 
 class MCTSAgentOrchestrator(AgentOrchestrator):
@@ -40,14 +39,14 @@ class MCTSAgentOrchestrator(AgentOrchestrator):
         profile: AgentProfile,
         shared_knowledge: KG,
         embedding_model,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         persist_dir: Path = Path('./agents_memory'),
         # MCTS configuration
         mcts_working_memory: bool = True,
         mcts_pattern_validation: bool = True,
         mcts_wm_simulations: int = 100,
         mcts_pattern_simulations: int = 50,
-        mcts_time_budget: Optional[float] = None
+        mcts_time_budget: float | None = None
     ):
         # Initialize base orchestrator (but override components)
         self.profile = profile
@@ -94,7 +93,7 @@ class MCTSAgentOrchestrator(AgentOrchestrator):
         self.stats = AgentStats()
 
         # Weaving orchestrator (set externally if needed)
-        self.weaving_orchestrator: Optional['WeavingOrchestrator'] = None
+        self.weaving_orchestrator: WeavingOrchestrator | None = None
 
         # MCTS configuration flags
         self.use_mcts_wm = mcts_working_memory
@@ -232,7 +231,7 @@ class MCTSAgentOrchestrator(AgentOrchestrator):
 
         return spacetime
 
-    def get_mcts_statistics(self) -> Dict:
+    def get_mcts_statistics(self) -> dict:
         """Get comprehensive MCTS statistics"""
         stats = {
             'working_memory': {},
@@ -253,9 +252,10 @@ class MCTSAgentOrchestrator(AgentOrchestrator):
 
         return stats
 
-    def _simple_response(self, query: Query, context: List):
+    def _simple_response(self, query: Query, context: list):
         """Simple baseline response (inherited from parent)"""
         from datetime import datetime
+
         from hololoom.fabric.spacetime import WeavingTrace
 
         # Concatenate top context
@@ -292,7 +292,7 @@ def create_mcts_agent(
     profile_name: str,
     shared_knowledge: KG,
     embedding_model,
-    config: Optional[Config] = None,
+    config: Config | None = None,
     persist_dir: Path = Path('./agents_memory'),
     mcts_working_memory: bool = True,
     mcts_pattern_validation: bool = True,

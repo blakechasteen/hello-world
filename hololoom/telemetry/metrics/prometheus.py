@@ -10,11 +10,10 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from threading import Lock
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
-from hololoom.telemetry.protocol import MetricsProtocol, MetricType, HistogramBuckets
 from hololoom.telemetry.config import MetricsConfig
-
+from hololoom.telemetry.protocol import MetricsProtocol
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  BASE METRIC
@@ -28,15 +27,15 @@ class Metric(ABC):
         self,
         name: str,
         description: str = "",
-        labels: Optional[List[str]] = None,
+        labels: list[str] | None = None,
     ):
         self.name = name
         self.description = description
         self.label_names = labels or []
         self._lock = Lock()
-        self._values: Dict[Tuple[str, ...], Any] = {}
+        self._values: dict[tuple[str, ...], Any] = {}
 
-    def _validate_labels(self, labels: Dict[str, str]) -> Tuple[str, ...]:
+    def _validate_labels(self, labels: dict[str, str]) -> tuple[str, ...]:
         """Validate and convert labels to tuple."""
         if set(labels.keys()) != set(self.label_names):
             expected = set(self.label_names)
@@ -46,7 +45,7 @@ class Metric(ABC):
             )
         return tuple(labels.get(k, "") for k in self.label_names)
 
-    def _get_label_str(self, label_values: Tuple[str, ...]) -> str:
+    def _get_label_str(self, label_values: tuple[str, ...]) -> str:
         """Convert label values to Prometheus format."""
         if not label_values:
             return ""
@@ -54,7 +53,7 @@ class Metric(ABC):
         return "{" + ",".join(pairs) + "}"
 
     @abstractmethod
-    def collect(self) -> List[str]:
+    def collect(self) -> list[str]:
         """Collect metric lines in Prometheus format."""
         ...
 
@@ -67,7 +66,7 @@ class Metric(ABC):
 class Counter(Metric):
     """Monotonically increasing counter."""
 
-    def inc(self, value: float = 1.0, labels: Optional[Dict[str, str]] = None) -> None:
+    def inc(self, value: float = 1.0, labels: dict[str, str] | None = None) -> None:
         """Increment the counter."""
         if value < 0:
             raise ValueError("Counter can only be incremented")
@@ -76,13 +75,13 @@ class Counter(Metric):
             current = self._values.get(label_key, 0.0)
             self._values[label_key] = current + value
 
-    def get(self, labels: Optional[Dict[str, str]] = None) -> float:
+    def get(self, labels: dict[str, str] | None = None) -> float:
         """Get current counter value."""
         label_key = self._validate_labels(labels or {}) if labels else ()
         with self._lock:
             return self._values.get(label_key, 0.0)
 
-    def collect(self) -> List[str]:
+    def collect(self) -> list[str]:
         """Collect in Prometheus format."""
         lines = []
         lines.append(f"# HELP {self.name} {self.description}")
@@ -102,33 +101,33 @@ class Counter(Metric):
 class Gauge(Metric):
     """Value that can go up and down."""
 
-    def set(self, value: float, labels: Optional[Dict[str, str]] = None) -> None:
+    def set(self, value: float, labels: dict[str, str] | None = None) -> None:
         """Set the gauge value."""
         label_key = self._validate_labels(labels or {}) if labels else ()
         with self._lock:
             self._values[label_key] = value
 
-    def inc(self, value: float = 1.0, labels: Optional[Dict[str, str]] = None) -> None:
+    def inc(self, value: float = 1.0, labels: dict[str, str] | None = None) -> None:
         """Increment the gauge."""
         label_key = self._validate_labels(labels or {}) if labels else ()
         with self._lock:
             current = self._values.get(label_key, 0.0)
             self._values[label_key] = current + value
 
-    def dec(self, value: float = 1.0, labels: Optional[Dict[str, str]] = None) -> None:
+    def dec(self, value: float = 1.0, labels: dict[str, str] | None = None) -> None:
         """Decrement the gauge."""
         label_key = self._validate_labels(labels or {}) if labels else ()
         with self._lock:
             current = self._values.get(label_key, 0.0)
             self._values[label_key] = current - value
 
-    def get(self, labels: Optional[Dict[str, str]] = None) -> float:
+    def get(self, labels: dict[str, str] | None = None) -> float:
         """Get current gauge value."""
         label_key = self._validate_labels(labels or {}) if labels else ()
         with self._lock:
             return self._values.get(label_key, 0.0)
 
-    def collect(self) -> List[str]:
+    def collect(self) -> list[str]:
         """Collect in Prometheus format."""
         lines = []
         lines.append(f"# HELP {self.name} {self.description}")
@@ -149,7 +148,7 @@ class Gauge(Metric):
 class HistogramData:
     """Data for a single histogram."""
 
-    buckets: List[Tuple[float, int]] = field(default_factory=list)
+    buckets: list[tuple[float, int]] = field(default_factory=list)
     sum_value: float = 0.0
     count: int = 0
 
@@ -161,17 +160,17 @@ class Histogram(Metric):
         self,
         name: str,
         description: str = "",
-        labels: Optional[List[str]] = None,
-        buckets: Optional[List[float]] = None,
+        labels: list[str] | None = None,
+        buckets: list[float] | None = None,
     ):
         super().__init__(name, description, labels)
         self.bucket_boundaries = buckets or [
             0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0
         ]
-        self._histograms: Dict[Tuple[str, ...], HistogramData] = {}
+        self._histograms: dict[tuple[str, ...], HistogramData] = {}
 
     def observe(
-        self, value: float, labels: Optional[Dict[str, str]] = None
+        self, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Observe a value."""
         label_key = self._validate_labels(labels or {}) if labels else ()
@@ -191,11 +190,11 @@ class Histogram(Metric):
                 new_buckets.append((boundary, count))
             hist.buckets = new_buckets
 
-    def time(self, labels: Optional[Dict[str, str]] = None):
+    def time(self, labels: dict[str, str] | None = None):
         """Context manager to time a block of code."""
         return _HistogramTimer(self, labels)
 
-    def collect(self) -> List[str]:
+    def collect(self) -> list[str]:
         """Collect in Prometheus format."""
         lines = []
         lines.append(f"# HELP {self.name} {self.description}")
@@ -236,7 +235,7 @@ class Histogram(Metric):
 class _HistogramTimer:
     """Timer context manager for histograms."""
 
-    def __init__(self, histogram: Histogram, labels: Optional[Dict[str, str]]):
+    def __init__(self, histogram: Histogram, labels: dict[str, str] | None):
         self.histogram = histogram
         self.labels = labels
         self.start_time: float = 0
@@ -259,7 +258,7 @@ class _HistogramTimer:
 class SummaryData:
     """Data for a single summary."""
 
-    observations: List[float] = field(default_factory=list)
+    observations: list[float] = field(default_factory=list)
     sum_value: float = 0.0
     count: int = 0
     max_age_seconds: float = 600.0  # 10 minutes
@@ -272,17 +271,17 @@ class Summary(Metric):
         self,
         name: str,
         description: str = "",
-        labels: Optional[List[str]] = None,
-        quantiles: Optional[List[float]] = None,
+        labels: list[str] | None = None,
+        quantiles: list[float] | None = None,
         max_observations: int = 1000,
     ):
         super().__init__(name, description, labels)
         self.quantiles = quantiles or [0.5, 0.9, 0.99]
         self.max_observations = max_observations
-        self._summaries: Dict[Tuple[str, ...], SummaryData] = {}
+        self._summaries: dict[tuple[str, ...], SummaryData] = {}
 
     def observe(
-        self, value: float, labels: Optional[Dict[str, str]] = None
+        self, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Observe a value."""
         label_key = self._validate_labels(labels or {}) if labels else ()
@@ -297,7 +296,7 @@ class Summary(Metric):
             if len(summ.observations) > self.max_observations:
                 summ.observations = summ.observations[-self.max_observations:]
 
-    def collect(self) -> List[str]:
+    def collect(self) -> list[str]:
         """Collect in Prometheus format."""
         lines = []
         lines.append(f"# HELP {self.name} {self.description}")
@@ -336,9 +335,9 @@ class Summary(Metric):
 class PrometheusRegistry(MetricsProtocol):
     """Registry for all metrics."""
 
-    def __init__(self, config: Optional[MetricsConfig] = None):
+    def __init__(self, config: MetricsConfig | None = None):
         self.config = config or MetricsConfig()
-        self._metrics: Dict[str, Metric] = {}
+        self._metrics: dict[str, Metric] = {}
         self._lock = Lock()
         self._prefix = self.config.prefix
 
@@ -360,7 +359,7 @@ class PrometheusRegistry(MetricsProtocol):
         self,
         name: str,
         description: str = "",
-        labels: Optional[List[str]] = None,
+        labels: list[str] | None = None,
     ) -> Counter:
         """Get or create a counter."""
         full_name = self._full_name(name)
@@ -378,7 +377,7 @@ class PrometheusRegistry(MetricsProtocol):
         self,
         name: str,
         description: str = "",
-        labels: Optional[List[str]] = None,
+        labels: list[str] | None = None,
     ) -> Gauge:
         """Get or create a gauge."""
         full_name = self._full_name(name)
@@ -396,8 +395,8 @@ class PrometheusRegistry(MetricsProtocol):
         self,
         name: str,
         description: str = "",
-        labels: Optional[List[str]] = None,
-        buckets: Optional[List[float]] = None,
+        labels: list[str] | None = None,
+        buckets: list[float] | None = None,
     ) -> Histogram:
         """Get or create a histogram."""
         full_name = self._full_name(name)
@@ -415,8 +414,8 @@ class PrometheusRegistry(MetricsProtocol):
         self,
         name: str,
         description: str = "",
-        labels: Optional[List[str]] = None,
-        quantiles: Optional[List[float]] = None,
+        labels: list[str] | None = None,
+        quantiles: list[float] | None = None,
     ) -> Summary:
         """Get or create a summary."""
         full_name = self._full_name(name)
@@ -436,7 +435,7 @@ class PrometheusRegistry(MetricsProtocol):
         self,
         name: str,
         value: float = 1.0,
-        labels: Optional[Dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
         description: str = "",
     ) -> None:
         """Increment a counter."""
@@ -448,7 +447,7 @@ class PrometheusRegistry(MetricsProtocol):
         self,
         name: str,
         value: float,
-        labels: Optional[Dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
         description: str = "",
     ) -> None:
         """Set a gauge value."""
@@ -460,8 +459,8 @@ class PrometheusRegistry(MetricsProtocol):
         self,
         name: str,
         value: float,
-        labels: Optional[Dict[str, str]] = None,
-        buckets: Optional[List[float]] = None,
+        labels: dict[str, str] | None = None,
+        buckets: list[float] | None = None,
         description: str = "",
     ) -> None:
         """Observe a histogram value."""
@@ -473,8 +472,8 @@ class PrometheusRegistry(MetricsProtocol):
         self,
         name: str,
         value: float,
-        labels: Optional[Dict[str, str]] = None,
-        quantiles: Optional[List[float]] = None,
+        labels: dict[str, str] | None = None,
+        quantiles: list[float] | None = None,
         description: str = "",
     ) -> None:
         """Observe a summary value."""
@@ -497,10 +496,10 @@ class PrometheusRegistry(MetricsProtocol):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-_global_registry: Optional[PrometheusRegistry] = None
+_global_registry: PrometheusRegistry | None = None
 
 
-def create_registry(config: Optional[MetricsConfig] = None) -> PrometheusRegistry:
+def create_registry(config: MetricsConfig | None = None) -> PrometheusRegistry:
     """Create and set the global registry."""
     global _global_registry
     _global_registry = PrometheusRegistry(config)
@@ -522,10 +521,10 @@ def get_registry() -> PrometheusRegistry:
 
 def counter(
     name: str,
-    value: Optional[float] = None,
-    labels: Optional[Any] = None,
+    value: float | None = None,
+    labels: Any | None = None,
     description: str = "",
-) -> Optional[Counter] | None:
+) -> Counter | None | None:
     """Increment a counter or get/create one if value is None."""
     registry = get_registry()
     if value is None:
@@ -536,10 +535,10 @@ def counter(
 
 def gauge(
     name: str,
-    value: Optional[float] = None,
-    labels: Optional[Any] = None,
+    value: float | None = None,
+    labels: Any | None = None,
     description: str = "",
-) -> Optional[Gauge] | None:
+) -> Gauge | None | None:
     """Set a gauge or get/create one if value is None."""
     registry = get_registry()
     if value is None:
@@ -550,11 +549,11 @@ def gauge(
 
 def histogram(
     name: str,
-    value: Optional[float] = None,
-    labels: Optional[Any] = None,
-    buckets: Optional[List[float]] = None,
+    value: float | None = None,
+    labels: Any | None = None,
+    buckets: list[float] | None = None,
     description: str = "",
-) -> Optional[Histogram] | None:
+) -> Histogram | None | None:
     """Observe a histogram value or get/create one if value is None."""
     registry = get_registry()
     if value is None:
@@ -565,11 +564,11 @@ def histogram(
 
 def summary(
     name: str,
-    value: Optional[float] = None,
-    labels: Optional[Any] = None,
-    quantiles: Optional[List[float]] = None,
+    value: float | None = None,
+    labels: Any | None = None,
+    quantiles: list[float] | None = None,
     description: str = "",
-) -> Optional[Summary] | None:
+) -> Summary | None | None:
     """Observe a summary value or get/create one if value is None."""
     registry = get_registry()
     if value is None:

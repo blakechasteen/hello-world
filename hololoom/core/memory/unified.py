@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Unified Memory Interface - Elegant API for All Memory Systems
 ==============================================================
@@ -13,11 +14,12 @@ Users shouldn't need to understand the internal systems.
 They should think about their INTENT, not the MECHANISM.
 """
 
-from typing import List, Dict, Optional, Any
+import logging
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+
 import networkx as nx
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +34,9 @@ class Memory:
     id: str
     text: str
     timestamp: str
-    context: Dict[str, Any]  # time, place, people, topics
+    context: dict[str, Any]  # time, place, people, topics
     relevance: float = 0.0  # How relevant to current query
-    tags: Optional[List[str]] = None  # Optional categorical tags
+    tags: list[str] | None = None  # Optional categorical tags
 
 
 class RecallStrategy(Enum):
@@ -58,7 +60,7 @@ class NavigationDirection(Enum):
 class MemoryPattern:
     """Discovered pattern in memories."""
     pattern_type: str  # "loop", "cluster", "resonance", "thread"
-    memories: List[str]  # Memory IDs involved
+    memories: list[str]  # Memory IDs involved
     strength: float  # Pattern strength [0, 1]
     description: str  # Human-readable explanation
 
@@ -95,7 +97,7 @@ class UnifiedMemory:
         # Discover
         patterns = memory.discover_patterns()
     """
-    
+
     def __init__(
         self,
         user_id: str = "default",
@@ -103,7 +105,7 @@ class UnifiedMemory:
         enable_neo4j: bool = True,
         enable_qdrant: bool = True,
         enable_hofstadter: bool = True,
-        backend: Optional[Any] = None,
+        backend: Any | None = None,
         enable_conductor: bool = True
     ):
         """
@@ -124,7 +126,9 @@ class UnifiedMemory:
 
             # Import protocol types needed for operation
             try:
-                from .protocol import Memory as ProtocolMemory, MemoryQuery, Strategy as ProtocolStrategy
+                from .protocol import Memory as ProtocolMemory
+                from .protocol import MemoryQuery
+                from .protocol import Strategy as ProtocolStrategy
                 self._protocol_memory = ProtocolMemory
                 self._protocol_query = MemoryQuery
                 self._protocol_strategy = ProtocolStrategy
@@ -146,7 +150,8 @@ class UnifiedMemory:
         self._conductor_available = False
         if enable_conductor and self._backend_available and self._backend:
             try:
-                from ..memory_symphony import MemoryConductor, MemoryStrategy as MS
+                from hololoom.memory_symphony import MemoryConductor
+                from hololoom.memory_symphony import MemoryStrategy as MS
                 self._conductor = MemoryConductor(
                     memory_backend=self._backend,
                     enable_cache=True,
@@ -196,14 +201,16 @@ class UnifiedMemory:
         except (ImportError, Exception) as e:
             # Graceful fallback - awareness optional
             logger.warning(f"UnifiedMemory: AwarenessGraph initialization failed: {e}")
-    
+
     def _init_subsystems(self, *flags):
         """Initialize backend systems (internal)."""
         # v1.0.1: Use simple in-memory store
         # v1.1+: Add hybrid Neo4j + Qdrant support
         try:
+            from .protocol import Memory as ProtocolMemory
+            from .protocol import MemoryQuery
+            from .protocol import Strategy as ProtocolStrategy
             from .stores.in_memory_store import InMemoryStore
-            from .protocol import Memory as ProtocolMemory, MemoryQuery, Strategy as ProtocolStrategy
             self._backend = InMemoryStore()
             self._backend_available = True
             self._protocol_memory = ProtocolMemory
@@ -213,17 +220,17 @@ class UnifiedMemory:
             # Fallback if imports fail
             self._backend = None
             self._backend_available = False
-    
+
     # ========================================================================
     # Core Operations - Intuitive and Simple
     # ========================================================================
-    
+
     async def store(
         self,
         text: str = None, # Allow content to be passed as text or content
-        context: Optional[Dict[str, str]] = None,
+        context: dict[str, str] | None = None,
         importance: float = 0.5,
-        metadata: Optional[Dict[str, Any]] = None, # Add metadata argument
+        metadata: dict[str, Any] | None = None, # Add metadata argument
         content: str = None # Add content alias for text
     ) -> str:
         """
@@ -293,7 +300,7 @@ class UnifiedMemory:
         if self._backend_available and self._backend:
             # Split user metadata from context
             user_context = context or {}
-            
+
             # Merge explicit metadata
             user_metadata = {
                 'user_id': self.user_id,
@@ -312,13 +319,13 @@ class UnifiedMemory:
             # Run async store
             try:
                 await self._backend.store(protocol_mem)
-            except Exception as e:
+            except Exception:
                 # Graceful fallback
                 pass
 
         return memory_id
 
-    async def store_batch(self, memories: List[Any]) -> List[str]:
+    async def store_batch(self, memories: list[Any]) -> list[str]:
         """Store multiple memories (Async)."""
         ids = []
         for memory in memories:
@@ -327,16 +334,16 @@ class UnifiedMemory:
             memo_id = await self.store(text=text, metadata=metadata)
             ids.append(memo_id)
         return ids
-    
+
     async def recall(
         self,
         query: str,
         strategy: RecallStrategy = RecallStrategy.BALANCED,
         limit: int = 5,
-        time_range: Optional[tuple] = None,
-        context_filter: Optional[Dict] = None,
+        time_range: tuple | None = None,
+        context_filter: dict | None = None,
         min_relevance: float = 0.0
-    ) -> List[Memory]:
+    ) -> list[Memory]:
         """
         Recall relevant memories (Async).
 
@@ -413,9 +420,8 @@ class UnifiedMemory:
 
         # Secondary path: Route through Memory Conductor if available
         if self._conductor_available and self._conductor:
-            import asyncio
             try:
-                from ..memory_symphony import MemoryQuery
+                from hololoom.memory_symphony import MemoryQuery
 
                 # Map user-facing RecallStrategy to MemoryStrategy
                 mem_strategy = self._map_strategy(strategy)
@@ -459,15 +465,15 @@ class UnifiedMemory:
         # Apply relevance filter for fallback paths if min_relevance > 0
         if min_relevance > 0:
             results = [m for m in results if getattr(m, 'relevance', 0.0) >= min_relevance]
-            
+
         return results
-    
+
     def navigate(
         self,
         from_memory: str,
         direction: NavigationDirection,
         steps: int = 5
-    ) -> List[Memory]:
+    ) -> list[Memory]:
         """
         Navigate memory space from a starting point.
         
@@ -521,12 +527,12 @@ class UnifiedMemory:
             return self._navigate_deep(from_memory, steps, graph)
 
         return []
-    
+
     def discover_patterns(
         self,
-        pattern_types: Optional[List[str]] = None,
+        pattern_types: list[str] | None = None,
         min_strength: float = 0.5
-    ) -> List[MemoryPattern]:
+    ) -> list[MemoryPattern]:
         """
         Discover emergent patterns in your memories.
         
@@ -551,46 +557,46 @@ class UnifiedMemory:
                 print(f"  Memories: {pattern.memories}")
         """
         patterns = []
-        
+
         # Strange loops (Hofstadter)
         if pattern_types is None or "loop" in pattern_types:
             loops = self._find_strange_loops(min_strength)
             patterns.extend(loops)
-        
+
         # Memory clusters (spectral)
         if pattern_types is None or "cluster" in pattern_types:
             clusters = self._find_clusters(min_strength)
             patterns.extend(clusters)
-        
+
         # Resonances (Hofstadter)
         if pattern_types is None or "resonance" in pattern_types:
             resonances = self._find_resonances(min_strength)
             patterns.extend(resonances)
-        
+
         # Narrative threads (Neo4j)
         if pattern_types is None or "thread" in pattern_types:
             threads = self._find_threads(min_strength)
             patterns.extend(threads)
-        
+
         return sorted(patterns, key=lambda p: p.strength, reverse=True)
-    
+
     # ========================================================================
     # Convenience Methods - Common Queries
     # ========================================================================
-    
-    def what_happened_today(self) -> List[Memory]:
+
+    def what_happened_today(self) -> list[Memory]:
         """Shortcut: Recall today's memories."""
         from datetime import datetime, timedelta
         today_start = datetime.now().replace(hour=0, minute=0)
         today_end = today_start + timedelta(days=1)
-        
+
         return self.recall(
             query="",  # No text filter, just time
             strategy=RecallStrategy.RECENT,
             time_range=(today_start.isoformat(), today_end.isoformat())
         )
-    
-    def similar_to(self, memory_id: str, limit: int = 5) -> List[Memory]:
+
+    def similar_to(self, memory_id: str, limit: int = 5) -> list[Memory]:
         """Shortcut: Find memories similar to this one."""
         # Get the memory's text
         memory = self._get_memory_by_id(memory_id)
@@ -599,8 +605,8 @@ class UnifiedMemory:
             strategy=RecallStrategy.SIMILAR,
             limit=limit
         )
-    
-    def explore_from(self, memory_id: str) -> Dict[str, List[Memory]]:
+
+    def explore_from(self, memory_id: str) -> dict[str, list[Memory]]:
         """
         Shortcut: Explore in all directions from a memory.
         
@@ -611,7 +617,7 @@ class UnifiedMemory:
             'backward': self.navigate(memory_id, NavigationDirection.BACKWARD, steps=3),
             'sideways': self.navigate(memory_id, NavigationDirection.SIDEWAYS, steps=3),
         }
-    
+
     # ========================================================================
     # Conductor Integration Helpers
     # ========================================================================
@@ -628,7 +634,7 @@ class UnifiedMemory:
         - BALANCED → AUTO (let conductor decide)
         """
         try:
-            from ..memory_symphony import MemoryStrategy as MS
+            from hololoom.memory_symphony import MemoryStrategy as MS
         except ImportError:
             return None
 
@@ -642,7 +648,7 @@ class UnifiedMemory:
 
         return mapping.get(recall_strategy, MS.AUTO)
 
-    async def _convert_results(self, coordination_result) -> List[Memory]:
+    async def _convert_results(self, coordination_result) -> list[Memory]:
         """
         Convert MemoryCoordinationResult → List[Memory].
 
@@ -677,7 +683,7 @@ class UnifiedMemory:
     # Temporal Queries (Priority #5)
     # ========================================================================
 
-    def time_travel(self, timestamp: str) -> Dict[str, Any]:
+    def time_travel(self, timestamp: str) -> dict[str, Any]:
         """
         Time-travel: View memory state at a specific point in time.
 
@@ -781,7 +787,7 @@ class UnifiedMemory:
         start_time: str,
         end_time: str,
         limit: int = 20
-    ) -> List[Memory]:
+    ) -> list[Memory]:
         """
         Query memories within a specific time range.
 
@@ -852,7 +858,7 @@ class UnifiedMemory:
         self,
         min_occurrences: int = 2,
         time_window_days: int = 7
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Detect temporal patterns in memories (recurring themes over time).
 
@@ -880,8 +886,8 @@ class UnifiedMemory:
             for pattern in patterns:
                 print(f"{pattern['pattern_type']}: {pattern['description']}")
         """
-        from datetime import datetime, timedelta
         from collections import defaultdict
+        from datetime import datetime, timedelta
 
         patterns = []
 
@@ -997,32 +1003,32 @@ class UnifiedMemory:
     # Internal Strategy Implementations (Hidden from User)
     # ========================================================================
 
-    async def _recall_temporal(self, query, limit, time_range) -> List[Memory]:
+    async def _recall_temporal(self, query, limit, time_range) -> list[Memory]:
         """Temporal strategy: Neo4j time threads."""
         # v1.0.1: Use in-memory store with temporal sorting
         return await self._recall_from_backend(query, limit, strategy="temporal")
 
-    async def _recall_semantic(self, query, limit) -> List[Memory]:
+    async def _recall_semantic(self, query, limit) -> list[Memory]:
         """Semantic strategy: Qdrant similarity."""
         # v1.0.1: Use in-memory store with text matching
         return await self._recall_from_backend(query, limit, strategy="semantic")
 
-    async def _recall_graph(self, query, limit) -> List[Memory]:
+    async def _recall_graph(self, query, limit) -> list[Memory]:
         """Graph strategy: Neo4j traversal."""
         # v1.0.1: Use in-memory store (no graph yet)
         return await self._recall_from_backend(query, limit, strategy="graph")
 
-    async def _recall_resonant(self, query, limit) -> List[Memory]:
+    async def _recall_resonant(self, query, limit) -> list[Memory]:
         """Resonance strategy: Hofstadter patterns."""
         # v1.0.1: Use in-memory store (no resonance yet)
         return await self._recall_from_backend(query, limit, strategy="resonant")
 
-    async def _recall_fused(self, query, limit, filters) -> List[Memory]:
+    async def _recall_fused(self, query, limit, filters) -> list[Memory]:
         """Balanced strategy: Weighted fusion of all."""
         # v1.0.1: Use in-memory store with fused strategy
         return await self._recall_from_backend(query, limit, strategy="fused")
 
-    async def _recall_from_backend(self, query, limit, strategy="fused") -> List[Memory]:
+    async def _recall_from_backend(self, query, limit, strategy="fused") -> list[Memory]:
         """Actually retrieve from backend store."""
         if not self._backend_available or not self._backend:
             return []
@@ -1054,7 +1060,7 @@ class UnifiedMemory:
                 merged_context = {**mem.context, **mem.metadata}
                 # Use actual score if available
                 score = result.scores[i] if i < len(result.scores) else 0.8
-                
+
                 unified_mems.append(Memory(
                     id=mem.id,
                     text=mem.text,
@@ -1066,11 +1072,11 @@ class UnifiedMemory:
             logger.info(f"Retrieved {len(unified_mems)} memories from backend using {strategy} strategy")
             return unified_mems
 
-        except Exception as e:
+        except Exception:
             # Graceful fallback
             return []
 
-    def _navigate_forward(self, start_node: str, steps: int, graph) -> List[Memory]:
+    def _navigate_forward(self, start_node: str, steps: int, graph) -> list[Memory]:
         """Navigate forward following successors (what comes next)."""
         from datetime import datetime
 
@@ -1104,7 +1110,7 @@ class UnifiedMemory:
 
         return path
 
-    def _navigate_backward(self, start_node: str, steps: int, graph) -> List[Memory]:
+    def _navigate_backward(self, start_node: str, steps: int, graph) -> list[Memory]:
         """Navigate backward following predecessors (what led to this)."""
         from datetime import datetime
 
@@ -1138,7 +1144,7 @@ class UnifiedMemory:
 
         return path
 
-    def _navigate_sideways(self, start_node: str, steps: int, graph) -> List[Memory]:
+    def _navigate_sideways(self, start_node: str, steps: int, graph) -> list[Memory]:
         """Navigate sideways to related but different nodes (siblings)."""
         from datetime import datetime
 
@@ -1175,10 +1181,11 @@ class UnifiedMemory:
 
         return path
 
-    def _navigate_deep(self, start_node: str, steps: int, graph) -> List[Memory]:
+    def _navigate_deep(self, start_node: str, steps: int, graph) -> list[Memory]:
         """Navigate deep - explore cycles and strange loops from this node."""
-        import networkx as nx
         from datetime import datetime
+
+        import networkx as nx
 
         path = []
 
@@ -1239,7 +1246,7 @@ class UnifiedMemory:
 
         return path
 
-    def _find_strange_loops(self, min_strength) -> List[MemoryPattern]:
+    def _find_strange_loops(self, min_strength) -> list[MemoryPattern]:
         """Detect strange loops using cycle detection."""
         if not self._backend_available or not self._backend:
             return []
@@ -1297,7 +1304,7 @@ class UnifiedMemory:
 
         return patterns
 
-    def _find_clusters(self, min_strength) -> List[MemoryPattern]:
+    def _find_clusters(self, min_strength) -> list[MemoryPattern]:
         """Detect clusters using community detection."""
         if not self._backend_available or not self._backend:
             return []
@@ -1358,7 +1365,7 @@ class UnifiedMemory:
 
         return patterns
 
-    def _find_resonances(self, min_strength) -> List[MemoryPattern]:
+    def _find_resonances(self, min_strength) -> list[MemoryPattern]:
         """Detect resonances using activation patterns."""
         if not self._backend_available or not self._backend:
             return []
@@ -1398,7 +1405,7 @@ class UnifiedMemory:
 
         return []
 
-    def _find_threads(self, min_strength) -> List[MemoryPattern]:
+    def _find_threads(self, min_strength) -> list[MemoryPattern]:
         """Detect narrative threads using temporal/causal edges."""
         if not self._backend_available or not self._backend:
             return []
@@ -1491,7 +1498,7 @@ class UnifiedMemory:
     # Production Health Checks (Priority #3)
     # ========================================================================
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """
         Comprehensive health check for production deployments.
 
@@ -1516,8 +1523,8 @@ class UnifiedMemory:
                     "errors": List[str]  # Any non-critical issues
                 }
         """
-        from datetime import datetime
         import time
+        from datetime import datetime
 
         health = {
             "status": "healthy",
@@ -1607,10 +1614,10 @@ class UnifiedMemory:
 
 if __name__ == "__main__":
     print("=== Unified Memory Interface Demo ===\n")
-    
+
     # Simple initialization
     memory = UnifiedMemory(user_id="blake")
-    
+
     # Store memories naturally
     print("Storing memories...")
     mem1 = memory.store(
@@ -1619,28 +1626,28 @@ if __name__ == "__main__":
         importance=0.8
     )
     print(f"  Stored: {mem1}")
-    
+
     # Recall with different strategies
     print("\nRecalling similar memories...")
     similar = memory.recall("hive inspection", strategy=RecallStrategy.SIMILAR)
     for mem in similar:
         print(f"  [{mem.relevance:.2f}] {mem.text}")
-    
+
     # Navigate memory space
     print("\nNavigating forward...")
     forward = memory.navigate(mem1, direction=NavigationDirection.FORWARD)
     print(f"  Path: {' → '.join(m.text[:30] for m in forward)}")
-    
+
     # Discover patterns
     print("\nDiscovering patterns...")
     patterns = memory.discover_patterns()
     for pattern in patterns[:3]:
         print(f"  {pattern.pattern_type}: {pattern.description}")
         print(f"    Strength: {pattern.strength:.2f}")
-    
+
     # Convenience methods
     print("\nWhat happened today?")
     today = memory.what_happened_today()
     print(f"  Found {len(today)} memories from today")
-    
+
     print("\n[OK] Demo complete!")

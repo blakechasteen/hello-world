@@ -33,21 +33,20 @@ Date: 2025-12-01 (Jenny MVP Week 1)
 
 import logging
 import re
-from typing import List, Dict, Any, Optional, AsyncIterator
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
-from datetime import datetime
+from typing import Any
+
+from hololoom.protocols.jenny import CompilationStrategy
 
 from .jenny_spec import (
     JennySpec,
-    PanelTypeJenny,
-    PanelSizeJenny,
-    LifecycleStage,
-    BindingMode,
     LayoutHint,
-    create_action,
+    LifecycleStage,
+    PanelSizeJenny,
+    PanelTypeJenny,
     get_default_actions,
 )
-from hololoom.protocols.jenny import CompilationStrategy, RenderTarget
 
 # Try to import Spacetime
 try:
@@ -76,7 +75,7 @@ class QueryAnalysis:
     has_errors: bool
     has_metrics: bool
     confidence_level: str  # low, medium, high
-    keywords: List[str] = field(default_factory=list)
+    keywords: list[str] = field(default_factory=list)
 
 
 def analyze_query(spacetime: Spacetime) -> QueryAnalysis:
@@ -172,7 +171,7 @@ class PanelGenerator(ABC):
         spacetime: Spacetime,
         priority: int = None,
         **kwargs
-    ) -> Optional[JennySpec]:
+    ) -> JennySpec | None:
         """
         Generate a JennySpec panel from spacetime.
 
@@ -199,7 +198,7 @@ class PanelGenerator(ABC):
         """Generate consistent spacetime_id."""
         return f"st_{id(spacetime)}"
 
-    def _get_priority(self, priority: Optional[int]) -> int:
+    def _get_priority(self, priority: int | None) -> int:
         """Get priority, using default if not specified."""
         return priority if priority is not None else self.default_priority
 
@@ -282,7 +281,7 @@ class SourcesPanelGenerator(PanelGenerator):
         spacetime: Spacetime,
         priority: int = None,
         **kwargs
-    ) -> Optional[JennySpec]:
+    ) -> JennySpec | None:
         if not spacetime.sources_used:
             return None
         return JennySpec(
@@ -317,7 +316,7 @@ class GraphPanelGenerator(PanelGenerator):
         spacetime: Spacetime,
         priority: int = None,
         **kwargs
-    ) -> Optional[JennySpec]:
+    ) -> JennySpec | None:
         trace = spacetime.trace
         if not trace or len(trace.threads_activated) < 2:
             return None
@@ -358,7 +357,7 @@ class TimelinePanelGenerator(PanelGenerator):
         spacetime: Spacetime,
         priority: int = None,
         **kwargs
-    ) -> Optional[JennySpec]:
+    ) -> JennySpec | None:
         trace = spacetime.trace
         if not trace or not trace.stage_durations:
             return None
@@ -422,9 +421,9 @@ class ReasoningPanelGenerator(PanelGenerator):
         self,
         spacetime: Spacetime,
         priority: int = None,
-        verification_results: Optional[Dict[str, Any]] = None,
+        verification_results: dict[str, Any] | None = None,
         **kwargs
-    ) -> Optional[JennySpec]:
+    ) -> JennySpec | None:
         """
         Generate an enhanced step-by-step reasoning panel.
 
@@ -485,8 +484,8 @@ class ReasoningPanelGenerator(PanelGenerator):
         self,
         trace: Any,
         overall_confidence: float,
-        verification_results: Optional[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        verification_results: dict[str, Any] | None
+    ) -> list[dict[str, Any]]:
         """Build detailed reasoning steps with confidence and verification."""
         steps = []
 
@@ -584,7 +583,7 @@ class ReasoningPanelGenerator(PanelGenerator):
 
         return steps
 
-    def _build_flow_diagram(self, steps: List[Dict[str, Any]]) -> Dict[str, str]:
+    def _build_flow_diagram(self, steps: list[dict[str, Any]]) -> dict[str, str]:
         """Build flow diagram in multiple formats."""
         # Simple text flow (arrows)
         text_flow_parts = []
@@ -628,9 +627,9 @@ class ReasoningPanelGenerator(PanelGenerator):
 
     def _build_verification_summary(
         self,
-        steps: List[Dict[str, Any]],
-        verification_results: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        steps: list[dict[str, Any]],
+        verification_results: dict[str, Any] | None
+    ) -> dict[str, Any]:
         """Build verification summary across all steps."""
         verified_count = sum(1 for s in steps if s.get("verification", {}).get("passed", s["status"] == "complete"))
         pending_count = sum(1 for s in steps if s["status"] == "pending" or s["status"] == "in_progress")
@@ -649,8 +648,8 @@ class ReasoningPanelGenerator(PanelGenerator):
     def _get_step_verification(
         self,
         step_key: str,
-        verification_results: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        verification_results: dict[str, Any] | None
+    ) -> dict[str, Any]:
         """Get verification status for a specific step."""
         if not verification_results:
             return {"status": "not_checked", "checked": False, "passed": None}
@@ -797,12 +796,12 @@ class ComparisonPanelGenerator(PanelGenerator):
         self,
         spacetime: Spacetime,
         priority: int = None,
-        left: Optional[Dict[str, Any]] = None,
-        right: Optional[Dict[str, Any]] = None,
+        left: dict[str, Any] | None = None,
+        right: dict[str, Any] | None = None,
         diff_type: str = "side_by_side",
         category: str = "text",
         **kwargs
-    ) -> Optional[JennySpec]:
+    ) -> JennySpec | None:
         """
         Generate a side-by-side comparison panel.
 
@@ -916,10 +915,10 @@ class ComparisonPanelGenerator(PanelGenerator):
 
     def _calculate_changes(
         self,
-        left: Dict[str, Any],
-        right: Dict[str, Any],
+        left: dict[str, Any],
+        right: dict[str, Any],
         diff_type: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Calculate changes between left and right content."""
         left_content = left.get("content", "")
         right_content = right.get("content", "")
@@ -965,8 +964,8 @@ class ComparisonPanelGenerator(PanelGenerator):
 
     def _build_subtitle(
         self,
-        changes: Dict[str, Any],
-        category_config: Dict[str, Any]
+        changes: dict[str, Any],
+        category_config: dict[str, Any]
     ) -> str:
         """Build subtitle from changes summary."""
         similarity_pct = int(changes["similarity"] * 100)
@@ -1033,9 +1032,9 @@ class WhyPanelGenerator(PanelGenerator):
         self,
         spacetime: Spacetime,
         priority: int = None,
-        specs_generated: List[JennySpec] = None,
+        specs_generated: list[JennySpec] = None,
         analysis: QueryAnalysis = None,
-        thompson_stats: Optional[Dict[str, Any]] = None,
+        thompson_stats: dict[str, Any] | None = None,
         **kwargs
     ) -> JennySpec:
         """
@@ -1105,7 +1104,7 @@ class WhyPanelGenerator(PanelGenerator):
         query_type: str,
         complexity: str,
         confidence: float,
-        specs_generated: List[JennySpec]
+        specs_generated: list[JennySpec]
     ) -> str:
         """Build human-readable decision explanation."""
         panel_names = [s.panel_type.value.upper() for s in specs_generated if s.panel_type != PanelTypeJenny.WHY]
@@ -1135,8 +1134,8 @@ class WhyPanelGenerator(PanelGenerator):
     def _get_alternatives_considered(
         self,
         query_type: str,
-        specs_generated: List[JennySpec]
-    ) -> List[Dict[str, Any]]:
+        specs_generated: list[JennySpec]
+    ) -> list[dict[str, Any]]:
         """Get alternatives that were considered but not chosen."""
         generated_types = {s.panel_type.value.upper() for s in specs_generated}
 
@@ -1156,8 +1155,8 @@ class WhyPanelGenerator(PanelGenerator):
 
     def _build_customization_hints(
         self,
-        specs_generated: List[JennySpec]
-    ) -> Dict[str, str]:
+        specs_generated: list[JennySpec]
+    ) -> dict[str, str]:
         """Build customization hints for each generated panel."""
         hints = {}
         for spec in specs_generated:
@@ -1168,8 +1167,8 @@ class WhyPanelGenerator(PanelGenerator):
 
     def _build_learning_stats(
         self,
-        thompson_stats: Optional[Dict[str, Any]]
-    ) -> Optional[Dict[str, Any]]:
+        thompson_stats: dict[str, Any] | None
+    ) -> dict[str, Any] | None:
         """Build learning statistics from Thompson Sampling data."""
         if not thompson_stats:
             return None
@@ -1189,7 +1188,7 @@ class WhyPanelGenerator(PanelGenerator):
 # Panel Generator Registry
 # ============================================================================
 
-PANEL_GENERATORS: Dict[PanelTypeJenny, PanelGenerator] = {
+PANEL_GENERATORS: dict[PanelTypeJenny, PanelGenerator] = {
     PanelTypeJenny.TEXT: TextPanelGenerator(),
     PanelTypeJenny.CONFIDENCE: ConfidencePanelGenerator(),
     PanelTypeJenny.SOURCES: SourcesPanelGenerator(),
@@ -1202,7 +1201,7 @@ PANEL_GENERATORS: Dict[PanelTypeJenny, PanelGenerator] = {
 }
 
 
-def get_panel_generator(panel_type: PanelTypeJenny) -> Optional[PanelGenerator]:
+def get_panel_generator(panel_type: PanelTypeJenny) -> PanelGenerator | None:
     """Get the generator for a panel type."""
     return PANEL_GENERATORS.get(panel_type)
 
@@ -1212,7 +1211,7 @@ def generate_panel(
     spacetime: Spacetime,
     priority: int = None,
     **kwargs
-) -> Optional[JennySpec]:
+) -> JennySpec | None:
     """
     Generate a panel using the registered generator.
 
@@ -1257,7 +1256,7 @@ def generate_confidence_panel(
 def generate_sources_panel(
     spacetime: Spacetime,
     priority: int = 2,
-) -> Optional[JennySpec]:
+) -> JennySpec | None:
     """Generate a sources attribution panel."""
     return PANEL_GENERATORS[PanelTypeJenny.SOURCES].generate(spacetime, priority)
 
@@ -1265,7 +1264,7 @@ def generate_sources_panel(
 def generate_graph_panel(
     spacetime: Spacetime,
     priority: int = 3,
-) -> Optional[JennySpec]:
+) -> JennySpec | None:
     """Generate a knowledge graph panel showing activated threads."""
     return PANEL_GENERATORS[PanelTypeJenny.GRAPH].generate(spacetime, priority)
 
@@ -1273,7 +1272,7 @@ def generate_graph_panel(
 def generate_timeline_panel(
     spacetime: Spacetime,
     priority: int = 4,
-) -> Optional[JennySpec]:
+) -> JennySpec | None:
     """Generate a stage timeline panel showing execution phases."""
     return PANEL_GENERATORS[PanelTypeJenny.TIMELINE].generate(spacetime, priority)
 
@@ -1281,8 +1280,8 @@ def generate_timeline_panel(
 def generate_reasoning_panel(
     spacetime: Spacetime,
     priority: int = 5,
-    verification_results: Optional[Dict[str, Any]] = None,
-) -> Optional[JennySpec]:
+    verification_results: dict[str, Any] | None = None,
+) -> JennySpec | None:
     """
     Generate a step-by-step reasoning chain panel.
 
@@ -1331,10 +1330,10 @@ def generate_metric_panel(
 
 def generate_why_panel(
     spacetime: Spacetime,
-    specs_generated: List[JennySpec],
+    specs_generated: list[JennySpec],
     analysis: QueryAnalysis,
     priority: int = 99,
-    thompson_stats: Optional[Dict[str, Any]] = None,
+    thompson_stats: dict[str, Any] | None = None,
 ) -> JennySpec:
     """
     Generate a 'Why this UI?' meta-panel (SYSTEM stage to break infinite loop).
@@ -1366,11 +1365,11 @@ def generate_why_panel(
 def generate_comparison_panel(
     spacetime: Spacetime,
     priority: int = 3,
-    left: Optional[Dict[str, Any]] = None,
-    right: Optional[Dict[str, Any]] = None,
+    left: dict[str, Any] | None = None,
+    right: dict[str, Any] | None = None,
     diff_type: str = "side_by_side",
     category: str = "text",
-) -> Optional[JennySpec]:
+) -> JennySpec | None:
     """
     Generate a side-by-side comparison panel.
 
@@ -1459,8 +1458,8 @@ class JennyCompiler:
         self,
         spacetime: Spacetime,
         strategy: CompilationStrategy = None,
-        context: Optional[Dict[str, Any]] = None
-    ) -> List[JennySpec]:
+        context: dict[str, Any] | None = None
+    ) -> list[JennySpec]:
         """
         Compile Spacetime into UI specifications.
 
@@ -1549,7 +1548,7 @@ class JennyCompiler:
         self,
         spacetime: Spacetime,
         strategy: CompilationStrategy = None,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> AsyncIterator[JennySpec]:
         """
         Stream-compile Spacetime for progressive rendering.
@@ -1561,7 +1560,7 @@ class JennyCompiler:
         for spec in specs:
             yield spec
 
-    def get_panel_strategy(self, spacetime: Spacetime) -> Dict[str, Any]:
+    def get_panel_strategy(self, spacetime: Spacetime) -> dict[str, Any]:
         """
         Analyze Spacetime and recommend panel strategy (dry run).
 

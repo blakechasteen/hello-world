@@ -21,26 +21,25 @@ Configuration:
 import asyncio
 import logging
 import re
-from typing import Any, Sequence, Dict, List, Optional
+from collections.abc import Sequence
 from datetime import datetime
-from dataclasses import dataclass, field
 
 try:
     from mcp.server import Server
-    from mcp.types import Resource, Tool, TextContent
+    from mcp.types import Resource, TextContent, Tool
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
     print("⚠️  MCP not installed. Run: pip install mcp")
 
 try:
-    from .protocol import UnifiedMemoryInterface, Strategy, create_unified_memory, Memory
+    from .protocol import Memory, Strategy, UnifiedMemoryInterface, create_unified_memory
 except ImportError:
     # Fallback for standalone execution
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).parent))
-    from protocol import UnifiedMemoryInterface, Strategy, create_unified_memory, Memory
+    from protocol import Strategy, UnifiedMemoryInterface, create_unified_memory
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -50,7 +49,7 @@ logger = logging.getLogger(__name__)
 memory: UnifiedMemoryInterface = None
 
 # Global conversation state (per-session)
-conversation_history: List[Dict] = []
+conversation_history: list[dict] = []
 conversation_stats = {
     'total_turns': 0,
     'remembered_turns': 0,
@@ -69,7 +68,7 @@ else:
 # Conversational Intelligence: Importance Scoring
 # ============================================================================
 
-def score_importance(user_input: str, system_output: str, metadata: Optional[Dict] = None) -> float:
+def score_importance(user_input: str, system_output: str, metadata: dict | None = None) -> float:
     """
     Score conversation turn importance (0.0-1.0).
 
@@ -163,29 +162,29 @@ if MCP_AVAILABLE:
                 strategy=Strategy.TEMPORAL,
                 limit=100
             )
-            
+
             resources = []
             for mem in result.memories:
                 # Truncate text for resource name
                 name = mem.text[:60] + "..." if len(mem.text) > 60 else mem.text
-                
+
                 # Build description with metadata
                 desc_parts = [f"Stored: {mem.timestamp.isoformat()}"]
                 if mem.context:
                     desc_parts.append(f"Context: {mem.context}")
                 if mem.tags:
                     desc_parts.append(f"Tags: {', '.join(mem.tags)}")
-                
+
                 resources.append(Resource(
                     uri=f"memory://{mem.id}",
                     name=name,
                     mimeType="text/plain",
                     description=" | ".join(desc_parts)
                 ))
-            
+
             logger.info(f"Listed {len(resources)} memory resources")
             return resources
-            
+
         except Exception as e:
             logger.error(f"Error listing memories: {e}")
             return []
@@ -204,21 +203,21 @@ if MCP_AVAILABLE:
         try:
             # Extract memory ID from URI
             mem_id = uri.replace("memory://", "")
-            
+
             # Search for this specific memory
             result = await memory.recall(
                 query=mem_id,
                 strategy=Strategy.TEMPORAL,
                 limit=100  # Search more to find exact ID
             )
-            
+
             # Find exact match
             target_mem = None
             for mem in result.memories:
                 if mem.id == mem_id:
                     target_mem = mem
                     break
-            
+
             if target_mem:
                 # Format full memory details
                 lines = [
@@ -229,18 +228,18 @@ if MCP_AVAILABLE:
                     target_mem.text,
                     "",
                 ]
-                
+
                 if target_mem.context:
                     lines.append(f"Context: {target_mem.context}")
                 if target_mem.tags:
                     lines.append(f"Tags: {', '.join(target_mem.tags)}")
                 if target_mem.user_id:
                     lines.append(f"User: {target_mem.user_id}")
-                
+
                 return "\n".join(lines)
             else:
                 return f"Memory {mem_id} not found"
-                
+
         except Exception as e:
             logger.error(f"Error reading memory {uri}: {e}")
             return f"Error: {e}"
@@ -296,7 +295,7 @@ if MCP_AVAILABLE:
                     "required": ["query"]
                 }
             ),
-            
+
             Tool(
                 name="store_memory",
                 description=(
@@ -328,7 +327,7 @@ if MCP_AVAILABLE:
                     "required": ["text"]
                 }
             ),
-            
+
             Tool(
                 name="memory_health",
                 description=(
@@ -475,7 +474,7 @@ if MCP_AVAILABLE:
                 strategy_name = arguments.get("strategy", "fused").upper()
                 limit = arguments.get("limit", 10)
                 user_id = arguments.get("user_id")
-                
+
                 # Validate strategy
                 try:
                     strategy = Strategy[strategy_name]
@@ -484,7 +483,7 @@ if MCP_AVAILABLE:
                         type="text",
                         text=f"Invalid strategy: {strategy_name}. Use: temporal, semantic, graph, pattern, or fused"
                     )]
-                
+
                 # Execute recall
                 result = await memory.recall(
                     query=query,
@@ -492,19 +491,19 @@ if MCP_AVAILABLE:
                     limit=limit,
                     user_id=user_id
                 )
-                
+
                 # Format results
                 if not result.memories:
                     return [TextContent(
                         type="text",
                         text=f"No memories found for query: '{query}'"
                     )]
-                
+
                 lines = [
                     f"Found {len(result.memories)} memories using {strategy.name} strategy:",
                     ""
                 ]
-                
+
                 for i, (mem, score) in enumerate(zip(result.memories, result.scores), 1):
                     lines.append(f"{i}. [{score:.3f}] {mem.text}")
                     if mem.context:
@@ -513,19 +512,19 @@ if MCP_AVAILABLE:
                         lines.append(f"   Tags: {', '.join(mem.tags)}")
                     lines.append(f"   ID: {mem.id} | Time: {mem.timestamp.isoformat()}")
                     lines.append("")
-                
+
                 return [TextContent(type="text", text="\n".join(lines))]
-            
+
             elif name == "store_memory":
                 # Parse arguments
                 text = arguments.get("text")
                 context = arguments.get("context", {})
                 tags = arguments.get("tags", [])
                 user_id = arguments.get("user_id")
-                
+
                 if not text:
                     return [TextContent(type="text", text="Error: 'text' is required")]
-                
+
                 # Store memory
                 mem_id = await memory.store(
                     text=text,
@@ -533,12 +532,12 @@ if MCP_AVAILABLE:
                     tags=tags,
                     user_id=user_id
                 )
-                
+
                 return [TextContent(
                     type="text",
                     text=f"✓ Memory stored successfully\nID: {mem_id}\nText: {text[:100]}..."
                 )]
-            
+
             elif name == "memory_health":
                 # Get health status
                 health = await memory.health_check()
@@ -651,7 +650,7 @@ Importance: {importance:.2f}"""
                 lines = [
                     system_response,
                     "",
-                    f"─────────────────────────────────",
+                    "─────────────────────────────────",
                     f"{status} (Importance: {importance:.2f}, Threshold: {threshold})",
                     f"Turn: {conversation_stats['total_turns']} | "
                     f"Signal: {conversation_stats['remembered_turns']} | "
@@ -712,6 +711,7 @@ Importance: {importance:.2f}"""
                 try:
                     # Import text spinner and protocol helpers
                     from hololoom.spinningWheel.modalities.text import spin_text
+
                     from .protocol import shards_to_memories
 
                     # Spin text into shards
@@ -806,6 +806,7 @@ Importance: {importance:.2f}"""
                 try:
                     # Import website spinner and protocol helpers
                     from hololoom.spinningWheel.modalities.website import spin_webpage
+
                     from .protocol import shards_to_memories
 
                     # Spin webpage into shards (will scrape content)
@@ -889,7 +890,7 @@ Importance: {importance:.2f}"""
 
             else:
                 return [TextContent(type="text", text=f"Unknown tool: {name}")]
-                
+
         except Exception as e:
             logger.error(f"Error executing tool {name}: {e}")
             return [TextContent(type="text", text=f"Error: {e}")]
@@ -915,16 +916,16 @@ async def init_memory(
         enable_qdrant: Enable Qdrant backend
     """
     global memory
-    
+
     logger.info("Initializing HoloLoom Memory MCP Server...")
-    
+
     memory = await create_unified_memory(
         user_id=user_id,
         enable_mem0=enable_mem0,
         enable_neo4j=enable_neo4j,
         enable_qdrant=enable_qdrant
     )
-    
+
     # Check health
     health = await memory.health_check()
     status = health.get('status', 'unknown')
@@ -948,7 +949,7 @@ async def main():
         enable_neo4j=True,
         enable_qdrant=True
     )
-    
+
     # Run server
     logger.info("Starting MCP server on stdio...")
     logger.info("Available tools: recall_memories, store_memory, process_text, ingest_webpage, memory_health, chat, conversation_stats")

@@ -49,25 +49,24 @@ Date: 2025-11-03
 Priority: 6
 """
 
-from typing import Optional, Dict, List, Tuple, Callable
-from dataclasses import dataclass, field
-from enum import Enum
-import numpy as np
 import warnings
+from dataclasses import dataclass, field
+
+import numpy as np
 
 # Import PDE solvers
 try:
     from hololoom.warp.semantic_pde import (
-        PDEType,
-        HeatEquationSolver,
-        WaveEquationSolver,
-        ReactionDiffusionSolver,
         HamiltonJacobiSolver,
-        create_heat_solver,
-        create_wave_solver,
-        create_reaction_diffusion_solver,
-        logistic_reaction,
+        HeatEquationSolver,
+        PDEType,
+        ReactionDiffusionSolver,
+        WaveEquationSolver,
         competitive_reaction,
+        create_heat_solver,
+        create_reaction_diffusion_solver,
+        create_wave_solver,
+        logistic_reaction,
     )
     _PDE_AVAILABLE = True
 except ImportError:
@@ -77,9 +76,9 @@ except ImportError:
 # Import semantic dimensions
 try:
     from hololoom.semantic_calculus.dimensions import (
-        SemanticSpectrum,
-        STANDARD_DIMENSIONS,
         EXTENDED_244_DIMENSIONS,
+        STANDARD_DIMENSIONS,
+        SemanticSpectrum,
     )
     _DIMENSIONS_AVAILABLE = True
 except ImportError:
@@ -103,7 +102,7 @@ class SemanticFlowState:
     """
     activation: np.ndarray
     time: float
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate state."""
@@ -159,8 +158,8 @@ class SemanticFlow:
         dimensions: int = 16,  # Use 16D for speed (can use 244 for research)
         pde_type: str = "heat",
         dt: float = 0.01,
-        laplacian: Optional[np.ndarray] = None,
-        adjacency: Optional[np.ndarray] = None,
+        laplacian: np.ndarray | None = None,
+        adjacency: np.ndarray | None = None,
         **pde_kwargs
     ):
         """
@@ -207,8 +206,8 @@ class SemanticFlow:
         self.solver = self._create_solver()
 
         # Trajectory tracking
-        self.trajectory: List[SemanticFlowState] = []
-        self._trajectory_metadata: Dict = {}
+        self.trajectory: list[SemanticFlowState] = []
+        self._trajectory_metadata: dict = {}
 
     def _create_default_laplacian(self, n: int) -> np.ndarray:
         """
@@ -415,7 +414,7 @@ class SemanticFlow:
 
         return states[-1]
 
-    def get_trajectory(self) -> List[SemanticFlowState]:
+    def get_trajectory(self) -> list[SemanticFlowState]:
         """Get the full semantic trajectory."""
         return self.trajectory
 
@@ -433,8 +432,8 @@ class SemanticFlow:
 
     def visualize_trajectory(
         self,
-        dimension_names: Optional[List[str]] = None,
-        save_path: Optional[str] = None
+        dimension_names: list[str] | None = None,
+        save_path: str | None = None
     ):
         """
         Visualize semantic trajectory.

@@ -12,11 +12,11 @@ import asyncio
 import json
 import random
 import sqlite3
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 class EvaluationCriterion(Enum):
@@ -61,18 +61,18 @@ class EvaluationPair:
     true_variant_b: str
 
     # Randomization (for blind evaluation)
-    presentation_order: Tuple[str, str] = ("A", "B")  # Which is shown first
+    presentation_order: tuple[str, str] = ("A", "B")  # Which is shown first
 
     # Evaluation results (filled by evaluator)
-    evaluations: Dict[str, Preference] = field(default_factory=dict)
-    overall_preference: Optional[Preference] = None
-    rationale: Optional[str] = None  # Why they chose this
+    evaluations: dict[str, Preference] = field(default_factory=dict)
+    overall_preference: Preference | None = None
+    rationale: str | None = None  # Why they chose this
 
     # Metadata
-    evaluator_id: Optional[str] = None
+    evaluator_id: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def get_winner(self) -> Optional[str]:
+    def get_winner(self) -> str | None:
         """
         Get which variant won (if any).
 
@@ -92,7 +92,7 @@ class EvaluationPair:
         else:  # Neutral
             return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         result = asdict(self)
         result['timestamp'] = self.timestamp.isoformat()
@@ -113,16 +113,16 @@ class EvaluationResults:
     ties: int = 0
 
     # Preference scores by criterion
-    criterion_scores: Dict[str, float] = field(default_factory=dict)
+    criterion_scores: dict[str, float] = field(default_factory=dict)
 
     # Overall statistics
     avg_score: float = 0.0  # -2 to +2 (positive favors MRF)
     mrf_preference_rate: float = 0.0  # % of evaluations preferring MRF
 
     # Inter-rater reliability (if multiple evaluators)
-    inter_rater_agreement: Optional[float] = None
+    inter_rater_agreement: float | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "summary": {
@@ -227,7 +227,7 @@ class HumanEvaluationCollector:
         query: str,
         traditional_response: str,
         mrf_response: str,
-        pair_id: Optional[str] = None
+        pair_id: str | None = None
     ) -> EvaluationPair:
         """
         Create an evaluation pair with randomized presentation order.
@@ -295,8 +295,8 @@ class HumanEvaluationCollector:
         pair_id: str,
         evaluator_id: str,
         overall_preference: Preference,
-        criterion_preferences: Optional[Dict[EvaluationCriterion, Preference]] = None,
-        rationale: Optional[str] = None
+        criterion_preferences: dict[EvaluationCriterion, Preference] | None = None,
+        rationale: str | None = None
     ):
         """
         Record an evaluation for a pair.
@@ -332,7 +332,7 @@ class HumanEvaluationCollector:
         conn.commit()
         conn.close()
 
-    async def get_pair(self, pair_id: str) -> Optional[EvaluationPair]:
+    async def get_pair(self, pair_id: str) -> EvaluationPair | None:
         """Retrieve an evaluation pair by ID."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -532,7 +532,7 @@ if __name__ == "__main__":
         print(f"Average score: {results.avg_score:+.2f} (range: -2 to +2)")
 
         if results.criterion_scores:
-            print(f"\nCriterion scores:")
+            print("\nCriterion scores:")
             for criterion, score in results.criterion_scores.items():
                 print(f"  {criterion}: {score:+.2f}")
 

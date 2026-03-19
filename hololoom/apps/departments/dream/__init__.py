@@ -20,15 +20,15 @@ Usage:
 """
 
 from .department import (
+    DreamAction,
     DreamDepartment,
     DreamDSStarVerifier,
-    DreamAction,
     DreamRequest,
     DreamResponse,
     DSStarCheck,
     VerificationResult,
+    create_and_start_dream_department,
     create_dream_department,
-    create_and_start_dream_department
 )
 
 __all__ = [

@@ -7,15 +7,15 @@ Status: ✅ Production Ready (November 2025)
 """
 
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from hololoom.prompting.testing.protocol import (
-    PromptTestResult,
     PromptTestConfig,
+    PromptTestResult,
 )
 
 
@@ -60,7 +60,7 @@ class Regression:
     detected_at: datetime = field(default_factory=datetime.now)
     """When this regression was detected."""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         data = asdict(self)
         data["regression_type"] = self.regression_type.value
@@ -68,7 +68,7 @@ class Regression:
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Regression":
+    def from_dict(cls, data: dict[str, Any]) -> "Regression":
         """Create from dictionary for JSON deserialization."""
         data = data.copy()
         data["regression_type"] = RegressionType(data["regression_type"])
@@ -84,7 +84,7 @@ class RegressionDetector:
     LATENCY_INCREASE_THRESHOLD = 0.20  # 20%
     TOKEN_INCREASE_THRESHOLD = 0.10  # 10%
 
-    def __init__(self, config: Optional[PromptTestConfig] = None):
+    def __init__(self, config: PromptTestConfig | None = None):
         """Initialize regression detector with optional config.
 
         Args:
@@ -101,9 +101,9 @@ class RegressionDetector:
 
     async def detect_regressions(
         self,
-        current_results: List[PromptTestResult],
-        baseline_results: List[PromptTestResult],
-    ) -> List[Regression]:
+        current_results: list[PromptTestResult],
+        baseline_results: list[PromptTestResult],
+    ) -> list[Regression]:
         """Detect regressions between baseline and current results.
 
         Args:
@@ -113,7 +113,7 @@ class RegressionDetector:
         Returns:
             List of detected regressions
         """
-        regressions: List[Regression] = []
+        regressions: list[Regression] = []
 
         # Create lookup map for baseline results by test name
         baseline_map = {r.test_case.name: r for r in baseline_results}
@@ -144,7 +144,7 @@ class RegressionDetector:
 
     def _compare_quality(
         self, current: PromptTestResult, baseline: PromptTestResult
-    ) -> Optional[Regression]:
+    ) -> Regression | None:
         """Compare quality scores between current and baseline.
 
         Args:
@@ -192,7 +192,7 @@ class RegressionDetector:
 
     def _compare_latency(
         self, current: PromptTestResult, baseline: PromptTestResult
-    ) -> Optional[Regression]:
+    ) -> Regression | None:
         """Compare latency between current and baseline.
 
         Args:
@@ -226,7 +226,7 @@ class RegressionDetector:
 
     def _compare_tokens(
         self, current: PromptTestResult, baseline: PromptTestResult
-    ) -> Optional[Regression]:
+    ) -> Regression | None:
         """Compare token usage between current and baseline.
 
         Args:
@@ -278,7 +278,7 @@ class RegressionDetector:
             return "CRITICAL"
 
     def save_baseline(
-        self, results: List[PromptTestResult], path: str
+        self, results: list[PromptTestResult], path: str
     ) -> None:
         """Save test results as baseline for future comparison.
 
@@ -306,7 +306,7 @@ class RegressionDetector:
 
     def load_baseline(
         self, path: str
-    ) -> List[PromptTestResult]:
+    ) -> list[PromptTestResult]:
         """Load baseline results from saved file.
 
         Args:
@@ -315,7 +315,7 @@ class RegressionDetector:
         Returns:
             List of baseline PromptTestResult objects
         """
-        with open(path, "r") as f:
+        with open(path) as f:
             baseline_data = json.load(f)
 
         # Reconstruct basic results (note: test_case details are not restored)
@@ -348,7 +348,7 @@ class RegressionDetector:
 
 
 def create_regression_detector(
-    config: Optional[PromptTestConfig] = None,
+    config: PromptTestConfig | None = None,
 ) -> RegressionDetector:
     """Factory function to create a regression detector.
 

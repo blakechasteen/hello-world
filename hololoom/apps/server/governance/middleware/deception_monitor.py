@@ -35,8 +35,8 @@ class DeceptionMonitorMiddleware:
             return ctx
 
         try:
-            from hololoom.alignment.deception_detection import BehavioralProbe, ProbeType
             from hololoom.alignment.audit_trail import DecisionType, OutcomeType
+            from hololoom.alignment.deception_detection import BehavioralProbe, ProbeType
 
             probe = BehavioralProbe(
                 probe_type=ProbeType.HONESTY,

@@ -17,17 +17,18 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
 from datetime import datetime
+from typing import Any
 
 from hololoom.protocols.department import DepartmentRequest, DepartmentResponse
+
 from .chain import Chain, ChainStep, StepType
 from .types import (
-    StepResult,
-    StepStatus,
+    ChainExecutionStats,
     ExecutionContext,
     RollbackPoint,
-    ChainExecutionStats,
+    StepResult,
+    StepStatus,
 )
 
 logger = logging.getLogger(__name__)
@@ -36,17 +37,17 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ExecutionTrace:
     """Trace of chain execution for debugging."""
-    step_results: List[StepResult]
-    final_context: Dict[str, Any]
+    step_results: list[StepResult]
+    final_context: dict[str, Any]
     total_duration_ms: float
     steps_executed: int
-    errors: List[str]
+    errors: list[str]
 
     def get_summary(self) -> str:
         """Get human-readable summary."""
         lines = []
         lines.append(f"\n{'='*60}")
-        lines.append(f"Execution Trace")
+        lines.append("Execution Trace")
         lines.append(f"{'='*60}")
         lines.append(f"Steps: {self.steps_executed} (errors: {len(self.errors)})")
         lines.append(f"Duration: {self.total_duration_ms:.1f}ms")
@@ -81,11 +82,11 @@ class ExecutionTrace:
 class ChainResult:
     """Result of chain execution."""
     success: bool
-    final_response: Optional[Any] = None
-    confidence: Optional[float] = None
-    trace: Optional[ExecutionTrace] = None
-    error: Optional[str] = None
-    stats: Optional[ChainExecutionStats] = None
+    final_response: Any | None = None
+    confidence: float | None = None
+    trace: ExecutionTrace | None = None
+    error: str | None = None
+    stats: ChainExecutionStats | None = None
 
     def __str__(self) -> str:
         """String representation."""
@@ -143,8 +144,8 @@ class ChainOrchestrator:
 
         # Initialize execution context
         context = ExecutionContext(initial_input=initial_input)
-        step_results: List[StepResult] = []
-        rollback_stack: List[RollbackPoint] = []
+        step_results: list[StepResult] = []
+        rollback_stack: list[RollbackPoint] = []
         stats = ChainExecutionStats()
 
         start_time = time.time()
@@ -491,7 +492,7 @@ class ChainOrchestrator:
         step: ChainStep,
         result: StepResult,
         context: ExecutionContext,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Determine next step to execute."""
         # Conditional branching
         if step.condition:
@@ -514,7 +515,7 @@ class ChainOrchestrator:
 
     def _build_trace(
         self,
-        step_results: List[StepResult],
+        step_results: list[StepResult],
         context: ExecutionContext,
         start_time: float,
     ) -> ExecutionTrace:

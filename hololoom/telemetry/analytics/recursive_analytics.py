@@ -41,14 +41,13 @@ Usage:
     print(f"Avg quality gain: {stats['avg_quality_gain']:.2%}")
 """
 
-import sqlite3
 import json
-import time
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
-from pathlib import Path
+import sqlite3
 from collections import defaultdict
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any
 
 from hololoom.protocols.recursive_reasoning import ReasoningStrategy
 
@@ -70,7 +69,7 @@ class StrategyMetrics:
 @dataclass
 class ExecutionRecord:
     """Single execution record"""
-    id: Optional[int]
+    id: int | None
     strategy: str
     query_text: str
     iterations: int
@@ -165,7 +164,7 @@ class RecursiveAnalytics:
         tokens_used: int,
         converged: bool = False,
         cost_per_1k_tokens: float = 0.003,  # Claude Sonnet pricing
-        metadata: Optional[Dict] = None
+        metadata: dict | None = None
     ):
         """
         Track a single recursive reasoning execution.
@@ -214,7 +213,7 @@ class RecursiveAnalytics:
         # Invalidate cache
         self._cache["last_refresh"] = 0
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """
         Get overall analytics summary.
 
@@ -346,9 +345,9 @@ class RecursiveAnalytics:
 
     def get_quality_trends(
         self,
-        strategy: Optional[ReasoningStrategy] = None,
+        strategy: ReasoningStrategy | None = None,
         days: int = 7
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get quality improvement trends over time.
 
@@ -405,8 +404,8 @@ class RecursiveAnalytics:
     def get_recent_executions(
         self,
         limit: int = 10,
-        strategy: Optional[ReasoningStrategy] = None
-    ) -> List[ExecutionRecord]:
+        strategy: ReasoningStrategy | None = None
+    ) -> list[ExecutionRecord]:
         """
         Get recent execution records.
 
@@ -455,7 +454,7 @@ class RecursiveAnalytics:
         conn.close()
         return records
 
-    def get_recommendations(self) -> List[str]:
+    def get_recommendations(self) -> list[str]:
         """
         Generate AI-powered recommendations based on analytics.
 
@@ -521,7 +520,7 @@ class RecursiveAnalytics:
 
         return recommendations
 
-    def get_recent_executions(self, limit: int = 20) -> List[Dict[str, Any]]:
+    def get_recent_executions(self, limit: int = 20) -> list[dict[str, Any]]:
         """
         Get recent executions for dashboard display.
 
@@ -592,7 +591,7 @@ class RecursiveAnalytics:
 
         conn.close()
 
-    def get_comparison_matrix(self) -> Dict[str, Dict[str, float]]:
+    def get_comparison_matrix(self) -> dict[str, dict[str, float]]:
         """
         Get comparison matrix of all strategies.
 

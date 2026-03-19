@@ -17,23 +17,19 @@ Architecture:
           → Learn from outcome
 """
 
-import asyncio
 import logging
-from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from hololoom.config import Config
-from hololoom.protocols.types import Query, MemoryShard
+from hololoom.protocols.types import MemoryShard
 from hololoom.search.web_crawler_integration import (
+    SearchCrawlResult,
     WebCrawlerSearch,
     WebCrawlerSearchConfig,
-    SearchCrawlResult
 )
-from hololoom.agentic.core import AgenticOrchestrator, ReasoningMode
-from hololoom.recursive import FullLearningEngine
-
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +46,7 @@ class ResearchStrategy(Enum):
 class ResearchPlan:
     """Decomposed research plan."""
     main_query: str
-    sub_queries: List[str]
+    sub_queries: list[str]
     strategy: ResearchStrategy
     max_depth: int = 1
     max_pages_per_query: int = 5
@@ -63,15 +59,15 @@ class ResearchResult:
     """Complete research result."""
     query: str
     plan: ResearchPlan
-    search_results: List[SearchCrawlResult]
+    search_results: list[SearchCrawlResult]
     total_pages_crawled: int
     total_shards_created: int
     synthesis: str
     cited_response: str
-    verification_results: Optional[Dict[str, Any]] = None
+    verification_results: dict[str, Any] | None = None
     confidence: float = 0.0
     total_duration_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class AgenticWebResearcher:
@@ -104,7 +100,7 @@ class AgenticWebResearcher:
 
     def __init__(
         self,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         strategy: ResearchStrategy = ResearchStrategy.STANDARD,
         enable_learning: bool = True,
         enable_verification: bool = True
@@ -186,7 +182,7 @@ class AgenticWebResearcher:
     async def research(
         self,
         query: str,
-        strategy: Optional[ResearchStrategy] = None,
+        strategy: ResearchStrategy | None = None,
         max_sub_queries: int = 5
     ) -> ResearchResult:
         """
@@ -252,7 +248,7 @@ class AgenticWebResearcher:
         for r in search_results:
             all_shards.extend(r.shards)
 
-        logger.info(f"Step 3: Aggregation complete")
+        logger.info("Step 3: Aggregation complete")
         logger.info(f"  Total pages crawled: {total_pages}")
         logger.info(f"  Total shards created: {total_shards}")
         logger.info("")
@@ -392,8 +388,8 @@ class AgenticWebResearcher:
     async def _verify_findings(
         self,
         query: str,
-        shards: List[MemoryShard]
-    ) -> Dict[str, Any]:
+        shards: list[MemoryShard]
+    ) -> dict[str, Any]:
         """
         Verify findings for consistency and accuracy.
 
@@ -433,8 +429,8 @@ class AgenticWebResearcher:
         self,
         query: str,
         plan: ResearchPlan,
-        search_results: List[SearchCrawlResult],
-        shards: List[MemoryShard]
+        search_results: list[SearchCrawlResult],
+        shards: list[MemoryShard]
     ) -> tuple[str, str]:
         """
         Synthesize comprehensive report from findings.
@@ -495,8 +491,8 @@ class AgenticWebResearcher:
 
     def _calculate_confidence(
         self,
-        search_results: List[SearchCrawlResult],
-        verification_results: Optional[Dict[str, Any]],
+        search_results: list[SearchCrawlResult],
+        verification_results: dict[str, Any] | None,
         total_shards: int
     ) -> float:
         """Calculate overall confidence score."""
@@ -524,7 +520,7 @@ class AgenticWebResearcher:
 
         return round(confidence, 2)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get research statistics."""
         return {
             **self.stats,

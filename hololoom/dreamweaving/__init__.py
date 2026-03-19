@@ -45,9 +45,9 @@ Safety & Alignment:
 - Rollback/branch for alternative timelines
 """
 
-from typing import Protocol, List, Dict, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional, Protocol
 
 __version__ = "0.1.0"
 
@@ -137,10 +137,10 @@ class WorldEntity:
     entity_type: EntityType
     name: str
     description: str
-    attributes: Dict[str, Any]
-    relationships: List[Dict[str, Any]]  # {target_id, relation_type, strength}
-    history: List["NarrativeEvent"]
-    metadata: Dict[str, Any]
+    attributes: dict[str, Any]
+    relationships: list[dict[str, Any]]  # {target_id, relation_type, strength}
+    history: list["NarrativeEvent"]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -162,12 +162,12 @@ class NarrativeEvent:
     event_id: str
     event_type: EventType
     timestamp: float  # In-world time (arbitrary units)
-    participants: List[str]  # Entity IDs
-    location_id: Optional[str]
+    participants: list[str]  # Entity IDs
+    location_id: str | None
     description: str
-    consequences: Dict[str, Any]
-    causal_links: Dict[str, List[str]]  # {causes: [...], effects: [...]}
-    metadata: Dict[str, Any]
+    consequences: dict[str, Any]
+    causal_links: dict[str, list[str]]  # {causes: [...], effects: [...]}
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -185,12 +185,12 @@ class WorldState:
         generation_context: Context for next generation
     """
     timestamp: float
-    entities: Dict[str, WorldEntity]
-    active_threads: List["NarrativeThread"]
-    recent_events: List[NarrativeEvent]
-    global_state: Dict[str, Any]
-    consistency_violations: List[Dict[str, Any]]
-    generation_context: Dict[str, Any]
+    entities: dict[str, WorldEntity]
+    active_threads: list["NarrativeThread"]
+    recent_events: list[NarrativeEvent]
+    global_state: dict[str, Any]
+    consistency_violations: list[dict[str, Any]]
+    generation_context: dict[str, Any]
 
 
 @dataclass
@@ -233,12 +233,12 @@ class NarrativeThread:
     thread_id: str
     thread_type: str  # "plot", "character", "theme", "subplot"
     title: str
-    participants: List[str]  # Entity IDs
-    events: List[str]  # Event IDs
+    participants: list[str]  # Entity IDs
+    events: list[str]  # Event IDs
     status: str  # "active", "resolved", "abandoned", "dormant"
     tension: float  # 0.0 (no tension) to 1.0 (climax)
-    foreshadowing: List[str]  # Setup for future events
-    metadata: Dict[str, Any]
+    foreshadowing: list[str]  # Setup for future events
+    metadata: dict[str, Any]
 
 
 # Protocol definitions for dependency injection
@@ -249,8 +249,8 @@ class WorldBuilderProtocol(Protocol):
     async def generate_entity(
         self,
         entity_type: EntityType,
-        context: Dict[str, Any],
-        constraints: Optional[Dict[str, Any]] = None
+        context: dict[str, Any],
+        constraints: dict[str, Any] | None = None
     ) -> WorldEntity:
         """Generate a new world entity."""
         ...
@@ -258,9 +258,9 @@ class WorldBuilderProtocol(Protocol):
     async def generate_event(
         self,
         event_type: EventType,
-        participants: List[str],
-        context: Dict[str, Any],
-        constraints: Optional[Dict[str, Any]] = None
+        participants: list[str],
+        context: dict[str, Any],
+        constraints: dict[str, Any] | None = None
     ) -> NarrativeEvent:
         """Generate a narrative event."""
         ...
@@ -268,7 +268,7 @@ class WorldBuilderProtocol(Protocol):
     async def evolve_world(
         self,
         world_state: WorldState,
-        user_input: Optional[str] = None,
+        user_input: str | None = None,
         mode: GenerationMode = GenerationMode.HYBRID
     ) -> WorldState:
         """Evolve world state forward."""
@@ -281,16 +281,16 @@ class ConsistencyCheckerProtocol(Protocol):
     async def check_consistency(
         self,
         world_state: WorldState,
-        rules: List[ConsistencyRule]
-    ) -> List[Dict[str, Any]]:
+        rules: list[ConsistencyRule]
+    ) -> list[dict[str, Any]]:
         """Check world state against consistency rules."""
         ...
 
     async def resolve_contradiction(
         self,
         world_state: WorldState,
-        violation: Dict[str, Any]
-    ) -> Optional[WorldState]:
+        violation: dict[str, Any]
+    ) -> WorldState | None:
         """Attempt to resolve a consistency violation."""
         ...
 
@@ -301,8 +301,8 @@ class GeneratorProtocol(Protocol):
     async def generate_text(
         self,
         prompt: str,
-        context: Dict[str, Any],
-        constraints: Optional[Dict[str, Any]] = None
+        context: dict[str, Any],
+        constraints: dict[str, Any] | None = None
     ) -> str:
         """Generate text (description, dialogue, etc)."""
         ...
@@ -311,7 +311,7 @@ class GeneratorProtocol(Protocol):
         self,
         entity: WorldEntity,
         depth: int = 1
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Expand context around an entity."""
         ...
 

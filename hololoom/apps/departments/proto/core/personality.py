@@ -12,10 +12,9 @@ Design:
 - Verbosity controls (minimal, normal, verbose)
 """
 
-from dataclasses import dataclass
-from typing import Dict, Any, Optional
-from enum import Enum
 import random
+from dataclasses import dataclass
+from enum import Enum
 
 
 class PersonalityStyle(Enum):
@@ -150,7 +149,7 @@ class PersonalityConfig:
     expert_mode: bool = False
 
 
-def build_system_prompt(config: Optional[PersonalityConfig] = None) -> str:
+def build_system_prompt(config: PersonalityConfig | None = None) -> str:
     """Build system prompt based on personality config."""
     if config is None:
         config = PersonalityConfig()
@@ -176,7 +175,7 @@ def build_system_prompt(config: Optional[PersonalityConfig] = None) -> str:
 
 def build_response_prompt(
     template_type: str,
-    config: Optional[PersonalityConfig] = None,
+    config: PersonalityConfig | None = None,
     **kwargs
 ) -> str:
     """Build response prompt from template and context."""
@@ -204,7 +203,7 @@ def get_uncertainty_phrase() -> str:
 def maybe_add_uncertainty(
     response: str,
     confidence: float,
-    config: Optional[PersonalityConfig] = None
+    config: PersonalityConfig | None = None
 ) -> str:
     """Add uncertainty prefix if confidence is low and config allows."""
     if config is None:

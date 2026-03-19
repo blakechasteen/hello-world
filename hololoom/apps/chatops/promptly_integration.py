@@ -28,24 +28,24 @@ Usage:
 """
 
 import asyncio
-import os
+import logging
 import sys
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
+
 import yaml
-import logging
 
 # Add Promptly to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "Promptly" / "promptly"))
 
 try:
-    from promptly import Promptly
-    from tools.llm_judge_enhanced import EnhancedLLMJudge
-    from tools.ab_testing import ABTester
-    from loop_composition import LoopComposer
     from integrations.hololoom_bridge import HoloLoomBridge
+    from loop_composition import LoopComposer
+    from promptly import Promptly
+    from tools.ab_testing import ABTester
+    from tools.llm_judge_enhanced import EnhancedLLMJudge
     PROMPTLY_AVAILABLE = True
 except ImportError:
     PROMPTLY_AVAILABLE = False
@@ -64,7 +64,7 @@ class UltrapromptConfig:
     temperature: float = 0.7
 
     # Modular sections
-    sections: List[str] = field(default_factory=lambda: [
+    sections: list[str] = field(default_factory=lambda: [
         "PLAN",      # Planning section
         "ANSWER",    # Main answer
         "VERIFY",    # Verification
@@ -81,7 +81,7 @@ class UltrapromptConfig:
 class JudgeConfig:
     """Configuration for LLM judge"""
     enabled: bool = True
-    criteria: List[str] = field(default_factory=lambda: [
+    criteria: list[str] = field(default_factory=lambda: [
         "accuracy",
         "clarity",
         "completeness",
@@ -102,7 +102,7 @@ class WorkflowConfig:
     cache_results: bool = True
 
     # Built-in workflows
-    workflows: Dict[str, str] = field(default_factory=dict)
+    workflows: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -127,10 +127,10 @@ class PromptlyEnhancedBot:
 
     def __init__(
         self,
-        ultraprompt_config: Optional[UltrapromptConfig] = None,
-        judge_config: Optional[JudgeConfig] = None,
-        workflow_config: Optional[WorkflowConfig] = None,
-        ab_test_config: Optional[ABTestConfig] = None
+        ultraprompt_config: UltrapromptConfig | None = None,
+        judge_config: JudgeConfig | None = None,
+        workflow_config: WorkflowConfig | None = None,
+        ab_test_config: ABTestConfig | None = None
     ):
         if not PROMPTLY_AVAILABLE:
             raise ImportError("Promptly framework not available")
@@ -151,11 +151,11 @@ class PromptlyEnhancedBot:
         self.ultraprompt_template = self._load_ultraprompt_template()
 
         # Workflow definitions
-        self.workflows: Dict[str, Any] = {}
+        self.workflows: dict[str, Any] = {}
         self._register_default_workflows()
 
         # A/B test experiments
-        self.active_experiments: Dict[str, Dict] = {}
+        self.active_experiments: dict[str, dict] = {}
 
         # Quality statistics
         self.quality_stats = {
@@ -168,13 +168,13 @@ class PromptlyEnhancedBot:
 
         logging.info("PromptlyEnhancedBot initialized")
 
-    def _load_ultraprompt_template(self) -> Optional[Dict]:
+    def _load_ultraprompt_template(self) -> dict | None:
         """Load ultraprompt template from YAML"""
         try:
             template_path = Path(__file__).parent.parent.parent / "Promptly" / "promptly" / ".promptly" / "prompts" / "ultraprompt-advanced.yaml"
 
             if template_path.exists():
-                with open(template_path, 'r', encoding='utf-8') as f:
+                with open(template_path, encoding='utf-8') as f:
                     return yaml.safe_load(f)
             else:
                 logging.warning(f"Ultraprompt template not found at {template_path}")
@@ -256,9 +256,9 @@ END
     async def process_with_ultraprompt(
         self,
         query: str,
-        context: Optional[Dict] = None,
+        context: dict | None = None,
         use_hololoom: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process a query using the ultraprompt framework.
 
@@ -332,7 +332,7 @@ END
     def _build_ultraprompt(
         self,
         query: str,
-        context: Optional[Dict],
+        context: dict | None,
         use_hololoom: bool
     ) -> str:
         """Build ultraprompt with all directives"""
@@ -376,7 +376,7 @@ END
         self,
         ultraprompt: str,
         query: str,
-        context: Optional[Dict]
+        context: dict | None
     ) -> str:
         """Execute ultraprompt using prompt chaining"""
 
@@ -402,7 +402,7 @@ END
         # Combine stages
         return f"## PLAN\n{plan}\n\n## ANSWER\n{answer}\n\n## VERIFY\n{verification}\n\n## TL;DR\n{tldr}"
 
-    def _parse_ultraprompt_response(self, response: str) -> Dict[str, str]:
+    def _parse_ultraprompt_response(self, response: str) -> dict[str, str]:
         """Parse structured ultraprompt response into sections"""
 
         sections = {
@@ -459,7 +459,7 @@ END
         self,
         query: str,
         response: str,
-        criteria: Optional[List[str]] = None
+        criteria: list[str] | None = None
     ) -> float:
         """
         Evaluate response quality using LLM judge.
@@ -495,8 +495,8 @@ END
     async def execute_workflow(
         self,
         workflow_name: str,
-        inputs: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        inputs: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Execute a named workflow loop.
 
@@ -538,9 +538,9 @@ END
         self,
         prompt_a: str,
         prompt_b: str,
-        test_cases: List[Dict[str, str]],
-        experiment_name: Optional[str] = None
-    ) -> Dict[str, Any]:
+        test_cases: list[dict[str, str]],
+        experiment_name: str | None = None
+    ) -> dict[str, Any]:
         """
         A/B test two prompts to find the better one.
 
@@ -599,7 +599,7 @@ END
             logging.error(f"Failed to register workflow '{name}': {e}")
             raise
 
-    def get_quality_statistics(self) -> Dict[str, Any]:
+    def get_quality_statistics(self) -> dict[str, Any]:
         """Get response quality statistics"""
         stats = self.quality_stats.copy()
 

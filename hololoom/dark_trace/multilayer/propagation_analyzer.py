@@ -18,12 +18,10 @@ Research Basis:
 Created: 2025-12-28
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Set, Any
-from enum import Enum
-import math
 import time
-
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # =============================================================================
 # Data Structures
@@ -58,7 +56,7 @@ class PropagationEdge:
     def __hash__(self):
         return hash((self.source_feature, self.target_feature))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "source_feature": self.source_feature,
@@ -81,8 +79,8 @@ class PropagationPath:
     """
     start_feature: str
     start_layer: int
-    edges: List[PropagationEdge] = field(default_factory=list)
-    end_features: List[str] = field(default_factory=list)
+    edges: list[PropagationEdge] = field(default_factory=list)
+    end_features: list[str] = field(default_factory=list)
     end_layer: int = 0
     total_strength: float = 0.0
     path_type: PropagationType = PropagationType.FORWARD
@@ -117,7 +115,7 @@ class PropagationPath:
             return 0
         return self.end_layer - self.start_layer
 
-    def get_features_at_layer(self, layer: int) -> List[str]:
+    def get_features_at_layer(self, layer: int) -> list[str]:
         """Get all features in this path at a specific layer."""
         features = set()
         if layer == self.start_layer:
@@ -131,19 +129,19 @@ class PropagationPath:
 
         return list(features)
 
-    def get_weakest_edge(self) -> Optional[PropagationEdge]:
+    def get_weakest_edge(self) -> PropagationEdge | None:
         """Get the weakest edge in the path (potential bottleneck)."""
         if not self.edges:
             return None
         return min(self.edges, key=lambda e: abs(e.strength))
 
-    def get_strongest_edge(self) -> Optional[PropagationEdge]:
+    def get_strongest_edge(self) -> PropagationEdge | None:
         """Get the strongest edge in the path."""
         if not self.edges:
             return None
         return max(self.edges, key=lambda e: abs(e.strength))
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """Get path summary."""
         return {
             "start_feature": self.start_feature,
@@ -167,11 +165,11 @@ class CircuitCandidate:
     collectively compute some function.
     """
     circuit_id: str
-    features: List[str]             # All features in circuit
-    edges: List[PropagationEdge]    # All edges in circuit
-    input_features: List[str]       # Features at earliest layer
-    output_features: List[str]      # Features at latest layer
-    layers_spanned: List[int]       # All layers involved
+    features: list[str]             # All features in circuit
+    edges: list[PropagationEdge]    # All edges in circuit
+    input_features: list[str]       # Features at earliest layer
+    output_features: list[str]      # Features at latest layer
+    layers_spanned: list[int]       # All layers involved
     circuit_type: CircuitType = CircuitType.LINEAR
     total_strength: float = 0.0
     description: str = ""
@@ -224,7 +222,7 @@ class CircuitCandidate:
         """Circuit depth (number of layers spanned)."""
         return len(self.layers_spanned)
 
-    def get_features_at_layer(self, layer: int) -> List[str]:
+    def get_features_at_layer(self, layer: int) -> list[str]:
         """Get features at a specific layer."""
         layer_features = set()
 
@@ -272,7 +270,7 @@ class CircuitCandidate:
             description=f"Merged: {self.description} + {other.description}"
         )
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """Get circuit summary."""
         return {
             "circuit_id": self.circuit_id,
@@ -332,7 +330,7 @@ class PropagationAnalyzer:
     def __init__(
         self,
         correlation_tracker: Any,  # CorrelationTracker
-        config: Optional[PropagationConfig] = None
+        config: PropagationConfig | None = None
     ):
         """
         Initialize propagation analyzer.
@@ -345,15 +343,15 @@ class PropagationAnalyzer:
         self.config = config or PropagationConfig()
 
         # Cache for discovered paths and circuits
-        self._path_cache: Dict[str, PropagationPath] = {}
-        self._circuits: List[CircuitCandidate] = []
+        self._path_cache: dict[str, PropagationPath] = {}
+        self._circuits: list[CircuitCandidate] = []
         self._circuit_discovery_time: float = 0.0
 
     def trace_feature(
         self,
         feature_id: str,
         direction: PropagationType = PropagationType.FORWARD,
-        max_depth: Optional[int] = None
+        max_depth: int | None = None
     ) -> PropagationPath:
         """
         Trace how a feature propagates through layers.
@@ -412,7 +410,7 @@ class PropagationAnalyzer:
         start_feature: str,
         start_layer: int,
         max_depth: int
-    ) -> List[PropagationEdge]:
+    ) -> list[PropagationEdge]:
         """Trace feature propagation forward through layers."""
         edges = []
         current_features = {start_feature}
@@ -462,7 +460,7 @@ class PropagationAnalyzer:
         start_feature: str,
         start_layer: int,
         max_depth: int
-    ) -> List[PropagationEdge]:
+    ) -> list[PropagationEdge]:
         """Trace feature propagation backward through layers."""
         edges = []
         current_features = {start_feature}
@@ -512,7 +510,7 @@ class PropagationAnalyzer:
         self,
         min_features: int = 3,
         min_layers: int = 2
-    ) -> List[CircuitCandidate]:
+    ) -> list[CircuitCandidate]:
         """
         Discover computational circuits in the model.
 
@@ -558,7 +556,7 @@ class PropagationAnalyzer:
 
         return circuits
 
-    def _collect_all_edges(self) -> List[PropagationEdge]:
+    def _collect_all_edges(self) -> list[PropagationEdge]:
         """Collect all significant edges from correlation tracker."""
         edges = []
 
@@ -582,14 +580,14 @@ class PropagationAnalyzer:
 
     def _find_connected_components(
         self,
-        edges: List[PropagationEdge],
+        edges: list[PropagationEdge],
         min_features: int,
         min_layers: int
-    ) -> List[CircuitCandidate]:
+    ) -> list[CircuitCandidate]:
         """Find connected components in the propagation graph."""
         # Build adjacency representation
-        adj: Dict[str, Set[str]] = {}
-        edge_map: Dict[Tuple[str, str], PropagationEdge] = {}
+        adj: dict[str, set[str]] = {}
+        edge_map: dict[tuple[str, str], PropagationEdge] = {}
 
         for edge in edges:
             if edge.source_feature not in adj:
@@ -685,8 +683,8 @@ class PropagationAnalyzer:
 
     def _merge_overlapping_circuits(
         self,
-        circuits: List[CircuitCandidate]
-    ) -> List[CircuitCandidate]:
+        circuits: list[CircuitCandidate]
+    ) -> list[CircuitCandidate]:
         """Merge circuits that share features."""
         if not circuits:
             return circuits
@@ -716,7 +714,7 @@ class PropagationAnalyzer:
 
         return merged
 
-    def find_feature_circuits(self, feature_id: str) -> List[CircuitCandidate]:
+    def find_feature_circuits(self, feature_id: str) -> list[CircuitCandidate]:
         """Find all circuits containing a specific feature."""
         if not self._circuits:
             self.discover_circuits()
@@ -740,7 +738,7 @@ class PropagationAnalyzer:
 
         return len(intersection) / len(union)
 
-    def analyze_bottlenecks(self) -> List[Dict[str, Any]]:
+    def analyze_bottlenecks(self) -> list[dict[str, Any]]:
         """
         Find bottleneck features - features many circuits pass through.
 
@@ -751,8 +749,8 @@ class PropagationAnalyzer:
             self.discover_circuits()
 
         # Count feature appearances in circuits
-        feature_counts: Dict[str, int] = {}
-        feature_strengths: Dict[str, List[float]] = {}
+        feature_counts: dict[str, int] = {}
+        feature_strengths: dict[str, list[float]] = {}
 
         for circuit in self._circuits:
             for feature in circuit.features:
@@ -780,7 +778,7 @@ class PropagationAnalyzer:
 
         return bottlenecks
 
-    def statistics(self) -> Dict[str, Any]:
+    def statistics(self) -> dict[str, Any]:
         """Get analyzer statistics."""
         return {
             "n_cached_paths": len(self._path_cache),

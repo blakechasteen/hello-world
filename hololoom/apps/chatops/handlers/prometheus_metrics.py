@@ -29,15 +29,14 @@ Usage:
     app.include_router(create_metrics_router(collector))
 """
 
-import time
 import logging
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Dict, List, Optional, Any
-from collections import deque
-from enum import Enum
 import statistics
 import threading
+import time
+from collections import deque
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,7 @@ class MetricValue:
     """A single metric value with labels."""
     name: str
     value: float
-    labels: Dict[str, str] = field(default_factory=dict)
+    labels: dict[str, str] = field(default_factory=dict)
     metric_type: MetricType = MetricType.GAUGE
     help_text: str = ""
     timestamp: float = field(default_factory=time.time)
@@ -64,9 +63,9 @@ class MetricValue:
 @dataclass
 class LatencyHistogram:
     """Histogram for latency tracking with percentile calculation."""
-    buckets: List[float] = field(default_factory=lambda: [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000])
-    observations: List[float] = field(default_factory=list)
-    bucket_counts: Dict[float, int] = field(default_factory=dict)
+    buckets: list[float] = field(default_factory=lambda: [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000])
+    observations: list[float] = field(default_factory=list)
+    bucket_counts: dict[float, int] = field(default_factory=dict)
     sum_total: float = 0.0
     count: int = 0
     max_observations: int = 10000
@@ -114,14 +113,14 @@ class JobMetrics:
     """Metrics for a single job."""
     job_id: str
     submitted_at: float
-    started_at: Optional[float] = None
-    completed_at: Optional[float] = None
+    started_at: float | None = None
+    completed_at: float | None = None
     status: str = "pending"
-    duration_ms: Optional[float] = None
-    confidence: Optional[float] = None
-    error: Optional[str] = None
+    duration_ms: float | None = None
+    confidence: float | None = None
+    error: str | None = None
     query_length: int = 0
-    tool_used: Optional[str] = None
+    tool_used: str | None = None
 
 
 class JobMetricsCollector:
@@ -142,11 +141,11 @@ class JobMetricsCollector:
 
     def __init__(self, window_size_minutes: int = 5):
         self._lock = threading.RLock()  # RLock allows re-entrant locking (fixes deadlock in get_summary)
-        self._jobs: Dict[str, JobMetrics] = {}
+        self._jobs: dict[str, JobMetrics] = {}
         self._completed_jobs: deque = deque(maxlen=10000)  # Rolling window
 
         # Counters
-        self._jobs_total: Dict[str, int] = {
+        self._jobs_total: dict[str, int] = {
             "pending": 0,
             "running": 0,
             "completed": 0,
@@ -171,10 +170,10 @@ class JobMetricsCollector:
         self._job_timestamps: deque = deque()
 
         # Error tracking
-        self._error_counts: Dict[str, int] = {}
+        self._error_counts: dict[str, int] = {}
 
         # Tool usage tracking
-        self._tool_counts: Dict[str, int] = {}
+        self._tool_counts: dict[str, int] = {}
 
         logger.info("JobMetricsCollector initialized")
 
@@ -297,7 +296,7 @@ class JobMetricsCollector:
             count = len(self._job_timestamps)
             return count / self._window_size_minutes if self._window_size_minutes > 0 else 0
 
-    def get_metrics(self) -> List[MetricValue]:
+    def get_metrics(self) -> list[MetricValue]:
         """Get all metrics in Prometheus format."""
         metrics = []
 
@@ -413,7 +412,7 @@ class JobMetricsCollector:
         metrics = self.get_metrics()
 
         # Group by metric name
-        by_name: Dict[str, List[MetricValue]] = {}
+        by_name: dict[str, list[MetricValue]] = {}
         for m in metrics:
             if m.name not in by_name:
                 by_name[m.name] = []
@@ -436,7 +435,7 @@ class JobMetricsCollector:
 
         return "\n".join(lines)
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get a summary dict for JSON export."""
         with self._lock:
             return {
@@ -472,7 +471,7 @@ def create_metrics_router(collector: JobMetricsCollector):
     """
     try:
         from fastapi import APIRouter
-        from fastapi.responses import PlainTextResponse, JSONResponse
+        from fastapi.responses import JSONResponse, PlainTextResponse
     except ImportError:
         logger.warning("FastAPI not available, metrics router disabled")
         return None
@@ -493,7 +492,7 @@ def create_metrics_router(collector: JobMetricsCollector):
 
 
 # Global collector instance (can be replaced)
-_global_collector: Optional[JobMetricsCollector] = None
+_global_collector: JobMetricsCollector | None = None
 
 
 def get_metrics_collector() -> JobMetricsCollector:

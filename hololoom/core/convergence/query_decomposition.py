@@ -16,13 +16,10 @@ Author: HoloLoom Team
 
 import logging
 import re
-from typing import List, Optional, Callable, Any
-from dataclasses import dataclass
+from collections.abc import Callable
+from typing import Any
 
-from hololoom.protocols.recursive_reasoning import (
-    DecompositionTree,
-    QueryDecomposerProtocol
-)
+from hololoom.protocols.recursive_reasoning import DecompositionTree
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +107,7 @@ class QueryDecomposer:
         self,
         max_depth: int = 3,
         max_sub_queries: int = 5,
-        weaving_fn: Optional[Callable] = None
+        weaving_fn: Callable | None = None
     ):
         """
         Initialize decomposer.
@@ -186,7 +183,7 @@ class QueryDecomposer:
             synthesis_strategy=synthesis_strategy
         )
 
-    def _decompose_strategy(self, query: str, complexity: float) -> List[str]:
+    def _decompose_strategy(self, query: str, complexity: float) -> list[str]:
         """
         Select and apply decomposition strategy.
 
@@ -218,7 +215,7 @@ class QueryDecomposer:
         # Strategy 5: Fallback - hierarchical breakdown
         return self._hierarchical_decomposition(query)
 
-    def _split_conjunctions(self, query: str) -> List[str]:
+    def _split_conjunctions(self, query: str) -> list[str]:
         """Split query on conjunctions (and, or)."""
         # Split on " and " and " or "
         parts = re.split(r'\s+(?:and|or)\s+', query, flags=re.IGNORECASE)
@@ -235,13 +232,13 @@ class QueryDecomposer:
 
         return sub_queries if sub_queries else [query]
 
-    def _extract_questions(self, query: str) -> List[str]:
+    def _extract_questions(self, query: str) -> list[str]:
         """Extract multiple questions from query."""
         # Split on sentence boundaries with question marks
         questions = [q.strip() + "?" for q in query.split("?") if q.strip()]
         return questions if len(questions) > 1 else [query]
 
-    def _split_comparison(self, query: str) -> List[str]:
+    def _split_comparison(self, query: str) -> list[str]:
         """Split comparison queries into individual analyses."""
         query_lower = query.lower()
 
@@ -265,12 +262,12 @@ class QueryDecomposer:
                 return [
                     f"What is {entity1.strip()}?",
                     f"What is {entity2.strip()}?",
-                    f"What are the key differences?"
+                    "What are the key differences?"
                 ]
 
         return [query]
 
-    def _aspect_based_decomposition(self, query: str) -> List[str]:
+    def _aspect_based_decomposition(self, query: str) -> list[str]:
         """Decompose analytical queries into aspects."""
         # Common aspects for analysis
         aspects = [
@@ -293,7 +290,7 @@ class QueryDecomposer:
 
         return sub_queries
 
-    def _hierarchical_decomposition(self, query: str) -> List[str]:
+    def _hierarchical_decomposition(self, query: str) -> list[str]:
         """Hierarchical breakdown: overview → details → examples."""
         topic = self._extract_topic(query)
 
@@ -319,7 +316,7 @@ class QueryDecomposer:
 
         return topic if topic else query
 
-    def _select_synthesis_strategy(self, root_query: str, sub_queries: List[str]) -> str:
+    def _select_synthesis_strategy(self, root_query: str, sub_queries: list[str]) -> str:
         """
         Select synthesis strategy based on query type.
 
@@ -343,7 +340,7 @@ class QueryDecomposer:
 
     async def synthesize_sub_answers(
         self,
-        sub_results: List[Any],
+        sub_results: list[Any],
         synthesis_strategy: str = "sequential_synthesis"
     ) -> str:
         """
@@ -376,12 +373,12 @@ class QueryDecomposer:
         else:
             return self._synthesize_sequential(answers)
 
-    def _synthesize_sequential(self, answers: List[str]) -> str:
+    def _synthesize_sequential(self, answers: list[str]) -> str:
         """Concatenate answers in sequence."""
         synthesized = "\n\n".join(f"**Part {i+1}:**\n{answer}" for i, answer in enumerate(answers))
         return synthesized
 
-    def _synthesize_comparison(self, answers: List[str]) -> str:
+    def _synthesize_comparison(self, answers: list[str]) -> str:
         """Synthesize comparison answers."""
         if len(answers) < 3:
             return self._synthesize_sequential(answers)
@@ -397,7 +394,7 @@ class QueryDecomposer:
 """
         return synthesized
 
-    def _synthesize_analytical(self, answers: List[str]) -> str:
+    def _synthesize_analytical(self, answers: list[str]) -> str:
         """Synthesize analytical answers with structure."""
         sections = ["Overview", "Advantages", "Disadvantages", "Use Cases"]
         synthesized_parts = []
@@ -407,7 +404,7 @@ class QueryDecomposer:
 
         return "\n\n".join(synthesized_parts)
 
-    def _synthesize_hierarchical(self, answers: List[str]) -> str:
+    def _synthesize_hierarchical(self, answers: list[str]) -> str:
         """Synthesize hierarchical answers."""
         if len(answers) >= 3:
             return f"""**Overview:**
@@ -430,7 +427,7 @@ class QueryDecomposer:
 def create_query_decomposer(
     max_depth: int = 3,
     max_sub_queries: int = 5,
-    weaving_fn: Optional[Callable] = None
+    weaving_fn: Callable | None = None
 ) -> QueryDecomposer:
     """
     Create query decomposer.
@@ -484,11 +481,11 @@ if __name__ == "__main__":
             # Decompose
             tree = await decomposer.decompose(query, complexity_threshold=0.5)
 
-            print(f"\nDecomposition:")
+            print("\nDecomposition:")
             print(f"  Root: {tree.root_query}")
             print(f"  Depth: {tree.depth}")
             print(f"  Synthesis Strategy: {tree.synthesis_strategy}")
-            print(f"\n  Sub-queries:")
+            print("\n  Sub-queries:")
             for i, sub in enumerate(tree.sub_queries, 1):
                 print(f"    {i}. {sub}")
 

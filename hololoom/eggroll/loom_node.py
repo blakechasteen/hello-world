@@ -1,17 +1,19 @@
-from hololoom.eggroll.mirror_core import MirrorCoreAgent
+from typing import Any
+
+import numpy as np
+import torch
+
 from hololoom.dark_trace.auto_probe import AutoProbe
 from hololoom.dark_trace.steering_policy import ConsistencyGuard
-import torch
-import random
-import numpy as np
-from typing import Optional, Tuple, Dict, Any
+from hololoom.eggroll.mirror_core import MirrorCoreAgent
 
 # Rust-accelerated operations (with NumPy fallback)
 from hololoom.eggroll.rust_ops import (
-    normalize_batch,
-    cosine_similarity_batch,
     RUST_AVAILABLE,
+    cosine_similarity_batch,
+    normalize_batch,
 )
+
 
 class LoomNode:
     """
@@ -36,8 +38,8 @@ class LoomNode:
         self.guard = None
 
         # Cache for embeddings (reused across steps)
-        self._last_embedding: Optional[np.ndarray] = None
-        self._target_embedding: Optional[np.ndarray] = None
+        self._last_embedding: np.ndarray | None = None
+        self._target_embedding: np.ndarray | None = None
 
         if use_dark_trace:
             # Determine probe target based on architecture
@@ -52,7 +54,7 @@ class LoomNode:
             self.probe = AutoProbe(self.agent, layer_name=target_layer)
             self.probe.start()
             self.guard = ConsistencyGuard(self.probe)
-            
+
     def set_weights(self, weights: dict):
         """Syncs weights with the Hive Mind (Central Parameter Server)."""
         self.agent.custom_model.load_state_dict(weights)
@@ -89,7 +91,7 @@ class LoomNode:
 
         return normalized.flatten()
 
-    def step(self, task_input: torch.Tensor, target: torch.Tensor) -> Tuple[float, Dict[str, Any], str]:
+    def step(self, task_input: torch.Tensor, target: torch.Tensor) -> tuple[float, dict[str, Any], str]:
         """
         Performs one evolutionary / gradient step.
 
@@ -118,7 +120,7 @@ class LoomNode:
         fitness = -loss.item()
 
         # Metrics collection
-        metrics: Dict[str, Any] = {
+        metrics: dict[str, Any] = {
             "loss": loss.item(),
             "base_fitness": fitness,
         }

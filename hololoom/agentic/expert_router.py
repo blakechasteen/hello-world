@@ -17,18 +17,18 @@ Date: 2025-12-09
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
 import random
-import math
-from datetime import datetime
 from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import TYPE_CHECKING, Any
 
 from hololoom.bandits.beta_arm import BetaArm
+
 from .protocol import AgentCapability, AgentStatus, SelectionStrategy
 
 if TYPE_CHECKING:
-    from .multi_agent import AgentRegistry, AgentInfo
+    from .multi_agent import AgentInfo, AgentRegistry
 
 
 @dataclass
@@ -93,7 +93,7 @@ class AgentScore:
     thompson_sample: float        # Sample from Thompson prior
     expected_reward: float        # E[X] from Thompson prior
 
-    def __lt__(self, other: "AgentScore") -> bool:
+    def __lt__(self, other: AgentScore) -> bool:
         return self.total_score < other.total_score
 
 
@@ -106,7 +106,7 @@ class RoutingDecision:
     """
     selected_agent: str
     score: AgentScore
-    alternatives: List[AgentScore] = field(default_factory=list)
+    alternatives: list[AgentScore] = field(default_factory=list)
     routing_reason: str = ""
     used_thompson: bool = False
     routing_time_ms: float = 0.0
@@ -185,10 +185,10 @@ class ExpertRouter:
         self._exploration_bonus = exploration_bonus
 
         # Thompson priors per agent
-        self._priors: Dict[str, ThompsonPrior] = defaultdict(ThompsonPrior)
+        self._priors: dict[str, ThompsonPrior] = defaultdict(ThompsonPrior)
 
         # Performance history per agent
-        self._performance: Dict[str, Dict[str, Any]] = defaultdict(
+        self._performance: dict[str, dict[str, Any]] = defaultdict(
             lambda: {
                 "successes": 0,
                 "failures": 0,
@@ -207,7 +207,7 @@ class ExpertRouter:
         required_capability: AgentCapability,
         strategy: SelectionStrategy = SelectionStrategy.BALANCED,
         top_k: int = 1,
-        exclude_agents: Optional[List[str]] = None
+        exclude_agents: list[str] | None = None
     ) -> RoutingDecision:
         """
         Route to the best agent for a capability.
@@ -418,7 +418,7 @@ class ExpertRouter:
         perf["total_latency_ms"] += latency_ms
         perf["last_used"] = datetime.now().isoformat()
 
-    def get_agent_prior(self, agent_id: str) -> Dict[str, float]:
+    def get_agent_prior(self, agent_id: str) -> dict[str, float]:
         """Get Thompson prior for an agent."""
         prior = self._priors[agent_id]
         return {
@@ -428,7 +428,7 @@ class ExpertRouter:
             "total_observations": prior.total_observations()
         }
 
-    def get_agent_performance(self, agent_id: str) -> Dict[str, Any]:
+    def get_agent_performance(self, agent_id: str) -> dict[str, Any]:
         """Get performance history for an agent."""
         perf = self._performance[agent_id]
         total = perf["successes"] + perf["failures"]
@@ -443,7 +443,7 @@ class ExpertRouter:
             "last_used": perf["last_used"]
         }
 
-    def get_routing_statistics(self) -> Dict[str, Any]:
+    def get_routing_statistics(self) -> dict[str, Any]:
         """Get overall routing statistics."""
         all_performances = {
             agent_id: self.get_agent_performance(agent_id)
@@ -480,7 +480,7 @@ class ExpertRouter:
         capability: AgentCapability,
         k: int = 3,
         strategy: SelectionStrategy = SelectionStrategy.BALANCED
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Get top K agents for a capability.
 

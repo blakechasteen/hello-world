@@ -12,16 +12,16 @@ Implements ModSecurity-style rules to protect against common web attacks:
 Created: 2025-11-26
 """
 
-import re
+import hashlib
 import json
 import logging
-from typing import Dict, List, Optional, Tuple, Set
+import re
 from datetime import datetime
-from fastapi import Request, HTTPException
+
+from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
-import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class WAFRule:
         self.severity = severity
         self.violations_count = 0
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         """Check if request violates the rule. Return violation details if true."""
         raise NotImplementedError
 
@@ -63,7 +63,7 @@ class SQLInjectionRule(WAFRule):
         )
         self.compiled_patterns = [re.compile(p, re.IGNORECASE) for p in self.SQL_PATTERNS]
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         # Check URL parameters
         url_str = str(request.url)
         for pattern in self.compiled_patterns:
@@ -119,7 +119,7 @@ class XSSRule(WAFRule):
         )
         self.compiled_patterns = [re.compile(p, re.IGNORECASE | re.DOTALL) for p in self.XSS_PATTERNS]
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         # Check URL parameters
         url_str = str(request.url)
         for pattern in self.compiled_patterns:
@@ -170,7 +170,7 @@ class PathTraversalRule(WAFRule):
         )
         self.compiled_patterns = [re.compile(p, re.IGNORECASE) for p in self.PATH_PATTERNS]
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         # Check URL
         url_str = str(request.url)
         for pattern in self.compiled_patterns:
@@ -217,7 +217,7 @@ class CommandInjectionRule(WAFRule):
         )
         self.compiled_patterns = [re.compile(p, re.IGNORECASE) for p in self.CMD_PATTERNS]
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         # Check URL parameters
         url_str = str(request.url)
         for pattern in self.compiled_patterns:
@@ -262,7 +262,7 @@ class HeaderValidationRule(WAFRule):
             "MEDIUM"
         )
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         total_size = 0
 
         for header_name, header_value in request.headers.items():
@@ -307,7 +307,7 @@ class RequestSizeLimitRule(WAFRule):
         if max_body_size:
             self.MAX_BODY_SIZE = max_body_size
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         # Check URL length
         if len(str(request.url)) > self.MAX_URL_LENGTH:
             return f"URL exceeds maximum length ({len(str(request.url))} > {self.MAX_URL_LENGTH})"
@@ -341,7 +341,7 @@ class XMLExternalEntityRule(WAFRule):
         )
         self.compiled_patterns = [re.compile(p, re.IGNORECASE) for p in self.XXE_PATTERNS]
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         # Only check if content type indicates XML
         content_type = request.headers.get('content-type', '').lower()
         if 'xml' not in content_type and 'soap' not in content_type:
@@ -379,7 +379,7 @@ class LDAPInjectionRule(WAFRule):
         )
         self.compiled_patterns = [re.compile(p, re.IGNORECASE) for p in self.LDAP_PATTERNS]
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         # Check URL parameters
         url_str = str(request.url)
         for pattern in self.compiled_patterns:
@@ -406,9 +406,9 @@ class WAFMiddleware(BaseHTTPMiddleware):
         self,
         app: ASGIApp,
         enabled: bool = True,
-        whitelist_ips: Optional[List[str]] = None,
-        blacklist_ips: Optional[List[str]] = None,
-        custom_rules: Optional[List[WAFRule]] = None,
+        whitelist_ips: list[str] | None = None,
+        blacklist_ips: list[str] | None = None,
+        custom_rules: list[WAFRule] | None = None,
         log_violations: bool = True,
         block_on_violation: bool = True,
         security_monitor = None
@@ -438,8 +438,8 @@ class WAFMiddleware(BaseHTTPMiddleware):
             self.rules.extend(custom_rules)
 
         # Violation statistics
-        self.violations_by_ip: Dict[str, int] = defaultdict(int)
-        self.violations_by_rule: Dict[str, int] = defaultdict(int)
+        self.violations_by_ip: dict[str, int] = defaultdict(int)
+        self.violations_by_rule: dict[str, int] = defaultdict(int)
 
         logger.info(f"WAF Middleware initialized with {len(self.rules)} rules")
 
@@ -557,7 +557,7 @@ class WAFMiddleware(BaseHTTPMiddleware):
         if self.security_monitor:
             await self.security_monitor.log_detailed_violation(log_entry)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get WAF statistics"""
 
         return {

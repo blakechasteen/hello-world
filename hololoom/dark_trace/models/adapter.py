@@ -32,9 +32,11 @@ Usage:
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from enum import Enum
+from typing import Any
+
 import numpy as np
 
 
@@ -56,11 +58,11 @@ class LayerInfo:
     name: str
     layer_type: LayerType
     index: int
-    input_dim: Optional[int] = None
-    output_dim: Optional[int] = None
-    num_heads: Optional[int] = None  # For attention layers
+    input_dim: int | None = None
+    output_dim: int | None = None
+    num_heads: int | None = None  # For attention layers
     is_hookable: bool = True
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __repr__(self) -> str:
         return f"LayerInfo({self.name}, type={self.layer_type.value}, idx={self.index})"
@@ -76,8 +78,8 @@ class ModelCapabilities:
     can_patch: bool = True
     supports_batching: bool = True
     supports_gradients: bool = True
-    max_batch_size: Optional[int] = None
-    supported_dtypes: List[str] = field(default_factory=lambda: ["float32"])
+    max_batch_size: int | None = None
+    supported_dtypes: list[str] = field(default_factory=lambda: ["float32"])
 
 
 @dataclass
@@ -88,7 +90,7 @@ class SteeringConfig:
     vector: np.ndarray
     scale: float = 1.0
     method: str = "add"  # "add", "replace", "multiply"
-    position: Optional[int] = None  # Token position, None = all
+    position: int | None = None  # Token position, None = all
     enabled: bool = True
 
     def apply(self, activations: np.ndarray) -> np.ndarray:
@@ -150,12 +152,12 @@ class HookHandle:
 
 
 # Type alias for activation hooks
-ActivationHook = Callable[[np.ndarray, str], Optional[np.ndarray]]
+ActivationHook = Callable[[np.ndarray, str], np.ndarray | None]
 
 
 def create_hook(
-    callback: Callable[[np.ndarray], Optional[np.ndarray]],
-    layer_filter: Optional[str] = None,
+    callback: Callable[[np.ndarray], np.ndarray | None],
+    layer_filter: str | None = None,
 ) -> ActivationHook:
     """
     Create an activation hook from a callback.
@@ -167,7 +169,7 @@ def create_hook(
     Returns:
         ActivationHook that can be registered with an adapter
     """
-    def hook(activations: np.ndarray, layer_name: str) -> Optional[np.ndarray]:
+    def hook(activations: np.ndarray, layer_name: str) -> np.ndarray | None:
         if layer_filter is not None:
             if not layer_name.startswith(layer_filter):
                 return None
@@ -195,8 +197,8 @@ class ModelAdapter(ABC):
             model: The model to wrap (any type)
         """
         self._model = model
-        self._hooks: Dict[str, Tuple[ActivationHook, str]] = {}
-        self._steering_configs: Dict[str, SteeringConfig] = {}
+        self._hooks: dict[str, tuple[ActivationHook, str]] = {}
+        self._steering_configs: dict[str, SteeringConfig] = {}
         self._hook_counter = 0
 
     @property
@@ -205,7 +207,7 @@ class ModelAdapter(ABC):
         return self._model
 
     @abstractmethod
-    def get_layer_names(self) -> List[str]:
+    def get_layer_names(self) -> list[str]:
         """Get names of all hookable layers."""
         pass
 
@@ -214,7 +216,7 @@ class ModelAdapter(ABC):
         """Get metadata about a specific layer."""
         pass
 
-    def get_all_layer_info(self) -> List[LayerInfo]:
+    def get_all_layer_info(self) -> list[LayerInfo]:
         """Get metadata about all layers."""
         return [self.get_layer_info(name) for name in self.get_layer_names()]
 
@@ -240,10 +242,10 @@ class ModelAdapter(ABC):
 
     def get_activations_batch(
         self,
-        inputs_batch: List[Any],
+        inputs_batch: list[Any],
         layer: str,
         **kwargs,
-    ) -> List[np.ndarray]:
+    ) -> list[np.ndarray]:
         """
         Extract activations for a batch of inputs.
 
@@ -255,9 +257,9 @@ class ModelAdapter(ABC):
     def get_multi_layer_activations(
         self,
         inputs: Any,
-        layers: List[str],
+        layers: list[str],
         **kwargs,
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """
         Extract activations from multiple layers in a single forward pass.
 
@@ -400,7 +402,7 @@ class DummyAdapter(ModelAdapter):
         self.n_layers = n_layers
         self.hidden_dim = hidden_dim
 
-    def get_layer_names(self) -> List[str]:
+    def get_layer_names(self) -> list[str]:
         return [f"layer.{i}" for i in range(self.n_layers)]
 
     def get_layer_info(self, layer_name: str) -> LayerInfo:
@@ -457,11 +459,11 @@ class ActivationCache:
     """
 
     def __init__(self, max_size: int = 1000):
-        self._cache: Dict[str, np.ndarray] = {}
+        self._cache: dict[str, np.ndarray] = {}
         self._max_size = max_size
-        self._access_order: List[str] = []
+        self._access_order: list[str] = []
 
-    def get(self, key: str) -> Optional[np.ndarray]:
+    def get(self, key: str) -> np.ndarray | None:
         """Get cached activations."""
         if key in self._cache:
             # Update access order (LRU)

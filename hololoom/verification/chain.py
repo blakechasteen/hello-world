@@ -16,29 +16,28 @@ import asyncio
 import hashlib
 import logging
 import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
 
+from hololoom.verification.claim_extractor import create_claim_extractor
+from hololoom.verification.contradiction_detector import create_contradiction_detector
+from hololoom.verification.independent_verifier import create_independent_verifier
 from hololoom.verification.protocol import (
     Contradiction,
     DegradationLevel,
     VerifiableClaim,
     VerificationAnswer,
-    VerificationChainProtocol,
     VerificationConfig,
     VerificationQuestion,
     VerificationResult,
     VerificationStatus,
 )
-from hololoom.verification.claim_extractor import create_claim_extractor
-from hololoom.verification.verification_planner import create_verification_planner
-from hololoom.verification.independent_verifier import create_independent_verifier
-from hololoom.verification.contradiction_detector import create_contradiction_detector
 from hololoom.verification.result_synthesizer import (
-    create_result_synthesizer,
-    calculate_overall_status,
     aggregate_claim_statuses,
+    calculate_overall_status,
+    create_result_synthesizer,
 )
+from hololoom.verification.verification_planner import create_verification_planner
 
 logger = logging.getLogger(__name__)
 
@@ -65,15 +64,15 @@ class VerificationCache:
     def __init__(self, max_size: int = 1000, ttl_seconds: float = 3600.0):
         self.max_size = max_size
         self.ttl_seconds = ttl_seconds
-        self._cache: Dict[str, CacheEntry] = {}
-        self._access_order: List[str] = []
+        self._cache: dict[str, CacheEntry] = {}
+        self._access_order: list[str] = []
 
     def _compute_key(self, query: str, response: str) -> str:
         """Compute cache key from query and response."""
         content = f"{query}||{response}"
         return hashlib.sha256(content.encode()).hexdigest()[:32]
 
-    def get(self, query: str, response: str) -> Optional[VerificationResult]:
+    def get(self, query: str, response: str) -> VerificationResult | None:
         """Get cached result if available and not expired."""
         key = self._compute_key(query, response)
 
@@ -119,7 +118,7 @@ class VerificationCache:
         self._cache.clear()
         self._access_order.clear()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         total_hits = sum(e.hit_count for e in self._cache.values())
         return {
@@ -153,7 +152,7 @@ class VerificationMetrics:
     degradation_level: DegradationLevel = DegradationLevel.FULL
     iterations_used: int = 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'timing': {
@@ -203,9 +202,9 @@ class VerificationChain:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
-        knowledge_base: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
+        knowledge_base: Any | None = None,
         enable_cache: bool = True,
         cache_size: int = 1000,
         cache_ttl: float = 3600.0,
@@ -274,7 +273,7 @@ class VerificationChain:
         query: str,
         response: str,
         confidence: float = 0.5,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         max_iterations: int = 3,
         confidence_threshold: float = 0.85,
     ) -> VerificationResult:
@@ -342,7 +341,7 @@ class VerificationChain:
         query: str,
         response: str,
         confidence: float,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         max_iterations: int,
         confidence_threshold: float,
         metrics: VerificationMetrics,
@@ -352,10 +351,10 @@ class VerificationChain:
         current_response = response
         current_confidence = confidence
         iteration = 0
-        all_claims: List[VerifiableClaim] = []
-        all_questions: List[VerificationQuestion] = []
-        all_answers: List[VerificationAnswer] = []
-        all_contradictions: List[Contradiction] = []
+        all_claims: list[VerifiableClaim] = []
+        all_questions: list[VerificationQuestion] = []
+        all_answers: list[VerificationAnswer] = []
+        all_contradictions: list[Contradiction] = []
 
         while iteration < max_iterations:
             iteration += 1
@@ -462,9 +461,9 @@ class VerificationChain:
 
     def _sample_important_claims(
         self,
-        claims: List[VerifiableClaim],
+        claims: list[VerifiableClaim],
         max_claims: int
-    ) -> List[VerifiableClaim]:
+    ) -> list[VerifiableClaim]:
         """Sample the most important claims."""
         if len(claims) <= max_claims:
             return claims
@@ -475,9 +474,9 @@ class VerificationChain:
 
     async def _generate_all_questions(
         self,
-        claims: List[VerifiableClaim],
-        context: Dict[str, Any] = None
-    ) -> List[VerificationQuestion]:
+        claims: list[VerifiableClaim],
+        context: dict[str, Any] = None
+    ) -> list[VerificationQuestion]:
         """Generate verification questions for all claims in parallel."""
         context = context or {}
         if self.config.parallel_verification:
@@ -503,9 +502,9 @@ class VerificationChain:
 
     async def _detect_all_contradictions(
         self,
-        claims: List[VerifiableClaim],
-        answers: List[VerificationAnswer]
-    ) -> List[Contradiction]:
+        claims: list[VerifiableClaim],
+        answers: list[VerificationAnswer]
+    ) -> list[Contradiction]:
         """Detect contradictions between claims and verification answers."""
         if self.config.parallel_verification:
             tasks = [
@@ -530,7 +529,7 @@ class VerificationChain:
                 contradictions.extend(claim_contradictions)
             return contradictions
 
-    def _sanitize_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    def _sanitize_context(self, context: dict[str, Any]) -> dict[str, Any]:
         """
         Remove original response from context.
 
@@ -585,7 +584,7 @@ class VerificationChain:
             }
         )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get chain statistics."""
         cache_stats = self._cache.get_stats() if self._cache else {}
         return {
@@ -608,9 +607,9 @@ async def verify_response(
     query: str,
     response: str,
     confidence: float = 0.5,
-    llm_client: Optional[Any] = None,
-    knowledge_base: Optional[Any] = None,
-    config: Optional[VerificationConfig] = None,
+    llm_client: Any | None = None,
+    knowledge_base: Any | None = None,
+    config: VerificationConfig | None = None,
     max_iterations: int = 3,
 ) -> VerificationResult:
     """
@@ -656,9 +655,9 @@ async def verify_response(
 
 
 def create_verification_chain(
-    config: Optional[VerificationConfig] = None,
-    llm_client: Optional[Any] = None,
-    knowledge_base: Optional[Any] = None,
+    config: VerificationConfig | None = None,
+    llm_client: Any | None = None,
+    knowledge_base: Any | None = None,
     enable_cache: bool = True,
 ) -> VerificationChain:
     """
@@ -709,9 +708,9 @@ class AgenticVerificationIntegration:
 
     def __init__(
         self,
-        chain: Optional[VerificationChain] = None,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
+        chain: VerificationChain | None = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
     ):
         self.chain = chain or create_verification_chain(
             config=config,
@@ -723,8 +722,8 @@ class AgenticVerificationIntegration:
         query: str,
         response: str,
         step_confidence: float,
-        step_metadata: Dict[str, Any],
-    ) -> Tuple[str, float, Dict[str, Any]]:
+        step_metadata: dict[str, Any],
+    ) -> tuple[str, float, dict[str, Any]]:
         """
         Verify a single agentic reasoning step.
 
@@ -765,8 +764,8 @@ class AgenticVerificationIntegration:
         self,
         original_query: str,
         synthesis_response: str,
-        sub_queries: List[str],
-        sub_responses: List[str],
+        sub_queries: list[str],
+        sub_responses: list[str],
         synthesis_confidence: float,
     ) -> VerificationResult:
         """

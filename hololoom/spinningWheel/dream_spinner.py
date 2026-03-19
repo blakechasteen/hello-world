@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 DreamSpinner - NeuroHood Dream Narrative to MemoryShard Converter
 =================================================================
@@ -21,28 +22,28 @@ Author: Phase 2 Integration
 Date: November 2025
 """
 
-from typing import List, Optional, Dict, Any, AsyncIterator, TYPE_CHECKING
+import logging
+import time
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from pathlib import Path
-import time
-import logging
+from typing import Any
 
+from hololoom.protocols.types import MemoryShard
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinnerCapabilities,
-    SpinResult,
-    ImportanceSignals,
     ImportanceScore,
+    ImportanceSignals,
+    SpinnerCapabilities,
 )
-from hololoom.protocols.types import MemoryShard
 
 # Graceful import of NeuroHood types
 try:
     from NeuroHood.dreams.narrative_generator import (
+        DreamMood,
         DreamNarrative,
         NarrativeAct,
         NarrativeArchetype,
-        DreamMood
     )
     NEUROHOOD_AVAILABLE = True
 except ImportError:
@@ -101,9 +102,9 @@ class DreamSpinner(BaseSpinner):
 
     def __init__(
         self,
-        config: Optional[DreamSpinnerConfig] = None,
+        config: DreamSpinnerConfig | None = None,
         importance_threshold: float = 0.3,
-        checkpoint_dir: Optional[Path] = None
+        checkpoint_dir: Path | None = None
     ):
         """
         Initialize DreamSpinner.
@@ -166,7 +167,7 @@ class DreamSpinner(BaseSpinner):
         self,
         source: Any,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Convert dream narrative(s) to MemoryShards.
 
@@ -207,7 +208,7 @@ class DreamSpinner(BaseSpinner):
         narrative: 'DreamNarrative',
         resident_id: str,
         session_id: str
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """Convert a single DreamNarrative to MemoryShards."""
         shards = []
 
@@ -375,7 +376,7 @@ class DreamSpinner(BaseSpinner):
             metadata=metadata
         )
 
-    def _extract_entities(self, narrative: 'DreamNarrative') -> List[str]:
+    def _extract_entities(self, narrative: 'DreamNarrative') -> list[str]:
         """Extract entities from dream narrative."""
         entities = []
 
@@ -413,7 +414,7 @@ class DreamSpinner(BaseSpinner):
 
         return unique
 
-    def _extract_motifs(self, narrative: 'DreamNarrative') -> List[str]:
+    def _extract_motifs(self, narrative: 'DreamNarrative') -> list[str]:
         """Extract motifs from dream narrative."""
         motifs = []
 
@@ -591,7 +592,7 @@ class DreamSpinner(BaseSpinner):
 # ============================================================================
 
 def create_dream_spinner(
-    config: Optional[DreamSpinnerConfig] = None,
+    config: DreamSpinnerConfig | None = None,
     importance_threshold: float = 0.3
 ) -> DreamSpinner:
     """

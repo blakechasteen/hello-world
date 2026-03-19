@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Orchestration Department - Multi-department task coordination.
 
@@ -19,20 +18,20 @@ Supported Tasks:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime
-from dataclasses import dataclass
-from enum import Enum
+
 import logging
-import asyncio
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 from ..base import BaseDepartment
 from ..protocol import (
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
     VerificationResult,
-    ConfidenceMetadata,
-    DepartmentConfig
 )
 
 logger = logging.getLogger(__name__)
@@ -55,8 +54,8 @@ class WorkflowStep:
     step_id: str
     department: str
     task_type: str
-    parameters: Dict[str, Any]
-    depends_on: Optional[List[str]] = None  # Step IDs this depends on
+    parameters: dict[str, Any]
+    depends_on: list[str] | None = None  # Step IDs this depends on
 
 
 @dataclass
@@ -66,8 +65,8 @@ class WorkflowResult:
     steps_completed: int
     steps_failed: int
     total_time_ms: float
-    results: Dict[str, DepartmentResponse]
-    errors: Dict[str, str]
+    results: dict[str, DepartmentResponse]
+    errors: dict[str, str]
 
 
 # ============================================================================
@@ -114,10 +113,10 @@ class OrchestrationDepartment(BaseDepartment):
 
     def __init__(
         self,
-        registry: Optional[Any] = None,
+        registry: Any | None = None,
         max_concurrent_tasks: int = 5,
         timeout_per_step_ms: float = 30000.0,
-        dept_config: Optional[DepartmentConfig] = None
+        dept_config: DepartmentConfig | None = None
     ):
         """
         Initialize Orchestration Department.
@@ -146,8 +145,8 @@ class OrchestrationDepartment(BaseDepartment):
         self.timeout_per_step_ms = timeout_per_step_ms
 
         # Workflow tracking
-        self._active_workflows: Dict[str, WorkflowResult] = {}
-        self._workflow_history: List[WorkflowResult] = []
+        self._active_workflows: dict[str, WorkflowResult] = {}
+        self._workflow_history: list[WorkflowResult] = []
 
         logger.info("Orchestration Department initialized")
 
@@ -289,7 +288,7 @@ class OrchestrationDepartment(BaseDepartment):
     async def _execute_workflow(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Execute multi-department workflow."""
         steps_data = request.parameters.get("steps", [])
         workflow_type = request.parameters.get("workflow_type", "sequential")
@@ -355,7 +354,7 @@ class OrchestrationDepartment(BaseDepartment):
     async def _execute_sequential(
         self,
         workflow_id: str,
-        steps: List[WorkflowStep]
+        steps: list[WorkflowStep]
     ) -> WorkflowResult:
         """Execute steps sequentially."""
         start_time = datetime.now()
@@ -405,7 +404,7 @@ class OrchestrationDepartment(BaseDepartment):
     async def _execute_parallel(
         self,
         workflow_id: str,
-        steps: List[WorkflowStep]
+        steps: list[WorkflowStep]
     ) -> WorkflowResult:
         """Execute steps in parallel."""
         start_time = datetime.now()
@@ -447,7 +446,7 @@ class OrchestrationDepartment(BaseDepartment):
         self,
         workflow_id: str,
         step: WorkflowStep,
-        prior_results: Dict[str, DepartmentResponse]
+        prior_results: dict[str, DepartmentResponse]
     ) -> DepartmentResponse:
         """Execute a single workflow step."""
         # Resolve parameters
@@ -468,9 +467,9 @@ class OrchestrationDepartment(BaseDepartment):
 
     def _resolve_parameters(
         self,
-        parameters: Dict[str, Any],
-        prior_results: Dict[str, DepartmentResponse]
-    ) -> Dict[str, Any]:
+        parameters: dict[str, Any],
+        prior_results: dict[str, DepartmentResponse]
+    ) -> dict[str, Any]:
         """Resolve parameter references like {step1.result.response}."""
         resolved = {}
 
@@ -506,7 +505,7 @@ class OrchestrationDepartment(BaseDepartment):
     async def _aggregate_results(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Aggregate results from multiple departments."""
         responses = request.parameters.get("responses", {})
 
@@ -535,7 +534,7 @@ class OrchestrationDepartment(BaseDepartment):
     async def _route_task(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Intelligently route task to best department."""
         task_description = request.parameters.get("task_description")
         candidate_departments = request.parameters.get("departments", [])
@@ -582,9 +581,9 @@ class OrchestrationDepartment(BaseDepartment):
 
     def _build_reasoning(
         self,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         request: DepartmentRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Build reasoning dict for response."""
         return {
             "task_type": request.task_type,
@@ -594,9 +593,9 @@ class OrchestrationDepartment(BaseDepartment):
 
     async def _build_session_state(
         self,
-        session_id: Optional[str],
-        result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        session_id: str | None,
+        result: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Build session state update."""
         if not session_id:
             return None
@@ -605,6 +604,6 @@ class OrchestrationDepartment(BaseDepartment):
             "last_workflow": result.get("workflow_id")
         }
 
-    def get_workflow_history(self, limit: int = 10) -> List[WorkflowResult]:
+    def get_workflow_history(self, limit: int = 10) -> list[WorkflowResult]:
         """Get recent workflow history."""
         return self._workflow_history[-limit:]

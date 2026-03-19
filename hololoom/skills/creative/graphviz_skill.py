@@ -2,11 +2,18 @@
 
 import asyncio
 import os
-import time
 import tempfile
-from typing import Dict, Any, List, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+import time
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 
 class GraphvizSkill(BaseSkill):
@@ -70,7 +77,7 @@ class GraphvizSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _dispatch(self, operation: str, parameters: Dict[str, Any]):
+    async def _dispatch(self, operation: str, parameters: dict[str, Any]):
         if operation == "render_dot":
             return await self._render_dot(parameters)
         elif operation == "layout_graph":
@@ -84,7 +91,7 @@ class GraphvizSkill(BaseSkill):
         elif operation == "export":
             return await self._export(parameters)
 
-    async def _run_graphviz(self, dot_source: str, output: str, layout: str = "dot", format: str = "png") -> Dict[str, Any]:
+    async def _run_graphviz(self, dot_source: str, output: str, layout: str = "dot", format: str = "png") -> dict[str, Any]:
         """Run Graphviz layout engine."""
         # Create temp file for DOT source
         with tempfile.NamedTemporaryFile(mode='w', suffix='.dot', delete=False) as f:
@@ -187,7 +194,7 @@ class GraphvizSkill(BaseSkill):
         rankdir = params.get("rankdir", "TB")  # TB (top-bottom), LR (left-right)
 
         # Generate DOT source from components
-        dot_lines = [f"digraph architecture {{", f"  rankdir={rankdir};", "  node [shape=box, style=rounded];"]
+        dot_lines = ["digraph architecture {", f"  rankdir={rankdir};", "  node [shape=box, style=rounded];"]
 
         # Group components by layer
         layers = {}
@@ -303,7 +310,7 @@ class GraphvizSkill(BaseSkill):
 
         # Read DOT source if from file
         if source and not dot_source:
-            with open(source, 'r') as f:
+            with open(source) as f:
                 dot_source = f.read()
 
         if not dot_source:
@@ -330,4 +337,5 @@ class GraphvizSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(GraphvizSkill())

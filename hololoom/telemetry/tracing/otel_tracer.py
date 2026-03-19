@@ -8,11 +8,13 @@ from __future__ import annotations
 
 import functools
 import logging
+from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime
 from threading import local
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
+from hololoom.telemetry.config import SamplingStrategy, TracingConfig
 from hololoom.telemetry.protocol import (
     SpanContext,
     SpanData,
@@ -23,7 +25,6 @@ from hololoom.telemetry.protocol import (
     create_span_context,
     generate_span_id,
 )
-from hololoom.telemetry.config import TracingConfig, SamplingStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ class BatchSpanProcessor:
         self.max_batch_size = max_batch_size
         self.max_export_batch_size = max_export_batch_size
         self.schedule_delay_ms = schedule_delay_ms
-        self._pending: List[SpanData] = []
+        self._pending: list[SpanData] = []
         self._shutdown = False
 
     def on_start(self, span: SpanData) -> None:
@@ -128,7 +129,7 @@ class Sampler:
     def should_sample(
         self,
         trace_id: str,
-        parent_context: Optional[SpanContext] = None,
+        parent_context: SpanContext | None = None,
     ) -> bool:
         """Determine if this trace should be sampled."""
         strategy = self.config.sampling_strategy
@@ -158,8 +159,8 @@ class OTelTracer(TracingProtocol):
 
     def __init__(
         self,
-        config: Optional[TracingConfig] = None,
-        processors: Optional[List[SpanProcessorProtocol]] = None,
+        config: TracingConfig | None = None,
+        processors: list[SpanProcessorProtocol] | None = None,
     ):
         self.config = config or TracingConfig()
         self.sampler = Sampler(self.config)
@@ -171,8 +172,8 @@ class OTelTracer(TracingProtocol):
         name: str,
         *,
         kind: SpanKind = SpanKind.INTERNAL,
-        attributes: Optional[Dict[str, Any]] = None,
-        parent: Optional[SpanContext] = None,
+        attributes: dict[str, Any] | None = None,
+        parent: SpanContext | None = None,
     ) -> SpanData:
         """Start a new span."""
         # Get parent from argument or current context
@@ -250,15 +251,15 @@ class OTelTracer(TracingProtocol):
                 except Exception as e:
                     logger.warning(f"Span processor on_end error: {e}")
 
-    def get_current_span(self) -> Optional[SpanData]:
+    def get_current_span(self) -> SpanData | None:
         """Get the current span from thread-local context."""
         return getattr(_context, "current_span", None)
 
-    def _set_current_span(self, span: Optional[SpanData]) -> None:
+    def _set_current_span(self, span: SpanData | None) -> None:
         """Set the current span in thread-local context."""
         _context.current_span = span
 
-    def inject_context(self, carrier: Dict[str, str]) -> None:
+    def inject_context(self, carrier: dict[str, str]) -> None:
         """Inject trace context into HTTP headers (W3C Trace Context)."""
         span = self.get_current_span()
         if span is None:
@@ -272,7 +273,7 @@ class OTelTracer(TracingProtocol):
         if ctx.trace_state:
             carrier["tracestate"] = ctx.trace_state
 
-    def extract_context(self, carrier: Dict[str, str]) -> Optional[SpanContext]:
+    def extract_context(self, carrier: dict[str, str]) -> SpanContext | None:
         """Extract trace context from HTTP headers (W3C Trace Context)."""
         traceparent = carrier.get("traceparent")
         if not traceparent:
@@ -300,7 +301,7 @@ class OTelTracer(TracingProtocol):
         name: str,
         *,
         kind: SpanKind = SpanKind.INTERNAL,
-        attributes: Optional[Dict[str, Any]] = None,
+        attributes: dict[str, Any] | None = None,
     ):
         """Context manager for tracing a block of code."""
         span = self.start_span(name, kind=kind, attributes=attributes)
@@ -331,10 +332,10 @@ class OTelTracer(TracingProtocol):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-_global_tracer: Optional[OTelTracer] = None
+_global_tracer: OTelTracer | None = None
 
 
-def create_tracer(config: Optional[TracingConfig] = None) -> OTelTracer:
+def create_tracer(config: TracingConfig | None = None) -> OTelTracer:
     """Create and set the global tracer."""
     global _global_tracer
     _global_tracer = OTelTracer(config)
@@ -355,9 +356,9 @@ def get_tracer() -> OTelTracer:
 
 
 def span(
-    name: Optional[str] = None,
+    name: str | None = None,
     kind: SpanKind = SpanKind.INTERNAL,
-    attributes: Optional[Dict[str, Any]] = None,
+    attributes: dict[str, Any] | None = None,
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """Decorator to trace a function."""
 

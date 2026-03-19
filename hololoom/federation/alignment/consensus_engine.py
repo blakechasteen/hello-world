@@ -21,22 +21,20 @@ Quorum Requirements by Trust Level:
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import time
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, Tuple
+from typing import Any
 
+from ..types import GuildTrustLevel, Response
 from .protocol import (
     AlignmentLayer,
     AlignmentStatus,
     AlignmentVerification,
     ConsensusAlignmentResult,
 )
-from .metadata import AlignmentMetadata, AlignmentProof
-from ..types import Response, GuildTrustLevel
-
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  CONSENSUS STRATEGY - How to reach agreement
@@ -76,7 +74,7 @@ class AlignmentVote:
     vote: AlignmentStatus             # Their verdict
     confidence: float                 # Confidence in vote
     trust_weight: float               # Voter's trust score
-    reasoning: List[str]              # Why they voted this way
+    reasoning: list[str]              # Why they voted this way
     verification: AlignmentVerification  # Full verification result
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
@@ -127,7 +125,7 @@ class AlignmentConsensusEngine:
         strategy: ConsensusStrategy = ConsensusStrategy.BYZANTINE_TOLERANT,
         timeout_ms: float = 500.0,
         min_quorum: int = 2,
-        max_byzantine_faults: Optional[int] = None,
+        max_byzantine_faults: int | None = None,
     ):
         """
         Initialize consensus engine.
@@ -146,12 +144,12 @@ class AlignmentConsensusEngine:
     async def reach_consensus(
         self,
         response: Response,
-        verifier_nodes: List[str],
+        verifier_nodes: list[str],
         verify_func: Callable[
             [str, Response, float, AlignmentLayer],
             Coroutine[Any, Any, AlignmentVerification]
         ],
-        node_trust_scores: Optional[Dict[str, float]] = None,
+        node_trust_scores: dict[str, float] | None = None,
         alignment_threshold: float = 0.8,
     ) -> ConsensusResult:
         """
@@ -217,16 +215,16 @@ class AlignmentConsensusEngine:
     async def _collect_votes(
         self,
         response: Response,
-        verifier_nodes: List[str],
+        verifier_nodes: list[str],
         verify_func: Callable,
-        node_trust_scores: Dict[str, float],
+        node_trust_scores: dict[str, float],
         alignment_threshold: float,
-    ) -> List[AlignmentVote]:
+    ) -> list[AlignmentVote]:
         """Collect votes from all verifier nodes."""
-        votes: List[AlignmentVote] = []
+        votes: list[AlignmentVote] = []
 
         # Create verification tasks
-        async def get_vote(node_id: str) -> Optional[AlignmentVote]:
+        async def get_vote(node_id: str) -> AlignmentVote | None:
             try:
                 verification = await asyncio.wait_for(
                     verify_func(
@@ -263,8 +261,8 @@ class AlignmentConsensusEngine:
 
     def _calculate_consensus(
         self,
-        votes: List[AlignmentVote],
-    ) -> Tuple[ConsensusOutcome, float, float]:
+        votes: list[AlignmentVote],
+    ) -> tuple[ConsensusOutcome, float, float]:
         """
         Calculate consensus outcome based on strategy.
 
@@ -314,8 +312,8 @@ class AlignmentConsensusEngine:
 
     def _calculate_weighted_consensus(
         self,
-        votes: List[AlignmentVote],
-    ) -> Tuple[ConsensusOutcome, float, float]:
+        votes: list[AlignmentVote],
+    ) -> tuple[ConsensusOutcome, float, float]:
         """Calculate consensus weighted by trust scores."""
         if not votes:
             return ConsensusOutcome.TIMEOUT, 0.0, 0.0
@@ -343,8 +341,8 @@ class AlignmentConsensusEngine:
 
     def _calculate_byzantine_consensus(
         self,
-        votes: List[AlignmentVote],
-    ) -> Tuple[ConsensusOutcome, float, float]:
+        votes: list[AlignmentVote],
+    ) -> tuple[ConsensusOutcome, float, float]:
         """
         Byzantine fault tolerant consensus.
 
@@ -378,14 +376,14 @@ class AlignmentConsensusEngine:
 
     def _detect_byzantine_behavior(
         self,
-        votes: List[AlignmentVote],
-    ) -> List[str]:
+        votes: list[AlignmentVote],
+    ) -> list[str]:
         """
         Detect potential Byzantine (malicious) behavior.
 
         Returns list of suspicious node IDs.
         """
-        suspicious: List[str] = []
+        suspicious: list[str] = []
 
         if len(votes) < 3:
             return suspicious
@@ -420,11 +418,11 @@ class AlignmentConsensusEngine:
 
     def _generate_reasoning(
         self,
-        votes: List[AlignmentVote],
+        votes: list[AlignmentVote],
         outcome: ConsensusOutcome,
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate human-readable reasoning for consensus result."""
-        reasoning: List[str] = []
+        reasoning: list[str] = []
 
         n_total = len(votes)
         n_positive = sum(1 for v in votes if v.is_positive)
@@ -452,14 +450,14 @@ class ConsensusResult:
 
     request_id: str
     outcome: ConsensusOutcome
-    votes: List[AlignmentVote]
+    votes: list[AlignmentVote]
     agreement_ratio: float
     consensus_confidence: float
     quorum_met: bool
     quorum_required: int
     latency_ms: float
-    reasoning: List[str] = field(default_factory=list)
-    byzantine_detected: List[str] = field(default_factory=list)
+    reasoning: list[str] = field(default_factory=list)
+    byzantine_detected: list[str] = field(default_factory=list)
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     @property

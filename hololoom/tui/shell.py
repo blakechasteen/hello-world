@@ -7,31 +7,29 @@ Integrates pipeline, graph, and metrics displays.
 """
 
 import asyncio
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Any, Callable
-from datetime import datetime
-import sys
 import time
+from dataclasses import dataclass
+from typing import Optional
 
 try:
     from rich.console import Console
-    from rich.panel import Panel
     from rich.layout import Layout
     from rich.live import Live
-    from rich.table import Table
-    from rich.text import Text
-    from rich.prompt import Prompt
     from rich.markdown import Markdown
-    from rich.syntax import Syntax
+    from rich.panel import Panel
+    from rich.prompt import Prompt
     from rich.spinner import Spinner
     from rich.status import Status
+    from rich.syntax import Syntax
+    from rich.table import Table
+    from rich.text import Text
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
 
-from hololoom.tui.pipeline_display import PipelineDisplay, CompactPipelineDisplay, StageStatus
 from hololoom.tui.graph_display import GraphDisplay, SourceAttributionDisplay
 from hololoom.tui.metrics_panel import MetricsPanel
+from hololoom.tui.pipeline_display import CompactPipelineDisplay, PipelineDisplay, StageStatus
 
 
 @dataclass
@@ -41,7 +39,7 @@ class QueryResult:
     response: str
     confidence: float
     latency_ms: float
-    sources: List[Dict]
+    sources: list[dict]
     tool_used: str
     cached: bool = False
 
@@ -110,9 +108,9 @@ class HoloLoomTUI:
         self.metrics = MetricsPanel(self.console)
 
         # State
-        self.history: List[QueryResult] = []
-        self.last_sources: List[Dict] = []
-        self.current_user: Optional[str] = None  # Phase 3
+        self.history: list[QueryResult] = []
+        self.last_sources: list[dict] = []
+        self.current_user: str | None = None  # Phase 3
 
         # Simulate some initial metrics
         self._init_demo_state()
@@ -285,7 +283,7 @@ class HoloLoomTUI:
         else:
             return f"Based on my knowledge, here's what I know about '{query}'..."
 
-    def _generate_demo_sources(self, query: str) -> List[Dict]:
+    def _generate_demo_sources(self, query: str) -> list[dict]:
         """Generate demo sources."""
         return [
             {"id": "mem_001", "content": f"Primary source for {query[:20]}...", "relevance": 0.92},
@@ -306,7 +304,7 @@ class HoloLoomTUI:
             border_style="green"
         ))
 
-    def print_sources(self, sources: List[Dict] = None):
+    def print_sources(self, sources: list[dict] = None):
         """Print source attribution."""
         sources = sources or self.last_sources
         if not sources:
@@ -516,7 +514,7 @@ class SimpleTUI:
     """
 
     def __init__(self):
-        self.history: List[str] = []
+        self.history: list[str] = []
 
     def print_banner(self):
         """Print ASCII banner."""
@@ -527,7 +525,7 @@ class SimpleTUI:
 ╚═══════════════════════════════════════════════════════════╝
         """)
 
-    def print_pipeline(self, stages: List[str]):
+    def print_pipeline(self, stages: list[str]):
         """Print simple pipeline."""
         print("\nPipeline:")
         for i, stage in enumerate(stages):

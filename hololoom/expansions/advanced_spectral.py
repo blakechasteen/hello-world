@@ -18,14 +18,14 @@ Date: December 2025
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any
 
 try:
     from hololoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:
-        def get_settings(self) -> Dict[str, Any]:
+        def get_settings(self) -> dict[str, Any]:
             raise NotImplementedError
 
 
@@ -59,7 +59,7 @@ class AdvancedSpectralConfig(ExpansionBundle):
     use_wavelets: bool = False
     """Enable multi-scale wavelet features (adds ~10-50ms, O(n^3) complexity)."""
 
-    wavelet_scales: List[float] = field(
+    wavelet_scales: list[float] = field(
         default_factory=lambda: [0.1, 1.0, 10.0]
     )
     """
@@ -92,12 +92,12 @@ class AdvancedSpectralConfig(ExpansionBundle):
     use_multiscale_spectral: bool = False
     """Enable hierarchical spectral analysis (experimental)."""
 
-    multiscale_spectral_scales: List[int] = field(
+    multiscale_spectral_scales: list[int] = field(
         default_factory=lambda: [96, 192, 384]
     )
     """Spectral scales (matches Matryoshka embedding scales)."""
 
-    def get_settings(self) -> Dict[str, Any]:
+    def get_settings(self) -> dict[str, Any]:
         """Return dictionary of settings to merge into config."""
         return {
             # Wavelets

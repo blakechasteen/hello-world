@@ -12,12 +12,12 @@ Prerequisites:
     - Browser installed (for Selenium tests)
 """
 
+import json
 import sys
 import time
-import json
-import requests
-from typing import Dict, List, Any
 from datetime import datetime
+
+import requests
 
 
 class Colors:
@@ -92,7 +92,7 @@ class Phase3Tester:
             self.print_test("Server Health", "FAIL", f"Connection error: {e}")
             return False
 
-    def test_orchestrator_endpoint(self) -> Dict:
+    def test_orchestrator_endpoint(self) -> dict:
         """Test 2: Orchestrator monitoring endpoint."""
         self.print_header("Test 2: Orchestrator Monitoring Endpoint")
 
@@ -127,7 +127,7 @@ class Phase3Tester:
             self.print_test("Orchestrator Endpoint", "FAIL", f"Error: {e}")
             return {}
 
-    def test_query_execution(self) -> Dict:
+    def test_query_execution(self) -> dict:
         """Test 3: Query execution and tracking."""
         self.print_header("Test 3: Query Execution & Tracking")
 
@@ -183,7 +183,7 @@ class Phase3Tester:
             self.print_test("Query Execution", "FAIL", f"Error: {e}")
             return {}
 
-    def test_learning_status(self) -> Dict:
+    def test_learning_status(self) -> dict:
         """Test 4: Learning system status (for Policy Monitor)."""
         self.print_header("Test 4: Learning System Status")
 
@@ -233,7 +233,7 @@ class Phase3Tester:
             self.print_test("Learning Status", "FAIL", f"Error: {e}")
             return {}
 
-    def test_multiple_queries(self, count: int = 5) -> List[Dict]:
+    def test_multiple_queries(self, count: int = 5) -> list[dict]:
         """Test 5: Multiple queries for policy evolution."""
         self.print_header(f"Test 5: Multiple Queries (n={count})")
 
@@ -449,7 +449,7 @@ class Phase3Tester:
         # Check server first
         if not self.check_server_health():
             print(f"\n{Colors.FAIL}Server not available. Please start the server first.{Colors.ENDC}")
-            print(f"Run: PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000\n")
+            print("Run: PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000\n")
             return 1
 
         # Run test suite

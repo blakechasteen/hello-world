@@ -10,11 +10,10 @@ and comprehensive metrics. Follows Edward Tufte's data visualization principles:
 Philosophy: "Above all else show the data."
 """
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
-from datetime import datetime
-import math
+from typing import Any
 
 
 class AnomalyType(Enum):
@@ -41,8 +40,8 @@ class AttackPoint:
     attack_count: int  # Total attacks attempted in this period
     bypass_count: int  # Number that successfully bypassed
     avg_severity: float  # 0.0-1.0 average severity of bypassed attacks
-    timestamp: Optional[float] = None  # Unix timestamp (optional)
-    metadata: Optional[Dict[str, Any]] = None  # Extra context
+    timestamp: float | None = None  # Unix timestamp (optional)
+    metadata: dict[str, Any] | None = None  # Extra context
 
     def __post_init__(self):
         """Validate data consistency."""
@@ -69,7 +68,7 @@ class StrategyMetrics:
     bypass_rate: float  # total_bypasses / total_attacks
     avg_severity: float  # Mean severity across all attacks
     trend: str  # "improving" (rising), "degrading" (falling), "stable"
-    sparkline_data: List[float]  # Success rates for inline visualization
+    sparkline_data: list[float]  # Success rates for inline visualization
     min_success: float = field(default=0.0)
     max_success: float = field(default=0.0)
     points_count: int = field(default=0)
@@ -134,9 +133,9 @@ class AttackTrajectoryRenderer:
 
     def render(
         self,
-        points: List[AttackPoint],
+        points: list[AttackPoint],
         title: str = "Attack Trajectory",
-        subtitle: Optional[str] = None,
+        subtitle: str | None = None,
     ) -> str:
         """Render complete HTML visualization.
 
@@ -197,8 +196,8 @@ class AttackTrajectoryRenderer:
     def _render_header(
         self,
         title: str,
-        subtitle: Optional[str],
-        metrics: Dict[str, Any],
+        subtitle: str | None,
+        metrics: dict[str, Any],
     ) -> str:
         """Render title, subtitle, and key metrics.
 
@@ -235,8 +234,8 @@ class AttackTrajectoryRenderer:
 
     def _render_chart(
         self,
-        points: List[AttackPoint],
-        anomalies: List[Tuple[int, AnomalyType]],
+        points: list[AttackPoint],
+        anomalies: list[tuple[int, AnomalyType]],
     ) -> str:
         """Render main SVG chart with success rate trajectory.
 
@@ -344,7 +343,7 @@ class AttackTrajectoryRenderer:
 
     def _build_line_path(
         self,
-        points: List[AttackPoint],
+        points: list[AttackPoint],
         x_scale: float,
         y_scale: float,
         margin: int,
@@ -373,8 +372,8 @@ class AttackTrajectoryRenderer:
 
     def _build_anomaly_marks(
         self,
-        anomalies: List[Tuple[int, AnomalyType]],
-        points: List[AttackPoint],
+        anomalies: list[tuple[int, AnomalyType]],
+        points: list[AttackPoint],
         x_scale: float,
         y_scale: float,
         margin: int,
@@ -408,7 +407,7 @@ class AttackTrajectoryRenderer:
 
     # ========== Statistics Panel ==========
 
-    def _render_statistics(self, metrics: Dict[str, Any]) -> str:
+    def _render_statistics(self, metrics: dict[str, Any]) -> str:
         """Render statistics panel with key metrics and trends.
 
         Design: High data density table following Tufte principles
@@ -477,7 +476,7 @@ class AttackTrajectoryRenderer:
 
     def _render_strategy_sparklines(
         self,
-        strategy_metrics: Dict[str, StrategyMetrics],
+        strategy_metrics: dict[str, StrategyMetrics],
     ) -> str:
         """Render strategy comparison using small multiples (sparklines).
 
@@ -529,7 +528,7 @@ class AttackTrajectoryRenderer:
 
     def _build_sparkline(
         self,
-        data: List[float],
+        data: list[float],
         width: int,
         height: int,
         css_class: str,
@@ -820,7 +819,7 @@ body {
 
     # ========== Data Analysis ==========
 
-    def _compute_metrics(self, points: List[AttackPoint]) -> Dict[str, Any]:
+    def _compute_metrics(self, points: list[AttackPoint]) -> dict[str, Any]:
         """Compute overall metrics from attack trajectory."""
         if not points:
             return {}
@@ -865,8 +864,8 @@ body {
         }
 
     def _detect_anomalies(
-        self, points: List[AttackPoint]
-    ) -> List[Tuple[int, AnomalyType]]:
+        self, points: list[AttackPoint]
+    ) -> list[tuple[int, AnomalyType]]:
         """Detect anomalies in attack trajectory.
 
         Detects:
@@ -913,9 +912,9 @@ body {
 
         return anomalies
 
-    def _group_by_strategy(self, points: List[AttackPoint]) -> Dict[str, List[AttackPoint]]:
+    def _group_by_strategy(self, points: list[AttackPoint]) -> dict[str, list[AttackPoint]]:
         """Group points by attack strategy."""
-        by_strategy: Dict[str, List[AttackPoint]] = {}
+        by_strategy: dict[str, list[AttackPoint]] = {}
         for point in points:
             if point.strategy not in by_strategy:
                 by_strategy[point.strategy] = []
@@ -923,8 +922,8 @@ body {
         return by_strategy
 
     def _compute_strategy_metrics(
-        self, by_strategy: Dict[str, List[AttackPoint]]
-    ) -> Dict[str, StrategyMetrics]:
+        self, by_strategy: dict[str, list[AttackPoint]]
+    ) -> dict[str, StrategyMetrics]:
         """Compute aggregated metrics for each strategy."""
         metrics = {}
 
@@ -971,12 +970,12 @@ body {
 
 
 def render_attack_trajectory(
-    strategies: List[str],
-    success_rates: List[float],
-    attack_counts: List[int],
-    bypass_counts: List[int],
+    strategies: list[str],
+    success_rates: list[float],
+    attack_counts: list[int],
+    bypass_counts: list[int],
     title: str = "Attack Trajectory",
-    subtitle: Optional[str] = None,
+    subtitle: str | None = None,
     detect_anomalies: bool = True,
     show_strategy_breakdown: bool = True,
 ) -> str:

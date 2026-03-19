@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Reflection and Caching Initialization
 ======================================
@@ -27,16 +26,15 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from hololoom.reflection.buffer import ReflectionBuffer
 from hololoom.performance.cache import QueryCache
+from hololoom.reflection.buffer import ReflectionBuffer
 from hololoom.routing.classifier_factory import create_classifier, create_fast_path_router
-
 
 logger = logging.getLogger(__name__)
 
 
 def initialize_reflection_and_caching(
-    orchestrator: 'WeavingOrchestrator',
+    orchestrator: WeavingOrchestrator,
     enable_reflection: bool,
     reflection_capacity: int
 ) -> None:

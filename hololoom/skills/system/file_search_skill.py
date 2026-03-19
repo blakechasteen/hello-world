@@ -1,13 +1,18 @@
 """File Search Skill - Fast file content search using ripgrep"""
 
 import asyncio
-import os
-import time
 import json
-from typing import Dict, Any, List, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+import time
+from typing import Any
 
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 # Check for ripgrep availability
 RIPGREP_AVAILABLE = False
@@ -79,7 +84,7 @@ class FileSearchSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _dispatch(self, operation: str, parameters: Dict[str, Any]):
+    async def _dispatch(self, operation: str, parameters: dict[str, Any]):
         if operation == "search":
             return await self._search(parameters)
         elif operation == "search_files":
@@ -89,7 +94,7 @@ class FileSearchSkill(BaseSkill):
         elif operation == "list_files":
             return await self._list_files(parameters)
 
-    async def _run_ripgrep(self, pattern: str, path: str, args: List[str]) -> tuple:
+    async def _run_ripgrep(self, pattern: str, path: str, args: list[str]) -> tuple:
         """Run ripgrep command."""
         cmd = ['rg', '--json'] + args + [pattern, path]
 
@@ -102,7 +107,7 @@ class FileSearchSkill(BaseSkill):
 
         return proc.returncode, stdout, stderr
 
-    async def _run_grep(self, pattern: str, path: str, args: List[str]) -> tuple:
+    async def _run_grep(self, pattern: str, path: str, args: list[str]) -> tuple:
         """Fallback to grep command."""
         cmd = ['grep', '-r'] + args + [pattern, path]
 
@@ -286,4 +291,5 @@ class FileSearchSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(FileSearchSkill())

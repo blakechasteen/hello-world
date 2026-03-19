@@ -31,9 +31,9 @@ import asyncio
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
-from .protocols import AgentMessage, MessagePriority
+from .protocols import AgentMessage
 
 
 @dataclass
@@ -54,7 +54,7 @@ class MessageMetrics:
     latency_receive_max_ms: float = 0.0
     latency_receive_avg_ms: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize metrics to dict."""
         return {
             "total_sent": self.total_sent,
@@ -106,10 +106,10 @@ class MessageBus:
             max_queue_size: Maximum messages per agent queue (prevents memory exhaustion)
         """
         self._max_queue_size = max_queue_size
-        self._queues: Dict[str, asyncio.PriorityQueue] = {}
-        self._subscribers: Dict[str, Set[str]] = defaultdict(set)  # topic -> agent_ids
-        self._pending_acks: Dict[str, AgentMessage] = {}
-        self._dead_letter: List[AgentMessage] = []
+        self._queues: dict[str, asyncio.PriorityQueue] = {}
+        self._subscribers: dict[str, set[str]] = defaultdict(set)  # topic -> agent_ids
+        self._pending_acks: dict[str, AgentMessage] = {}
+        self._dead_letter: list[AgentMessage] = []
         self._metrics = MessageMetrics()
         self._lock = asyncio.Lock()
         self._latency_samples = {"send": [], "receive": []}
@@ -179,14 +179,14 @@ class MessageBus:
 
             return True
 
-        except Exception as e:
+        except Exception:
             # Graceful error handling
             self._dead_letter.append(message)
             return False
 
     async def receive(
         self, agent_id: str, timeout: float = 1.0
-    ) -> Optional[AgentMessage]:
+    ) -> AgentMessage | None:
         """Receive message from agent's queue.
 
         Implementation:
@@ -232,7 +232,7 @@ class MessageBus:
 
         except asyncio.TimeoutError:
             return None
-        except Exception as e:
+        except Exception:
             return None
 
     async def broadcast(self, message: AgentMessage) -> int:
@@ -300,7 +300,7 @@ class MessageBus:
                 del self._pending_acks[message_id]
                 self._metrics.total_acks_received += 1
 
-    def get_pending_acks(self) -> List[AgentMessage]:
+    def get_pending_acks(self) -> list[AgentMessage]:
         """Get list of messages still waiting for acks."""
         return list(self._pending_acks.values())
 
@@ -331,7 +331,7 @@ class MessageBus:
     # Queue Management
     # ========================================================================
 
-    def get_queue_sizes(self) -> Dict[str, int]:
+    def get_queue_sizes(self) -> dict[str, int]:
         """Get current size of each agent's queue.
 
         Returns:
@@ -363,7 +363,7 @@ class MessageBus:
     # Dead Letter Queue
     # ========================================================================
 
-    def get_dead_letters(self) -> List[AgentMessage]:
+    def get_dead_letters(self) -> list[AgentMessage]:
         """Get messages in dead letter queue.
 
         Returns:
@@ -385,7 +385,7 @@ class MessageBus:
     # Metrics and Monitoring
     # ========================================================================
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get comprehensive bus metrics.
 
         Returns:

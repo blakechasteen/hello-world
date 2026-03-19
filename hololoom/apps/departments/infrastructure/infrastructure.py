@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Infrastructure Department - Low-level infrastructure services.
 
@@ -21,27 +20,24 @@ Supported Tasks:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional, Tuple
+
+import asyncio
+import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Any
+
 import numpy as np
-import logging
-import time
-import asyncio
 
 from ..base import BaseDepartment
 from ..protocol import (
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
     VerificationResult,
-    ConfidenceMetadata,
-    DepartmentConfig
 )
-from .zero_copy import (
-    ZeroCopyEmbeddingStore,
-    MatryoshkaEmbeddingStore,
-    EmbeddingView
-)
+from .zero_copy import MatryoshkaEmbeddingStore
 
 logger = logging.getLogger(__name__)
 
@@ -95,14 +91,14 @@ class InfrastructureDepartment(BaseDepartment):
 
     def __init__(
         self,
-        storage_dir: Optional[Path] = None,
-        scales: List[int] = [96, 192, 384],
+        storage_dir: Path | None = None,
+        scales: list[int] = [96, 192, 384],
         max_embeddings: int = 100000,
         enable_neo4j: bool = False,
         enable_qdrant: bool = False,
-        neo4j_uri: Optional[str] = None,
-        qdrant_host: Optional[str] = None,
-        dept_config: Optional[DepartmentConfig] = None
+        neo4j_uri: str | None = None,
+        qdrant_host: str | None = None,
+        dept_config: DepartmentConfig | None = None
     ):
         """
         Initialize Infrastructure Department.
@@ -142,7 +138,7 @@ class InfrastructureDepartment(BaseDepartment):
         self.max_embeddings = max_embeddings
 
         # Embedding store (lazy initialization)
-        self._embedding_store: Optional[MatryoshkaEmbeddingStore] = None
+        self._embedding_store: MatryoshkaEmbeddingStore | None = None
 
         # Backend configuration
         self.enable_neo4j = enable_neo4j
@@ -151,12 +147,12 @@ class InfrastructureDepartment(BaseDepartment):
         self.qdrant_host = qdrant_host or "localhost:6333"
 
         # Backend clients (lazy initialization)
-        self._neo4j_driver: Optional[Any] = None
-        self._qdrant_client: Optional[Any] = None
+        self._neo4j_driver: Any | None = None
+        self._qdrant_client: Any | None = None
 
         # Performance tracking
-        self._operation_latencies: Dict[str, List[float]] = {}
-        self._backend_health: Dict[str, bool] = {
+        self._operation_latencies: dict[str, list[float]] = {}
+        self._backend_health: dict[str, bool] = {
             "embedding_store": False,
             "neo4j": False,
             "qdrant": False
@@ -448,7 +444,7 @@ class InfrastructureDepartment(BaseDepartment):
     async def _store_embeddings(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Store embeddings in zero-copy store."""
         embeddings = request.parameters.get("embeddings", [])
         scale = request.parameters.get("scale", 384)
@@ -505,7 +501,7 @@ class InfrastructureDepartment(BaseDepartment):
     async def _retrieve_embeddings(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Retrieve embeddings from zero-copy store."""
         ids = request.parameters.get("ids", [])
         scale = request.parameters.get("scale", 384)
@@ -562,7 +558,7 @@ class InfrastructureDepartment(BaseDepartment):
     async def _search_embeddings(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Search similar embeddings."""
         query_vector = request.parameters.get("query_vector")
         k = request.parameters.get("k", 10)
@@ -623,7 +619,7 @@ class InfrastructureDepartment(BaseDepartment):
     async def _diagnose_performance(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Run performance diagnostics."""
         # Get embedding store stats
         store_stats = self._embedding_store.get_stats_all_scales()
@@ -666,7 +662,7 @@ class InfrastructureDepartment(BaseDepartment):
     async def _check_backends(
         self,
         request: DepartmentRequest
-    ) -> Tuple[Dict[str, Any], ConfidenceMetadata]:
+    ) -> tuple[dict[str, Any], ConfidenceMetadata]:
         """Check backend health."""
         await self._check_all_backends()
 
@@ -778,9 +774,9 @@ class InfrastructureDepartment(BaseDepartment):
 
     def _build_reasoning(
         self,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         request: DepartmentRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Build reasoning dict for response."""
         return {
             "task_type": request.task_type,
@@ -789,9 +785,9 @@ class InfrastructureDepartment(BaseDepartment):
 
     async def _build_session_state(
         self,
-        session_id: Optional[str],
-        result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        session_id: str | None,
+        result: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Build session state update."""
         if not session_id:
             return None

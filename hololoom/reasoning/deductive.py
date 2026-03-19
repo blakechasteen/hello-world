@@ -20,11 +20,10 @@ Philosophy:
      from knowledge flows wisdom."
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Set, Optional, Tuple, Any
-from collections import defaultdict
 import logging
-from copy import deepcopy
+from collections import defaultdict
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ class Fact:
         """Check if argument is a variable (starts with ?)."""
         return isinstance(arg, str) and arg.startswith('?')
 
-    def variables(self) -> Set[str]:
+    def variables(self) -> set[str]:
         """Get all variables in fact."""
         return {arg for arg in self.arguments if self.is_variable(arg)}
 
@@ -60,7 +59,7 @@ class Fact:
         """Check if fact is fully ground (no variables)."""
         return len(self.variables()) == 0
 
-    def substitute(self, bindings: Dict[str, Any]) -> 'Fact':
+    def substitute(self, bindings: dict[str, Any]) -> 'Fact':
         """Apply variable substitutions."""
         new_args = tuple(
             bindings.get(arg, arg) if self.is_variable(arg) else arg
@@ -99,12 +98,12 @@ class Rule:
             name="grandparent"
         )
     """
-    premises: List[Fact]
+    premises: list[Fact]
     conclusion: Fact
     confidence: float = 1.0     # Rule certainty (0-1)
     name: str = ""              # Rule identifier
 
-    def variables(self) -> Set[str]:
+    def variables(self) -> set[str]:
         """Get all variables in rule."""
         vars_set = set()
         for premise in self.premises:
@@ -112,7 +111,7 @@ class Rule:
         vars_set |= self.conclusion.variables()
         return vars_set
 
-    def substitute(self, bindings: Dict[str, Any]) -> 'Rule':
+    def substitute(self, bindings: dict[str, Any]) -> 'Rule':
         """Apply variable substitutions to entire rule."""
         new_premises = [p.substitute(bindings) for p in self.premises]
         new_conclusion = self.conclusion.substitute(bindings)
@@ -131,8 +130,8 @@ class Proof:
     Represents complete reasoning trace from axioms to conclusion.
     """
     conclusion: Fact
-    rules_applied: List[Tuple[Rule, Dict[str, Any]]]  # (rule, bindings) pairs
-    premises_used: List[Fact]
+    rules_applied: list[tuple[Rule, dict[str, Any]]]  # (rule, bindings) pairs
+    premises_used: list[Fact]
     depth: int = 0
 
     def __repr__(self):
@@ -176,7 +175,7 @@ class Unifier:
 
     @staticmethod
     def unify(fact1: Fact, fact2: Fact,
-              bindings: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+              bindings: dict[str, Any] | None = None) -> dict[str, Any] | None:
         """
         Unify two facts, returning variable bindings or None if impossible.
 
@@ -247,12 +246,12 @@ class KnowledgeBase:
 
     def __init__(self):
         """Initialize empty knowledge base."""
-        self.facts: Set[Fact] = set()
-        self.rules: List[Rule] = []
+        self.facts: set[Fact] = set()
+        self.rules: list[Rule] = []
 
         # Indexing for efficient lookup
-        self._fact_index: Dict[str, Set[Fact]] = defaultdict(set)  # predicate -> facts
-        self._rule_index: Dict[str, List[Rule]] = defaultdict(list)  # conclusion predicate -> rules
+        self._fact_index: dict[str, set[Fact]] = defaultdict(set)  # predicate -> facts
+        self._rule_index: dict[str, list[Rule]] = defaultdict(list)  # conclusion predicate -> rules
 
         logger.info("Initialized KnowledgeBase")
 
@@ -269,7 +268,7 @@ class KnowledgeBase:
         self._fact_index[fact.predicate].add(fact)
         logger.debug(f"Added fact: {fact}")
 
-    def add_facts(self, facts: List[Fact]):
+    def add_facts(self, facts: list[Fact]):
         """Add multiple facts."""
         for fact in facts:
             self.add_fact(fact)
@@ -280,7 +279,7 @@ class KnowledgeBase:
         self._rule_index[rule.conclusion.predicate].append(rule)
         logger.debug(f"Added rule: {rule}")
 
-    def add_rules(self, rules: List[Rule]):
+    def add_rules(self, rules: list[Rule]):
         """Add multiple rules."""
         for rule in rules:
             self.add_rule(rule)
@@ -304,7 +303,7 @@ class KnowledgeBase:
 
         return query_fact in self.facts
 
-    def query_with_unification(self, query_fact: Fact) -> List[Dict[str, Any]]:
+    def query_with_unification(self, query_fact: Fact) -> list[dict[str, Any]]:
         """
         Query with pattern matching (supports variables).
 
@@ -327,7 +326,7 @@ class KnowledgeBase:
 
         return results
 
-    def get_rules_for(self, predicate: str) -> List[Rule]:
+    def get_rules_for(self, predicate: str) -> list[Rule]:
         """Get rules that conclude given predicate."""
         return self._rule_index.get(predicate, [])
 
@@ -335,7 +334,7 @@ class KnowledgeBase:
     # Statistics
     # ------------------------------------------------------------------------
 
-    def size(self) -> Tuple[int, int]:
+    def size(self) -> tuple[int, int]:
         """Return (num_facts, num_rules)."""
         return len(self.facts), len(self.rules)
 
@@ -375,7 +374,7 @@ class DeductiveReasoner:
     # Forward Chaining
     # ------------------------------------------------------------------------
 
-    def forward_chain(self, max_iterations: int = 100) -> Set[Fact]:
+    def forward_chain(self, max_iterations: int = 100) -> set[Fact]:
         """
         Forward chaining inference.
 
@@ -424,15 +423,15 @@ class DeductiveReasoner:
         return derived_facts
 
     def _find_satisfying_bindings(self, rule: Rule,
-                                  facts: Set[Fact]) -> List[Dict[str, Any]]:
+                                  facts: set[Fact]) -> list[dict[str, Any]]:
         """
         Find all variable bindings that satisfy rule premises.
 
         Uses recursive backtracking to find all consistent bindings.
         """
         # Recursive helper
-        def find_bindings_recursive(premises: List[Fact],
-                                   bindings: Dict[str, Any]) -> List[Dict[str, Any]]:
+        def find_bindings_recursive(premises: list[Fact],
+                                   bindings: dict[str, Any]) -> list[dict[str, Any]]:
             # Base case: all premises satisfied
             if not premises:
                 return [bindings]
@@ -459,7 +458,7 @@ class DeductiveReasoner:
     # Backward Chaining
     # ------------------------------------------------------------------------
 
-    def backward_chain(self, goal: Fact, max_depth: int = 10) -> Optional[Proof]:
+    def backward_chain(self, goal: Fact, max_depth: int = 10) -> Proof | None:
         """
         Backward chaining to prove goal.
 
@@ -495,7 +494,7 @@ class DeductiveReasoner:
     def _backward_chain_recursive(self,
                                   goal: Fact,
                                   depth: int,
-                                  visited: Set[Fact]) -> Optional[Proof]:
+                                  visited: set[Fact]) -> Proof | None:
         """Recursive backward chaining."""
 
         # Base case: max depth reached
@@ -565,7 +564,7 @@ class DeductiveReasoner:
     # Proof Explanation
     # ------------------------------------------------------------------------
 
-    def explain(self, fact: Fact) -> Optional[Proof]:
+    def explain(self, fact: Fact) -> Proof | None:
         """
         Generate proof explanation for fact.
 
@@ -602,7 +601,7 @@ def create_fact(predicate: str, *args) -> Fact:
     return Fact(predicate, args)
 
 
-def create_rule(premises: List[Fact], conclusion: Fact, name: str = "") -> Rule:
+def create_rule(premises: list[Fact], conclusion: Fact, name: str = "") -> Rule:
     """Convenience function to create rules."""
     return Rule(premises, conclusion, name=name)
 

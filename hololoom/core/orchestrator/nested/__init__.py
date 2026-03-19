@@ -22,15 +22,14 @@ References:
 - HoloLoom Phase 5: Recursive Learning
 """
 
-from hololoom.orchestrator.nested.ultra_fast import (
-    UltraFastOptimizer,
-    WorkingMemory,
-    SubQueryRouter,
-)
-
 from hololoom.orchestrator.nested.hierarchy import (
     NestedLearningHierarchy,
     OptimizationLevel,
+)
+from hololoom.orchestrator.nested.ultra_fast import (
+    SubQueryRouter,
+    UltraFastOptimizer,
+    WorkingMemory,
 )
 
 __all__ = [

@@ -31,15 +31,13 @@ Features:
     - ✓ Compatible with existing Promptly schema
 """
 
-import sqlite3
-import sys
-import logging
 import argparse
 import hashlib
-from pathlib import Path
+import logging
+import sqlite3
+import sys
 from datetime import datetime
-from typing import Optional, Dict, List, Tuple
-
+from pathlib import Path
 
 # ============================================================================
 # CONFIGURATION
@@ -243,7 +241,7 @@ class MigrationTracker:
         except Exception:
             return 0
 
-    def get_migration_history(self) -> List[Dict]:
+    def get_migration_history(self) -> list[dict]:
         """Get full migration history"""
         if not self.conn:
             return []
@@ -382,7 +380,7 @@ class SchemaMigrator:
                     self.conn.execute(stmt)
 
                 self.conn.commit()
-                logger.info(f"Schema migration completed successfully")
+                logger.info("Schema migration completed successfully")
 
                 # Record migration
                 self.tracker.init_tracker()
@@ -407,7 +405,7 @@ class SchemaMigrator:
             logger.error(f"Migration execution failed: {e}")
             return False
 
-    def validate_schema(self) -> Tuple[bool, List[str]]:
+    def validate_schema(self) -> tuple[bool, list[str]]:
         """Validate schema integrity"""
         if not self.conn:
             return False, ["Database not connected"]
@@ -460,7 +458,7 @@ class SchemaMigrator:
             logger.error(f"Schema validation error: {e}")
             return False, [str(e)]
 
-    def get_schema_info(self) -> Dict:
+    def get_schema_info(self) -> dict:
         """Get detailed schema information"""
         if not self.conn:
             return {}
@@ -618,7 +616,7 @@ def main():
 
         else:
             # Normal migration
-            logger.info(f"Promptly Workflow Versioning Migration")
+            logger.info("Promptly Workflow Versioning Migration")
             logger.info(f"Database: {args.db_path}")
             logger.info(f"Schema version: v{SCHEMA_VERSION}")
             logger.info("")

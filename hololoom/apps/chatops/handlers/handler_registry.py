@@ -32,11 +32,12 @@ Usage:
 Created: 2025-12-05
 """
 
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Set
-from enum import Enum
 import asyncio
 import functools
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 
 class HandlerCategory(Enum):
@@ -56,7 +57,7 @@ class HandlerSpec:
     description: str              # Short description for help
     usage: str = ""               # Full usage string
     category: HandlerCategory = HandlerCategory.QUERY
-    aliases: List[str] = field(default_factory=list)
+    aliases: list[str] = field(default_factory=list)
     requires_auth: bool = False   # Require authenticated user
     requires_room_admin: bool = False  # Require room admin
     hidden: bool = False          # Hide from help output
@@ -75,13 +76,13 @@ class HandlerRegistry:
     """
 
     # Class-level storage for decorated handlers
-    _pending_handlers: Dict[str, HandlerSpec] = {}
-    _instances: List[Any] = []
+    _pending_handlers: dict[str, HandlerSpec] = {}
+    _instances: list[Any] = []
 
     def __init__(self):
-        self._handlers: Dict[str, HandlerSpec] = {}
-        self._command_to_spec: Dict[str, str] = {}  # Maps aliases to primary command
-        self._cooldowns: Dict[str, Dict[str, float]] = {}  # command -> user_id -> last_used
+        self._handlers: dict[str, HandlerSpec] = {}
+        self._command_to_spec: dict[str, str] = {}  # Maps aliases to primary command
+        self._cooldowns: dict[str, dict[str, float]] = {}  # command -> user_id -> last_used
 
     @classmethod
     def register(
@@ -90,7 +91,7 @@ class HandlerRegistry:
         description: str,
         usage: str = "",
         category: HandlerCategory = HandlerCategory.QUERY,
-        aliases: Optional[List[str]] = None,
+        aliases: list[str] | None = None,
         requires_auth: bool = False,
         requires_room_admin: bool = False,
         hidden: bool = False,
@@ -189,7 +190,7 @@ class HandlerRegistry:
         description: str,
         usage: str = "",
         category: HandlerCategory = HandlerCategory.QUERY,
-        aliases: Optional[List[str]] = None,
+        aliases: list[str] | None = None,
         requires_auth: bool = False,
         hidden: bool = False
     ) -> None:
@@ -211,20 +212,20 @@ class HandlerRegistry:
         for alias in (aliases or []):
             self._command_to_spec[alias] = command
 
-    def get_handler(self, command: str) -> Optional[HandlerSpec]:
+    def get_handler(self, command: str) -> HandlerSpec | None:
         """Get handler spec for a command (resolves aliases)."""
         primary = self._command_to_spec.get(command)
         if primary:
             return self._handlers.get(primary)
         return None
 
-    def get_all_commands(self) -> List[str]:
+    def get_all_commands(self) -> list[str]:
         """Get all registered commands (primary only, no aliases)."""
         return list(self._handlers.keys())
 
-    def get_commands_by_category(self) -> Dict[HandlerCategory, List[HandlerSpec]]:
+    def get_commands_by_category(self) -> dict[HandlerCategory, list[HandlerSpec]]:
         """Get handlers grouped by category."""
-        result: Dict[HandlerCategory, List[HandlerSpec]] = {
+        result: dict[HandlerCategory, list[HandlerSpec]] = {
             cat: [] for cat in HandlerCategory
         }
 
@@ -240,8 +241,8 @@ class HandlerRegistry:
         room: Any,
         event: Any,
         args: str,
-        user_id: Optional[str] = None
-    ) -> Optional[Any]:
+        user_id: str | None = None
+    ) -> Any | None:
         """
         Dispatch a command to its registered handler.
 
@@ -282,7 +283,7 @@ class HandlerRegistry:
         prefix: str = "!",
         show_aliases: bool = True,
         show_usage: bool = True,
-        filter_category: Optional[HandlerCategory] = None
+        filter_category: HandlerCategory | None = None
     ) -> str:
         """
         Generate help text from registered handlers.
@@ -319,7 +320,7 @@ class HandlerRegistry:
 
         return "\n".join(lines)
 
-    def generate_help_for_command(self, command: str, prefix: str = "!") -> Optional[str]:
+    def generate_help_for_command(self, command: str, prefix: str = "!") -> str | None:
         """Generate detailed help for a specific command."""
         spec = self.get_handler(command)
         if not spec:
@@ -327,9 +328,9 @@ class HandlerRegistry:
 
         lines = [
             f"**{prefix}{spec.command}**",
-            f"",
+            "",
             f"{spec.description}",
-            f"",
+            "",
             f"**Usage:** `{spec.usage}`"
         ]
 
@@ -362,7 +363,7 @@ chatops_handler = HandlerRegistry.register
 
 
 # Global registry instance (optional, for simple use cases)
-_global_registry: Optional[HandlerRegistry] = None
+_global_registry: HandlerRegistry | None = None
 
 
 def get_global_registry() -> HandlerRegistry:

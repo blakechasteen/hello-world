@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Zero-Copy Embedding Store - Memory-mapped embedding storage.
 
@@ -18,16 +17,17 @@ Key Features:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional, Tuple
-from dataclasses import dataclass
-from pathlib import Path
-import numpy as np
-import mmap
-import struct
-import logging
+
 import json
-from datetime import datetime
+import logging
+import mmap
 import threading
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class EmbeddingMetadata:
     created_at: float
     last_accessed: float
     access_count: int
-    tags: List[str]
+    tags: list[str]
 
 
 @dataclass
@@ -114,15 +114,15 @@ class ZeroCopyEmbeddingStore:
 
         # Memory-mapped array for embeddings
         self.embeddings_file = self.storage_dir / f"embeddings_{dimension}d.mmap"
-        self.embeddings_mmap: Optional[mmap.mmap] = None
-        self.embeddings_array: Optional[np.ndarray] = None
+        self.embeddings_mmap: mmap.mmap | None = None
+        self.embeddings_array: np.ndarray | None = None
 
         # Metadata storage
         self.metadata_file = self.storage_dir / "metadata.json"
-        self.metadata: Dict[str, EmbeddingMetadata] = {}
+        self.metadata: dict[str, EmbeddingMetadata] = {}
 
         # Index mapping (id -> position in array)
-        self.index: Dict[str, int] = {}
+        self.index: dict[str, int] = {}
         self.next_position = 0
 
         # Thread safety
@@ -201,7 +201,7 @@ class ZeroCopyEmbeddingStore:
         self,
         id: str,
         vector: np.ndarray,
-        tags: Optional[List[str]] = None
+        tags: list[str] | None = None
     ) -> bool:
         """
         Add embedding to store (copy-on-write).
@@ -255,7 +255,7 @@ class ZeroCopyEmbeddingStore:
             logger.debug(f"Added embedding {id} at position {position}")
             return True
 
-    async def get_embedding(self, id: str) -> Optional[EmbeddingView]:
+    async def get_embedding(self, id: str) -> EmbeddingView | None:
         """
         Get embedding view (zero-copy).
 
@@ -295,8 +295,8 @@ class ZeroCopyEmbeddingStore:
 
     async def get_embeddings_batch(
         self,
-        ids: List[str]
-    ) -> List[Optional[EmbeddingView]]:
+        ids: list[str]
+    ) -> list[EmbeddingView | None]:
         """
         Get multiple embeddings (zero-copy batch).
 
@@ -312,8 +312,8 @@ class ZeroCopyEmbeddingStore:
         self,
         query_vector: np.ndarray,
         k: int = 10,
-        tags: Optional[List[str]] = None
-    ) -> List[Tuple[str, float, EmbeddingView]]:
+        tags: list[str] | None = None
+    ) -> list[tuple[str, float, EmbeddingView]]:
         """
         Search for k most similar embeddings (uses memory-mapped data).
 
@@ -431,7 +431,7 @@ class ZeroCopyEmbeddingStore:
             return
 
         try:
-            with open(self.metadata_file, 'r') as f:
+            with open(self.metadata_file) as f:
                 data = json.load(f)
 
             # Restore metadata
@@ -487,7 +487,7 @@ class ZeroCopyEmbeddingStore:
     # Statistics and Monitoring
     # ========================================================================
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get store statistics."""
         with self._lock:
             return {
@@ -503,15 +503,15 @@ class ZeroCopyEmbeddingStore:
                 )
             }
 
-    def get_metadata(self, id: str) -> Optional[EmbeddingMetadata]:
+    def get_metadata(self, id: str) -> EmbeddingMetadata | None:
         """Get metadata for embedding."""
         return self.metadata.get(id)
 
     def list_embeddings(
         self,
-        tags: Optional[List[str]] = None,
+        tags: list[str] | None = None,
         limit: int = 100
-    ) -> List[EmbeddingMetadata]:
+    ) -> list[EmbeddingMetadata]:
         """List embeddings with optional tag filtering."""
         with self._lock:
             results = []
@@ -557,7 +557,7 @@ class MatryoshkaEmbeddingStore:
     def __init__(
         self,
         storage_dir: Path | str,
-        scales: List[int] = [96, 192, 384],
+        scales: list[int] = [96, 192, 384],
         max_embeddings: int = 100000
     ):
         """
@@ -573,7 +573,7 @@ class MatryoshkaEmbeddingStore:
         self.max_embeddings = max_embeddings
 
         # Create store for each scale
-        self.stores: Dict[int, ZeroCopyEmbeddingStore] = {}
+        self.stores: dict[int, ZeroCopyEmbeddingStore] = {}
 
         for scale in scales:
             self.stores[scale] = ZeroCopyEmbeddingStore(
@@ -599,8 +599,8 @@ class MatryoshkaEmbeddingStore:
     async def add_embedding_multi_scale(
         self,
         id: str,
-        vectors: Dict[int, np.ndarray],
-        tags: Optional[List[str]] = None
+        vectors: dict[int, np.ndarray],
+        tags: list[str] | None = None
     ) -> bool:
         """
         Add embedding at multiple scales.
@@ -629,7 +629,7 @@ class MatryoshkaEmbeddingStore:
         self,
         id: str,
         scale: int
-    ) -> Optional[EmbeddingView]:
+    ) -> EmbeddingView | None:
         """Get embedding at specific scale."""
         if scale not in self.stores:
             raise ValueError(f"Scale {scale} not supported")
@@ -641,15 +641,15 @@ class MatryoshkaEmbeddingStore:
         query_vector: np.ndarray,
         k: int = 10,
         scale: int = 384,
-        tags: Optional[List[str]] = None
-    ) -> List[Tuple[str, float, EmbeddingView]]:
+        tags: list[str] | None = None
+    ) -> list[tuple[str, float, EmbeddingView]]:
         """Search at specific scale."""
         if scale not in self.stores:
             raise ValueError(f"Scale {scale} not supported")
 
         return await self.stores[scale].search_similar(query_vector, k, tags)
 
-    def get_stats_all_scales(self) -> Dict[int, Dict[str, Any]]:
+    def get_stats_all_scales(self) -> dict[int, dict[str, Any]]:
         """Get statistics for all scales."""
         return {
             scale: store.get_stats()

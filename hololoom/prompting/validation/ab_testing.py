@@ -16,9 +16,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-from hololoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+from hololoom.prompting.unified_mrf import MetapromptConfig, ModelProvider, UnifiedMRF
 
 
 class PromptVariant(Enum):
@@ -41,7 +41,7 @@ class ABTestConfig:
     confidence_level: float = 0.95  # 95% confidence
 
     # Maximum duration for test (seconds)
-    max_duration_seconds: Optional[float] = None
+    max_duration_seconds: float | None = None
 
     # Output directory for results
     output_dir: Path = Path("./ab_test_results")
@@ -50,7 +50,7 @@ class ABTestConfig:
     enable_human_eval: bool = True
 
     # Model provider for UnifiedMRF variant
-    model_provider: Optional[str] = None
+    model_provider: str | None = None
 
 
 @dataclass
@@ -64,19 +64,19 @@ class PromptExecution:
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Quality metrics (can be auto-computed or human-rated)
-    quality_score: Optional[float] = None  # 0.0-1.0
-    correctness: Optional[bool] = None
-    completeness: Optional[float] = None  # 0.0-1.0
-    clarity: Optional[float] = None  # 0.0-1.0
+    quality_score: float | None = None  # 0.0-1.0
+    correctness: bool | None = None
+    completeness: float | None = None  # 0.0-1.0
+    clarity: float | None = None  # 0.0-1.0
 
     # Human evaluation (if enabled)
-    human_rating: Optional[int] = None  # 1-5 stars
-    human_feedback: Optional[str] = None
+    human_rating: int | None = None  # 1-5 stars
+    human_feedback: str | None = None
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "variant": self.variant.value,
@@ -98,8 +98,8 @@ class PromptExecution:
 class ABTestResults:
     """Aggregated A/B test results with statistical analysis."""
 
-    traditional_executions: List[PromptExecution] = field(default_factory=list)
-    mrf_executions: List[PromptExecution] = field(default_factory=list)
+    traditional_executions: list[PromptExecution] = field(default_factory=list)
+    mrf_executions: list[PromptExecution] = field(default_factory=list)
 
     # Summary statistics
     traditional_avg_quality: float = 0.0
@@ -112,17 +112,17 @@ class ABTestResults:
 
     # Statistical significance
     is_statistically_significant: bool = False
-    p_value: Optional[float] = None
+    p_value: float | None = None
     confidence_level: float = 0.95
 
     # Human evaluation (if enabled)
-    traditional_avg_human_rating: Optional[float] = None
-    mrf_avg_human_rating: Optional[float] = None
-    human_preference_pct: Optional[float] = None  # % preferring MRF
+    traditional_avg_human_rating: float | None = None
+    mrf_avg_human_rating: float | None = None
+    human_preference_pct: float | None = None  # % preferring MRF
 
     # Metadata
     start_time: datetime = field(default_factory=datetime.now)
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
     total_duration_seconds: float = 0.0
 
     def calculate_statistics(self):
@@ -213,7 +213,7 @@ class ABTestResults:
                 else:
                     self.p_value = 0.20  # Not significant
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "summary": {
@@ -368,9 +368,9 @@ class ABTestRunner:
 
     async def run_test(
         self,
-        queries: List[str],
-        traditional_prompts: List[str],
-        metaprompts: List[MetapromptConfig]
+        queries: list[str],
+        traditional_prompts: list[str],
+        metaprompts: list[MetapromptConfig]
     ) -> ABTestResults:
         """
         Run A/B test on a list of queries.
@@ -516,17 +516,17 @@ if __name__ == "__main__":
         print(f"  Traditional: {len(results.traditional_executions)}")
         print(f"  UnifiedMRF: {len(results.mrf_executions)}")
 
-        print(f"\nQuality:")
+        print("\nQuality:")
         print(f"  Traditional avg: {results.traditional_avg_quality:.3f}")
         print(f"  UnifiedMRF avg: {results.mrf_avg_quality:.3f}")
         print(f"  Improvement: {results.quality_improvement_pct:+.1f}%")
 
-        print(f"\nStatistical Significance:")
+        print("\nStatistical Significance:")
         print(f"  Significant: {results.is_statistically_significant}")
         print(f"  P-value: {results.p_value}")
         print(f"  Confidence: {results.confidence_level * 100:.0f}%")
 
-        print(f"\nLatency:")
+        print("\nLatency:")
         print(f"  Traditional avg: {results.traditional_avg_latency:.1f}ms")
         print(f"  UnifiedMRF avg: {results.mrf_avg_latency:.1f}ms")
         print(f"  Change: {results.latency_change_pct:+.1f}%")

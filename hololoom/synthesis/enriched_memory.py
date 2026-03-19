@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Enriched Memory
 ===============
@@ -9,10 +8,10 @@ Turns raw conversation shards into structured knowledge ready for synthesis.
 """
 
 import re
-from typing import List, Dict, Any, Optional, Tuple, Set
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 
 class ReasoningType(Enum):
@@ -50,20 +49,20 @@ class EnrichedMemory:
 
     # Enrichment fields
     reasoning_type: ReasoningType
-    entities: List[str] = field(default_factory=list)
-    relationships: List[Tuple[str, str, str]] = field(default_factory=list)  # (subject, predicate, object)
-    topics: List[str] = field(default_factory=list)
-    keywords: List[str] = field(default_factory=list)
-    dependencies: List[str] = field(default_factory=list)  # IDs of related memories
+    entities: list[str] = field(default_factory=list)
+    relationships: list[tuple[str, str, str]] = field(default_factory=list)  # (subject, predicate, object)
+    topics: list[str] = field(default_factory=list)
+    keywords: list[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)  # IDs of related memories
 
     # Conversation-specific
-    user_input: Optional[str] = None
-    system_output: Optional[str] = None
+    user_input: str | None = None
+    system_output: str | None = None
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for storage."""
         return {
             'id': self.id,
@@ -94,7 +93,7 @@ class MemoryEnricher:
     - Keywords (important terms)
     """
 
-    def __init__(self, domain_terms: Optional[List[str]] = None):
+    def __init__(self, domain_terms: list[str] | None = None):
         """
         Initialize enricher.
 
@@ -111,7 +110,7 @@ class MemoryEnricher:
             'matryoshka', 'spectral', 'motif', 'context', 'decision'
         ])
 
-    def enrich(self, raw_memory: Dict[str, Any]) -> EnrichedMemory:
+    def enrich(self, raw_memory: dict[str, Any]) -> EnrichedMemory:
         """
         Enrich a raw memory with structure.
 
@@ -162,7 +161,7 @@ class MemoryEnricher:
             metadata=raw_memory.get('metadata', {})
         )
 
-    def _parse_conversation(self, text: str) -> Tuple[Optional[str], Optional[str]]:
+    def _parse_conversation(self, text: str) -> tuple[str | None, str | None]:
         """Parse conversation turn structure."""
         # Look for "User:" and "System:" markers
         user_match = re.search(r'User:\s*(.+?)(?=System:|Importance:|$)', text, re.DOTALL)
@@ -173,7 +172,7 @@ class MemoryEnricher:
 
         return user_input, system_output
 
-    def _extract_entities(self, text: str) -> List[str]:
+    def _extract_entities(self, text: str) -> list[str]:
         """Extract entities (capitalized terms, domain concepts)."""
         entities = set()
 
@@ -196,7 +195,7 @@ class MemoryEnricher:
         return sorted(list(entities))[:20]  # Top 20
 
     def _extract_relationships(self, text: str,
-                              entities: List[str]) -> List[Tuple[str, str, str]]:
+                              entities: list[str]) -> list[tuple[str, str, str]]:
         """
         Extract relationships between entities.
 
@@ -264,7 +263,7 @@ class MemoryEnricher:
         # Default
         return ReasoningType.OBSERVATION
 
-    def _extract_topics(self, text: str) -> List[str]:
+    def _extract_topics(self, text: str) -> list[str]:
         """Extract topics/themes from text."""
         topics = set()
 
@@ -287,7 +286,7 @@ class MemoryEnricher:
 
         return sorted(list(topics))
 
-    def _extract_keywords(self, text: str) -> List[str]:
+    def _extract_keywords(self, text: str) -> list[str]:
         """Extract important keywords (domain terms, repeated words)."""
         keywords = set()
 

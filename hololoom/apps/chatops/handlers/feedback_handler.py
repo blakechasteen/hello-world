@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 Reaction-Based Feedback Handler - Phase 1.1 of ChatOps Roadmap
 ================================================================
@@ -31,21 +32,14 @@ Author: Claude Code
 import asyncio
 import logging
 import time
-from typing import Dict, List, Any, Optional, Set, Callable, Tuple
-from dataclasses import dataclass, field
 from collections import defaultdict
+from dataclasses import dataclass, field
 from enum import Enum
-import json
+from typing import Any, Optional
 
 # Graceful nio import
 try:
-    from nio import (
-        AsyncClient,
-        MatrixRoom,
-        ReactionEvent,
-        RoomMessageText,
-        Event
-    )
+    from nio import AsyncClient, Event, MatrixRoom, ReactionEvent, RoomMessageText
     NIO_AVAILABLE = True
 except ImportError:
     NIO_AVAILABLE = False
@@ -57,7 +51,9 @@ except ImportError:
 # Handler registry (graceful import)
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
 except ImportError:
     HandlerRegistry = None
@@ -66,7 +62,7 @@ except ImportError:
 
 # Thompson Sampling convergence engine (graceful import)
 try:
-    from hololoom.convergence.engine import ThompsonBandit, ConvergenceEngine
+    from hololoom.convergence.engine import ConvergenceEngine, ThompsonBandit
     CONVERGENCE_AVAILABLE = True
 except ImportError:
     CONVERGENCE_AVAILABLE = False
@@ -115,7 +111,7 @@ class ReactionMapping:
 
 
 # Unicode emoji mappings (Matrix uses Unicode)
-REACTION_MAPPINGS: Dict[str, ReactionMapping] = {
+REACTION_MAPPINGS: dict[str, ReactionMapping] = {
     # Thumbs up variants
     "\U0001F44D": ReactionMapping("\U0001F44D", ReactionType.POSITIVE, 0.75, "thumbs_up"),
     "+1": ReactionMapping("+1", ReactionType.POSITIVE, 0.75, "plus_one"),
@@ -164,7 +160,7 @@ REACTION_MAPPINGS: Dict[str, ReactionMapping] = {
 }
 
 
-def get_reaction_reward(emoji: str) -> Tuple[float, ReactionType]:
+def get_reaction_reward(emoji: str) -> tuple[float, ReactionType]:
     """
     Get reward value and type for an emoji.
 
@@ -199,11 +195,11 @@ class TrackedMessage:
     event_id: str
     room_id: str
     query: str
-    tool_used: Optional[str] = None
+    tool_used: str | None = None
     confidence: float = 0.0
     timestamp: float = field(default_factory=time.time)
-    reactions: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    reactions: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class BotMessageTracker:
@@ -224,9 +220,9 @@ class BotMessageTracker:
         """
         self.max_messages = max_messages
         self.ttl_seconds = ttl_seconds
-        self._messages: Dict[str, TrackedMessage] = {}
-        self._event_to_message: Dict[str, str] = {}  # event_id -> message key
-        self._room_messages: Dict[str, List[str]] = defaultdict(list)  # room_id -> message keys
+        self._messages: dict[str, TrackedMessage] = {}
+        self._event_to_message: dict[str, str] = {}  # event_id -> message key
+        self._room_messages: dict[str, list[str]] = defaultdict(list)  # room_id -> message keys
 
         logger.info(f"BotMessageTracker initialized (max={max_messages}, ttl={ttl_seconds}s)")
 
@@ -235,9 +231,9 @@ class BotMessageTracker:
         event_id: str,
         room_id: str,
         query: str,
-        tool_used: Optional[str] = None,
+        tool_used: str | None = None,
         confidence: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> TrackedMessage:
         """
         Track a bot message for feedback collection.
@@ -278,7 +274,7 @@ class BotMessageTracker:
         logger.debug(f"Tracking message: {event_id[:20]}... query='{query[:30]}...'")
         return message
 
-    def get_message(self, event_id: str) -> Optional[TrackedMessage]:
+    def get_message(self, event_id: str) -> TrackedMessage | None:
         """Get tracked message by event ID."""
         key = self._event_to_message.get(event_id)
         if key:
@@ -291,7 +287,7 @@ class BotMessageTracker:
         emoji: str,
         user_id: str,
         reaction_event_id: str
-    ) -> Optional[TrackedMessage]:
+    ) -> TrackedMessage | None:
         """
         Record a reaction on a tracked message.
 
@@ -319,7 +315,7 @@ class BotMessageTracker:
             return message
         return None
 
-    def get_pending_feedback(self) -> List[TrackedMessage]:
+    def get_pending_feedback(self) -> list[TrackedMessage]:
         """Get messages with reactions that haven't been processed."""
         return [m for m in self._messages.values() if m.reactions]
 
@@ -355,9 +351,9 @@ class BotMessageTracker:
             if oldest_key in self._room_messages.get(msg.room_id, []):
                 self._room_messages[msg.room_id].remove(oldest_key)
 
-        logger.debug(f"Evicted oldest message for LRU")
+        logger.debug("Evicted oldest message for LRU")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get tracker statistics."""
         total_reactions = sum(len(m.reactions) for m in self._messages.values())
         positive = sum(
@@ -395,7 +391,7 @@ class ThompsonFeedbackUpdater:
         self,
         bandit: Optional['ThompsonBandit'] = None,
         hot_tracker: Optional['HotPatternTracker'] = None,
-        tool_names: Optional[List[str]] = None
+        tool_names: list[str] | None = None
     ):
         """
         Initialize updater.
@@ -438,7 +434,7 @@ class ThompsonFeedbackUpdater:
         self,
         message: TrackedMessage,
         clear_reactions: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process feedback from reactions on a message.
 
@@ -494,7 +490,7 @@ class ThompsonFeedbackUpdater:
 
         return result
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get updater statistics."""
         stats = {
             "total_updates": self.total_updates,
@@ -547,7 +543,7 @@ class FeedbackProcessor:
         self.auto_process_interval = auto_process_interval
 
         # Background task for auto-processing
-        self._auto_process_task: Optional[asyncio.Task] = None
+        self._auto_process_task: asyncio.Task | None = None
         self._running = False
 
         logger.info("FeedbackProcessor initialized")
@@ -557,9 +553,9 @@ class FeedbackProcessor:
         event_id: str,
         room_id: str,
         query: str,
-        tool_used: Optional[str] = None,
+        tool_used: str | None = None,
         confidence: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> TrackedMessage:
         """Track a bot response for feedback collection."""
         return self.tracker.track_message(
@@ -577,7 +573,7 @@ class FeedbackProcessor:
         emoji: str,
         user_id: str,
         reaction_event_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Process an incoming reaction.
 
@@ -621,7 +617,7 @@ class FeedbackProcessor:
             "reaction_type": reaction_type.value
         }
 
-    async def process_all_pending(self) -> Dict[str, Any]:
+    async def process_all_pending(self) -> dict[str, Any]:
         """Process all pending feedback."""
         pending = self.tracker.get_pending_feedback()
 
@@ -640,7 +636,7 @@ class FeedbackProcessor:
             "updater_stats": self.updater.get_statistics()
         }
 
-    async def _log_feedback(self, message: TrackedMessage, result: Dict[str, Any]) -> None:
+    async def _log_feedback(self, message: TrackedMessage, result: dict[str, Any]) -> None:
         """Log feedback to reflection buffer."""
         if self.reflection_buffer is None:
             return
@@ -695,7 +691,7 @@ class FeedbackProcessor:
             except Exception as e:
                 logger.error(f"Error in auto-processing: {e}")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get comprehensive statistics."""
         return {
             "tracker": self.tracker.get_statistics(),
@@ -709,7 +705,7 @@ class FeedbackProcessor:
 # Global Feedback Processor Instance
 # ============================================================================
 
-_global_processor: Optional[FeedbackProcessor] = None
+_global_processor: FeedbackProcessor | None = None
 
 
 def get_feedback_processor() -> FeedbackProcessor:
@@ -733,8 +729,8 @@ def set_feedback_processor(processor: FeedbackProcessor) -> None:
 async def handle_reaction_event(
     room: 'MatrixRoom',
     event: 'ReactionEvent',
-    processor: Optional[FeedbackProcessor] = None
-) -> Optional[Dict[str, Any]]:
+    processor: FeedbackProcessor | None = None
+) -> dict[str, Any] | None:
     """
     Handle a Matrix reaction event.
 
@@ -785,14 +781,14 @@ async def handle_reaction_event(
 class FeedbackHandlers:
     """ChatOps handlers for feedback management."""
 
-    def __init__(self, processor: Optional[FeedbackProcessor] = None):
+    def __init__(self, processor: FeedbackProcessor | None = None):
         self.processor = processor or get_feedback_processor()
 
     async def handle_feedback_stats(
         self,
         room: Any,
         event: Any,
-        args: List[str]
+        args: list[str]
     ) -> str:
         """
         Handle !feedback stats command.
@@ -846,7 +842,7 @@ class FeedbackHandlers:
         self,
         room: Any,
         event: Any,
-        args: List[str]
+        args: list[str]
     ) -> str:
         """
         Handle !feedback process command.
@@ -873,7 +869,7 @@ class FeedbackHandlers:
         self,
         room: Any,
         event: Any,
-        args: List[str]
+        args: list[str]
     ) -> str:
         """Handle !feedback help command."""
         return """## Feedback Commands
@@ -902,19 +898,19 @@ React to bot messages to provide feedback:
 
 
 # Convenience handler functions
-async def handle_feedback_stats(room: Any, event: Any, args: List[str]) -> str:
+async def handle_feedback_stats(room: Any, event: Any, args: list[str]) -> str:
     """Handle !feedback stats command."""
     handlers = FeedbackHandlers()
     return await handlers.handle_feedback_stats(room, event, args)
 
 
-async def handle_feedback_process(room: Any, event: Any, args: List[str]) -> str:
+async def handle_feedback_process(room: Any, event: Any, args: list[str]) -> str:
     """Handle !feedback process command."""
     handlers = FeedbackHandlers()
     return await handlers.handle_feedback_process(room, event, args)
 
 
-async def handle_feedback_help(room: Any, event: Any, args: List[str]) -> str:
+async def handle_feedback_help(room: Any, event: Any, args: list[str]) -> str:
     """Handle !feedback help command."""
     handlers = FeedbackHandlers()
     return await handlers.handle_feedback_help(room, event, args)

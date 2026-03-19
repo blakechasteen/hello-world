@@ -32,30 +32,38 @@ Usage:
     result = await spinner.spin_incremental()
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import List, Dict, Any, Optional, Callable, AsyncIterator
-from pathlib import Path
 import hashlib
 import time
+from collections.abc import AsyncIterator, Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 try:
-    from nio import AsyncClient, RoomMessageText, RoomMessageMedia, RoomMessage
-    from nio import MatrixRoom, RoomMessagesError, LoginError, SyncError
+    from nio import (
+        AsyncClient,
+        LoginError,
+        MatrixRoom,
+        RoomMessage,
+        RoomMessageMedia,
+        RoomMessagesError,
+        RoomMessageText,
+        SyncError,
+    )
     MATRIX_AVAILABLE = True
 except ImportError:
     MATRIX_AVAILABLE = False
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
+    ImportanceScore,
+    ImportanceSignals,
     SpinnerCapabilities,
     SpinnerCheckpoint,
-    ImportanceScore,
-    ImportanceSignals
+    SpinResult,
 )
-from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass
@@ -63,20 +71,20 @@ class MatrixMessage:
     """Parsed Matrix message event"""
     event_id: str
     room_id: str
-    room_name: Optional[str]
+    room_name: str | None
     sender: str
-    sender_display_name: Optional[str]
+    sender_display_name: str | None
     timestamp: datetime
     msg_type: str  # m.text, m.image, m.file, m.emote, m.notice
     content: str  # Message body
-    formatted_content: Optional[str] = None  # HTML formatted
-    reactions: Dict[str, int] = field(default_factory=dict)  # {emoji: count}
-    thread_root: Optional[str] = None  # Parent message for threads
-    attachments: List[str] = field(default_factory=list)  # URLs to media
-    mentions: List[str] = field(default_factory=list)  # @user mentions
+    formatted_content: str | None = None  # HTML formatted
+    reactions: dict[str, int] = field(default_factory=dict)  # {emoji: count}
+    thread_root: str | None = None  # Parent message for threads
+    attachments: list[str] = field(default_factory=list)  # URLs to media
+    mentions: list[str] = field(default_factory=list)  # @user mentions
     edited: bool = False
-    reply_to: Optional[str] = None  # Event ID of replied message
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    reply_to: str | None = None  # Event ID of replied message
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def is_thread_root(self) -> bool:
@@ -96,7 +104,7 @@ class MatrixParser:
     """Parse Matrix protocol events into MatrixMessage objects"""
 
     @staticmethod
-    def parse_event(event: Any, room: Any) -> Optional[MatrixMessage]:
+    def parse_event(event: Any, room: Any) -> MatrixMessage | None:
         """
         Parse Matrix event into MatrixMessage
 
@@ -170,7 +178,7 @@ class MatrixParser:
         )
 
     @staticmethod
-    def extract_mentions(content: str) -> List[str]:
+    def extract_mentions(content: str) -> list[str]:
         """
         Extract @user mentions from message content
 
@@ -187,7 +195,7 @@ class MatrixParser:
         return list(set(mentions))  # Deduplicate
 
     @staticmethod
-    def extract_reactions(messages: List[MatrixMessage]) -> Dict[str, Dict[str, int]]:
+    def extract_reactions(messages: list[MatrixMessage]) -> dict[str, dict[str, int]]:
         """
         Extract reactions for messages (requires separate reaction events)
 
@@ -223,12 +231,12 @@ class MatrixSpinner(BaseSpinner):
     def __init__(
         self,
         homeserver: str = "https://matrix.org",
-        access_token: Optional[str] = None,
-        user_id: Optional[str] = None,
-        password: Optional[str] = None,
+        access_token: str | None = None,
+        user_id: str | None = None,
+        password: str | None = None,
         importance_threshold: float = 0.3,
         max_messages_per_room: int = 1000,
-        device_id: Optional[str] = None
+        device_id: str | None = None
     ):
         """
         Initialize MatrixSpinner
@@ -262,7 +270,7 @@ class MatrixSpinner(BaseSpinner):
         self.importance_scorer = ImportanceScorer()
 
         # Client will be initialized in async context
-        self.client: Optional[AsyncClient] = None
+        self.client: AsyncClient | None = None
 
     def get_capabilities(self) -> SpinnerCapabilities:
         """Return spinner capabilities"""
@@ -310,7 +318,7 @@ class MatrixSpinner(BaseSpinner):
 
         return self.client
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Spin Matrix room(s) into MemoryShards
 
@@ -342,8 +350,8 @@ class MatrixSpinner(BaseSpinner):
     async def spin_room(
         self,
         room_id: str,
-        since: Optional[str] = None,
-        limit: Optional[int] = None
+        since: str | None = None,
+        limit: int | None = None
     ) -> SpinResult:
         """
         Spin a single Matrix room
@@ -368,7 +376,7 @@ class MatrixSpinner(BaseSpinner):
 
     async def spin_all_rooms(
         self,
-        room_filter: Optional[Callable[[str, str], bool]] = None
+        room_filter: Callable[[str, str], bool] | None = None
     ) -> SpinResult:
         """
         Spin all joined Matrix rooms
@@ -404,8 +412,8 @@ class MatrixSpinner(BaseSpinner):
 
     async def spin_incremental(
         self,
-        checkpoint: Optional[SpinnerCheckpoint] = None,
-        room_id: Optional[str] = None
+        checkpoint: SpinnerCheckpoint | None = None,
+        room_id: str | None = None
     ) -> SpinResult:
         """
         Incremental sync using Matrix sync token
@@ -493,9 +501,9 @@ class MatrixSpinner(BaseSpinner):
     async def _fetch_room_messages(
         self,
         room_id: str,
-        since: Optional[str] = None,
-        limit: Optional[int] = None
-    ) -> List[MatrixMessage]:
+        since: str | None = None,
+        limit: int | None = None
+    ) -> list[MatrixMessage]:
         """
         Fetch messages from a Matrix room
 
@@ -535,7 +543,7 @@ class MatrixSpinner(BaseSpinner):
 
         return messages
 
-    def _messages_to_shards(self, messages: List[MatrixMessage]) -> List[MemoryShard]:
+    def _messages_to_shards(self, messages: list[MatrixMessage]) -> list[MemoryShard]:
         """
         Convert MatrixMessage objects to MemoryShards
 
@@ -601,7 +609,7 @@ class MatrixSpinner(BaseSpinner):
 
         return ''.join(parts)
 
-    def _extract_entities(self, msg: MatrixMessage) -> List[str]:
+    def _extract_entities(self, msg: MatrixMessage) -> list[str]:
         """Extract entities from message"""
         entities = []
 
@@ -618,7 +626,7 @@ class MatrixSpinner(BaseSpinner):
 
         return list(set(entities))  # Deduplicate
 
-    def _extract_motifs(self, msg: MatrixMessage) -> List[str]:
+    def _extract_motifs(self, msg: MatrixMessage) -> list[str]:
         """Extract motifs from message"""
         motifs = []
 
@@ -784,9 +792,9 @@ class MatrixSpinner(BaseSpinner):
 async def spin_matrix_room(
     room_id: str,
     homeserver: str = "https://matrix.org",
-    access_token: Optional[str] = None,
-    user_id: Optional[str] = None,
-    password: Optional[str] = None,
+    access_token: str | None = None,
+    user_id: str | None = None,
+    password: str | None = None,
     importance_threshold: float = 0.3
 ) -> SpinResult:
     """

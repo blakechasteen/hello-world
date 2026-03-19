@@ -10,12 +10,10 @@ Phase: 3 - Adaptive Learning
 
 import json
 import logging
-import asyncio
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional
-from pathlib import Path
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -62,16 +60,16 @@ class DeploymentResult:
     message: str
     patterns_deployed: int = 0
     rollback_triggered: bool = False
-    rollback_reason: Optional[str] = None
+    rollback_reason: str | None = None
 
 
 @dataclass
 class PatternVersion:
     """Versioned pattern set for rollback."""
     version: int
-    patterns: List  # List[Pattern]
+    patterns: list  # List[Pattern]
     deployed_at: float
-    metrics: Optional[DeploymentMetrics] = None
+    metrics: DeploymentMetrics | None = None
     is_active: bool = True
 
 
@@ -130,11 +128,11 @@ class AdaptiveUpdater:
         self.deployment_start_time = None
 
         # Pattern versions (for rollback)
-        self.pattern_versions: List[PatternVersion] = []
+        self.pattern_versions: list[PatternVersion] = []
         self.current_version = 0
 
         # Deployment metrics
-        self.metrics_history: List[DeploymentMetrics] = []
+        self.metrics_history: list[DeploymentMetrics] = []
 
         logger.info(f"AdaptiveUpdater initialized "
                    f"(strategy={strategy.value}, "
@@ -142,8 +140,8 @@ class AdaptiveUpdater:
 
     async def deploy_patterns(
         self,
-        new_patterns: List,
-        force_strategy: Optional[DeploymentStrategy] = None
+        new_patterns: list,
+        force_strategy: DeploymentStrategy | None = None
     ) -> DeploymentResult:
         """
         Deploy new patterns safely.
@@ -180,7 +178,7 @@ class AdaptiveUpdater:
         elif strategy == DeploymentStrategy.IMMEDIATE:
             return await self._deploy_immediate(new_patterns)
 
-    async def _deploy_shadow_mode(self, new_patterns: List) -> DeploymentResult:
+    async def _deploy_shadow_mode(self, new_patterns: list) -> DeploymentResult:
         """
         Deploy in shadow mode (no production impact).
 
@@ -218,7 +216,7 @@ class AdaptiveUpdater:
             patterns_deployed=len(new_patterns)
         )
 
-    async def _deploy_ab_test(self, new_patterns: List) -> DeploymentResult:
+    async def _deploy_ab_test(self, new_patterns: list) -> DeploymentResult:
         """
         Deploy with A/B testing (10/90 split).
 
@@ -269,7 +267,7 @@ class AdaptiveUpdater:
             patterns_deployed=len(new_patterns)
         )
 
-    async def _deploy_gradual(self, new_patterns: List) -> DeploymentResult:
+    async def _deploy_gradual(self, new_patterns: list) -> DeploymentResult:
         """
         Deploy with gradual rollout (10% -> 50% -> 100%).
 
@@ -349,7 +347,7 @@ class AdaptiveUpdater:
             patterns_deployed=len(new_patterns)
         )
 
-    async def _deploy_immediate(self, new_patterns: List) -> DeploymentResult:
+    async def _deploy_immediate(self, new_patterns: list) -> DeploymentResult:
         """
         Deploy immediately (100% traffic, no gradual rollout).
 
@@ -486,7 +484,7 @@ class AdaptiveUpdater:
         logger.debug(f"Saved version {version.version} "
                     f"(total versions: {len(self.pattern_versions)})")
 
-    def _get_previous_version(self) -> Optional[PatternVersion]:
+    def _get_previous_version(self) -> PatternVersion | None:
         """Get the previous active version for rollback."""
         if len(self.pattern_versions) < 2:
             return None
@@ -494,14 +492,14 @@ class AdaptiveUpdater:
         # Get second-to-last version (last is current)
         return self.pattern_versions[-2]
 
-    def _get_current_patterns(self) -> List:
+    def _get_current_patterns(self) -> list:
         """Get current patterns from classifier."""
         if hasattr(self.classifier, 'get_active_patterns'):
             return self.classifier.get_active_patterns()
         logger.debug("Classifier has no get_active_patterns(); returning empty list")
         return []
 
-    def _install_patterns(self, patterns: List, shadow: bool = False):
+    def _install_patterns(self, patterns: list, shadow: bool = False):
         """
         Install patterns in classifier.
 
@@ -517,7 +515,7 @@ class AdaptiveUpdater:
             logger.info(f"Installing {len(patterns)} patterns in {mode} mode "
                        f"(classifier lacks update_patterns, log only)")
 
-    def get_deployment_status(self) -> Dict:
+    def get_deployment_status(self) -> dict:
         """Get current deployment status."""
         return {
             'current_phase': self.current_phase.value,
@@ -527,7 +525,7 @@ class AdaptiveUpdater:
             'metrics_collected': len(self.metrics_history)
         }
 
-    def get_metrics_history(self, phases: Optional[List[DeploymentPhase]] = None) -> List[DeploymentMetrics]:
+    def get_metrics_history(self, phases: list[DeploymentPhase] | None = None) -> list[DeploymentMetrics]:
         """
         Get metrics history, optionally filtered by phases.
 

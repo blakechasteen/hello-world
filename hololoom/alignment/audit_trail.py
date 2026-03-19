@@ -16,15 +16,14 @@ References:
 - Industry best practices (Anthropic, OpenAI, DeepMind)
 """
 
-import logging
 import hashlib
-from dataclasses import dataclass, field, asdict
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
-from pathlib import Path
-from enum import Enum
 import json
-
+import logging
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,7 @@ logger = logging.getLogger(__name__)
 GENESIS_HASH = "0" * 64  # SHA-256 produces 64 hex characters
 
 
-def _seal_entry(entry: Dict[str, Any], previous_hash: str) -> str:
+def _seal_entry(entry: dict[str, Any], previous_hash: str) -> str:
     """
     Create cryptographic chain hash for an audit entry.
 
@@ -57,7 +56,7 @@ def _seal_entry(entry: Dict[str, Any], previous_hash: str) -> str:
     return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
 
-def _verify_chain_integrity(entries: List[Dict[str, Any]]) -> Tuple[bool, Optional[int], str]:
+def _verify_chain_integrity(entries: list[dict[str, Any]]) -> tuple[bool, int | None, str]:
     """
     Verify the integrity of an audit chain.
 
@@ -135,22 +134,22 @@ class DecisionLog:
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Context
-    query_text: Optional[str] = None
-    action_description: Optional[str] = None
-    risk_level: Optional[str] = None
+    query_text: str | None = None
+    action_description: str | None = None
+    risk_level: str | None = None
 
     # Decision details
     confidence: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Provenance
-    reasoning_chain: List[str] = field(default_factory=list)
-    data_sources: List[str] = field(default_factory=list)
+    reasoning_chain: list[str] = field(default_factory=list)
+    data_sources: list[str] = field(default_factory=list)
 
     # SECURITY: Chain hash for tamper detection
     chain_hash: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "decision_id": self.decision_id,
@@ -169,7 +168,7 @@ class DecisionLog:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DecisionLog":
+    def from_dict(cls, data: dict[str, Any]) -> "DecisionLog":
         """Create from dictionary."""
         return cls(
             decision_id=data["decision_id"],
@@ -205,15 +204,15 @@ class ProvenanceNode:
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Graph structure
-    parent_ids: List[str] = field(default_factory=list)
-    children_ids: List[str] = field(default_factory=list)
+    parent_ids: list[str] = field(default_factory=list)
+    children_ids: list[str] = field(default_factory=list)
 
     # Data
-    inputs: Dict[str, Any] = field(default_factory=dict)
-    outputs: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    inputs: dict[str, Any] = field(default_factory=dict)
+    outputs: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "node_id": self.node_id,
@@ -228,7 +227,7 @@ class ProvenanceNode:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ProvenanceNode":
+    def from_dict(cls, data: dict[str, Any]) -> "ProvenanceNode":
         """Create from dictionary."""
         return cls(
             node_id=data["node_id"],
@@ -252,18 +251,18 @@ class ProvenanceTracer:
     """
 
     def __init__(self):
-        self.nodes: Dict[str, ProvenanceNode] = {}
-        self.root_ids: List[str] = []
+        self.nodes: dict[str, ProvenanceNode] = {}
+        self.root_ids: list[str] = []
 
     def add_node(
         self,
         node_id: str,
         step_type: str,
         description: str,
-        parent_ids: Optional[List[str]] = None,
-        inputs: Optional[Dict[str, Any]] = None,
-        outputs: Optional[Dict[str, Any]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        parent_ids: list[str] | None = None,
+        inputs: dict[str, Any] | None = None,
+        outputs: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ProvenanceNode:
         """Add a node to the provenance graph."""
         node = ProvenanceNode(
@@ -290,7 +289,7 @@ class ProvenanceTracer:
         logger.debug(f"Added provenance node: {node_id} ({step_type})")
         return node
 
-    def get_reasoning_chain(self, node_id: str) -> List[str]:
+    def get_reasoning_chain(self, node_id: str) -> list[str]:
         """
         Get the reasoning chain from root to this node.
 
@@ -312,7 +311,7 @@ class ProvenanceTracer:
         trace_back(node_id)
         return chain
 
-    def get_data_sources(self, node_id: str) -> List[str]:
+    def get_data_sources(self, node_id: str) -> list[str]:
         """
         Get all data sources that contributed to this node.
 
@@ -336,7 +335,7 @@ class ProvenanceTracer:
         collect_sources(node_id)
         return list(sources)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "nodes": {node_id: node.to_dict() for node_id, node in self.nodes.items()},
@@ -344,7 +343,7 @@ class ProvenanceTracer:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ProvenanceTracer":
+    def from_dict(cls, data: dict[str, Any]) -> "ProvenanceTracer":
         """Create from dictionary."""
         tracer = cls()
         tracer.nodes = {
@@ -390,7 +389,7 @@ class AuditTrail:
 
     def __init__(
         self,
-        persist_path: Optional[Path] = None,
+        persist_path: Path | None = None,
         auto_flush: bool = True,
         flush_interval: int = 10,
     ):
@@ -402,8 +401,8 @@ class AuditTrail:
             auto_flush: Automatically flush to disk after each log
             flush_interval: If auto_flush=False, flush every N logs
         """
-        self.logs: List[DecisionLog] = []
-        self.tracers: Dict[str, ProvenanceTracer] = {}
+        self.logs: list[DecisionLog] = []
+        self.tracers: dict[str, ProvenanceTracer] = {}
 
         self.persist_path = Path(persist_path) if persist_path else None
         self.auto_flush = auto_flush
@@ -427,11 +426,11 @@ class AuditTrail:
         decision_type: DecisionType,
         outcome: OutcomeType,
         reason: str,
-        query_text: Optional[str] = None,
-        action_description: Optional[str] = None,
-        risk_level: Optional[str] = None,
+        query_text: str | None = None,
+        action_description: str | None = None,
+        risk_level: str | None = None,
         confidence: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> DecisionLog:
         """
         Log a decision to the audit trail.
@@ -512,29 +511,29 @@ class AuditTrail:
 
     # Query methods
     def query_by_decision_type(
-        self, decision_type: DecisionType, limit: Optional[int] = None
-    ) -> List[DecisionLog]:
+        self, decision_type: DecisionType, limit: int | None = None
+    ) -> list[DecisionLog]:
         """Query logs by decision type."""
         results = [log for log in self.logs if log.decision_type == decision_type]
         return results[:limit] if limit else results
 
     def query_by_outcome(
-        self, outcome: OutcomeType, limit: Optional[int] = None
-    ) -> List[DecisionLog]:
+        self, outcome: OutcomeType, limit: int | None = None
+    ) -> list[DecisionLog]:
         """Query logs by outcome."""
         results = [log for log in self.logs if log.outcome == outcome]
         return results[:limit] if limit else results
 
     def query_by_time_range(
-        self, start: datetime, end: datetime, limit: Optional[int] = None
-    ) -> List[DecisionLog]:
+        self, start: datetime, end: datetime, limit: int | None = None
+    ) -> list[DecisionLog]:
         """Query logs by time range."""
         results = [log for log in self.logs if start <= log.timestamp <= end]
         return results[:limit] if limit else results
 
     def query_by_metadata(
-        self, metadata_filter: Dict[str, Any], limit: Optional[int] = None
-    ) -> List[DecisionLog]:
+        self, metadata_filter: dict[str, Any], limit: int | None = None
+    ) -> list[DecisionLog]:
         """
         Query logs by metadata fields.
 
@@ -557,7 +556,7 @@ class AuditTrail:
     # SECURITY: Chain integrity verification
     # ==========================================================================
 
-    def verify_integrity(self) -> Tuple[bool, Optional[int], str]:
+    def verify_integrity(self) -> tuple[bool, int | None, str]:
         """
         Verify the integrity of the entire audit chain.
 
@@ -672,7 +671,7 @@ class AuditTrail:
 
 
 def create_audit_trail(
-    persist_path: Optional[Path] = None,
+    persist_path: Path | None = None,
     auto_flush: bool = True,
 ) -> AuditTrail:
     """

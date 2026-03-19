@@ -6,7 +6,7 @@ FAST mode: skip memory if no source, abort only on critical stages,
 early termination on high-confidence quick decisions.
 """
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from .base import WeavingPolicyBase
 
@@ -46,7 +46,7 @@ class FastPolicy(WeavingPolicyBase):
 
     def on_level_complete(
         self, level: list[str], ctx: 'WeavingContext',
-    ) -> Optional[frozenset[str]]:
+    ) -> frozenset[str] | None:
         # Early termination: if quick_decision produced high-confidence result
         if 'quick_decision' in level and ctx.collapse_result:
             if hasattr(ctx.collapse_result, 'confidence') and ctx.collapse_result.confidence > 0.95:

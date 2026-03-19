@@ -32,14 +32,13 @@ Author: Claude Code
 Date: January 2025
 """
 
-from typing import Dict, List, Optional, Any, Protocol
-from dataclasses import dataclass, field
-from enum import Enum
+import json
 import re
 import time
+from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
-import json
-
+from typing import Any
 
 # ============================================================================
 # Intent Types
@@ -63,24 +62,24 @@ class Intent:
     confidence: float  # 0.0-1.0
 
     # Field correction
-    field_name: Optional[str] = None
-    field_value: Optional[Any] = None
-    original_value: Optional[Any] = None
+    field_name: str | None = None
+    field_value: Any | None = None
+    original_value: Any | None = None
 
     # Field mapping
-    source_field: Optional[str] = None
-    target_field: Optional[str] = None
+    source_field: str | None = None
+    target_field: str | None = None
 
     # Schema evolution
-    schema_name: Optional[str] = None
-    field_definition: Optional[Dict] = None
+    schema_name: str | None = None
+    field_definition: dict | None = None
 
     # Category
-    category_name: Optional[str] = None
+    category_name: str | None = None
 
     # Metadata
     raw_command: str = ""
-    parsed_tokens: List[str] = field(default_factory=list)
+    parsed_tokens: list[str] = field(default_factory=list)
 
 
 # ============================================================================
@@ -104,7 +103,7 @@ class CorrectionPattern:
     # Pattern definition
     source_pattern: str  # What triggers this (regex or rule)
     target_action: str   # What to do
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
 
     # Learning metrics
     confidence: float = 0.5  # 0.0-1.0
@@ -114,8 +113,8 @@ class CorrectionPattern:
 
     # Metadata
     created_at: float = field(default_factory=time.time)
-    last_used: Optional[float] = None
-    learned_from: List[str] = field(default_factory=list)  # Correction IDs
+    last_used: float | None = None
+    learned_from: list[str] = field(default_factory=list)  # Correction IDs
 
     @property
     def success_rate(self) -> float:
@@ -157,11 +156,11 @@ class Correction:
     voice_command: str
 
     # Before/after
-    original_data: Dict[str, Any]
-    corrected_data: Dict[str, Any]
+    original_data: dict[str, Any]
+    corrected_data: dict[str, Any]
 
     # Learning
-    pattern_learned: Optional[CorrectionPattern] = None
+    pattern_learned: CorrectionPattern | None = None
     applied_automatically: bool = False  # Was this auto-applied from pattern?
 
 
@@ -319,7 +318,7 @@ class SelfTuningEngine:
 
     def __init__(
         self,
-        storage_path: Optional[Path] = None,
+        storage_path: Path | None = None,
         min_confidence: float = 0.7
     ):
         """
@@ -333,25 +332,25 @@ class SelfTuningEngine:
         self.min_confidence = min_confidence
 
         # Learned patterns
-        self.patterns: Dict[str, CorrectionPattern] = {}
+        self.patterns: dict[str, CorrectionPattern] = {}
 
         # Correction history
-        self.corrections: Dict[str, Correction] = {}
+        self.corrections: dict[str, Correction] = {}
 
         # Load patterns if storage exists
         if self.storage_path and self.storage_path.exists():
             self._load_patterns()
 
         # Track last applied patterns (for metadata)
-        self.last_patterns_applied: List[CorrectionPattern] = []
+        self.last_patterns_applied: list[CorrectionPattern] = []
 
     async def learn_from_correction(
         self,
-        original_data: Dict[str, Any],
-        corrected_data: Dict[str, Any],
-        context: Dict[str, Any],
+        original_data: dict[str, Any],
+        corrected_data: dict[str, Any],
+        context: dict[str, Any],
         voice_command: str
-    ) -> Optional[CorrectionPattern]:
+    ) -> CorrectionPattern | None:
         """
         Learn pattern from user correction.
 
@@ -414,9 +413,9 @@ class SelfTuningEngine:
 
     def _find_changes(
         self,
-        original: Dict[str, Any],
-        corrected: Dict[str, Any]
-    ) -> Dict[str, tuple]:
+        original: dict[str, Any],
+        corrected: dict[str, Any]
+    ) -> dict[str, tuple]:
         """Find what changed between original and corrected data."""
         changes = {}
 
@@ -434,7 +433,7 @@ class SelfTuningEngine:
         field_name: str,
         old_value: str,
         new_value: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> CorrectionPattern:
         """Create value normalization pattern."""
         pattern_id = f"norm_{field_name}_{hash(old_value)}"
@@ -469,9 +468,9 @@ class SelfTuningEngine:
 
     async def apply_learned_patterns(
         self,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         schema_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Apply learned patterns to data.
 
@@ -504,10 +503,10 @@ class SelfTuningEngine:
 
     def _apply_normalization_pattern(
         self,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         pattern: CorrectionPattern,
         schema_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Apply value normalization pattern."""
         # Check context matches
         if pattern.context.get('schema') and pattern.context['schema'] != schema_name:
@@ -531,8 +530,8 @@ class SelfTuningEngine:
     def get_patterns_for_field(
         self,
         field_name: str,
-        min_confidence: Optional[float] = None
-    ) -> List[CorrectionPattern]:
+        min_confidence: float | None = None
+    ) -> list[CorrectionPattern]:
         """Get learned patterns for specific field."""
         min_conf = min_confidence or self.min_confidence
 
@@ -573,7 +572,7 @@ class SelfTuningEngine:
         if not self.storage_path or not self.storage_path.exists():
             return
 
-        with open(self.storage_path, 'r') as f:
+        with open(self.storage_path) as f:
             patterns_data = json.load(f)
 
         for pattern_id, data in patterns_data.items():
@@ -607,8 +606,8 @@ class VoiceCorrector:
 
     def __init__(
         self,
-        tuning_engine: Optional[SelfTuningEngine] = None,
-        intent_parser: Optional[IntentParser] = None
+        tuning_engine: SelfTuningEngine | None = None,
+        intent_parser: IntentParser | None = None
     ):
         """
         Initialize voice corrector.
@@ -621,13 +620,13 @@ class VoiceCorrector:
         self.intent_parser = intent_parser or IntentParser()
 
         # Track corrections
-        self.corrections: Dict[str, Correction] = {}
+        self.corrections: dict[str, Correction] = {}
 
     async def apply_correction(
         self,
         transformation_id: str,
         voice_command: str,
-        original_data: Dict[str, Any],
+        original_data: dict[str, Any],
         schema_name: str
     ) -> Correction:
         """
@@ -684,9 +683,9 @@ class VoiceCorrector:
 
     def get_suggestions(
         self,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         schema_name: str
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get voice-friendly correction suggestions.
 

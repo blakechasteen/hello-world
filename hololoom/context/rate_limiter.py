@@ -17,13 +17,11 @@ Prevents:
 
 import asyncio
 import time
-from typing import Optional
-from dataclasses import dataclass
 from collections import deque
+from dataclasses import dataclass
 from enum import Enum
 
 from hololoom.context.error_handling import RateLimitExceededError
-
 
 # ============================================================================
 # Rate Limiter Types
@@ -119,7 +117,7 @@ class TokenBucketRateLimiter:
             self.total_rejected += 1
             return False
 
-    async def acquire_wait(self, tokens: int = 1, timeout: Optional[float] = None):
+    async def acquire_wait(self, tokens: int = 1, timeout: float | None = None):
         """
         Acquire tokens, waiting if necessary
 
@@ -234,7 +232,7 @@ class SlidingWindowRateLimiter:
             self.total_rejected += 1
             return False
 
-    async def acquire_wait(self, timeout: Optional[float] = None):
+    async def acquire_wait(self, timeout: float | None = None):
         """
         Acquire request slot, waiting if necessary
 
@@ -394,7 +392,7 @@ class RateLimiter:
     - Concurrent limiter (parallelism control)
     """
 
-    def __init__(self, config: Optional[RateLimiterConfig] = None):
+    def __init__(self, config: RateLimiterConfig | None = None):
         """
         Initialize unified rate limiter
 

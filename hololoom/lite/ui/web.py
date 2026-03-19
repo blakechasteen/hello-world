@@ -19,9 +19,6 @@ Features:
 Date: December 2025
 """
 
-import asyncio
-from typing import Optional
-import json
 
 
 # Global loom instance for the web server
@@ -48,8 +45,8 @@ def start_web(host: str = "0.0.0.0", port: int = 8080, **kwargs) -> None:
 def create_app():
     """Create the FastAPI application."""
     from fastapi import FastAPI, Request
-    from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import HTMLResponse, JSONResponse
 
     app = FastAPI(
         title="HoloLoom Lite",

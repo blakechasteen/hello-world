@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Jenny MRF Integration - Metaprompt Refinement Framework Enhancement
 ====================================================================
@@ -37,45 +38,44 @@ References:
 - jenny_spec.py (JennySpec dataclass)
 """
 
+import json
 import logging
 import random
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
 from pathlib import Path
-import json
+from typing import Any, Optional
 
 from hololoom.bandits.beta_arm import BetaArm
+from hololoom.protocols.jenny import CompilationStrategy
 
-from .jenny_spec import (
-    JennySpec,
-    PanelTypeJenny,
-    PanelSizeJenny,
-    LifecycleStage,
-    BindingMode,
-    get_default_actions,
-)
 from .jenny_compiler import (
     JennyCompiler,
     QueryAnalysis,
     analyze_query,
-    generate_text_panel,
     generate_confidence_panel,
-    generate_sources_panel,
     generate_graph_panel,
-    generate_timeline_panel,
-    generate_reasoning_panel,
     generate_metric_panel,
+    generate_reasoning_panel,
+    generate_sources_panel,
+    generate_text_panel,
+    generate_timeline_panel,
 )
-from hololoom.protocols.jenny import CompilationStrategy
+from .jenny_spec import (
+    JennySpec,
+    LifecycleStage,
+    PanelSizeJenny,
+    PanelTypeJenny,
+    get_default_actions,
+)
 
 # Try to import MRF
 try:
     from hololoom.prompting.unified_mrf import (
-        UnifiedMRF,
-        RefinementStrategyType,
         ModelProvider,
+        RefinementStrategyType,
+        UnifiedMRF,
     )
     MRF_AVAILABLE = True
 except ImportError:
@@ -159,7 +159,7 @@ class PanelTypeLearner:
         stats = learner.get_statistics()
     """
 
-    def __init__(self, persist_path: Optional[str] = None):
+    def __init__(self, persist_path: str | None = None):
         """
         Initialize learner.
 
@@ -167,8 +167,8 @@ class PanelTypeLearner:
             persist_path: Optional path to persist learning state
         """
         # Priors indexed by (query_type, panel_type)
-        self.priors: Dict[Tuple[str, str], PanelTypePrior] = defaultdict(PanelTypePrior)
-        self.selection_history: List[Dict[str, Any]] = []
+        self.priors: dict[tuple[str, str], PanelTypePrior] = defaultdict(PanelTypePrior)
+        self.selection_history: list[dict[str, Any]] = []
         self.persist_path = persist_path
 
         # Load persisted state if available
@@ -180,7 +180,7 @@ class PanelTypeLearner:
     def select(
         self,
         query_type: str,
-        candidates: List[PanelTypeJenny],
+        candidates: list[PanelTypeJenny],
         exploration_bonus: float = 0.0
     ) -> PanelTypeJenny:
         """
@@ -259,7 +259,7 @@ class PanelTypeLearner:
         if self.persist_path:
             self._save_state()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get learning statistics."""
         stats = {
             "total_selections": len(self.selection_history),
@@ -277,7 +277,7 @@ class PanelTypeLearner:
 
         return stats
 
-    def get_best_panel_type(self, query_type: str) -> Optional[PanelTypeJenny]:
+    def get_best_panel_type(self, query_type: str) -> PanelTypeJenny | None:
         """Get the current best panel type for a query type (without sampling)."""
         best_value = 0.0
         best_type = None
@@ -320,7 +320,7 @@ class PanelTypeLearner:
             return
 
         try:
-            with open(path, 'r') as f:
+            with open(path) as f:
                 state = json.load(f)
 
             for key, prior_data in state.get("priors", {}).items():
@@ -340,7 +340,7 @@ class PanelTypeLearner:
 
 async def generate_why_panel_mrf(
     spacetime: Spacetime,
-    specs_generated: List[JennySpec],
+    specs_generated: list[JennySpec],
     analysis: QueryAnalysis,
     mrf: Optional["UnifiedMRF"] = None,
     priority: int = 99,
@@ -430,7 +430,7 @@ Focus on what value each panel provides to the user.
     )
 
 
-def _extract_decision_factors(spacetime: Spacetime, analysis: QueryAnalysis) -> Dict[str, Any]:
+def _extract_decision_factors(spacetime: Spacetime, analysis: QueryAnalysis) -> dict[str, Any]:
     """Extract factors that influenced panel selection."""
     factors = {
         "confidence_level": analysis.confidence_level,
@@ -450,8 +450,8 @@ def _extract_decision_factors(spacetime: Spacetime, analysis: QueryAnalysis) -> 
 
 def _generate_rule_based_explanation(
     analysis: QueryAnalysis,
-    panel_types: List[str],
-    decision_factors: Dict[str, Any]
+    panel_types: list[str],
+    decision_factors: dict[str, Any]
 ) -> str:
     """Generate rule-based explanation (fallback when MRF unavailable)."""
     parts = []
@@ -522,7 +522,7 @@ class JennyMRFCompiler(JennyCompiler):
         default_strategy: CompilationStrategy = CompilationStrategy.AUTO,
         include_why_panel: bool = True,
         enable_learning: bool = True,
-        learning_persist_path: Optional[str] = None,
+        learning_persist_path: str | None = None,
         mrf_instance: Optional["UnifiedMRF"] = None,
     ):
         """
@@ -558,8 +558,8 @@ class JennyMRFCompiler(JennyCompiler):
         self,
         spacetime: Spacetime,
         strategy: CompilationStrategy = None,
-        context: Optional[Dict[str, Any]] = None
-    ) -> List[JennySpec]:
+        context: dict[str, Any] | None = None
+    ) -> list[JennySpec]:
         """
         Compile Spacetime into UI specifications with MRF enhancement.
 
@@ -634,7 +634,7 @@ class JennyMRFCompiler(JennyCompiler):
         strategy: CompilationStrategy,
         analysis: QueryAnalysis,
         spacetime: Spacetime
-    ) -> List[List[PanelTypeJenny]]:
+    ) -> list[list[PanelTypeJenny]]:
         """Get candidate panel types based on strategy."""
         candidates = []
 
@@ -666,7 +666,7 @@ class JennyMRFCompiler(JennyCompiler):
         panel_type: PanelTypeJenny,
         spacetime: Spacetime,
         priority: int
-    ) -> Optional[JennySpec]:
+    ) -> JennySpec | None:
         """Generate a panel of the specified type."""
         generators = {
             PanelTypeJenny.CONFIDENCE: lambda: generate_confidence_panel(spacetime, priority),
@@ -707,7 +707,7 @@ class JennyMRFCompiler(JennyCompiler):
         if self.learner:
             self.learner.update(query_type, panel_type, success, confidence)
 
-    def get_learning_statistics(self) -> Dict[str, Any]:
+    def get_learning_statistics(self) -> dict[str, Any]:
         """Get learning statistics."""
         if self.learner:
             return self.learner.get_statistics()
@@ -720,7 +720,7 @@ class JennyMRFCompiler(JennyCompiler):
 
 def create_mrf_compiler(
     enable_learning: bool = True,
-    learning_persist_path: Optional[str] = None,
+    learning_persist_path: str | None = None,
 ) -> JennyMRFCompiler:
     """
     Create an MRF-enhanced Jenny compiler.
@@ -738,7 +738,7 @@ def create_mrf_compiler(
     )
 
 
-def create_panel_learner(persist_path: Optional[str] = None) -> PanelTypeLearner:
+def create_panel_learner(persist_path: str | None = None) -> PanelTypeLearner:
     """
     Create a standalone panel type learner.
 
@@ -757,7 +757,7 @@ def create_panel_learner(persist_path: Optional[str] = None) -> PanelTypeLearner
 
 # Maps action handler names to (success: bool, confidence: float) tuples
 # These values represent the learning signal strength for each action type
-ACTION_LEARNING_MAP: Dict[str, Tuple[bool, float]] = {
+ACTION_LEARNING_MAP: dict[str, tuple[bool, float]] = {
     "pin_panel": (True, 0.9),      # Strong positive signal - user valued the panel
     "dismiss_panel": (False, 0.3), # Weak negative signal - could be cleanup, not dislike
     "show_why_panel": (True, 0.7), # Moderate positive - user engaged with meta-panel

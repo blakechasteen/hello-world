@@ -19,12 +19,12 @@ Use Cases:
 Created: 2025-11-22 (Phase 4)
 """
 
-from typing import List, Optional, Tuple
 import logging
-import numpy as np
 from dataclasses import dataclass
 
-from hololoom.vision.protocol import MarkerDetectorProtocol, Marker
+import numpy as np
+
+from hololoom.vision.protocol import Marker, MarkerDetectorProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +173,7 @@ class MarkerDetector(MarkerDetectorProtocol):
         self.dist_coeffs = dist_coeffs
         logger.info("Camera calibration set for pose estimation")
 
-    async def detect_markers(self, frame: np.ndarray) -> List[Marker]:
+    async def detect_markers(self, frame: np.ndarray) -> list[Marker]:
         """
         Detect markers in frame.
 
@@ -196,7 +196,7 @@ class MarkerDetector(MarkerDetectorProtocol):
         else:
             return []
 
-    async def _detect_aruco(self, frame: np.ndarray) -> List[Marker]:
+    async def _detect_aruco(self, frame: np.ndarray) -> list[Marker]:
         """Detect ArUco markers"""
         try:
             import cv2
@@ -260,7 +260,7 @@ class MarkerDetector(MarkerDetectorProtocol):
             logger.error(f"ArUco detection failed: {e}")
             return []
 
-    async def _detect_qr(self, frame: np.ndarray) -> List[Marker]:
+    async def _detect_qr(self, frame: np.ndarray) -> list[Marker]:
         """Detect QR codes"""
         try:
             import cv2
@@ -305,7 +305,7 @@ class MarkerDetector(MarkerDetectorProtocol):
             logger.error(f"QR detection failed: {e}")
             return []
 
-    async def _detect_apriltag(self, frame: np.ndarray) -> List[Marker]:
+    async def _detect_apriltag(self, frame: np.ndarray) -> list[Marker]:
         """Detect AprilTags"""
         try:
             import cv2
@@ -368,7 +368,7 @@ class MarkerDetector(MarkerDetectorProtocol):
             logger.error(f"AprilTag detection failed: {e}")
             return []
 
-    async def process_frame(self, frame: np.ndarray) -> List[Marker]:
+    async def process_frame(self, frame: np.ndarray) -> list[Marker]:
         """Process frame (delegates to detect_markers)"""
         return await self.detect_markers(frame)
 
@@ -417,7 +417,7 @@ def create_default_camera_matrix(width: int, height: int) -> np.ndarray:
     ], dtype=np.float32)
 
 
-def marker_to_transform_matrix(marker: Marker) -> Optional[np.ndarray]:
+def marker_to_transform_matrix(marker: Marker) -> np.ndarray | None:
     """
     Convert marker pose to 4x4 transformation matrix.
 

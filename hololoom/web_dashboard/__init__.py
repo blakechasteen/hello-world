@@ -9,9 +9,9 @@ emits a helpful deprecation warning rather than a confusing ImportError.
 """
 
 import importlib
-import warnings
 import sys
 import types
+import warnings
 
 
 class _DeprecatedFinder:

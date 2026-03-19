@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Conversation Handlers for Matrix ChatOps
 =========================================
@@ -35,10 +36,9 @@ Updated: 2025-12-19 - Added scratch pad integration
 """
 
 import logging
-from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from collections import defaultdict
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from hololoom.fabric.spacetime import Spacetime
@@ -65,7 +65,9 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -79,8 +81,8 @@ except ImportError:
 # ============================================================================
 
 try:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
     from hololoom.protocols.types import Query
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
     ORCHESTRATOR_AVAILABLE = True
 except ImportError:
     ORCHESTRATOR_AVAILABLE = False
@@ -93,7 +95,7 @@ except ImportError:
 # ============================================================================
 
 try:
-    from hololoom.apps.chatops.handlers.thread_handler import ThreadHandler, ThreadContext
+    from hololoom.apps.chatops.handlers.thread_handler import ThreadContext, ThreadHandler
     THREAD_AVAILABLE = True
 except ImportError:
     THREAD_AVAILABLE = False
@@ -106,18 +108,18 @@ except ImportError:
 # ============================================================================
 
 try:
+    from hololoom.apps.chatops.handlers.scratchpad_handlers import (
+        get_scratchpad_manager,
+        record_last_result,
+        set_scratchpad_manager,
+    )
     from hololoom.apps.chatops.scratchpad import (
-        ScratchArtifact,
-        ArtifactScope,
         ArtifactReference,
-        SessionArtifactContext
+        ArtifactScope,
+        ScratchArtifact,
+        SessionArtifactContext,
     )
     from hololoom.apps.chatops.scratchpad.manager import ScratchPadManager
-    from hololoom.apps.chatops.handlers.scratchpad_handlers import (
-        record_last_result,
-        get_scratchpad_manager,
-        set_scratchpad_manager
-    )
     SCRATCHPAD_AVAILABLE = True
 except ImportError:
     SCRATCHPAD_AVAILABLE = False
@@ -144,11 +146,11 @@ class UserSessionState:
     """
     user_id: str
     session_start: datetime = field(default_factory=datetime.now)
-    last_query: Optional[str] = None
-    last_query_time: Optional[datetime] = None
+    last_query: str | None = None
+    last_query_time: datetime | None = None
     last_result: Optional['Spacetime'] = None
     last_confidence: float = 0.0
-    query_history: List[Dict[str, Any]] = field(default_factory=list)
+    query_history: list[dict[str, Any]] = field(default_factory=list)
 
     # Session metrics
     total_queries: int = 0
@@ -187,7 +189,7 @@ class UserSessionState:
         """Get total session duration."""
         return datetime.now() - self.session_start
 
-    def get_context_window(self, window_minutes: int = 10) -> List[Dict[str, Any]]:
+    def get_context_window(self, window_minutes: int = 10) -> list[dict[str, Any]]:
         """Get queries within the context window."""
         cutoff = datetime.now() - timedelta(minutes=window_minutes)
         return [
@@ -227,7 +229,7 @@ class SessionManager:
         Args:
             session_timeout_minutes: Session expiry time (default 30 min)
         """
-        self._sessions: Dict[tuple, UserSessionState] = {}
+        self._sessions: dict[tuple, UserSessionState] = {}
         self.session_timeout = timedelta(minutes=session_timeout_minutes)
 
         logger.info("SessionManager initialized")
@@ -272,7 +274,7 @@ class SessionManager:
             return True
         return False
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get session statistics."""
         active = sum(
             1 for s in self._sessions.values()
@@ -289,7 +291,7 @@ class SessionManager:
 
 
 # Global session manager
-_session_manager: Optional[SessionManager] = None
+_session_manager: SessionManager | None = None
 
 
 def get_session_manager() -> SessionManager:
@@ -465,8 +467,8 @@ async def get_artifact_context_for_user(
 def get_artifact_references_for_session(
     user_id: str,
     room_id: str,
-    session_id: Optional[str] = None
-) -> List['ArtifactReference']:
+    session_id: str | None = None
+) -> list['ArtifactReference']:
     """
     Get artifact references for a user's session.
 
@@ -583,7 +585,7 @@ async def handle_continue(
         # Format response
         response_text = getattr(spacetime, 'response', str(spacetime))
 
-        response = f"## Continuing Previous Query\n\n"
+        response = "## Continuing Previous Query\n\n"
         response += f"**Original**: {session.query_history[-2]['query'][:100] if len(session.query_history) > 1 else session.last_query[:100]}...\n"
 
         if continuation_text:
@@ -654,7 +656,7 @@ async def handle_context(
 
     # Last query
     if session.last_query:
-        response += f"### Last Query\n"
+        response += "### Last Query\n"
         response += f"**Query**: {session.last_query[:200]}{'...' if len(session.last_query) > 200 else ''}\n"
         response += f"**Confidence**: {session.last_confidence:.2f}\n"
 
@@ -668,7 +670,7 @@ async def handle_context(
     context_queries = session.get_context_window(10)
 
     if context_queries:
-        response += f"### Context Window (last 10 min)\n"
+        response += "### Context Window (last 10 min)\n"
         response += f"_{len(context_queries)} queries_\n\n"
 
         # Show recent queries
@@ -691,7 +693,7 @@ async def handle_context(
         try:
             artifact_context = await get_artifact_context_for_user(user_id, room_id, limit=10)
             if artifact_context:
-                response += f"\n### Stored Artifacts\n"
+                response += "\n### Stored Artifacts\n"
                 # Parse the artifact context (skip the header line)
                 artifact_lines = artifact_context.split('\n')[1:]
                 response += f"_{len(artifact_lines)} artifacts available_\n\n"
@@ -699,18 +701,18 @@ async def handle_context(
                     response += f"{line}\n"
                 if not show_full and len(artifact_lines) > 5:
                     response += f"\n_Use `!context --full` to see all {len(artifact_lines)} artifacts_\n"
-                response += f"\n_Use `!scratch get <name>` to retrieve an artifact_\n"
+                response += "\n_Use `!scratch get <name>` to retrieve an artifact_\n"
             else:
-                response += f"\n### Stored Artifacts\n"
+                response += "\n### Stored Artifacts\n"
                 response += "_No artifacts stored. Use `!scratch store <name>` after a query._\n"
         except Exception as e:
             logger.debug(f"Could not get artifact context for !context: {e}")
-            response += f"\n### Stored Artifacts\n"
+            response += "\n### Stored Artifacts\n"
             response += "_Artifact storage not available._\n"
 
     # Manager stats
     manager_stats = session_mgr.get_statistics()
-    response += f"\n### Global Stats\n"
+    response += "\n### Global Stats\n"
     response += f"**Active Sessions**: {manager_stats['active_sessions']}\n"
     response += f"**Total Queries (All Sessions)**: {manager_stats['total_queries']}\n"
 

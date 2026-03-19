@@ -9,22 +9,21 @@ Port: 8002 (avoids conflict with 8000 agentic_api, 8001 workflow)
 Status: Phase 1 Implementation (December 2025)
 """
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Query
+import logging
+from typing import Any
+
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-from datetime import datetime
-import asyncio
-import logging
 
 from hololoom.apps.server.agent_manager_hub import (
     AgentManagerHub,
-    ThreadConfig,
-    SwarmConfig,
-    ReasoningMode,
-    ThreadStatus,
     MRFStrategy,
-    create_agent_manager_hub
+    ReasoningMode,
+    SwarmConfig,
+    ThreadConfig,
+    ThreadStatus,
+    create_agent_manager_hub,
 )
 
 # Configure logging
@@ -47,7 +46,7 @@ app.add_middleware(
 )
 
 # Global hub instance (initialized on startup)
-_hub: Optional[AgentManagerHub] = None
+_hub: AgentManagerHub | None = None
 
 
 # =============================================================================
@@ -61,9 +60,9 @@ class CreateThreadRequest(BaseModel):
     agent_type: str = Field(default="weaving", description="Agent type: weaving, rag, agentic, custom")
     reasoning_mode: str = Field(default="direct", description="Reasoning mode: direct, verify, research, plan_execute")
     priority: int = Field(default=0, description="Priority level (higher = sooner execution)")
-    time_budget_ms: Optional[float] = Field(default=None, description="Time budget in milliseconds")
-    token_budget: Optional[int] = Field(default=None, description="Token budget")
-    depends_on: List[str] = Field(default_factory=list, description="Thread IDs this thread depends on")
+    time_budget_ms: float | None = Field(default=None, description="Time budget in milliseconds")
+    token_budget: int | None = Field(default=None, description="Token budget")
+    depends_on: list[str] = Field(default_factory=list, description="Thread IDs this thread depends on")
     llm_provider: str = Field(default="ollama", description="LLM provider: ollama, anthropic, openai")
     llm_model: str = Field(default="llama3.2:3b", description="Model name")
 
@@ -79,24 +78,24 @@ class ThreadResponse(BaseModel):
     current_step: int
     total_steps: int
     elapsed_time_ms: float
-    time_budget_ms: Optional[float]
+    time_budget_ms: float | None
     tokens_used: int
-    token_budget: Optional[int]
+    token_budget: int | None
     confidence: float
     estimated_cost_usd: float
     is_local: bool
-    depends_on: List[str]
-    blocks: List[str]
-    swarm_id: Optional[str]
-    head_commit_id: Optional[str]
+    depends_on: list[str]
+    blocks: list[str]
+    swarm_id: str | None
+    head_commit_id: str | None
     created_at: str
     updated_at: str
-    error: Optional[str]
+    error: str | None
 
 
 class ThreadListResponse(BaseModel):
     """Response with list of threads."""
-    threads: List[ThreadResponse]
+    threads: list[ThreadResponse]
     total: int
     active: int
     completed: int
@@ -114,14 +113,14 @@ class StepResponse(BaseModel):
     elapsed_time_ms: float
     tokens_used: int
     confidence: float
-    query: Optional[str]
-    response: Optional[str]
-    tool_used: Optional[str]
+    query: str | None
+    response: str | None
+    tool_used: str | None
     mrf_eligible: bool
     mcts_eligible: bool
-    injection_applied: Optional[str]
-    parent_id: Optional[str]
-    children_ids: List[str]
+    injection_applied: str | None
+    parent_id: str | None
+    children_ids: list[str]
 
 
 class SetPriorityRequest(BaseModel):
@@ -143,9 +142,9 @@ class InjectMCTSRequest(BaseModel):
 class ForkThreadRequest(BaseModel):
     """Request to fork a thread from a step."""
     from_step_id: str = Field(..., description="Step ID to fork from")
-    new_reasoning_mode: Optional[str] = Field(default=None, description="New reasoning mode for forked thread")
-    new_mrf_strategy: Optional[str] = Field(default=None, description="MRF strategy for forked thread")
-    new_mcts_budget: Optional[int] = Field(default=None, description="MCTS budget for forked thread")
+    new_reasoning_mode: str | None = Field(default=None, description="New reasoning mode for forked thread")
+    new_mrf_strategy: str | None = Field(default=None, description="MRF strategy for forked thread")
+    new_mcts_budget: int | None = Field(default=None, description="MCTS budget for forked thread")
 
 
 class CreateSwarmRequest(BaseModel):
@@ -153,7 +152,7 @@ class CreateSwarmRequest(BaseModel):
     name: str = Field(..., description="Swarm name")
     query: str = Field(..., description="Query/task for the swarm")
     child_count: int = Field(default=3, description="Number of child threads")
-    reasoning_modes: List[str] = Field(default_factory=list, description="Reasoning modes for children (cycles if fewer than child_count)")
+    reasoning_modes: list[str] = Field(default_factory=list, description="Reasoning modes for children (cycles if fewer than child_count)")
     merge_strategy: str = Field(default="best", description="Merge strategy: best, combine, manual")
 
 
@@ -162,7 +161,7 @@ class SwarmResponse(BaseModel):
     id: str
     name: str
     parent_thread_id: str
-    child_thread_ids: List[str]
+    child_thread_ids: list[str]
     merge_strategy: str
     status: str
     created_at: str
@@ -170,24 +169,24 @@ class SwarmResponse(BaseModel):
 
 class MergeSwarmRequest(BaseModel):
     """Request to merge swarm results."""
-    strategy: Optional[str] = Field(default=None, description="Override merge strategy")
+    strategy: str | None = Field(default=None, description="Override merge strategy")
 
 
 class CheckoutRequest(BaseModel):
     """Request to checkout a commit (rollback)."""
     target: str = Field(..., description="Commit ID or branch name")
-    create_branch: Optional[str] = Field(default=None, description="Create new branch at target")
+    create_branch: str | None = Field(default=None, description="Create new branch at target")
 
 
 class CreateBranchRequest(BaseModel):
     """Request to create a branch."""
     name: str = Field(..., description="Branch name")
-    from_commit: Optional[str] = Field(default=None, description="Source commit (default: HEAD)")
+    from_commit: str | None = Field(default=None, description="Source commit (default: HEAD)")
 
 
 class CommitLogResponse(BaseModel):
     """Response with commit log."""
-    commits: List[Dict[str, Any]]
+    commits: list[dict[str, Any]]
     total: int
 
 
@@ -345,7 +344,7 @@ async def create_thread(request: CreateThreadRequest):
 
 @app.get("/api/threads", response_model=ThreadListResponse)
 async def list_threads(
-    status: Optional[str] = Query(default=None, description="Filter by status"),
+    status: str | None = Query(default=None, description="Filter by status"),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0)
 ):
@@ -511,7 +510,7 @@ async def fork_thread(thread_id: str, request: ForkThreadRequest):
 # Step Endpoints
 # =============================================================================
 
-@app.get("/api/threads/{thread_id}/steps", response_model=List[StepResponse])
+@app.get("/api/threads/{thread_id}/steps", response_model=list[StepResponse])
 async def list_thread_steps(thread_id: str):
     """List all steps for a thread."""
     hub = get_hub()
@@ -642,7 +641,7 @@ async def get_swarm(swarm_id: str):
 
 
 @app.post("/api/swarms/{swarm_id}/merge")
-async def merge_swarm(swarm_id: str, request: Optional[MergeSwarmRequest] = None):
+async def merge_swarm(swarm_id: str, request: MergeSwarmRequest | None = None):
     """Merge swarm results."""
     hub = get_hub()
 
@@ -867,7 +866,7 @@ async def websocket_endpoint(websocket: WebSocket):
     # Subscription patterns (client can subscribe to specific threads/events)
     subscriptions = set()
 
-    async def send_event(event: Dict[str, Any]):
+    async def send_event(event: dict[str, Any]):
         """Send event if client is subscribed."""
         event_type = event.get("type", "")
         thread_id = event.get("thread_id", "")

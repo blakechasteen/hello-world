@@ -8,14 +8,15 @@ Created: 2025-11-16
 Part of: Wave 3 Production Hardening
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Callable
-from enum import Enum
 import asyncio
-import aiohttp
-import time
 import logging
-from datetime import datetime, timedelta
+import time
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -115,10 +116,10 @@ class FailoverManager:
 
     def __init__(
         self,
-        regions: List[Region],
-        config: Optional[FailoverConfig] = None,
+        regions: list[Region],
+        config: FailoverConfig | None = None,
         strategy: FailoverStrategy = FailoverStrategy.PRIORITY,
-        on_failover: Optional[Callable[[Region, Region], None]] = None,
+        on_failover: Callable[[Region, Region], None] | None = None,
     ):
         """
         Initialize failover manager.
@@ -138,9 +139,9 @@ class FailoverManager:
         self.on_failover = on_failover
 
         self.active_region = self.regions[0]
-        self._monitoring_task: Optional[asyncio.Task] = None
-        self._last_failover: Optional[datetime] = None
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._monitoring_task: asyncio.Task | None = None
+        self._last_failover: datetime | None = None
+        self._session: aiohttp.ClientSession | None = None
         self._round_robin_index = 0
 
     async def start(self):
@@ -315,7 +316,7 @@ class FailoverManager:
                 except Exception as e:
                     logger.error(f"Failback callback error: {e}")
 
-    async def _select_region(self) -> Optional[Region]:
+    async def _select_region(self) -> Region | None:
         """
         Select best region based on strategy.
 
@@ -417,7 +418,7 @@ class FailoverManager:
 
         raise Exception(f"All retries failed: {last_error}")
 
-    def get_status(self) -> Dict:
+    def get_status(self) -> dict:
         """
         Get current failover status.
 
@@ -470,7 +471,7 @@ class FailoverManager:
 
 # Convenience function for creating standard configurations
 def create_failover_manager(
-    regions: List[tuple],  # List of (name, endpoint, priority) tuples
+    regions: list[tuple],  # List of (name, endpoint, priority) tuples
     strategy: FailoverStrategy = FailoverStrategy.PRIORITY,
     **config_kwargs
 ) -> FailoverManager:

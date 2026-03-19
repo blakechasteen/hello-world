@@ -14,7 +14,6 @@ Endpoints:
 import logging
 import re
 from collections import defaultdict
-from typing import Optional, List
 
 from fastapi import APIRouter, HTTPException
 
@@ -26,7 +25,7 @@ router = APIRouter(tags=["Workspace"])
 
 
 @router.get("/api/todos")
-async def get_todos(workspace_id: Optional[str] = None, limit: int = 50):
+async def get_todos(workspace_id: str | None = None, limit: int = 50):
     """
     Extract all TODOs from workspace with importance scoring.
 
@@ -174,8 +173,8 @@ async def get_todos(workspace_id: Optional[str] = None, limit: int = 50):
 @router.post("/ingest/workspace")
 async def ingest_workspace(
     workspace_path: str,
-    languages: Optional[List[str]] = None,
-    exclude_patterns: Optional[List[str]] = None
+    languages: list[str] | None = None,
+    exclude_patterns: list[str] | None = None
 ):
     """
     Ingest entire workspace into knowledge graph.
@@ -197,8 +196,8 @@ async def ingest_workspace(
         }
     """
     try:
-        from hololoom.spinningWheel.workspace import WorkspaceSpinner
         from hololoom import HoloLoom
+        from hololoom.spinningWheel.workspace import WorkspaceSpinner
 
         logger.info(f"Starting workspace ingestion: {workspace_path}")
 
@@ -250,8 +249,8 @@ async def ingest_workspace(
 @router.post("/ingest/workspace/legacy")
 async def ingest_workspace_legacy(
     workspace_path: str,
-    languages: Optional[List[str]] = None,
-    exclude_patterns: Optional[List[str]] = None
+    languages: list[str] | None = None,
+    exclude_patterns: list[str] | None = None
 ):
     """
     Legacy workspace ingestion using codebase indexer (if available).
@@ -333,7 +332,7 @@ async def ingest_workspace_legacy(
 
 
 @router.post("/ingest/file")
-async def ingest_file(file_path: str, language: str, content: Optional[str] = None):
+async def ingest_file(file_path: str, language: str, content: str | None = None):
     """
     Ingest single file into knowledge graph.
 
@@ -372,8 +371,8 @@ async def ingest_file(file_path: str, language: str, content: Optional[str] = No
 
         # If content provided, create temp file
         if content:
-            import tempfile
             import os
+            import tempfile
             with tempfile.NamedTemporaryFile(mode='w', suffix=f'.{language}', delete=False) as f:
                 f.write(content)
                 temp_path = f.name

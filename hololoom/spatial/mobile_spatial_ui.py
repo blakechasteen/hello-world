@@ -12,16 +12,17 @@ Phase 4: Spatial Computing Enhancement - Mobile UI
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Tuple, Set
 import asyncio
 import logging
 import math
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 # Import spatial math types
-from hololoom.spatial.math_types import Vector3, Quaternion, Color, Transform
+from hololoom.spatial.math_types import Color, Quaternion, Vector3
 
 logger = logging.getLogger(__name__)
 
@@ -89,15 +90,15 @@ class TouchGestureType(Enum):
 class TouchGesture:
     """Detected touch gesture event."""
     gesture_type: TouchGestureType
-    position: Tuple[float, float]  # Screen position (0-1 normalized)
-    delta: Tuple[float, float] = (0.0, 0.0)  # Movement delta
+    position: tuple[float, float]  # Screen position (0-1 normalized)
+    delta: tuple[float, float] = (0.0, 0.0)  # Movement delta
     scale: float = 1.0  # For pinch gestures
     rotation: float = 0.0  # For rotate gestures (radians)
     velocity: float = 0.0  # Gesture velocity
     finger_count: int = 1
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "gesture_type": self.gesture_type.value,
             "position": self.position,
@@ -167,7 +168,7 @@ class DeviceCapabilities:
         else:
             return UIScale.NORMAL
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "device_type": self.device_type.value,
             "screen_width": self.screen_width,
@@ -229,10 +230,10 @@ class LayoutConstraints:
     max_width: float = float('inf')
     min_height: float = 0.0
     max_height: float = float('inf')
-    aspect_ratio: Optional[float] = None  # width/height
+    aspect_ratio: float | None = None  # width/height
     margin: float = 8.0
     padding: float = 8.0
-    safe_area_insets: Tuple[float, float, float, float] = (0, 0, 0, 0)  # top, right, bottom, left
+    safe_area_insets: tuple[float, float, float, float] = (0, 0, 0, 0)  # top, right, bottom, left
 
 
 # ============================================================================
@@ -300,12 +301,12 @@ class UIComponent:
     is_disabled: bool = False
 
     # Content
-    label: Optional[str] = None
-    icon: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    label: str | None = None
+    icon: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def get_computed_position(self, screen_width: int, screen_height: int,
-                             safe_area: Tuple[float, float, float, float]) -> Tuple[float, float]:
+                             safe_area: tuple[float, float, float, float]) -> tuple[float, float]:
         """Calculate actual screen position."""
         top, right, bottom, left = safe_area
 
@@ -328,7 +329,7 @@ class UIComponent:
             base_y + self.offset_y * screen_height
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "component_id": self.component_id,
             "component_type": self.component_type.value,
@@ -365,7 +366,7 @@ class BottomSheet(UIComponent):
 
     current_state: str = "collapsed"  # collapsed, half, expanded
     draggable: bool = True
-    snap_points: List[float] = field(default_factory=lambda: [0.1, 0.5, 0.8])
+    snap_points: list[float] = field(default_factory=lambda: [0.1, 0.5, 0.8])
 
     # Content
     header_height: float = 32.0
@@ -382,11 +383,11 @@ class RadialMenu(UIComponent):
     """Radial/pie menu for spatial interaction."""
     radius: float = 100.0
     inner_radius: float = 30.0
-    items: List[Dict[str, Any]] = field(default_factory=list)
+    items: list[dict[str, Any]] = field(default_factory=list)
     open_gesture: TouchGestureType = TouchGestureType.LONG_PRESS
 
     is_open: bool = False
-    selected_index: Optional[int] = None
+    selected_index: int | None = None
 
     def __post_init__(self):
         self.component_type = UIComponentType.RADIAL_MENU
@@ -398,7 +399,7 @@ class RadialMenu(UIComponent):
         angle_per_item = 2 * math.pi / len(self.items)
         return index * angle_per_item - math.pi / 2  # Start from top
 
-    def get_item_position(self, index: int) -> Tuple[float, float]:
+    def get_item_position(self, index: int) -> tuple[float, float]:
         """Get position offset for item."""
         angle = self.get_item_angle(index)
         mid_radius = (self.radius + self.inner_radius) / 2
@@ -417,7 +418,7 @@ class SpatialHUD:
     follow_distance: float = 2.0  # Meters from viewer
 
     # Elements
-    elements: Dict[str, UIComponent] = field(default_factory=dict)
+    elements: dict[str, UIComponent] = field(default_factory=dict)
 
     # Layout zones
     top_bar_height: float = 0.08    # 8% of view
@@ -447,7 +448,7 @@ class SpatialHUD:
             viewer_position.z + forward.z * self.follow_distance
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "hud_id": self.hud_id,
             "visible": self.visible,
@@ -464,10 +465,10 @@ class SpatialHUD:
 class TouchPoint:
     """Single touch point tracking."""
     touch_id: int
-    position: Tuple[float, float]
-    start_position: Tuple[float, float]
+    position: tuple[float, float]
+    start_position: tuple[float, float]
     start_time: datetime
-    last_position: Tuple[float, float]
+    last_position: tuple[float, float]
     last_time: datetime
     is_active: bool = True
 
@@ -494,17 +495,17 @@ class TouchGestureRecognizer:
         self.swipe_max_time_ms = swipe_max_time_ms
         self.edge_threshold = edge_threshold
 
-        self.active_touches: Dict[int, TouchPoint] = {}
-        self.gesture_handlers: Dict[TouchGestureType, List[Callable]] = {}
+        self.active_touches: dict[int, TouchPoint] = {}
+        self.gesture_handlers: dict[TouchGestureType, list[Callable]] = {}
 
         # Multi-touch state
-        self._initial_pinch_distance: Optional[float] = None
-        self._initial_rotation: Optional[float] = None
+        self._initial_pinch_distance: float | None = None
+        self._initial_rotation: float | None = None
 
         # Long press detection
-        self._long_press_task: Optional[asyncio.Task] = None
+        self._long_press_task: asyncio.Task | None = None
 
-    def on_touch_start(self, touch_id: int, x: float, y: float) -> Optional[TouchGesture]:
+    def on_touch_start(self, touch_id: int, x: float, y: float) -> TouchGesture | None:
         """Handle touch start event."""
         now = datetime.now()
         self.active_touches[touch_id] = TouchPoint(
@@ -527,7 +528,7 @@ class TouchGestureRecognizer:
 
         return None
 
-    def on_touch_move(self, touch_id: int, x: float, y: float) -> Optional[TouchGesture]:
+    def on_touch_move(self, touch_id: int, x: float, y: float) -> TouchGesture | None:
         """Handle touch move event."""
         if touch_id not in self.active_touches:
             return None
@@ -559,7 +560,7 @@ class TouchGestureRecognizer:
 
         return None
 
-    def on_touch_end(self, touch_id: int) -> Optional[TouchGesture]:
+    def on_touch_end(self, touch_id: int) -> TouchGesture | None:
         """Handle touch end event."""
         if touch_id not in self.active_touches:
             return None
@@ -635,7 +636,7 @@ class TouchGestureRecognizer:
         self._initial_pinch_distance = math.sqrt(dx * dx + dy * dy)
         self._initial_rotation = math.atan2(dy, dx)
 
-    def _detect_multi_touch_gesture(self) -> Optional[TouchGesture]:
+    def _detect_multi_touch_gesture(self) -> TouchGesture | None:
         """Detect pinch/rotate gesture."""
         if len(self.active_touches) != 2:
             return None
@@ -685,7 +686,7 @@ class TouchGestureRecognizer:
         return None
 
     def _classify_swipe(self, dx: float, dy: float,
-                       start_pos: Tuple[float, float]) -> TouchGestureType:
+                       start_pos: tuple[float, float]) -> TouchGestureType:
         """Classify swipe direction."""
         # Check for edge swipes
         is_left_edge = start_pos[0] < self.edge_threshold
@@ -732,7 +733,7 @@ class MobileSpatialUIManager:
     - Performance optimization
     """
 
-    def __init__(self, initial_capabilities: Optional[DeviceCapabilities] = None):
+    def __init__(self, initial_capabilities: DeviceCapabilities | None = None):
         self.capabilities = initial_capabilities or DeviceCapabilities(
             device_type=DeviceType.MOBILE_PHONE,
             screen_width=375,
@@ -740,13 +741,13 @@ class MobileSpatialUIManager:
             has_touch=True
         )
 
-        self.components: Dict[str, UIComponent] = {}
-        self.hud: Optional[SpatialHUD] = None
+        self.components: dict[str, UIComponent] = {}
+        self.hud: SpatialHUD | None = None
         self.gesture_recognizer = TouchGestureRecognizer()
 
         # UI state
-        self.active_modal: Optional[str] = None
-        self.active_bottom_sheet: Optional[str] = None
+        self.active_modal: str | None = None
+        self.active_bottom_sheet: str | None = None
         self.ui_scale = UIScale.NORMAL
 
         # Performance
@@ -754,7 +755,7 @@ class MobileSpatialUIManager:
         self.reduce_motion: bool = False
 
         # Event handlers
-        self._ui_event_handlers: Dict[str, List[Callable]] = {}
+        self._ui_event_handlers: dict[str, list[Callable]] = {}
 
     def update_capabilities(self, capabilities: DeviceCapabilities):
         """Update device capabilities and adapt UI."""
@@ -788,7 +789,7 @@ class MobileSpatialUIManager:
         component_id: str,
         icon: str,
         anchor: UIAnchor = UIAnchor.BOTTOM_RIGHT,
-        action: Optional[Callable] = None
+        action: Callable | None = None
     ) -> FloatingActionButton:
         """Create and add floating action button."""
         fab = FloatingActionButton(
@@ -825,7 +826,7 @@ class MobileSpatialUIManager:
     def create_radial_menu(
         self,
         component_id: str,
-        items: List[Dict[str, Any]]
+        items: list[dict[str, Any]]
     ) -> RadialMenu:
         """Create radial menu."""
         menu = RadialMenu(
@@ -893,7 +894,7 @@ class MobileSpatialUIManager:
         """Handle right edge swipe."""
         self._emit_ui_event("drawer", {"side": "right", "action": "open"})
 
-    def _hit_test(self, position: Tuple[float, float]) -> Optional[UIComponent]:
+    def _hit_test(self, position: tuple[float, float]) -> UIComponent | None:
         """Find component at screen position."""
         screen_x = position[0] * self.capabilities.screen_width
         screen_y = position[1] * self.capabilities.screen_height
@@ -958,7 +959,7 @@ class MobileSpatialUIManager:
             self._ui_event_handlers[event_type] = []
         self._ui_event_handlers[event_type].append(handler)
 
-    def _emit_ui_event(self, event_type: str, data: Dict[str, Any]):
+    def _emit_ui_event(self, event_type: str, data: dict[str, Any]):
         """Emit UI event."""
         handlers = self._ui_event_handlers.get(event_type, [])
         for handler in handlers:
@@ -967,7 +968,7 @@ class MobileSpatialUIManager:
             except Exception as e:
                 logger.error(f"UI event handler error: {e}")
 
-    def get_performance_hints(self) -> Dict[str, Any]:
+    def get_performance_hints(self) -> dict[str, Any]:
         """Get performance recommendations for current device."""
         return {
             "render_quality": self.render_quality,
@@ -979,7 +980,7 @@ class MobileSpatialUIManager:
             "frame_rate_target": self.capabilities.preferred_frame_rate
         }
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export UI state."""
         return {
             "device": self.capabilities.to_dict(),
@@ -1018,7 +1019,7 @@ def create_mobile_ui_manager(
     return manager
 
 
-def create_default_spatial_ui(manager: MobileSpatialUIManager) -> Dict[str, UIComponent]:
+def create_default_spatial_ui(manager: MobileSpatialUIManager) -> dict[str, UIComponent]:
     """Create default spatial UI components."""
     components = {}
 

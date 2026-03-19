@@ -20,14 +20,14 @@ Example:
     >>> policy.update(Observation(ctx.id, action.id, reward))
 """
 
-from hololoom.bandits.neural_ts.types import (
-    Context,
-    Action,
-    Observation,
-    BanditPolicy,
-)
-from hololoom.bandits.neural_ts.policy import NeuralThompsonPolicy
 from hololoom.bandits.config import BanditConfig, create_neural_ts_policy
+from hololoom.bandits.neural_ts.policy import NeuralThompsonPolicy
+from hololoom.bandits.neural_ts.types import (
+    Action,
+    BanditPolicy,
+    Context,
+    Observation,
+)
 
 __all__ = [
     "Context",

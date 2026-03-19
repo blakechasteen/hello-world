@@ -14,9 +14,10 @@ import logging
 import pickle
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from typing import Any, Dict, Optional, Callable
+from typing import Any
 
 import numpy as np
 
@@ -27,7 +28,6 @@ from hololoom.ml.protocol import (
     ModelType,
     PredictionResult,
     TaskType,
-    TrainerProtocol,
     TrainingResult,
     generate_model_id,
 )
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 SKLEARN_AVAILABLE = False
 try:
     import sklearn
-    from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
     from sklearn.model_selection import cross_val_score
 
     SKLEARN_AVAILABLE = True
@@ -67,7 +67,7 @@ class BaseTrainer(ABC):
     """
 
     # Shared thread pool for sklearn operations
-    _executor: Optional[ThreadPoolExecutor] = None
+    _executor: ThreadPoolExecutor | None = None
 
     def __init__(self, n_workers: int = 4):
         """
@@ -114,7 +114,7 @@ class BaseTrainer(ABC):
         ...
 
     @abstractmethod
-    def get_hyperparameter_space(self) -> Dict[str, Any]:
+    def get_hyperparameter_space(self) -> dict[str, Any]:
         """Get hyperparameter search space for tuning."""
         ...
 
@@ -233,8 +233,8 @@ class BaseTrainer(ABC):
     def _get_feature_importance_from_model(
         self,
         model: Any,
-        feature_names: Optional[list],
-    ) -> Optional[Dict[str, float]]:
+        feature_names: list | None,
+    ) -> dict[str, float] | None:
         """
         Extract feature importance from trained model.
 
@@ -335,7 +335,7 @@ class BaseTrainer(ABC):
         y_eval: np.ndarray,
         cv_folds: int,
         n_features: int,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Synchronous evaluation implementation.
 
@@ -438,7 +438,7 @@ class BaseTrainer(ABC):
     def get_feature_importance(
         self,
         result: TrainingResult,
-    ) -> Optional[Dict[str, float]]:
+    ) -> dict[str, float] | None:
         """
         Get feature importance from training result.
 

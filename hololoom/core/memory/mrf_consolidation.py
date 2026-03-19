@@ -30,14 +30,10 @@ Example:
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any
 
-from hololoom.prompting.unified_mrf import (
-    UnifiedMRF,
-    MetapromptConfig,
-    ModelProvider
-)
 from hololoom.memory.consolidation import ConsolidationStrategy
+from hololoom.prompting.unified_mrf import MetapromptConfig, ModelProvider, UnifiedMRF
 from hololoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
@@ -48,10 +44,10 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 def create_consolidation_mrf_prompt(
-    episodes: List[MemoryShard],
+    episodes: list[MemoryShard],
     strategy: str,
     model_provider: str = "claude",
-    constraints: Optional[List[str]] = None
+    constraints: list[str] | None = None
 ) -> str:
     """
     Create UnifiedMRF-enhanced prompt for memory consolidation.
@@ -108,9 +104,9 @@ def _shard_to_text(shard: MemoryShard) -> str:
 # ============================================================================
 
 def _create_fact_extraction_prompt(
-    episodes: List[str],
+    episodes: list[str],
     provider: ModelProvider,
-    constraints: List[str]
+    constraints: list[str]
 ) -> str:
     """Create fact extraction prompt with MRF."""
     config = MetapromptConfig(
@@ -161,9 +157,9 @@ def _create_fact_extraction_prompt(
 
 
 def _create_entity_extraction_prompt(
-    episodes: List[str],
+    episodes: list[str],
     provider: ModelProvider,
-    constraints: List[str]
+    constraints: list[str]
 ) -> str:
     """Create entity extraction prompt with MRF."""
     config = MetapromptConfig(
@@ -214,9 +210,9 @@ def _create_entity_extraction_prompt(
 
 
 def _create_summarization_prompt(
-    episodes: List[str],
+    episodes: list[str],
     provider: ModelProvider,
-    constraints: List[str]
+    constraints: list[str]
 ) -> str:
     """Create summarization prompt with MRF."""
     config = MetapromptConfig(
@@ -265,9 +261,9 @@ def _create_summarization_prompt(
 
 
 def _create_deduplication_prompt(
-    episodes: List[str],
+    episodes: list[str],
     provider: ModelProvider,
-    constraints: List[str]
+    constraints: list[str]
 ) -> str:
     """Create deduplication prompt with MRF."""
     config = MetapromptConfig(
@@ -324,8 +320,8 @@ def _create_deduplication_prompt(
 def assess_consolidation_quality(
     strategy: str,
     input_episodes: int,
-    output_facts: List[str],
-    context: Optional[Dict[str, Any]] = None
+    output_facts: list[str],
+    context: dict[str, Any] | None = None
 ) -> float:
     """
     Assess quality of MRF-enhanced consolidation.
@@ -401,10 +397,10 @@ def assess_consolidation_quality(
 # ============================================================================
 
 def enhance_consolidation_with_mrf(
-    episodes: List[MemoryShard],
+    episodes: list[MemoryShard],
     model_provider: str = "claude",
     enable_all_strategies: bool = True
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """
     Complete consolidation pipeline with MRF enhancement.
 

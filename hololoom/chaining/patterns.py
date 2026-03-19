@@ -14,7 +14,7 @@ Date: November 2025
 """
 
 from .chain import Chain, ChainStep, StepType
-from .conditions import Conditions, CommonConditions
+from .conditions import Conditions
 
 
 class ChainPatterns:

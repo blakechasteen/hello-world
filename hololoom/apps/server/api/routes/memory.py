@@ -12,10 +12,9 @@ Endpoints:
 
 import logging
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
-
 from hololoom.protocols.types import MemoryShard
 
 from ..state import state
@@ -26,7 +25,7 @@ router = APIRouter(tags=["Memory"])
 
 
 @router.post("/memories/add")
-async def add_memory(memory: Dict):
+async def add_memory(memory: dict):
     """
     Add new memory to persistent storage.
 
@@ -96,7 +95,7 @@ async def add_memory(memory: Dict):
 
 
 @router.post("/api/remember")
-async def api_remember(request: Dict[str, Any]):
+async def api_remember(request: dict[str, Any]):
     """
     Store content to HoloLoom memory with IDE context.
 
@@ -141,7 +140,7 @@ async def api_remember(request: Dict[str, Any]):
 
             return {
                 "status": "success",
-                "message": f"Saved to HoloLoom memory",
+                "message": "Saved to HoloLoom memory",
                 "memory_id": memory.id
             }
 
@@ -151,7 +150,7 @@ async def api_remember(request: Dict[str, Any]):
 
 
 @router.post("/api/recall")
-async def api_recall(request: Dict[str, Any]):
+async def api_recall(request: dict[str, Any]):
     """
     Search HoloLoom memories using semantic + keyword search.
 

@@ -34,12 +34,12 @@ Created: 2025-11-30
 Author: HoloLoom Team
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any, Protocol, AsyncIterator, Union, Tuple
-from enum import Enum, auto
-from datetime import datetime
 import uuid
-
+from collections.abc import AsyncIterator
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Protocol
 
 # ============================================================================
 # Cognitive Visualization Types (15 Types)
@@ -94,13 +94,13 @@ class CognitiveEvent:
     id: str
     viz_type: CognitiveVizType
     timestamp: datetime
-    data: Dict[str, Any]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Lifecycle hints
-    duration_ms: Optional[float] = None  # How long to display
+    duration_ms: float | None = None  # How long to display
     priority: int = 5  # 1 (highest) to 10 (lowest)
-    replaces: Optional[str] = None  # ID of event this replaces
+    replaces: str | None = None  # ID of event this replaces
 
     def __post_init__(self):
         if not self.id:
@@ -115,21 +115,21 @@ class CognitiveFrame:
     Contains all events that should be rendered together.
     """
     timestamp: datetime
-    events: List[CognitiveEvent] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    events: list[CognitiveEvent] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Weaving context
-    query_id: Optional[str] = None
-    weaving_stage: Optional[str] = None  # "retrieval", "decision", "synthesis", etc.
+    query_id: str | None = None
+    weaving_stage: str | None = None  # "retrieval", "decision", "synthesis", etc.
     confidence: float = 0.0
 
     @property
-    def stage(self) -> Optional[str]:
+    def stage(self) -> str | None:
         """Alias for weaving_stage for convenience."""
         return self.weaving_stage
 
     @property
-    def title(self) -> Optional[str]:
+    def title(self) -> str | None:
         """Get title from metadata."""
         return self.metadata.get("title")
 
@@ -138,7 +138,7 @@ class CognitiveFrame:
         self.events.append(event)
         return self
 
-    def get_by_type(self, viz_type: CognitiveVizType) -> List[CognitiveEvent]:
+    def get_by_type(self, viz_type: CognitiveVizType) -> list[CognitiveEvent]:
         """Get events of a specific type."""
         return [e for e in self.events if e.viz_type == viz_type]
 
@@ -153,7 +153,7 @@ class CognitiveStream:
     def __init__(self, source_id: str):
         self.source_id = source_id
         self.started_at = datetime.now()
-        self._frames: List[CognitiveFrame] = []
+        self._frames: list[CognitiveFrame] = []
 
     async def emit(self, frame: CognitiveFrame) -> None:
         """Emit a frame (for producers)."""
@@ -179,9 +179,9 @@ class ActivationField:
     Visualized as: Glowing waves propagating from source nodes,
     with intensity representing activation level.
     """
-    source_nodes: List[str]  # Origin points of activation
-    activation_levels: Dict[str, float]  # node_id → activation (0.0-1.0)
-    wave_front: List[str]  # Currently propagating nodes
+    source_nodes: list[str]  # Origin points of activation
+    activation_levels: dict[str, float]  # node_id → activation (0.0-1.0)
+    wave_front: list[str]  # Currently propagating nodes
     propagation_step: int = 0  # Time step in propagation
     decay_rate: float = 0.15  # Activation decay per step
 
@@ -211,19 +211,19 @@ class ProbabilityManifold:
     Visualized as: Probability density clouds, with brighter regions
     indicating higher probability of selection.
     """
-    tool_names: List[str]
-    alpha_values: List[float]  # Success counts + 1 (Beta prior)
-    beta_values: List[float]  # Failure counts + 1 (Beta prior)
-    sampled_values: Optional[List[float]] = None  # Current samples
-    selected_tool: Optional[str] = None  # Tool chosen this step
+    tool_names: list[str]
+    alpha_values: list[float]  # Success counts + 1 (Beta prior)
+    beta_values: list[float]  # Failure counts + 1 (Beta prior)
+    sampled_values: list[float] | None = None  # Current samples
+    selected_tool: str | None = None  # Tool chosen this step
 
     @property
-    def expected_values(self) -> List[float]:
+    def expected_values(self) -> list[float]:
         """Expected value for each tool: alpha / (alpha + beta)."""
         return [a / (a + b) for a, b in zip(self.alpha_values, self.beta_values)]
 
     @property
-    def variances(self) -> List[float]:
+    def variances(self) -> list[float]:
         """Variance for each tool."""
         return [
             (a * b) / ((a + b) ** 2 * (a + b + 1))
@@ -263,8 +263,8 @@ class SemanticPosition:
     Visualized as: Point in 3D projected space (t-SNE/UMAP/PCA),
     with color encoding dominant semantic dimension.
     """
-    position: List[float]  # 228D vector (or projected)
-    dominant_axes: List[Tuple[str, float]]  # Top semantic axes with values
+    position: list[float]  # 228D vector (or projected)
+    dominant_axes: list[tuple[str, float]]  # Top semantic axes with values
     query_text: str = ""
 
     # 16 Interpretable Axes
@@ -275,7 +275,7 @@ class SemanticPosition:
         "emotionality", "actionability", "novelty", "controversy"
     ]
 
-    def get_interpretable(self) -> Dict[str, float]:
+    def get_interpretable(self) -> dict[str, float]:
         """Get first 16 dimensions as interpretable axes."""
         if len(self.position) >= 16:
             return dict(zip(self.INTERPRETABLE_AXES, self.position[:16]))
@@ -307,9 +307,9 @@ class SemanticTrajectory:
     Visualized as: Path/ribbon in 3D space showing semantic journey,
     with color encoding velocity/shift magnitude.
     """
-    positions: List[SemanticPosition]
-    velocities: List[float] = field(default_factory=list)  # Speed at each step
-    shift_points: List[int] = field(default_factory=list)  # Major shift indices
+    positions: list[SemanticPosition]
+    velocities: list[float] = field(default_factory=list)  # Speed at each step
+    shift_points: list[int] = field(default_factory=list)  # Major shift indices
 
     def to_event(self) -> CognitiveEvent:
         """Convert to CRP event."""
@@ -336,10 +336,10 @@ class KnowledgeGraph3D:
     Visualized as: Force-directed 3D graph with typed edges,
     node sizing by importance, edge coloring by relationship type.
     """
-    nodes: List[Dict[str, Any]]  # [{id, label, type, importance, position, ...}]
-    edges: List[Dict[str, Any]]  # [{src, dst, type, weight, ...}]
+    nodes: list[dict[str, Any]]  # [{id, label, type, importance, position, ...}]
+    edges: list[dict[str, Any]]  # [{src, dst, type, weight, ...}]
     layout: str = "force_directed"  # force_directed, spherical, hierarchical, radial
-    highlighted_path: Optional[List[str]] = None  # Path to highlight
+    highlighted_path: list[str] | None = None  # Path to highlight
 
     def to_event(self) -> CognitiveEvent:
         """Convert to CRP event."""
@@ -368,8 +368,8 @@ class TokenStream:
     Visualized as: Tokens appearing in 3D space, flowing from
     generation point with semantic coloring.
     """
-    tokens: List[str]
-    token_indices: List[int]
+    tokens: list[str]
+    token_indices: list[int]
     cumulative_text: str = ""
     is_final: bool = False
     generation_speed: float = 0.0  # tokens/sec
@@ -400,8 +400,8 @@ class DecisionCollapse:
     Visualized as: Probability distribution "collapsing" to selected option,
     like quantum measurement visualization.
     """
-    options: List[str]
-    probabilities: List[float]
+    options: list[str]
+    probabilities: list[float]
     selected: str
     collapse_strategy: str = "bayesian_blend"  # argmax, epsilon_greedy, bayesian_blend, pure_thompson
     collapse_confidence: float = 0.0
@@ -432,9 +432,9 @@ class AttentionFlow:
     Visualized as: Flowing connections between query tokens and
     memory elements, with width encoding attention weight.
     """
-    query_tokens: List[str]
-    memory_keys: List[str]
-    attention_weights: List[List[float]]  # [query_len, key_len]
+    query_tokens: list[str]
+    memory_keys: list[str]
+    attention_weights: list[list[float]]  # [query_len, key_len]
     head_index: int = 0  # For multi-head attention
 
     def to_event(self) -> CognitiveEvent:
@@ -462,7 +462,7 @@ class ReasoningChain:
     Visualized as: Connected steps showing reasoning flow,
     with each step showing query → result → confidence.
     """
-    steps: List[Dict[str, Any]]  # [{query, result, confidence, reasoning_mode, ...}]
+    steps: list[dict[str, Any]]  # [{query, result, confidence, reasoning_mode, ...}]
     current_step: int = 0
     total_confidence: float = 0.0
     reasoning_mode: str = "direct"  # direct, verify, research, plan_execute
@@ -493,8 +493,8 @@ class MemoryRetrieval:
     with relevance encoding brightness.
     """
     query: str
-    retrieved_ids: List[str]
-    relevance_scores: List[float]
+    retrieved_ids: list[str]
+    relevance_scores: list[float]
     retrieval_method: str = "hybrid"  # vector, bm25, hybrid, graph
     total_candidates: int = 0
 
@@ -524,10 +524,10 @@ class ConfidenceFlow:
     Visualized as: Line chart showing confidence evolution,
     with anomaly detection and cache markers.
     """
-    confidences: List[float]
-    timestamps: List[datetime]
-    cache_hits: List[bool] = field(default_factory=list)
-    anomalies: List[Dict[str, Any]] = field(default_factory=list)
+    confidences: list[float]
+    timestamps: list[datetime]
+    cache_hits: list[bool] = field(default_factory=list)
+    anomalies: list[dict[str, Any]] = field(default_factory=list)
 
     def to_event(self) -> CognitiveEvent:
         """Convert to CRP event."""
@@ -554,10 +554,10 @@ class ToolSelection:
     Visualized as: Horizontal bar chart of tool probabilities,
     with selected tool highlighted.
     """
-    tools: List[str]
-    probabilities: List[float]
+    tools: list[str]
+    probabilities: list[float]
     selected: str
-    bandit_stats: Optional[Dict[str, Any]] = None  # Thompson Sampling stats
+    bandit_stats: dict[str, Any] | None = None  # Thompson Sampling stats
 
     def to_event(self) -> CognitiveEvent:
         """Convert to CRP event."""
@@ -584,8 +584,8 @@ class ContextExpansion:
     Visualized as: Expanding circle/sphere showing context boundary,
     with nodes entering/leaving visible.
     """
-    seed_nodes: List[str]
-    expanded_nodes: List[str]
+    seed_nodes: list[str]
+    expanded_nodes: list[str]
     token_budget: int
     tokens_used: int
     expansion_strategy: str = "adaptive"  # fixed_depth, adaptive, streaming
@@ -628,13 +628,13 @@ class WeavingCycle:
     9. Reflection Buffer - Learning
     """
     current_stage: int  # 1-9
-    stage_names: List[str] = field(default_factory=lambda: [
+    stage_names: list[str] = field(default_factory=lambda: [
         "Loom Command", "Chrono Trigger", "Yarn Graph",
         "Resonance Shed", "Warp Space", "Convergence Engine",
         "Tool Execution", "Spacetime Fabric", "Reflection Buffer"
     ])
-    stage_statuses: List[str] = field(default_factory=lambda: ["pending"] * 9)  # pending, active, complete
-    stage_durations: List[float] = field(default_factory=lambda: [0.0] * 9)  # ms per stage
+    stage_statuses: list[str] = field(default_factory=lambda: ["pending"] * 9)  # pending, active, complete
+    stage_durations: list[float] = field(default_factory=lambda: [0.0] * 9)  # ms per stage
     pattern_card: str = "FAST"  # BARE, FAST, FUSED
 
     def to_event(self) -> CognitiveEvent:
@@ -665,8 +665,8 @@ class ReflectionLoop:
     query: str
     outcome: str  # success, failure, partial
     confidence: float
-    feedback: Dict[str, Any]
-    pattern_learned: Optional[str] = None
+    feedback: dict[str, Any]
+    pattern_learned: str | None = None
     policy_updated: bool = False
 
     def to_event(self) -> CognitiveEvent:
@@ -713,7 +713,7 @@ class CognitiveRenderer(Protocol):
         """Check if renderer supports a visualization type."""
         ...
 
-    def get_supported_types(self) -> List[CognitiveVizType]:
+    def get_supported_types(self) -> list[CognitiveVizType]:
         """Get all supported visualization types."""
         ...
 
@@ -724,7 +724,7 @@ class CognitiveRenderer(Protocol):
 
 def create_event(
     viz_type: CognitiveVizType,
-    data: Dict[str, Any],
+    data: dict[str, Any],
     **kwargs
 ) -> CognitiveEvent:
     """Create a cognitive event."""
@@ -741,7 +741,7 @@ def create_event(
 
 
 def create_frame(
-    events: List[CognitiveEvent],
+    events: list[CognitiveEvent],
     **kwargs
 ) -> CognitiveFrame:
     """Create a cognitive frame.

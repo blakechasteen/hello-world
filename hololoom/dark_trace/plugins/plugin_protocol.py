@@ -8,12 +8,14 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Protocol, Callable, TypeVar, Generic
-from dataclasses import dataclass, field
-from enum import Enum
 from abc import ABC, abstractmethod
-import numpy as np
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any
+
+import numpy as np
 
 
 class PluginCategory(Enum):
@@ -48,25 +50,25 @@ class PluginMetadata:
     category: PluginCategory
 
     # Dependencies
-    requires: List[str] = field(default_factory=list)  # Other plugin dependencies
+    requires: list[str] = field(default_factory=list)  # Other plugin dependencies
     python_requires: str = ">=3.9"
 
     # Capabilities
-    provides: List[str] = field(default_factory=list)  # Features this plugin provides
+    provides: list[str] = field(default_factory=list)  # Features this plugin provides
 
     # Repository info
-    homepage: Optional[str] = None
-    repository: Optional[str] = None
+    homepage: str | None = None
+    repository: str | None = None
     license: str = "MIT"
 
     # Tags for discovery
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
     # Timestamps
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "version": self.version,
@@ -85,7 +87,7 @@ class PluginMetadata:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "PluginMetadata":
+    def from_dict(cls, data: dict[str, Any]) -> "PluginMetadata":
         return cls(
             name=data["name"],
             version=data["version"],
@@ -111,7 +113,7 @@ class PluginSignature:
     signature: bytes            # The signature bytes
     public_key_id: str          # Identifier for the public key
     signed_at: datetime
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
     def is_expired(self) -> bool:
         if self.expires_at is None:
@@ -126,11 +128,11 @@ class PluginRating:
     plugin_version: str
     user_id: str
     rating: float               # 1-5 stars
-    review: Optional[str] = None
+    review: str | None = None
     created_at: datetime = field(default_factory=datetime.now)
     helpful_votes: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "plugin_name": self.plugin_name,
             "plugin_version": self.plugin_version,
@@ -179,11 +181,11 @@ class DarkTracePlugin(ABC):
         """Return True if plugin is healthy."""
         return True
 
-    def get_config_schema(self) -> Dict[str, Any]:
+    def get_config_schema(self) -> dict[str, Any]:
         """Return JSON schema for plugin configuration."""
         return {}
 
-    def configure(self, config: Dict[str, Any]) -> None:
+    def configure(self, config: dict[str, Any]) -> None:
         """Configure the plugin with given settings."""
         pass
 
@@ -196,7 +198,7 @@ class LensPlugin(DarkTracePlugin):
         self,
         activations: np.ndarray,
         **kwargs
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """
         Extract features from activations.
 
@@ -209,7 +211,7 @@ class LensPlugin(DarkTracePlugin):
         """
         pass
 
-    def get_feature_names(self) -> List[str]:
+    def get_feature_names(self) -> list[str]:
         """Return names of features this lens extracts."""
         return []
 
@@ -224,7 +226,7 @@ class ValidatorPlugin(DarkTracePlugin):
         activations: np.ndarray,
         intervention_fn: Callable,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate a causal hypothesis.
 
@@ -247,9 +249,9 @@ class AnalyzerPlugin(DarkTracePlugin):
     def analyze(
         self,
         activations: np.ndarray,
-        feature_names: Optional[List[str]] = None,
+        feature_names: list[str] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze activations and return insights.
 
@@ -270,7 +272,7 @@ class VisualizerPlugin(DarkTracePlugin):
     @abstractmethod
     def visualize(
         self,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         format: str = "html",
         **kwargs
     ) -> str:
@@ -287,7 +289,7 @@ class VisualizerPlugin(DarkTracePlugin):
         """
         pass
 
-    def get_supported_formats(self) -> List[str]:
+    def get_supported_formats(self) -> list[str]:
         """Return list of supported output formats."""
         return ["html"]
 
@@ -299,9 +301,9 @@ class SafetyPlugin(DarkTracePlugin):
     def check_safety(
         self,
         activations: np.ndarray,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Check activations for safety concerns.
 
@@ -315,7 +317,7 @@ class SafetyPlugin(DarkTracePlugin):
         """
         pass
 
-    def get_safety_thresholds(self) -> Dict[str, float]:
+    def get_safety_thresholds(self) -> dict[str, float]:
         """Return safety thresholds for different concern types."""
         return {}
 
@@ -327,7 +329,7 @@ class SteeringPlugin(DarkTracePlugin):
     def generate_steering_vector(
         self,
         goal: str,
-        reference_activations: Optional[np.ndarray] = None,
+        reference_activations: np.ndarray | None = None,
         **kwargs
     ) -> np.ndarray:
         """
@@ -343,7 +345,7 @@ class SteeringPlugin(DarkTracePlugin):
         """
         pass
 
-    def get_supported_goals(self) -> List[str]:
+    def get_supported_goals(self) -> list[str]:
         """Return list of goals this plugin supports."""
         return []
 
@@ -356,7 +358,7 @@ class DatasetPlugin(DarkTracePlugin):
         self,
         split: str = "train",
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Load dataset for interpretability analysis.
 
@@ -369,7 +371,7 @@ class DatasetPlugin(DarkTracePlugin):
         """
         pass
 
-    def get_available_splits(self) -> List[str]:
+    def get_available_splits(self) -> list[str]:
         """Return available dataset splits."""
         return ["train", "val", "test"]
 
@@ -400,7 +402,7 @@ class ModelAdapterPlugin(DarkTracePlugin):
         self,
         adapted_model: Any,
         inputs: Any,
-        layer: Optional[str] = None,
+        layer: str | None = None,
         **kwargs
     ) -> np.ndarray:
         """

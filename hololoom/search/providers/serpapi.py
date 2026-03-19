@@ -7,7 +7,7 @@ Provides access to Google search results with proper parsing.
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import Any
 
 try:
     import requests
@@ -16,7 +16,7 @@ except ImportError:
     REQUESTS_AVAILABLE = False
     requests = None
 
-from ..protocol import SearchProvider, RawSearchResult, SearchResultType
+from ..protocol import RawSearchResult, SearchResultType
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class SerpAPIProvider:
         query: str,
         limit: int = 100,
         **kwargs
-    ) -> List[RawSearchResult]:
+    ) -> list[RawSearchResult]:
         """
         Execute Google search via SerpAPI.
 
@@ -114,7 +114,7 @@ class SerpAPIProvider:
         """Get provider name."""
         return "serpapi"
 
-    def _parse_results(self, data: Dict[str, Any]) -> List[RawSearchResult]:
+    def _parse_results(self, data: dict[str, Any]) -> list[RawSearchResult]:
         """Parse SerpAPI response into RawSearchResult objects."""
         results = []
 

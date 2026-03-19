@@ -38,10 +38,8 @@ Follows Edward Tufte's principles: maximize data-ink ratio, minimize chartjunk.
         f.write(html)
 """
 
-import time
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
 from collections import Counter
+from dataclasses import dataclass
 
 # DATAPIG imports
 try:
@@ -60,21 +58,21 @@ class QualityReport:
     """Quality report for a single dataset"""
     dataset_name: str
     timestamp: float
-    issues: List['DataQualityIssue']
+    issues: list['DataQualityIssue']
     dataset_size: int
     duration_ms: float = 0.0
 
-    def get_issue_counts_by_type(self) -> Dict[str, int]:
+    def get_issue_counts_by_type(self) -> dict[str, int]:
         """Count issues by type"""
         counter = Counter(i.issue_type.value for i in self.issues)
         return dict(counter)
 
-    def get_issue_counts_by_severity(self) -> Dict[str, int]:
+    def get_issue_counts_by_severity(self) -> dict[str, int]:
         """Count issues by severity"""
         counter = Counter(i.severity.value for i in self.issues)
         return dict(counter)
 
-    def get_critical_issues(self) -> List['DataQualityIssue']:
+    def get_critical_issues(self) -> list['DataQualityIssue']:
         """Get CAPTAIN-level (critical) issues"""
         return [i for i in self.issues if i.severity.value == "CAPTAIN"]
 
@@ -109,7 +107,7 @@ class QualityReport:
 # Sparkline Generation (Tufte-style)
 # ============================================================================
 
-def render_sparkline(values: List[float], width: int = 100, height: int = 30) -> str:
+def render_sparkline(values: list[float], width: int = 100, height: int = 30) -> str:
     """
     Render inline SVG sparkline (Tufte-style word-sized graphic)
 
@@ -175,7 +173,7 @@ def render_sparkline(values: List[float], width: int = 100, height: int = 30) ->
 # ============================================================================
 
 def render_small_multiples(
-    reports: List[QualityReport],
+    reports: list[QualityReport],
     max_columns: int = 4
 ) -> str:
     """
@@ -285,7 +283,7 @@ def render_small_multiples(
 # Data Density Table (Maximum Information Per Square Inch)
 # ============================================================================
 
-def render_density_table(reports: List[QualityReport]) -> str:
+def render_density_table(reports: list[QualityReport]) -> str:
     """
     Render high-density issue breakdown table
 
@@ -369,9 +367,9 @@ def render_density_table(reports: List[QualityReport]) -> str:
 # ============================================================================
 
 def render_quality_dashboard(
-    reports: List[QualityReport],
+    reports: list[QualityReport],
     title: str = "DATAPIG Quality Dashboard",
-    subtitle: Optional[str] = None
+    subtitle: str | None = None
 ) -> str:
     """
     Render complete Tufte-style quality dashboard
@@ -417,13 +415,13 @@ def render_quality_dashboard(
     # Critical issues section
     critical_html = ""
     if critical_issues:
-        critical_html = '''
+        critical_html = f'''
 <div style="margin-top: 32px; padding: 16px; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
   <div style="font-weight: 600; font-size: 16px; color: #991b1b; margin-bottom: 12px;">
-    🚨 Critical Issues ({count})
+    🚨 Critical Issues ({len(critical_issues)})
   </div>
   <div style="font-size: 14px; color: #7f1d1d;">
-'''.format(count=len(critical_issues))
+'''
 
         for dataset_name, issue in critical_issues[:10]:  # Show max 10
             critical_html += f'''

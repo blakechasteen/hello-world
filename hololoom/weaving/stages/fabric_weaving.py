@@ -11,7 +11,7 @@ This stage:
 
 import logging
 from datetime import datetime
-from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -38,9 +38,9 @@ class FabricWeavingStage:
 
     def __init__(
         self,
-        warp_space: Optional[Any] = None,
-        semantic_cache: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
+        warp_space: Any | None = None,
+        semantic_cache: Any | None = None,
+        logger: logging.Logger | None = None,
     ):
         self.warp_space = warp_space
         self.semantic_cache = semantic_cache
@@ -48,7 +48,7 @@ class FabricWeavingStage:
 
     async def execute(self, ctx: 'WeavingContext') -> None:
         """Weave all results into Spacetime, writing spacetime and trace to ctx."""
-        from hololoom.fabric.spacetime import Spacetime, WeavingTrace, Artifact
+        from hololoom.fabric.spacetime import Artifact, Spacetime, WeavingTrace
 
         # Detension warp space
         warp_operations = list(ctx.warp_operations) if ctx.warp_operations else []
@@ -112,7 +112,7 @@ class FabricWeavingStage:
         self.logger.info("  [9] Spacetime fabric woven!")
 
     @staticmethod
-    def _extract_motifs(features: Any) -> List[str]:
+    def _extract_motifs(features: Any) -> list[str]:
         """Extract motif patterns from Features object."""
         if not features or not features.motifs:
             return []
@@ -121,9 +121,9 @@ class FabricWeavingStage:
             for m in features.motifs
         ]
 
-    def _build_metadata(self, ctx: 'WeavingContext', pattern_spec: Any) -> Dict[str, Any]:
+    def _build_metadata(self, ctx: 'WeavingContext', pattern_spec: Any) -> dict[str, Any]:
         """Build metadata dict for Spacetime."""
-        metadata: Dict[str, Any] = {}
+        metadata: dict[str, Any] = {}
 
         if pattern_spec:
             metadata['pattern_card'] = pattern_spec.name

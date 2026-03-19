@@ -24,24 +24,24 @@ Architecture:
 Date: November 16, 2025
 """
 
-import asyncio
 import functools
 import time
+from collections.abc import Callable
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, Callable, List
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 # OpenTelemetry imports with graceful fallback
 try:
     from opentelemetry import trace
+    from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+    from opentelemetry.sdk.resources import SERVICE_NAME, SERVICE_VERSION, Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-    from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-    from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION
-    from opentelemetry.trace import Status, StatusCode, Span
-    from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
     from opentelemetry.semconv.trace import SpanAttributes
+    from opentelemetry.trace import Span, Status, StatusCode
+    from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
@@ -135,7 +135,7 @@ class TracingManager:
         >>>     return await hololoom.weave(transcript)
     """
 
-    def __init__(self, config: Optional[TracingConfig] = None):
+    def __init__(self, config: TracingConfig | None = None):
         """
         Initialize tracing manager.
 
@@ -146,7 +146,7 @@ class TracingManager:
         self.tracer = None
         self.provider = None
         self.propagator = None
-        self._active_spans: Dict[str, Any] = {}
+        self._active_spans: dict[str, Any] = {}
 
         if self.config.enable_tracing:
             if not OTEL_AVAILABLE:
@@ -251,7 +251,7 @@ class TracingManager:
     # Decorators
     # ========================================================================
 
-    def trace_voice_command(self, operation_name: Optional[str] = None):
+    def trace_voice_command(self, operation_name: str | None = None):
         """
         Decorator for tracing voice command processing.
 
@@ -330,7 +330,7 @@ class TracingManager:
             return wrapper
         return decorator
 
-    def trace_tts_synthesis(self, operation_name: Optional[str] = None):
+    def trace_tts_synthesis(self, operation_name: str | None = None):
         """
         Decorator for tracing TTS synthesis.
 
@@ -477,7 +477,7 @@ class TracingManager:
             return wrapper
         return decorator
 
-    def trace_hololoom_weave(self, operation_name: Optional[str] = None):
+    def trace_hololoom_weave(self, operation_name: str | None = None):
         """
         Decorator for tracing HoloLoom weaving operations.
 
@@ -558,8 +558,8 @@ class TracingManager:
     async def span(
         self,
         name: str,
-        kind: Optional[Any] = None,
-        attributes: Optional[Dict[str, Any]] = None
+        kind: Any | None = None,
+        attributes: dict[str, Any] | None = None
     ):
         """
         Context manager for manual span creation.
@@ -596,7 +596,7 @@ class TracingManager:
                 span.record_exception(e)
                 raise
 
-    def get_current_span(self) -> Optional[Any]:
+    def get_current_span(self) -> Any | None:
         """
         Get the current active span.
 
@@ -608,7 +608,7 @@ class TracingManager:
 
         return trace.get_current_span()
 
-    def add_event(self, name: str, attributes: Optional[Dict[str, Any]] = None):
+    def add_event(self, name: str, attributes: dict[str, Any] | None = None):
         """
         Add an event to the current span.
 
@@ -644,10 +644,10 @@ class TracingManager:
 # ============================================================================
 
 # Global tracing manager (initialized on first use)
-_global_tracing_manager: Optional[TracingManager] = None
+_global_tracing_manager: TracingManager | None = None
 
 
-def get_tracing_manager(config: Optional[TracingConfig] = None) -> TracingManager:
+def get_tracing_manager(config: TracingConfig | None = None) -> TracingManager:
     """
     Get or create global tracing manager.
 

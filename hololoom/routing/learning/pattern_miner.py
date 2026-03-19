@@ -8,14 +8,13 @@ Date: November 13, 2025
 Phase: 3 - Adaptive Learning
 """
 
-import re
 import json
 import logging
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Set, Tuple
+import re
 from collections import Counter, defaultdict
-from pathlib import Path
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +27,7 @@ class ClassificationLog:
     actual: str  # Classifier output
     confidence: float
     timestamp: float
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -47,7 +46,7 @@ class Pattern:
     regex: str
     complexity: str  # trivial/simple/complex/research
     score: PatternScore
-    examples: List[str] = field(default_factory=list)
+    examples: list[str] = field(default_factory=list)
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
 
 
@@ -68,7 +67,7 @@ class PatternMiner:
 
     def __init__(
         self,
-        stats_path: Optional[str] = None,
+        stats_path: str | None = None,
         min_support: int = 10,
         min_precision: float = 0.95,
         min_recall: float = 0.30,
@@ -113,7 +112,7 @@ class PatternMiner:
         self,
         days_lookback: int = 7,
         focus_on_misclassifications: bool = True
-    ) -> List[Pattern]:
+    ) -> list[Pattern]:
         """
         Mine patterns from recent classification logs.
 
@@ -171,7 +170,7 @@ class PatternMiner:
 
         return top_patterns
 
-    def _load_logs(self, days_lookback: int) -> List[ClassificationLog]:
+    def _load_logs(self, days_lookback: int) -> list[ClassificationLog]:
         """Load classification logs from disk."""
         if not self.stats_path or not self.stats_path.exists():
             return []
@@ -182,7 +181,7 @@ class PatternMiner:
         # Read log files
         for log_file in self.stats_path.glob("*.jsonl"):
             try:
-                with open(log_file, 'r') as f:
+                with open(log_file) as f:
                     for line in f:
                         if not line.strip():
                             continue
@@ -208,9 +207,9 @@ class PatternMiner:
 
     def _extract_candidates(
         self,
-        logs: List[ClassificationLog],
+        logs: list[ClassificationLog],
         focus_on_misclassifications: bool
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """
         Extract candidate patterns from logs.
 
@@ -245,7 +244,7 @@ class PatternMiner:
 
         return list(candidates)
 
-    def _extract_ngrams(self, logs: List[ClassificationLog], max_n: int = 5) -> Counter:
+    def _extract_ngrams(self, logs: list[ClassificationLog], max_n: int = 5) -> Counter:
         """Extract n-grams from queries."""
         ngrams = Counter()
 
@@ -263,7 +262,7 @@ class PatternMiner:
 
         return ngrams
 
-    def _generalize_pattern(self, text: str) -> Optional[str]:
+    def _generalize_pattern(self, text: str) -> str | None:
         """Generalize text into regex pattern."""
         # Try generalization rules
         for pattern, replacement in self.generalization_rules:
@@ -287,7 +286,7 @@ class PatternMiner:
         self,
         pattern: str,
         complexity: str,
-        logs: List[ClassificationLog]
+        logs: list[ClassificationLog]
     ) -> PatternScore:
         """
         Score pattern quality.
@@ -355,9 +354,9 @@ class PatternMiner:
     def _get_examples(
         self,
         pattern: str,
-        logs: List[ClassificationLog],
+        logs: list[ClassificationLog],
         max_examples: int = 5
-    ) -> List[str]:
+    ) -> list[str]:
         """Get example queries matching pattern."""
         try:
             regex = re.compile(pattern, re.IGNORECASE)
@@ -373,7 +372,7 @@ class PatternMiner:
 
         return examples
 
-    def export_patterns(self, patterns: List[Pattern], output_path: str):
+    def export_patterns(self, patterns: list[Pattern], output_path: str):
         """Export patterns to JSON for review/deployment."""
         output = Path(output_path)
         output.parent.mkdir(parents=True, exist_ok=True)

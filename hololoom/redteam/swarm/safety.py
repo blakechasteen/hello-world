@@ -33,12 +33,12 @@ import hashlib
 import json
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set
-
+from typing import Any
 
 # ============================================================================
 # Enums
@@ -115,10 +115,10 @@ class AuthorizationToken:
 
     token_id: str
     issued_at: float
-    scope: List[str]  # Allowed target patterns
+    scope: list[str]  # Allowed target patterns
     issuer: str
-    permissions: Set[str] = field(default_factory=set)
-    expires_at: Optional[float] = None
+    permissions: set[str] = field(default_factory=set)
+    expires_at: float | None = None
 
     def is_valid(self) -> bool:
         """Check if token is still valid (not expired)."""
@@ -126,7 +126,7 @@ class AuthorizationToken:
             return True
         return time.time() < self.expires_at
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize token for audit logging."""
         return {
             "token_id": self.token_id,
@@ -159,8 +159,8 @@ class AuditEntry:
     timestamp: float
     event_type: AuditEventType
     agent_id: str
-    details: Dict[str, Any]
-    target: Optional[str] = None
+    details: dict[str, Any]
+    target: str | None = None
     severity: SeverityLevel = SeverityLevel.LOW
     checksum: str = ""
 
@@ -170,7 +170,7 @@ class AuditEntry:
             content = f"{self.entry_id}:{self.timestamp}:{self.event_type.value}:{self.agent_id}"
             self.checksum = hashlib.sha256(content.encode()).hexdigest()[:16]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize entry for storage."""
         return {
             "entry_id": self.entry_id,
@@ -250,8 +250,8 @@ class AuthorizationManager:
 
     def __init__(self):
         """Initialize authorization manager."""
-        self._tokens: Dict[str, AuthorizationToken] = {}
-        self._verified_tokens: Set[str] = set()
+        self._tokens: dict[str, AuthorizationToken] = {}
+        self._verified_tokens: set[str] = set()
 
     def register_token(self, token: AuthorizationToken) -> None:
         """Register an authorization token.
@@ -283,7 +283,7 @@ class AuthorizationManager:
         self._verified_tokens.add(token_id)
         return True
 
-    def get_token_scope(self, token_id: str) -> List[str]:
+    def get_token_scope(self, token_id: str) -> list[str]:
         """Get allowed scope for a token.
 
         Args:
@@ -331,14 +331,14 @@ class ScopeValidator:
     Scope escape: Immediate shutdown, alert, audit
     """
 
-    def __init__(self, allowed_targets: List[str]):
+    def __init__(self, allowed_targets: list[str]):
         """Initialize scope validator.
 
         Args:
             allowed_targets: List of allowed target patterns (whitelist)
         """
-        self._allowed_targets: Set[str] = set(allowed_targets)
-        self._escape_attempts: List[str] = []
+        self._allowed_targets: set[str] = set(allowed_targets)
+        self._escape_attempts: list[str] = []
 
     def validate_target(self, target: str) -> bool:
         """Validate a target against allowed scope.
@@ -368,7 +368,7 @@ class ScopeValidator:
         self._escape_attempts.append(target)
         return False
 
-    def get_escape_attempts(self) -> List[str]:
+    def get_escape_attempts(self) -> list[str]:
         """Get list of scope escape attempts.
 
         Returns:
@@ -419,7 +419,7 @@ class RateLimiter:
     Exceeding them is a system failure, not a parameter to tune.
     """
 
-    def __init__(self, config: Optional[RateLimitConfig] = None):
+    def __init__(self, config: RateLimitConfig | None = None):
         """Initialize rate limiter.
 
         Args:
@@ -479,7 +479,7 @@ class RateLimiter:
             if self._state.concurrent_count > 0:
                 self._state.concurrent_count -= 1
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """Get current rate limit state.
 
         Returns:
@@ -514,13 +514,13 @@ class AuditLogger:
     - Logs CANNOT be disabled (even in "debug mode")
     """
 
-    def __init__(self, log_path: Optional[Path] = None):
+    def __init__(self, log_path: Path | None = None):
         """Initialize audit logger.
 
         Args:
             log_path: Path to write audit logs (optional)
         """
-        self._entries: List[AuditEntry] = []
+        self._entries: list[AuditEntry] = []
         self._log_path = log_path
         self._lock = asyncio.Lock()
 
@@ -531,8 +531,8 @@ class AuditLogger:
         self,
         event_type: AuditEventType,
         agent_id: str,
-        details: Dict[str, Any],
-        target: Optional[str] = None,
+        details: dict[str, Any],
+        target: str | None = None,
         severity: SeverityLevel = SeverityLevel.LOW,
     ) -> AuditEntry:
         """Log an audit event.
@@ -578,16 +578,16 @@ class AuditLogger:
             self._log_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self._log_path, "a") as f:
                 f.write(json.dumps(entry.to_dict()) + "\n")
-        except Exception as e:
+        except Exception:
             # Even persistence failure doesn't stop in-memory logging
             pass
 
     def get_entries(
         self,
-        event_type: Optional[AuditEventType] = None,
-        agent_id: Optional[str] = None,
-        since: Optional[float] = None,
-    ) -> List[AuditEntry]:
+        event_type: AuditEventType | None = None,
+        agent_id: str | None = None,
+        since: float | None = None,
+    ) -> list[AuditEntry]:
         """Get audit entries with optional filters.
 
         Args:
@@ -611,7 +611,7 @@ class AuditLogger:
 
         return entries
 
-    def get_critical_events(self) -> List[AuditEntry]:
+    def get_critical_events(self) -> list[AuditEntry]:
         """Get all critical severity events.
 
         Returns:
@@ -654,15 +654,15 @@ class AnomalyDetector:
 
     def __init__(self):
         """Initialize anomaly detector."""
-        self._agent_patterns: Dict[str, Dict[str, int]] = {}
+        self._agent_patterns: dict[str, dict[str, int]] = {}
         self._baseline_established = False
-        self._anomalies: List[Dict[str, Any]] = []
+        self._anomalies: list[dict[str, Any]] = []
 
     def record_operation(
         self,
         agent_id: str,
         operation_type: str,
-        target: Optional[str] = None,
+        target: str | None = None,
     ) -> None:
         """Record an operation for pattern analysis.
 
@@ -683,8 +683,8 @@ class AnomalyDetector:
         self,
         agent_id: str,
         operation_type: str,
-        target: Optional[str] = None,
-    ) -> Optional[Dict[str, Any]]:
+        target: str | None = None,
+    ) -> dict[str, Any] | None:
         """Check if an operation is anomalous.
 
         Args:
@@ -713,7 +713,7 @@ class AnomalyDetector:
 
         return None
 
-    def get_anomalies(self) -> List[Dict[str, Any]]:
+    def get_anomalies(self) -> list[dict[str, Any]]:
         """Get all detected anomalies.
 
         Returns:
@@ -739,20 +739,20 @@ class SeverityAssessor:
         If LOW      → Full exploitation permitted
     """
 
-    def __init__(self, human_review_callback: Optional[Callable] = None):
+    def __init__(self, human_review_callback: Callable | None = None):
         """Initialize severity assessor.
 
         Args:
             human_review_callback: Callback for human review (CRITICAL vulnerabilities)
         """
         self._human_review_callback = human_review_callback
-        self._pending_review: List[Dict[str, Any]] = []
+        self._pending_review: list[dict[str, Any]] = []
 
     def assess(
         self,
         vulnerability_type: str,
         target: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
     ) -> SeverityLevel:
         """Assess vulnerability severity.
 
@@ -804,7 +804,7 @@ class SeverityAssessor:
         self,
         vulnerability_type: str,
         target: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
     ) -> bool:
         """Handle critical vulnerability - STOP and await human review.
 
@@ -834,7 +834,7 @@ class SeverityAssessor:
         # System is NOT authorized to make critical-impact decisions autonomously
         return False
 
-    def get_pending_reviews(self) -> List[Dict[str, Any]]:
+    def get_pending_reviews(self) -> list[dict[str, Any]]:
         """Get vulnerabilities pending human review.
 
         Returns:
@@ -874,10 +874,10 @@ class SafetyGate:
 
     def __init__(
         self,
-        allowed_targets: List[str],
-        rate_limit_config: Optional[RateLimitConfig] = None,
-        log_path: Optional[Path] = None,
-        human_review_callback: Optional[Callable] = None,
+        allowed_targets: list[str],
+        rate_limit_config: RateLimitConfig | None = None,
+        log_path: Path | None = None,
+        human_review_callback: Callable | None = None,
     ):
         """Initialize safety gate.
 
@@ -894,7 +894,7 @@ class SafetyGate:
         self._anomaly_detector = AnomalyDetector()
         self._severity_assessor = SeverityAssessor(human_review_callback)
 
-        self._current_token_id: Optional[str] = None
+        self._current_token_id: str | None = None
         self._shutdown = False
 
     def register_token(self, token: AuthorizationToken) -> None:
@@ -1042,7 +1042,7 @@ class SafetyGate:
         agent_id: str,
         vulnerability_type: str,
         target: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
     ) -> SeverityLevel:
         """Report a discovered vulnerability.
 
@@ -1089,7 +1089,7 @@ class SafetyGate:
         """Release a rate limit slot after operation completes."""
         await self._rate_limiter.release()
 
-    def get_audit_log(self) -> List[Dict[str, Any]]:
+    def get_audit_log(self) -> list[dict[str, Any]]:
         """Get full audit log.
 
         Returns:
@@ -1097,7 +1097,7 @@ class SafetyGate:
         """
         return [e.to_dict() for e in self._audit_logger.get_entries()]
 
-    def get_critical_events(self) -> List[Dict[str, Any]]:
+    def get_critical_events(self) -> list[dict[str, Any]]:
         """Get critical severity events.
 
         Returns:
@@ -1105,7 +1105,7 @@ class SafetyGate:
         """
         return [e.to_dict() for e in self._audit_logger.get_critical_events()]
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get safety gate metrics.
 
         Returns:
@@ -1144,12 +1144,12 @@ class SafetyGate:
 
 
 def create_safety_gate(
-    allowed_targets: List[str],
+    allowed_targets: list[str],
     requests_per_minute: int = 60,
     daily_limit: int = 10000,
     concurrent_limit: int = 5,
     cost_limit_usd: float = 10.0,
-    log_path: Optional[str] = None,
+    log_path: str | None = None,
 ) -> SafetyGate:
     """Create a safety gate with standard configuration.
 
@@ -1181,10 +1181,10 @@ def create_safety_gate(
 
 
 def create_authorization_token(
-    scope: List[str],
+    scope: list[str],
     issuer: str,
-    permissions: Optional[Set[str]] = None,
-    expires_in_hours: Optional[float] = None,
+    permissions: set[str] | None = None,
+    expires_in_hours: float | None = None,
 ) -> AuthorizationToken:
     """Create an authorization token.
 

@@ -12,13 +12,12 @@ Author: Claude Code
 Date: November 2025
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
+from typing import Any
 
-from hololoom.spinningWheel.protocol import BaseSpinner, SpinResult
 from hololoom.protocols.types import MemoryShard
-
+from hololoom.spinningWheel.protocol import BaseSpinner
 
 # ============================================================================
 # Domain Detection
@@ -73,7 +72,7 @@ class DomainScore:
     """Score for domain classification"""
     domain: str
     confidence: float
-    matched_patterns: List[str]
+    matched_patterns: list[str]
 
 
 class DomainRouter:
@@ -100,7 +99,7 @@ class DomainRouter:
         self.confidence_threshold = confidence_threshold
         self.domain_spinners = {}  # Will be populated by register_spinner()
 
-    def detect_domain(self, text: str, top_k: int = 3) -> List[DomainScore]:
+    def detect_domain(self, text: str, top_k: int = 3) -> list[DomainScore]:
         """
         Detect domain(s) from text.
 
@@ -147,9 +146,9 @@ class DomainRouter:
     async def route(
         self,
         transcription_text: str,
-        detected_domain: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> List[MemoryShard]:
+        detected_domain: str | None = None,
+        metadata: dict[str, Any] | None = None
+    ) -> list[MemoryShard]:
         """
         Route transcription to specialized spinner.
 
@@ -187,7 +186,7 @@ class DomainRouter:
 
         return result.shards if hasattr(result, 'shards') else result
 
-    def _generic_spinner(self, text: str, metadata: Optional[Dict] = None) -> List[MemoryShard]:
+    def _generic_spinner(self, text: str, metadata: dict | None = None) -> list[MemoryShard]:
         """Fallback for unrecognized domains"""
         return [MemoryShard(
             id=f"generic_{hash(text[:100])}",
@@ -209,7 +208,7 @@ class BeeInspectionSpinner(BaseSpinner):
     def __init__(self):
         super().__init__(name="bee_inspection")
 
-    async def _spin_impl(self, source: Dict[str, Any], **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: dict[str, Any], **kwargs) -> list[MemoryShard]:
         """Process bee inspection transcription"""
         text = source['text']
         metadata = source.get('metadata', {})
@@ -235,7 +234,7 @@ class BeeInspectionSpinner(BaseSpinner):
             }
         )]
 
-    def _extract_inspection_data(self, text: str) -> Dict[str, Any]:
+    def _extract_inspection_data(self, text: str) -> dict[str, Any]:
         """Extract structured data from bee inspection notes"""
         # Temperature extraction
         temp_match = re.search(r'(-?\d+)\s*(degrees?|°|F|C)', text, re.IGNORECASE)
@@ -283,7 +282,7 @@ class RecipeSpinner(BaseSpinner):
     def __init__(self):
         super().__init__(name="recipe")
 
-    async def _spin_impl(self, source: Dict[str, Any], **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: dict[str, Any], **kwargs) -> list[MemoryShard]:
         """Process recipe transcription"""
         text = source['text']
         metadata = source.get('metadata', {})
@@ -309,7 +308,7 @@ class RecipeSpinner(BaseSpinner):
             }
         )]
 
-    def _extract_recipe_data(self, text: str) -> Dict[str, Any]:
+    def _extract_recipe_data(self, text: str) -> dict[str, Any]:
         """Extract structured recipe data"""
         # Recipe name (often first sentence or after "recipe for")
         name_match = re.search(r'(?:recipe for|making|how to make)\s+([^.!?\n]+)', text, re.IGNORECASE)
@@ -356,7 +355,7 @@ class BudgetSpinner(BaseSpinner):
     def __init__(self):
         super().__init__(name="budget")
 
-    async def _spin_impl(self, source: Dict[str, Any], **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: dict[str, Any], **kwargs) -> list[MemoryShard]:
         """Process budget/expense transcription"""
         text = source['text']
         metadata = source.get('metadata', {})
@@ -376,7 +375,7 @@ class BudgetSpinner(BaseSpinner):
             }
         )]
 
-    def _extract_budget_data(self, text: str) -> Dict[str, Any]:
+    def _extract_budget_data(self, text: str) -> dict[str, Any]:
         """Extract budget/expense data"""
         data = {}
 

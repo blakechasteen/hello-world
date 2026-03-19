@@ -18,7 +18,7 @@ Usage:
 Date: December 2025
 """
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 
 def launch(mode: str = "repl", **kwargs) -> None:
@@ -76,7 +76,7 @@ def _launch_web(**kwargs) -> None:
         from hololoom.lite.ui.web import start_web
         start_web(**kwargs)
     except ImportError as e:
-        print(f"Web chat requires 'fastapi' and 'uvicorn' packages.")
+        print("Web chat requires 'fastapi' and 'uvicorn' packages.")
         print("Install with: pip install fastapi uvicorn")
         print(f"Error: {e}")
 
@@ -87,7 +87,7 @@ def _launch_desktop(**kwargs) -> None:
         from hololoom.lite.ui.desktop import start_desktop
         start_desktop(**kwargs)
     except ImportError as e:
-        print(f"Desktop app requires 'gradio' package.")
+        print("Desktop app requires 'gradio' package.")
         print("Install with: pip install gradio")
         print(f"Error: {e}")
 

@@ -16,7 +16,7 @@ import signal
 import subprocess
 import sys
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Protocol, Tuple
+from typing import Protocol
 
 # Platform-specific imports with graceful degradation
 try:
@@ -34,7 +34,7 @@ except ImportError:
 if sys.platform == "linux":
     try:
         import ctypes
-        from ctypes import c_int, c_uint64, CDLL
+        from ctypes import CDLL, c_int, c_uint64
         HAS_LINUX_CTYPES = True
     except ImportError:
         HAS_LINUX_CTYPES = False
@@ -61,8 +61,8 @@ class ProcessIsolationConfig:
     enable_cgroups: bool = True
     enable_seccomp: bool = True
     enable_rlimit: bool = True
-    working_directory: Optional[str] = None
-    environment: Optional[Dict[str, str]] = None
+    working_directory: str | None = None
+    environment: dict[str, str] | None = None
 
 
 class ProcessIsolationProtocol(Protocol):
@@ -70,11 +70,11 @@ class ProcessIsolationProtocol(Protocol):
 
     async def spawn_isolated(
         self,
-        command: List[str],
-        stdin: Optional[bytes] = None,
-        timeout: Optional[int] = None,
+        command: list[str],
+        stdin: bytes | None = None,
+        timeout: int | None = None,
         **kwargs
-    ) -> Tuple[int, bytes, bytes, int]:
+    ) -> tuple[int, bytes, bytes, int]:
         """
         Spawn process with isolation.
 
@@ -119,8 +119,8 @@ class ProcessIsolator:
 
         self.config = config
         self.platform = self._get_platform()
-        self.processes: Dict[int, subprocess.Popen] = {}
-        self.cgroup_paths: Dict[int, str] = {}
+        self.processes: dict[int, subprocess.Popen] = {}
+        self.cgroup_paths: dict[int, str] = {}
 
         # Platform capability detection
         self.has_cgroups = HAS_LINUX_CTYPES and self.platform == "linux"
@@ -142,11 +142,11 @@ class ProcessIsolator:
 
     async def spawn_isolated(
         self,
-        command: List[str],
-        stdin: Optional[bytes] = None,
-        timeout: Optional[int] = None,
+        command: list[str],
+        stdin: bytes | None = None,
+        timeout: int | None = None,
         **kwargs
-    ) -> Tuple[int, bytes, bytes, int]:
+    ) -> tuple[int, bytes, bytes, int]:
         """
         Spawn an isolated process.
 
@@ -223,7 +223,7 @@ class ProcessIsolator:
             return_code = process.returncode
             return (pid, stdout, stderr, return_code)
 
-        except Exception as e:
+        except Exception:
             # Cleanup on failure
             await self.kill(pid)
             raise
@@ -276,7 +276,7 @@ class ProcessIsolator:
 
             self.cgroup_paths[pid] = cgroup_path
 
-        except OSError as e:
+        except OSError:
             # Cgroups may require elevated privileges
             pass
 
@@ -451,7 +451,7 @@ class ProcessIsolator:
         """Get detected platform."""
         return self.platform
 
-    def get_capabilities(self) -> Dict[str, bool]:
+    def get_capabilities(self) -> dict[str, bool]:
         """Get available isolation capabilities."""
         return {
             "cgroups": self.has_cgroups,
@@ -461,7 +461,7 @@ class ProcessIsolator:
             "psutil": HAS_PSUTIL,
         }
 
-    def get_process_stats(self, pid: int) -> Optional[Dict]:
+    def get_process_stats(self, pid: int) -> dict | None:
         """
         Get process statistics.
 
@@ -510,7 +510,7 @@ async def test_isolation():
         pid, stdout, stderr, return_code = await isolator.spawn_isolated(
             ["echo", "Hello from isolated process"]
         )
-        print(f"\nSimple test:")
+        print("\nSimple test:")
         print(f"  PID: {pid}")
         print(f"  Return code: {return_code}")
         print(f"  Output: {stdout.decode().strip()}")

@@ -7,50 +7,47 @@ and Bayesian optimization to steer the distributed learning process.
 """
 
 import asyncio
-import numpy as np
 import time
-from typing import List, Dict, Any, Optional, Protocol
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from typing import Any, Protocol
 
-# Rust-accelerated operations (with NumPy fallback)
-from hololoom.eggroll.rust_ops import (
-    cluster_population,
-    diversity_bonus,
-    compute_warp_similarity,
-    get_backend_info,
-    RUST_AVAILABLE,
+import numpy as np
+import torch
+
+from hololoom.eggroll.distributed_backend import LocalBackend, RayBackend
+from hololoom.eggroll.loom_node import LoomNode
+
+# Advanced Math Subsystems
+from hololoom.eggroll.math_crusher import (
+    AdvancedRegression,
+    CalculusTools,
+    CyberneticRegulator,
+    PIDController,
 )
 
 # Observability (Prometheus metrics + OpenTelemetry tracing)
 from hololoom.eggroll.metrics import (
-    EggrollMetricsCollector,
     create_eggroll_collector,
 )
-from hololoom.eggroll.tracing import (
-    trace_epoch,
-    trace_rust_operation,
-    eggroll_span,
-    get_eggroll_tracer,
-)
-
-# Core HoloLoom Components
-from hololoom.shuttle.eggroll_shuttle import Shuttle, PerturbSpec
-from hololoom.warp.eggroll_warp import Warp
-from hololoom.memory.yarn.eggroll_yarn import Yarn
-from hololoom.weaving.eggroll_weave import Weave
-import torch
-from hololoom.eggroll.loom_node import LoomNode
 from hololoom.eggroll.mirror_core import MirrorCoreAgent
 
-# Advanced Math Subsystems
-from hololoom.eggroll.math_crusher import (
-    PIDController, 
-    CalculusTools, 
-    CyberneticRegulator, 
-    AdvancedRegression
+# Rust-accelerated operations (with NumPy fallback)
+from hololoom.eggroll.rust_ops import (
+    RUST_AVAILABLE,
+    cluster_population,
+    diversity_bonus,
+    get_backend_info,
 )
-from hololoom.eggroll.distributed_backend import LocalBackend, RayBackend
+from hololoom.eggroll.tracing import (
+    get_eggroll_tracer,
+)
+from hololoom.memory.yarn.eggroll_yarn import Yarn
+
+# Core HoloLoom Components
+from hololoom.shuttle.eggroll_shuttle import PerturbSpec, Shuttle
+from hololoom.warp.eggroll_warp import Warp
+from hololoom.weaving.eggroll_weave import Weave
 
 # --- Configuration & Types ---
 
@@ -65,19 +62,19 @@ class OptimizationMode(Enum):
 class OptimizationConfig:
     """Hyperparameters for the cybernetic control system."""
     learning_rate: float = 0.01
-    
+
     # PID settings
     kp: float = 0.5
     ki: float = 0.1
     kd: float = 0.05
-    
+
     # Bayesian settings
     regression_alpha: float = 1.0
     regression_beta: float = 10.0
-    
+
     # Homeostasis
     target_variety: float = 1.0
-    
+
     @classmethod
     def from_mode(cls, mode: OptimizationMode) -> 'OptimizationConfig':
         """Factory method for preset configurations."""
@@ -97,15 +94,15 @@ class WorkerResult:
     worker_id: int
     reward: float
     perturb_spec: PerturbSpec
-    outputs: List[str]
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    metrics: Dict[str, float] = field(default_factory=dict)
+    outputs: list[str]
+    metadata: dict[str, Any] = field(default_factory=dict)
+    metrics: dict[str, float] = field(default_factory=dict)
 
 # --- Strategies ---
 
 class OptimizerStrategy(Protocol):
     """Protocol for optimization strategies to allow hot-swapping."""
-    def compute_update(self, results: List[WorkerResult], current_model_dim: int) -> np.ndarray:
+    def compute_update(self, results: list[WorkerResult], current_model_dim: int) -> np.ndarray:
         ...
 
 class CyberneticOptimizer:
@@ -115,14 +112,14 @@ class CyberneticOptimizer:
     """
     def __init__(self, config: OptimizationConfig):
         self.config = config
-        
+
         # Subsystems
         self.pid = PIDController(config.kp, config.ki, config.kd, setpoint=0.1)
         self.regulator = CyberneticRegulator(target_variety=config.target_variety)
         self.predictor = AdvancedRegression(alpha=config.regression_alpha, beta=config.regression_beta)
-        
+
         # State
-        self.history: Dict[str, List[float]] = {
+        self.history: dict[str, list[float]] = {
             "epoch": [],
             "reward": [],
             "energy": [],
@@ -131,46 +128,46 @@ class CyberneticOptimizer:
         self.smoothed_improvement = 0.0
         self.prev_avg_reward = 0.0
 
-    def compute_update(self, results: List[WorkerResult], current_model_dim: int) -> np.ndarray:
+    def compute_update(self, results: list[WorkerResult], current_model_dim: int) -> np.ndarray:
         if not results:
             return np.zeros((current_model_dim, current_model_dim))
-            
+
         # 1. Advantage Estimation (Z-score normalization)
         rewards = np.array([r.reward for r in results])
         mean_reward = np.mean(rewards)
         std_reward = np.std(rewards) + 1e-8
         normalized_rewards = (rewards - mean_reward) / std_reward
-        
+
         # 2. Predictive Control (Bayesian Lookahead)
         self._update_bayesian_priors(mean_reward)
-        
+
         # 3. PID Tuning
         raw_improvement = mean_reward - self.prev_avg_reward
         self.prev_avg_reward = mean_reward
-        
+
         self.smoothed_improvement = CalculusTools.exponential_moving_average(
             raw_improvement, self.smoothed_improvement, alpha=0.7
         )
         pid_adjustment = self.pid.update(self.smoothed_improvement)
-        
+
         # 4. Cybernetic Regulation (Ashby's Law)
         # Disturbance is the variance of rewards (instability of landscape)
         system_energy = self.regulator.regulate(std_reward)
-        
+
         # 5. Compute Adaptive Learning Rate
         # Energy acts as a gain multiplier (Homeostatic regulation)
         adaptive_lr = self.config.learning_rate * (1.0 + np.tanh(pid_adjustment)) * system_energy
-        
+
         # Log state
         self._log_state(mean_reward, system_energy, pid_adjustment)
-        
+
         # 6. Aggregate Gradients (Evolution Strategies)
         total_update = np.zeros((current_model_dim, current_model_dim))
-        
+
         # Mock aggregation for simulation
         # In real world, we use ES: sum(reward * noise)
         simulated_gradient = np.random.randn(current_model_dim, current_model_dim) * adaptive_lr
-        
+
         return simulated_gradient
 
     def _update_bayesian_priors(self, current_reward: float):
@@ -181,13 +178,13 @@ class CyberneticOptimizer:
             # Feature map: [1, epoch, epoch^2]
             Phi = np.column_stack([np.ones_like(epochs), epochs, epochs**2])
             targets = np.array(self.history["reward"])
-            
+
             self.predictor.fit_bayesian_linear(Phi, targets)
-            
+
             # Predict next step
             phi_next = np.array([1.0, hist_len, hist_len**2])
             pred_mean, _ = self.predictor.predict(phi_next)
-            
+
             # Adjust PID setpoint based on predicted potential
             predicted_improvement = pred_mean - current_reward
             self.pid.setpoint = max(0.05, predicted_improvement + 0.05)
@@ -216,7 +213,7 @@ class EggrollIntegration:
     - Silhouette-based diversity bonus
     """
 
-    def __init__(self, num_workers: int = 10, config: Optional[OptimizationConfig] = None,
+    def __init__(self, num_workers: int = 10, config: OptimizationConfig | None = None,
                  model_type: str = "standard", backend_type: str = "local", **model_kwargs):
         self.num_workers = num_workers
         self.config = config or OptimizationConfig()
@@ -235,14 +232,14 @@ class EggrollIntegration:
         self.optimizer = CyberneticOptimizer(self.config)
 
         # Diversity tracking (uses Rust-accelerated clustering)
-        self._population_embeddings: Optional[np.ndarray] = None
-        self._diversity_history: List[float] = []
+        self._population_embeddings: np.ndarray | None = None
+        self._diversity_history: list[float] = []
 
         # Observability: Metrics collector and tracer
         self.metrics_collector = create_eggroll_collector(population_id=f"pop_{id(self)}")
         self.tracer = get_eggroll_tracer()
-        print(f"📊 Observability enabled (Prometheus metrics + OpenTelemetry tracing)")
-        
+        print("📊 Observability enabled (Prometheus metrics + OpenTelemetry tracing)")
+
         # Distributed Backend Initialization
         if backend_type == "local":
             self.backend = LocalBackend()
@@ -250,19 +247,19 @@ class EggrollIntegration:
             self.backend = RayBackend()
         else:
             raise ValueError(f"Unknown backend: {backend_type}")
-            
+
         print(f"🔗 Initializing Distributed Backend ({backend_type}) with {num_workers} workers...")
         # Initialize workers (LoomNodes)
         self.backend.initialize(
-            num_workers, 
-            LoomNode, 
-            model_type=model_type, 
+            num_workers,
+            LoomNode,
+            model_type=model_type,
             model_kwargs=model_kwargs,
             use_dark_trace=True # Enable Dark Trace on workers
         )
-        
+
         # Control State
-        self.forced_pattern: Optional[str] = None
+        self.forced_pattern: str | None = None
         self._lock = asyncio.Lock()
 
     async def generate(self, prompt: str) -> str:
@@ -272,7 +269,7 @@ class EggrollIntegration:
     def set_forced_pattern(self, pattern: str) -> None:
         """Forces all retrieval/task generation to bias towards a specific pattern."""
         self.forced_pattern = pattern
-        
+
     def set_optimization_mode(self, mode: OptimizationMode) -> None:
         """Swaps the optimizer configuration on the fly."""
         print(f"🔄 Switching optimization mode to: {mode.name}")
@@ -282,8 +279,9 @@ class EggrollIntegration:
     def export_dashboard_data(self, filepath: str = "HoloLoom/eggroll/dashboard/data.json") -> None:
         """Exports the Yarn lineage graph to a JSON file for the D3.js dashboard."""
         import json
-        import networkx as nx
         import os
+
+        import networkx as nx
 
         # Ensure directory exists
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
@@ -298,10 +296,10 @@ class EggrollIntegration:
 
     def compute_population_diversity(
         self,
-        worker_results: List[WorkerResult],
+        worker_results: list[WorkerResult],
         n_clusters: int = 5,
         seed: int = 42
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compute population diversity using Rust-accelerated clustering.
 
@@ -376,11 +374,11 @@ class EggrollIntegration:
 
     async def run_evolution_loop(self, num_epochs: int = 1) -> None:
         print(f"🚀 Starting EGGROLL Loop ({self.num_workers} nodes)...")
-        
+
         for epoch in range(num_epochs):
-            async with self._lock: 
+            async with self._lock:
                 await self._run_single_epoch(epoch)
-    
+
     async def _run_single_epoch(self, epoch: int) -> None:
         banner = f"Epoch {epoch+1}"
         epoch_start_time = time.perf_counter()
@@ -392,32 +390,32 @@ class EggrollIntegration:
 
         # 2. Trigger Steps on Workers (Simulated Inputs)
         dummy_input = torch.randint(0, 1000, (1, 16))
-        
+
         # Map Async: step(task_input, target) -> Returns (fitness, metrics, output_sample)
         self.backend.map_async("step", dummy_input, dummy_input)
-        
+
         # 3. Gather Results
         with RichSpinner(f"{banner} | Evolution in progress...") as spinner:
             raw_results = self.backend.gather_results()
-            
+
             worker_results = []
             fitness_scores = []
-            
+
             for item in raw_results:
                 if isinstance(item, Exception):
                     # print(f"⚠️ Worker Error: {item}")
                     continue
-                    
+
                 # Item structure: (worker_id, (fitness, metrics, output))
                 worker_id, step_res = item
-                
+
                 if isinstance(step_res, Exception):
                      # print(f"⚠️ Step Error on Worker {worker_id}: {step_res}")
                      continue
-                     
+
                 fitness, metrics, output = step_res
                 fitness_scores.append(fitness)
-                
+
                 result = WorkerResult(
                     worker_id=worker_id,
                     reward=fitness,
@@ -426,23 +424,23 @@ class EggrollIntegration:
                     metrics=metrics
                 )
                 worker_results.append(result)
-                
+
                 # 4. Yarn Logging (Historian)
                 node_id = f"epoch_{epoch}_worker_{worker_id}"
-                
+
                 # Warp Score (Refined using metrics!)
                 refined_reward = self.warp.score("target", output, metrics=metrics)
-                
+
                 self.yarn.graph.add_node(
-                    node_id, 
-                    reward=refined_reward, 
+                    node_id,
+                    reward=refined_reward,
                     architecture=self.mirror_core.model_type,
                     metrics=metrics,
                     parent=f"epoch_{epoch-1}_best" if epoch > 0 else "root"
                 )
                 if epoch > 0:
                     self.yarn.graph.add_edge(f"epoch_{epoch-1}_best", node_id)
-            
+
             avg_fitness = np.mean(fitness_scores) if fitness_scores else 0.0
 
             # 5. Compute Population Diversity (Rust-accelerated)
@@ -504,7 +502,7 @@ class EggrollIntegration:
             # 7. Export for Visualization
             self.export_dashboard_data()
 
-    def get_metrics_summary(self) -> Dict[str, Any]:
+    def get_metrics_summary(self) -> dict[str, Any]:
         """Get summary of collected metrics for this population."""
         return self.metrics_collector.get_summary()
 
@@ -517,22 +515,22 @@ class RichSpinner:
         self._frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
         self._running = False
         self._task = None
-        
+
     def update(self, message: str):
         self.message = message
-        
+
     async def _spin(self):
         idx = 0
         while self._running:
             print(f"\r{self._frames[idx % len(self._frames)]} {self.message}", end="", flush=True)
             idx += 1
             await asyncio.sleep(0.1)
-            
+
     def __enter__(self):
         self._running = True
         print(f"\n⚡ STARTER: {self.message}")
         return self
-        
+
     def __exit__(self, exc_type, exc_value, traceback):
         self._running = False
         print(f"\n✅ DONE: {self.message}\n")
@@ -542,10 +540,10 @@ async def main():
     config = OptimizationConfig.from_mode(OptimizationMode.RESEARCH)
     # Testing Spiking Network for Efficiency Rewards
     integration = EggrollIntegration(num_workers=4, config=config, model_type="spiking")
-    
+
     # Run a few loops
     await integration.run_evolution_loop(num_epochs=3)
-    
+
     # Switch to MoE
     print("\n🔀 Switching architecture simulation to MoE...")
     # (In real life we'd spin up new integration, here we just simulate the change in future loop)

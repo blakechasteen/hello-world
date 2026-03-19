@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 HoloLoom - Unified Memory System
 
@@ -32,8 +33,9 @@ Design Philosophy:
 - Cross-device: Identity owns memory, devices are just windows
 """
 
-from typing import Any, List, Optional, Dict, Union, Tuple, TYPE_CHECKING
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, Optional, Union
+
 import networkx as nx
 
 # LAZY IMPORTS: Break circular dependency with HoloLoom/__init__.py
@@ -41,17 +43,14 @@ import networkx as nx
 if TYPE_CHECKING:
     from hololoom.config import Config
     from hololoom.handoff.identity import UnifiedIdentity
-    from hololoom.handoff.orchestrator import HardenedHandoffOrchestrator
-    from hololoom.handoff.synced_memory import SyncedMemory
-    from hololoom.loom.weave_house import WeaveHouse, WeaveResult
     from hololoom.loom.dreaming import DreamOrchestrator
-    from hololoom.fabric.fabric import Fabric
+    from hololoom.loom.weave_house import WeaveHouse, WeaveResult
 
-from hololoom.memory.protocol import Memory
-from hololoom.memory.awareness_graph import AwarenessGraph
-from hololoom.memory.awareness_types import ActivationStrategy, AwarenessMetrics
-from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.memory.awareness_graph import AwarenessGraph
+from hololoom.memory.awareness_types import ActivationStrategy
+from hololoom.memory.protocol import Memory
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
 # Input processing (graceful degradation)
 try:
@@ -87,7 +86,7 @@ class HoloLoom:
     def __init__(
         self,
         config: Optional['Config'] = None,
-        graph_backend: Optional[nx.MultiDiGraph] = None,
+        graph_backend: nx.MultiDiGraph | None = None,
         identity: Optional['UnifiedIdentity'] = None,
         use_multi_perspective: bool = False,
     ):
@@ -171,9 +170,13 @@ class HoloLoom:
         self._use_multi_perspective = use_multi_perspective or (
             hasattr(self.config, 'use_weave_house') and self.config.use_weave_house
         )
-        self._weave_house: Optional['WeaveHouse'] = None
-        self._dream_orchestrator: Optional['DreamOrchestrator'] = None
+        self._weave_house: WeaveHouse | None = None
+        self._dream_orchestrator: DreamOrchestrator | None = None
         self._weave_house_initialized = False
+
+        # Weaving orchestrator (lazy — created on first query/chat/ingest)
+        self._weaver: Any | None = None
+        self.conversation_history: list[dict] = []
 
     # =========================================================================
     # Core Operations: The 10/10 API
@@ -182,7 +185,7 @@ class HoloLoom:
     async def experience(
         self,
         content: Any,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> Memory:
         """
         Experience content and integrate into memory.
@@ -256,9 +259,9 @@ class HoloLoom:
         self,
         query: Any,
         strategy: ActivationStrategy = ActivationStrategy.BALANCED,
-        limit: Optional[int] = None,
+        limit: int | None = None,
         include_photos: bool = False
-    ) -> Union[List[Memory], Dict[str, List]]:
+    ) -> list[Memory] | dict[str, list]:
         """
         Recall memories related to query.
 
@@ -361,8 +364,8 @@ class HoloLoom:
 
     async def reflect(
         self,
-        memories: List[Memory],
-        feedback: Optional[Dict] = None
+        memories: list[Memory],
+        feedback: dict | None = None
     ) -> None:
         """
         Reflect on memories to improve future recall.
@@ -412,14 +415,152 @@ class HoloLoom:
         # await self._awareness.reflection_buffer.learn(memories, feedback)
 
     # =========================================================================
+    # Weaving Operations (lazy WeavingOrchestrator, shares AwarenessGraph)
+    # =========================================================================
+
+    async def _ensure_weaver(self):
+        """Lazy-load WeavingOrchestrator on first weaving operation."""
+        if self._weaver is not None:
+            return self._weaver
+
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+
+        self._weaver = WeavingOrchestrator(
+            cfg=self.config,
+            awareness_layer=self._awareness,
+            enable_reflection=True,
+        )
+        return self._weaver
+
+    async def query(
+        self,
+        text: str,
+        pattern: str | None = None,
+    ) -> Any:
+        """
+        Process a query through the 9-stage weaving cycle.
+
+        For one-shot questions that need full reasoning (tool selection,
+        synthesis, convergence). For simple memory retrieval, use recall().
+
+        Args:
+            text: Query text
+            pattern: Optional pattern override ("bare", "fast", "fused")
+
+        Returns:
+            Spacetime object with response, confidence, trace
+
+        Example:
+            >>> result = await loom.query("What is Thompson Sampling?")
+            >>> print(result.response)
+            >>> print(f"Confidence: {result.confidence:.2f}")
+        """
+        from hololoom.protocols.types import Query
+        weaver = await self._ensure_weaver()
+        return await weaver.weave(query=Query(text=text), pattern_override=pattern)
+
+    async def chat(
+        self,
+        message: str,
+        pattern: str | None = None,
+    ) -> str:
+        """
+        Conversational weaving with turn history.
+
+        Args:
+            message: User message
+            pattern: Optional pattern override
+
+        Returns:
+            Response string
+
+        Example:
+            >>> response = await loom.chat("What is HoloLoom?")
+            >>> response = await loom.chat("Tell me more")  # has context
+        """
+        spacetime = await self.query(message, pattern)
+        self.conversation_history.append({
+            'user': message,
+            'assistant': spacetime.response,
+            'confidence': spacetime.confidence,
+        })
+        return spacetime.response
+
+    # =========================================================================
+    # Ingestion (SpinnerProtocol — any spinner, lazy per-call)
+    # =========================================================================
+
+    async def ingest(self, spinner: Any, source: Any = None, **kwargs) -> int:
+        """
+        Ingest content using any SpinnerProtocol implementation.
+
+        Args:
+            spinner: A SpinnerProtocol instance (TextSpinner, WebsiteSpinner, etc.)
+            source: Source data dict passed to spinner.spin()
+            **kwargs: Additional arguments merged into source
+
+        Returns:
+            Number of memories created
+
+        Example:
+            >>> from hololoom.spinningWheel.modalities.slack import SlackSpinner
+            >>> count = await loom.ingest(SlackSpinner(), channel="engineering")
+        """
+        from hololoom.memory.protocol import shards_to_memories
+
+        spin_input = source if isinstance(source, dict) else {}
+        spin_input.update(kwargs)
+        shards = await spinner.spin(spin_input)
+        memories = shards_to_memories(shards)
+        count = 0
+        for mem in memories:
+            await self.experience(mem.text, context=getattr(mem, 'metadata', {}))
+            count += 1
+        return count
+
+    async def ingest_text(self, text: str, metadata: dict | None = None) -> int:
+        """Ingest plain text (chunked into paragraphs)."""
+        from hololoom.spinningWheel import TextSpinner, TextSpinnerConfig
+        spinner = TextSpinner(TextSpinnerConfig(chunk_size=500, chunk_by='paragraph'))
+        return await self.ingest(spinner, {'text': text, 'metadata': metadata or {}})
+
+    async def ingest_web(self, url: str) -> int:
+        """Ingest web page content."""
+        from hololoom.spinningWheel.modalities.website import WebsiteSpinner
+        return await self.ingest(WebsiteSpinner(), {'url': url})
+
+    async def ingest_youtube(
+        self,
+        video_id: str,
+        languages: list[str] | None = None,
+    ) -> int:
+        """Ingest YouTube video transcript."""
+        from hololoom.spinningWheel.modalities.youtube import YouTubeSpinner, YouTubeSpinnerConfig
+        spinner = YouTubeSpinner(YouTubeSpinnerConfig(languages=languages or ['en']))
+        return await self.ingest(spinner, {'url': video_id, 'languages': languages or ['en']})
+
+    # =========================================================================
     # Convenience Methods
     # =========================================================================
 
+    def get_stats(self) -> dict[str, Any]:
+        """
+        Get unified stats from memory + weaver.
+
+        Returns:
+            Dict with memory metrics, conversation state, and weaving stats
+        """
+        stats = self.get_metrics()
+        stats['conversation_turns'] = len(self.conversation_history)
+        if self._weaver and hasattr(self._weaver, 'get_statistics'):
+            stats['weaving'] = self._weaver.get_statistics()
+        return stats
+
     async def experience_batch(
         self,
-        contents: List[Any],
-        context: Optional[Dict] = None
-    ) -> List[Memory]:
+        contents: list[Any],
+        context: dict | None = None
+    ) -> list[Memory]:
         """
         Experience multiple contents efficiently.
 
@@ -448,7 +589,7 @@ class HoloLoom:
         self,
         query: str,
         **kwargs
-    ) -> List[Memory]:
+    ) -> list[Memory]:
         """
         Alias for recall() with more intuitive name.
 
@@ -464,7 +605,7 @@ class HoloLoom:
         """
         return await self.recall(query, **kwargs)
 
-    def get_metrics(self) -> Dict:
+    def get_metrics(self) -> dict:
         """
         Get system metrics for monitoring.
 
@@ -523,7 +664,7 @@ Shift detected: {metrics['shift_detected']}
     async def weave(
         self,
         query: str,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> 'WeaveResult':
         """
         Multi-perspective query using WeaveHouse.
@@ -581,7 +722,7 @@ Shift detected: {metrics['shift_detected']}
 
         return result
 
-    async def get_perspectives(self) -> Dict[str, str]:
+    async def get_perspectives(self) -> dict[str, str]:
         """
         Get descriptions of all available loom perspectives.
 
@@ -678,8 +819,8 @@ Shift detected: {metrics['shift_detected']}
     def _ensure_photo_memory(self):
         """Lazy-initialize photo memory storage."""
         if not hasattr(self, '_photo_memory'):
-            from hololoom.memory.photo_tokens import PhotoTokenMemory
             from hololoom.memory.graph import KG
+            from hololoom.memory.photo_tokens import PhotoTokenMemory
 
             # Create photo memory storage
             storage_path = self.config.data_dir if hasattr(self.config, 'data_dir') else "./photo_memory"
@@ -696,9 +837,9 @@ Shift detected: {metrics['shift_detected']}
     async def remember_photo(
         self,
         image: Union[bytes, 'np.ndarray', str, Path],
-        caption: Optional[str] = None,
-        tags: List[str] = None,
-        link_to_memory: Optional[str] = None
+        caption: str | None = None,
+        tags: list[str] = None,
+        link_to_memory: str | None = None
     ) -> 'PhotoToken':
         """
         Remember a photo in multimodal memory.
@@ -767,7 +908,7 @@ Shift detected: {metrics['shift_detected']}
         self,
         query_image: Union[bytes, 'np.ndarray', str, Path],
         k: int = 5
-    ) -> List['PhotoToken']:
+    ) -> list['PhotoToken']:
         """
         Find visually similar photos using CLIP embeddings.
 
@@ -800,7 +941,7 @@ Shift detected: {metrics['shift_detected']}
 
         return photos_with_scores
 
-    async def get_photos_by_tag(self, tag: str, k: int = 10) -> List['PhotoToken']:
+    async def get_photos_by_tag(self, tag: str, k: int = 10) -> list['PhotoToken']:
         """
         Get photos with a specific tag.
 
@@ -871,9 +1012,9 @@ Shift detected: {metrics['shift_detected']}
         self,
         data: Any,
         compression_type: str = 'auto',
-        caption: Optional[str] = None,
-        tags: List[str] = None
-    ) -> Tuple['PhotoToken', 'CompressionMetrics']:
+        caption: str | None = None,
+        tags: list[str] = None
+    ) -> tuple['PhotoToken', 'CompressionMetrics']:
         """
         Compress structured data into visual representation for efficient storage.
 
@@ -908,7 +1049,7 @@ Shift detected: {metrics['shift_detected']}
             >>> results = await loom.recall("architecture", include_photos=True)
             >>> # Vision model can read diagram directly
         """
-        from hololoom.memory.visual_compression import compress_to_visual, CompressionMetrics
+        from hololoom.memory.visual_compression import compress_to_visual
 
         # Compress data to visual representation
         image, metrics = compress_to_visual(
@@ -1004,7 +1145,7 @@ Shift detected: {metrics['shift_detected']}
             # Fallback to caption
             return photo_token.caption or "No caption available"
 
-    def get_compression_stats(self) -> Dict[str, Any]:
+    def get_compression_stats(self) -> dict[str, Any]:
         """
         Get statistics on compressed visual memories.
 
@@ -1142,6 +1283,10 @@ Shift detected: {metrics['shift_detected']}
         if hasattr(self, '_photo_memory'):
             await self._photo_memory.__aexit__(exc_type, exc_val, exc_tb)
 
+        # Stop weaving orchestrator if initialized
+        if self._weaver is not None and hasattr(self._weaver, 'stop'):
+            self._weaver.stop()
+
         # Close awareness graph (cleanup tasks, connections, etc.)
         if hasattr(self._awareness, 'close'):
             await self._awareness.close()
@@ -1219,7 +1364,7 @@ Shift detected: {metrics['shift_detected']}
     async def handoff_to(
         self,
         target_device: str,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> 'HandoffResult':
         """
         Hand off current work context to another device.
@@ -1294,7 +1439,7 @@ Shift detected: {metrics['shift_detected']}
 
         return await self._handoff.receive_handoff(signed_request)
 
-    def get_pending_sync(self) -> List[Dict[str, Any]]:
+    def get_pending_sync(self) -> list[dict[str, Any]]:
         """
         Get pending memory operations waiting to sync.
 
@@ -1311,7 +1456,7 @@ Shift detected: {metrics['shift_detected']}
         ops = self._synced_memory.pending_delta()
         return [op.to_dict() for op in ops]
 
-    def get_device_registry(self) -> Dict[str, Any]:
+    def get_device_registry(self) -> dict[str, Any]:
         """
         Get information about paired devices.
 
@@ -1356,8 +1501,8 @@ Shift detected: {metrics['shift_detected']}
     async def add_device(
         self,
         device_name: str,
-        pairing_code: Optional[str] = None
-    ) -> Dict[str, Any]:
+        pairing_code: str | None = None
+    ) -> dict[str, Any]:
         """
         Add a new device to the identity's device registry.
 

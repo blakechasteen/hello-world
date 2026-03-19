@@ -8,8 +8,8 @@ Exports:
     - ProtoMode: Execution modes
 """
 
-from hololoom.apps.departments.proto.core.engine import ProtoEngine
 from hololoom.apps.departments.proto.core.config import ProtoConfig, ProtoMode
+from hololoom.apps.departments.proto.core.engine import ProtoEngine
 
 __all__ = [
     "ProtoEngine",

@@ -26,11 +26,9 @@ Author: HoloLoom Team
 Date: 2025-10-29
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple
-from enum import Enum
 import math
-
+from dataclasses import dataclass, field
+from enum import Enum
 
 # ============================================================================
 # Data Structures
@@ -40,24 +38,24 @@ import math
 class EmbeddingPoint:
     """Point in semantic space with metadata."""
     id: str
-    embedding: List[float]
+    embedding: list[float]
     x: float = 0.0  # 2D projection coordinate
     y: float = 0.0
-    label: Optional[str] = None
-    cluster: Optional[int] = None
-    color: Optional[str] = None
+    label: str | None = None
+    cluster: int | None = None
+    color: str | None = None
     size: float = 6.0
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
 
 @dataclass
 class QueryTrajectory:
     """Sequence of queries forming a path through semantic space."""
-    queries: List[str]
-    embeddings: List[List[float]]
-    projected_points: List[Tuple[float, float]] = field(default_factory=list)
+    queries: list[str]
+    embeddings: list[list[float]]
+    projected_points: list[tuple[float, float]] = field(default_factory=list)
     color: str = "#3b82f6"
-    label: Optional[str] = None
+    label: str | None = None
 
 
 class ProjectionMethod(Enum):
@@ -99,7 +97,7 @@ class SimplePCA:
         self.components = None
         self.explained_variance = None
 
-    def fit_transform(self, X: List[List[float]]) -> List[List[float]]:
+    def fit_transform(self, X: list[list[float]]) -> list[list[float]]:
         """
         Fit PCA and transform data.
 
@@ -155,9 +153,9 @@ class SimplePCA:
 
     def _power_iteration_features(
         self,
-        cov: List[List[float]],
+        cov: list[list[float]],
         n_components: int
-    ) -> List[List[float]]:
+    ) -> list[list[float]]:
         """
         Find top eigenvectors using power iteration.
 
@@ -212,10 +210,10 @@ class SimplePCA:
 
     def _power_iteration_samples(
         self,
-        X_centered: List[List[float]],
-        cov_samples: List[List[float]],
+        X_centered: list[list[float]],
+        cov_samples: list[list[float]],
         n_components: int
-    ) -> List[List[float]]:
+    ) -> list[list[float]]:
         """
         Find top eigenvectors when n_samples < n_features.
 
@@ -340,10 +338,10 @@ class SemanticSpaceRenderer:
 
     def render(
         self,
-        points: List[EmbeddingPoint],
+        points: list[EmbeddingPoint],
         title: str = "Semantic Space Projection",
-        subtitle: Optional[str] = None,
-        trajectories: Optional[List[QueryTrajectory]] = None,
+        subtitle: str | None = None,
+        trajectories: list[QueryTrajectory] | None = None,
         show_clusters: bool = True,
         show_labels: bool = True
     ) -> str:
@@ -376,9 +374,9 @@ class SemanticSpaceRenderer:
         html_parts = [
             self._render_html_head(title),
             self._render_styles(),
-            f'<body>',
-            f'<div class="space-container">',
-            f'<div class="space-header">',
+            '<body>',
+            '<div class="space-container">',
+            '<div class="space-header">',
             f'<h2>{title}</h2>',
         ]
 
@@ -389,7 +387,7 @@ class SemanticSpaceRenderer:
         stats_html = self._render_statistics(projected_points, trajectories)
         html_parts.append(stats_html)
 
-        html_parts.append(f'</div>')  # Close header
+        html_parts.append('</div>')  # Close header
 
         # Info panel
         info_html = self._render_info_panel()
@@ -405,17 +403,17 @@ class SemanticSpaceRenderer:
         html_parts.append(svg_html)
 
         html_parts.extend([
-            f'</div>',  # Close container
-            f'</body>',
-            f'</html>'
+            '</div>',  # Close container
+            '</body>',
+            '</html>'
         ])
 
         return '\n'.join(html_parts)
 
     def _project_embeddings(
         self,
-        points: List[EmbeddingPoint]
-    ) -> List[EmbeddingPoint]:
+        points: list[EmbeddingPoint]
+    ) -> list[EmbeddingPoint]:
         """
         Project high-dimensional embeddings to 2D.
 
@@ -489,8 +487,8 @@ class SemanticSpaceRenderer:
 
     def _project_trajectory(
         self,
-        embeddings: List[List[float]]
-    ) -> List[Tuple[float, float]]:
+        embeddings: list[list[float]]
+    ) -> list[tuple[float, float]]:
         """
         Project trajectory embeddings to 2D.
 
@@ -701,8 +699,8 @@ class SemanticSpaceRenderer:
 
     def _render_statistics(
         self,
-        points: List[EmbeddingPoint],
-        trajectories: Optional[List[QueryTrajectory]] = None
+        points: list[EmbeddingPoint],
+        trajectories: list[QueryTrajectory] | None = None
     ) -> str:
         """Render projection statistics."""
         num_points = len(points)
@@ -756,8 +754,8 @@ class SemanticSpaceRenderer:
 
     def _render_svg_projection(
         self,
-        points: List[EmbeddingPoint],
-        trajectories: Optional[List[QueryTrajectory]],
+        points: list[EmbeddingPoint],
+        trajectories: list[QueryTrajectory] | None,
         show_clusters: bool,
         show_labels: bool
     ) -> str:
@@ -857,7 +855,7 @@ class SemanticSpaceRenderer:
 
         return traj_svg
 
-    def _render_clusters(self, points: List[EmbeddingPoint]) -> str:
+    def _render_clusters(self, points: list[EmbeddingPoint]) -> str:
         """Render cluster boundaries and labels."""
         # Group points by cluster
         clusters = {}
@@ -919,7 +917,7 @@ class SemanticSpaceRenderer:
 
         return point_svg
 
-    def _render_script(self, points: List[EmbeddingPoint]) -> str:
+    def _render_script(self, points: list[EmbeddingPoint]) -> str:
         """Render JavaScript for interactivity."""
         # Build point data for tooltips
         point_data_js = []
@@ -1017,13 +1015,13 @@ class SemanticSpaceRenderer:
 # ============================================================================
 
 def render_semantic_space(
-    embeddings: List[List[float]],
-    labels: Optional[List[str]] = None,
-    clusters: Optional[List[int]] = None,
+    embeddings: list[list[float]],
+    labels: list[str] | None = None,
+    clusters: list[int] | None = None,
     title: str = "Semantic Space Projection",
-    subtitle: Optional[str] = None,
+    subtitle: str | None = None,
     method: ProjectionMethod = ProjectionMethod.PCA,
-    trajectories: Optional[List[QueryTrajectory]] = None
+    trajectories: list[QueryTrajectory] | None = None
 ) -> str:
     """
     Render semantic space projection from raw embeddings.

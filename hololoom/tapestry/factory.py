@@ -12,17 +12,16 @@ Created: December 2025
 """
 
 import logging
-from typing import Optional
 
-from hololoom.tapestry.protocol import TapestryBackend
 from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
+from hololoom.tapestry.protocol import TapestryBackend
 
 logger = logging.getLogger(__name__)
 
 
 async def create_tapestry_backend(
-    backend: Optional[str] = None,
-    path: Optional[str] = None
+    backend: str | None = None,
+    path: str | None = None
 ) -> TapestryBackend:
     """
     Factory with graceful fallback.
@@ -65,8 +64,8 @@ async def create_tapestry_backend(
             return SqliteTapestryBackend(sqlite_path)
         except ImportError:
             logger.warning(
-                f"SQLite backend not available, falling back to JSON. "
-                f"Install aiosqlite for SQLite support."
+                "SQLite backend not available, falling back to JSON. "
+                "Install aiosqlite for SQLite support."
             )
             return JsonTapestryBackend(path)
 
@@ -85,7 +84,7 @@ def get_default_tapestry_path() -> str:
     return ".hololoom/tapestry.json"
 
 
-def get_project_tapestry_path(project_root: Optional[str] = None) -> str:
+def get_project_tapestry_path(project_root: str | None = None) -> str:
     """
     Get project-specific tapestry path.
 

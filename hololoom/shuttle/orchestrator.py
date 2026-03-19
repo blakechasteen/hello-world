@@ -5,14 +5,13 @@ Ties together Warp (vector search), Yarn (knowledge graph), policies, bandits, a
 to provide intelligent context retrieval.
 """
 
-from dataclasses import dataclass
-from typing import Protocol, List, Dict, Any, Optional
 import time
+from dataclasses import dataclass
+from typing import Any, Protocol
 
-from .policies import Anchor, ExpansionConfig, ALL_POLICIES, POLICY_BY_NAME
 from .bandits import PolicySelector, RewardCalculator
 from .mcts import MCTSState, NeighborMap, run_mcts_search
-
+from .policies import ALL_POLICIES, POLICY_BY_NAME, Anchor
 
 # ============================================================================
 # Interface Protocols
@@ -25,7 +24,7 @@ class WarpInterface(Protocol):
     Warp provides fuzzy, semantic search over embedded content.
     """
 
-    def search(self, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
+    def search(self, query: str, top_k: int = 10) -> list[dict[str, Any]]:
         """
         Semantic search for anchor points.
 
@@ -48,11 +47,11 @@ class YarnInterface(Protocol):
 
     def build_neighbor_map(
         self,
-        anchors: List[str],
-        allowed_edge_types: List[str],
+        anchors: list[str],
+        allowed_edge_types: list[str],
         max_depth: int,
         max_nodes: int,
-    ) -> tuple[NeighborMap, List[str]]:
+    ) -> tuple[NeighborMap, list[str]]:
         """
         Build neighbor map for MCTS from anchor nodes.
 
@@ -69,7 +68,7 @@ class YarnInterface(Protocol):
         """
         ...
 
-    def describe_nodes(self, node_ids: List[str]) -> str:
+    def describe_nodes(self, node_ids: list[str]) -> str:
         """
         Get human-readable description of nodes.
 
@@ -90,13 +89,13 @@ class YarnInterface(Protocol):
 class ShuttleResult:
     """Result from shuttle query execution."""
     query: str
-    fuzzy_evidence: List[Dict[str, Any]]  # Warp search results
+    fuzzy_evidence: list[dict[str, Any]]  # Warp search results
     structural_claims: str  # Yarn graph description
-    selected_nodes: List[str]  # Nodes selected by MCTS
+    selected_nodes: list[str]  # Nodes selected by MCTS
     policy_used: str  # Which policy was selected
     reward: float  # Calculated reward for this result
     search_time_ms: float  # Total execution time
-    metadata: Dict[str, Any]  # Additional metadata
+    metadata: dict[str, Any]  # Additional metadata
 
 
 # ============================================================================
@@ -141,7 +140,7 @@ class Shuttle:
         self,
         query: str,
         top_k_warp: int = 10,
-        policy_name: Optional[str] = None,
+        policy_name: str | None = None,
     ) -> ShuttleResult:
         """
         Main query execution: Warp search → Policy selection → Yarn expansion → MCTS.
@@ -261,7 +260,7 @@ class Shuttle:
             },
         )
 
-    def _warp_results_to_anchors(self, warp_results: List[Dict[str, Any]]) -> List[Anchor]:
+    def _warp_results_to_anchors(self, warp_results: list[dict[str, Any]]) -> list[Anchor]:
         """
         Convert Warp search results to Anchor objects.
 
@@ -285,11 +284,11 @@ class Shuttle:
 
         return anchors
 
-    def get_policy_statistics(self) -> Dict[str, Dict]:
+    def get_policy_statistics(self) -> dict[str, dict]:
         """Get Thompson Sampling statistics for all policies."""
         return self.policy_selector.get_statistics()
 
-    def get_best_policies(self, top_k: int = 3) -> List[tuple[str, float]]:
+    def get_best_policies(self, top_k: int = 3) -> list[tuple[str, float]]:
         """Get top-k policies by mean reward."""
         return self.policy_selector.get_best_policies(top_k)
 

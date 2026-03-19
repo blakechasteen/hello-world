@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom ChatOps Runner
 =======================
@@ -15,14 +14,13 @@ Usage:
     python run_chatops.py --config config.yaml --debug
 """
 
-import asyncio
 import argparse
+import asyncio
 import logging
+import os
 import signal
 import sys
-import os
 from pathlib import Path
-from typing import Optional
 
 try:
     import yaml
@@ -34,9 +32,8 @@ except ImportError:
 # Add repository root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from hololoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
 from hololoom.apps.chatops.chatops_bridge import ChatOpsOrchestrator
-from hololoom.apps.chatops.conversation_memory import ConversationMemory
+from hololoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
 
 try:
     from hololoom.apps.chatops import ChatOpsSkills
@@ -48,8 +45,8 @@ except ImportError:
 
 # Claude Code integration
 try:
-    from hololoom.apps.departments.claude_code import ClaudeCodeDepartment
     from hololoom.apps.chatops.handlers.code_handlers import register_code_handlers
+    from hololoom.apps.departments.claude_code import ClaudeCodeDepartment
     CLAUDE_CODE_AVAILABLE = True
 except ImportError as e:
     CLAUDE_CODE_AVAILABLE = False
@@ -57,12 +54,12 @@ except ImportError as e:
 
 # Scratchpad integration
 try:
-    from hololoom.apps.chatops.scratchpad import ScratchPadManager, ScratchPadConfig
     from hololoom.apps.chatops.handlers.scratchpad_handlers import (
+        get_scratchpad_manager,
         register_scratchpad_handlers,
         set_scratchpad_manager,
-        get_scratchpad_manager
     )
+    from hololoom.apps.chatops.scratchpad import ScratchPadConfig, ScratchPadManager
     SCRATCHPAD_AVAILABLE = True
 except ImportError as e:
     SCRATCHPAD_AVAILABLE = False
@@ -72,7 +69,7 @@ except ImportError as e:
 try:
     from hololoom.apps.chatops.handlers.semantic_handlers import (
         create_semantic_handlers,
-        set_semantic_handlers
+        set_semantic_handlers,
     )
     SEMANTIC_AVAILABLE = True
 except ImportError as e:
@@ -101,7 +98,7 @@ def load_config(config_path: str) -> dict:
         return get_default_config()
 
     try:
-        with open(config_path, 'r') as f:
+        with open(config_path) as f:
             config = yaml.safe_load(f)
         logger.info(f"Loaded config from {config_path}")
         return config
@@ -271,7 +268,7 @@ def setup_logging(config: dict, debug: bool = False) -> None:
 # Command Handlers
 # ============================================================================
 
-def register_builtin_commands(bot: MatrixBot, chatops: ChatOpsOrchestrator, skills: Optional[ChatOpsSkills] = None):
+def register_builtin_commands(bot: MatrixBot, chatops: ChatOpsOrchestrator, skills: ChatOpsSkills | None = None):
     """
     Register built-in command handlers.
 
@@ -389,12 +386,12 @@ class ChatOpsRunner:
             config: Configuration dict
         """
         self.config = config
-        self.bot: Optional[MatrixBot] = None
-        self.chatops: Optional[ChatOpsOrchestrator] = None
-        self.skills: Optional[ChatOpsSkills] = None
-        self.claude_code: Optional['ClaudeCodeDepartment'] = None
-        self.scratchpad_manager: Optional['ScratchPadManager'] = None
-        self.semantic_handlers: Optional['SemanticMatrixHandlers'] = None
+        self.bot: MatrixBot | None = None
+        self.chatops: ChatOpsOrchestrator | None = None
+        self.skills: ChatOpsSkills | None = None
+        self.claude_code: ClaudeCodeDepartment | None = None
+        self.scratchpad_manager: ScratchPadManager | None = None
+        self.semantic_handlers: SemanticMatrixHandlers | None = None
         self.running = False
 
     async def setup(self) -> None:

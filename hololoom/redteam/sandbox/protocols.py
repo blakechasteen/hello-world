@@ -14,11 +14,12 @@ Author: CARTS Team
 Date: 2025-12-05
 """
 
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Dict, Any, Callable, Awaitable
+from typing import Any
+
 from typing_extensions import Protocol, runtime_checkable
-import logging
 
 logger = logging.getLogger("hololoom.redteam.sandbox.protocols")
 
@@ -55,18 +56,18 @@ class SandboxConfig:
 
     # Network policy
     network_enabled: bool = False  # Block egress by default
-    allowed_hosts: List[str] = field(default_factory=list)
-    allowed_ports: List[int] = field(default_factory=list)
+    allowed_hosts: list[str] = field(default_factory=list)
+    allowed_ports: list[int] = field(default_factory=list)
 
     # Filesystem policy
     filesystem_readonly: bool = True
-    allowed_read_paths: List[str] = field(default_factory=list)
-    allowed_write_paths: List[str] = field(default_factory=list)
+    allowed_read_paths: list[str] = field(default_factory=list)
+    allowed_write_paths: list[str] = field(default_factory=list)
 
     # Overlay filesystem (Linux only)
-    overlay_root: Optional[str] = None
-    overlay_lower: Optional[str] = None
-    overlay_upper: Optional[str] = None
+    overlay_root: str | None = None
+    overlay_lower: str | None = None
+    overlay_upper: str | None = None
 
     # Docker-specific
     docker_image: str = "python:3.11-slim"
@@ -101,18 +102,18 @@ class SandboxResult:
     stderr: str
 
     # Resource usage
-    resource_usage: Dict[str, Any] = field(default_factory=dict)
+    resource_usage: dict[str, Any] = field(default_factory=dict)
 
     # Sandbox details
     sandbox_mode_used: SandboxMode = SandboxMode.NONE
-    sandbox_violations: List[str] = field(default_factory=list)
+    sandbox_violations: list[str] = field(default_factory=list)
 
     # Errors and warnings
-    errors: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def failed(self) -> bool:
@@ -152,9 +153,9 @@ class ProcessIsolationProtocol(Protocol):
 
     async def spawn(
         self,
-        command: List[str],
-        env: Dict[str, str],
-        cwd: Optional[str] = None
+        command: list[str],
+        env: dict[str, str],
+        cwd: str | None = None
     ) -> SandboxResult:
         """
         Spawn an isolated process.
@@ -173,7 +174,7 @@ class ProcessIsolationProtocol(Protocol):
         """Kill the running process (if any)."""
         ...
 
-    def get_resource_usage(self) -> Dict[str, float]:
+    def get_resource_usage(self) -> dict[str, float]:
         """Get current resource usage metrics."""
         ...
 
@@ -205,7 +206,7 @@ class NetworkPolicyProtocol(Protocol):
         """Allow DNS resolution (53/UDP)."""
         ...
 
-    def get_violations(self) -> List[Dict[str, Any]]:
+    def get_violations(self) -> list[dict[str, Any]]:
         """Get list of network policy violations."""
         ...
 
@@ -254,7 +255,7 @@ class FilesystemSandboxProtocol(Protocol):
 # Utility Functions
 # =============================================================================
 
-def validate_sandbox_config(config: SandboxConfig) -> List[str]:
+def validate_sandbox_config(config: SandboxConfig) -> list[str]:
     """
     Validate sandbox configuration.
 
@@ -287,7 +288,7 @@ def validate_sandbox_config(config: SandboxConfig) -> List[str]:
     return warnings
 
 
-def get_sandbox_mode_availability() -> Dict[SandboxMode, bool]:
+def get_sandbox_mode_availability() -> dict[SandboxMode, bool]:
     """
     Check availability of different sandbox modes on this system.
 

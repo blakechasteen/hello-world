@@ -11,11 +11,11 @@ Each strategy implements a different complexity level:
 """
 
 from .base import BaseStrategy
-from .lite_strategy import LiteStrategy
+from .factory import create_strategy
 from .fast_strategy import FastStrategy
 from .full_strategy import FullStrategy
+from .lite_strategy import LiteStrategy
 from .research_strategy import ResearchStrategy
-from .factory import create_strategy
 
 __all__ = [
     "BaseStrategy",

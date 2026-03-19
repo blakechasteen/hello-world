@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 Multi-Agent Semantic Coordination
 ==================================
@@ -36,13 +37,12 @@ Created: 2025-12-25
 
 import asyncio
 import logging
-import time
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
 from enum import Enum
+from typing import Any, Optional
 
 import numpy as np
 
@@ -54,8 +54,10 @@ except ImportError:
 # Import semantic components
 try:
     from hololoom.semantic_calculus import (
-        PolicySemanticState as SemanticState,
         SEMANTIC_CATEGORIES,
+    )
+    from hololoom.semantic_calculus import (
+        PolicySemanticState as SemanticState,
     )
     SEMANTIC_AVAILABLE = True
 except ImportError:
@@ -64,9 +66,7 @@ except ImportError:
     SEMANTIC_CATEGORIES = {}
 
 # Handler registry
-from hololoom.apps.chatops.handlers.handler_registry import (
-    HandlerRegistry, HandlerCategory, chatops_handler
-)
+from hololoom.apps.chatops.handlers.handler_registry import HandlerCategory, chatops_handler
 
 logger = logging.getLogger(__name__)
 
@@ -92,8 +92,8 @@ class AgentInfo:
     created_at: datetime = field(default_factory=datetime.now)
     last_active: datetime = field(default_factory=datetime.now)
     query_count: int = 0
-    current_topic: Optional[str] = None
-    semantic_summary: Optional[Dict[str, float]] = None
+    current_topic: str | None = None
+    semantic_summary: dict[str, float] | None = None
 
 
 @dataclass
@@ -101,11 +101,11 @@ class TopicThread:
     """A thread linking related topics across rooms."""
     thread_id: str
     topic_name: str
-    room_ids: Set[str] = field(default_factory=set)
-    agent_ids: Set[str] = field(default_factory=set)
+    room_ids: set[str] = field(default_factory=set)
+    agent_ids: set[str] = field(default_factory=set)
     created_at: datetime = field(default_factory=datetime.now)
     last_activity: datetime = field(default_factory=datetime.now)
-    semantic_centroid: Optional[np.ndarray] = None
+    semantic_centroid: np.ndarray | None = None
     message_count: int = 0
 
 
@@ -116,10 +116,10 @@ class HandoffContext:
     to_agent: str
     room_id: str
     timestamp: datetime
-    semantic_state: Optional[Any] = None
-    queries: List[str] = field(default_factory=list)
-    topic_shifts: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    semantic_state: Any | None = None
+    queries: list[str] = field(default_factory=list)
+    topic_shifts: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -155,16 +155,16 @@ class SharedSemanticRegistry:
             return
 
         # Agent registry
-        self._agents: Dict[str, AgentInfo] = {}
+        self._agents: dict[str, AgentInfo] = {}
 
         # Topic threads (cross-room linking)
-        self._topics: Dict[str, TopicThread] = {}
+        self._topics: dict[str, TopicThread] = {}
 
         # Room -> Agent mapping
-        self._room_agents: Dict[str, str] = {}
+        self._room_agents: dict[str, str] = {}
 
         # Semantic state cache (agent_id -> states)
-        self._state_cache: Dict[str, List[Any]] = defaultdict(list)
+        self._state_cache: dict[str, list[Any]] = defaultdict(list)
 
         # Topic similarity threshold
         self._topic_similarity_threshold = 0.7
@@ -173,7 +173,7 @@ class SharedSemanticRegistry:
         self._max_cache_size = 100
 
         # Handoff history
-        self._handoff_history: List[HandoffContext] = []
+        self._handoff_history: list[HandoffContext] = []
 
         self._initialized = True
         logger.info("SharedSemanticRegistry initialized")
@@ -210,9 +210,9 @@ class SharedSemanticRegistry:
     async def update_agent_state(
         self,
         agent_id: str,
-        semantic_state: Optional[Any] = None,
-        query: Optional[str] = None,
-        topic: Optional[str] = None
+        semantic_state: Any | None = None,
+        query: str | None = None,
+        topic: str | None = None
     ):
         """
         Update an agent's semantic state.
@@ -256,8 +256,8 @@ class SharedSemanticRegistry:
     async def find_related_topics(
         self,
         semantic_state: Any,
-        exclude_room: Optional[str] = None
-    ) -> List[Tuple[TopicThread, float]]:
+        exclude_room: str | None = None
+    ) -> list[tuple[TopicThread, float]]:
         """
         Find topic threads related to the given semantic state.
 
@@ -297,7 +297,7 @@ class SharedSemanticRegistry:
         topic_name: str,
         room_id: str,
         agent_id: str,
-        semantic_state: Optional[Any] = None
+        semantic_state: Any | None = None
     ) -> TopicThread:
         """
         Create a new topic thread.
@@ -365,7 +365,7 @@ class SharedSemanticRegistry:
         from_agent: str,
         to_agent: str,
         include_history: int = 10
-    ) -> Optional[HandoffContext]:
+    ) -> HandoffContext | None:
         """
         Initiate a context handoff between agents.
 
@@ -452,23 +452,23 @@ class SharedSemanticRegistry:
             logger.info(f"Handoff completed: {from_agent} -> {to_agent}")
             return True
 
-    async def get_all_agents(self) -> List[AgentInfo]:
+    async def get_all_agents(self) -> list[AgentInfo]:
         """Get all registered agents."""
         async with self._lock:
             return list(self._agents.values())
 
-    async def get_all_topics(self) -> List[TopicThread]:
+    async def get_all_topics(self) -> list[TopicThread]:
         """Get all topic threads."""
         async with self._lock:
             return list(self._topics.values())
 
-    async def get_agent_by_room(self, room_id: str) -> Optional[AgentInfo]:
+    async def get_agent_by_room(self, room_id: str) -> AgentInfo | None:
         """Get agent for a room."""
         async with self._lock:
             agent_id = self._room_agents.get(room_id)
             return self._agents.get(agent_id) if agent_id else None
 
-    async def get_stats(self) -> Dict[str, Any]:
+    async def get_stats(self) -> dict[str, Any]:
         """Get registry statistics."""
         async with self._lock:
             active_agents = sum(
@@ -942,7 +942,7 @@ async def notify_semantic_update(
     room_id: str,
     semantic_state: Any,
     query: str,
-    topic: Optional[str] = None
+    topic: str | None = None
 ):
     """
     Notify registry of a semantic state update.

@@ -17,21 +17,20 @@ Features:
 Created: 2025-01-21
 """
 
-import asyncio
 import argparse
+import asyncio
 import json
 import random
-import time
 import statistics
+import time
 from datetime import datetime
-from typing import List, Dict, Any, Tuple
 from pathlib import Path
+from typing import Any
 
 # HoloLoom
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.config import Config
-from hololoom.memory.graph import KG
+from hololoom.protocols.types import MemoryShard, Query
 
+from hololoom.config import Config
 
 # ============================================================================
 # A/B Test Configuration
@@ -75,8 +74,8 @@ class ABTestRunner:
         self.config = config
 
         # Metrics storage
-        self.control_metrics: List[Dict[str, Any]] = []  # Legacy
-        self.test_metrics: List[Dict[str, Any]] = []     # Shuttle
+        self.control_metrics: list[dict[str, Any]] = []  # Legacy
+        self.test_metrics: list[dict[str, Any]] = []     # Shuttle
 
         # Test queries
         self.queries = [
@@ -97,7 +96,7 @@ class ABTestRunner:
         hololoom_config: Config,
         enable_shuttle: bool,
         query_text: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run a single query and collect metrics.
 
@@ -146,7 +145,7 @@ class ABTestRunner:
     async def run_test(self):
         """Run complete A/B test."""
         print(f"\n{'='*80}")
-        print(f"Shuttle A/B Test")
+        print("Shuttle A/B Test")
         print(f"{'='*80}")
         print(f"Start time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"Duration: {self.config.duration_seconds}s")
@@ -204,13 +203,13 @@ class ABTestRunner:
             await asyncio.sleep(0.1)
 
         print(f"\n{'='*80}")
-        print(f"Test Complete!")
+        print("Test Complete!")
         print(f"Total queries: {query_count}")
         print(f"Shuttle queries: {len(self.test_metrics)}")
         print(f"Legacy queries: {len(self.control_metrics)}")
         print(f"{'='*80}\n")
 
-    def analyze_results(self) -> Dict[str, Any]:
+    def analyze_results(self) -> dict[str, Any]:
         """Analyze A/B test results."""
 
         # Extract metrics
@@ -263,7 +262,7 @@ class ABTestRunner:
 
         return results
 
-    def generate_report(self, results: Dict[str, Any]) -> str:
+    def generate_report(self, results: dict[str, Any]) -> str:
         """Generate markdown report."""
         report = []
 
@@ -314,7 +313,7 @@ class ABTestRunner:
 
         return "".join(report)
 
-    def save_results(self, results: Dict[str, Any]):
+    def save_results(self, results: dict[str, Any]):
         """Save results to JSON."""
         output = {
             'results': results,

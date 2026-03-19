@@ -12,22 +12,14 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import secrets
 import time
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum, auto
 from typing import (
     Any,
-    AsyncIterator,
-    Callable,
-    Dict,
-    List,
-    Optional,
     Protocol,
-    Set,
-    Tuple,
     runtime_checkable,
 )
 
@@ -57,7 +49,7 @@ class TransportMessage:
     data: bytes
     timestamp: float = field(default_factory=time.time)
     transport_type: str = "unknown"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -67,7 +59,7 @@ class SendResult:
     success: bool
     transport_used: str
     latency_ms: float = 0.0
-    error: Optional[str] = None
+    error: str | None = None
     retries: int = 0
 
 
@@ -125,7 +117,7 @@ class TransportProtocol(Protocol):
         """
         ...
 
-    async def discover_peers(self) -> List[str]:
+    async def discover_peers(self) -> list[str]:
         """
         Discover available peer devices.
 
@@ -151,7 +143,7 @@ class BaseTransport(ABC):
         self.device_id = device_id
         self._status = TransportStatus.DISCONNECTED
         self._message_queue: asyncio.Queue[TransportMessage] = asyncio.Queue()
-        self._connected_peers: Set[str] = set()
+        self._connected_peers: set[str] = set()
         self._send_count = 0
         self._receive_count = 0
         self._error_count = 0
@@ -199,7 +191,7 @@ class BaseTransport(ABC):
                 break
 
     @abstractmethod
-    async def discover_peers(self) -> List[str]:
+    async def discover_peers(self) -> list[str]:
         """Discover available peer devices."""
         pass
 
@@ -208,7 +200,7 @@ class BaseTransport(ABC):
         """Check if transport is available."""
         pass
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get transport statistics."""
         return {
             "transport_type": self.transport_type,
@@ -245,8 +237,8 @@ class WebSocketTransport(BaseTransport):
         self.reconnect_interval = reconnect_interval
         self.max_reconnect_attempts = max_reconnect_attempts
         self._ws = None
-        self._receive_task: Optional[asyncio.Task] = None
-        self._heartbeat_task: Optional[asyncio.Task] = None
+        self._receive_task: asyncio.Task | None = None
+        self._heartbeat_task: asyncio.Task | None = None
 
     @property
     def transport_type(self) -> str:
@@ -385,7 +377,7 @@ class WebSocketTransport(BaseTransport):
                 error=str(e)
             )
 
-    async def discover_peers(self) -> List[str]:
+    async def discover_peers(self) -> list[str]:
         """Request peer list from relay."""
         if self._status != TransportStatus.CONNECTED or not self._ws:
             return []
@@ -481,7 +473,7 @@ class BluetoothTransport(BaseTransport):
         self.service_uuid = service_uuid
         self.scan_timeout = scan_timeout
         self._server = None
-        self._client_connections: Dict[str, Any] = {}
+        self._client_connections: dict[str, Any] = {}
 
     @property
     def transport_type(self) -> str:
@@ -573,7 +565,7 @@ class BluetoothTransport(BaseTransport):
                 error=str(e)
             )
 
-    async def discover_peers(self) -> List[str]:
+    async def discover_peers(self) -> list[str]:
         """Scan for nearby Bluetooth devices."""
         if not self.is_available():
             return []
@@ -615,7 +607,7 @@ class LocalNetworkTransport(BaseTransport):
         self.port = port
         self.service_name = service_name
         self._server = None
-        self._peer_addresses: Dict[str, Tuple[str, int]] = {}
+        self._peer_addresses: dict[str, tuple[str, int]] = {}
 
     @property
     def transport_type(self) -> str:
@@ -720,7 +712,7 @@ class LocalNetworkTransport(BaseTransport):
                 error=str(e)
             )
 
-    async def discover_peers(self) -> List[str]:
+    async def discover_peers(self) -> list[str]:
         """Discover peers via mDNS."""
         if not self.is_available():
             return []
@@ -791,11 +783,11 @@ class CompositeTransport(BaseTransport):
     def __init__(
         self,
         device_id: str,
-        transports: Optional[List[BaseTransport]] = None,
+        transports: list[BaseTransport] | None = None,
     ):
         super().__init__(device_id)
         self.transports = transports or []
-        self._active_transports: List[BaseTransport] = []
+        self._active_transports: list[BaseTransport] = []
 
     @property
     def transport_type(self) -> str:
@@ -904,7 +896,7 @@ class CompositeTransport(BaseTransport):
 
     async def receive(self) -> AsyncIterator[TransportMessage]:
         """Receive from all transports, deduplicate by message hash."""
-        seen_hashes: Set[str] = set()
+        seen_hashes: set[str] = set()
 
         # Create receive tasks for all active transports
         async def receive_from(transport: BaseTransport):
@@ -932,9 +924,9 @@ class CompositeTransport(BaseTransport):
             for task in tasks:
                 task.cancel()
 
-    async def discover_peers(self) -> List[str]:
+    async def discover_peers(self) -> list[str]:
         """Discover peers from all transports."""
-        all_peers: Set[str] = set()
+        all_peers: set[str] = set()
 
         results = await asyncio.gather(
             *[t.discover_peers() for t in self._active_transports],
@@ -948,7 +940,7 @@ class CompositeTransport(BaseTransport):
         self._connected_peers = all_peers
         return list(all_peers)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get composite transport statistics."""
         stats = super().get_stats()
         stats["active_transports"] = [

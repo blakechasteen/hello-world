@@ -1,11 +1,17 @@
 """Data Format Skill - Validate, transform, and convert JSON/YAML/TOML data"""
 
-import time
 import json
-from typing import Dict, Any, List, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+import time
+from typing import Any
 
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 # Check for YAML availability
 YAML_AVAILABLE = False
@@ -95,7 +101,7 @@ class DataFormatSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    def _dispatch(self, operation: str, parameters: Dict[str, Any]):
+    def _dispatch(self, operation: str, parameters: dict[str, Any]):
         if operation == "validate_json":
             return self._validate_json(parameters)
         elif operation == "validate_yaml":
@@ -489,4 +495,5 @@ class DataFormatSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(DataFormatSkill())

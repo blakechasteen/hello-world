@@ -22,13 +22,15 @@ Methods:
     get_load_balancer_stats() - Get load balancer metrics
 """
 
-import httpx
 import uuid
-from typing import List, Optional, Dict, Any
-from ..shared.types import NodeRecord, NodeStatus
-from ..shared.logging import get_logger
-from ..shared.load_balancer import LoadBalancer, LoadBalanceStrategy, SelectionResult
+from typing import Any
+
+import httpx
+
 from ..portal_server.job_queue import JobQueue, QueueDispatcher, QueuedJob
+from ..shared.load_balancer import LoadBalancer, LoadBalanceStrategy, SelectionResult
+from ..shared.logging import get_logger
+from ..shared.types import NodeRecord
 
 logger = get_logger(__name__, component="shuttle")
 
@@ -70,7 +72,7 @@ class SimpleScheduler:
         self.job_queue = JobQueue(max_size=10000)
         self.queue_dispatcher = QueueDispatcher(self.job_queue, self)
 
-    async def get_nodes(self, online_only: bool = True) -> List[NodeRecord]:
+    async def get_nodes(self, online_only: bool = True) -> list[NodeRecord]:
         """
         Get nodes from Portal.
 
@@ -130,8 +132,8 @@ class SimpleScheduler:
 
     async def pick_node(
         self,
-        job_requirements: Optional[Dict[str, Any]] = None,
-    ) -> Optional[NodeRecord]:
+        job_requirements: dict[str, Any] | None = None,
+    ) -> NodeRecord | None:
         """
         Pick a healthy node for job dispatch using load balancing.
 
@@ -177,7 +179,7 @@ class SimpleScheduler:
         logger.warning("No healthy nodes found after fallback")
         return None
 
-    def get_load_balancer_stats(self) -> Dict[str, Any]:
+    def get_load_balancer_stats(self) -> dict[str, Any]:
         """Get load balancer metrics."""
         return self.load_balancer.get_stats()
 
@@ -186,7 +188,7 @@ class SimpleScheduler:
         node: NodeRecord,
         module_id: str,
         input_json: dict,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         timeout_seconds: int = 60,
     ) -> dict:
         """
@@ -250,7 +252,7 @@ class SimpleScheduler:
         node: NodeRecord,
         module_id: str,
         input_json: dict,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         timeout_seconds: int = 60,
     ) -> dict:
         """
@@ -431,7 +433,7 @@ class SimpleScheduler:
     async def dispatch_batch_async(
         self,
         node: NodeRecord,
-        jobs: List[dict],
+        jobs: list[dict],
     ) -> dict:
         """
         Submit multiple jobs for async execution in a single request.
@@ -495,8 +497,8 @@ class SimpleScheduler:
         self,
         module_id: str,
         input_json: dict,
-        job_requirements: Optional[Dict[str, Any]] = None,
-        job_id: Optional[str] = None,
+        job_requirements: dict[str, Any] | None = None,
+        job_id: str | None = None,
         timeout_seconds: int = 60,
         priority: int = 0,
     ) -> dict:
@@ -575,7 +577,7 @@ class SimpleScheduler:
         await self.queue_dispatcher.stop()
         logger.info("Queue dispatcher stopped")
 
-    def get_queue_stats(self) -> Dict[str, Any]:
+    def get_queue_stats(self) -> dict[str, Any]:
         """Get combined queue and dispatcher statistics."""
         queue_stats = self.job_queue.get_stats()
         dispatcher_stats = self.queue_dispatcher.get_stats()

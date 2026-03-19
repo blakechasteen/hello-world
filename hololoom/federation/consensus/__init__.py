@@ -28,6 +28,20 @@ Algorithm Selection:
     | 1000+    | Avalanche  | Avalanche  |
 """
 
+from .avalanche import (
+    AvalancheConsensus,
+    AvalancheParams,
+    AvalanchePreference,
+    PreferenceState,
+)
+from .pbft import (
+    CommitMessage,
+    PBFTConsensus,
+    PBFTMessage,
+    PBFTPhase,
+    PrepareMessage,
+    PrePrepareMessage,
+)
 from .protocol import (
     # Core protocol
     ConsensusProtocol,
@@ -37,47 +51,27 @@ from .protocol import (
     ResponseConsensusProtocol,
     ResponseConsensusResult,
 )
-
 from .quorum import (
     QuorumConsensus,
     ResponseQuorumConsensus,
 )
-
 from .raft import (
-    RaftConsensus,
-    RaftState,
-    LogEntry,
     AppendEntriesRequest,
     AppendEntriesResponse,
+    LogEntry,
+    RaftConsensus,
+    RaftState,
     RequestVoteRequest,
     RequestVoteResponse,
 )
-
-from .pbft import (
-    PBFTConsensus,
-    PBFTPhase,
-    PBFTMessage,
-    PrePrepareMessage,
-    PrepareMessage,
-    CommitMessage,
-)
-
-from .avalanche import (
-    AvalancheConsensus,
-    AvalancheParams,
-    AvalanchePreference,
-    PreferenceState,
-)
-
 from .selector import (
     ConsensusSelector,
-    SelectionCriteria,
     FaultModel,
-    select_consensus,
-    get_recommended_algorithm,
+    SelectionCriteria,
     describe_algorithm,
+    get_recommended_algorithm,
+    select_consensus,
 )
-
 
 __all__ = [
     # Protocol ABC

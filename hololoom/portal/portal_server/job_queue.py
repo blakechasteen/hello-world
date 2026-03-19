@@ -23,8 +23,8 @@ import asyncio
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List, Deque, TYPE_CHECKING
 from enum import Enum
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ..shuttle_bot.scheduler import SimpleScheduler
@@ -58,15 +58,15 @@ class QueuedJob:
     """
     job_id: str
     module_id: str
-    input_json: Dict[str, Any]
-    job_requirements: Optional[Dict[str, Any]] = None
+    input_json: dict[str, Any]
+    job_requirements: dict[str, Any] | None = None
     timeout_seconds: int = 60
     priority: int = 0
     queued_at: float = field(default_factory=time.time)
     status: QueuedJobStatus = QueuedJobStatus.PENDING
     attempts: int = 0
     max_attempts: int = 3
-    last_error: Optional[str] = None
+    last_error: str | None = None
 
 
 @dataclass
@@ -95,11 +95,11 @@ class JobQueue:
 
     def __init__(self, max_size: int = 10000):
         self.max_size = max_size
-        self._queue: Deque[QueuedJob] = deque()
-        self._jobs_by_id: Dict[str, QueuedJob] = {}
+        self._queue: deque[QueuedJob] = deque()
+        self._jobs_by_id: dict[str, QueuedJob] = {}
         self._stats = QueueStats()
         self._lock = asyncio.Lock()
-        self._wait_times: List[float] = []  # Rolling window for avg calculation
+        self._wait_times: list[float] = []  # Rolling window for avg calculation
 
     async def enqueue(self, job: QueuedJob) -> bool:
         """
@@ -131,7 +131,7 @@ class JobQueue:
             self._stats.current_depth = len(self._queue)
             return True
 
-    async def dequeue(self) -> Optional[QueuedJob]:
+    async def dequeue(self) -> QueuedJob | None:
         """
         Get next job from queue.
 
@@ -155,7 +155,7 @@ class JobQueue:
 
             return job
 
-    async def peek(self) -> Optional[QueuedJob]:
+    async def peek(self) -> QueuedJob | None:
         """
         Peek at next job without removing it.
 
@@ -208,7 +208,7 @@ class JobQueue:
                 self._stats.total_failed += 1
                 del self._jobs_by_id[job_id]
 
-    async def get_job_status(self, job_id: str) -> Optional[QueuedJob]:
+    async def get_job_status(self, job_id: str) -> QueuedJob | None:
         """
         Get job by ID (for status polling).
 
@@ -249,7 +249,7 @@ class JobQueue:
             self._stats.current_depth = len(self._queue)
             return True
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get queue metrics for monitoring.
 
@@ -300,7 +300,7 @@ class QueueDispatcher:
         self.scheduler = scheduler
         self.check_interval = check_interval
         self._running = False
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
         self._dispatched_count = 0
         self._failed_count = 0
 
@@ -384,7 +384,7 @@ class QueueDispatcher:
             await self.queue.mark_failed(job.job_id, str(e))
             self._failed_count += 1
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get dispatcher statistics.
 

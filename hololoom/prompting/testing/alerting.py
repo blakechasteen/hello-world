@@ -7,10 +7,11 @@ Provides:
 - Default rules for common metrics
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict, Optional, Callable, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .metrics_collector import MetricType
@@ -61,7 +62,7 @@ class Alert:
     actual_value: float
     timestamp: datetime = field(default_factory=datetime.now)
     acknowledged: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def message(self) -> str:
         """Generate alert message from template."""
@@ -85,10 +86,10 @@ class AlertingSystem:
 
     def __init__(self):
         """Initialize alerting system."""
-        self.rules: List[ThresholdRule] = []
-        self.alerts: List[Alert] = []
-        self.handlers: List[Callable[[Alert], None]] = []
-        self._last_alert_time: Dict[str, datetime] = {}
+        self.rules: list[ThresholdRule] = []
+        self.alerts: list[Alert] = []
+        self.handlers: list[Callable[[Alert], None]] = []
+        self._last_alert_time: dict[str, datetime] = {}
 
     def add_rule(self, rule: ThresholdRule) -> None:
         """Register a threshold rule.
@@ -110,8 +111,8 @@ class AlertingSystem:
         self,
         metric_type: "MetricType",
         value: float,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> Optional[Alert]:
+        metadata: dict[str, Any] | None = None
+    ) -> Alert | None:
         """Check value against rules, return alert if triggered.
 
         Args:
@@ -161,7 +162,7 @@ class AlertingSystem:
 
         return None
 
-    def get_active_alerts(self) -> List[Alert]:
+    def get_active_alerts(self) -> list[Alert]:
         """Get unacknowledged alerts.
 
         Returns:
@@ -169,7 +170,7 @@ class AlertingSystem:
         """
         return [a for a in self.alerts if not a.acknowledged]
 
-    def get_alerts_by_severity(self, severity: AlertSeverity) -> List[Alert]:
+    def get_alerts_by_severity(self, severity: AlertSeverity) -> list[Alert]:
         """Get alerts filtered by severity.
 
         Args:
@@ -237,7 +238,7 @@ class AlertingSystem:
         return ops.get(comparison, lambda v, t: False)(value, threshold)
 
 
-def get_default_rules() -> List[ThresholdRule]:
+def get_default_rules() -> list[ThresholdRule]:
     """Get default threshold rules for common metrics.
 
     Returns:

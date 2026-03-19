@@ -23,13 +23,13 @@ Usage:
 
 from fastapi import FastAPI
 
-from .health import router as health_router
-from .query import router as query_router
-from .memory import router as memory_router
-from .workspace import router as workspace_router
 from .analysis import router as analysis_router
-from .visualization import router as visualization_router
+from .health import router as health_router
+from .memory import router as memory_router
 from .monitoring import router as monitoring_router
+from .query import router as query_router
+from .visualization import router as visualization_router
+from .workspace import router as workspace_router
 
 
 def include_all_routers(app: FastAPI) -> None:

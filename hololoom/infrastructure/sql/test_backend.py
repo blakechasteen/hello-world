@@ -17,13 +17,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from hololoom.infrastructure.sql import (
-    SQLBackend,
-    SQLConfig,
-    create_sql_backend,
-    load_mock_data
-)
-
+from hololoom.infrastructure.sql import SQLConfig, create_sql_backend, load_mock_data
 
 logger = logging.getLogger(__name__)
 

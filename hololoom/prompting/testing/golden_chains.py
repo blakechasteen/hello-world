@@ -19,8 +19,8 @@ Status: Production Ready (December 2025)
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 from enum import Enum
+from typing import Any
 
 
 class TestDifficulty(Enum):
@@ -44,13 +44,13 @@ class GoldenPair:
     quality_score: float
     """Expected quality score (0.0-1.0)."""
 
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     """Descriptive tags for categorization."""
 
     difficulty: TestDifficulty = TestDifficulty.EASY
     """Test difficulty level."""
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Additional metadata (domain, notes, etc)."""
 
 
@@ -58,7 +58,7 @@ class GoldenPair:
 # 1. FACT_CHECK - Factual Claim Verification
 # =============================================================================
 
-FACT_CHECK_GOLDEN: List[GoldenPair] = [
+FACT_CHECK_GOLDEN: list[GoldenPair] = [
     # Easy cases - Clear true/false
     GoldenPair(
         prompt="Verify: The Eiffel Tower is located in London.",
@@ -164,7 +164,7 @@ FACT_CHECK_GOLDEN: List[GoldenPair] = [
 # 2. CODE_REVIEW - Code Quality Assessment
 # =============================================================================
 
-CODE_REVIEW_GOLDEN: List[GoldenPair] = [
+CODE_REVIEW_GOLDEN: list[GoldenPair] = [
     # Easy cases - Clear issues
     GoldenPair(
         prompt="""Review this code:
@@ -309,7 +309,7 @@ if event_time < created_at:
 # 3. SUMMARIZE - Content Summarization
 # =============================================================================
 
-SUMMARIZE_GOLDEN: List[GoldenPair] = [
+SUMMARIZE_GOLDEN: list[GoldenPair] = [
     # Easy cases - Clear content
     GoldenPair(
         prompt="""Summarize: Thompson Sampling is a Bayesian approach to the multi-armed bandit problem. It maintains probability distributions over the expected reward of each arm and samples from these distributions to select actions. Unlike epsilon-greedy which explores randomly, Thompson Sampling naturally balances exploration and exploitation through its probabilistic selection mechanism.""",
@@ -416,7 +416,7 @@ def consolidate_memories(self, similarity_threshold=0.95, min_cluster_size=2, pr
 # 4. SAFETY_GATED - Safety-Filtered Responses
 # =============================================================================
 
-SAFETY_GATED_GOLDEN: List[GoldenPair] = [
+SAFETY_GATED_GOLDEN: list[GoldenPair] = [
     # Easy cases - Clear safe/unsafe
     GoldenPair(
         prompt="How do I make a cake?",
@@ -558,7 +558,7 @@ SAFETY_GATED_GOLDEN: List[GoldenPair] = [
 # 5. MEMORY_AUGMENTED - Memory-Enhanced Responses
 # =============================================================================
 
-MEMORY_AUGMENTED_GOLDEN: List[GoldenPair] = [
+MEMORY_AUGMENTED_GOLDEN: list[GoldenPair] = [
     # Easy cases - Clear memory reference
     GoldenPair(
         prompt="Based on our earlier discussion about Python, what was the main advantage I mentioned?",
@@ -676,7 +676,7 @@ MEMORY_AUGMENTED_GOLDEN: List[GoldenPair] = [
 # 6. HALLUCINATION_GUARD - Hallucination Prevention
 # =============================================================================
 
-HALLUCINATION_GUARD_GOLDEN: List[GoldenPair] = [
+HALLUCINATION_GUARD_GOLDEN: list[GoldenPair] = [
     # Easy cases - Clear knowledge boundary
     GoldenPair(
         prompt="What happened in the news yesterday?",
@@ -817,7 +817,7 @@ HALLUCINATION_GUARD_GOLDEN: List[GoldenPair] = [
 # 7. RAG_OPTIMIZED - RAG-Based Retrieval
 # =============================================================================
 
-RAG_OPTIMIZED_GOLDEN: List[GoldenPair] = [
+RAG_OPTIMIZED_GOLDEN: list[GoldenPair] = [
     # Easy cases - Clear retrieval
     GoldenPair(
         prompt="What does the documentation say about the configure() function?",
@@ -934,7 +934,7 @@ RAG_OPTIMIZED_GOLDEN: List[GoldenPair] = [
 # 8. AGENT_PLANNING - Multi-Step Planning
 # =============================================================================
 
-AGENT_PLANNING_GOLDEN: List[GoldenPair] = [
+AGENT_PLANNING_GOLDEN: list[GoldenPair] = [
     # Easy cases - Clear goal
     GoldenPair(
         prompt="Create a plan to deploy a Python web application.",
@@ -1268,7 +1268,7 @@ Would you like me to develop the improved plan?""",
 # COMBINED DATASETS
 # =============================================================================
 
-CHAIN_GOLDEN_DATASETS: Dict[str, List[GoldenPair]] = {
+CHAIN_GOLDEN_DATASETS: dict[str, list[GoldenPair]] = {
     "fact_check": FACT_CHECK_GOLDEN,
     "code_review": CODE_REVIEW_GOLDEN,
     "summarize": SUMMARIZE_GOLDEN,
@@ -1280,7 +1280,7 @@ CHAIN_GOLDEN_DATASETS: Dict[str, List[GoldenPair]] = {
 }
 
 
-def get_golden_dataset(pattern_name: str) -> List[GoldenPair]:
+def get_golden_dataset(pattern_name: str) -> list[GoldenPair]:
     """Get golden dataset for a specific chain pattern.
 
     Args:
@@ -1298,7 +1298,7 @@ def get_golden_dataset(pattern_name: str) -> List[GoldenPair]:
     return CHAIN_GOLDEN_DATASETS[pattern_name]
 
 
-def get_all_golden_datasets() -> Dict[str, List[GoldenPair]]:
+def get_all_golden_datasets() -> dict[str, list[GoldenPair]]:
     """Get all golden datasets.
 
     Returns:
@@ -1308,9 +1308,9 @@ def get_all_golden_datasets() -> Dict[str, List[GoldenPair]]:
 
 
 def filter_by_difficulty(
-    dataset: List[GoldenPair],
-    difficulties: Optional[List[TestDifficulty]] = None,
-) -> List[GoldenPair]:
+    dataset: list[GoldenPair],
+    difficulties: list[TestDifficulty] | None = None,
+) -> list[GoldenPair]:
     """Filter golden pairs by difficulty level.
 
     Args:
@@ -1326,10 +1326,10 @@ def filter_by_difficulty(
 
 
 def filter_by_tags(
-    dataset: List[GoldenPair],
-    tags: List[str],
+    dataset: list[GoldenPair],
+    tags: list[str],
     match_all: bool = False,
-) -> List[GoldenPair]:
+) -> list[GoldenPair]:
     """Filter golden pairs by tags.
 
     Args:
@@ -1348,7 +1348,7 @@ def filter_by_tags(
     return [pair for pair in dataset if matches(pair)]
 
 
-def get_dataset_summary() -> Dict[str, Dict[str, Any]]:
+def get_dataset_summary() -> dict[str, dict[str, Any]]:
     """Get summary statistics for all datasets.
 
     Returns:
@@ -1379,7 +1379,7 @@ def get_dataset_summary() -> Dict[str, Dict[str, Any]]:
 # =============================================================================
 
 
-def filter_by_source(source: str) -> List[GoldenPair]:
+def filter_by_source(source: str) -> list[GoldenPair]:
     """Filter test cases by research source.
 
     Searches metadata['source'] field for matches.
@@ -1407,7 +1407,7 @@ def filter_by_source(source: str) -> List[GoldenPair]:
     return results
 
 
-def get_cases_for_evaluation_criterion(criterion: str) -> List[GoldenPair]:
+def get_cases_for_evaluation_criterion(criterion: str) -> list[GoldenPair]:
     """Get test cases targeting specific evaluation criteria.
 
     Maps evaluation criteria to relevant test patterns.
@@ -1495,7 +1495,7 @@ def get_total_case_count() -> int:
     return sum(len(dataset) for dataset in CHAIN_GOLDEN_DATASETS.values())
 
 
-def get_difficulty_distribution() -> Dict[str, int]:
+def get_difficulty_distribution() -> dict[str, int]:
     """Get overall difficulty distribution across all datasets.
 
     Returns:

@@ -12,14 +12,12 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Optional, Type
 
-from .protocol import ConsensusProtocol, FinalityType
+from .avalanche import AvalancheConsensus, AvalancheParams
+from .pbft import PBFTConsensus
+from .protocol import ConsensusProtocol
 from .quorum import QuorumConsensus
 from .raft import RaftConsensus
-from .pbft import PBFTConsensus
-from .avalanche import AvalancheConsensus, AvalancheParams
-
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +95,7 @@ class ConsensusSelector:
     def select(
         self,
         criteria: SelectionCriteria,
-    ) -> tuple[Type[ConsensusProtocol], dict]:
+    ) -> tuple[type[ConsensusProtocol], dict]:
         """
         Select the optimal consensus algorithm.
 

@@ -28,24 +28,23 @@ Quick Start:
 """
 
 # Matryoshka web search (new!)
-from .protocol import SearchProvider, WebSearchResult, SearchConfig
-from .matryoshka_search import MatryoshkaWebSearch
-from .citation import CitationFormatter, CitationStyle, Citation
-from .cache import SearchCache
-from .providers import create_provider
-
 # Multi-agent search suite (existing)
 from .agentic_search_suite import (
-    SearchOrchestrator,
-    SearchAgent,
-    FactualAgent,
     AnalyticalAgent,
-    MultiHopAgent,
     ExploratoryAgent,
-    SearchStrategy,
+    FactualAgent,
+    MultiHopAgent,
+    SearchAgent,
+    SearchOrchestrator,
     SearchQuery,
-    SearchResult as AgenticSearchResult
+    SearchStrategy,
 )
+from .agentic_search_suite import SearchResult as AgenticSearchResult
+from .cache import SearchCache
+from .citation import Citation, CitationFormatter, CitationStyle
+from .matryoshka_search import MatryoshkaWebSearch
+from .protocol import SearchConfig, SearchProvider, WebSearchResult
+from .providers import create_provider
 
 __all__ = [
     # Matryoshka web search

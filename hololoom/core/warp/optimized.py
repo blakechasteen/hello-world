@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Optimized Warp Space
 ====================
@@ -16,10 +17,9 @@ significant performance improvements for large-scale deployments.
 """
 
 import logging
+from typing import Any, Union
+
 import numpy as np
-from typing import Dict, List, Any, Optional, Union, Tuple
-from dataclasses import dataclass
-import warnings
 
 from hololoom.alignment.safety_guardrails import (
     ActionCategory,
@@ -56,7 +56,7 @@ class SparseTensorField:
     low-rank structure.
     """
 
-    def __init__(self, dense_tensor: Optional[np.ndarray] = None, threshold: float = 1e-6):
+    def __init__(self, dense_tensor: np.ndarray | None = None, threshold: float = 1e-6):
         """
         Initialize sparse tensor.
 
@@ -145,10 +145,10 @@ class GPUWarpSpace:
     def __init__(
         self,
         embedder,
-        scales: List[int] = [96, 192, 384],
+        scales: list[int] = [96, 192, 384],
         use_gpu: bool = True,
         dtype: str = "float32",
-        guardrails: Optional[SafetyGuardrails] = None,
+        guardrails: SafetyGuardrails | None = None,
     ):
         """
         Initialize GPU warp space.
@@ -175,7 +175,7 @@ class GPUWarpSpace:
 
         self.guardrails = guardrails or create_guardrails()
         self.guardrails_enabled = self.guardrails is not None
-        self._guardrail_decisions: Dict[str, Optional[SafetyDecision]] = {
+        self._guardrail_decisions: dict[str, SafetyDecision | None] = {
             "tension": None,
             "attention": None,
             "weighted_context": None,
@@ -186,7 +186,7 @@ class GPUWarpSpace:
         logger.info(f"GPUWarpSpace initialized: device={self.device}, dtype={self.dtype}")
 
     @staticmethod
-    def _decision_to_dict(decision: Optional[SafetyDecision]) -> Optional[Dict[str, Any]]:
+    def _decision_to_dict(decision: SafetyDecision | None) -> dict[str, Any] | None:
         return decision.to_dict() if decision else None
 
     def _evaluate_guardrails(
@@ -195,9 +195,9 @@ class GPUWarpSpace:
         *,
         action: str,
         category: ActionCategory,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         text_input: str = "",
-    ) -> Optional[SafetyDecision]:
+    ) -> SafetyDecision | None:
         if not self.guardrails_enabled:
             return None
 
@@ -225,7 +225,7 @@ class GPUWarpSpace:
 
     async def tension(
         self,
-        thread_texts: List[str],
+        thread_texts: list[str],
         batch_size: int = 32
     ) -> None:
         """
@@ -346,9 +346,9 @@ class GPUWarpSpace:
 
     def batch_attention(
         self,
-        query_embeddings: List[np.ndarray],
+        query_embeddings: list[np.ndarray],
         temperature: float = 1.0
-    ) -> List[np.ndarray]:
+    ) -> list[np.ndarray]:
         """
         Compute attention for multiple queries in parallel.
 
@@ -389,7 +389,7 @@ class GPUWarpSpace:
 
         return contexts.cpu().numpy()
 
-    def guardrail_trace(self) -> Dict[str, Optional[Dict[str, Any]]]:
+    def guardrail_trace(self) -> dict[str, dict[str, Any] | None]:
         return {
             stage: self._decision_to_dict(decision)
             for stage, decision in self._guardrail_decisions.items()
@@ -472,12 +472,12 @@ class TensorMemoryPool:
         Args:
             max_pool_size: Maximum number of cached tensors
         """
-        self.pool: Dict[Tuple, List[np.ndarray]] = {}
+        self.pool: dict[tuple, list[np.ndarray]] = {}
         self.max_pool_size = max_pool_size
         self.hits = 0
         self.misses = 0
 
-    def allocate(self, shape: Tuple, dtype=np.float32) -> np.ndarray:
+    def allocate(self, shape: tuple, dtype=np.float32) -> np.ndarray:
         """
         Allocate tensor from pool or create new.
 
@@ -517,7 +517,7 @@ class TensorMemoryPool:
         if len(self.pool[key]) < self.max_pool_size:
             self.pool[key].append(tensor)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get memory pool statistics."""
         return {
             "hits": self.hits,
@@ -550,10 +550,10 @@ class BatchedWarpProcessor:
 
     async def batch_tension_and_attend(
         self,
-        thread_batches: List[List[str]],
-        query_batches: List[List[np.ndarray]],
+        thread_batches: list[list[str]],
+        query_batches: list[list[np.ndarray]],
         warp_space
-    ) -> List[List[np.ndarray]]:
+    ) -> list[list[np.ndarray]]:
         """
         Process multiple warp space operations in batches.
 

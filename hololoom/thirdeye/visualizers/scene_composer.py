@@ -14,25 +14,23 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
-import json
-import hashlib
+from typing import Any
 
-from . import VisualizationMode, VisualScene, VisualElement, detect_visualization_mode
-from .ui_visualizer import extract_ui_from_text
-from .narrative_visualizer import extract_narrative_from_text
+from . import VisualizationMode, detect_visualization_mode
 from .architecture_visualizer import extract_architecture_from_text
+from .narrative_visualizer import extract_narrative_from_text
+from .ui_visualizer import extract_ui_from_text
 
 
 @dataclass
 class ConversationContext:
     """Tracks conversation context for better visualization decisions."""
-    recent_messages: List[str] = field(default_factory=list)
+    recent_messages: list[str] = field(default_factory=list)
     current_mode: VisualizationMode = VisualizationMode.ABSTRACT
-    mode_history: List[VisualizationMode] = field(default_factory=list)
-    entities_mentioned: Dict[str, int] = field(default_factory=dict)
-    scene_cache: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    mode_history: list[VisualizationMode] = field(default_factory=list)
+    entities_mentioned: dict[str, int] = field(default_factory=dict)
+    scene_cache: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     def add_message(self, text: str) -> None:
         """Add a message to context, keep last 10."""
@@ -59,9 +57,9 @@ class SceneComposer:
 
     def __init__(self):
         self.context = ConversationContext()
-        self._last_scene: Optional[Dict[str, Any]] = None
+        self._last_scene: dict[str, Any] | None = None
 
-    def compose(self, text: str, force_mode: Optional[VisualizationMode] = None) -> Dict[str, Any]:
+    def compose(self, text: str, force_mode: VisualizationMode | None = None) -> dict[str, Any]:
         """
         Compose a visualization scene from text.
 
@@ -101,7 +99,7 @@ class SceneComposer:
 
         return scene
 
-    def _route_to_visualizer(self, text: str, mode: VisualizationMode) -> Optional[Dict[str, Any]]:
+    def _route_to_visualizer(self, text: str, mode: VisualizationMode) -> dict[str, Any] | None:
         """Route to the appropriate specialized visualizer."""
         if mode == VisualizationMode.UI_DESIGN:
             return extract_ui_from_text(text)
@@ -123,7 +121,7 @@ class SceneComposer:
 
         return None
 
-    def _extract_data_visualization(self, text: str) -> Optional[Dict[str, Any]]:
+    def _extract_data_visualization(self, text: str) -> dict[str, Any] | None:
         """Extract data visualization from text."""
         import re
 
@@ -163,9 +161,8 @@ class SceneComposer:
             'background': {'type': 'gradient', 'colors': ['#f8fafc', '#e2e8f0']}
         }
 
-    def _extract_object_visualization(self, text: str) -> Optional[Dict[str, Any]]:
+    def _extract_object_visualization(self, text: str) -> dict[str, Any] | None:
         """Extract physical object visualization from text."""
-        import re
 
         # Common object keywords
         object_patterns = {
@@ -211,9 +208,8 @@ class SceneComposer:
             'background': {'type': 'gradient', 'colors': ['#fafafa', '#e5e5e5']}
         }
 
-    def _extract_world_visualization(self, text: str) -> Optional[Dict[str, Any]]:
+    def _extract_world_visualization(self, text: str) -> dict[str, Any] | None:
         """Extract environment/world visualization from text."""
-        import re
 
         # Environment keywords to terrain types
         terrain_types = {
@@ -274,7 +270,7 @@ class SceneComposer:
             }
         }
 
-    def _create_abstract_scene(self, text: str) -> Dict[str, Any]:
+    def _create_abstract_scene(self, text: str) -> dict[str, Any]:
         """Create abstract concept visualization as fallback."""
         import re
 
@@ -324,9 +320,9 @@ class SceneComposer:
         colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#ec4899']
         return colors[index % len(colors)]
 
-    def _add_mode_transition(self, new_scene: Dict[str, Any],
+    def _add_mode_transition(self, new_scene: dict[str, Any],
                             old_mode: VisualizationMode,
-                            new_mode: VisualizationMode) -> Dict[str, Any]:
+                            new_mode: VisualizationMode) -> dict[str, Any]:
         """Add smooth transition animation between modes."""
         new_scene['transition'] = {
             'from_mode': old_mode.value,
@@ -337,7 +333,7 @@ class SceneComposer:
         }
         return new_scene
 
-    def get_context_summary(self) -> Dict[str, Any]:
+    def get_context_summary(self) -> dict[str, Any]:
         """Get summary of current conversation context."""
         return {
             'current_mode': self.context.current_mode.value,
@@ -347,7 +343,7 @@ class SceneComposer:
 
 
 # Singleton instance
-_composer: Optional[SceneComposer] = None
+_composer: SceneComposer | None = None
 
 
 def get_composer() -> SceneComposer:
@@ -358,7 +354,7 @@ def get_composer() -> SceneComposer:
     return _composer
 
 
-def compose_scene(text: str, force_mode: Optional[str] = None) -> Dict[str, Any]:
+def compose_scene(text: str, force_mode: str | None = None) -> dict[str, Any]:
     """
     Convenience function to compose a scene from text.
 

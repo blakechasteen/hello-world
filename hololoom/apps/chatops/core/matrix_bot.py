@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Matrix Bot Client
 ==================
@@ -21,22 +20,22 @@ Dependencies:
 import asyncio
 import logging
 import re
-from typing import Dict, List, Optional, Callable, Any
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
+from typing import Any
 
 try:
     from nio import (
         AsyncClient,
-        MatrixRoom,
-        RoomMessageText,
-        RoomMessageImage,
-        RoomMessageFile,
-        RoomMessageAudio,  # Voice messages
         LoginResponse,
-        SyncResponse,
+        MatrixRoom,
+        RoomMessageAudio,  # Voice messages
+        RoomMessageFile,
+        RoomMessageImage,
+        RoomMessageText,
         RoomSendResponse,
+        SyncResponse,
         UploadResponse,
     )
     NIO_AVAILABLE = True
@@ -59,13 +58,13 @@ class MatrixBotConfig:
     # Connection details
     homeserver_url: str  # e.g., "https://matrix.org"
     user_id: str         # e.g., "@mybot:matrix.org"
-    access_token: Optional[str] = None  # Use token OR password
-    password: Optional[str] = None
+    access_token: str | None = None  # Use token OR password
+    password: str | None = None
     device_id: str = "HOLOLOOM_BOT"
     device_name: str = "HoloLoom ChatOps Bot"
 
     # Rooms to join
-    rooms: List[str] = field(default_factory=list)  # Room IDs or aliases
+    rooms: list[str] = field(default_factory=list)  # Room IDs or aliases
 
     # Bot behavior
     command_prefix: str = "!"          # Command prefix (e.g., !help)
@@ -73,8 +72,8 @@ class MatrixBotConfig:
     respond_to_dm: bool = True         # Respond to direct messages
 
     # Admin controls
-    admin_users: List[str] = field(default_factory=list)  # User IDs with admin access
-    allowed_users: List[str] = field(default_factory=list)  # Whitelist (empty = all)
+    admin_users: list[str] = field(default_factory=list)  # User IDs with admin access
+    allowed_users: list[str] = field(default_factory=list)  # Whitelist (empty = all)
 
     # Rate limiting
     rate_limit_messages: int = 10      # Max messages per window
@@ -136,19 +135,19 @@ class MatrixBot:
         )
 
         # Command handlers: command_name -> async callable
-        self.handlers: Dict[str, Callable] = {}
+        self.handlers: dict[str, Callable] = {}
 
         # Rate limiting: user_id -> list of timestamps
-        self.rate_limits: Dict[str, List[datetime]] = {}
+        self.rate_limits: dict[str, list[datetime]] = {}
 
         # Running state
         self.running = False
 
         # Default message handler (catches non-command messages)
-        self.default_handler: Optional[Callable] = None
+        self.default_handler: Callable | None = None
 
         # Voice handler for audio messages
-        self.voice_handler: Optional[Any] = None
+        self.voice_handler: Any | None = None
 
         logger.info(f"MatrixBot initialized for {config.user_id}")
 

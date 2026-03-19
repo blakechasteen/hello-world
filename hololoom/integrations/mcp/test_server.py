@@ -5,7 +5,6 @@ Test ExpertLoom MCP Server
 Quick test to verify the server works before connecting to Claude Desktop.
 """
 
-import asyncio
 import sys
 from pathlib import Path
 
@@ -49,19 +48,19 @@ if __name__ == "__main__":
 
     # Test server creation
     try:
-        from expertloom_server import app, load_domain, get_current_domain
+        from expertloom_server import load_domain
         print("[OK] Server module imports successfully")
 
         # Test domain loading
         domain = load_domain("automotive")
-        print(f"[OK] Domain loader works")
+        print("[OK] Domain loader works")
 
-        print(f"[OK] Server configured with 5 tools:")
-        print(f"  - summarize_text: Summarize while preserving entities")
-        print(f"  - extract_entities: Extract entities and measurements")
-        print(f"  - process_note: Complete pipeline")
-        print(f"  - list_domains: Show available domains")
-        print(f"  - switch_domain: Change active domain")
+        print("[OK] Server configured with 5 tools:")
+        print("  - summarize_text: Summarize while preserving entities")
+        print("  - extract_entities: Extract entities and measurements")
+        print("  - process_note: Complete pipeline")
+        print("  - list_domains: Show available domains")
+        print("  - switch_domain: Change active domain")
 
     except Exception as e:
         print(f"[ERROR] Server test failed: {e}")

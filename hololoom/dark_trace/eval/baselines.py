@@ -22,7 +22,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Protocol, Tuple, Union
+from typing import Any, Protocol
 
 import numpy as np
 
@@ -50,9 +50,9 @@ class BaselineResult:
 
     baseline_type: BaselineType
     name: str
-    metrics: Dict[str, float]
+    metrics: dict[str, float]
     duration_seconds: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def summary(self) -> str:
         """Generate human-readable summary."""
@@ -66,7 +66,7 @@ class BaselineResult:
             lines.append(f"  {key}: {value:.4f}")
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "baseline_type": self.baseline_type.value,
@@ -97,7 +97,7 @@ class SAEProtocol(Protocol):
 class BaselineMethod(ABC):
     """Abstract base class for baseline methods."""
 
-    def __init__(self, n_features: int, seed: Optional[int] = 42):
+    def __init__(self, n_features: int, seed: int | None = 42):
         """Initialize baseline method.
 
         Args:
@@ -109,7 +109,7 @@ class BaselineMethod(ABC):
         self._fitted = False
 
     @abstractmethod
-    def fit(self, data: np.ndarray, labels: Optional[np.ndarray] = None) -> None:
+    def fit(self, data: np.ndarray, labels: np.ndarray | None = None) -> None:
         """Fit the baseline to data.
 
         Args:
@@ -145,7 +145,7 @@ class BaselineMethod(ABC):
     def evaluate(
         self,
         test_data: np.ndarray,
-        test_labels: Optional[np.ndarray] = None,
+        test_labels: np.ndarray | None = None,
     ) -> BaselineResult:
         """Evaluate the baseline on test data.
 
@@ -229,7 +229,7 @@ class RandomBaseline(BaselineMethod):
     def __init__(
         self,
         n_features: int,
-        seed: Optional[int] = 42,
+        seed: int | None = 42,
         sparsity: float = 0.1,
     ):
         """Initialize random baseline.
@@ -241,10 +241,10 @@ class RandomBaseline(BaselineMethod):
         """
         super().__init__(n_features, seed)
         self.sparsity = sparsity
-        self._weights: Optional[np.ndarray] = None
+        self._weights: np.ndarray | None = None
         self._threshold: float = 0.0
 
-    def fit(self, data: np.ndarray, labels: Optional[np.ndarray] = None) -> None:
+    def fit(self, data: np.ndarray, labels: np.ndarray | None = None) -> None:
         """Fit random directions.
 
         Args:
@@ -321,7 +321,7 @@ class MeanBaseline(BaselineMethod):
     Reconstruction: x_hat = mean(x_train)
     """
 
-    def __init__(self, n_features: int = 1, seed: Optional[int] = 42):
+    def __init__(self, n_features: int = 1, seed: int | None = 42):
         """Initialize mean baseline.
 
         Args:
@@ -329,9 +329,9 @@ class MeanBaseline(BaselineMethod):
             seed: Random seed
         """
         super().__init__(1, seed)  # Mean is 1 feature
-        self._mean: Optional[np.ndarray] = None
+        self._mean: np.ndarray | None = None
 
-    def fit(self, data: np.ndarray, labels: Optional[np.ndarray] = None) -> None:
+    def fit(self, data: np.ndarray, labels: np.ndarray | None = None) -> None:
         """Compute mean of training data.
 
         Args:
@@ -389,7 +389,7 @@ class PCABaseline(BaselineMethod):
     def __init__(
         self,
         n_features: int,
-        seed: Optional[int] = 42,
+        seed: int | None = 42,
         whiten: bool = False,
     ):
         """Initialize PCA baseline.
@@ -401,11 +401,11 @@ class PCABaseline(BaselineMethod):
         """
         super().__init__(n_features, seed)
         self.whiten = whiten
-        self._components: Optional[np.ndarray] = None
-        self._mean: Optional[np.ndarray] = None
-        self._singular_values: Optional[np.ndarray] = None
+        self._components: np.ndarray | None = None
+        self._mean: np.ndarray | None = None
+        self._singular_values: np.ndarray | None = None
 
-    def fit(self, data: np.ndarray, labels: Optional[np.ndarray] = None) -> None:
+    def fit(self, data: np.ndarray, labels: np.ndarray | None = None) -> None:
         """Fit PCA to data.
 
         Args:
@@ -486,7 +486,7 @@ class SupervisedProbeBaseline(BaselineMethod):
     def __init__(
         self,
         n_features: int,
-        seed: Optional[int] = 42,
+        seed: int | None = 42,
         l2_reg: float = 0.01,
         max_iter: int = 100,
     ):
@@ -501,9 +501,9 @@ class SupervisedProbeBaseline(BaselineMethod):
         super().__init__(n_features, seed)
         self.l2_reg = l2_reg
         self.max_iter = max_iter
-        self._weights: Optional[np.ndarray] = None
-        self._biases: Optional[np.ndarray] = None
-        self._decode_weights: Optional[np.ndarray] = None
+        self._weights: np.ndarray | None = None
+        self._biases: np.ndarray | None = None
+        self._decode_weights: np.ndarray | None = None
 
     def _sigmoid(self, x: np.ndarray) -> np.ndarray:
         """Numerically stable sigmoid."""
@@ -513,7 +513,7 @@ class SupervisedProbeBaseline(BaselineMethod):
             np.exp(x) / (1 + np.exp(x))
         )
 
-    def fit(self, data: np.ndarray, labels: Optional[np.ndarray] = None) -> None:
+    def fit(self, data: np.ndarray, labels: np.ndarray | None = None) -> None:
         """Fit linear probes to data with labels.
 
         Args:
@@ -625,9 +625,9 @@ class ComparisonResult:
         sae_beats_all: Whether SAE beats all baselines
     """
 
-    sae_result: Dict[str, float]
-    baseline_results: Dict[str, BaselineResult]
-    improvements: Dict[str, Dict[str, float]]
+    sae_result: dict[str, float]
+    baseline_results: dict[str, BaselineResult]
+    improvements: dict[str, dict[str, float]]
     best_baseline: str
     sae_beats_all: bool
 
@@ -662,7 +662,7 @@ class ComparisonResult:
 
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "sae_result": self.sae_result,
@@ -693,7 +693,7 @@ class BaselineComparison:
         self,
         sae: SAEProtocol,
         test_data: np.ndarray,
-        test_labels: Optional[np.ndarray] = None,
+        test_labels: np.ndarray | None = None,
         primary_metric: str = "explained_variance",
     ):
         """Initialize comparison.
@@ -708,10 +708,10 @@ class BaselineComparison:
         self.test_data = test_data
         self.test_labels = test_labels
         self.primary_metric = primary_metric
-        self.baselines: List[BaselineMethod] = []
-        self._train_data: Optional[np.ndarray] = None
+        self.baselines: list[BaselineMethod] = []
+        self._train_data: np.ndarray | None = None
 
-    def set_training_data(self, train_data: np.ndarray) -> "BaselineComparison":
+    def set_training_data(self, train_data: np.ndarray) -> BaselineComparison:
         """Set training data for baselines.
 
         Args:
@@ -723,7 +723,7 @@ class BaselineComparison:
         self._train_data = train_data
         return self
 
-    def add_baseline(self, baseline: BaselineMethod) -> "BaselineComparison":
+    def add_baseline(self, baseline: BaselineMethod) -> BaselineComparison:
         """Add a baseline method.
 
         Args:
@@ -735,7 +735,7 @@ class BaselineComparison:
         self.baselines.append(baseline)
         return self
 
-    def add_all_defaults(self, n_features: int) -> "BaselineComparison":
+    def add_all_defaults(self, n_features: int) -> BaselineComparison:
         """Add all default baselines.
 
         Args:
@@ -750,7 +750,7 @@ class BaselineComparison:
         self.add_baseline(SupervisedProbeBaseline(min(n_features, 10)))
         return self
 
-    def _evaluate_sae(self) -> Dict[str, float]:
+    def _evaluate_sae(self) -> dict[str, float]:
         """Evaluate SAE on test data.
 
         Returns:
@@ -798,7 +798,7 @@ class BaselineComparison:
         sae_metrics = self._evaluate_sae()
 
         # Evaluate baselines
-        baseline_results: Dict[str, BaselineResult] = {}
+        baseline_results: dict[str, BaselineResult] = {}
         for baseline in self.baselines:
             # Fit baseline
             baseline.fit(train_data, self.test_labels)
@@ -808,7 +808,7 @@ class BaselineComparison:
             baseline_results[result.name] = result
 
         # Compute improvements
-        improvements: Dict[str, Dict[str, float]] = {}
+        improvements: dict[str, dict[str, float]] = {}
         for name, result in baseline_results.items():
             improvements[name] = {}
             for metric in sae_metrics:
@@ -848,7 +848,7 @@ class BaselineComparison:
 
 # Convenience functions
 
-def create_default_baselines(n_features: int) -> List[BaselineMethod]:
+def create_default_baselines(n_features: int) -> list[BaselineMethod]:
     """Create default set of baselines.
 
     Args:

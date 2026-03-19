@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Zero-Copy Embedding Layer for HoloLoom
 =======================================
@@ -29,17 +30,15 @@ Author: Claude Code
 Date: 2025-11-12
 """
 
+import mmap
 import os
 import warnings
-import hashlib
-import mmap
-from pathlib import Path
-from typing import List, Dict, Optional, Tuple, Union
 from dataclasses import dataclass, field
+from pathlib import Path
+
 import numpy as np
 
 # Import only from shared types layer
-from hololoom.protocols.types import Vector
 
 # Optional dependencies
 try:
@@ -91,9 +90,9 @@ class EmbeddingStore:
     dim: int
 
     # Internal state
-    _file_handle: Optional[object] = field(default=None, init=False, repr=False)
-    _mmap: Optional[mmap.mmap] = field(default=None, init=False, repr=False)
-    _data: Optional[np.ndarray] = field(default=None, init=False, repr=False)
+    _file_handle: object | None = field(default=None, init=False, repr=False)
+    _mmap: mmap.mmap | None = field(default=None, init=False, repr=False)
+    _data: np.ndarray | None = field(default=None, init=False, repr=False)
     _next_idx: int = field(default=0, init=False, repr=False)
 
     MAGIC = b'HOLOLOOM'
@@ -101,7 +100,7 @@ class EmbeddingStore:
     HEADER_SIZE = 64
 
     @classmethod
-    def create(cls, path: Union[str, Path], max_embeddings: int, dim: int) -> 'EmbeddingStore':
+    def create(cls, path: str | Path, max_embeddings: int, dim: int) -> 'EmbeddingStore':
         """
         Create a new memory-mapped embedding store.
 
@@ -138,7 +137,7 @@ class EmbeddingStore:
         return store
 
     @classmethod
-    def open(cls, path: Union[str, Path], mode: str = 'r') -> 'EmbeddingStore':
+    def open(cls, path: str | Path, mode: str = 'r') -> 'EmbeddingStore':
         """
         Open an existing memory-mapped embedding store.
 
@@ -225,7 +224,7 @@ class EmbeddingStore:
         # Return view (zero-copy)
         return self._data[idx]
 
-    def read_batch(self, indices: List[int]) -> np.ndarray:
+    def read_batch(self, indices: list[int]) -> np.ndarray:
         """
         Read multiple embeddings (creates single copy).
 
@@ -328,16 +327,16 @@ class ZeroCopyMatryoshkaEmbeddings:
         # all_scales = {96: view1, 192: view2, 384: view3, 768: view4}
     """
 
-    sizes: List[int] = field(default_factory=lambda: [96, 192, 384, 768])
-    base_model_name: Optional[str] = None
-    store_path: Optional[Union[str, Path]] = None
+    sizes: list[int] = field(default_factory=lambda: [96, 192, 384, 768])
+    base_model_name: str | None = None
+    store_path: str | Path | None = None
     max_cache_size: int = 10000
 
     # Internal state
-    _model: Optional[object] = field(default=None, init=False, repr=False)
+    _model: object | None = field(default=None, init=False, repr=False)
     _model_loaded: bool = field(default=False, init=False, repr=False)
-    _store: Optional[EmbeddingStore] = field(default=None, init=False, repr=False)
-    _text_to_idx: Dict[str, int] = field(default_factory=dict, init=False, repr=False)
+    _store: EmbeddingStore | None = field(default=None, init=False, repr=False)
+    _text_to_idx: dict[str, int] = field(default_factory=dict, init=False, repr=False)
     _next_idx: int = field(default=0, init=False, repr=False)
     base_dim: int = field(default=768, init=False, repr=False)
 
@@ -429,9 +428,9 @@ class ZeroCopyMatryoshkaEmbeddings:
 
     def encode_scales(
         self,
-        texts: List[str],
-        size: Optional[int] = None
-    ) -> Union[Dict[int, np.ndarray], np.ndarray]:
+        texts: list[str],
+        size: int | None = None
+    ) -> dict[int, np.ndarray] | np.ndarray:
         """
         Encode texts at one or all scales using zero-copy views.
 
@@ -472,12 +471,12 @@ class ZeroCopyMatryoshkaEmbeddings:
             return base[:, :size]
 
         # Return all scales (zero-copy views)
-        out: Dict[int, np.ndarray] = {}
+        out: dict[int, np.ndarray] = {}
         for d in self.sizes:
             out[d] = base[:, :d]  # Zero-copy view!
         return out
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts at largest scale (for Protocol compatibility).
 
@@ -489,7 +488,7 @@ class ZeroCopyMatryoshkaEmbeddings:
         """
         return self.encode_scales(texts, size=max(self.sizes))
 
-    def encode_base(self, texts: List[str]) -> np.ndarray:
+    def encode_base(self, texts: list[str]) -> np.ndarray:
         """
         Generate base (full-dimensional) embeddings.
 
@@ -523,10 +522,10 @@ class ZeroCopyMatryoshkaEmbeddings:
 # ============================================================================
 
 def benchmark_zero_copy_vs_projection(
-    texts: List[str],
-    sizes: List[int] = [96, 192, 384, 768],
+    texts: list[str],
+    sizes: list[int] = [96, 192, 384, 768],
     n_iterations: int = 100
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Benchmark zero-copy vs projection-based approaches.
 
@@ -539,6 +538,7 @@ def benchmark_zero_copy_vs_projection(
         Dict with timing results
     """
     import time
+
     from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     results = {}

@@ -22,32 +22,28 @@ Author: Claude Code
 Date: December 2025
 """
 
-import os
-import re
-import sys
 import glob
+import os
+import platform
 import shutil
 import sqlite3
-import asyncio
 import tempfile
-import platform
-from pathlib import Path
-from typing import List, Optional, Dict, Any, Tuple
+import warnings
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any
 from urllib.parse import urlparse
-import warnings
 
+from hololoom.protocols.types import MemoryShard
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
+    ImportanceScore,
+    ImportanceSignals,
     SpinnerCapabilities,
     SpinnerCheckpoint,
-    ImportanceSignals,
-    ImportanceScore
+    SpinResult,
 )
-from hololoom.protocols.types import MemoryShard
-
 
 # =============================================================================
 # Browser Configuration
@@ -57,7 +53,7 @@ from hololoom.protocols.types import MemoryShard
 class BrowserConfig:
     """Configuration for a specific browser."""
     name: str
-    history_paths: Dict[str, List[str]]  # Platform -> list of path patterns
+    history_paths: dict[str, list[str]]  # Platform -> list of path patterns
     history_table: str  # Table name in SQLite DB
     url_column: str  # Column name for URL
     title_column: str  # Column name for title
@@ -67,7 +63,7 @@ class BrowserConfig:
 
 
 # Browser configurations
-BROWSER_CONFIGS: Dict[str, BrowserConfig] = {
+BROWSER_CONFIGS: dict[str, BrowserConfig] = {
     'chrome': BrowserConfig(
         name='Chrome',
         history_paths={
@@ -170,10 +166,10 @@ class DomainStats:
     domain: str
     total_visits: int = 0
     unique_pages: int = 0
-    last_visit: Optional[datetime] = None
-    first_seen: Optional[datetime] = None
-    titles: List[str] = field(default_factory=list)
-    browsers: List[str] = field(default_factory=list)
+    last_visit: datetime | None = None
+    first_seen: datetime | None = None
+    titles: list[str] = field(default_factory=list)
+    browsers: list[str] = field(default_factory=list)
 
 
 # =============================================================================
@@ -275,13 +271,13 @@ class BrowserHistorySpinner(BaseSpinner):
     def __init__(
         self,
         importance_threshold: float = 0.3,
-        browsers: Optional[List[str]] = None,
+        browsers: list[str] | None = None,
         days_back: int = 30,
         min_visits: int = 1,
-        include_domains_only: Optional[List[str]] = None,
-        exclude_domains: Optional[List[str]] = None,
+        include_domains_only: list[str] | None = None,
+        exclude_domains: list[str] | None = None,
         aggregate_by_domain: bool = True,
-        checkpoint_dir: Optional[Path] = None
+        checkpoint_dir: Path | None = None
     ):
         """
         Initialize BrowserHistorySpinner.
@@ -336,7 +332,7 @@ class BrowserHistorySpinner(BaseSpinner):
         """Check if any browser history is accessible."""
         return len(self._detect_browsers()) > 0
 
-    def _detect_browsers(self) -> List[Tuple[str, str, BrowserConfig]]:
+    def _detect_browsers(self) -> list[tuple[str, str, BrowserConfig]]:
         """
         Detect installed browsers and their history files.
 
@@ -405,8 +401,8 @@ class BrowserHistorySpinner(BaseSpinner):
         config: BrowserConfig,
         browser_name: str,
         profile: str,
-        since_timestamp: Optional[datetime] = None
-    ) -> List[HistoryEntry]:
+        since_timestamp: datetime | None = None
+    ) -> list[HistoryEntry]:
         """
         Read history entries from a browser database.
 
@@ -566,7 +562,7 @@ class BrowserHistorySpinner(BaseSpinner):
         self,
         source: Any = None,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Read browser history and create memory shards.
 
@@ -585,7 +581,7 @@ class BrowserHistorySpinner(BaseSpinner):
             return []
 
         # Read history from all browsers
-        all_entries: List[HistoryEntry] = []
+        all_entries: list[HistoryEntry] = []
 
         for browser_name, history_path, config, profile in browsers:
             # Copy database to avoid locking issues
@@ -675,10 +671,10 @@ class BrowserHistorySpinner(BaseSpinner):
 
     def _aggregate_by_domain(
         self,
-        entries: List[HistoryEntry]
-    ) -> Dict[str, DomainStats]:
+        entries: list[HistoryEntry]
+    ) -> dict[str, DomainStats]:
         """Aggregate history entries by domain."""
-        domain_stats: Dict[str, DomainStats] = {}
+        domain_stats: dict[str, DomainStats] = {}
 
         for entry in entries:
             if entry.domain not in domain_stats:
@@ -703,7 +699,7 @@ class BrowserHistorySpinner(BaseSpinner):
     async def spin_incremental(
         self,
         source: Any = None,
-        checkpoint: Optional[SpinnerCheckpoint] = None,
+        checkpoint: SpinnerCheckpoint | None = None,
         **kwargs
     ) -> SpinResult:
         """
@@ -757,7 +753,7 @@ class BrowserHistorySpinner(BaseSpinner):
 # =============================================================================
 
 async def read_browser_history(
-    browsers: Optional[List[str]] = None,
+    browsers: list[str] | None = None,
     days_back: int = 30,
     min_visits: int = 2,
     exclude_common: bool = True
@@ -794,7 +790,7 @@ async def read_browser_history(
     return await spinner.spin(None)
 
 
-def get_available_browsers() -> List[str]:
+def get_available_browsers() -> list[str]:
     """
     Get list of browsers with accessible history.
 

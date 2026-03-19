@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Infrastructure Department - Shared data layer and performance diagnostics.
 
@@ -11,7 +10,7 @@ This package provides low-level infrastructure services for all departments:
 """
 
 from .infrastructure import InfrastructureDepartment
-from .zero_copy import ZeroCopyEmbeddingStore, EmbeddingView
+from .zero_copy import EmbeddingView, ZeroCopyEmbeddingStore
 
 __all__ = [
     'InfrastructureDepartment',

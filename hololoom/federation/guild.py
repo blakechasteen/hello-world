@@ -11,10 +11,8 @@ import logging
 import math
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from datetime import datetime
 
-from .protocols import GuildProtocol
 from .types import (
     AdmissionPolicy,
     FederationNode,
@@ -110,9 +108,9 @@ class GuildManager:
     """
 
     def __init__(self):
-        self._guilds: Dict[str, Guild] = {}
-        self._reputation: Dict[str, Dict[str, ReputationRecord]] = defaultdict(dict)
-        self._pending_applications: Dict[str, List[str]] = defaultdict(list)
+        self._guilds: dict[str, Guild] = {}
+        self._reputation: dict[str, dict[str, ReputationRecord]] = defaultdict(dict)
+        self._pending_applications: dict[str, list[str]] = defaultdict(list)
 
     # ───────────────────────────────────────────────────────────────────────
     #  GUILD LIFECYCLE
@@ -124,7 +122,7 @@ class GuildManager:
         domain: str,
         *,
         admission: AdmissionPolicy = AdmissionPolicy.OPEN,
-        founder: Optional[str] = None,
+        founder: str | None = None,
     ) -> Guild:
         """
         Create a new guild.
@@ -179,7 +177,7 @@ class GuildManager:
         guild_id: str,
         node_id: str,
         *,
-        sponsor: Optional[str] = None,
+        sponsor: str | None = None,
     ) -> bool:
         """
         Request to join a guild.
@@ -390,11 +388,11 @@ class GuildManager:
     #  QUERIES
     # ───────────────────────────────────────────────────────────────────────
 
-    def get_guild(self, guild_id: str) -> Optional[Guild]:
+    def get_guild(self, guild_id: str) -> Guild | None:
         """Get guild by ID."""
         return self._guilds.get(guild_id)
 
-    async def get_members(self, guild_id: str) -> List[str]:
+    async def get_members(self, guild_id: str) -> list[str]:
         """Get guild members."""
         guild = self._guilds.get(guild_id)
         if not guild:
@@ -412,9 +410,9 @@ class GuildManager:
     def list_guilds(
         self,
         *,
-        domain: Optional[str] = None,
-        min_trust: Optional[GuildTrustLevel] = None,
-    ) -> List[Guild]:
+        domain: str | None = None,
+        min_trust: GuildTrustLevel | None = None,
+    ) -> list[Guild]:
         """List guilds with optional filters."""
         guilds = list(self._guilds.values())
 
@@ -432,7 +430,7 @@ class GuildManager:
 
         return guilds
 
-    def find_by_domain(self, domain: str) -> List[Guild]:
+    def find_by_domain(self, domain: str) -> list[Guild]:
         """Find guilds by domain."""
         return [g for g in self._guilds.values() if g.domain == domain]
 
@@ -446,7 +444,7 @@ class GuildManager:
         applicant: str,
         voter: str,
         approve: bool,
-    ) -> Optional[bool]:
+    ) -> bool | None:
         """
         Vote on pending membership application.
 
@@ -504,7 +502,7 @@ class TrustCalculator:
         node: FederationNode,
         guild_manager: GuildManager,
         *,
-        context_guild: Optional[str] = None,
+        context_guild: str | None = None,
     ) -> float:
         """
         Calculate overall trust score for node.

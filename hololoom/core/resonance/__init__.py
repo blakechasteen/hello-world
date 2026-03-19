@@ -9,6 +9,6 @@ Exports:
 - create_resonance_shed: Factory function
 """
 
-from .shed import ResonanceShed, FeatureThread, create_resonance_shed
+from .shed import FeatureThread, ResonanceShed, create_resonance_shed
 
 __all__ = ["ResonanceShed", "FeatureThread", "create_resonance_shed"]

@@ -9,20 +9,19 @@ Location: HoloLoom/departments/proto/abilities/core/security_scan.py
 Version: 1.0.0
 """
 
-import re
 import os
+import re
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Set
 from enum import Enum
+from pathlib import Path
+from typing import Any
 
 from ..protocol import (
-    BaseAbility,
     AbilityManifest,
+    AbilityResult,
     AbilityTier,
     AbilityTrustLevel,
-    AbilityResult,
-    AbilityContext,
+    BaseAbility,
 )
 
 
@@ -58,8 +57,8 @@ class SecurityFinding:
     line_number: int
     match: str
     description: str
-    context: Optional[str] = None
-    fix_suggestion: Optional[str] = None
+    context: str | None = None
+    fix_suggestion: str | None = None
 
 
 class SecurityScanAbility(BaseAbility):
@@ -336,7 +335,7 @@ class SecurityScanAbility(BaseAbility):
 
         return file_path.suffix.lower() in code_extensions
 
-    def _get_line_context(self, lines: List[str], line_num: int,
+    def _get_line_context(self, lines: list[str], line_num: int,
                          context_lines: int = 2) -> str:
         """Get surrounding lines for context."""
         start = max(0, line_num - context_lines)
@@ -352,15 +351,15 @@ class SecurityScanAbility(BaseAbility):
     def _scan_file(
         self,
         file_path: Path,
-        scan_types: Set[ScanCategory],
+        scan_types: set[ScanCategory],
         severity_threshold: Severity,
         include_context: bool
-    ) -> List[SecurityFinding]:
+    ) -> list[SecurityFinding]:
         """Scan a single file for security issues."""
         findings = []
 
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, encoding='utf-8', errors='ignore') as f:
                 lines = f.readlines()
                 content = ''.join(lines)
 
@@ -410,7 +409,7 @@ class SecurityScanAbility(BaseAbility):
 
         return findings
 
-    def _matches_pattern(self, path: Path, patterns: List[str]) -> bool:
+    def _matches_pattern(self, path: Path, patterns: list[str]) -> bool:
         """Check if path matches any exclusion pattern."""
         path_str = str(path)
         for pattern in patterns:
@@ -424,7 +423,7 @@ class SecurityScanAbility(BaseAbility):
                     return True
         return False
 
-    async def preflight(self, params: Dict[str, Any]) -> None:
+    async def preflight(self, params: dict[str, Any]) -> None:
         """
         Validate parameters before execution.
 
@@ -461,7 +460,7 @@ class SecurityScanAbility(BaseAbility):
                 f"Valid: {sorted(valid_severities)}"
             )
 
-    async def execute(self, params: Dict[str, Any]) -> AbilityResult:
+    async def execute(self, params: dict[str, Any]) -> AbilityResult:
         """
         Execute security scan.
 

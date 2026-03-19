@@ -18,27 +18,24 @@ Date: 2025-12-22
 Phase: 11.7 - Built-in Plugins
 """
 
-from hololoom.dark_trace.plugins.builtin.safety_monitor import (
-    SafetyMonitorPlugin,
-    SafetyAlert,
-    SafetyAlertLevel,
-    SafetyMonitoringResult,
-)
-
 from hololoom.dark_trace.plugins.builtin.alignment_validator import (
+    AlignmentValidationResult,
     AlignmentValidatorPlugin,
     AlignmentViolation,
     AlignmentViolationType,
-    AlignmentValidationResult,
     ViolationSeverity,
 )
-
 from hololoom.dark_trace.plugins.builtin.metrics_exporter import (
+    MetricsBatch,
     MetricsExporterPlugin,
     PrometheusMetric,
-    MetricsBatch,
 )
-
+from hololoom.dark_trace.plugins.builtin.safety_monitor import (
+    SafetyAlert,
+    SafetyAlertLevel,
+    SafetyMonitoringResult,
+    SafetyMonitorPlugin,
+)
 
 # =============================================================================
 # Built-in Plugin Registry

@@ -8,12 +8,11 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Tuple
-from dataclasses import dataclass, field
-from enum import Enum
-from datetime import datetime
 import json
-import math
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class DriftType(Enum):
@@ -44,9 +43,9 @@ class DriftEvent:
     baseline_value: float
     current_value: float
     drift_magnitude: float  # How much drift occurred (0-1 normalized)
-    affected_features: List[str] = field(default_factory=list)
+    affected_features: list[str] = field(default_factory=list)
     description: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def drift_percentage(self) -> float:
@@ -66,7 +65,7 @@ class DriftEvent:
         }
         return colors.get(self.severity, "#888888")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "timestamp": self.timestamp.isoformat(),
             "drift_type": self.drift_type.value,
@@ -105,16 +104,16 @@ class DriftMonitor:
     trend lines, and threshold markers.
     """
 
-    def __init__(self, config: Optional[DriftMonitorConfig] = None):
+    def __init__(self, config: DriftMonitorConfig | None = None):
         self.config = config or DriftMonitorConfig()
-        self.events: List[DriftEvent] = []
-        self.baseline_metrics: Dict[str, float] = {}
+        self.events: list[DriftEvent] = []
+        self.baseline_metrics: dict[str, float] = {}
 
     def add_event(self, event: DriftEvent) -> None:
         """Add a drift event."""
         self.events.append(event)
 
-    def add_events(self, events: List[DriftEvent]) -> None:
+    def add_events(self, events: list[DriftEvent]) -> None:
         """Add multiple drift events."""
         self.events.extend(events)
 
@@ -126,18 +125,18 @@ class DriftMonitor:
         """Clear all events."""
         self.events.clear()
 
-    def get_events_by_type(self, drift_type: DriftType) -> List[DriftEvent]:
+    def get_events_by_type(self, drift_type: DriftType) -> list[DriftEvent]:
         """Get events filtered by type."""
         return [e for e in self.events if e.drift_type == drift_type]
 
-    def get_events_by_severity(self, severity: DriftSeverity) -> List[DriftEvent]:
+    def get_events_by_severity(self, severity: DriftSeverity) -> list[DriftEvent]:
         """Get events filtered by severity."""
         return [e for e in self.events if e.severity == severity]
 
     def render(
         self,
         title: str = "Drift Monitor",
-        subtitle: Optional[str] = None,
+        subtitle: str | None = None,
         show_timeline: bool = True,
         show_magnitude_chart: bool = True,
     ) -> str:
@@ -317,7 +316,7 @@ class DriftMonitor:
 </html>
 """
 
-    def _render_timeline(self, events: List[DriftEvent]) -> str:
+    def _render_timeline(self, events: list[DriftEvent]) -> str:
         """Render timeline visualization."""
         if not events:
             return '<p style="color: #888; text-align: center;">No drift events recorded</p>'
@@ -390,7 +389,7 @@ class DriftMonitor:
 
         return f'<svg width="{width}" height="{height}">{"".join(elements)}</svg>'
 
-    def _render_magnitude_chart(self, events: List[DriftEvent]) -> str:
+    def _render_magnitude_chart(self, events: list[DriftEvent]) -> str:
         """Render magnitude over time chart."""
         if not events:
             return ""
@@ -489,7 +488,7 @@ class DriftMonitor:
 
         return f'<div class="legend">{"".join(items)}</div>'
 
-    def _render_summary_stats(self, events: List[DriftEvent]) -> str:
+    def _render_summary_stats(self, events: list[DriftEvent]) -> str:
         """Render summary statistics."""
         if not events:
             return '<div class="card"><p style="color: #888;">No events to summarize</p></div>'
@@ -499,7 +498,7 @@ class DriftMonitor:
         avg_magnitude = sum(e.drift_magnitude for e in events) / total if total > 0 else 0
 
         # Find most affected features
-        feature_counts: Dict[str, int] = {}
+        feature_counts: dict[str, int] = {}
         for event in events:
             for f in event.affected_features:
                 feature_counts[f] = feature_counts.get(f, 0) + 1
@@ -534,7 +533,7 @@ class DriftMonitor:
         </div>
         """
 
-    def _render_events_table(self, events: List[DriftEvent]) -> str:
+    def _render_events_table(self, events: list[DriftEvent]) -> str:
         """Render events table."""
         if not events:
             return '<p style="color: #888;">No recent events</p>'
@@ -588,7 +587,7 @@ class DriftMonitor:
 
 
 def render_drift_timeline(
-    events: List[DriftEvent],
+    events: list[DriftEvent],
     title: str = "Drift Timeline",
     show_magnitude_chart: bool = True,
 ) -> str:
@@ -617,7 +616,7 @@ def create_drift_event(
     baseline: float,
     current: float,
     drift_type: DriftType = DriftType.ACTIVATION,
-    affected_features: Optional[List[str]] = None,
+    affected_features: list[str] | None = None,
     threshold_warning: float = 0.3,
     threshold_critical: float = 0.6,
     threshold_emergency: float = 0.8,

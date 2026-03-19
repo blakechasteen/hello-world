@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 MRF Analytics Dashboard
 =======================
@@ -78,14 +79,14 @@ Usage:
     dashboard.save_report("mrf_dashboard.html")
 """
 
-import time
 import json
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
+import time
 from collections import defaultdict
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ except ImportError:
     logger.warning("Thompson Sampling learner not available")
 
 try:
-    from hololoom.prompting.analytics.ab_testing import ABTest, ABGroup
+    from hololoom.prompting.analytics.ab_testing import ABGroup, ABTest
     AB_TESTING_AVAILABLE = True
 except ImportError:
     ABTest = None
@@ -119,7 +120,7 @@ class MRFEnhancementLog:
     quality_after: float  # 0.0-1.0
     execution_time_ms: float
     model_provider: str = "claude"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def quality_improvement(self) -> float:
@@ -141,9 +142,9 @@ class SystemStatistics:
     avg_quality_after: float = 0.0
     avg_quality_improvement: float = 0.0
     avg_execution_time_ms: float = 0.0
-    strategy_usage: Dict[str, int] = field(default_factory=dict)
-    model_usage: Dict[str, int] = field(default_factory=dict)
-    recent_logs: List[MRFEnhancementLog] = field(default_factory=list)
+    strategy_usage: dict[str, int] = field(default_factory=dict)
+    model_usage: dict[str, int] = field(default_factory=dict)
+    recent_logs: list[MRFEnhancementLog] = field(default_factory=list)
 
     def update(self, log: MRFEnhancementLog):
         """Update statistics with new log entry."""
@@ -178,7 +179,7 @@ class MRFDashboard:
 
     def __init__(
         self,
-        persist_path: Optional[Path] = None,
+        persist_path: Path | None = None,
         enable_learning: bool = False,
         enable_ab_testing: bool = False
     ):
@@ -194,14 +195,14 @@ class MRFDashboard:
         self.persist_path.mkdir(parents=True, exist_ok=True)
 
         # System statistics
-        self.systems: Dict[str, SystemStatistics] = {}
+        self.systems: dict[str, SystemStatistics] = {}
 
         # Global logs
-        self.all_logs: List[MRFEnhancementLog] = []
+        self.all_logs: list[MRFEnhancementLog] = []
 
         # Regression tracking
-        self.baseline_quality: Dict[str, float] = {}  # system -> baseline quality
-        self.regressions_detected: List[Dict[str, Any]] = []
+        self.baseline_quality: dict[str, float] = {}  # system -> baseline quality
+        self.regressions_detected: list[dict[str, Any]] = []
 
         # Learning module (optional)
         self.learner = None
@@ -214,7 +215,7 @@ class MRFDashboard:
             logger.warning("Learning requested but module not available")
 
         # A/B testing (optional)
-        self.ab_tests: Dict[str, ABTest] = {}
+        self.ab_tests: dict[str, ABTest] = {}
         self.enable_ab_testing = enable_ab_testing and AB_TESTING_AVAILABLE
         if enable_ab_testing and not AB_TESTING_AVAILABLE:
             logger.warning("A/B testing requested but module not available")
@@ -231,7 +232,7 @@ class MRFDashboard:
         quality_after: float,
         execution_time_ms: float,
         model_provider: str = "claude",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ):
         """
         Log an MRF enhancement usage.
@@ -321,7 +322,7 @@ class MRFDashboard:
                 f"(-{regression['drop_percent']:.1f}%)"
             )
 
-    def get_statistics(self, system: Optional[str] = None) -> Dict[str, Any]:
+    def get_statistics(self, system: str | None = None) -> dict[str, Any]:
         """
         Get MRF usage statistics.
 
@@ -659,7 +660,7 @@ class MRFDashboard:
         self,
         query_type: str,
         system: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get strategy recommendation from Thompson Sampling learner.
 
@@ -675,7 +676,7 @@ class MRFDashboard:
 
         return self.learner.get_strategy_recommendation(query_type, system)
 
-    def get_learning_statistics(self) -> Optional[Dict[str, Any]]:
+    def get_learning_statistics(self) -> dict[str, Any] | None:
         """
         Get Thompson Sampling learning statistics.
 
@@ -695,7 +696,7 @@ class MRFDashboard:
         control_description: str,
         treatment_description: str,
         traffic_split: float = 0.5
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Create a new A/B test.
 
@@ -732,7 +733,7 @@ class MRFDashboard:
         user_id: str,
         quality_score: float,
         execution_time_ms: float,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ):
         """
         Log A/B test result.
@@ -761,7 +762,7 @@ class MRFDashboard:
             metadata=metadata
         )
 
-    def get_ab_test_results(self, test_name: str) -> Optional[Dict[str, Any]]:
+    def get_ab_test_results(self, test_name: str) -> dict[str, Any] | None:
         """
         Get A/B test analysis results.
 
@@ -777,7 +778,7 @@ class MRFDashboard:
         test = self.ab_tests[test_name]
         return test.analyze()
 
-    def list_ab_tests(self) -> Dict[str, Dict[str, Any]]:
+    def list_ab_tests(self) -> dict[str, dict[str, Any]]:
         """
         List all A/B tests with summaries.
 
@@ -796,8 +797,8 @@ class MRFDashboard:
 
     def log_verification(
         self,
-        verification_result: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None
+        verification_result: dict[str, Any],
+        context: dict[str, Any] | None = None
     ):
         """
         Log Chain of Verification (CoVe) usage.
@@ -910,7 +911,7 @@ class MRFDashboard:
             f"Time: {time_ms:.1f}ms"
         )
 
-    def get_cove_statistics(self) -> Dict[str, Any]:
+    def get_cove_statistics(self) -> dict[str, Any]:
         """
         Get Chain of Verification (CoVe) usage statistics.
 
@@ -989,7 +990,7 @@ class MRFDashboard:
             "recent_trend": recent_confidences
         }
 
-    def _persist_cove_log(self, log_entry: Dict[str, Any]):
+    def _persist_cove_log(self, log_entry: dict[str, Any]):
         """Persist CoVe log entry to disk."""
         log_file = self.persist_path / f"cove_log_{datetime.now().strftime('%Y%m%d')}.jsonl"
         with open(log_file, "a", encoding="utf-8") as f:
@@ -1066,8 +1067,8 @@ class MRFDashboard:
                 summary = test.get_summary()
                 if summary["ready_for_analysis"]:
                     analysis = test.analyze()
-                    lines.append(f'# HELP mrf_ab_test_significant A/B test significance')
-                    lines.append(f'# TYPE mrf_ab_test_significant gauge')
+                    lines.append('# HELP mrf_ab_test_significant A/B test significance')
+                    lines.append('# TYPE mrf_ab_test_significant gauge')
                     lines.append(f'mrf_ab_test_significant{{test="{test_name}"}} {1 if analysis["is_significant"] else 0}')
                     lines.append("")
 
@@ -1124,7 +1125,7 @@ class MRFDashboard:
         log_files = sorted(self.persist_path.glob("mrf_log_*.jsonl"))
         for log_file in log_files[-7:]:  # Last 7 days
             try:
-                with open(log_file, "r", encoding="utf-8") as f:
+                with open(log_file, encoding="utf-8") as f:
                     for line in f:
                         data = json.loads(line)
                         log = MRFEnhancementLog(**data)
@@ -1138,7 +1139,7 @@ class MRFDashboard:
 
 # Convenience functions
 def create_dashboard(
-    persist_path: Optional[Path] = None,
+    persist_path: Path | None = None,
     enable_learning: bool = False,
     enable_ab_testing: bool = False
 ) -> MRFDashboard:

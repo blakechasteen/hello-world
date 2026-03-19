@@ -48,11 +48,13 @@ Date: November 2025
 """
 
 from hololoom.apps.departments.examples.workflow_examples import (
-    research_workflow_example,
+    customer_onboarding_workflow_example,
     deployment_workflow_example,
     intelligent_routing_workflow_example,
     monitoring_scaling_workflow_example,
-    customer_onboarding_workflow_example,
+    research_workflow_example,
+)
+from hololoom.apps.departments.examples.workflow_examples import (
     main as run_all_workflows,
 )
 

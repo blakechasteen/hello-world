@@ -3,9 +3,9 @@
 Performance Cache - LRU cache with TTL for query results
 """
 import time
-from typing import Any, Optional, Dict
 from collections import OrderedDict
 from dataclasses import dataclass
+from typing import Any
 
 # Prometheus metrics
 try:
@@ -40,7 +40,7 @@ class QueryCache:
         self.hits = 0
         self.misses = 0
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get cached value, None if expired or missing."""
         if key not in self.cache:
             self.misses += 1
@@ -88,7 +88,7 @@ class QueryCache:
         self.hits = 0
         self.misses = 0
 
-    def stats(self) -> Dict:
+    def stats(self) -> dict:
         """Get cache statistics."""
         total = self.hits + self.misses
         hit_rate = self.hits / total if total > 0 else 0.0

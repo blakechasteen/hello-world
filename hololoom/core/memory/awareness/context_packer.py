@@ -11,14 +11,14 @@ Packs awareness + memory + query into optimal LLM prompts with:
 This is the bridge between consciousness (awareness) and generation (LLM).
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any, Tuple
-from enum import Enum
 import time
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # Import memory fusion for advanced retrieval (moved to HoloLoom/memory/awareness/ in Dec 2025)
 try:
-    from .memory_fusion import MemoryFusion, MultipassConfig, MemoryNode
+    from .memory_fusion import MemoryFusion, MemoryNode, MultipassConfig
     MEMORY_FUSION_AVAILABLE = True
 except ImportError:
     MEMORY_FUSION_AVAILABLE = False
@@ -48,12 +48,12 @@ class ContextElement:
     importance: float  # 0.0-1.0
     token_count: int
     source: str  # "awareness", "memory", "pattern", "query"
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    
+    metadata: dict[str, Any] = field(default_factory=dict)
+
     # Compression alternatives
-    summary: Optional[str] = None
-    detailed: Optional[str] = None
-    
+    summary: str | None = None
+    detailed: str | None = None
+
     def compress(self, level: CompressionLevel) -> str:
         """Get compressed version of content"""
         if level == CompressionLevel.FULL:
@@ -65,7 +65,7 @@ class ContextElement:
         elif level == CompressionLevel.MINIMAL:
             return f"[{self.source}: {len(self.content)} chars]"
         return self.content
-    
+
     def estimate_tokens(self, level: CompressionLevel) -> int:
         """Estimate tokens for compressed version"""
         compressed = self.compress(level)
@@ -79,7 +79,7 @@ class TokenBudget:
     total: int = 8000           # Total token budget
     reserved_for_query: int = 500  # Reserve for query/instructions
     reserved_for_response: int = 1000  # Reserve for LLM response
-    
+
     @property
     def available_for_context(self) -> int:
         """Tokens available for context"""
@@ -89,53 +89,53 @@ class TokenBudget:
 @dataclass
 class PackedContext:
     """Assembled context ready for LLM"""
-    
+
     # Core sections
     awareness_section: str
     memory_section: str
     pattern_section: str
     query_section: str
-    
+
     # Metadata
     total_tokens: int
     elements_included: int
     elements_compressed: int
     elements_excluded: int
-    
+
     # Importance statistics
     avg_importance: float
     min_importance: float
-    
+
     # Provenance
     packing_time_ms: float
-    compression_stats: Dict[str, int]
-    
+    compression_stats: dict[str, int]
+
     def format_for_llm(self, include_metadata: bool = False) -> str:
         """Format packed context for LLM prompt"""
         sections = []
-        
+
         # Awareness context (confidence, structure, patterns)
         if self.awareness_section:
             sections.append("# AWARENESS CONTEXT")
             sections.append(self.awareness_section)
             sections.append("")
-        
+
         # Memory retrieval (relevant past interactions)
         if self.memory_section:
             sections.append("# RELEVANT MEMORIES")
             sections.append(self.memory_section)
             sections.append("")
-        
+
         # Pattern analysis (compositional patterns)
         if self.pattern_section:
             sections.append("# RECOGNIZED PATTERNS")
             sections.append(self.pattern_section)
             sections.append("")
-        
+
         # Query
         sections.append("# QUERY")
         sections.append(self.query_section)
-        
+
         # Optional metadata
         if include_metadata:
             sections.append("")
@@ -145,7 +145,7 @@ class PackedContext:
                           f"{self.elements_compressed} compressed, "
                           f"{self.elements_excluded} excluded")
             sections.append(f"Importance: avg={self.avg_importance:.2f}, min={self.min_importance:.2f}")
-        
+
         return "\n".join(sections)
 
 
@@ -161,10 +161,10 @@ class SmartContextPacker:
     5. Ensure critical elements always included
     6. Optional: Use memory fusion for multipass graph crawling
     """
-    
+
     def __init__(
         self,
-        token_budget: Optional[TokenBudget] = None,
+        token_budget: TokenBudget | None = None,
         min_importance_threshold: float = 0.2,
         use_memory_fusion: bool = True,
         memory_backend = None
@@ -182,7 +182,7 @@ class SmartContextPacker:
         self.min_importance = min_importance_threshold
         self.use_memory_fusion = use_memory_fusion and MEMORY_FUSION_AVAILABLE
         self.memory_backend = memory_backend
-        
+
         # Initialize memory fusion if enabled
         self.memory_fusion = None
         if self.use_memory_fusion and memory_backend:
@@ -190,14 +190,14 @@ class SmartContextPacker:
                 config=MultipassConfig.for_complexity("FULL"),
                 memory_backend=memory_backend
             )
-    
+
     async def pack_context(
         self,
         query: str,
         awareness_context,
-        memory_results: Optional[List[Any]] = None,
+        memory_results: list[Any] | None = None,
         max_memories: int = 10,
-        use_fusion: Optional[bool] = None
+        use_fusion: bool | None = None
     ) -> PackedContext:
         """
         Pack context optimally for LLM generation.
@@ -213,14 +213,14 @@ class SmartContextPacker:
             PackedContext ready for LLM
         """
         start_time = time.time()
-        
+
         # Determine if using fusion
         should_use_fusion = (
             (use_fusion if use_fusion is not None else self.use_memory_fusion)
             and self.memory_fusion is not None
             and memory_results is None  # Only use fusion if no pre-retrieved results
         )
-        
+
         # If using fusion, retrieve memories with multipass crawling
         if should_use_fusion:
             print(f"🕷️  Using memory fusion for query: {query[:50]}...")
@@ -240,10 +240,10 @@ class SmartContextPacker:
                 for node in fused_nodes
             ]
             print(f"  ✅ Fusion retrieved {len(memory_results)} memories with graph traversal")
-        
+
         # 1. Collect all context elements
         elements = []
-        
+
         # Query element (always critical)
         elements.append(ContextElement(
             content=query,
@@ -252,11 +252,11 @@ class SmartContextPacker:
             source="query",
             metadata={"type": "user_query"}
         ))
-        
+
         # Awareness elements
         awareness_elements = self._extract_awareness_elements(awareness_context)
         elements.extend(awareness_elements)
-        
+
         # Memory elements
         if memory_results:
             memory_elements = self._extract_memory_elements(
@@ -265,31 +265,31 @@ class SmartContextPacker:
                 query=query
             )
             elements.extend(memory_elements)
-        
+
         # 2. Score and sort by importance
         elements = self._score_elements(elements, awareness_context)
         elements.sort(key=lambda e: e.importance, reverse=True)
-        
+
         # 3. Optimize packing with token budget
         packed_elements, compression_stats = self._optimize_packing(
             elements,
             self.budget.available_for_context
         )
-        
+
         # 4. Assemble sections
         sections = self._assemble_sections(packed_elements)
-        
+
         # 5. Calculate statistics
         total_tokens = sum(e.token_count for e in packed_elements)
         included = len(packed_elements)
         compressed = compression_stats.get('compressed', 0)
         excluded = len(elements) - included
-        
+
         avg_importance = sum(e.importance for e in packed_elements) / max(included, 1)
         min_importance_included = min((e.importance for e in packed_elements), default=0.0)
-        
+
         packing_time = (time.time() - start_time) * 1000
-        
+
         return PackedContext(
             awareness_section=sections.get('awareness', ''),
             memory_section=sections.get('memory', ''),
@@ -304,11 +304,11 @@ class SmartContextPacker:
             packing_time_ms=packing_time,
             compression_stats=compression_stats
         )
-    
-    def _extract_awareness_elements(self, awareness_context) -> List[ContextElement]:
+
+    def _extract_awareness_elements(self, awareness_context) -> list[ContextElement]:
         """Extract context elements from awareness context"""
         elements = []
-        
+
         # Confidence signals (CRITICAL)
         conf = awareness_context.confidence
         confidence_text = (
@@ -317,7 +317,7 @@ class SmartContextPacker:
             f"Uncertainty: {conf.uncertainty_level:.2f}\n"
             f"Knowledge Gap: {'Yes' if conf.knowledge_gap_detected else 'No'}"
         )
-        
+
         elements.append(ContextElement(
             content=confidence_text,
             importance=ContextImportance.CRITICAL.value,
@@ -326,7 +326,7 @@ class SmartContextPacker:
             metadata={"type": "confidence_signals"},
             summary=f"Confidence: {1.0 - conf.uncertainty_level:.2f}"
         ))
-        
+
         # Structural analysis (HIGH)
         struct = awareness_context.structural
         structural_text = (
@@ -334,7 +334,7 @@ class SmartContextPacker:
             f"Is Question: {struct.is_question}\n"
             f"Expected Response: {struct.suggested_response_type}"
         )
-        
+
         elements.append(ContextElement(
             content=structural_text,
             importance=ContextImportance.HIGH.value,
@@ -343,20 +343,20 @@ class SmartContextPacker:
             metadata={"type": "structural_analysis"},
             summary=f"Type: {struct.suggested_response_type}"
         ))
-        
+
         # Pattern analysis (HIGH if seen before, MEDIUM otherwise)
         patterns = awareness_context.patterns
         pattern_importance = (
             ContextImportance.HIGH.value if patterns.seen_count > 0
             else ContextImportance.MEDIUM.value
         )
-        
+
         pattern_text = (
             f"Domain: {patterns.domain}/{patterns.subdomain}\n"
             f"Familiarity: {patterns.seen_count}× seen\n"
             f"Confidence: {patterns.confidence:.2f}"
         )
-        
+
         elements.append(ContextElement(
             content=pattern_text,
             importance=pattern_importance,
@@ -365,30 +365,30 @@ class SmartContextPacker:
             metadata={"type": "pattern_analysis"},
             summary=f"Domain: {patterns.domain} ({patterns.seen_count}× seen)"
         ))
-        
+
         return elements
-    
+
     def _extract_memory_elements(
         self,
-        memory_results: List[Any],
+        memory_results: list[Any],
         max_count: int,
         query: str
-    ) -> List[ContextElement]:
+    ) -> list[ContextElement]:
         """Extract context elements from memory retrieval"""
         elements = []
-        
+
         for i, memory in enumerate(memory_results[:max_count]):
             # Calculate importance based on:
             # - Relevance score (if available)
             # - Recency (more recent = higher)
             # - Position in results (earlier = higher)
-            
+
             base_importance = 0.8 - (i * 0.05)  # Decay by position
             base_importance = max(base_importance, 0.3)
-            
+
             # Extract memory text
             memory_text = self._extract_memory_text(memory)
-            
+
             elements.append(ContextElement(
                 content=memory_text,
                 importance=base_importance,
@@ -402,9 +402,9 @@ class SmartContextPacker:
                 summary=memory_text[:100] + "..." if len(memory_text) > 100 else memory_text,
                 detailed=memory_text[:300] + "..." if len(memory_text) > 300 else memory_text
             ))
-        
+
         return elements
-    
+
     def _extract_memory_text(self, memory: Any) -> str:
         """Extract text from memory object (handles different formats)"""
         if isinstance(memory, dict):
@@ -415,12 +415,12 @@ class SmartContextPacker:
             return memory.content
         else:
             return str(memory)
-    
+
     def _score_elements(
         self,
-        elements: List[ContextElement],
+        elements: list[ContextElement],
         awareness_context
-    ) -> List[ContextElement]:
+    ) -> list[ContextElement]:
         """
         Adjust importance scores based on awareness signals.
         
@@ -431,31 +431,31 @@ class SmartContextPacker:
         """
         conf = awareness_context.confidence
         patterns = awareness_context.patterns
-        
+
         for element in elements:
             # Boost awareness elements when uncertain
             if element.source == "awareness" and conf.uncertainty_level > 0.7:
                 element.importance = min(1.0, element.importance * 1.2)
-            
+
             # Boost pattern elements when familiar
             if element.source == "awareness" and element.metadata.get('type') == 'pattern_analysis':
                 if patterns.seen_count > 10:
                     element.importance = min(1.0, element.importance * 1.1)
-            
+
             # Boost memory elements from same domain
             if element.source == "memory":
                 # Check if memory content relates to recognized domain
                 content_lower = element.content.lower()
                 if patterns.domain.lower() in content_lower:
                     element.importance = min(1.0, element.importance * 1.15)
-        
+
         return elements
-    
+
     def _optimize_packing(
         self,
-        elements: List[ContextElement],
+        elements: list[ContextElement],
         token_budget: int
-    ) -> Tuple[List[ContextElement], Dict[str, int]]:
+    ) -> tuple[list[ContextElement], dict[str, int]]:
         """
         Optimize element packing within token budget.
         
@@ -474,7 +474,7 @@ class SmartContextPacker:
             'minimal': 0,
             'compressed': 0
         }
-        
+
         # First pass: Include critical elements (always full)
         for element in elements:
             if element.importance >= ContextImportance.CRITICAL.value:
@@ -482,12 +482,12 @@ class SmartContextPacker:
                     packed.append(element)
                     remaining_budget -= element.token_count
                     compression_stats['full'] += 1
-        
+
         # Second pass: Include high-importance elements (compress if needed)
         for element in elements:
             if (ContextImportance.HIGH.value <= element.importance < ContextImportance.CRITICAL.value
                 and element not in packed):
-                
+
                 # Try full first
                 if element.token_count <= remaining_budget:
                     packed.append(element)
@@ -513,11 +513,11 @@ class SmartContextPacker:
                         remaining_budget -= summary_tokens
                         compression_stats['summary'] += 1
                         compression_stats['compressed'] += 1
-        
+
         # Third pass: Include medium/low elements (aggressively compress)
         for element in elements:
             if element.importance < ContextImportance.HIGH.value and element not in packed:
-                
+
                 # Only include if summary fits
                 if element.summary:
                     summary_tokens = element.estimate_tokens(CompressionLevel.SUMMARY)
@@ -528,10 +528,10 @@ class SmartContextPacker:
                         remaining_budget -= summary_tokens
                         compression_stats['summary'] += 1
                         compression_stats['compressed'] += 1
-        
+
         return packed, compression_stats
-    
-    def _assemble_sections(self, elements: List[ContextElement]) -> Dict[str, str]:
+
+    def _assemble_sections(self, elements: list[ContextElement]) -> dict[str, str]:
         """Assemble elements into formatted sections"""
         sections = {
             'awareness': [],
@@ -539,7 +539,7 @@ class SmartContextPacker:
             'pattern': [],
             'query': []
         }
-        
+
         for element in elements:
             if element.source == "query":
                 sections['query'].append(element.content)
@@ -550,7 +550,7 @@ class SmartContextPacker:
                     sections['awareness'].append(element.content)
             elif element.source == "memory":
                 sections['memory'].append(f"- {element.content}")
-        
+
         # Join sections
         return {
             k: "\n".join(v) if v else ""

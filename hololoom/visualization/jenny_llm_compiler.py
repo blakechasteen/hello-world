@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Jenny LLM Compiler - LLM-Enhanced Panel Compilation
 ====================================================
@@ -40,40 +41,30 @@ import json
 import logging
 import re
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple, Union
+from typing import Any, Optional
 
-from .jenny_spec import (
-    JennySpec,
-    PanelTypeJenny,
-    PanelSizeJenny,
-    LifecycleStage,
-    get_default_actions,
-)
-from .jenny_mrf import (
-    JennyMRFCompiler,
-    PanelTypeLearner,
-    MRF_AVAILABLE,
-)
+from hololoom.protocols.jenny import CompilationStrategy
+
 from .jenny_compiler import (
     QueryAnalysis,
     analyze_query,
     generate_text_panel,
-    generate_confidence_panel,
-    generate_sources_panel,
-    generate_graph_panel,
-    generate_timeline_panel,
-    generate_reasoning_panel,
-    generate_metric_panel,
 )
-from hololoom.protocols.jenny import CompilationStrategy
+from .jenny_mrf import (
+    JennyMRFCompiler,
+    PanelTypeLearner,
+)
+from .jenny_spec import (
+    JennySpec,
+    PanelTypeJenny,
+)
 
 # Try to import MRF for prompt enhancement
 try:
     from hololoom.prompting.unified_mrf import (
-        UnifiedMRF,
-        RefinementStrategyType,
         ModelProvider,
+        RefinementStrategyType,
+        UnifiedMRF,
     )
     MRF_PROMPT_AVAILABLE = True
 except ImportError:
@@ -100,14 +91,16 @@ except ImportError:
 # Try to import async LLM client (Phase M2)
 try:
     from .jenny_llm_client import (
+        AnthropicClient,
         AsyncLLMClientBase,
         LLMClientConfig,
         LLMResponse,
-        create_llm_client as create_async_llm_client,
-        create_best_available_client,
         OllamaClient,
-        AnthropicClient,
         OpenAIClient,
+        create_best_available_client,
+    )
+    from .jenny_llm_client import (
+        create_llm_client as create_async_llm_client,
     )
     ASYNC_LLM_AVAILABLE = True
 except ImportError:
@@ -213,7 +206,7 @@ class SemanticProfile:
     objectivity: float = 0.5
     novelty: float = 0.5
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {
             "technicality": self.technicality,
             "complexity": self.complexity,
@@ -282,12 +275,12 @@ class LLMPanelSelection:
     """Parsed LLM response for panel selection."""
     panel_type: PanelTypeJenny
     reason: str
-    secondary_panels: List[PanelTypeJenny]
+    secondary_panels: list[PanelTypeJenny]
     confidence: float
     raw_response: str
     parse_method: str  # "json" or "regex"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "panel_type": self.panel_type.value,
             "reason": self.reason,
@@ -297,7 +290,7 @@ class LLMPanelSelection:
         }
 
 
-def parse_llm_response(response: str) -> Optional[LLMPanelSelection]:
+def parse_llm_response(response: str) -> LLMPanelSelection | None:
     """
     Parse LLM response with fallback strategies.
 
@@ -448,7 +441,7 @@ class LLMClient:
     def available(self) -> bool:
         return self._available
 
-    async def generate(self, prompt: str) -> Optional[str]:
+    async def generate(self, prompt: str) -> str | None:
         """Generate response from LLM."""
         if not self._available:
             return None
@@ -520,8 +513,8 @@ class LLMJennyCompiler(JennyMRFCompiler):
         llm_model: str = "llama3.2:3b",
         llm_timeout_ms: int = 500,
         enable_learning: bool = True,
-        learner: Optional[PanelTypeLearner] = None,
-        learning_persist_path: Optional[str] = None,
+        learner: PanelTypeLearner | None = None,
+        learning_persist_path: str | None = None,
         enable_mrf_prompt_enhancement: bool = True,
         enable_semantic_axes: bool = True,
         llm_config: Optional['LLMClientConfig'] = None,
@@ -561,12 +554,12 @@ class LLMJennyCompiler(JennyMRFCompiler):
 
         # Async LLM client configuration (Phase M2)
         self._llm_config = llm_config
-        self._async_llm: Optional[AsyncLLMClientBase] = None
+        self._async_llm: AsyncLLMClientBase | None = None
         self._llm_available = False
         self._use_async_client = ASYNC_LLM_AVAILABLE
 
         # Legacy sync client fallback
-        self._llm_legacy: Optional[LLMClient] = None
+        self._llm_legacy: LLMClient | None = None
 
         # Track LLM usage statistics
         self._llm_calls = 0
@@ -656,8 +649,8 @@ class LLMJennyCompiler(JennyMRFCompiler):
         self,
         spacetime: Spacetime,
         strategy: CompilationStrategy = None,
-        context: Optional[Dict[str, Any]] = None
-    ) -> List[JennySpec]:
+        context: dict[str, Any] | None = None
+    ) -> list[JennySpec]:
         """
         Compile Spacetime into UI specifications using LLM.
 
@@ -694,7 +687,7 @@ class LLMJennyCompiler(JennyMRFCompiler):
         self._llm_fallbacks += 1
         return await super().compile(spacetime, strategy, context)
 
-    async def _generate_llm_response(self, prompt: str) -> Optional[str]:
+    async def _generate_llm_response(self, prompt: str) -> str | None:
         """
         Generate LLM response using async or legacy client.
 
@@ -718,7 +711,7 @@ class LLMJennyCompiler(JennyMRFCompiler):
         self,
         spacetime: Spacetime,
         analysis: QueryAnalysis,
-    ) -> Optional[List[JennySpec]]:
+    ) -> list[JennySpec] | None:
         """
         Compile using LLM-based panel selection.
 
@@ -851,7 +844,7 @@ class LLMJennyCompiler(JennyMRFCompiler):
 
         return base_prompt
 
-    def get_llm_statistics(self) -> Dict[str, Any]:
+    def get_llm_statistics(self) -> dict[str, Any]:
         """Get LLM usage statistics."""
         success_rate = self._llm_successes / max(self._llm_calls, 1)
 
@@ -875,7 +868,7 @@ class LLMJennyCompiler(JennyMRFCompiler):
 
         return stats
 
-    def get_learning_statistics(self) -> Dict[str, Any]:
+    def get_learning_statistics(self) -> dict[str, Any]:
         """Get combined learning and LLM statistics."""
         base_stats = super().get_learning_statistics()
         llm_stats = self.get_llm_statistics()
@@ -894,7 +887,7 @@ def create_llm_compiler(
     llm_provider: str = "ollama",
     llm_model: str = "llama3.2:3b",
     enable_learning: bool = True,
-    learning_persist_path: Optional[str] = None,
+    learning_persist_path: str | None = None,
     enable_mrf_prompt_enhancement: bool = True,
     enable_semantic_axes: bool = True,
 ) -> LLMJennyCompiler:
@@ -927,7 +920,7 @@ def create_compiler_with_fallback(
     llm_provider: str = "ollama",
     llm_model: str = "llama3.2:3b",
     enable_learning: bool = True,
-) -> Union[LLMJennyCompiler, JennyMRFCompiler]:
+) -> LLMJennyCompiler | JennyMRFCompiler:
     """
     Create the best available compiler with automatic fallback.
 

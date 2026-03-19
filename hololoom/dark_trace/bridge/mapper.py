@@ -16,18 +16,11 @@ Research Basis:
 - Unmapped features may represent novel dimensions
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Set
 from collections import defaultdict
-import numpy as np
-import torch
+from dataclasses import dataclass, field
+from typing import Any
 
-from hololoom.dark_trace.protocol import (
-    TraceLens,
-    Feature,
-    FeatureSource,
-    LensType,
-)
+import numpy as np
 
 
 @dataclass
@@ -54,8 +47,8 @@ class SemanticMeaning:
     sample_count: int = 0
 
     # Exemplar words for positive/negative poles
-    positive_exemplars: List[str] = field(default_factory=list)
-    negative_exemplars: List[str] = field(default_factory=list)
+    positive_exemplars: list[str] = field(default_factory=list)
+    negative_exemplars: list[str] = field(default_factory=list)
 
     @property
     def direction(self) -> str:
@@ -104,7 +97,7 @@ class FeatureMapping:
     feature_index: int
 
     # Top-k semantic meanings sorted by |correlation|
-    semantic_meanings: List[SemanticMeaning] = field(default_factory=list)
+    semantic_meanings: list[SemanticMeaning] = field(default_factory=list)
 
     # Activation statistics
     mean_activation: float = 0.0
@@ -116,10 +109,10 @@ class FeatureMapping:
     is_well_mapped: bool = False  # Has at least one strong correlation
 
     # Human-assigned label (if available from labeler)
-    human_label: Optional[str] = None
+    human_label: str | None = None
 
     @property
-    def top_meaning(self) -> Optional[SemanticMeaning]:
+    def top_meaning(self) -> SemanticMeaning | None:
         """Get the strongest semantic meaning."""
         if self.semantic_meanings:
             return max(self.semantic_meanings, key=lambda m: m.strength)
@@ -207,11 +200,11 @@ class FeatureSemanticMapper:
         self.well_mapped_threshold = well_mapped_threshold
 
         # Cache for computed mappings
-        self._feature_mappings: Dict[str, FeatureMapping] = {}
-        self._semantic_to_features: Dict[str, List[Tuple[str, float]]] = defaultdict(list)
+        self._feature_mappings: dict[str, FeatureMapping] = {}
+        self._semantic_to_features: dict[str, list[tuple[str, float]]] = defaultdict(list)
 
         # Track unmapped features
-        self._unmapped_features: Set[str] = set()
+        self._unmapped_features: set[str] = set()
 
         # Build mappings from correlator data
         self._build_mappings()
@@ -284,7 +277,7 @@ class FeatureSemanticMapper:
                 key=lambda x: abs(x[1]), reverse=True
             )
 
-    def get_feature_mapping(self, feature_id: str) -> Optional[FeatureMapping]:
+    def get_feature_mapping(self, feature_id: str) -> FeatureMapping | None:
         """
         Get semantic mapping for an SAE feature.
 
@@ -300,7 +293,7 @@ class FeatureSemanticMapper:
         self,
         feature_id: str,
         k: int = 5,
-    ) -> List[SemanticMeaning]:
+    ) -> list[SemanticMeaning]:
         """
         Get top-k semantic meanings for a feature.
 
@@ -321,7 +314,7 @@ class FeatureSemanticMapper:
         semantic_dimension: str,
         k: int = 5,
         positive_only: bool = False,
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Get SAE features most correlated with a semantic dimension.
 
@@ -343,7 +336,7 @@ class FeatureSemanticMapper:
     def get_unmapped_features(
         self,
         min_activation: float = 0.1,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get features with no strong semantic correlations.
 
@@ -360,9 +353,9 @@ class FeatureSemanticMapper:
 
     def get_composite_mapping(
         self,
-        feature_ids: List[str],
-        weights: Optional[List[float]] = None,
-    ) -> Dict[str, float]:
+        feature_ids: list[str],
+        weights: list[float] | None = None,
+    ) -> dict[str, float]:
         """
         Get composite semantic mapping for multiple features.
 
@@ -386,8 +379,8 @@ class FeatureSemanticMapper:
         weights = [w / total_weight for w in weights]
 
         # Accumulate weighted correlations
-        composite: Dict[str, float] = defaultdict(float)
-        contribution_count: Dict[str, int] = defaultdict(int)
+        composite: dict[str, float] = defaultdict(float)
+        contribution_count: dict[str, int] = defaultdict(int)
 
         for feature_id, weight in zip(feature_ids, weights):
             mapping = self.get_feature_mapping(feature_id)
@@ -409,7 +402,7 @@ class FeatureSemanticMapper:
         self,
         feature_id: str,
         k: int = 5,
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Find features with similar semantic profiles.
 
@@ -483,7 +476,7 @@ class FeatureSemanticMapper:
 
         return mapping.describe(verbose=verbose)
 
-    def get_mapping_statistics(self) -> Dict[str, Any]:
+    def get_mapping_statistics(self) -> dict[str, Any]:
         """
         Get statistics about the mapping quality.
 
@@ -549,7 +542,7 @@ class FeatureSemanticMapper:
         """Load mappings from file."""
         import json
 
-        with open(path, 'r') as f:
+        with open(path) as f:
             data = json.load(f)
 
         # Rebuild mappings from saved data

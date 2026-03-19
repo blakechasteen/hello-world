@@ -18,11 +18,10 @@ Usage:
 """
 
 import ast
-import re
-from pathlib import Path
-from typing import List, Dict, Set, Optional, Tuple
-from dataclasses import dataclass
 import logging
+import re
+from dataclasses import dataclass
+from pathlib import Path
 
 from hololoom.protocols.types import MemoryShard
 
@@ -35,9 +34,9 @@ class CodeElement:
     type: str  # "function", "class", "import"
     name: str
     line: int
-    docstring: Optional[str] = None
-    parameters: Optional[List[str]] = None
-    return_type: Optional[str] = None
+    docstring: str | None = None
+    parameters: list[str] | None = None
+    return_type: str | None = None
 
 
 @dataclass
@@ -46,7 +45,7 @@ class Comment:
     type: str  # "NOTE", "TODO", "FIXME", "GENERAL"
     text: str
     line: int
-    context: Optional[str] = None  # Nearby code for context
+    context: str | None = None  # Nearby code for context
 
 
 class WorkspaceSpinner:
@@ -87,14 +86,14 @@ class WorkspaceSpinner:
             enable_enrichment: Use Ollama to enrich entities/motifs (slower)
         """
         self.enable_enrichment = enable_enrichment
-        self.gitignore_patterns: Set[str] = set()
+        self.gitignore_patterns: set[str] = set()
 
     async def spin_workspace(
         self,
         workspace_path: str | Path,
-        languages: Optional[List[str]] = None,
-        exclude_patterns: Optional[List[str]] = None
-    ) -> List[MemoryShard]:
+        languages: list[str] | None = None,
+        exclude_patterns: list[str] | None = None
+    ) -> list[MemoryShard]:
         """
         Scan entire workspace and create memory shards.
 
@@ -143,7 +142,7 @@ class WorkspaceSpinner:
         self,
         file_path: Path,
         workspace_root: Path
-    ) -> Optional[MemoryShard]:
+    ) -> MemoryShard | None:
         """
         Process single file and extract structure + comments.
 
@@ -169,8 +168,8 @@ class WorkspaceSpinner:
             return None
 
         # Extract code elements
-        elements: List[CodeElement] = []
-        comments: List[Comment] = []
+        elements: list[CodeElement] = []
+        comments: list[Comment] = []
 
         if language == 'python':
             elements, comments = self._parse_python(content)
@@ -234,10 +233,10 @@ class WorkspaceSpinner:
             }
         )
 
-    def _parse_python(self, content: str) -> Tuple[List[CodeElement], List[Comment]]:
+    def _parse_python(self, content: str) -> tuple[list[CodeElement], list[Comment]]:
         """Parse Python file using AST."""
-        elements: List[CodeElement] = []
-        comments: List[Comment] = []
+        elements: list[CodeElement] = []
+        comments: list[Comment] = []
 
         try:
             tree = ast.parse(content)
@@ -285,10 +284,10 @@ class WorkspaceSpinner:
 
         return elements, comments
 
-    def _parse_typescript(self, content: str) -> Tuple[List[CodeElement], List[Comment]]:
+    def _parse_typescript(self, content: str) -> tuple[list[CodeElement], list[Comment]]:
         """Parse TypeScript/JavaScript using regex (simple approach)."""
-        elements: List[CodeElement] = []
-        comments: List[Comment] = []
+        elements: list[CodeElement] = []
+        comments: list[Comment] = []
 
         # Extract functions
         func_pattern = r'(?:function|const|let|var)\s+(\w+)\s*=?\s*(?:async\s*)?\(([^)]*)\)'
@@ -357,9 +356,9 @@ class WorkspaceSpinner:
 
         return elements, comments
 
-    def _parse_markdown(self, content: str) -> List[Comment]:
+    def _parse_markdown(self, content: str) -> list[Comment]:
         """Extract TODO/NOTE items from markdown."""
-        comments: List[Comment] = []
+        comments: list[Comment] = []
 
         lines = content.split('\n')
         for i, line in enumerate(lines, 1):
@@ -389,9 +388,9 @@ class WorkspaceSpinner:
 
     def _extract_motifs(
         self,
-        elements: List[CodeElement],
-        comments: List[Comment]
-    ) -> List[str]:
+        elements: list[CodeElement],
+        comments: list[Comment]
+    ) -> list[str]:
         """Extract motifs from code elements and comments."""
         motifs = set()
 
@@ -413,7 +412,7 @@ class WorkspaceSpinner:
 
         return list(motifs)
 
-    def _get_return_annotation(self, node: ast.FunctionDef) -> Optional[str]:
+    def _get_return_annotation(self, node: ast.FunctionDef) -> str | None:
         """Get return type annotation from function."""
         if node.returns:
             return ast.unparse(node.returns)
@@ -439,8 +438,8 @@ class WorkspaceSpinner:
     def _scan_directory(
         self,
         directory: Path,
-        languages: Optional[List[str]] = None
-    ) -> List[Path]:
+        languages: list[str] | None = None
+    ) -> list[Path]:
         """
         Recursively scan directory for supported files.
 

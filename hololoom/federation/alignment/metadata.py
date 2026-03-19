@@ -17,11 +17,9 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from .protocol import AlignmentStatus, DeceptionFlag
-
+from .protocol import AlignmentStatus
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  RESOURCE TRACKING - What the node consumed
@@ -47,7 +45,7 @@ class ResourceUsage:
     tool_calls: int = 0                       # Tools invoked
     memory_reads: int = 0                     # Knowledge graph reads
     memory_writes: int = 0                    # Knowledge graph writes
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def total_tokens(self) -> int:
@@ -68,7 +66,7 @@ class ResourceUsage:
             or self.tokens_out > 10000     # >10k output tokens
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "cpu_ms": self.cpu_ms,
@@ -83,7 +81,7 @@ class ResourceUsage:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ResourceUsage":
+    def from_dict(cls, data: dict[str, Any]) -> ResourceUsage:
         """Deserialize from dictionary."""
         return cls(
             cpu_ms=data.get("cpu_ms", 0.0),
@@ -130,10 +128,10 @@ class AlignmentMetadata:
     safety_decision_allowed: bool             # From SafetyGuardrails.allowed
     risk_level: str                           # SAFE, LOW, MEDIUM, HIGH, CRITICAL
     deception_score: float                    # 0.0-1.0
-    deception_flags: List[str] = field(default_factory=list)
+    deception_flags: list[str] = field(default_factory=list)
     convergence_safe: bool = True             # No power-seeking detected
     resource_usage: ResourceUsage = field(default_factory=ResourceUsage)
-    reasoning_chain: List[str] = field(default_factory=list)
+    reasoning_chain: list[str] = field(default_factory=list)
     signature: bytes = b""                    # Ed25519 signature
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
@@ -201,7 +199,7 @@ class AlignmentMetadata:
         canonical = json.dumps(data, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical.encode()).digest()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "node_id": self.node_id,
@@ -218,7 +216,7 @@ class AlignmentMetadata:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "AlignmentMetadata":
+    def from_dict(cls, data: dict[str, Any]) -> AlignmentMetadata:
         """Deserialize from dictionary."""
         return cls(
             node_id=data["node_id"],
@@ -259,7 +257,7 @@ class AlignmentProof:
     metadata_hash: bytes                      # SHA256 of AlignmentMetadata
     signature: bytes                          # Ed25519 sig of hash(all_fields)
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    expires_at: Optional[datetime] = None     # Proof expiration
+    expires_at: datetime | None = None     # Proof expiration
 
     @property
     def is_valid(self) -> bool:
@@ -290,7 +288,7 @@ class AlignmentProof:
         canonical = json.dumps(data, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical.encode()).digest()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "verifier_id": self.verifier_id,
@@ -307,7 +305,7 @@ class AlignmentProof:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "AlignmentProof":
+    def from_dict(cls, data: dict[str, Any]) -> AlignmentProof:
         """Deserialize from dictionary."""
         return cls(
             verifier_id=data["verifier_id"],
@@ -346,7 +344,7 @@ class AlignedResponse:
     responder: str
     confidence: float
     alignment_metadata: AlignmentMetadata
-    alignment_proof: Optional[AlignmentProof] = None
+    alignment_proof: AlignmentProof | None = None
     latency_ms: float = 0.0
     created_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -371,7 +369,7 @@ class AlignedResponse:
         # Geometric mean gives higher weight to lower value
         return (self.confidence * alignment_conf) ** 0.5
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "text": self.text,

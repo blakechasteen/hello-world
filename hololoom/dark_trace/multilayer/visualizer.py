@@ -13,10 +13,10 @@ Design Philosophy (Edward Tufte):
 - Minimize chartjunk
 """
 
+import json
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Any, Tuple
-import json
+from typing import Any
 
 
 class VisualizationFormat(Enum):
@@ -129,7 +129,7 @@ class HierarchyDiagram:
         with open(path, 'w', encoding='utf-8') as f:
             f.write(self.content)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "content": self.content,
@@ -154,7 +154,7 @@ class FlowDiagram:
 
     # Flow statistics
     total_flow: float = 0.0
-    bottleneck_layer: Optional[int] = None
+    bottleneck_layer: int | None = None
     compression_ratio: float = 1.0
 
     # Dimensions
@@ -166,7 +166,7 @@ class FlowDiagram:
         with open(path, 'w', encoding='utf-8') as f:
             f.write(self.content)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "content": self.content,
@@ -192,7 +192,7 @@ class EvolutionPlot:
     peak_layer: int = 0
 
     # Trajectory
-    layer_activations: Dict[int, float] = field(default_factory=dict)
+    layer_activations: dict[int, float] = field(default_factory=dict)
 
     # Dimensions
     width: int = 0
@@ -203,7 +203,7 @@ class EvolutionPlot:
         with open(path, 'w', encoding='utf-8') as f:
             f.write(self.content)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "content": self.content,
@@ -286,7 +286,7 @@ class HierarchyVisualizer:
         self,
         hierarchy_analyzer: Any = None,  # FeatureHierarchyAnalyzer
         flow_analyzer: Any = None,  # InformationFlowAnalyzer
-        config: Optional[VisualizationConfig] = None
+        config: VisualizationConfig | None = None
     ):
         """
         Initialize visualizer.
@@ -302,9 +302,9 @@ class HierarchyVisualizer:
 
     def create_hierarchy_diagram(
         self,
-        nodes: Optional[List[Any]] = None,  # List[HierarchyNode]
-        edges: Optional[List[Any]] = None,  # List[HierarchyEdge]
-        test_inputs: Optional[Any] = None,
+        nodes: list[Any] | None = None,  # List[HierarchyNode]
+        edges: list[Any] | None = None,  # List[HierarchyEdge]
+        test_inputs: Any | None = None,
         title: str = "Feature Hierarchy"
     ) -> HierarchyDiagram:
         """
@@ -368,8 +368,8 @@ class HierarchyVisualizer:
 
     def create_flow_diagram(
         self,
-        flow_result: Optional[Any] = None,  # FlowAnalysisResult
-        test_inputs: Optional[Any] = None,
+        flow_result: Any | None = None,  # FlowAnalysisResult
+        test_inputs: Any | None = None,
         title: str = "Information Flow"
     ) -> FlowDiagram:
         """
@@ -415,9 +415,9 @@ class HierarchyVisualizer:
     def create_evolution_plot(
         self,
         feature_id: str,
-        evolution: Optional[Any] = None,  # FeatureEvolution
-        test_inputs: Optional[Any] = None,
-        title: Optional[str] = None
+        evolution: Any | None = None,  # FeatureEvolution
+        test_inputs: Any | None = None,
+        title: str | None = None
     ) -> EvolutionPlot:
         """
         Create feature evolution plot.
@@ -483,13 +483,13 @@ class HierarchyVisualizer:
 
     def _render_hierarchy_html(
         self,
-        nodes: List[Any],
-        edges: List[Any],
+        nodes: list[Any],
+        edges: list[Any],
         title: str
     ) -> str:
         """Render hierarchy as interactive HTML."""
         # Group nodes by layer
-        layers: Dict[int, List[Any]] = {}
+        layers: dict[int, list[Any]] = {}
         for node in nodes:
             layer = node.layer_idx if hasattr(node, 'layer_idx') else 0
             if layer not in layers:
@@ -501,7 +501,7 @@ class HierarchyVisualizer:
         svg_height = self.config.height
 
         # Calculate positions
-        node_positions: Dict[str, Tuple[int, int]] = {}
+        node_positions: dict[str, tuple[int, int]] = {}
         sorted_layers = sorted(layers.keys())
 
         for layer_idx in sorted_layers:
@@ -618,8 +618,8 @@ class HierarchyVisualizer:
 
     def _render_hierarchy_svg(
         self,
-        nodes: List[Any],
-        edges: List[Any],
+        nodes: list[Any],
+        edges: list[Any],
         title: str
     ) -> str:
         """Render hierarchy as standalone SVG."""
@@ -634,12 +634,12 @@ class HierarchyVisualizer:
 
     def _render_hierarchy_mermaid(
         self,
-        nodes: List[Any],
-        edges: List[Any],
+        nodes: list[Any],
+        edges: list[Any],
         title: str
     ) -> str:
         """Render hierarchy as Mermaid diagram."""
-        lines = [f"graph TD", f"    %% {title}"]
+        lines = ["graph TD", f"    %% {title}"]
 
         # Add nodes with styling
         for node in nodes[:50]:  # Limit for readability
@@ -669,8 +669,8 @@ class HierarchyVisualizer:
 
     def _render_hierarchy_json(
         self,
-        nodes: List[Any],
-        edges: List[Any],
+        nodes: list[Any],
+        edges: list[Any],
         title: str
     ) -> str:
         """Render hierarchy as JSON for custom visualization."""
@@ -816,7 +816,7 @@ class HierarchyVisualizer:
 
     def _render_flow_mermaid(self, flow_result: Any, title: str) -> str:
         """Render flow as Mermaid diagram."""
-        lines = [f"graph LR", f"    %% {title}"]
+        lines = ["graph LR", f"    %% {title}"]
 
         layer_flows = flow_result.layer_flows if hasattr(flow_result, 'layer_flows') else {}
         cross_flows = flow_result.cross_layer_flows if hasattr(flow_result, 'cross_layer_flows') else {}
@@ -913,8 +913,8 @@ class HierarchyVisualizer:
 def create_hierarchy_visualization(
     hierarchy_analyzer: Any,
     test_inputs: Any,
-    config: Optional[VisualizationConfig] = None,
-    output_path: Optional[str] = None
+    config: VisualizationConfig | None = None,
+    output_path: str | None = None
 ) -> HierarchyDiagram:
     """
     Create and optionally save a hierarchy visualization.
@@ -944,8 +944,8 @@ def create_hierarchy_visualization(
 def create_flow_visualization(
     flow_analyzer: Any,
     test_inputs: Any,
-    config: Optional[VisualizationConfig] = None,
-    output_path: Optional[str] = None
+    config: VisualizationConfig | None = None,
+    output_path: str | None = None
 ) -> FlowDiagram:
     """
     Create and optionally save a flow visualization.

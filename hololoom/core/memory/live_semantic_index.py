@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 LiveSemanticIndex — Self-updating embedding index for the Memory Bus.
 
@@ -20,14 +21,15 @@ Usage:
 """
 
 import logging
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # Optional imports — graceful degradation (Design Principle #2)
 try:
-    from sentence_transformers import SentenceTransformer
     import numpy as np
+    from sentence_transformers import SentenceTransformer
     _HAVE_EMBEDDINGS = True
 except ImportError:
     SentenceTransformer = None
@@ -66,11 +68,11 @@ class LiveSemanticIndex:
         self.embedding_dim = embedding_dim
         self.score_threshold = score_threshold
 
-        self._model: Optional[Any] = None
-        self._ids: List[str] = []
-        self._embeddings: Optional[Any] = None  # np.ndarray (N, dim) or None
-        self._content_map: Dict[str, str] = {}  # id → content
-        self._meta_map: Dict[str, Dict[str, Any]] = {}  # id → metadata
+        self._model: Any | None = None
+        self._ids: list[str] = []
+        self._embeddings: Any | None = None  # np.ndarray (N, dim) or None
+        self._content_map: dict[str, str] = {}  # id → content
+        self._meta_map: dict[str, dict[str, Any]] = {}  # id → metadata
 
         self.available = _HAVE_EMBEDDINGS
         if self.available:
@@ -86,7 +88,7 @@ class LiveSemanticIndex:
     # Embedding
     # =========================================================================
 
-    def _embed(self, text: str) -> Optional[Any]:
+    def _embed(self, text: str) -> Any | None:
         """Embed a single text, truncate to embedding_dim, return normalized vector."""
         if not self.available or self._model is None:
             return None
@@ -99,7 +101,7 @@ class LiveSemanticIndex:
                 vec = vec / norm
         return vec
 
-    def _embed_batch(self, texts: List[str]) -> Optional[Any]:
+    def _embed_batch(self, texts: list[str]) -> Any | None:
         """Embed a batch of texts. Returns (N, dim) ndarray or None."""
         if not self.available or self._model is None or not texts:
             return None
@@ -121,7 +123,7 @@ class LiveSemanticIndex:
         content: str,
         memory_type: str = "factual",
         importance: float = 0.5,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> bool:
         """Add or update a single item in the index.
 
@@ -155,7 +157,7 @@ class LiveSemanticIndex:
 
     def index_batch(
         self,
-        items: List[Tuple[str, str, str, float, Optional[Dict[str, Any]]]],
+        items: list[tuple[str, str, str, float, dict[str, Any] | None]],
     ) -> int:
         """Bulk-index items: list of (id, content, memory_type, importance, metadata).
 
@@ -225,17 +227,17 @@ class LiveSemanticIndex:
     # Search
     # =========================================================================
 
-    def search_sync(self, query: str, max_results: int = 5) -> List[Dict[str, Any]]:
+    def search_sync(self, query: str, max_results: int = 5) -> list[dict[str, Any]]:
         """Synchronous search — returns list of dicts matching semantic_fn contract."""
         if self.available and self._embeddings is not None and len(self._ids) > 0:
             return self._search_vector(query, max_results)
         return self._search_keyword(query, max_results)
 
-    async def search(self, query: str, max_results: int = 5) -> List[Dict[str, Any]]:
+    async def search(self, query: str, max_results: int = 5) -> list[dict[str, Any]]:
         """Async search — the interface LiteMemoryBus.semantic_fn expects."""
         return self.search_sync(query, max_results)
 
-    def _search_vector(self, query: str, max_results: int) -> List[Dict[str, Any]]:
+    def _search_vector(self, query: str, max_results: int) -> list[dict[str, Any]]:
         """Cosine similarity search over the embedding index."""
         query_vec = self._embed(query)
         if query_vec is None:
@@ -271,7 +273,7 @@ class LiveSemanticIndex:
 
         return results
 
-    def _search_keyword(self, query: str, max_results: int) -> List[Dict[str, Any]]:
+    def _search_keyword(self, query: str, max_results: int) -> list[dict[str, Any]]:
         """Jaccard keyword fallback when embeddings are unavailable."""
         query_tokens = set(query.lower().split())
         if not query_tokens:
@@ -309,7 +311,7 @@ class LiveSemanticIndex:
     # Bus Integration
     # =========================================================================
 
-    def as_semantic_fn(self) -> Callable[[str, int], Coroutine[Any, Any, List[Dict]]]:
+    def as_semantic_fn(self) -> Callable[[str, int], Coroutine[Any, Any, list[dict]]]:
         """Return an async function matching LiteMemoryBus.semantic_fn signature.
 
         Usage:
@@ -343,7 +345,7 @@ class LiveSemanticIndex:
     # Diagnostics
     # =========================================================================
 
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         """Return index health status."""
         return {
             "available": self.available,
@@ -363,8 +365,8 @@ def create_semantic_bus(
     model_name: str = "all-MiniLM-L6-v2",
     embedding_dim: int = 384,
     score_threshold: float = 0.0,
-    bus_kwargs: Optional[Dict[str, Any]] = None,
-) -> Tuple[Any, "LiveSemanticIndex"]:
+    bus_kwargs: dict[str, Any] | None = None,
+) -> tuple[Any, "LiveSemanticIndex"]:
     """Create a LiteMemoryBus with a live semantic index wired in.
 
     Returns:

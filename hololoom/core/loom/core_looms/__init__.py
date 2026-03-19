@@ -18,9 +18,9 @@ Date: December 2025
 Author: HoloLoom Architecture Team
 """
 
-from .recall_loom import RecallLoom
-from .reason_loom import ReasonLoom
 from .reach_loom import ReachLoom
+from .reason_loom import ReasonLoom
+from .recall_loom import RecallLoom
 from .reflect_loom import ReflectLoom
 from .refuse_loom import RefuseLoom
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Proactive Agent for ChatOps
 ============================
@@ -26,10 +25,10 @@ Architecture:
 
 import logging
 import re
-from typing import Dict, List, Optional, Set, Any
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -47,22 +46,22 @@ class Decision:
     conversation_id: str
     message_id: str
     confidence: float = 0.8
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ActionItem:
     """An action item extracted from conversation."""
     text: str
-    assigned_to: Optional[str] = None
+    assigned_to: str | None = None
     mentioned_by: str = ""
     timestamp: datetime = field(default_factory=datetime.now)
     conversation_id: str = ""
     message_id: str = ""
-    due_date: Optional[datetime] = None
+    due_date: datetime | None = None
     status: str = "open"  # open, in_progress, completed
     priority: str = "medium"  # low, medium, high
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -74,7 +73,7 @@ class Question:
     conversation_id: str
     message_id: str
     answered: bool = False
-    answer_message_id: Optional[str] = None
+    answer_message_id: str | None = None
 
 
 @dataclass
@@ -84,13 +83,13 @@ class MeetingNotes:
     title: str
     start_time: datetime
     end_time: datetime
-    participants: List[str]
-    topics: List[str]
-    decisions: List[Decision]
-    action_items: List[ActionItem]
-    questions: List[Question]
+    participants: list[str]
+    topics: list[str]
+    decisions: list[Decision]
+    action_items: list[ActionItem]
+    questions: list[Question]
     summary: str
-    raw_messages: List[Dict[str, Any]] = field(default_factory=list)
+    raw_messages: list[dict[str, Any]] = field(default_factory=list)
 
 
 # ============================================================================
@@ -108,7 +107,7 @@ class DecisionDetector:
         r"we['\s]+re\s+going\s+with",
     ]
 
-    def detect(self, messages: List[Dict]) -> List[Decision]:
+    def detect(self, messages: list[dict]) -> list[Decision]:
         """
         Detect decisions in message list.
 
@@ -155,7 +154,7 @@ class ActionItemDetector:
         r"assign(ed)?\s+to\s+(\w+)",
     ]
 
-    def detect(self, messages: List[Dict]) -> List[ActionItem]:
+    def detect(self, messages: list[dict]) -> list[ActionItem]:
         """Detect action items in messages."""
         items = []
 
@@ -191,7 +190,7 @@ class ActionItemDetector:
 class QuestionDetector:
     """Detects questions in conversation."""
 
-    def detect(self, messages: List[Dict]) -> List[Question]:
+    def detect(self, messages: list[dict]) -> list[Question]:
         """Detect questions in messages."""
         questions = []
 
@@ -261,18 +260,18 @@ class ProactiveAgent:
         self.question_detector = QuestionDetector()
 
         # Tracking
-        self.decisions: Dict[str, List[Decision]] = defaultdict(list)
-        self.action_items: Dict[str, List[ActionItem]] = defaultdict(list)
-        self.questions: Dict[str, List[Question]] = defaultdict(list)
-        self.message_counts: Dict[str, int] = defaultdict(int)
+        self.decisions: dict[str, list[Decision]] = defaultdict(list)
+        self.action_items: dict[str, list[ActionItem]] = defaultdict(list)
+        self.questions: dict[str, list[Question]] = defaultdict(list)
+        self.message_counts: dict[str, int] = defaultdict(int)
 
         logger.info("ProactiveAgent initialized")
 
     def process_messages(
         self,
-        messages: List[Dict],
+        messages: list[dict],
         conversation_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process messages and extract insights.
 
@@ -312,7 +311,7 @@ class ProactiveAgent:
 
         return insights
 
-    def _generate_suggestions(self, conversation_id: str) -> List[str]:
+    def _generate_suggestions(self, conversation_id: str) -> list[str]:
         """Generate proactive suggestions based on conversation state."""
         suggestions = []
 
@@ -362,8 +361,8 @@ class ProactiveAgent:
     def generate_meeting_notes(
         self,
         conversation_id: str,
-        messages: List[Dict],
-        title: Optional[str] = None
+        messages: list[dict],
+        title: str | None = None
     ) -> MeetingNotes:
         """
         Generate structured meeting notes from conversation.
@@ -410,7 +409,7 @@ class ProactiveAgent:
 
         return notes
 
-    def _extract_topics(self, messages: List[Dict]) -> List[str]:
+    def _extract_topics(self, messages: list[dict]) -> list[str]:
         """Extract discussion topics (simplified)."""
         # In production, would use topic modeling or LLM
         # For now, extract common keywords
@@ -427,9 +426,9 @@ class ProactiveAgent:
 
     def _generate_summary(
         self,
-        messages: List[Dict],
-        decisions: List[Decision],
-        action_items: List[ActionItem]
+        messages: list[dict],
+        decisions: list[Decision],
+        action_items: list[ActionItem]
     ) -> str:
         """Generate meeting summary."""
         summary_parts = []
@@ -494,7 +493,7 @@ class ProactiveAgent:
 
         return "\n".join(lines)
 
-    def get_statistics(self, conversation_id: str) -> Dict[str, Any]:
+    def get_statistics(self, conversation_id: str) -> dict[str, Any]:
         """Get statistics for a conversation."""
         return {
             "total_messages": self.message_counts[conversation_id],

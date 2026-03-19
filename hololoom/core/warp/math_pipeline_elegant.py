@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Elegant Math Pipeline - Fluent API with Beautiful Visualizations
 =================================================================
@@ -18,33 +18,28 @@ Date: 2025-10-29
 
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional, Callable
-from dataclasses import dataclass, field
-from datetime import datetime
-from pathlib import Path
+from typing import Any
+
 import numpy as np
 
 # Rich terminal UI
 try:
+    from rich import box
     from rich.console import Console
-    from rich.table import Table
-    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
-    from rich.panel import Panel
     from rich.layout import Layout
     from rich.live import Live
+    from rich.panel import Panel
+    from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
     from rich.syntax import Syntax
+    from rich.table import Table
     from rich.tree import Tree
-    from rich import box
     HAS_RICH = True
 except ImportError:
     HAS_RICH = False
     Console = None
 
 # Base math pipeline
-from hololoom.warp.math_pipeline_integration import (
-    MathPipelineIntegration,
-    MathPipelineResult
-)
+from hololoom.warp.math_pipeline_integration import MathPipelineIntegration, MathPipelineResult
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +106,7 @@ class BeautifulMathUI:
         self.console.print(f"\n[bold white]Query:[/] {query}")
         self.console.print(f"[bold {color}]Intent:[/] {intent.upper()}")
 
-    def print_operations(self, operations: List[str], cost: int, budget: int):
+    def print_operations(self, operations: list[str], cost: int, budget: int):
         """Print selected operations with cost."""
         if not self.console:
             print(f"Operations: {', '.join(operations)}")
@@ -169,7 +164,7 @@ class BeautifulMathUI:
         )
         self.console.print(panel)
 
-    def print_statistics_table(self, stats: Dict[str, Any]):
+    def print_statistics_table(self, stats: dict[str, Any]):
         """Print statistics as beautiful table."""
         if not self.console:
             print("\nStatistics:")
@@ -199,7 +194,7 @@ class BeautifulMathUI:
 
         self.console.print(table)
 
-    def print_rl_leaderboard(self, leaderboard: List[Dict]):
+    def print_rl_leaderboard(self, leaderboard: list[dict]):
         """Print RL operation leaderboard."""
         if not self.console or not leaderboard:
             return
@@ -234,7 +229,7 @@ class BeautifulMathUI:
 
         self.console.print(table)
 
-    def print_sparkline(self, values: List[float], label: str = "Trend"):
+    def print_sparkline(self, values: list[float], label: str = "Trend"):
         """Print ASCII sparkline."""
         if not values:
             return
@@ -294,10 +289,10 @@ class ElegantMathPipeline:
         self._beautiful = False
 
         # State
-        self._integration: Optional[MathPipelineIntegration] = None
-        self._ui: Optional[BeautifulMathUI] = None
-        self._cache: Dict[str, MathPipelineResult] = {}
-        self._history: List[MathPipelineResult] = []
+        self._integration: MathPipelineIntegration | None = None
+        self._ui: BeautifulMathUI | None = None
+        self._cache: dict[str, MathPipelineResult] = {}
+        self._history: list[MathPipelineResult] = []
 
         logger.info("ElegantMathPipeline initialized")
 
@@ -393,10 +388,10 @@ class ElegantMathPipeline:
     async def analyze(
         self,
         query: str,
-        query_embedding: Optional[np.ndarray] = None,
-        context: Optional[Dict] = None,
+        query_embedding: np.ndarray | None = None,
+        context: dict | None = None,
         use_cache: bool = True
-    ) -> Optional[MathPipelineResult]:
+    ) -> MathPipelineResult | None:
         """
         Analyze query (async, with caching).
 
@@ -460,18 +455,18 @@ class ElegantMathPipeline:
     def analyze_sync(
         self,
         query: str,
-        query_embedding: Optional[np.ndarray] = None,
-        context: Optional[Dict] = None
-    ) -> Optional[MathPipelineResult]:
+        query_embedding: np.ndarray | None = None,
+        context: dict | None = None
+    ) -> MathPipelineResult | None:
         """Synchronous version of analyze."""
         return asyncio.run(self.analyze(query, query_embedding, context))
 
     async def analyze_batch(
         self,
-        queries: List[str],
+        queries: list[str],
         use_cache: bool = True,
         show_progress: bool = True
-    ) -> List[Optional[MathPipelineResult]]:
+    ) -> list[MathPipelineResult | None]:
         """
         Analyze multiple queries (async, parallel).
 
@@ -498,7 +493,7 @@ class ElegantMathPipeline:
 
     # Statistics & visualization
 
-    def statistics(self) -> Dict[str, Any]:
+    def statistics(self) -> dict[str, Any]:
         """Get pipeline statistics."""
         self._ensure_integration()
         return self._integration.get_statistics()
@@ -587,7 +582,7 @@ async def analyze(
     mode: str = "fast",
     beautiful: bool = True,
     **kwargs
-) -> Optional[MathPipelineResult]:
+) -> MathPipelineResult | None:
     """
     One-liner analysis function.
 
@@ -622,7 +617,7 @@ async def analyze(
     return await pipeline.analyze(query, context=kwargs)
 
 
-def analyze_sync(query: str, mode: str = "fast", **kwargs) -> Optional[MathPipelineResult]:
+def analyze_sync(query: str, mode: str = "fast", **kwargs) -> MathPipelineResult | None:
     """Synchronous one-liner analysis."""
     return asyncio.run(analyze(query, mode=mode, **kwargs))
 

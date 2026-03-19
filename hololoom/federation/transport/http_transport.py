@@ -14,14 +14,12 @@ import asyncio
 import json
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from ..types import FederationNode
-
 from . import (
     BaseTransport,
     MessageHandler,
-    MessageType,
     TransportMessage,
     TransportResponse,
 )
@@ -62,10 +60,10 @@ class HTTPTransport(BaseTransport):
         self._max_connections = max_connections
 
         # aiohttp objects (created lazily)
-        self._session: Optional[Any] = None  # aiohttp.ClientSession
-        self._app: Optional[Any] = None       # aiohttp.web.Application
-        self._runner: Optional[Any] = None    # aiohttp.web.AppRunner
-        self._site: Optional[Any] = None      # aiohttp.web.TCPSite
+        self._session: Any | None = None  # aiohttp.ClientSession
+        self._app: Any | None = None       # aiohttp.web.Application
+        self._runner: Any | None = None    # aiohttp.web.AppRunner
+        self._site: Any | None = None      # aiohttp.web.TCPSite
 
     async def _get_session(self) -> Any:
         """Get or create the HTTP client session."""
@@ -315,10 +313,10 @@ class MockTransport(BaseTransport):
 
     def __init__(self, node_id: str):
         super().__init__(node_id)
-        self._other_nodes: Dict[str, MockTransport] = {}
+        self._other_nodes: dict[str, MockTransport] = {}
         self._latency_ms: float = 1.0  # Simulated latency
 
-    def connect_to(self, other: "MockTransport") -> None:
+    def connect_to(self, other: MockTransport) -> None:
         """Connect this mock to another for direct message delivery."""
         self._other_nodes[other.node_id] = other
         other._other_nodes[self.node_id] = self

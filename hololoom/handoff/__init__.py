@@ -48,83 +48,77 @@ from __future__ import annotations
 # ═══════════════════════════════════════════════════════════════════════════
 #  IDENTITY - Cryptographic identity and device management
 # ═══════════════════════════════════════════════════════════════════════════
-
 from hololoom.handoff.identity import (
     UnifiedIdentity,
     get_or_create_identity,
 )
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  TYPES - Data structures for handoff operations
-# ═══════════════════════════════════════════════════════════════════════════
-
-from hololoom.handoff.types import (
-    # Enums
-    DeviceStatus,
-    HandoffStatus,
-    SyncDirection,
-    # Device management
-    DeviceCapability,
-    DeviceManifest,
-    # Handoff operations
-    HandoffRequest,
-    HandoffResult,
-    # Sync operations
-    SignedOp,
-    MergeResult,
-    # Exceptions
-    HandoffError,
-    DeviceNotFoundError,
-    DeviceRevokedError,
-    DeviceUnhealthyError,
-    RateLimitExceededError,
-    InvalidSignatureError,
-    ReplayAttackError,
-    PayloadRejectedError,
-    HandoffBlockedError,
-)
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  SYNCED MEMORY - CRDT-based local-first memory with automatic sync
-# ═══════════════════════════════════════════════════════════════════════════
-
-from hololoom.handoff.synced_memory import (
-    SyncedMemory,
-    LamportClock,
-    MemoryOp,
-    MemoryOpType,
-)
-
-# ═══════════════════════════════════════════════════════════════════════════
 #  ORCHESTRATOR - 7-layer security handoff coordination
 # ═══════════════════════════════════════════════════════════════════════════
-
 from hololoom.handoff.orchestrator import (
     HardenedHandoffOrchestrator,
 )
 
 # ═══════════════════════════════════════════════════════════════════════════
+#  SYNCED MEMORY - CRDT-based local-first memory with automatic sync
+# ═══════════════════════════════════════════════════════════════════════════
+from hololoom.handoff.synced_memory import (
+    LamportClock,
+    MemoryOp,
+    MemoryOpType,
+    SyncedMemory,
+)
+
+# ═══════════════════════════════════════════════════════════════════════════
 #  TRANSPORT - Pluggable transport layer (WebSocket, Bluetooth, LAN)
 # ═══════════════════════════════════════════════════════════════════════════
-
 from hololoom.handoff.transport import (
+    BaseTransport,
+    BluetoothTransport,
+    CompositeTransport,
+    LocalNetworkTransport,
+    SendResult,
+    TransportMessage,
     # Protocol and base
     TransportProtocol,
     TransportStatus,
-    TransportMessage,
-    SendResult,
-    BaseTransport,
     # Transport implementations
     WebSocketTransport,
-    BluetoothTransport,
-    LocalNetworkTransport,
-    CompositeTransport,
     # Factory functions
     create_default_transport,
-    create_websocket_only_transport,
     create_local_only_transport,
+    create_websocket_only_transport,
 )
 
+# ═══════════════════════════════════════════════════════════════════════════
+#  TYPES - Data structures for handoff operations
+# ═══════════════════════════════════════════════════════════════════════════
+from hololoom.handoff.types import (
+    # Device management
+    DeviceCapability,
+    DeviceManifest,
+    DeviceNotFoundError,
+    DeviceRevokedError,
+    # Enums
+    DeviceStatus,
+    DeviceUnhealthyError,
+    HandoffBlockedError,
+    # Exceptions
+    HandoffError,
+    # Handoff operations
+    HandoffRequest,
+    HandoffResult,
+    HandoffStatus,
+    InvalidSignatureError,
+    MergeResult,
+    PayloadRejectedError,
+    RateLimitExceededError,
+    ReplayAttackError,
+    # Sync operations
+    SignedOp,
+    SyncDirection,
+)
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  PUBLIC API

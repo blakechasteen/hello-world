@@ -25,26 +25,23 @@ References:
 - spec_ledger.py (provenance tracking)
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List, Callable, Awaitable, Protocol, Union
-from datetime import datetime
-from uuid import uuid4
-import asyncio
 import functools
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Protocol, Union
+from uuid import uuid4
 
-from .jenny_enums import LifecycleStage, DissolutionTrigger, ActionStatus
+from .jenny_enums import ActionStatus, DissolutionTrigger, LifecycleStage
+from .jenny_lifecycle import (
+    InvalidTransitionError,
+    JennyLifecycleManagerBase,
+    PanelNotFoundError,
+)
 from .jenny_spec import (
     JennySpec,
-    create_action,
 )
-from .jenny_lifecycle import (
-    JennyLifecycleManagerBase,
-    PanelState,
-    PanelNotFoundError,
-    InvalidTransitionError,
-)
-from .spec_ledger import SpecLedger, SpecLedgerEntry
-
+from .spec_ledger import SpecLedger
 
 # ============================================================================
 # Action Result Types
@@ -65,17 +62,17 @@ class ActionResult:
     timestamp: datetime = field(default_factory=datetime.now)
 
     # State changes
-    previous_lifecycle: Optional[LifecycleStage] = None
-    new_lifecycle: Optional[LifecycleStage] = None
+    previous_lifecycle: LifecycleStage | None = None
+    new_lifecycle: LifecycleStage | None = None
 
     # Output
-    message: Optional[str] = None
-    data: Dict[str, Any] = field(default_factory=dict)
+    message: str | None = None
+    data: dict[str, Any] = field(default_factory=dict)
 
     # Error info (if failed)
-    error: Optional[str] = None
+    error: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize for logging/API."""
         return {
             "action_id": self.action_id,
@@ -100,9 +97,9 @@ class ActionHandlerProtocol(Protocol):
 
     async def execute(
         self,
-        action: Dict[str, Any],
+        action: dict[str, Any],
         spec: JennySpec,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> ActionResult:
         """Execute an action on a panel."""
         ...
@@ -110,7 +107,7 @@ class ActionHandlerProtocol(Protocol):
     def register_handler(
         self,
         handler_name: str,
-        handler_fn: Callable[[JennySpec, Dict[str, Any]], Awaitable[ActionResult]],
+        handler_fn: Callable[[JennySpec, dict[str, Any]], Awaitable[ActionResult]],
     ) -> None:
         """Register a custom action handler."""
         ...
@@ -121,7 +118,7 @@ class ActionHandlerProtocol(Protocol):
 # ============================================================================
 
 # Type alias for handler return: either ActionResult or success dict
-HandlerReturn = Union[ActionResult, Dict[str, Any]]
+HandlerReturn = Union[ActionResult, dict[str, Any]]
 
 
 def action_handler(handler_name: str, tracks_lifecycle: bool = False):
@@ -153,9 +150,9 @@ def action_handler(handler_name: str, tracks_lifecycle: bool = False):
         @functools.wraps(handler_fn)
         async def wrapper(
             spec: JennySpec,
-            params: Dict[str, Any],
+            params: dict[str, Any],
             lifecycle_manager: JennyLifecycleManagerBase,
-            ledger: Optional[SpecLedger],
+            ledger: SpecLedger | None,
         ) -> ActionResult:
             action_id = str(uuid4())
             previous_lifecycle = spec.lifecycle if tracks_lifecycle else None
@@ -213,9 +210,9 @@ def action_handler(handler_name: str, tracks_lifecycle: bool = False):
 @action_handler("pin_panel", tracks_lifecycle=True)
 async def _handle_pin_panel(
     spec: JennySpec,
-    params: Dict[str, Any],
+    params: dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
-    ledger: Optional[SpecLedger],
+    ledger: SpecLedger | None,
 ) -> HandlerReturn:
     """
     Pin panel: NASCENT → STABLE
@@ -242,9 +239,9 @@ async def _handle_pin_panel(
 @action_handler("dismiss_panel", tracks_lifecycle=True)
 async def _handle_dismiss_panel(
     spec: JennySpec,
-    params: Dict[str, Any],
+    params: dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
-    ledger: Optional[SpecLedger],
+    ledger: SpecLedger | None,
 ) -> HandlerReturn:
     """
     Dismiss panel: * → DISSOLVING → ARCHIVED
@@ -272,9 +269,9 @@ async def _handle_dismiss_panel(
 @action_handler("show_why_panel")
 async def _handle_show_why_panel(
     spec: JennySpec,
-    params: Dict[str, Any],
+    params: dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
-    ledger: Optional[SpecLedger],
+    ledger: SpecLedger | None,
 ) -> HandlerReturn:
     """
     Show "Why this UI?" meta-panel.
@@ -289,7 +286,7 @@ async def _handle_show_why_panel(
         "panel_type": spec.panel_type.value,
         "reasoning": [
             f"Panel type '{spec.panel_type.value}' was selected based on query content",
-            f"Confidence level determined appropriate visualization",
+            "Confidence level determined appropriate visualization",
             f"Content structure matched {spec.panel_type.value} template",
         ],
         "alternatives_considered": [
@@ -314,9 +311,9 @@ async def _handle_show_why_panel(
 @action_handler("expand_panel")
 async def _handle_expand_panel(
     spec: JennySpec,
-    params: Dict[str, Any],
+    params: dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
-    ledger: Optional[SpecLedger],
+    ledger: SpecLedger | None,
 ) -> HandlerReturn:
     """Expand panel to larger size."""
     return {
@@ -331,9 +328,9 @@ async def _handle_expand_panel(
 @action_handler("collapse_panel")
 async def _handle_collapse_panel(
     spec: JennySpec,
-    params: Dict[str, Any],
+    params: dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
-    ledger: Optional[SpecLedger],
+    ledger: SpecLedger | None,
 ) -> HandlerReturn:
     """Collapse panel to smaller size."""
     return {
@@ -348,9 +345,9 @@ async def _handle_collapse_panel(
 @action_handler("copy_content")
 async def _handle_copy_content(
     spec: JennySpec,
-    params: Dict[str, Any],
+    params: dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
-    ledger: Optional[SpecLedger],
+    ledger: SpecLedger | None,
 ) -> HandlerReturn:
     """Copy panel content to clipboard."""
     # Extract copyable content based on panel type
@@ -374,9 +371,9 @@ async def _handle_copy_content(
 @action_handler("export_panel")
 async def _handle_export_panel(
     spec: JennySpec,
-    params: Dict[str, Any],
+    params: dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
-    ledger: Optional[SpecLedger],
+    ledger: SpecLedger | None,
 ) -> HandlerReturn:
     """
     Export panel data.
@@ -442,8 +439,8 @@ class JennyActionHandler:
     def __init__(
         self,
         lifecycle_manager: JennyLifecycleManagerBase,
-        ledger: Optional[SpecLedger] = None,
-        learning_callback: Optional[Callable[[ActionResult, JennySpec], Awaitable[None]]] = None,
+        ledger: SpecLedger | None = None,
+        learning_callback: Callable[[ActionResult, JennySpec], Awaitable[None]] | None = None,
     ):
         """
         Initialize action handler.
@@ -460,7 +457,7 @@ class JennyActionHandler:
         self._learning_callback = learning_callback
 
         # Built-in handlers
-        self._handlers: Dict[str, Callable] = {
+        self._handlers: dict[str, Callable] = {
             "pin_panel": _handle_pin_panel,
             "dismiss_panel": _handle_dismiss_panel,
             "show_why_panel": _handle_show_why_panel,
@@ -471,14 +468,14 @@ class JennyActionHandler:
         }
 
         # Action history for debugging
-        self._history: List[ActionResult] = []
+        self._history: list[ActionResult] = []
         self._max_history = 1000
 
     async def execute(
         self,
-        action: Dict[str, Any],
+        action: dict[str, Any],
         spec: JennySpec,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> ActionResult:
         """
         Execute an action on a panel.
@@ -567,11 +564,11 @@ class JennyActionHandler:
         """
         self._handlers[handler_name] = handler_fn
 
-    def get_available_handlers(self) -> List[str]:
+    def get_available_handlers(self) -> list[str]:
         """Get list of registered handler names."""
         return list(self._handlers.keys())
 
-    def get_history(self, limit: int = 100) -> List[Dict[str, Any]]:
+    def get_history(self, limit: int = 100) -> list[dict[str, Any]]:
         """Get recent action history."""
         return [r.to_dict() for r in self._history[-limit:]]
 
@@ -586,8 +583,8 @@ class JennyActionHandler:
 
 def create_action_handler(
     lifecycle_manager: JennyLifecycleManagerBase,
-    ledger: Optional[SpecLedger] = None,
-    learning_callback: Optional[Callable[[ActionResult, JennySpec], Awaitable[None]]] = None,
+    ledger: SpecLedger | None = None,
+    learning_callback: Callable[[ActionResult, JennySpec], Awaitable[None]] | None = None,
 ) -> JennyActionHandler:
     """
     Create a Jenny action handler.

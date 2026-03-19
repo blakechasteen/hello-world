@@ -25,59 +25,53 @@ Phase: 11.8 - Engine Integration
 """
 
 import asyncio
+import logging
+import time
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Union
-import time
-import logging
+from typing import Any
 
 import torch
 
-from hololoom.dark_trace.protocol import (
-    TraceLens,
-    BaseLens,
-    Feature,
-    FeatureActivation,
-    SteeringVector,
-    LensType,
-    FeatureSource,
-    SafetyFlag,
+from hololoom.dark_trace.plugins.alignment_bridge import (
+    PluginAlignmentBridge,
 )
-from hololoom.dark_trace.result import (
-    TraceResult,
-    LensResult,
-    SteeringResult,
-    AblationResult,
-    InjectionResult,
-    PatchResult,
-    CircuitTrace,
-    AnalysisStatus,
-    SteeringOutcome,
+from hololoom.dark_trace.plugins.interface import (
+    DarkTracePlugin,
+    MonitorPlugin,
 )
-from hololoom.dark_trace.registry import FeatureRegistry, create_sae_features
-from hololoom.dark_trace.trace_config import TraceConfig, TraceMode
+from hololoom.dark_trace.plugins.loader import (
+    BulkLoadResult,
+    LoaderConfig,
+    PluginLoader,
+)
+from hololoom.dark_trace.plugins.registry import PluginRegistry
 
 # Plugin system imports (Phase 11)
 from hololoom.dark_trace.plugins.safety_gate import (
     PluginSafetyGate,
     TrustLevel,
-    PluginCapability,
 )
-from hololoom.dark_trace.plugins.alignment_bridge import (
-    PluginAlignmentBridge,
+from hololoom.dark_trace.protocol import (
+    BaseLens,
+    FeatureActivation,
+    FeatureSource,
+    LensType,
+    SafetyFlag,
+    SteeringVector,
+    TraceLens,
 )
-from hololoom.dark_trace.plugins.registry import PluginRegistry
-from hololoom.dark_trace.plugins.loader import (
-    PluginLoader,
-    LoaderConfig,
-    BulkLoadResult,
+from hololoom.dark_trace.registry import FeatureRegistry, create_sae_features
+from hololoom.dark_trace.result import (
+    AblationResult,
+    AnalysisStatus,
+    CircuitTrace,
+    LensResult,
+    SteeringOutcome,
+    SteeringResult,
+    TraceResult,
 )
-from hololoom.dark_trace.plugins.interface import (
-    DarkTracePlugin,
-    PluginMetadata,
-    MonitorPlugin,
-)
-
+from hololoom.dark_trace.trace_config import TraceConfig
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +97,7 @@ class DarkTraceEngine:
 
     def __init__(
         self,
-        config: Optional[TraceConfig] = None,
+        config: TraceConfig | None = None,
         enable_plugins: bool = True,
         auto_load_builtins: bool = True,
     ):
@@ -118,7 +112,7 @@ class DarkTraceEngine:
         self.config = config or TraceConfig.standard()
 
         # Lens registry: {LensType: TraceLens}
-        self._lenses: Dict[LensType, TraceLens] = {}
+        self._lenses: dict[LensType, TraceLens] = {}
 
         # Feature registry (unified namespace)
         self.registry = FeatureRegistry(
@@ -131,10 +125,10 @@ class DarkTraceEngine:
 
         # Plugin system (Phase 11)
         self._plugins_enabled = enable_plugins
-        self._alignment_bridge: Optional[PluginAlignmentBridge] = None
-        self._safety_gate: Optional[PluginSafetyGate] = None
-        self._plugin_registry: Optional[PluginRegistry] = None
-        self._plugin_loader: Optional[PluginLoader] = None
+        self._alignment_bridge: PluginAlignmentBridge | None = None
+        self._safety_gate: PluginSafetyGate | None = None
+        self._plugin_registry: PluginRegistry | None = None
+        self._plugin_loader: PluginLoader | None = None
 
         if enable_plugins:
             self._init_plugin_system(auto_load_builtins)
@@ -183,9 +177,6 @@ class DarkTraceEngine:
     def _load_builtin_plugins(self) -> None:
         """Load built-in CORE and TRUSTED plugins."""
         from hololoom.dark_trace.plugins.builtin import (
-            SafetyMonitorPlugin,
-            AlignmentValidatorPlugin,
-            MetricsExporterPlugin,
             get_auto_load_plugins,
         )
 
@@ -278,15 +269,15 @@ class DarkTraceEngine:
 
         logger.info(f"Registered lens: {lens_type.name} ({lens.feature_dim} features)")
 
-    def get_lens(self, lens_type: LensType) -> Optional[TraceLens]:
+    def get_lens(self, lens_type: LensType) -> TraceLens | None:
         """Get a registered lens by type."""
         return self._lenses.get(lens_type)
 
-    def list_lenses(self) -> List[LensType]:
+    def list_lenses(self) -> list[LensType]:
         """List all registered lens types."""
         return list(self._lenses.keys())
 
-    def _get_active_lenses(self) -> Dict[LensType, TraceLens]:
+    def _get_active_lenses(self) -> dict[LensType, TraceLens]:
         """Get lenses that are enabled in config."""
         active = {}
 
@@ -308,7 +299,7 @@ class DarkTraceEngine:
     def analyze(
         self,
         activations: torch.Tensor,
-        layer_name: Optional[str] = None,
+        layer_name: str | None = None,
         include_safety: bool = True,
     ) -> TraceResult:
         """
@@ -341,10 +332,10 @@ class DarkTraceEngine:
             return TraceResult.create_failed(trace_id, "No active lenses")
 
         # Run analysis through each lens
-        lens_results: Dict[LensType, LensResult] = {}
-        all_features: List[FeatureActivation] = []
-        sae_activations: Dict[str, float] = {}
-        semantic_activations: Dict[str, float] = {}
+        lens_results: dict[LensType, LensResult] = {}
+        all_features: list[FeatureActivation] = []
+        sae_activations: dict[str, float] = {}
+        semantic_activations: dict[str, float] = {}
 
         for lens_type, lens in active_lenses.items():
             lens_start = time.time()
@@ -480,7 +471,7 @@ class DarkTraceEngine:
         self,
         lens_type: LensType,
         projections: torch.Tensor
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Compute lens-specific metrics."""
         metrics = {}
 
@@ -493,7 +484,7 @@ class DarkTraceEngine:
 
     def _safety_analysis(
         self,
-        features: List[FeatureActivation]
+        features: list[FeatureActivation]
     ) -> tuple:
         """
         Perform safety analysis on features.
@@ -543,7 +534,7 @@ class DarkTraceEngine:
         self,
         activations: torch.Tensor,
         verbosity: int = 1,
-        focus_features: Optional[List[str]] = None,
+        focus_features: list[str] | None = None,
     ) -> str:
         """
         Generate human-readable explanation of activations.
@@ -615,7 +606,7 @@ class DarkTraceEngine:
 
     def steer(
         self,
-        goals: Dict[str, float],
+        goals: dict[str, float],
         validate_safety: bool = True,
     ) -> SteeringResult:
         """
@@ -690,7 +681,7 @@ class DarkTraceEngine:
             safety_validated=validate_safety,
         )
 
-    def _find_lens_for_feature(self, feature_id: str) -> Optional[TraceLens]:
+    def _find_lens_for_feature(self, feature_id: str) -> TraceLens | None:
         """Find the lens that owns a feature."""
         feature = self.registry.get(feature_id)
         if not feature:
@@ -712,7 +703,7 @@ class DarkTraceEngine:
     def ablate(
         self,
         activations: torch.Tensor,
-        feature_ids: List[str],
+        feature_ids: list[str],
     ) -> AblationResult:
         """
         Ablate (remove) features from activations.
@@ -817,7 +808,7 @@ class DarkTraceEngine:
     # Statistics
     # =========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get engine statistics."""
         stats = {
             "analyses_performed": self._analysis_count,
@@ -872,7 +863,7 @@ class DarkTraceEngine:
 
     async def load_plugins(
         self,
-        plugin_dirs: Optional[List[str]] = None,
+        plugin_dirs: list[str] | None = None,
         auto_discover: bool = True,
         min_trust_level: TrustLevel = TrustLevel.SANDBOXED,
     ) -> BulkLoadResult:
@@ -908,7 +899,7 @@ class DarkTraceEngine:
     async def load_plugin(
         self,
         plugin_path: str,
-        trust_level: Optional[TrustLevel] = None,
+        trust_level: TrustLevel | None = None,
     ):
         """
         Load a single plugin from path.
@@ -930,7 +921,7 @@ class DarkTraceEngine:
             trust_level=trust_level,
         )
 
-    def get_plugin(self, name: str) -> Optional[DarkTracePlugin]:
+    def get_plugin(self, name: str) -> DarkTracePlugin | None:
         """
         Get a registered plugin by name.
 
@@ -944,7 +935,7 @@ class DarkTraceEngine:
             return None
         return self._plugin_registry.get_plugin(name)
 
-    def list_plugins(self) -> List[str]:
+    def list_plugins(self) -> list[str]:
         """
         List all registered plugin names.
 
@@ -955,7 +946,7 @@ class DarkTraceEngine:
             return []
         return self._plugin_registry.get_plugin_names()
 
-    def get_plugin_info(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_plugin_info(self, name: str) -> dict[str, Any] | None:
         """
         Get information about a plugin.
 
@@ -1012,17 +1003,17 @@ class DarkTraceEngine:
                     logger.warning(f"Plugin {name} failed on analysis notification: {e}")
 
     @property
-    def safety_gate(self) -> Optional[PluginSafetyGate]:
+    def safety_gate(self) -> PluginSafetyGate | None:
         """Access the plugin safety gate."""
         return self._safety_gate
 
     @property
-    def alignment_bridge(self) -> Optional[PluginAlignmentBridge]:
+    def alignment_bridge(self) -> PluginAlignmentBridge | None:
         """Access the alignment bridge."""
         return self._alignment_bridge
 
     @property
-    def plugin_registry(self) -> Optional[PluginRegistry]:
+    def plugin_registry(self) -> PluginRegistry | None:
         """Access the plugin registry."""
         return self._plugin_registry
 
@@ -1055,7 +1046,7 @@ class DarkTraceEngine:
 # =============================================================================
 
 def create_engine(
-    config: Optional[TraceConfig] = None,
+    config: TraceConfig | None = None,
     auto_register_sae: bool = False,
     sae_dim: int = 384,
 ) -> DarkTraceEngine:

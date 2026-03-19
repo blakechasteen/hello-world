@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Base Department - Abstract base class providing common department functionality.
 
@@ -21,26 +20,20 @@ and inherited, not copy-pasted across departments."
 """
 
 from __future__ import annotations
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, timedelta
-from collections import defaultdict, deque
+
 import asyncio
-import time
 import logging
+from collections import defaultdict, deque
+from datetime import datetime, timedelta
+from typing import Any
 
 from hololoom.protocols.department import (
-    Department,
+    DepartmentConfig,
+    DepartmentManifest,
     DepartmentRequest,
     DepartmentResponse,
     VerificationResult,
-    ConfidenceMetadata,
-    ConfidenceLevel,
-    DepartmentConfig,
-    DepartmentManifest,
-    compute_learning_rate,
-    should_update_now,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -111,9 +104,9 @@ class BaseDepartment:
         name: str,
         domain: str,
         version: str,
-        supported_tasks: List[str],
-        confidence_range: Tuple[float, float],
-        config: Optional[DepartmentConfig] = None
+        supported_tasks: list[str],
+        confidence_range: tuple[float, float],
+        config: DepartmentConfig | None = None
     ):
         """
         Initialize base department.
@@ -137,9 +130,9 @@ class BaseDepartment:
         self.config = config or DepartmentConfig()
 
         # Three-tier memory system
-        self.short_term_memory: Dict[str, Any] = {}  # Recent interactions (this session)
-        self.medium_term_memory: Dict[str, Any] = {}  # Session patterns (hours to days)
-        self.long_term_memory: Dict[str, Any] = {}  # Institutional knowledge (weeks to months)
+        self.short_term_memory: dict[str, Any] = {}  # Recent interactions (this session)
+        self.medium_term_memory: dict[str, Any] = {}  # Session patterns (hours to days)
+        self.long_term_memory: dict[str, Any] = {}  # Institutional knowledge (weeks to months)
 
         # Memory capacity tracking
         self._short_term_keys: deque = deque(maxlen=self.config.short_term_capacity)
@@ -147,11 +140,11 @@ class BaseDepartment:
         self._long_term_keys: deque = deque(maxlen=self.config.long_term_capacity)
 
         # Session tracking
-        self._active_sessions: Dict[str, datetime] = {}  # session_id → last_access
-        self._session_requests: Dict[str, int] = defaultdict(int)  # session_id → request_count
+        self._active_sessions: dict[str, datetime] = {}  # session_id → last_access
+        self._session_requests: dict[str, int] = defaultdict(int)  # session_id → request_count
 
         # Learning signals buffer
-        self._learning_signals: List[Dict[str, Any]] = []
+        self._learning_signals: list[dict[str, Any]] = []
         self._last_strategy_update = datetime.now()
 
         # Performance metrics
@@ -165,11 +158,11 @@ class BaseDepartment:
         }
 
         # Confidence calibration tracking
-        self._confidence_calibration: Dict[str, List[Tuple[float, float]]] = defaultdict(list)
+        self._confidence_calibration: dict[str, list[tuple[float, float]]] = defaultdict(list)
         # task_type → [(predicted_confidence, actual_quality)]
 
         # Background tasks
-        self._background_tasks: List[asyncio.Task] = []
+        self._background_tasks: list[asyncio.Task] = []
 
         # Lifecycle
         self._initialized = False
@@ -257,7 +250,7 @@ class BaseDepartment:
 
     async def update_strategy(
         self,
-        learning_signals: List[Dict[str, Any]]
+        learning_signals: list[dict[str, Any]]
     ) -> None:
         """
         Update department strategy based on learning signals.
@@ -328,7 +321,7 @@ class BaseDepartment:
     async def get_session_state(
         self,
         session_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Retrieve session-specific state.
 
@@ -360,7 +353,7 @@ class BaseDepartment:
     async def _store_session_state(
         self,
         session_id: str,
-        state: Dict[str, Any]
+        state: dict[str, Any]
     ) -> None:
         """Store session state in short-term memory."""
         if not self.config.enable_session_memory:
@@ -411,7 +404,7 @@ class BaseDepartment:
     async def get_institutional_memory(
         self,
         pattern_type: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Retrieve cross-session patterns (long-term memory).
 
@@ -483,7 +476,7 @@ class BaseDepartment:
     # Health Monitoring
     # ========================================================================
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """
         Report department health and performance metrics.
 

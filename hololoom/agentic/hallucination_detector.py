@@ -23,14 +23,13 @@ Usage:
 """
 
 import ast
-import re
 import logging
-from typing import List, Dict, Optional, Any
+import re
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 from hololoom.agentic.codebase_ingestion import CodebaseIndexer, EntityType, Language
-
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +52,7 @@ class CodeReference:
     reference_type: str  # "function_call", "class_usage", "import", "attribute"
     line_number: int
     context: str  # Surrounding code for context
-    expected_type: Optional[EntityType] = None
+    expected_type: EntityType | None = None
 
 
 @dataclass
@@ -65,14 +64,14 @@ class Hallucination:
     context: str
     confidence: float  # 0.0-1.0 (how sure we are it's a hallucination)
     reason: str
-    suggestions: List[str]  # Suggested real entities
-    fix_suggestion: Optional[str] = None  # Suggested code fix
+    suggestions: list[str]  # Suggested real entities
+    fix_suggestion: str | None = None  # Suggested code fix
 
 
 class ReferenceExtractor:
     """Base class for extracting references from code."""
 
-    def extract_references(self, code: str, file_path: str = "temp.py") -> List[CodeReference]:
+    def extract_references(self, code: str, file_path: str = "temp.py") -> list[CodeReference]:
         """Extract all references from code."""
         raise NotImplementedError
 
@@ -80,7 +79,7 @@ class ReferenceExtractor:
 class PythonReferenceExtractor(ReferenceExtractor):
     """Extract references from Python code."""
 
-    def extract_references(self, code: str, file_path: str = "temp.py") -> List[CodeReference]:
+    def extract_references(self, code: str, file_path: str = "temp.py") -> list[CodeReference]:
         """Extract function calls, class usage, imports, attributes."""
         references = []
 
@@ -144,7 +143,7 @@ class PythonReferenceExtractor(ReferenceExtractor):
 
         return references
 
-    def _extract_call(self, node: ast.Call, code: str) -> Optional[CodeReference]:
+    def _extract_call(self, node: ast.Call, code: str) -> CodeReference | None:
         """Extract function call reference."""
         func_name = None
 
@@ -175,7 +174,7 @@ class PythonReferenceExtractor(ReferenceExtractor):
 class TypeScriptReferenceExtractor(ReferenceExtractor):
     """Extract references from TypeScript/JavaScript code."""
 
-    def extract_references(self, code: str, file_path: str = "temp.ts") -> List[CodeReference]:
+    def extract_references(self, code: str, file_path: str = "temp.ts") -> list[CodeReference]:
         """Extract references using regex patterns."""
         references = []
 
@@ -293,7 +292,7 @@ class HallucinationDetector:
         language: Language,
         file_path: str = "temp",
         strict: bool = False
-    ) -> List[Hallucination]:
+    ) -> list[Hallucination]:
         """
         Detect hallucinations in code.
 
@@ -356,7 +355,7 @@ class HallucinationDetector:
         ref: CodeReference,
         language: Language,
         strict: bool
-    ) -> Optional[Hallucination]:
+    ) -> Hallucination | None:
         """Create hallucination object with suggestions."""
         # Find similar entities
         similar = await self.indexer.find_similar_entities(
@@ -409,7 +408,7 @@ class HallucinationDetector:
     def _calculate_confidence(
         self,
         ref: CodeReference,
-        similar: List[tuple],
+        similar: list[tuple],
         strict: bool
     ) -> float:
         """Calculate confidence that this is a hallucination."""
@@ -466,7 +465,7 @@ class HallucinationDetector:
         code: str,
         language: Language,
         file_path: str = "temp"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Detect hallucinations and generate human-readable explanation.
 

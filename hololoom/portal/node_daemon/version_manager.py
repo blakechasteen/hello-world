@@ -39,7 +39,7 @@ import json
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 
 @dataclass
@@ -58,13 +58,13 @@ class ModuleVersion:
     version: str
     version_hash: str  # SHA256 of WASM content (first 16 chars)
     wasm_path: Path
-    manifest_path: Optional[Path] = None
+    manifest_path: Path | None = None
     deprecated: bool = False
-    deprecated_at: Optional[float] = None  # Unix timestamp
+    deprecated_at: float | None = None  # Unix timestamp
     size_bytes: int = 0
     loaded_at: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "module_id": self.module_id,
@@ -130,9 +130,9 @@ class VersionManager:
         self.manifest_filename = manifest_filename
 
         # module_id -> version -> ModuleVersion
-        self._versions: Dict[str, Dict[str, ModuleVersion]] = {}
+        self._versions: dict[str, dict[str, ModuleVersion]] = {}
         # module_id -> active version string
-        self._active: Dict[str, str] = {}
+        self._active: dict[str, str] = {}
 
         # Scan modules on initialization
         if self.modules_dir.exists():
@@ -247,7 +247,7 @@ class VersionManager:
         module_id: str,
         version: str,
         wasm_path: Path,
-        manifest_path: Optional[Path] = None,
+        manifest_path: Path | None = None,
     ) -> ModuleVersion:
         """
         Register a module version internally.
@@ -277,7 +277,7 @@ class VersionManager:
 
         return module_version
 
-    def get_active_version(self, module_id: str) -> Optional[ModuleVersion]:
+    def get_active_version(self, module_id: str) -> ModuleVersion | None:
         """
         Get currently active version of a module.
 
@@ -294,7 +294,7 @@ class VersionManager:
         version = self._active[module_id]
         return self._versions.get(module_id, {}).get(version)
 
-    def get_version(self, module_id: str, version: str) -> Optional[ModuleVersion]:
+    def get_version(self, module_id: str, version: str) -> ModuleVersion | None:
         """
         Get a specific version of a module.
 
@@ -307,7 +307,7 @@ class VersionManager:
         """
         return self._versions.get(module_id, {}).get(version)
 
-    def list_versions(self, module_id: str) -> List[ModuleVersion]:
+    def list_versions(self, module_id: str) -> list[ModuleVersion]:
         """
         List all versions of a module.
 
@@ -319,7 +319,7 @@ class VersionManager:
         """
         return list(self._versions.get(module_id, {}).values())
 
-    def list_modules(self) -> List[str]:
+    def list_modules(self) -> list[str]:
         """
         List all registered module IDs.
 
@@ -422,9 +422,9 @@ class VersionManager:
         module_id: str,
         version: str,
         wasm_path: Path,
-        manifest_path: Optional[Path] = None,
+        manifest_path: Path | None = None,
         set_active: bool = False,
-    ) -> Optional[ModuleVersion]:
+    ) -> ModuleVersion | None:
         """
         Manually register a module version.
 
@@ -511,7 +511,7 @@ class VersionManager:
             total_size_bytes=total_size,
         )
 
-    def get_manifest(self, module_id: str, version: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def get_manifest(self, module_id: str, version: str | None = None) -> dict[str, Any] | None:
         """
         Load and return the manifest for a module version.
 
@@ -531,12 +531,12 @@ class VersionManager:
             return None
 
         try:
-            with open(module_version.manifest_path, "r") as f:
+            with open(module_version.manifest_path) as f:
                 return json.load(f)
         except Exception:
             return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Export version state as dictionary.
 

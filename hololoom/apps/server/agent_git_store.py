@@ -11,22 +11,21 @@ for agent thread history. Each thread gets its own bare git repo, enabling:
 Status: Production Ready (December 2025)
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-import json
 import hashlib
+import json
 import logging
 import time
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # Lazy dulwich imports - graceful degradation if not installed
 try:
-    from dulwich.repo import Repo
-    from dulwich.objects import Blob, Tree, Commit
     from dulwich import porcelain
+    from dulwich.objects import Blob, Commit, Tree
+    from dulwich.repo import Repo
     DULWICH_AVAILABLE = True
 except ImportError:
     DULWICH_AVAILABLE = False
@@ -42,7 +41,7 @@ class StepCommit:
     """
     # Identity
     commit_id: str                          # SHA256 hash
-    parent_id: Optional[str]                # Previous commit (None for root)
+    parent_id: str | None                # Previous commit (None for root)
 
     # Metadata
     thread_id: str
@@ -60,15 +59,15 @@ class StepCommit:
     cost_usd: float
 
     # Context (stored as tuple for immutability)
-    context_window: Tuple[str, ...] = field(default_factory=tuple)
+    context_window: tuple[str, ...] = field(default_factory=tuple)
 
     # Reasoning state
-    mrf_strategy: Optional[str] = None
-    mcts_state: Optional[bytes] = None      # Serialized MCTSState
+    mrf_strategy: str | None = None
+    mcts_state: bytes | None = None      # Serialized MCTSState
 
     # Results
-    response: Optional[str] = None
-    tool_selected: Optional[str] = None
+    response: str | None = None
+    tool_selected: str | None = None
 
     # Integrity
     state_hash: str = ""
@@ -76,7 +75,7 @@ class StepCommit:
     def __hash__(self) -> int:
         return hash(self.commit_id)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dict for JSON storage."""
         return {
             "commit_id": self.commit_id,
@@ -100,7 +99,7 @@ class StepCommit:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "StepCommit":
+    def from_dict(cls, data: dict[str, Any]) -> "StepCommit":
         """Deserialize from dict."""
         return cls(
             commit_id=data["commit_id"],
@@ -143,7 +142,7 @@ class InMemoryGitStore:
 
     def __init__(self):
         # thread_id -> {commits: {sha: data}, branches: {name: sha}, HEAD: sha, reflog: []}
-        self._repos: Dict[str, Dict[str, Any]] = {}
+        self._repos: dict[str, dict[str, Any]] = {}
 
     def init_thread_repo(self, thread_id: str) -> None:
         """Initialize in-memory repo for a thread."""
@@ -161,7 +160,7 @@ class InMemoryGitStore:
         self,
         thread_id: str,
         step_commit: StepCommit,
-        parent_sha: Optional[str] = None
+        parent_sha: str | None = None
     ) -> str:
         """Create a commit from StepCommit. Returns commit SHA."""
         self._ensure_repo(thread_id)
@@ -197,7 +196,7 @@ class InMemoryGitStore:
 
         return sha
 
-    def create_branch(self, thread_id: str, branch_name: str, commit_sha: Optional[str] = None) -> None:
+    def create_branch(self, thread_id: str, branch_name: str, commit_sha: str | None = None) -> None:
         """Create a branch pointing to commit (default: HEAD)."""
         self._ensure_repo(thread_id)
         repo = self._repos[thread_id]
@@ -238,7 +237,7 @@ class InMemoryGitStore:
 
         return repo["HEAD"]
 
-    def get_log(self, thread_id: str, max_count: int = 50) -> List[Dict]:
+    def get_log(self, thread_id: str, max_count: int = 50) -> list[dict]:
         """Get commit history (git log)."""
         self._ensure_repo(thread_id)
         repo = self._repos[thread_id]
@@ -264,7 +263,7 @@ class InMemoryGitStore:
 
         return commits
 
-    def diff(self, thread_id: str, sha1: str, sha2: str) -> Dict[str, Any]:
+    def diff(self, thread_id: str, sha1: str, sha2: str) -> dict[str, Any]:
         """Compare two commits."""
         self._ensure_repo(thread_id)
         repo = self._repos[thread_id]
@@ -292,7 +291,7 @@ class InMemoryGitStore:
             "changes": diff
         }
 
-    def list_branches(self, thread_id: str) -> List[str]:
+    def list_branches(self, thread_id: str) -> list[str]:
         """List all branches."""
         self._ensure_repo(thread_id)
         return list(self._repos[thread_id]["branches"].keys())
@@ -367,7 +366,7 @@ class InMemoryGitStore:
 
         return new_sha
 
-    def get_reflog(self, thread_id: str, limit: int = 50) -> List[Dict]:
+    def get_reflog(self, thread_id: str, limit: int = 50) -> list[dict]:
         """Get reflog entries."""
         self._ensure_repo(thread_id)
         entries = self._repos[thread_id]["reflog"][-limit:]
@@ -382,7 +381,7 @@ class InMemoryGitStore:
             for e in reversed(entries)
         ]
 
-    def get_merge_base(self, thread_id: str, branch1: str, branch2: str) -> Optional[str]:
+    def get_merge_base(self, thread_id: str, branch1: str, branch2: str) -> str | None:
         """Find common ancestor of two branches."""
         self._ensure_repo(thread_id)
         repo = self._repos[thread_id]
@@ -488,8 +487,8 @@ class DulwichGitStore:
         self.base_path.mkdir(parents=True, exist_ok=True)
 
         # In-memory tracking for HEAD ref (dulwich doesn't track this well)
-        self._head_refs: Dict[str, str] = {}  # thread_id -> branch name
-        self._reflogs: Dict[str, List[ReflogEntry]] = {}
+        self._head_refs: dict[str, str] = {}  # thread_id -> branch name
+        self._reflogs: dict[str, list[ReflogEntry]] = {}
 
     def _repo_path(self, thread_id: str) -> Path:
         """Get repo path for thread."""
@@ -518,7 +517,7 @@ class DulwichGitStore:
         self,
         thread_id: str,
         step_commit: StepCommit,
-        parent_sha: Optional[bytes] = None
+        parent_sha: bytes | None = None
     ) -> str:
         """Create a real git commit from StepCommit. Returns commit SHA hex."""
         repo = self._get_repo(thread_id)
@@ -572,7 +571,7 @@ class DulwichGitStore:
 
         return commit.id.hex()
 
-    def create_branch(self, thread_id: str, branch_name: str, commit_sha: Optional[str] = None) -> None:
+    def create_branch(self, thread_id: str, branch_name: str, commit_sha: str | None = None) -> None:
         """Create a git branch (ref) pointing to commit."""
         repo = self._get_repo(thread_id)
 
@@ -623,7 +622,7 @@ class DulwichGitStore:
 
         return new_sha
 
-    def get_log(self, thread_id: str, max_count: int = 50) -> List[Dict]:
+    def get_log(self, thread_id: str, max_count: int = 50) -> list[dict]:
         """Get commit history (git log)."""
         repo = self._get_repo(thread_id)
         head = repo.refs.get(b"HEAD")
@@ -663,7 +662,7 @@ class DulwichGitStore:
 
         return commits
 
-    def diff(self, thread_id: str, sha1: str, sha2: str) -> Dict[str, Any]:
+    def diff(self, thread_id: str, sha1: str, sha2: str) -> dict[str, Any]:
         """Compare two commits."""
         repo = self._get_repo(thread_id)
 
@@ -685,7 +684,7 @@ class DulwichGitStore:
             "changes": changes
         }
 
-    def _load_state(self, repo: "Repo", commit_sha: bytes) -> Dict:
+    def _load_state(self, repo: "Repo", commit_sha: bytes) -> dict:
         """Load state.json from a commit."""
         commit = repo.object_store[commit_sha]
         tree = repo.object_store[commit.tree]
@@ -697,7 +696,7 @@ class DulwichGitStore:
 
         return {}
 
-    def list_branches(self, thread_id: str) -> List[str]:
+    def list_branches(self, thread_id: str) -> list[str]:
         """List all branches."""
         repo = self._get_repo(thread_id)
         branches = []
@@ -785,7 +784,7 @@ class DulwichGitStore:
 
         return commit.id.hex()
 
-    def get_reflog(self, thread_id: str, limit: int = 50) -> List[Dict]:
+    def get_reflog(self, thread_id: str, limit: int = 50) -> list[dict]:
         """Get reflog entries."""
         entries = self._reflogs.get(thread_id, [])[-limit:]
         return [
@@ -799,7 +798,7 @@ class DulwichGitStore:
             for e in reversed(entries)
         ]
 
-    def get_merge_base(self, thread_id: str, branch1: str, branch2: str) -> Optional[str]:
+    def get_merge_base(self, thread_id: str, branch1: str, branch2: str) -> str | None:
         """Find common ancestor of two branches."""
         repo = self._get_repo(thread_id)
 
@@ -919,7 +918,7 @@ class AgentGitStore:
         self,
         thread_id: str,
         step_commit: StepCommit,
-        parent_sha: Optional[str] = None
+        parent_sha: str | None = None
     ) -> str:
         """Create a commit. Returns SHA hex string."""
         if DULWICH_AVAILABLE and parent_sha:
@@ -927,7 +926,7 @@ class AgentGitStore:
             return self._store.commit_step(thread_id, step_commit, parent_bytes)
         return self._store.commit_step(thread_id, step_commit, parent_sha)
 
-    def create_branch(self, thread_id: str, branch_name: str, commit_sha: Optional[str] = None) -> None:
+    def create_branch(self, thread_id: str, branch_name: str, commit_sha: str | None = None) -> None:
         """Create a branch."""
         self._store.create_branch(thread_id, branch_name, commit_sha)
 
@@ -935,15 +934,15 @@ class AgentGitStore:
         """Checkout branch or commit."""
         return self._store.checkout(thread_id, target)
 
-    def get_log(self, thread_id: str, max_count: int = 50) -> List[Dict]:
+    def get_log(self, thread_id: str, max_count: int = 50) -> list[dict]:
         """Get commit history."""
         return self._store.get_log(thread_id, max_count)
 
-    def diff(self, thread_id: str, sha1: str, sha2: str) -> Dict[str, Any]:
+    def diff(self, thread_id: str, sha1: str, sha2: str) -> dict[str, Any]:
         """Diff two commits."""
         return self._store.diff(thread_id, sha1, sha2)
 
-    def list_branches(self, thread_id: str) -> List[str]:
+    def list_branches(self, thread_id: str) -> list[str]:
         """List all branches."""
         return self._store.list_branches(thread_id)
 
@@ -959,11 +958,11 @@ class AgentGitStore:
         """Cherry-pick a commit."""
         return self._store.cherry_pick(thread_id, commit_sha)
 
-    def get_reflog(self, thread_id: str, limit: int = 50) -> List[Dict]:
+    def get_reflog(self, thread_id: str, limit: int = 50) -> list[dict]:
         """Get reflog entries."""
         return self._store.get_reflog(thread_id, limit)
 
-    def get_merge_base(self, thread_id: str, branch1: str, branch2: str) -> Optional[str]:
+    def get_merge_base(self, thread_id: str, branch1: str, branch2: str) -> str | None:
         """Find common ancestor."""
         return self._store.get_merge_base(thread_id, branch1, branch2)
 
@@ -978,14 +977,14 @@ def create_step_commit(
     query: str,
     reasoning_mode: str,
     confidence: float,
-    response: Optional[str] = None,
-    tool_selected: Optional[str] = None,
+    response: str | None = None,
+    tool_selected: str | None = None,
     tokens_used: int = 0,
     cost_usd: float = 0.0,
-    parent_id: Optional[str] = None,
+    parent_id: str | None = None,
     epistemic_confidence: float = 0.0,
-    mrf_strategy: Optional[str] = None,
-    context_window: Optional[List[str]] = None
+    mrf_strategy: str | None = None,
+    context_window: list[str] | None = None
 ) -> StepCommit:
     """
     Factory function to create a StepCommit with automatic ID generation.

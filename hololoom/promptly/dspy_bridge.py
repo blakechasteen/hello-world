@@ -40,16 +40,16 @@ Usage:
 """
 
 import asyncio
-import logging
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Callable, Tuple
-from pathlib import Path
 import json
+import logging
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
 # Type imports
 from hololoom.config import Config
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.fabric.spacetime import Spacetime
+from hololoom.protocols.types import Query
 
 # Optional DSPy import with graceful degradation
 try:
@@ -67,13 +67,13 @@ class DSPySignature:
     """Wrapper for DSPy signature with HoloLoom context"""
     name: str
     description: str
-    inputs: List[str]
-    outputs: List[str]
-    examples: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    inputs: list[str]
+    outputs: list[str]
+    examples: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Internal DSPy signature (lazy-loaded)
-    _dspy_sig: Optional[Any] = None
+    _dspy_sig: Any | None = None
 
     def to_dspy_signature(self) -> Any:
         """Convert to DSPy signature class"""
@@ -114,7 +114,7 @@ class DSPyProgram:
     training_examples: int
     validation_score: float
     created_at: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -125,8 +125,8 @@ class DSPyOptimizationConfig:
     max_bootstrapped_demos: int = 4
     max_labeled_demos: int = 16
     max_rounds: int = 1
-    metric: Optional[Callable] = None
-    teacher_settings: Dict[str, Any] = field(default_factory=dict)
+    metric: Callable | None = None
+    teacher_settings: dict[str, Any] = field(default_factory=dict)
 
 
 class DSPyHoloLoom:
@@ -142,9 +142,9 @@ class DSPyHoloLoom:
 
     def __init__(
         self,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         lm_model: str = "openai/gpt-4o-mini",
-        lm_api_key: Optional[str] = None
+        lm_api_key: str | None = None
     ):
         """
         Initialize DSPy-HoloLoom bridge.
@@ -188,7 +188,7 @@ class DSPyHoloLoom:
         dspy.settings.configure(lm=self.lm)
 
         # Cache for optimized programs
-        self.program_cache: Dict[str, DSPyProgram] = {}
+        self.program_cache: dict[str, DSPyProgram] = {}
 
         # HoloLoom integration (lazy-loaded)
         self._orchestrator = None
@@ -199,8 +199,8 @@ class DSPyHoloLoom:
     async def _get_orchestrator(self):
         """Lazy-load HoloLoom orchestrator"""
         if self._orchestrator is None:
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
             from hololoom.memory.backend_factory import create_memory_backend
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
 
             # Create memory backend
             self._memory = await create_memory_backend(self.config)
@@ -217,8 +217,8 @@ class DSPyHoloLoom:
         self,
         pattern_name: str,
         description: str,
-        inputs: List[str],
-        outputs: List[str]
+        inputs: list[str],
+        outputs: list[str]
     ) -> DSPySignature:
         """
         Create a DSPy signature from a HoloLoom pattern.
@@ -248,7 +248,7 @@ class DSPyHoloLoom:
         self,
         query: str,
         limit: int = 50
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Fetch training examples from hololoom memory.
 
@@ -289,7 +289,7 @@ class DSPyHoloLoom:
         self,
         signature: DSPySignature,
         memory_query: str,
-        optimization_config: Optional[DSPyOptimizationConfig] = None,
+        optimization_config: DSPyOptimizationConfig | None = None,
         validation_split: float = 0.2
     ) -> DSPyProgram:
         """
@@ -405,7 +405,7 @@ class DSPyHoloLoom:
         program: DSPyProgram,
         use_hololoom_context: bool = True,
         **inputs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute an optimized DSPy program.
 
@@ -477,7 +477,7 @@ class DSPyHoloLoom:
         """Load optimized program from disk"""
         # Load metadata
         metadata_path = path.parent / f"{path.stem}_metadata.json"
-        with open(metadata_path, 'r') as f:
+        with open(metadata_path) as f:
             meta = json.load(f)
 
         # Recreate signature
@@ -510,9 +510,9 @@ class DSPyHoloLoom:
 
 def create_signature(
     description: str,
-    inputs: List[str],
-    outputs: List[str],
-    name: Optional[str] = None
+    inputs: list[str],
+    outputs: list[str],
+    name: str | None = None
 ) -> DSPySignature:
     """
     Convenience function to create a DSPy signature.

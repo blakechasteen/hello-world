@@ -78,22 +78,19 @@ Status: Production ready (2025-12-02)
 """
 
 from .protocol import (
+    # Protocol and Base Class
+    Ability,
+    AbilityContext,
+    # Data Classes
+    AbilityManifest,
+    AbilityResult,
     # Enums
     AbilityTier,
     AbilityTrustLevel,
-
-    # Data Classes
-    AbilityManifest,
-    AbilityContext,
-    PreflightResult,
-    AbilityResult,
-    VerificationResult,
-
-    # Protocol and Base Class
-    Ability,
     BaseAbility,
+    PreflightResult,
+    VerificationResult,
 )
-
 from .registry import AbilityRegistry
 
 __all__ = [

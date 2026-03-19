@@ -82,7 +82,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     volumes:
-      - ./HoloLoom:/app/HoloLoom:ro
+      - ./hololoom:/app/hololoom:ro
       - ./demos:/app/demos:ro
       - ./requirements.txt:/app/requirements.txt:ro
       - hololoom_lite_cache:/app/.cache
@@ -105,7 +105,7 @@ services:
         pip install --no-cache-dir torch numpy gymnasium fastapi uvicorn httpx aiohttp &&
         pip install --no-cache-dir networkx qdrant-client neo4j sentence-transformers &&
         pip install --no-cache-dir anthropic openai ollama 2>/dev/null || true &&
-        uvicorn HoloLoom.apps.server.agentic_api:app --host 0.0.0.0 --port 8000
+        uvicorn hololoom.apps.server.agentic_api:app --host 0.0.0.0 --port 8000
       "
 
 volumes:

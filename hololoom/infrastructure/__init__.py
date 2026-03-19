@@ -9,13 +9,12 @@ Components:
 """
 
 from hololoom.infrastructure.sql import (
+    QueryResult,
     SQLBackend,
     SQLConfig,
-    QueryResult,
     create_sql_backend,
-    load_mock_data
+    load_mock_data,
 )
-
 
 __all__ = [
     "SQLBackend",

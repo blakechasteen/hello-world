@@ -11,9 +11,9 @@ Each department exposes its capabilities as an MCP server with:
 This implements Conway's Law for agents: architecture mirrors organization.
 """
 
-from typing import Dict, List, Optional, Any, Literal
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Literal
 
 
 class PermissionLevel(Enum):
@@ -36,10 +36,10 @@ class MCPTool:
     """Definition of a tool exposed by a department"""
     name: str
     description: str
-    parameters: Dict[str, Any]  # JSON Schema
-    required_permissions: List[PermissionLevel]
+    parameters: dict[str, Any]  # JSON Schema
+    required_permissions: list[PermissionLevel]
     permission_mode: PermissionMode
-    returns: Dict[str, Any]  # JSON Schema
+    returns: dict[str, Any]  # JSON Schema
 
 
 @dataclass
@@ -47,10 +47,10 @@ class DepartmentCharter:
     """Charter defining a department's role and capabilities"""
     name: str
     role: str  # High-level purpose
-    capabilities: List[str]  # What it can do
-    tools: List[MCPTool]  # MCP-exposed tools
-    permissions: List[PermissionLevel]  # What this department is allowed to do
-    dependencies: List[str]  # Other departments this depends on
+    capabilities: list[str]  # What it can do
+    tools: list[MCPTool]  # MCP-exposed tools
+    permissions: list[PermissionLevel]  # What this department is allowed to do
+    dependencies: list[str]  # Other departments this depends on
     session_state: Literal["stateless", "session_id", "stateful"]
     context_budget: int  # Max tokens for this department's context
 
@@ -542,7 +542,7 @@ ORCHESTRATION = DepartmentCharter(
 # DEPARTMENT REGISTRY
 # =============================================================================
 
-DEPARTMENT_REGISTRY: Dict[str, DepartmentCharter] = {
+DEPARTMENT_REGISTRY: dict[str, DepartmentCharter] = {
     "MasterWeaver": MASTER_WEAVER,
     "Verification": VERIFICATION,
     "Infrastructure": INFRASTRUCTURE,
@@ -552,17 +552,17 @@ DEPARTMENT_REGISTRY: Dict[str, DepartmentCharter] = {
 }
 
 
-def get_department(name: str) -> Optional[DepartmentCharter]:
+def get_department(name: str) -> DepartmentCharter | None:
     """Get department charter by name"""
     return DEPARTMENT_REGISTRY.get(name)
 
 
-def list_departments() -> List[str]:
+def list_departments() -> list[str]:
     """List all registered departments"""
     return list(DEPARTMENT_REGISTRY.keys())
 
 
-def get_department_tools(department_name: str) -> List[MCPTool]:
+def get_department_tools(department_name: str) -> list[MCPTool]:
     """Get all tools exposed by a department"""
     dept = get_department(department_name)
     return dept.tools if dept else []

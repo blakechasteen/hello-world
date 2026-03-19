@@ -22,14 +22,13 @@ Key Features:
 - Lifecycle-aware persistence
 """
 
-from enum import Enum
-from typing import Dict, List, Optional, Set
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 import asyncio
 import logging
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
 
-from hololoom.protocols.types import MemoryShard, Query, Features
+from hololoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 
@@ -80,12 +79,12 @@ class ContextStream:
     name: str
     scope: MemoryScope
     lifecycle: LifeCycle
-    memories: List[MemoryShard] = field(default_factory=list)
-    summary: Optional[str] = None  # Auto-generated summary
-    last_summarized: Optional[datetime] = None
+    memories: list[MemoryShard] = field(default_factory=list)
+    summary: str | None = None  # Auto-generated summary
+    last_summarized: datetime | None = None
     created_at: datetime = field(default_factory=datetime.now)
 
-    def _get_ttl(self) -> Optional[timedelta]:
+    def _get_ttl(self) -> timedelta | None:
         """Time-to-live for memory expiration."""
         if self.lifecycle == LifeCycle.PERMANENT:
             return None  # Never expire
@@ -148,7 +147,7 @@ class ContextStream:
         if pruned_count > 0:
             logger.info(f"Pruned {pruned_count} expired memories from stream '{self.name}'")
 
-    def get_active_memories(self) -> List[MemoryShard]:
+    def get_active_memories(self) -> list[MemoryShard]:
         """Get non-expired memories."""
         self.prune_expired()
         return self.memories
@@ -180,7 +179,7 @@ class ContextStreamManager:
 
     def __init__(self):
         # Default streams (user can add custom)
-        self.streams: Dict[str, ContextStream] = {
+        self.streams: dict[str, ContextStream] = {
             "personal_preferences": ContextStream(
                 name="personal_preferences",
                 scope=MemoryScope.USER,
@@ -204,7 +203,7 @@ class ContextStreamManager:
         }
 
         # Background tasks
-        self._pruning_task: Optional[asyncio.Task] = None
+        self._pruning_task: asyncio.Task | None = None
         self._running = False
 
     async def start_background_tasks(self):
@@ -252,7 +251,7 @@ class ContextStreamManager:
         self,
         name: str,
         scope: MemoryScope,
-        lifecycle: Optional[LifeCycle] = None
+        lifecycle: LifeCycle | None = None
     ) -> ContextStream:
         """
         Create a custom context stream.
@@ -314,18 +313,18 @@ class ContextStreamManager:
 
         await self.streams[stream_name].add_memory(memory)
 
-    def get_stream(self, name: str) -> Optional[ContextStream]:
+    def get_stream(self, name: str) -> ContextStream | None:
         """Get stream by name."""
         return self.streams.get(name)
 
-    def get_streams_by_scope(self, scope: MemoryScope) -> List[ContextStream]:
+    def get_streams_by_scope(self, scope: MemoryScope) -> list[ContextStream]:
         """Get all streams with given scope."""
         return [
             stream for stream in self.streams.values()
             if stream.scope == scope
         ]
 
-    def get_streams_by_lifecycle(self, lifecycle: LifeCycle) -> List[ContextStream]:
+    def get_streams_by_lifecycle(self, lifecycle: LifeCycle) -> list[ContextStream]:
         """Get all streams with given lifecycle."""
         return [
             stream for stream in self.streams.values()
@@ -334,10 +333,10 @@ class ContextStreamManager:
 
     def get_all_memories(
         self,
-        stream_names: Optional[List[str]] = None,
-        scopes: Optional[List[MemoryScope]] = None,
-        lifecycles: Optional[List[LifeCycle]] = None
-    ) -> List[MemoryShard]:
+        stream_names: list[str] | None = None,
+        scopes: list[MemoryScope] | None = None,
+        lifecycles: list[LifeCycle] | None = None
+    ) -> list[MemoryShard]:
         """
         Get memories from specified streams/scopes/lifecycles.
 
@@ -370,7 +369,7 @@ class ContextStreamManager:
 
         return all_memories
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """
         Get statistics about memory streams.
 

@@ -53,23 +53,23 @@ import importlib
 import logging
 import sys
 import traceback
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.engine import DarkTraceEngine
-    from hololoom.dark_trace.plugins.safety_gate import (
-        PluginSafetyGate,
-        TrustLevel,
-        SafetyCheckResult,
-    )
     from hololoom.dark_trace.plugins.alignment_bridge import PluginAlignmentBridge
-    from hololoom.dark_trace.plugins.registry import PluginRegistry
     from hololoom.dark_trace.plugins.discovery import DiscoveredPlugin
     from hololoom.dark_trace.plugins.interface import DarkTracePlugin
+    from hololoom.dark_trace.plugins.registry import PluginRegistry
+    from hololoom.dark_trace.plugins.safety_gate import (
+        PluginSafetyGate,
+        SafetyCheckResult,
+        TrustLevel,
+    )
 
 logger = logging.getLogger("hololoom.dark_trace.plugins.loader")
 
@@ -110,9 +110,9 @@ class PluginLoadResult:
     status: LoadStatus
     trust_level: Optional["TrustLevel"] = None
     load_time_ms: float = 0.0
-    error: Optional[str] = None
-    warnings: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
+    warnings: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
@@ -120,7 +120,7 @@ class PluginLoadResult:
         """Check if load was successful."""
         return self.status == LoadStatus.SUCCESS
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "plugin_name": self.plugin_name,
@@ -146,11 +146,11 @@ class BulkLoadResult:
         total_time_ms: Total time for bulk load
         dependency_order: Order plugins were loaded (dependency-resolved)
     """
-    loaded: List[str] = field(default_factory=list)
-    failed: List[PluginLoadResult] = field(default_factory=list)
-    skipped: List[str] = field(default_factory=list)
+    loaded: list[str] = field(default_factory=list)
+    failed: list[PluginLoadResult] = field(default_factory=list)
+    skipped: list[str] = field(default_factory=list)
     total_time_ms: float = 0.0
-    dependency_order: List[str] = field(default_factory=list)
+    dependency_order: list[str] = field(default_factory=list)
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
@@ -161,7 +161,7 @@ class BulkLoadResult:
     def failure_count(self) -> int:
         return len(self.failed)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "loaded": self.loaded,
@@ -238,10 +238,10 @@ class DependencyResolver:
     """
 
     def __init__(self) -> None:
-        self._graph: Dict[str, Set[str]] = {}  # plugin -> dependencies
-        self._reverse: Dict[str, Set[str]] = {}  # plugin -> dependents
+        self._graph: dict[str, set[str]] = {}  # plugin -> dependencies
+        self._reverse: dict[str, set[str]] = {}  # plugin -> dependents
 
-    def add_plugin(self, name: str, dependencies: List[str]) -> None:
+    def add_plugin(self, name: str, dependencies: list[str]) -> None:
         """Add plugin and its dependencies."""
         self._graph[name] = set(dependencies)
         for dep in dependencies:
@@ -249,7 +249,7 @@ class DependencyResolver:
                 self._reverse[dep] = set()
             self._reverse[dep].add(name)
 
-    def detect_cycles(self) -> List[List[str]]:
+    def detect_cycles(self) -> list[list[str]]:
         """
         Detect dependency cycles.
 
@@ -286,7 +286,7 @@ class DependencyResolver:
 
         return cycles
 
-    def topological_sort(self) -> Tuple[List[str], Optional[str]]:
+    def topological_sort(self) -> tuple[list[str], str | None]:
         """
         Get topological sort of plugins (load order).
 
@@ -301,7 +301,7 @@ class DependencyResolver:
             return [], f"Dependency cycle detected: {cycle_str}"
 
         # Kahn's algorithm for topological sort
-        in_degree = {node: 0 for node in self._graph}
+        in_degree = dict.fromkeys(self._graph, 0)
         for deps in self._graph.values():
             for dep in deps:
                 if dep in in_degree:
@@ -329,8 +329,8 @@ class DependencyResolver:
 
     def get_missing_dependencies(
         self,
-        available: Set[str]
-    ) -> Dict[str, List[str]]:
+        available: set[str]
+    ) -> dict[str, list[str]]:
         """
         Find missing dependencies for each plugin.
 
@@ -367,7 +367,7 @@ class SandboxedEnvironment:
     ) -> None:
         self._safety_gate = safety_gate
         self._plugin_name = plugin_name
-        self._restricted_modules: Set[str] = {
+        self._restricted_modules: set[str] = {
             "os",
             "subprocess",
             "socket",
@@ -375,8 +375,8 @@ class SandboxedEnvironment:
             "requests",
             "shutil",
         }
-        self._original_import: Optional[Callable] = None
-        self._operations_log: List[Dict[str, Any]] = []
+        self._original_import: Callable | None = None
+        self._operations_log: list[dict[str, Any]] = []
 
     def __enter__(self) -> "SandboxedEnvironment":
         """Enter sandboxed environment."""
@@ -390,7 +390,7 @@ class SandboxedEnvironment:
         logger.debug(f"Exiting sandbox for {self._plugin_name}")
         return False  # Don't suppress exceptions
 
-    def log_operation(self, operation: str, details: Dict[str, Any]) -> None:
+    def log_operation(self, operation: str, details: dict[str, Any]) -> None:
         """Log an operation performed in sandbox."""
         self._operations_log.append({
             "operation": operation,
@@ -398,7 +398,7 @@ class SandboxedEnvironment:
             "timestamp": datetime.now().isoformat(),
         })
 
-    def get_operations_log(self) -> List[Dict[str, Any]]:
+    def get_operations_log(self) -> list[dict[str, Any]]:
         """Get all operations performed in sandbox."""
         return self._operations_log.copy()
 
@@ -446,7 +446,7 @@ class PluginLoader:
         safety_gate: "PluginSafetyGate",
         alignment_bridge: "PluginAlignmentBridge",
         registry: "PluginRegistry",
-        config: Optional[LoaderConfig] = None,
+        config: LoaderConfig | None = None,
     ) -> None:
         """
         Initialize plugin loader.
@@ -465,8 +465,8 @@ class PluginLoader:
         self._config = config or LoaderConfig.conservative()
 
         # Track loading state
-        self._loading: Set[str] = set()  # Currently loading
-        self._load_history: List[PluginLoadResult] = []
+        self._loading: set[str] = set()  # Currently loading
+        self._load_history: list[PluginLoadResult] = []
 
         logger.info("PluginLoader initialized")
 
@@ -715,9 +715,7 @@ class PluginLoader:
                     ):
                         # Check if it's a plugin subclass
                         try:
-                            from hololoom.dark_trace.plugins.interface import (
-                                DarkTracePlugin
-                            )
+                            from hololoom.dark_trace.plugins.interface import DarkTracePlugin
                             if issubclass(attr, DarkTracePlugin):
                                 plugin_class = attr
                                 break
@@ -964,7 +962,7 @@ class PluginLoader:
 
     async def load_all(
         self,
-        discovered_plugins: List["DiscoveredPlugin"],
+        discovered_plugins: list["DiscoveredPlugin"],
         min_trust_level: Optional["TrustLevel"] = None,
     ) -> BulkLoadResult:
         """
@@ -1007,7 +1005,7 @@ class PluginLoader:
 
         # Build dependency graph
         resolver = DependencyResolver()
-        plugins_by_name: Dict[str, "DiscoveredPlugin"] = {}
+        plugins_by_name: dict[str, DiscoveredPlugin] = {}
 
         for dp in discovered_plugins:
             plugins_by_name[dp.name] = dp
@@ -1153,11 +1151,11 @@ class PluginLoader:
     # Statistics
     # -------------------------------------------------------------------------
 
-    def get_load_history(self) -> List[PluginLoadResult]:
+    def get_load_history(self) -> list[PluginLoadResult]:
         """Get history of all load attempts."""
         return self._load_history.copy()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get loader statistics."""
         success_count = sum(1 for r in self._load_history if r.success)
         failure_count = len(self._load_history) - success_count
@@ -1192,7 +1190,7 @@ def create_plugin_loader(
     safety_gate: "PluginSafetyGate",
     alignment_bridge: "PluginAlignmentBridge",
     registry: "PluginRegistry",
-    config: Optional[LoaderConfig] = None,
+    config: LoaderConfig | None = None,
 ) -> PluginLoader:
     """
     Create a configured PluginLoader.

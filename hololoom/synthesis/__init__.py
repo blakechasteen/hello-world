@@ -12,9 +12,9 @@ Transforms filtered conversations into:
 The gold mine: Your filtered signal, ready for learning.
 """
 
-from .enriched_memory import EnrichedMemory, ReasoningType, MemoryEnricher
-from .pattern_extractor import PatternExtractor, Pattern, PatternType
-from .data_synthesizer import DataSynthesizer, TrainingExample, SynthesisConfig
+from .data_synthesizer import DataSynthesizer, SynthesisConfig, TrainingExample
+from .enriched_memory import EnrichedMemory, MemoryEnricher, ReasoningType
+from .pattern_extractor import Pattern, PatternExtractor, PatternType
 
 __all__ = [
     'EnrichedMemory',

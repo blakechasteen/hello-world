@@ -18,9 +18,9 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Any, Optional
+from typing import Any
 
-from .strategies import AttackStrategy, AttackPayload, STRATEGY_CATEGORIES, AttackCategory
+from .strategies import STRATEGY_CATEGORIES, AttackCategory, AttackPayload, AttackStrategy
 
 logger = logging.getLogger("hololoom.redteam.executor")
 
@@ -58,7 +58,7 @@ class AttackResult:
     execution_time_ms: float
     timestamp: datetime = field(default_factory=datetime.now)
     target_system: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def severity_level(self) -> SeverityLevel:
@@ -135,7 +135,7 @@ class AttackExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> AttackResult:
         """
         Execute an attack payload against appropriate safety system.
@@ -206,9 +206,9 @@ class AttackExecutor:
 
     async def execute_batch(
         self,
-        attacks: List[AttackPayload],
+        attacks: list[AttackPayload],
         parallel: bool = False
-    ) -> List[AttackResult]:
+    ) -> list[AttackResult]:
         """
         Execute multiple attacks.
 
@@ -237,7 +237,7 @@ class AttackExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> AttackResult:
         """
         Test attack against AgenticSafetyAdapter.
@@ -320,7 +320,7 @@ class AttackExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> AttackResult:
         """
         Test behavioral attacks (hidden goal, power-seeking, etc.).
@@ -352,7 +352,7 @@ class AttackExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         start_time: float
     ) -> AttackResult:
         """Test against DeceptionDetector."""
@@ -432,7 +432,7 @@ class AttackExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         start_time: float
     ) -> AttackResult:
         """Test against InstrumentalConvergenceGuard."""
@@ -512,7 +512,7 @@ class AttackExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> AttackResult:
         """Test context manipulation attacks."""
         # Context attacks go through safety adapter
@@ -523,7 +523,7 @@ class AttackExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> AttackResult:
         """Test advanced attacks (adversarial suffixes)."""
         # Advanced attacks primarily target safety adapter
@@ -537,7 +537,7 @@ class AttackExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         start_time: float
     ) -> AttackResult:
         """
@@ -596,7 +596,7 @@ class AttackExecutor:
         self,
         strategy: AttackStrategy,
         payload: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         start_time: float,
         target_system: str
     ) -> AttackResult:
@@ -702,7 +702,7 @@ class AttackExecutor:
         elif result.outcome == AttackOutcome.ERROR:
             self.stats['errors'] += 1
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get execution statistics."""
         return {
             **self.stats,

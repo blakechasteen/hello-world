@@ -310,7 +310,7 @@ class TestSteps7To9:
 
         # Mock guardrails that block the action
         mock_guardrails = Mock()
-        mock_guardrails.gate_action.return_value = Mock(
+        mock_guardrails.evaluate.return_value = Mock(
             allowed=False,
             reason="Action blocked for safety",
             risk_level=Mock(value="high"),

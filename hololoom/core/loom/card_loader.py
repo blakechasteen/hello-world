@@ -22,11 +22,12 @@ Usage:
     shuttle = await WeavingShuttle.from_card("fast")
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List
-from pathlib import Path
-import yaml
 import logging
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +39,10 @@ class MathCapabilities:
 
     Controls which mathematical operations are exposed in the weaving process.
     """
-    semantic_calculus: Dict[str, Any] = field(default_factory=dict)
-    spectral_embedding: Dict[str, Any] = field(default_factory=dict)
-    motif_detection: Dict[str, Any] = field(default_factory=dict)
-    policy_engine: Dict[str, Any] = field(default_factory=dict)
+    semantic_calculus: dict[str, Any] = field(default_factory=dict)
+    spectral_embedding: dict[str, Any] = field(default_factory=dict)
+    motif_detection: dict[str, Any] = field(default_factory=dict)
+    policy_engine: dict[str, Any] = field(default_factory=dict)
 
     def to_semantic_config(self):
         """Convert to SemanticCalculusConfig."""
@@ -74,17 +75,17 @@ class MathCapabilities:
 class MemoryConfig:
     """Memory backend configuration."""
     backend: str = "networkx"
-    caching: Dict[str, Any] = field(default_factory=dict)
-    retrieval: Dict[str, Any] = field(default_factory=dict)
-    graph: Dict[str, Any] = field(default_factory=dict)
+    caching: dict[str, Any] = field(default_factory=dict)
+    retrieval: dict[str, Any] = field(default_factory=dict)
+    graph: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ToolsConfig:
     """Tools availability configuration."""
-    enabled: List[str] = field(default_factory=list)
-    disabled: List[str] = field(default_factory=list)
-    configs: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    enabled: list[str] = field(default_factory=list)
+    disabled: list[str] = field(default_factory=list)
+    configs: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     def is_tool_enabled(self, tool_name: str) -> bool:
         """Check if tool is enabled."""
@@ -92,7 +93,7 @@ class ToolsConfig:
             return False
         return tool_name in self.enabled
 
-    def get_tool_config(self, tool_name: str) -> Optional[Dict[str, Any]]:
+    def get_tool_config(self, tool_name: str) -> dict[str, Any] | None:
         """Get configuration for specific tool."""
         if not self.is_tool_enabled(tool_name):
             return None
@@ -105,7 +106,7 @@ class PerformanceProfile:
     target_latency_ms: int = 200
     max_latency_ms: int = 500
     timeout_ms: int = 2000
-    optimization: Dict[str, Any] = field(default_factory=dict)
+    optimization: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -144,13 +145,13 @@ class PatternCard:
     memory_config: MemoryConfig = field(default_factory=MemoryConfig)
     tools_config: ToolsConfig = field(default_factory=ToolsConfig)
     performance_profile: PerformanceProfile = field(default_factory=PerformanceProfile)
-    extensions: Dict[str, Any] = field(default_factory=dict)
+    extensions: dict[str, Any] = field(default_factory=dict)
 
     # Inheritance
-    extends: Optional[str] = None
+    extends: str | None = None
 
     @classmethod
-    def load(cls, card_name: str, cards_dir: Path = None, overrides: Dict[str, Any] = None) -> 'PatternCard':
+    def load(cls, card_name: str, cards_dir: Path = None, overrides: dict[str, Any] = None) -> 'PatternCard':
         """
         Load pattern card from YAML file.
 
@@ -214,7 +215,7 @@ class PatternCard:
         return card
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'PatternCard':
+    def from_dict(cls, data: dict[str, Any]) -> 'PatternCard':
         """
         Construct PatternCard from dictionary.
 
@@ -241,7 +242,7 @@ class PatternCard:
             extends=data.get('extends'),
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert card to dictionary representation.
 
@@ -304,7 +305,7 @@ class PatternCard:
         logger.info(f"✓ Saved card '{card_name}'")
 
     @staticmethod
-    def _merge_configs(base: Dict, override: Dict) -> Dict:
+    def _merge_configs(base: dict, override: dict) -> dict:
         """
         Deep merge two configuration dictionaries.
 

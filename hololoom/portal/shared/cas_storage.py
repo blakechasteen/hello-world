@@ -31,11 +31,11 @@ Directory Structure:
 """
 
 import hashlib
+import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Optional, List, Any
-import threading
+from typing import Any
 
 
 @dataclass
@@ -53,7 +53,7 @@ class CASEntry:
     created_at: float = field(default_factory=time.time)
     last_accessed: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "content_hash": self.content_hash,
@@ -73,9 +73,9 @@ class CASStats:
     total_references: int = 0
     total_size_bytes: int = 0
     deduplication_ratio: float = 1.0
-    objects_by_size: Dict[str, int] = field(default_factory=dict)
+    objects_by_size: dict[str, int] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "unique_objects": self.unique_objects,
@@ -95,7 +95,7 @@ class CASReference:
     content_hash: str
     created_at: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "module_id": self.module_id,
@@ -138,8 +138,8 @@ class CASStorage:
         self.hash_prefix_length = hash_prefix_length
 
         # Internal state
-        self._entries: Dict[str, CASEntry] = {}
-        self._references: Dict[str, Dict[str, CASReference]] = {}  # module_id -> version -> ref
+        self._entries: dict[str, CASEntry] = {}
+        self._references: dict[str, dict[str, CASReference]] = {}  # module_id -> version -> ref
         self._lock = threading.RLock()  # Reentrant lock to allow nested locking
 
         # Ensure directories exist
@@ -235,7 +235,7 @@ class CASStorage:
                             # Update reference count
                             if content_hash in self._entries:
                                 self._entries[content_hash].reference_count += 1
-                        except (OSError, IOError):
+                        except OSError:
                             pass
 
     def store(
@@ -310,7 +310,7 @@ class CASStorage:
 
         return content_hash
 
-    def get(self, module_id: str, version: str) -> Optional[bytes]:
+    def get(self, module_id: str, version: str) -> bytes | None:
         """
         Get content by module reference.
 
@@ -328,10 +328,10 @@ class CASStorage:
         try:
             content_hash = ref_path.read_text().strip()
             return self.get_by_hash(content_hash)
-        except (OSError, IOError):
+        except OSError:
             return None
 
-    def get_by_hash(self, content_hash: str) -> Optional[bytes]:
+    def get_by_hash(self, content_hash: str) -> bytes | None:
         """
         Get content directly by hash.
 
@@ -351,10 +351,10 @@ class CASStorage:
         try:
             with open(entry.path, "rb") as f:
                 return f.read()
-        except (OSError, IOError):
+        except OSError:
             return None
 
-    def get_hash(self, module_id: str, version: str) -> Optional[str]:
+    def get_hash(self, module_id: str, version: str) -> str | None:
         """
         Get content hash for a module version without reading content.
 
@@ -479,7 +479,7 @@ class CASStorage:
 
         return deleted
 
-    def list_modules(self) -> List[str]:
+    def list_modules(self) -> list[str]:
         """
         List all module IDs.
 
@@ -489,7 +489,7 @@ class CASStorage:
         with self._lock:
             return list(self._references.keys())
 
-    def list_versions(self, module_id: str) -> List[str]:
+    def list_versions(self, module_id: str) -> list[str]:
         """
         List all versions of a module.
 
@@ -504,7 +504,7 @@ class CASStorage:
                 return []
             return list(self._references[module_id].keys())
 
-    def get_reference(self, module_id: str, version: str) -> Optional[CASReference]:
+    def get_reference(self, module_id: str, version: str) -> CASReference | None:
         """
         Get reference information.
 
@@ -520,7 +520,7 @@ class CASStorage:
                 return self._references[module_id][version]
         return None
 
-    def get_entry(self, content_hash: str) -> Optional[CASEntry]:
+    def get_entry(self, content_hash: str) -> CASEntry | None:
         """
         Get entry information by hash.
 
@@ -548,7 +548,7 @@ class CASStorage:
             return False
         return self._hash_content(content) == content_hash
 
-    def verify_all(self) -> Dict[str, bool]:
+    def verify_all(self) -> dict[str, bool]:
         """
         Verify integrity of all stored objects.
 
@@ -597,7 +597,7 @@ class CASStorage:
             objects_by_size=size_dist,
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Export storage state as dictionary.
 

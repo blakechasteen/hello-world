@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Hybrid Neo4j + Qdrant Memory Store
 ===================================
@@ -18,16 +17,16 @@ Token Efficiency:
 This is the HYPERSPACE MEMORY STORE.
 """
 
-from typing import List, Optional, Dict, Any
-from dataclasses import dataclass
-from datetime import datetime
 import hashlib
 import json
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 # Direct imports to avoid package hell
 from neo4j import GraphDatabase
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
+from qdrant_client.models import Distance, PointStruct, VectorParams
 from sentence_transformers import SentenceTransformer
 
 
@@ -37,8 +36,8 @@ class Memory:
     id: str
     text: str
     timestamp: datetime
-    context: Dict[str, Any]
-    metadata: Dict[str, Any]
+    context: dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -47,16 +46,16 @@ class MemoryQuery:
     text: str
     user_id: str = "default"
     limit: int = 5
-    filters: Optional[Dict[str, Any]] = None
+    filters: dict[str, Any] | None = None
 
 
 @dataclass
 class RetrievalResult:
     """Retrieval results with provenance."""
-    memories: List[Memory]
-    scores: List[float]
+    memories: list[Memory]
+    scores: list[float]
     strategy_used: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 class Strategy:
@@ -143,7 +142,7 @@ class HybridNeo4jQdrant:
         self._setup_neo4j()
         self._setup_qdrant()
 
-        print(f"✓ Hybrid store initialized")
+        print("✓ Hybrid store initialized")
         print(f"  - Neo4j: {neo4j_uri}")
         print(f"  - Qdrant: {qdrant_url}")
 
@@ -277,7 +276,7 @@ class HybridNeo4jQdrant:
 
         return mem_id
 
-    async def store_many(self, memories: List[Memory]) -> List[str]:
+    async def store_many(self, memories: list[Memory]) -> list[str]:
         """Store multiple memories."""
         ids = []
         for memory in memories:
@@ -500,7 +499,7 @@ class HybridNeo4jQdrant:
             metadata=metadata
         )
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Check health of both stores."""
         # Neo4j count
         with self.neo4j_driver.session() as session:

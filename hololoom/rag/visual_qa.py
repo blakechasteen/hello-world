@@ -28,9 +28,9 @@ Date: January 2025
 """
 
 import logging
-from typing import Union, Optional, Any
-from pathlib import Path
 import tempfile
+from pathlib import Path
+from typing import Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +103,10 @@ class VisualQAEngine:
         # Try to load DeepSeek OCR spinner (preferred)
         if self.deepseek_available:
             try:
-                from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner, DeepSeekOCRConfig
+                from hololoom.spinningWheel.deepseek_ocr_spinner import (
+                    DeepSeekOCRConfig,
+                    DeepSeekOCRSpinner,
+                )
 
                 # Create config for OCR
                 ocr_config = DeepSeekOCRConfig(
@@ -358,9 +361,10 @@ class VisualQAEngine:
     def _check_deepseek_available(self) -> bool:
         """Check if DeepSeek OCR is available."""
         try:
-            from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
-            import transformers
             import torch
+            import transformers
+
+            from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
             return True
         except ImportError:
             return False

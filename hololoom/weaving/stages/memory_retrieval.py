@@ -11,10 +11,10 @@ This stage retrieves relevant context from memory using:
 
 import logging
 import time
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Any
 
-from hololoom.protocols.types import Query, MemoryShard
 from hololoom.loom.command import PatternSpec
+from hololoom.protocols.types import MemoryShard, Query
 from hololoom.weaving.protocols import StageResult
 
 
@@ -28,9 +28,9 @@ class MemoryRetrievalStage:
 
     def __init__(
         self,
-        memory_backend: Optional[Any] = None,
-        retriever: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
+        memory_backend: Any | None = None,
+        retriever: Any | None = None,
+        logger: logging.Logger | None = None,
     ):
         """
         Initialize the memory retrieval stage.
@@ -47,7 +47,7 @@ class MemoryRetrievalStage:
     async def execute(
         self,
         query: Query,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         pattern_spec: PatternSpec,
     ) -> StageResult:
         """
@@ -108,9 +108,9 @@ class MemoryRetrievalStage:
         self,
         query: Query,
         pattern_spec: PatternSpec,
-        complexity: Optional[Any] = None,
-        provenance: Optional[Any] = None,
-    ) -> Tuple[List[MemoryShard], List[str], List[Tuple[MemoryShard, float]]]:
+        complexity: Any | None = None,
+        provenance: Any | None = None,
+    ) -> tuple[list[MemoryShard], list[str], list[tuple[MemoryShard, float]]]:
         """
         Retrieve memories using the appropriate method.
 
@@ -155,10 +155,10 @@ class MemoryRetrievalStage:
     async def _multipass_memory_crawl(
         self,
         query: Query,
-        complexity: Optional[Any],
-        provenance: Optional[Any],
+        complexity: Any | None,
+        provenance: Any | None,
         pattern_spec: PatternSpec,
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Perform multipass memory crawling.
 
@@ -203,7 +203,7 @@ class MemoryRetrievalStage:
         self,
         query: Query,
         pattern_spec: PatternSpec
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Simple memory query fallback.
 
@@ -235,10 +235,10 @@ class MemoryRetrievalStage:
         """Get the name of this stage."""
         return "memory_retrieval"
 
-    def get_required_context_keys(self) -> List[str]:
+    def get_required_context_keys(self) -> list[str]:
         """Get required context keys."""
         return []  # Optional: complexity, provenance
 
-    def get_output_context_keys(self) -> List[str]:
+    def get_output_context_keys(self) -> list[str]:
         """Get output context keys."""
         return ["shards", "shard_texts", "hits"]

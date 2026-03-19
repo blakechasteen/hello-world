@@ -14,50 +14,43 @@ Author: Claude Code
 Date: 2025-11-20
 """
 
-from typing import List, Optional, Dict, Any, Union
-from pathlib import Path
 import warnings
+from pathlib import Path
+from typing import Any
 
 try:
     from langchain.document_loaders import (
-        # Text-based
-        TextLoader,
-        DirectoryLoader,
-        UnstructuredMarkdownLoader,
-
-        # PDFs
-        PyPDFLoader,
-        PDFMinerLoader,
-        UnstructuredPDFLoader,
-
-        # Office documents
-        UnstructuredWordDocumentLoader,
-        UnstructuredPowerPointLoader,
-        UnstructuredExcelLoader,
-
-        # Web
-        WebBaseLoader,
-        UnstructuredURLLoader,
-        SeleniumURLLoader,
-
-        # Code
-        GitLoader,
-        GitHubIssuesLoader,
-        NotebookLoader,
-
         # Databases
         AirtableLoader,
-        NotionDBLoader,
-
-        # Communication
-        SlackDirectoryLoader,
-        DiscordChatLoader,
-
         # Others
         CSVLoader,
+        DirectoryLoader,
+        DiscordChatLoader,
+        GitHubIssuesLoader,
+        # Code
+        GitLoader,
         JSONLoader,
+        NotebookLoader,
+        NotionDBLoader,
+        PDFMinerLoader,
+        # PDFs
+        PyPDFLoader,
+        SeleniumURLLoader,
+        # Communication
+        SlackDirectoryLoader,
+        # Text-based
+        TextLoader,
+        UnstructuredExcelLoader,
         UnstructuredHTMLLoader,
         UnstructuredImageLoader,
+        UnstructuredMarkdownLoader,
+        UnstructuredPDFLoader,
+        UnstructuredPowerPointLoader,
+        UnstructuredURLLoader,
+        # Office documents
+        UnstructuredWordDocumentLoader,
+        # Web
+        WebBaseLoader,
     )
     LANGCHAIN_AVAILABLE = True
 except ImportError:
@@ -73,13 +66,13 @@ try:
     from hololoom.Documentation.types import MemoryShard
 except ImportError:
     from dataclasses import dataclass
-    from typing import Dict, Any
+    from typing import Any
 
     @dataclass
     class MemoryShard:
         content: str
         source: str
-        metadata: Dict[str, Any]
+        metadata: dict[str, Any]
 
 
 # Document type to loader mapping (only if LangChain available)
@@ -157,10 +150,10 @@ class UniversalDocumentLoader:
 
     def load(
         self,
-        source: Union[str, Path],
-        loader_type: Optional[str] = None,
+        source: str | Path,
+        loader_type: str | None = None,
         **loader_kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Load documents from any source.
 
@@ -224,10 +217,10 @@ class UniversalDocumentLoader:
 
     def load_directory(
         self,
-        directory: Union[str, Path],
+        directory: str | Path,
         glob_pattern: str = "**/*",
-        exclude: Optional[List[str]] = None
-    ) -> List[MemoryShard]:
+        exclude: list[str] | None = None
+    ) -> list[MemoryShard]:
         """
         Load all documents from a directory.
 
@@ -261,7 +254,7 @@ class UniversalDocumentLoader:
 
         return shards
 
-    def load_urls(self, urls: List[str], **loader_kwargs) -> List[MemoryShard]:
+    def load_urls(self, urls: list[str], **loader_kwargs) -> list[MemoryShard]:
         """
         Load documents from multiple URLs.
 
@@ -319,10 +312,10 @@ class UniversalDocumentLoader:
 # Convenience functions
 
 def load_documents(
-    source: Union[str, Path, List[str]],
-    loader_type: Optional[str] = None,
+    source: str | Path | list[str],
+    loader_type: str | None = None,
     **kwargs
-) -> List[MemoryShard]:
+) -> list[MemoryShard]:
     """
     Convenience function to load documents.
 
@@ -349,7 +342,7 @@ def load_documents(
         return loader.load(source, loader_type=loader_type, **kwargs)
 
 
-def supported_document_types() -> Dict[str, str]:
+def supported_document_types() -> dict[str, str]:
     """
     Get list of supported document types.
 
@@ -364,7 +357,7 @@ def supported_document_types() -> Dict[str, str]:
 
 # Specialized loaders
 
-def load_github_repo(repo_url: str, branch: str = "main") -> List[MemoryShard]:
+def load_github_repo(repo_url: str, branch: str = "main") -> list[MemoryShard]:
     """
     Load all files from a GitHub repository.
 
@@ -394,8 +387,8 @@ def load_github_repo(repo_url: str, branch: str = "main") -> List[MemoryShard]:
 
 
 def load_slack_workspace(
-    slack_export_path: Union[str, Path]
-) -> List[MemoryShard]:
+    slack_export_path: str | Path
+) -> list[MemoryShard]:
     """
     Load Slack workspace export.
 
@@ -426,7 +419,7 @@ def load_slack_workspace(
 def load_notion_database(
     notion_token: str,
     database_id: str
-) -> List[MemoryShard]:
+) -> list[MemoryShard]:
     """
     Load Notion database.
 

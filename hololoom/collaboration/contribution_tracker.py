@@ -6,11 +6,11 @@ Tracks who added what knowledge, enabling attribution
 and contribution analytics.
 """
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Any
-import json
+from typing import Any
 
 
 class ContributionType(Enum):
@@ -43,15 +43,15 @@ class Contribution:
     status: ContributionStatus = ContributionStatus.DRAFT
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
-    reviewed_by: Optional[str] = None
+    reviewed_by: str | None = None
     review_comment: str = ""
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
     # Quality metrics
     usefulness_score: float = 0.0  # How useful was this contribution
     access_count: int = 0          # How many times accessed
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "contribution_id": self.contribution_id,
@@ -70,7 +70,7 @@ class Contribution:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'Contribution':
+    def from_dict(cls, data: dict) -> 'Contribution':
         """Deserialize from dictionary."""
         return cls(
             contribution_id=data["contribution_id"],
@@ -101,7 +101,7 @@ class UserContributionStats:
     avg_usefulness: float = 0.0
 
     # By type
-    by_type: Dict[str, int] = field(default_factory=dict)
+    by_type: dict[str, int] = field(default_factory=dict)
 
     @property
     def approval_rate(self) -> float:
@@ -123,7 +123,7 @@ class ContributionTracker:
     - Support review workflow
     """
 
-    def __init__(self, storage_path: Optional[str] = None):
+    def __init__(self, storage_path: str | None = None):
         """
         Initialize tracker.
 
@@ -131,9 +131,9 @@ class ContributionTracker:
             storage_path: Path to persist data (None for in-memory)
         """
         self.storage_path = storage_path
-        self.contributions: Dict[str, Contribution] = {}
-        self._by_user: Dict[str, Set[str]] = {}  # user_id -> contribution_ids
-        self._by_target: Dict[str, Set[str]] = {}  # target_id -> contribution_ids
+        self.contributions: dict[str, Contribution] = {}
+        self._by_user: dict[str, set[str]] = {}  # user_id -> contribution_ids
+        self._by_target: dict[str, set[str]] = {}  # target_id -> contribution_ids
         self._counter = 0
 
         if storage_path:
@@ -153,7 +153,7 @@ class ContributionTracker:
         target_id: str,
         content: Any,
         auto_approve: bool = False,
-        metadata: Dict = None
+        metadata: dict = None
     ) -> Contribution:
         """
         Record a new contribution.
@@ -259,7 +259,7 @@ class ContributionTracker:
         self._save()
         return True
 
-    def get_pending_reviews(self) -> List[Contribution]:
+    def get_pending_reviews(self) -> list[Contribution]:
         """Get contributions awaiting review."""
         return [
             c for c in self.contributions.values()
@@ -268,12 +268,12 @@ class ContributionTracker:
 
     # === Querying ===
 
-    def get_contribution(self, contribution_id: str) -> Optional[Contribution]:
+    def get_contribution(self, contribution_id: str) -> Contribution | None:
         """Get contribution by ID."""
         return self.contributions.get(contribution_id)
 
     def get_contributions_by_user(self, user_id: str,
-                                   status: ContributionStatus = None) -> List[Contribution]:
+                                   status: ContributionStatus = None) -> list[Contribution]:
         """Get contributions by user."""
         contribution_ids = self._by_user.get(user_id, set())
         contributions = [self.contributions[cid] for cid in contribution_ids if cid in self.contributions]
@@ -283,13 +283,13 @@ class ContributionTracker:
 
         return sorted(contributions, key=lambda c: c.created_at, reverse=True)
 
-    def get_contributions_for_target(self, target_id: str) -> List[Contribution]:
+    def get_contributions_for_target(self, target_id: str) -> list[Contribution]:
         """Get contributions for a target (node/edge)."""
         contribution_ids = self._by_target.get(target_id, set())
         contributions = [self.contributions[cid] for cid in contribution_ids if cid in self.contributions]
         return sorted(contributions, key=lambda c: c.created_at, reverse=True)
 
-    def get_attribution(self, target_id: str) -> Optional[str]:
+    def get_attribution(self, target_id: str) -> str | None:
         """Get original contributor for a target."""
         contributions = self.get_contributions_for_target(target_id)
         add_contributions = [
@@ -333,7 +333,7 @@ class ContributionTracker:
 
         return stats
 
-    def get_leaderboard(self, limit: int = 10) -> List[Dict]:
+    def get_leaderboard(self, limit: int = 10) -> list[dict]:
         """Get top contributors."""
         user_stats = {}
 
@@ -397,7 +397,7 @@ class ContributionTracker:
             return
 
         try:
-            with open(self.storage_path, 'r') as f:
+            with open(self.storage_path) as f:
                 data = json.load(f)
 
             self._counter = data.get("counter", 0)
@@ -422,7 +422,7 @@ class ContributionTracker:
 
     # === Export ===
 
-    def export_contributions(self, user_id: Optional[str] = None,
+    def export_contributions(self, user_id: str | None = None,
                               format: str = "json") -> str:
         """Export contributions."""
         if user_id:
@@ -477,7 +477,7 @@ if __name__ == "__main__":
 
     # Get stats
     alice_stats = tracker.get_user_stats("alice")
-    print(f"\nAlice's stats:")
+    print("\nAlice's stats:")
     print(f"  Total: {alice_stats.total_contributions}")
     print(f"  Approved: {alice_stats.approved_contributions}")
     print(f"  By type: {alice_stats.by_type}")

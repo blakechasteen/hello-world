@@ -28,20 +28,19 @@ Integration: Phases 1-4 → Real-time Dashboard
 import asyncio
 import json
 import logging
-from typing import Dict, List, Set, Optional, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse
+
+from hololoom.agentic.skill_agents import SkillRegistry, list_available_skills
 
 # HoloLoom imports
 from hololoom.config import Config
 from hololoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
-from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
-from hololoom.agentic.skill_agents import SkillRegistry, list_available_skills
 
 # Initialize logging
 logging.basicConfig(
@@ -63,10 +62,10 @@ app.add_middleware(
 )
 
 # Global state
-analytics: Optional[RecursiveAnalytics] = None
-skill_registry: Optional[SkillRegistry] = None
-active_websockets: Set[WebSocket] = set()
-config: Optional[Config] = None
+analytics: RecursiveAnalytics | None = None
+skill_registry: SkillRegistry | None = None
+active_websockets: set[WebSocket] = set()
+config: Config | None = None
 
 
 # ============================================================================
@@ -104,7 +103,7 @@ class ConnectionManager:
     """Manage WebSocket connections."""
 
     def __init__(self):
-        self.active_connections: Set[WebSocket] = set()
+        self.active_connections: set[WebSocket] = set()
 
     async def connect(self, websocket: WebSocket):
         """Accept new WebSocket connection."""
@@ -117,7 +116,7 @@ class ConnectionManager:
         self.active_connections.discard(websocket)
         logger.info(f"WebSocket disconnected. Total: {len(self.active_connections)}")
 
-    async def broadcast(self, message: Dict[str, Any]):
+    async def broadcast(self, message: dict[str, Any]):
         """Broadcast message to all connected clients."""
         disconnected = set()
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom Weaving Orchestrator - Canonical Implementation with mythRL Protocols
 =================================================================================
@@ -30,52 +29,48 @@ import asyncio
 import logging
 import time
 import warnings
-import numpy as np
-from typing import Dict, List, Any, Optional, Callable, Type, TYPE_CHECKING
+from collections.abc import Callable
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any
 
-# Shared types
-from hololoom.protocols.types import Query, Context, Features, MemoryShard
+import numpy as np
+
+from hololoom.alignment.audit_trail import DecisionType, OutcomeType
+from hololoom.alignment.safety_guardrails import (
+    ActionCategory,
+    ActionRequest,
+)
+from hololoom.chrono.trigger import ChronoTrigger, TemporalWindow
+
+# Core modules
+from hololoom.config import Config
+from hololoom.convergence.engine import CollapseStrategy, ConvergenceEngine
+from hololoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
+from hololoom.fabric.spacetime import Artifact, Spacetime, WeavingTrace
+
+# Weaving architecture components
+from hololoom.loom.command import PatternCard
+from hololoom.memory.graph import KG  # Yarn Graph for thread storage
+from hololoom.motif.base import create_motif_detector
+from hololoom.policy.unified import create_policy
 
 # mythRL Protocol-based architecture types
 from hololoom.protocols import (
     ComplexityLevel,
-    ProvenanceTrace,
-    MythRLResult,
-    PatternSelectionProtocol,
-    FeatureExtractionProtocol,
-    WarpSpaceProtocol,
-    DecisionEngineProtocol,
 )
 
-# Weaving architecture components
-from hololoom.loom.command import LoomCommand, PatternCard, PatternSpec
-from hololoom.chrono.trigger import ChronoTrigger, TemporalWindow, ExecutionLimits
+# Shared types
+from hololoom.protocols.types import MemoryShard, Query
+from hololoom.reflection.buffer import LearningSignal
 from hololoom.resonance.shed import ResonanceShed
-from hololoom.warp.space import WarpSpace
-from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy, CollapseResult
-from hololoom.fabric.spacetime import Spacetime, WeavingTrace, Artifact
-from hololoom.reflection.buffer import ReflectionBuffer, LearningSignal
-
-# Core modules
-from hololoom.config import Config, ExecutionMode
-from hololoom.motif.base import create_motif_detector
-from hololoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
-from hololoom.memory.base import create_retriever
-from hololoom.memory.graph import KG  # Yarn Graph for thread storage
-from hololoom.policy.unified import create_policy
-from hololoom.alignment.safety_guardrails import (
-    create_guardrails, SafetyGuardrails, ActionRequest, ActionCategory, RiskLevel
-)
-from hololoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 
 # Semantic State Integration (Phase 8 - December 2025)
 from hololoom.semantic_calculus import (
+    SIGNIFICANT_SHIFT_THRESHOLD,
     PolicySemanticState,
     SemanticToolSelector,
-    TOPIC_SHIFT_THRESHOLD,
-    SIGNIFICANT_SHIFT_THRESHOLD,
 )
+from hololoom.warp.space import WarpSpace
 
 # Conscience Integration (Phase 2C - December 2025)
 try:
@@ -92,39 +87,24 @@ except ImportError:
     )
 
 # Tool Execution (Elegance Pass: Extracted to tools/ module - November 2025)
-from hololoom.tools import ToolExecutor
 
 # Initialization Functions (Elegance Pass: Extracted to orchestrator/initialization/ - November 2025 Phase 2)
-from hololoom.orchestrator.initialization import (
-    initialize_config_and_memory,
-    initialize_reflection_and_caching,
-    initialize_recursive_learning,
-    initialize_components,
-    initialize_production_hardening,
-    initialize_semantic_cache,
-    initialize_linguistic_gate,
-)
-
 # Core Logic Functions (Elegance Pass: Extracted to orchestrator/core/ - November 2025 Phase 3)
 from hololoom.orchestrator.core import (
     assess_complexity_level,
     create_provenance_trace,
-    get_reflection_metrics,
-    get_recursive_learning_stats,
-    get_metrics,
-    start_background_consolidation,
-    spawn_background_task,
+)
+from hololoom.orchestrator.initialization import (
+    initialize_components,
+    initialize_config_and_memory,
+    initialize_production_hardening,
+    initialize_reflection_and_caching,
 )
 
-# Retrieval Functions (Elegance Pass: Extracted to orchestrator/retrieval/ - November 2025 Phase 6)
-from hololoom.orchestrator.retrieval import (
-    multipass_memory_crawl,
-    query_memory_backend,
-)
-
-# Physics Integration (Elegance Pass: Extracted to orchestrator/physics/ - November 2025 Phase 7)
-from hololoom.orchestrator.physics import (
-    weave_with_physics,
+# Jenny Panel Detection (Elegance Pass: Extracted to orchestrator/jenny/ - December 2025)
+from hololoom.orchestrator.jenny import (
+    build_jenny_panel_context,
+    detect_jenny_panel_type,
 )
 
 # Learning Integration (Elegance Pass: Extracted to orchestrator/learning/ - November 2025 Phase 8)
@@ -132,43 +112,40 @@ from hololoom.orchestrator.learning import (
     apply_recursive_learning,
 )
 
-# Jenny Panel Detection (Elegance Pass: Extracted to orchestrator/jenny/ - December 2025)
-from hololoom.orchestrator.jenny import (
-    JENNY_CONFIDENCE_THRESHOLD,
-    JENNY_THREADS_THRESHOLD,
-    JENNY_STAGES_THRESHOLD,
-    JENNY_DURATION_THRESHOLD_MS,
-    classify_query_type,
-    get_panel_type_candidates,
-    detect_panel_type_heuristic,
-    detect_jenny_panel_type,
-    build_jenny_panel_context,
+# Physics Integration (Elegance Pass: Extracted to orchestrator/physics/ - November 2025 Phase 7)
+from hololoom.orchestrator.physics import (
+    weave_with_physics,
+)
+
+# Retrieval Functions (Elegance Pass: Extracted to orchestrator/retrieval/ - November 2025 Phase 6)
+from hololoom.orchestrator.retrieval import (
+    multipass_memory_crawl,
 )
 
 # Production Hardening (Part 5: Days 21-25)
 try:
     from hololoom.context import (
+        BackendError,
+        CircuitBreakerRegistry,
+        CircuitState,
+        ErrorHandler,
+        HealthChecker,
+        HealthStatus,
         # Configuration
         ProductionConfig,
-        # Monitoring
-        create_system_monitor,
+        RateLimiter,
+        RateLimitExceededError,
         SystemMonitor,
         # Circuit breakers
         create_circuit_breaker_registry,
-        CircuitBreakerRegistry,
-        CircuitState,
-        # Rate limiting
-        create_rate_limiter,
-        RateLimiter,
-        RateLimitExceededError,
-        # Health checks
-        create_health_checker,
-        HealthChecker,
-        HealthStatus,
         # Error handling
         create_error_handler,
-        ErrorHandler,
-        BackendError,
+        # Health checks
+        create_health_checker,
+        # Rate limiting
+        create_rate_limiter,
+        # Monitoring
+        create_system_monitor,
     )
     PRODUCTION_HARDENING_AVAILABLE = True
 except ImportError:
@@ -181,12 +158,9 @@ except ImportError:
     )
 
 # Physics-based routing (Phase 1: Gradient Flow)
-from hololoom.routing import ToolRouter, ToolConfig
 
 # Smart Query Routing (November 2025 - Performance Optimization)
-from hololoom.routing.query_classifier import QueryClassifier, QueryComplexity
-from hololoom.routing.fast_paths import FastPathRouter, handle_trivial_query, handle_simple_query
-from hololoom.routing.classifier_factory import create_classifier, create_fast_path_router
+from hololoom.routing.query_classifier import QueryComplexity
 
 # Shuttle Integration (January 2025 - MCTS-powered Warp↔Yarn intersection)
 try:
@@ -210,18 +184,12 @@ except ImportError:
 
 # Statistical Mechanics (Phase 5)
 try:
-    from hololoom.physics import (
-        StatisticalMechanicsEngine,
-        Microstate,
-        Macrostate,
-        PhaseTransition
-    )
+    from hololoom.physics import Macrostate, Microstate, PhaseTransition, StatisticalMechanicsEngine
     STATISTICAL_MECHANICS_AVAILABLE = True
 except ImportError:
     STATISTICAL_MECHANICS_AVAILABLE = False
 
 # Performance optimizations
-from hololoom.performance.cache import QueryCache
 
 # Prometheus metrics
 try:
@@ -236,8 +204,8 @@ logging.basicConfig(level=logging.INFO)
 try:
     from hololoom.visualization.jenny_mrf import (
         JennyMRFCompiler,
-        create_mrf_compiler,
         PanelTypeLearner,
+        create_mrf_compiler,
     )
     JENNY_MRF_AVAILABLE = True
 except ImportError:
@@ -251,7 +219,7 @@ except ImportError:
 
 # Jenny renderer string-to-enum mapping (elegance: module-level constant)
 # Lazy import to avoid circular dependency - populated on first use
-JENNY_RENDERER_MAP: Optional[Dict[str, Any]] = None
+JENNY_RENDERER_MAP: dict[str, Any] | None = None
 
 def _get_jenny_renderer_map():
     """Lazy load Jenny renderer map to avoid import-time dependency."""
@@ -270,7 +238,6 @@ def _get_jenny_renderer_map():
 
 
 if TYPE_CHECKING:
-    from hololoom.awareness.llm_integration import OllamaLLM
     from hololoom.config import BanditStrategy
 
 
@@ -328,10 +295,10 @@ class WeavingOrchestrator:
     def __init__(
         self,
         cfg: Config,
-        shards: Optional[List[MemoryShard]] = None,
-        memory: Optional[Any] = None,  # Unified memory backend
-        yarn_graph: Optional['KG'] = None,  # Yarn Graph (KG) for thread storage
-        pattern_preference: Optional[PatternCard] = None,
+        shards: list[MemoryShard] | None = None,
+        memory: Any | None = None,  # Unified memory backend
+        yarn_graph: KG | None = None,  # Yarn Graph (KG) for thread storage
+        pattern_preference: PatternCard | None = None,
         enable_reflection: bool = True,
         reflection_capacity: int = 1000,
         enable_complexity_auto_detect: bool = True,
@@ -341,10 +308,10 @@ class WeavingOrchestrator:
         consolidation_interval: float = 3600.0,  # 1 hour default
         consolidation_temperature: float = 1.0,
         consolidation_cooling_rate: float = 0.95,
-        stage_callback: Optional[Callable[[int, str, float], None]] = None,  # Phase 3.1: Stage tracking
+        stage_callback: Callable[[int, str, float], None] | None = None,  # Phase 3.1: Stage tracking
         # Production Hardening (Part 5)
         enable_production_hardening: bool = False,
-        production_config: Optional['ProductionConfig'] = None,
+        production_config: ProductionConfig | None = None,
         rate_limit_qps: float = 100.0,
         rate_limit_concurrent: int = 50,
         enable_circuit_breakers: bool = True,
@@ -352,9 +319,9 @@ class WeavingOrchestrator:
         enable_health_checks: bool = True,
         enable_auto_enhancement: bool = False,  # Meta-Prompt Auto-Enhancement
         # Consciousness Integration (Phase 1 - November 2025)
-        awareness_layer: Optional[Any] = None,  # AwarenessGraph for epistemic consciousness
+        awareness_layer: Any | None = None,  # AwarenessGraph for epistemic consciousness
         # Conscience Integration (Phase 2C - December 2025)
-        conscience_adapter: Optional[Any] = None,  # AgenticConscienceAdapter for per-query gating
+        conscience_adapter: Any | None = None,  # AgenticConscienceAdapter for per-query gating
         enable_conscience: bool = True,  # Enable conscience gating (default True)
         # Jenny Generative UI Runtime (December 2025 - MVP Week 1)
         enable_jenny: bool = False,  # Enable Jenny UI spec compilation
@@ -447,7 +414,7 @@ class WeavingOrchestrator:
                 import os
                 template_path = os.path.join("promptly_skills", "meta_prompt", "template.md")
                 if os.path.exists(template_path):
-                    with open(template_path, "r", encoding="utf-8") as f:
+                    with open(template_path, encoding="utf-8") as f:
                         self.meta_prompt_template = f.read()
                     self.logger.info("Meta-Prompt template loaded for auto-enhancement")
                 else:
@@ -465,8 +432,8 @@ class WeavingOrchestrator:
         self.consolidation_interval = consolidation_interval
         self.consolidation_temperature = consolidation_temperature
         self.consolidation_cooling_rate = consolidation_cooling_rate
-        self.stat_mech_engine: Optional['StatisticalMechanicsEngine'] = None
-        self._consolidation_task: Optional[asyncio.Task] = None
+        self.stat_mech_engine: StatisticalMechanicsEngine | None = None
+        self._consolidation_task: asyncio.Task | None = None
 
         # Recursive Learning System Components (Phase 1-5)
         self.enable_recursive_learning = cfg.enable_recursive_learning
@@ -474,11 +441,11 @@ class WeavingOrchestrator:
 
         # Production Hardening (Part 5: Days 21-25)
         self.enable_production_hardening = enable_production_hardening and PRODUCTION_HARDENING_AVAILABLE
-        self.monitor: Optional['SystemMonitor'] = None
-        self.breaker_registry: Optional['CircuitBreakerRegistry'] = None
-        self.rate_limiter: Optional['RateLimiter'] = None
-        self.health_checker: Optional['HealthChecker'] = None
-        self.error_handler: Optional['ErrorHandler'] = None
+        self.monitor: SystemMonitor | None = None
+        self.breaker_registry: CircuitBreakerRegistry | None = None
+        self.rate_limiter: RateLimiter | None = None
+        self.health_checker: HealthChecker | None = None
+        self.error_handler: ErrorHandler | None = None
 
         if self.enable_production_hardening:
             initialize_production_hardening(
@@ -554,8 +521,8 @@ class WeavingOrchestrator:
 
         if enable_jenny:
             try:
-                from hololoom.visualization.jenny_runtime import JennyRuntime, JennyConfig
                 from hololoom.visualization.jenny_renderer import RenderTarget
+                from hololoom.visualization.jenny_runtime import JennyConfig, JennyRuntime
 
                 # Use module-level renderer map (elegance: DRY)
                 renderer_map = _get_jenny_renderer_map()
@@ -608,9 +575,9 @@ class WeavingOrchestrator:
 
         # Semantic State Integration (Phase 8 - December 2025)
         # Track semantic state across queries for topic shift detection and tool selection
-        self._previous_semantic_state: Optional[PolicySemanticState] = None
+        self._previous_semantic_state: PolicySemanticState | None = None
         self._query_index: int = 0
-        self._semantic_tool_selector: Optional[SemanticToolSelector] = None
+        self._semantic_tool_selector: SemanticToolSelector | None = None
 
         # Initialize SemanticToolSelector if semantic calculus is available
         if hasattr(self, 'semantic_spectrum') and self.semantic_spectrum is not None:
@@ -622,7 +589,7 @@ class WeavingOrchestrator:
                 self._semantic_tool_selector = None
 
         # Initialize SemanticAwareBandit for Thompson Sampling (Phase 1 - December 2025)
-        self._semantic_bandit: Optional['SemanticAwareBandit'] = None
+        self._semantic_bandit: SemanticAwareBandit | None = None
         if self.cfg.enable_semantic_bandit:
             try:
                 from hololoom.semantic_calculus.semantic_state import SemanticAwareBandit
@@ -634,7 +601,7 @@ class WeavingOrchestrator:
 
         self.logger.info("WeavingOrchestrator initialization complete")
 
-    def _analyze_semantics(self, text: str) -> Optional[Dict[str, float]]:
+    def _analyze_semantics(self, text: str) -> dict[str, float] | None:
         """
         Analyze text through semantic calculus with three-tier caching.
 
@@ -769,9 +736,9 @@ class WeavingOrchestrator:
     async def weave(
         self,
         query: Query,
-        pattern_override: Optional[PatternCard] = None,
-        complexity: Optional[ComplexityLevel] = None,
-        auto_enhance: Optional[bool] = None
+        pattern_override: PatternCard | None = None,
+        complexity: ComplexityLevel | None = None,
+        auto_enhance: bool | None = None
     ) -> Spacetime:
         """
         Execute the complete 9-step weaving cycle with mythRL progressive complexity.
@@ -1089,13 +1056,13 @@ class WeavingOrchestrator:
 
         # mythRL: Create provenance trace
         provenance = create_provenance_trace(self, query, complexity)
-        
+
         self.logger.info(f"[mythRL] Complexity: {complexity.name} ({complexity.value} steps)")
 
         # Check cache first
         cached_result = self.query_cache.get(query.text)
         if cached_result is not None:
-            self.logger.info(f"[CACHE HIT] Returning cached result for query")
+            self.logger.info("[CACHE HIT] Returning cached result for query")
             provenance.add_shuttle_event("cache_hit", "Returned cached result")
             # Track cache hit
             if METRICS_ENABLED:
@@ -1147,7 +1114,7 @@ class WeavingOrchestrator:
             )
 
             duration = (time.time() - step_start) * 1000
-            self.logger.info(f"  [2] Chrono Trigger fired")
+            self.logger.info("  [2] Chrono Trigger fired")
             stage_timings['temporal_setup'] = duration
             self._emit_stage_event(2, "Chrono Trigger", duration)
 
@@ -1519,7 +1486,8 @@ class WeavingOrchestrator:
 
                 try:
                     from hololoom.awareness.beta_wave_packer import (
-                        BetaWaveContextPacker, TokenBudget
+                        BetaWaveContextPacker,
+                        TokenBudget,
                     )
 
                     # Create token budget from config
@@ -1727,7 +1695,7 @@ class WeavingOrchestrator:
                         neural_probs[i] = 0.7 * neural_probs[i]
                 # Renormalize
                 neural_probs = neural_probs / neural_probs.sum()
-                self.logger.debug(f"  [7b] Blended neural + gradient flow probabilities")
+                self.logger.debug("  [7b] Blended neural + gradient flow probabilities")
 
             # Semantic Bandit: Adjust priors based on semantic state (Phase 1 - December 2025)
             if self._semantic_bandit and context.metadata.get('semantic_state'):
@@ -1967,7 +1935,7 @@ class WeavingOrchestrator:
                 context_summary=f"{len(context.memories)} shards",
                 sources_used=[s.id for s in context.memories[:3]]
             )
-            
+
             # Attach mythRL enhancements if protocol system is enabled
             if hasattr(self, 'enable_complexity_auto_detect') and self.enable_complexity_auto_detect:
                 spacetime.complexity = complexity
@@ -1988,7 +1956,7 @@ class WeavingOrchestrator:
                 })
 
             duration = (time.time() - step_start) * 1000
-            self.logger.info(f"  [9] Spacetime fabric woven!")
+            self.logger.info("  [9] Spacetime fabric woven!")
             stage_timings['spacetime_assembly'] = duration
             self._emit_stage_event(9, "Spacetime Fabric", duration)
 
@@ -2163,7 +2131,7 @@ class WeavingOrchestrator:
 
             # Cache the result
             self.query_cache.put(query.text, spacetime)
-            self.logger.debug(f"[CACHE] Cached result for query")
+            self.logger.debug("[CACHE] Cached result for query")
 
             return spacetime
 
@@ -2201,7 +2169,7 @@ class WeavingOrchestrator:
                 metadata={'status': 'error', 'error_type': type(e).__name__}
             )
 
-    def _map_bandit_to_collapse(self, bandit_strategy: 'BanditStrategy') -> CollapseStrategy:
+    def _map_bandit_to_collapse(self, bandit_strategy: BanditStrategy) -> CollapseStrategy:
         """Map Config BanditStrategy to Convergence CollapseStrategy."""
         from hololoom.config import BanditStrategy
 
@@ -2265,7 +2233,7 @@ class WeavingOrchestrator:
         self,
         query: Query,
         track_provenance: bool = True
-    ) -> tuple[Spacetime, Optional[UnifiedPhysicsResult]]:
+    ) -> tuple[Spacetime, UnifiedPhysicsResult | None]:
         """
         Physics-enhanced weaving with complete unified physics integration.
 
@@ -2297,8 +2265,8 @@ class WeavingOrchestrator:
     async def reflect(
         self,
         spacetime: Spacetime,
-        feedback: Optional[Dict[str, Any]] = None,
-        reward: Optional[float] = None
+        feedback: dict[str, Any] | None = None,
+        reward: float | None = None
     ) -> None:
         """
         Store Spacetime in reflection buffer for learning.
@@ -2316,7 +2284,7 @@ class WeavingOrchestrator:
         await self.reflection_buffer.store(spacetime, feedback=feedback, reward=reward)
         self.logger.debug(f"Reflected on {spacetime.tool_used} (confidence={spacetime.confidence:.2f})")
 
-    async def learn(self, force: bool = False) -> List[LearningSignal]:
+    async def learn(self, force: bool = False) -> list[LearningSignal]:
         """
         Analyze reflection buffer and generate learning signals.
 
@@ -2338,7 +2306,7 @@ class WeavingOrchestrator:
 
         return signals
 
-    async def apply_learning_signals(self, signals: List[LearningSignal]) -> None:
+    async def apply_learning_signals(self, signals: list[LearningSignal]) -> None:
         """
         Apply learning signals to adapt the system.
 
@@ -2375,8 +2343,8 @@ class WeavingOrchestrator:
     async def weave_and_reflect(
         self,
         query: Query,
-        feedback: Optional[Dict[str, Any]] = None,
-        pattern_override: Optional[PatternCard] = None
+        feedback: dict[str, Any] | None = None,
+        pattern_override: PatternCard | None = None
     ) -> Spacetime:
         """
         Weave and automatically reflect on the outcome.
@@ -2439,7 +2407,7 @@ class WeavingOrchestrator:
     # Lifecycle Management
     # ========================================================================
 
-    async def __aenter__(self) -> 'WeavingOrchestrator':
+    async def __aenter__(self) -> WeavingOrchestrator:
         """
         Async context manager entry.
 
@@ -2460,9 +2428,9 @@ class WeavingOrchestrator:
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[Any]
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any | None
     ) -> bool:
         """
         Async context manager exit with cleanup.
@@ -2493,7 +2461,7 @@ class WeavingOrchestrator:
     # Cache and Statistics
     # ========================================================================
 
-    def cache_stats(self) -> Dict[str, Any]:
+    def cache_stats(self) -> dict[str, Any]:
         """
         Get cache statistics.
 
@@ -2621,7 +2589,7 @@ class WeavingOrchestrator:
     # Production Hardening Methods (Part 5: Days 21-25)
     # ========================================================================
 
-    async def get_health(self) -> Optional[Dict[str, Any]]:
+    async def get_health(self) -> dict[str, Any] | None:
         """
         Get production health check status.
 
@@ -2655,7 +2623,7 @@ class WeavingOrchestrator:
                 "timestamp": time.time()
             }
 
-    def get_circuit_breaker_status(self) -> Optional[Dict[str, Any]]:
+    def get_circuit_breaker_status(self) -> dict[str, Any] | None:
         """
         Get circuit breaker states for all registered backends.
 

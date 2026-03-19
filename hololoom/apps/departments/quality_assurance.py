@@ -6,21 +6,16 @@ Quality Assurance Department - DATAPIG Integration
 Unified code + data quality assurance using Trough + DATAPIG + xTerminator.
 """
 
-from typing import Dict, List, Optional, Any
 import logging
+from typing import Any
 
 from .base import BaseDepartment
-from .protocol import (
-    DepartmentRequest,
-    DepartmentResponse,
-    VerificationResult,
-    ConfidenceMetadata,
-    ConfidenceLevel
-)
+from .protocol import ConfidenceMetadata, DepartmentRequest, DepartmentResponse, VerificationResult
 
 # DATAPIG imports
 try:
-    from hololoom.datapig import DataPigDetector, Severity as DataPigSeverity
+    from hololoom.datapig import DataPigDetector
+    from hololoom.datapig import Severity as DataPigSeverity
     from hololoom.datapig.config import create_config
     DATAPIG_AVAILABLE = True
 except ImportError:
@@ -391,7 +386,7 @@ class QualityAssuranceDepartment(BaseDepartment):
             confidence=ConfidenceMetadata.from_score(0.0, justification=[error])
         )
 
-    def _serialize_issue(self, issue) -> Dict[str, Any]:
+    def _serialize_issue(self, issue) -> dict[str, Any]:
         """Serialize DATAPIG issue to dict"""
         return {
             "type": issue.issue_type.value,
@@ -401,7 +396,7 @@ class QualityAssuranceDepartment(BaseDepartment):
             "details": issue.details
         }
 
-    def _serialize_trough_issue(self, issue) -> Dict[str, Any]:
+    def _serialize_trough_issue(self, issue) -> dict[str, Any]:
         """Serialize Trough issue to dict"""
         return {
             "category": issue.category.value if hasattr(issue.category, 'value') else str(issue.category),
@@ -411,7 +406,7 @@ class QualityAssuranceDepartment(BaseDepartment):
             "suggestion": issue.suggestion
         }
 
-    def _dict_to_issue(self, issue_dict: Dict):
+    def _dict_to_issue(self, issue_dict: dict):
         """Convert dict back to DataQualityIssue"""
         from hololoom.datapig.detector import DataQualityIssue, IssueType, Severity
 

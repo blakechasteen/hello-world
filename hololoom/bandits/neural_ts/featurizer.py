@@ -5,10 +5,12 @@ Combines context (from hololoom embeddings) and action features into
 input vectors for the reward model.
 """
 
+from collections.abc import Callable
+
 import numpy as np
 import numpy.typing as npt
-from typing import Callable
-from hololoom.bandits.neural_ts.types import Context, Action
+
+from hololoom.bandits.neural_ts.types import Action, Context
 
 
 class ContextActionFeaturizer:

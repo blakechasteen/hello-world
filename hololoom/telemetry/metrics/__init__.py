@@ -4,23 +4,23 @@ Metrics module - Prometheus metrics collection.
 Provides counters, gauges, histograms, and summaries for HoloLoom systems.
 """
 
-from hololoom.telemetry.metrics.prometheus import (
-    PrometheusRegistry,
-    Counter,
-    Gauge,
-    Histogram,
-    Summary,
-    create_registry,
-    get_registry,
-    # Convenience functions
-    counter,
-    gauge,
-    histogram,
-    summary,
-)
 from hololoom.telemetry.metrics.collectors import (
     HoloLoomCollector,
     create_default_collector,
+)
+from hololoom.telemetry.metrics.prometheus import (
+    Counter,
+    Gauge,
+    Histogram,
+    PrometheusRegistry,
+    Summary,
+    # Convenience functions
+    counter,
+    create_registry,
+    gauge,
+    get_registry,
+    histogram,
+    summary,
 )
 
 __all__ = [

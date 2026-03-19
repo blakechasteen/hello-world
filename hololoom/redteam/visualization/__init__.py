@@ -22,11 +22,11 @@ Example:
 """
 
 from .attack_trajectory import (
-    AttackPoint,
-    StrategyMetrics,
-    AttackTrajectoryRenderer,
-    render_attack_trajectory,
     AnomalyType,
+    AttackPoint,
+    AttackTrajectoryRenderer,
+    StrategyMetrics,
+    render_attack_trajectory,
 )
 
 __all__ = [

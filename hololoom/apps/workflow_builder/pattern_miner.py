@@ -10,12 +10,11 @@ Created: December 2025 (Wave 3.2)
 
 import json
 import logging
+import random
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-import random
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +22,12 @@ logger = logging.getLogger(__name__)
 @dataclass
 class NodePattern:
     """A pattern of node sequences with success metrics."""
-    sequence: Tuple[str, ...]
+    sequence: tuple[str, ...]
     frequency: int = 0
     success_count: int = 0
     failure_count: int = 0
     avg_latency_ms: float = 0.0
-    last_seen: Optional[str] = None
+    last_seen: str | None = None
 
     @property
     def success_rate(self) -> float:
@@ -58,20 +57,20 @@ class WorkflowPatternMiner:
     """
 
     # Pattern storage
-    pair_patterns: Dict[Tuple[str, str], NodePattern] = field(default_factory=dict)
-    triple_patterns: Dict[Tuple[str, str, str], NodePattern] = field(default_factory=dict)
+    pair_patterns: dict[tuple[str, str], NodePattern] = field(default_factory=dict)
+    triple_patterns: dict[tuple[str, str, str], NodePattern] = field(default_factory=dict)
 
     # Node popularity (how often each node type is used)
-    node_frequency: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
-    node_success: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
-    node_failure: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    node_frequency: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    node_success: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    node_failure: dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     # Pattern cache for fast lookups
-    _suggestions_cache: Dict[str, List[str]] = field(default_factory=dict)
-    _cache_timestamp: Optional[float] = None
+    _suggestions_cache: dict[str, list[str]] = field(default_factory=dict)
+    _cache_timestamp: float | None = None
     _cache_ttl: float = 60.0  # Cache for 60 seconds
 
-    def extract_patterns(self, workflow_history: List[dict]) -> None:
+    def extract_patterns(self, workflow_history: list[dict]) -> None:
         """
         Extract patterns from workflow execution history.
 
@@ -142,10 +141,10 @@ class WorkflowPatternMiner:
 
     def suggest_next_nodes(
         self,
-        current_nodes: List[str],
+        current_nodes: list[str],
         k: int = 5,
         strategy: str = 'thompson'
-    ) -> List[Dict[str, any]]:
+    ) -> list[dict[str, any]]:
         """
         Suggest likely next nodes based on current workflow.
 
@@ -231,7 +230,7 @@ class WorkflowPatternMiner:
             frequency = stats.frequency / max(1, sum(p.frequency for p in self.pair_patterns.values()))
             return 0.6 * thompson + 0.4 * frequency
 
-    def _suggest_starting_nodes(self, k: int) -> List[Dict[str, any]]:
+    def _suggest_starting_nodes(self, k: int) -> list[dict[str, any]]:
         """Suggest good starting nodes based on overall popularity and success."""
         candidates = []
 
@@ -260,9 +259,9 @@ class WorkflowPatternMiner:
 
     def get_common_patterns(
         self,
-        workflow_type: Optional[str] = None,
+        workflow_type: str | None = None,
         min_frequency: int = 2
-    ) -> List[Dict[str, any]]:
+    ) -> list[dict[str, any]]:
         """
         Get common workflow patterns (templates).
 
@@ -300,7 +299,7 @@ class WorkflowPatternMiner:
         patterns.sort(key=lambda x: x['frequency'], reverse=True)
         return patterns
 
-    def get_node_performance_ranking(self) -> List[Dict[str, any]]:
+    def get_node_performance_ranking(self) -> list[dict[str, any]]:
         """
         Get performance ranking of all node types.
 
@@ -375,7 +374,7 @@ class WorkflowPatternMiner:
             return False
 
         try:
-            with open(filepath, 'r') as f:
+            with open(filepath) as f:
                 data = json.load(f)
 
             # Load pair patterns
@@ -419,7 +418,7 @@ class WorkflowPatternMiner:
 
 
 # Global pattern miner instance
-_pattern_miner: Optional[WorkflowPatternMiner] = None
+_pattern_miner: WorkflowPatternMiner | None = None
 
 
 def get_pattern_miner() -> WorkflowPatternMiner:
@@ -432,20 +431,20 @@ def get_pattern_miner() -> WorkflowPatternMiner:
     return _pattern_miner
 
 
-def update_patterns_from_history(workflow_history: List[dict]) -> None:
+def update_patterns_from_history(workflow_history: list[dict]) -> None:
     """Update global pattern miner from workflow history."""
     miner = get_pattern_miner()
     miner.extract_patterns(workflow_history)
     miner.save_patterns()
 
 
-def suggest_next_nodes(current_nodes: List[str], k: int = 5) -> List[Dict[str, any]]:
+def suggest_next_nodes(current_nodes: list[str], k: int = 5) -> list[dict[str, any]]:
     """Suggest next nodes using global pattern miner."""
     miner = get_pattern_miner()
     return miner.suggest_next_nodes(current_nodes, k=k, strategy='thompson')
 
 
-def get_common_patterns(min_frequency: int = 2) -> List[Dict[str, any]]:
+def get_common_patterns(min_frequency: int = 2) -> list[dict[str, any]]:
     """Get common patterns using global pattern miner."""
     miner = get_pattern_miner()
     return miner.get_common_patterns(min_frequency=min_frequency)

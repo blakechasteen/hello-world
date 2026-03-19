@@ -38,23 +38,22 @@ Date: December 2025
 # =============================================================================
 # Elegant API (Separated Concerns)
 # =============================================================================
-from hololoom.lite.memory import Memory, MemoryItem
-from hololoom.lite.reasoning import ask, research, Answer, Analysis
-
 # =============================================================================
 # Legacy API (Backward Compatible)
 # =============================================================================
 from hololoom.lite.core import HoloLoomLite, LiteResult, SimpleLoom
+from hololoom.lite.memory import Memory, MemoryItem
+from hololoom.lite.reasoning import Analysis, Answer, ask, research
 
 # Agent tool exports (lazy loaded to avoid import errors if dependencies missing)
 try:
     from hololoom.lite.openai_tools import (
         HOLOLOOM_LITE_TOOLS,
         execute_tool,
-        get_tools_for_openai,
-        get_tools_for_anthropic,
+        get_tool_descriptions,
         get_tool_names,
-        get_tool_descriptions
+        get_tools_for_anthropic,
+        get_tools_for_openai,
     )
     _OPENAI_TOOLS_AVAILABLE = True
 except ImportError:

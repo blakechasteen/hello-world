@@ -17,32 +17,19 @@ that learns from every interaction and continuously adapts.
 
 import asyncio
 import logging
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, Set
-from datetime import datetime, timedelta
 from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from typing import Any
 
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 from hololoom.config import Config
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.protocols.types import MemoryShard, Query
 from hololoom.recursive.scratchpad import Scratchpad
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from .loop_integration import (
-    LearningLoopEngine,
-    LearningLoopConfig,
-    LearnedPattern
-)
-from .hot_patterns import (
-    HotPatternFeedbackEngine,
-    HotPatternConfig,
-    UsageRecord
-)
-from .advanced_refinement import (
-    AdvancedRefiner,
-    RefinementStrategy,
-    RefinementResult
-)
+from .advanced_refinement import AdvancedRefiner
+from .hot_patterns import HotPatternConfig, HotPatternFeedbackEngine
+from .loop_integration import LearningLoopConfig
 
 
 @dataclass
@@ -54,7 +41,7 @@ class ThompsonPriors:
     - alpha: Number of successes + 1
     - beta: Number of failures + 1
     """
-    tool_priors: Dict[str, Dict[str, float]] = field(default_factory=lambda: defaultdict(
+    tool_priors: dict[str, dict[str, float]] = field(default_factory=lambda: defaultdict(
         lambda: {"alpha": 1.0, "beta": 1.0}
     ))
 
@@ -80,7 +67,9 @@ class ThompsonPriors:
 
     def save(self, path: str) -> None:
         """Atomic save of Thompson priors to JSON."""
-        import json, tempfile, os
+        import json
+        import os
+        import tempfile
         # Convert defaultdict to plain dict for serialization
         state = {"tool_priors": dict(self.tool_priors)}
         dir_name = os.path.dirname(path) or "."
@@ -94,7 +83,8 @@ class ThompsonPriors:
     @classmethod
     def load(cls, path: str) -> "ThompsonPriors":
         """Load Thompson priors from JSON. Raises FileNotFoundError if missing."""
-        import json, os
+        import json
+        import os
         if not os.path.exists(path):
             raise FileNotFoundError(path)
         with open(path) as f:
@@ -111,9 +101,9 @@ class ThompsonPriors:
 @dataclass
 class PolicyWeights:
     """Learned weights for policy adapters"""
-    adapter_weights: Dict[str, float] = field(default_factory=lambda: defaultdict(lambda: 1.0))
-    adapter_successes: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
-    adapter_total: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    adapter_weights: dict[str, float] = field(default_factory=lambda: defaultdict(lambda: 1.0))
+    adapter_successes: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    adapter_total: dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     def update(self, adapter: str, success: bool):
         """Update adapter weights based on outcome"""
@@ -191,7 +181,7 @@ class BackgroundLearner:
         # Learning state
         self.recent_spacetimes: deque = deque(maxlen=100)
         self.running = False
-        self.task: Optional[asyncio.Task] = None
+        self.task: asyncio.Task | None = None
 
     async def start(self):
         """Start background learning loop"""
@@ -338,7 +328,7 @@ class FullLearningEngine:
     def __init__(
         self,
         cfg: Config,
-        shards: Optional[List[MemoryShard]] = None,
+        shards: list[MemoryShard] | None = None,
         enable_background_learning: bool = True,
         learning_update_interval: float = 60.0
     ):
@@ -364,10 +354,10 @@ class FullLearningEngine:
         self.metrics = LearningMetrics()
 
         # Will be initialized in __aenter__
-        self.orchestrator: Optional[WeavingOrchestrator] = None
-        self.hot_pattern_engine: Optional[HotPatternFeedbackEngine] = None
-        self.advanced_refiner: Optional[AdvancedRefiner] = None
-        self.background_learner: Optional[BackgroundLearner] = None
+        self.orchestrator: WeavingOrchestrator | None = None
+        self.hot_pattern_engine: HotPatternFeedbackEngine | None = None
+        self.advanced_refiner: AdvancedRefiner | None = None
+        self.background_learner: BackgroundLearner | None = None
 
         self.enable_background_learning = enable_background_learning
         self.learning_update_interval = learning_update_interval
@@ -521,7 +511,7 @@ class FullLearningEngine:
 
         return spacetime
 
-    def get_learning_statistics(self) -> Dict[str, Any]:
+    def get_learning_statistics(self) -> dict[str, Any]:
         """
         Get comprehensive learning statistics.
 
@@ -622,9 +612,13 @@ class FullLearningEngine:
                 "policy_updates": self.metrics.policy_updates
             }, f, indent=2)
 
-        # Save scratchpad
+        # Save scratchpad (history is a list of entries)
+        history = self.get_scratchpad_history()
         with open(os.path.join(path, "scratchpad.txt"), "w") as f:
-            f.write(self.get_scratchpad_history())
+            if isinstance(history, list):
+                f.write("\n".join(str(entry) for entry in history))
+            else:
+                f.write(str(history))
 
         self.logger.info(f"Saved learning state to {path}")
 
@@ -633,7 +627,7 @@ class FullLearningEngine:
 async def weave_with_full_learning(
     query: Query,
     config: Config,
-    shards: Optional[List[MemoryShard]] = None,
+    shards: list[MemoryShard] | None = None,
     enable_refinement: bool = True,
     enable_background_learning: bool = True
 ) -> Spacetime:

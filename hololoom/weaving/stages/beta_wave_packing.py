@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Beta Wave Packing Stage
 =======================
@@ -11,7 +12,7 @@ Uses activation spreading through spring engine to:
 """
 
 import logging
-from typing import Any, ClassVar, Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
 
@@ -39,7 +40,7 @@ class BetaWavePackingStage:
         response_reserve: int = 1024,
         activation_threshold: float = 0.1,
         compression_threshold: float = 0.3,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         self.spring_engine = spring_engine
         self.token_budget = token_budget
@@ -59,9 +60,7 @@ class BetaWavePackingStage:
             return
 
         try:
-            from hololoom.awareness.beta_wave_packer import (
-                BetaWaveContextPacker, TokenBudget
-            )
+            from hololoom.awareness.beta_wave_packer import BetaWaveContextPacker, TokenBudget
 
             budget = TokenBudget(
                 total=self.token_budget,
@@ -101,7 +100,7 @@ class BetaWavePackingStage:
             self.logger.warning(f"  [6.5] Beta wave packing failed: {e}. Falling back to raw shards.")
             ctx.packed_context = None
 
-    def _extract_query_embedding(self, dot_plasma: Dict[str, Any]) -> np.ndarray:
+    def _extract_query_embedding(self, dot_plasma: dict[str, Any]) -> np.ndarray:
         """Extract query embedding from DotPlasma psi field."""
         psi_raw = dot_plasma.get('psi', [])
         if isinstance(psi_raw, dict):

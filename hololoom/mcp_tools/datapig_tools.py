@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 DATAPIG MCP Tools for Claude Desktop
 
@@ -7,12 +8,12 @@ MCP server tools exposing DATAPIG data quality validation to Claude Desktop.
 """
 
 import json
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 # MCP imports
 try:
     from mcp.server import MCPServer
-    from mcp.types import Tool, TextContent
+    from mcp.types import TextContent, Tool
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
@@ -23,12 +24,12 @@ try:
     from hololoom.datapig import (
         DataPigDetector,
         DataQualityIssue,
-        Severity,
         IssueType,
+        Severity,
+        analyze_dataset,
         engage_warp_validation,
-        analyze_dataset
     )
-    from hololoom.datapig.config import create_config, DetectorConfig
+    from hololoom.datapig.config import DetectorConfig, create_config
     DATAPIG_AVAILABLE = True
 except ImportError:
     DATAPIG_AVAILABLE = False
@@ -56,11 +57,11 @@ else:
 # ============================================================================
 
 def _validate_data_quality_impl(
-    dataset: List[Dict],
+    dataset: list[dict],
     severity_threshold: str = "COMMANDER",
     preset: str = "default",
     **config_overrides
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Implementation of validate_data_quality tool"""
 
     if not DATAPIG_AVAILABLE:
@@ -120,10 +121,10 @@ def _validate_data_quality_impl(
 if MCP_AVAILABLE and DATAPIG_AVAILABLE:
     @server.tool("validate_data_quality")
     async def validate_data_quality(
-        dataset: List[Dict],
+        dataset: list[dict],
         severity_threshold: str = "COMMANDER",
         preset: str = "default"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate data quality with DATAPIG
 
@@ -170,10 +171,10 @@ if MCP_AVAILABLE and DATAPIG_AVAILABLE:
 # ============================================================================
 
 def _fix_data_quality_impl(
-    dataset: List[Dict],
-    issues: Optional[List[Dict]] = None,
+    dataset: list[dict],
+    issues: list[dict] | None = None,
     validate: bool = True
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Implementation of fix_data_quality tool"""
 
     if not DATAPIG_AVAILABLE:
@@ -205,10 +206,10 @@ def _fix_data_quality_impl(
 if MCP_AVAILABLE and DATAPIG_AVAILABLE and XTERMINATOR_AVAILABLE:
     @server.tool("fix_data_quality")
     async def fix_data_quality(
-        dataset: List[Dict],
-        issues: Optional[List[Dict]] = None,
+        dataset: list[dict],
+        issues: list[dict] | None = None,
         validate: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Auto-fix data quality issues with xTerminator
 
@@ -243,7 +244,7 @@ if MCP_AVAILABLE and DATAPIG_AVAILABLE and XTERMINATOR_AVAILABLE:
 # Tool 3: Warp Validation (Quick Check)
 # ============================================================================
 
-def _warp_validation_impl(dataset: List[Dict]) -> Dict[str, Any]:
+def _warp_validation_impl(dataset: list[dict]) -> dict[str, Any]:
     """Implementation of warp_validation tool"""
 
     if not DATAPIG_AVAILABLE:
@@ -266,7 +267,7 @@ def _warp_validation_impl(dataset: List[Dict]) -> Dict[str, Any]:
 
 if MCP_AVAILABLE and DATAPIG_AVAILABLE:
     @server.tool("warp_validation")
-    async def warp_validation(dataset: List[Dict]) -> Dict[str, Any]:
+    async def warp_validation(dataset: list[dict]) -> dict[str, Any]:
         """
         Quick warp drive validation check
 
@@ -296,7 +297,7 @@ if MCP_AVAILABLE and DATAPIG_AVAILABLE:
 # Helper Functions
 # ============================================================================
 
-def _format_issue(issue: DataQualityIssue) -> Dict[str, Any]:
+def _format_issue(issue: DataQualityIssue) -> dict[str, Any]:
     """Format DATAPIG issue for JSON serialization"""
     return {
         "type": issue.issue_type.value,
@@ -308,7 +309,7 @@ def _format_issue(issue: DataQualityIssue) -> Dict[str, Any]:
     }
 
 
-def _dict_to_issue(issue_dict: Dict) -> DataQualityIssue:
+def _dict_to_issue(issue_dict: dict) -> DataQualityIssue:
     """Convert dict to DataQualityIssue (for fix_data_quality)"""
     from hololoom.datapig.detector import DataQualityIssue, IssueType, Severity
 
@@ -322,7 +323,7 @@ def _dict_to_issue(issue_dict: Dict) -> DataQualityIssue:
     )
 
 
-def _generate_recommendations(issues: List[DataQualityIssue]) -> List[str]:
+def _generate_recommendations(issues: list[DataQualityIssue]) -> list[str]:
     """Generate actionable recommendations based on issues"""
     recommendations = []
 

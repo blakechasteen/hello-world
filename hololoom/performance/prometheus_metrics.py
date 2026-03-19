@@ -54,17 +54,14 @@ Prometheus queries:
     avg(hololoom_confidence_score) by (tool_used)
 """
 
-import time
 import logging
+import time
 from contextlib import contextmanager
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 try:
-    from prometheus_client import (
-        Counter, Histogram, Gauge, start_http_server, REGISTRY
-    )
+    from prometheus_client import REGISTRY, Counter, Gauge, Histogram, start_http_server
     PROMETHEUS_AVAILABLE = True
 except ImportError:
     logger.warning("prometheus_client not installed - metrics disabled")
@@ -269,7 +266,7 @@ class PrometheusMetrics:
 
         cache_misses_total.labels(cache_type=cache_type).inc()
 
-    def get_cache_hit_rate(self, cache_type: str = 'query_cache') -> Optional[float]:
+    def get_cache_hit_rate(self, cache_type: str = 'query_cache') -> float | None:
         """
         Calculate cache hit rate (if prometheus available).
 

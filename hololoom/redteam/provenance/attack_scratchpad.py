@@ -13,11 +13,11 @@ Follows the pattern from hololoom/recursive/scratchpad.py but specialized
 for red team attack tracking.
 """
 
+import json
 import time
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Set
 from enum import Enum
-import json
+from typing import Any
 
 
 class AttackStrategy(Enum):
@@ -103,14 +103,14 @@ class AttackScratchpadEntry:
 
     # Follow-up planning
     next_action: str = ""               # Recommended follow-up attack
-    next_strategy: Optional[str] = None # Suggested next strategy
+    next_strategy: str | None = None # Suggested next strategy
 
     # Temporal/organizational
     chain_id: str = ""                  # Which attack chain this belongs to
     step_number: int = 0                # Position in the chain
 
     # Extended metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: float = field(default_factory=lambda: time.time())
 
 
@@ -122,15 +122,15 @@ class AttackChain:
     goal: str                           # Overall objective
     description: str                    # Human-readable description
 
-    entries: List[AttackScratchpadEntry] = field(default_factory=list)
+    entries: list[AttackScratchpadEntry] = field(default_factory=list)
 
     # Success tracking
     initial_confidence: float = 0.0     # Initial confidence in chain success
     cumulative_score: float = 0.0       # Combined success score
-    bypassed_layers: Set[str] = field(default_factory=set)
+    bypassed_layers: set[str] = field(default_factory=set)
 
     created_at: float = field(default_factory=lambda: time.time())
-    completed_at: Optional[float] = None
+    completed_at: float | None = None
 
     def success_rate(self) -> float:
         """Calculate success rate as avg of all steps."""
@@ -163,13 +163,13 @@ class AttackScratchpad:
         Args:
             capacity: Maximum number of entries to store (LRU trimming)
         """
-        self.entries: List[AttackScratchpadEntry] = []
-        self.chains: Dict[str, AttackChain] = {}
+        self.entries: list[AttackScratchpadEntry] = []
+        self.chains: dict[str, AttackChain] = {}
         self.capacity = capacity
 
         # Statistics tracking
-        self.strategy_counts: Dict[str, int] = {}
-        self.layer_hits: Dict[str, int] = {}
+        self.strategy_counts: dict[str, int] = {}
+        self.layer_hits: dict[str, int] = {}
         self.successful_count = 0
 
     def add_attack_entry(
@@ -183,10 +183,10 @@ class AttackScratchpad:
         bypassed: bool,
         confidence: float = 0.5,
         next_action: str = "",
-        next_strategy: Optional[str] = None,
+        next_strategy: str | None = None,
         chain_id: str = "",
         step_number: int = 0,
-        metadata: Optional[Dict] = None
+        metadata: dict | None = None
     ) -> AttackScratchpadEntry:
         """
         Add a new attack entry to the scratchpad.
@@ -260,7 +260,7 @@ class AttackScratchpad:
 
         return entry
 
-    def get_attack_chain(self, chain_id: str) -> List[AttackScratchpadEntry]:
+    def get_attack_chain(self, chain_id: str) -> list[AttackScratchpadEntry]:
         """
         Get all attacks in a specific chain.
 
@@ -274,7 +274,7 @@ class AttackScratchpad:
             return []
         return self.chains[chain_id].entries.copy()
 
-    def get_chain_info(self, chain_id: str) -> Optional[AttackChain]:
+    def get_chain_info(self, chain_id: str) -> AttackChain | None:
         """
         Get metadata about an attack chain.
 
@@ -286,7 +286,7 @@ class AttackScratchpad:
         """
         return self.chains.get(chain_id)
 
-    def get_history(self) -> List[AttackScratchpadEntry]:
+    def get_history(self) -> list[AttackScratchpadEntry]:
         """
         Get complete history of all attack entries.
 
@@ -295,7 +295,7 @@ class AttackScratchpad:
         """
         return self.entries.copy()
 
-    def get_successful_attacks(self) -> List[AttackScratchpadEntry]:
+    def get_successful_attacks(self) -> list[AttackScratchpadEntry]:
         """
         Get only attacks that bypassed their target defense.
 
@@ -304,7 +304,7 @@ class AttackScratchpad:
         """
         return [e for e in self.entries if e.bypassed]
 
-    def get_failed_attacks(self) -> List[AttackScratchpadEntry]:
+    def get_failed_attacks(self) -> list[AttackScratchpadEntry]:
         """
         Get only attacks that failed (defense held).
 
@@ -313,7 +313,7 @@ class AttackScratchpad:
         """
         return [e for e in self.entries if not e.bypassed]
 
-    def get_by_strategy(self, strategy: AttackStrategy) -> List[AttackScratchpadEntry]:
+    def get_by_strategy(self, strategy: AttackStrategy) -> list[AttackScratchpadEntry]:
         """
         Get all attacks using a specific strategy.
 
@@ -325,7 +325,7 @@ class AttackScratchpad:
         """
         return [e for e in self.entries if e.strategy == strategy]
 
-    def get_by_layer(self, layer: DefenseLayer) -> List[AttackScratchpadEntry]:
+    def get_by_layer(self, layer: DefenseLayer) -> list[AttackScratchpadEntry]:
         """
         Get all attacks targeting a specific defense layer.
 
@@ -337,7 +337,7 @@ class AttackScratchpad:
         """
         return [e for e in self.entries if e.target_layer == layer]
 
-    def get_last_n(self, n: int) -> List[AttackScratchpadEntry]:
+    def get_last_n(self, n: int) -> list[AttackScratchpadEntry]:
         """
         Get the last n attack entries.
 
@@ -357,7 +357,7 @@ class AttackScratchpad:
         self.layer_hits = {}
         self.successful_count = 0
 
-    def summarize(self) -> Dict[str, Any]:
+    def summarize(self) -> dict[str, Any]:
         """
         Get comprehensive statistics summary of all attacks.
 

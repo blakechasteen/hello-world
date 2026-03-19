@@ -19,9 +19,8 @@ Usage:
 
 import asyncio
 import sys
-import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -30,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
-    from mcp.types import Tool, TextContent
+    from mcp.types import TextContent, Tool
 except ImportError:
     print("ERROR: mcp package not installed. Run: pip install mcp", file=sys.stderr)
     sys.exit(1)
@@ -38,8 +37,7 @@ except ImportError:
 # ExpertLoom imports
 from mythRL_core.entity_resolution import EntityRegistry, EntityResolver
 from mythRL_core.entity_resolution.extractor import EntityExtractor
-from mythRL_core.summarization import TextSummarizer, SummarizerConfig, SummarizationStrategy
-
+from mythRL_core.summarization import SummarizationStrategy, SummarizerConfig, TextSummarizer
 
 # Initialize server
 app = Server("expertloom")
@@ -49,7 +47,7 @@ DOMAINS = {}  # domain_name -> (registry, resolver, extractor)
 CURRENT_DOMAIN = None
 
 
-def load_domain(domain_name: str) -> Dict[str, Any]:
+def load_domain(domain_name: str) -> dict[str, Any]:
     """Load a domain's registry, resolver, and extractor."""
     registry_path = Path(__file__).parent.parent / "mythRL_core" / "domains" / domain_name / "registry.json"
 
@@ -251,7 +249,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
         )]
 
 
-async def tool_summarize_text(args: Dict[str, Any]) -> list[TextContent]:
+async def tool_summarize_text(args: dict[str, Any]) -> list[TextContent]:
     """Summarize text while preserving key information."""
     text = args["text"]
     max_sentences = args.get("max_sentences", 3)
@@ -307,7 +305,7 @@ async def tool_summarize_text(args: Dict[str, Any]) -> list[TextContent]:
     return [TextContent(type="text", text=response)]
 
 
-async def tool_extract_entities(args: Dict[str, Any]) -> list[TextContent]:
+async def tool_extract_entities(args: dict[str, Any]) -> list[TextContent]:
     """Extract entities and measurements from text."""
     text = args["text"]
     domain_name = args.get("domain", "automotive")
@@ -343,7 +341,7 @@ async def tool_extract_entities(args: Dict[str, Any]) -> list[TextContent]:
     return [TextContent(type="text", text=response)]
 
 
-async def tool_process_note(args: Dict[str, Any]) -> list[TextContent]:
+async def tool_process_note(args: dict[str, Any]) -> list[TextContent]:
     """Complete processing pipeline."""
     text = args["text"]
     domain_name = args.get("domain", "automotive")
@@ -394,17 +392,17 @@ async def tool_process_note(args: Dict[str, Any]) -> list[TextContent]:
 
     # Show payload structure
     payload = extracted.to_qdrant_payload()
-    response += f"\n**Qdrant Payload:**\n"
+    response += "\n**Qdrant Payload:**\n"
     response += f"- Primary entity: {payload.get('primary_entity_id', 'none')}\n"
     response += f"- Entity IDs: {payload['entity_ids']}\n"
     response += f"- Has measurements: {payload['has_measurements']}\n"
 
-    response += f"\n**Ready for Qdrant storage!**\n"
+    response += "\n**Ready for Qdrant storage!**\n"
 
     return [TextContent(type="text", text=response)]
 
 
-async def tool_list_domains(args: Dict[str, Any]) -> list[TextContent]:
+async def tool_list_domains(args: dict[str, Any]) -> list[TextContent]:
     """List available domains."""
     domains_dir = Path(__file__).parent.parent / "mythRL_core" / "domains"
 
@@ -447,7 +445,7 @@ async def tool_list_domains(args: Dict[str, Any]) -> list[TextContent]:
     return [TextContent(type="text", text=response)]
 
 
-async def tool_switch_domain(args: Dict[str, Any]) -> list[TextContent]:
+async def tool_switch_domain(args: dict[str, Any]) -> list[TextContent]:
     """Switch active domain."""
     global CURRENT_DOMAIN
 

@@ -7,7 +7,7 @@ Events, logging, timing — all live here, not in the runner.
 """
 
 import logging
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -23,8 +23,8 @@ class WeavingPolicyBase:
 
     def __init__(
         self,
-        event_emitter: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
+        event_emitter: Any | None = None,
+        logger: logging.Logger | None = None,
     ):
         self.emitter = event_emitter
         self.logger = logger or logging.getLogger('hololoom.weaving')
@@ -41,7 +41,7 @@ class WeavingPolicyBase:
 
     def on_level_complete(
         self, level: list[str], ctx: 'WeavingContext',
-    ) -> Optional[frozenset[str]]:
+    ) -> frozenset[str] | None:
         """Called after each level completes.
 
         Return a new active stage set to re-resolve remaining levels,
@@ -62,7 +62,7 @@ class WeavingPolicyBase:
         stage_name: str,
         ctx: 'WeavingContext',
         duration_ms: float,
-        error: Optional[Exception] = None,
+        error: Exception | None = None,
     ) -> None:
         """Called after each stage completes (success or failure)."""
         ctx.record_timing(stage_name, duration_ms)

@@ -5,12 +5,12 @@ ShadowDetectorMiddleware — runs DetectorRegistry per checkpoint, logs comparis
 from __future__ import annotations
 
 import logging
-from typing import Optional, List
+
+from hololoom.alignment.detector_registry import DetectorRegistry
+from hololoom.alignment.graduation_policy import GraduationVerdict
 
 from ..context import GovernanceContext
 from ..protocol import NextFn
-from hololoom.alignment.detector_registry import DetectorRegistry
-from hololoom.alignment.graduation_policy import GraduationVerdict
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class ShadowDetectorMiddleware:
     def __init__(
         self,
         registry: DetectorRegistry,
-        checkpoints: Optional[List[str]] = None,
+        checkpoints: list[str] | None = None,
         audit_trail=None,
     ):
         self.registry = registry

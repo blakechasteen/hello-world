@@ -23,12 +23,10 @@ each pattern carries perspective, each tension carries truth."
 Author: HoloLoom Architecture Team
 """
 
-from dataclasses import dataclass, field, asdict
-from datetime import datetime
-from typing import Any, Dict, List, Optional
-import json
 import logging
-from pathlib import Path
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 
@@ -62,11 +60,11 @@ class Tension:
     claim_a: str                              # What loom_a says
     claim_b: str                              # What loom_b says
     severity: float                           # 0.0-1.0, how significant?
-    exploration_query: Optional[str] = None   # Query to explore this tension
-    resolution: Optional[str] = None          # How was it resolved (if at all)?
+    exploration_query: str | None = None   # Query to explore this tension
+    resolution: str | None = None          # How was it resolved (if at all)?
     is_irreducible: bool = False              # True if cannot be resolved
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "loom_a": self.loom_a,
@@ -80,7 +78,7 @@ class Tension:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Tension':
+    def from_dict(cls, data: dict[str, Any]) -> 'Tension':
         """Deserialize from dictionary."""
         return cls(
             loom_a=data["loom_a"],
@@ -117,12 +115,12 @@ class Resolution:
         )
     """
     resolved: bool                            # Did we resolve it?
-    consensus_claim: Optional[str]            # What we agreed on (if resolved)
+    consensus_claim: str | None            # What we agreed on (if resolved)
     confidence: float                         # How confident in resolution?
-    supporting_looms: List[str] = field(default_factory=list)
-    dissenting_looms: List[str] = field(default_factory=list)
+    supporting_looms: list[str] = field(default_factory=list)
+    dissenting_looms: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "resolved": self.resolved,
@@ -133,7 +131,7 @@ class Resolution:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Resolution':
+    def from_dict(cls, data: dict[str, Any]) -> 'Resolution':
         """Deserialize from dictionary."""
         return cls(
             resolved=data["resolved"],
@@ -199,16 +197,16 @@ class Fabric(Spacetime):
 
     # ====== Perspective Identity ======
     perspective: str = "unknown"              # Which loom made this?
-    blind_spots: List[str] = field(default_factory=list)  # What I can't see
+    blind_spots: list[str] = field(default_factory=list)  # What I can't see
 
     # ====== Epistemic Awareness ======
     epistemic_confidence: float = 0.5         # Confidence in my confidence (0-1)
-    falsifiable_by: List[str] = field(default_factory=list)  # What would change my mind?
-    admits_ignorance: List[str] = field(default_factory=list)  # What I know I don't know
+    falsifiable_by: list[str] = field(default_factory=list)  # What would change my mind?
+    admits_ignorance: list[str] = field(default_factory=list)  # What I know I don't know
 
     # ====== Inter-Loom Dynamics ======
-    tensions_with: Dict[str, str] = field(default_factory=dict)  # {loom: disagreement}
-    agreement_with: Dict[str, float] = field(default_factory=dict)  # {loom: similarity}
+    tensions_with: dict[str, str] = field(default_factory=dict)  # {loom: disagreement}
+    agreement_with: dict[str, float] = field(default_factory=dict)  # {loom: similarity}
 
     def __post_init__(self):
         """Initialize and validate fabric fields."""
@@ -226,7 +224,7 @@ class Fabric(Spacetime):
         if 'epistemic_confidence' not in self.metadata:
             self.metadata['epistemic_confidence'] = self.epistemic_confidence
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert to serializable dictionary.
 
@@ -249,7 +247,7 @@ class Fabric(Spacetime):
         return base_dict
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Fabric':
+    def from_dict(cls, data: dict[str, Any]) -> 'Fabric':
         """
         Create Fabric from dictionary.
 
@@ -309,10 +307,10 @@ class Fabric(Spacetime):
         cls,
         spacetime: Spacetime,
         perspective: str = "unknown",
-        blind_spots: Optional[List[str]] = None,
+        blind_spots: list[str] | None = None,
         epistemic_confidence: float = 0.5,
-        falsifiable_by: Optional[List[str]] = None,
-        admits_ignorance: Optional[List[str]] = None
+        falsifiable_by: list[str] | None = None,
+        admits_ignorance: list[str] | None = None
     ) -> 'Fabric':
         """
         Create Fabric from existing Spacetime.
@@ -386,7 +384,7 @@ class Fabric(Spacetime):
         """
         self.agreement_with[loom_name] = similarity
 
-    def summarize(self) -> Dict[str, Any]:
+    def summarize(self) -> dict[str, Any]:
         """
         Get concise summary including perspective and epistemic fields.
 
@@ -404,7 +402,7 @@ class Fabric(Spacetime):
         })
         return base_summary
 
-    def get_reflection_signal(self) -> Dict[str, Any]:
+    def get_reflection_signal(self) -> dict[str, Any]:
         """
         Extract reflection signal including epistemic metadata.
 
@@ -438,29 +436,29 @@ class MultiFabricCollection:
     - Analyze perspective coverage
     """
 
-    def __init__(self, fabrics: Optional[List[Fabric]] = None):
+    def __init__(self, fabrics: list[Fabric] | None = None):
         """
         Initialize multi-fabric collection.
 
         Args:
             fabrics: Initial list of Fabric instances
         """
-        self.fabrics: List[Fabric] = fabrics or []
+        self.fabrics: list[Fabric] = fabrics or []
         self.logger = logging.getLogger(__name__)
 
     def add(self, fabric: Fabric) -> None:
         """Add a fabric to the collection."""
         self.fabrics.append(fabric)
 
-    def by_perspective(self, perspective: str) -> List[Fabric]:
+    def by_perspective(self, perspective: str) -> list[Fabric]:
         """Get all fabrics from a specific perspective."""
         return [f for f in self.fabrics if f.perspective == perspective]
 
-    def perspectives_present(self) -> List[str]:
+    def perspectives_present(self) -> list[str]:
         """Get list of unique perspectives in collection."""
         return list(set(f.perspective for f in self.fabrics))
 
-    def find_consensus(self) -> Dict[str, Any]:
+    def find_consensus(self) -> dict[str, Any]:
         """
         Find areas of consensus across perspectives.
 
@@ -471,7 +469,7 @@ class MultiFabricCollection:
             return {"status": "insufficient_fabrics", "count": len(self.fabrics)}
 
         # Find common agreement patterns
-        all_agreements: Dict[str, List[float]] = {}
+        all_agreements: dict[str, list[float]] = {}
         for fabric in self.fabrics:
             for loom, score in fabric.agreement_with.items():
                 if loom not in all_agreements:
@@ -493,7 +491,7 @@ class MultiFabricCollection:
             "avg_epistemic_confidence": sum(f.epistemic_confidence for f in self.fabrics) / len(self.fabrics),
         }
 
-    def find_disagreements(self) -> List[Tension]:
+    def find_disagreements(self) -> list[Tension]:
         """
         Find all tensions across fabrics.
 
@@ -507,7 +505,7 @@ class MultiFabricCollection:
                 tensions.append(Tension.from_dict(t) if isinstance(t, dict) else t)
         return tensions
 
-    def get_collective_blind_spots(self) -> List[str]:
+    def get_collective_blind_spots(self) -> list[str]:
         """
         Find blind spots shared by ALL perspectives.
 

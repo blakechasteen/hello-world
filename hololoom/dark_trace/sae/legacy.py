@@ -18,11 +18,11 @@ Migration Guide:
     trainer = ResearchTrainer(sae, config)
 """
 
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from typing import Dict, Any, Tuple
 
 
 class SparseAutoEncoder(nn.Module):
@@ -72,7 +72,7 @@ class SparseAutoEncoder(nn.Module):
         with torch.no_grad():
             self.decoder.weight.data = F.normalize(self.decoder.weight.data, p=2, dim=0)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Forward pass through the SAE.
 
@@ -96,7 +96,7 @@ class SparseAutoEncoder(nn.Module):
         x: torch.Tensor,
         reconstruction: torch.Tensor,
         latents: torch.Tensor
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         Compute reconstruction and sparsity losses.
 
@@ -127,7 +127,7 @@ class SparseAutoEncoder(nn.Module):
         self,
         x: torch.Tensor,
         threshold: float = 0.0
-    ) -> Dict[int, float]:
+    ) -> dict[int, float]:
         """
         Get active features above threshold for given input.
 
@@ -183,7 +183,7 @@ class DarkSaeTrainer:
         self.sae = sae
         self.optimizer = optim.Adam(sae.parameters(), lr=lr)
 
-    def step(self, activations: torch.Tensor) -> Dict[str, float]:
+    def step(self, activations: torch.Tensor) -> dict[str, float]:
         """
         Perform one training step.
 

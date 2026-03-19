@@ -14,12 +14,12 @@ Features:
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any, Callable, Set
-from enum import Enum
-from datetime import datetime
 import math
-import asyncio
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class GazeSource(Enum):
@@ -72,10 +72,10 @@ class GazeRay:
 class GazeHit:
     """Result of gaze ray intersection."""
     hit: bool
-    node_id: Optional[str] = None
-    position: Optional[tuple] = None
+    node_id: str | None = None
+    position: tuple | None = None
     distance: float = 0.0
-    normal: Optional[tuple] = None
+    normal: tuple | None = None
 
 
 @dataclass
@@ -95,16 +95,16 @@ class AttentionPoint:
     position: tuple
     duration: float  # Total time looking
     weight: float  # Attention weight
-    node_id: Optional[str] = None
+    node_id: str | None = None
     timestamp: float = field(default_factory=lambda: datetime.now().timestamp())
 
 
 @dataclass
 class GazeFocus:
     """Current gaze focus state."""
-    focused_node_id: Optional[str] = None
+    focused_node_id: str | None = None
     focus_duration: float = 0.0
-    focus_position: Optional[tuple] = None
+    focus_position: tuple | None = None
     is_stable: bool = False  # Gaze is stable (not saccading)
     stability_score: float = 0.0  # How stable the gaze is
 
@@ -121,7 +121,7 @@ class AttentionHeatMap:
         self.resolution = resolution
         self.bounds = bounds
         self.decay_rate = decay_rate
-        self.grid: Dict[tuple, float] = {}  # (grid_x, grid_y, grid_z) -> heat
+        self.grid: dict[tuple, float] = {}  # (grid_x, grid_y, grid_z) -> heat
         self.last_update = datetime.now().timestamp()
 
     def _world_to_grid(self, x: float, y: float, z: float) -> tuple:
@@ -191,7 +191,7 @@ class AttentionHeatMap:
         for key in cold_cells:
             del self.grid[key]
 
-    def get_hotspots(self, threshold: float = 0.5, max_count: int = 10) -> List[tuple]:
+    def get_hotspots(self, threshold: float = 0.5, max_count: int = 10) -> list[tuple]:
         """Get world positions of hot spots."""
         # Sort cells by heat
         sorted_cells = sorted(
@@ -213,7 +213,7 @@ class AttentionHeatMap:
         grid_pos = self._world_to_grid(*position)
         return self.grid.get(grid_pos, 0.0)
 
-    def to_visualization_data(self) -> Dict[str, Any]:
+    def to_visualization_data(self) -> dict[str, Any]:
         """Export for 3D visualization."""
         points = []
         for (gx, gy, gz), heat in self.grid.items():
@@ -264,8 +264,8 @@ class GazeTracker:
         dwell_duration: float = 1.0,  # Seconds to trigger selection
         stability_threshold: float = 0.02,  # Movement threshold for stability
         attention_decay: float = 0.01,
-        node_positions: Optional[Dict[str, tuple]] = None,
-        node_radii: Optional[Dict[str, float]] = None
+        node_positions: dict[str, tuple] | None = None,
+        node_radii: dict[str, float] | None = None
     ):
         self.dwell_duration = dwell_duration
         self.stability_threshold = stability_threshold
@@ -276,35 +276,35 @@ class GazeTracker:
         self.default_node_radius = 0.1
 
         # Gaze state
-        self.current_ray: Optional[GazeRay] = None
-        self.previous_ray: Optional[GazeRay] = None
+        self.current_ray: GazeRay | None = None
+        self.previous_ray: GazeRay | None = None
         self.gaze_source = GazeSource.HEAD_POSE
         self.eye_tracking_available = False
 
         # Focus tracking
         self.current_focus = GazeFocus()
-        self.focus_history: List[tuple] = []  # (node_id, duration)
+        self.focus_history: list[tuple] = []  # (node_id, duration)
         self.max_focus_history = 100
 
         # Dwell selection
-        self.active_dwells: Dict[str, DwellSelection] = {}
-        self.dwell_callbacks: List[Callable[[str], None]] = []
+        self.active_dwells: dict[str, DwellSelection] = {}
+        self.dwell_callbacks: list[Callable[[str], None]] = []
 
         # Attention tracking
         self.attention_map = AttentionHeatMap(decay_rate=attention_decay)
-        self.attention_points: List[AttentionPoint] = []
+        self.attention_points: list[AttentionPoint] = []
         self.max_attention_points = 1000
 
         # Gaze prediction (simple velocity-based)
-        self.gaze_velocity: Optional[tuple] = None
+        self.gaze_velocity: tuple | None = None
         self.prediction_enabled = True
 
         # Callbacks
-        self.on_focus_change: List[Callable[[Optional[str], Optional[str]], None]] = []
-        self.on_dwell_select: List[Callable[[str], None]] = []
-        self.on_attention_hotspot: List[Callable[[tuple, float], None]] = []
+        self.on_focus_change: list[Callable[[str | None, str | None], None]] = []
+        self.on_dwell_select: list[Callable[[str], None]] = []
+        self.on_attention_hotspot: list[Callable[[tuple, float], None]] = []
 
-    def update_node_positions(self, positions: Dict[str, tuple]):
+    def update_node_positions(self, positions: dict[str, tuple]):
         """Update node positions for hit testing."""
         self.node_positions.update(positions)
 
@@ -365,7 +365,7 @@ class GazeTracker:
         if not self.current_ray:
             return GazeHit(hit=False)
 
-        closest_hit: Optional[GazeHit] = None
+        closest_hit: GazeHit | None = None
         closest_distance = float('inf')
 
         for node_id, position in self.node_positions.items():
@@ -409,7 +409,7 @@ class GazeTracker:
         ray_direction: tuple,
         sphere_center: tuple,
         sphere_radius: float
-    ) -> Optional[float]:
+    ) -> float | None:
         """Ray-sphere intersection test. Returns distance or None."""
         # Vector from ray origin to sphere center
         oc_x = ray_origin[0] - sphere_center[0]
@@ -538,7 +538,7 @@ class GazeTracker:
                 trigger_duration=self.dwell_duration
             )
 
-    def _add_attention_point(self, position: tuple, node_id: Optional[str]):
+    def _add_attention_point(self, position: tuple, node_id: str | None):
         """Add attention point to history."""
         self.attention_points.append(AttentionPoint(
             position=position,
@@ -551,7 +551,7 @@ class GazeTracker:
         if len(self.attention_points) > self.max_attention_points:
             self.attention_points = self.attention_points[-self.max_attention_points:]
 
-    def get_predicted_gaze(self, time_ahead: float = 0.1) -> Optional[GazeRay]:
+    def get_predicted_gaze(self, time_ahead: float = 0.1) -> GazeRay | None:
         """Predict where user will look based on velocity."""
         if not self.prediction_enabled or not self.current_ray or not self.gaze_velocity:
             return self.current_ray
@@ -581,9 +581,9 @@ class GazeTracker:
 
         return predicted
 
-    def get_focus_statistics(self) -> Dict[str, Any]:
+    def get_focus_statistics(self) -> dict[str, Any]:
         """Get focus duration statistics per node."""
-        node_durations: Dict[str, float] = {}
+        node_durations: dict[str, float] = {}
 
         for node_id, duration in self.focus_history:
             node_durations[node_id] = node_durations.get(node_id, 0.0) + duration
@@ -603,7 +603,7 @@ class GazeTracker:
             "focus_count": len(self.focus_history) + (1 if self.current_focus.focused_node_id else 0)
         }
 
-    def get_attention_hotspots(self, count: int = 5) -> List[tuple]:
+    def get_attention_hotspots(self, count: int = 5) -> list[tuple]:
         """Get top attention hotspots."""
         return self.attention_map.get_hotspots(threshold=0.3, max_count=count)
 
@@ -611,11 +611,11 @@ class GazeTracker:
         """Register callback for dwell selection."""
         self.on_dwell_select.append(callback)
 
-    def register_focus_callback(self, callback: Callable[[Optional[str], Optional[str]], None]):
+    def register_focus_callback(self, callback: Callable[[str | None, str | None], None]):
         """Register callback for focus changes (old_id, new_id)."""
         self.on_focus_change.append(callback)
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export current state for WebXR client."""
         dwell_states = {}
         for target_id, dwell in self.active_dwells.items():
@@ -657,8 +657,8 @@ class GazeHighlighter:
         self.tracker = tracker
 
         # Highlight states
-        self.highlighted_nodes: Set[str] = set()
-        self.highlight_intensity: Dict[str, float] = {}
+        self.highlighted_nodes: set[str] = set()
+        self.highlight_intensity: dict[str, float] = {}
 
         # Settings
         self.hover_intensity = 0.5
@@ -669,7 +669,7 @@ class GazeHighlighter:
         # Register callbacks
         tracker.register_focus_callback(self._on_focus_change)
 
-    def _on_focus_change(self, old_id: Optional[str], new_id: Optional[str]):
+    def _on_focus_change(self, old_id: str | None, new_id: str | None):
         """Handle focus change events."""
         if old_id:
             # Start fading old highlight
@@ -712,7 +712,7 @@ class GazeHighlighter:
             self.highlighted_nodes.discard(node_id)
             self.highlight_intensity.pop(node_id, None)
 
-    def get_highlight_state(self) -> Dict[str, float]:
+    def get_highlight_state(self) -> dict[str, float]:
         """Get current highlight intensities."""
         return dict(self.highlight_intensity)
 

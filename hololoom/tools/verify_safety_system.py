@@ -4,19 +4,20 @@ Quick verification of the safety lock system.
 Tests core functionality without pytest dependency.
 """
 
-import sys
 import os
+import sys
 
 # Add repository root to path
 sys.path.insert(0, os.path.dirname(__file__))
 
 from hololoom.config import Config
 from hololoom.safety import (
-    SafetyLock,
-    Layer6Capability,
     Layer6BlockedException,
+    Layer6Capability,
+    SafetyLock,
     SafetyMonitor,
 )
+
 
 def test_defaults():
     """Test that Layer 6 is blocked by default."""

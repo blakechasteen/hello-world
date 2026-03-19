@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom Orchestrator Initialization Module
 ============================================
@@ -24,13 +23,13 @@ Public API:
 Created: 2025-11-22 (Elegance Pass Refactoring - Phase 2)
 """
 
-from hololoom.orchestrator.initialization.config_init import initialize_config_and_memory
-from hololoom.orchestrator.initialization.reflection_init import initialize_reflection_and_caching
-from hololoom.orchestrator.initialization.recursive_init import initialize_recursive_learning
-from hololoom.orchestrator.initialization.component_init import initialize_components
-from hololoom.orchestrator.initialization.production_init import initialize_production_hardening
 from hololoom.orchestrator.initialization.cache_init import initialize_semantic_cache
+from hololoom.orchestrator.initialization.component_init import initialize_components
+from hololoom.orchestrator.initialization.config_init import initialize_config_and_memory
 from hololoom.orchestrator.initialization.linguistic_init import initialize_linguistic_gate
+from hololoom.orchestrator.initialization.production_init import initialize_production_hardening
+from hololoom.orchestrator.initialization.recursive_init import initialize_recursive_learning
+from hololoom.orchestrator.initialization.reflection_init import initialize_reflection_and_caching
 
 __all__ = [
     'initialize_config_and_memory',

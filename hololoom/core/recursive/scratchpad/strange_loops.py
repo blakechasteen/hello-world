@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Strange Loops Detector
 ======================
@@ -20,15 +19,14 @@ Types of Loops:
 4. **Strange Loop**: Upward and downward causality simultaneously
 """
 
+import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Dict, Optional, Set, Tuple
-import re
 
 from hololoom.recursive.scratchpad.recursive_scratchpad import (
+    DialogueTree,
     Thought,
     ThoughtType,
-    DialogueTree,
 )
 
 
@@ -54,10 +52,10 @@ class LevelCrossing:
 class StrangeLoop:
     """Detected strange loop."""
     loop_type: LoopType
-    thoughts: List[Thought]
+    thoughts: list[Thought]
     description: str
     strength: float  # How "strange" (0-1)
-    level_crossings: List[LevelCrossing]
+    level_crossings: list[LevelCrossing]
 
 
 class LoopDetector:
@@ -86,7 +84,7 @@ class LoopDetector:
         self.min_loop_size = min_loop_size
         self.similarity_threshold = similarity_threshold
 
-    def detect_loops(self, tree: DialogueTree) -> Dict[str, StrangeLoop]:
+    def detect_loops(self, tree: DialogueTree) -> dict[str, StrangeLoop]:
         """
         Detect all loops in dialogue tree.
 
@@ -104,7 +102,7 @@ class LoopDetector:
                 loops[thought.id] = StrangeLoop(
                     loop_type=LoopType.DIRECT_SELF_REFERENCE,
                     thoughts=[thought],
-                    description=f"Thought directly references itself",
+                    description="Thought directly references itself",
                     strength=0.9,
                     level_crossings=[]
                 )
@@ -129,7 +127,7 @@ class LoopDetector:
                 loops[loop_id] = StrangeLoop(
                     loop_type=LoopType.LEVEL_CROSSING,
                     thoughts=[crossing.upper_thought, crossing.lower_thought],
-                    description=f"Meta-thought affects object-thought",
+                    description="Meta-thought affects object-thought",
                     strength=crossing.strength,
                     level_crossings=[crossing]
                 )
@@ -173,7 +171,7 @@ class LoopDetector:
 
         return False
 
-    def _find_cycles(self, tree: DialogueTree) -> List[List[Thought]]:
+    def _find_cycles(self, tree: DialogueTree) -> list[list[Thought]]:
         """Find cyclic patterns in semantic content."""
         cycles = []
         thoughts = list(tree.thoughts.values())
@@ -206,7 +204,7 @@ class LoopDetector:
 
         return intersection / union if union > 0 else 0.0
 
-    def _detect_level_crossings(self, tree: DialogueTree) -> List[LevelCrossing]:
+    def _detect_level_crossings(self, tree: DialogueTree) -> list[LevelCrossing]:
         """Detect level crossings (meta ↔ object)."""
         crossings = []
 
@@ -263,7 +261,7 @@ class LoopDetector:
 
         return has_meta and has_object
 
-    def _detect_meta_reasoning(self, tree: DialogueTree) -> Dict[str, StrangeLoop]:
+    def _detect_meta_reasoning(self, tree: DialogueTree) -> dict[str, StrangeLoop]:
         """Detect meta-reasoning patterns."""
         meta_loops = {}
 
@@ -331,7 +329,7 @@ class StrangeLoopAnalyzer:
     """Analyze strange loops for insights."""
 
     @staticmethod
-    def analyze_loop_density(tree: DialogueTree, loops: Dict[str, StrangeLoop]) -> float:
+    def analyze_loop_density(tree: DialogueTree, loops: dict[str, StrangeLoop]) -> float:
         """
         Compute loop density (loops per thought).
 
@@ -344,9 +342,9 @@ class StrangeLoopAnalyzer:
 
     @staticmethod
     def get_strongest_loops(
-        loops: Dict[str, StrangeLoop],
+        loops: dict[str, StrangeLoop],
         n: int = 5
-    ) -> List[StrangeLoop]:
+    ) -> list[StrangeLoop]:
         """Get N strongest loops."""
         return sorted(
             loops.values(),

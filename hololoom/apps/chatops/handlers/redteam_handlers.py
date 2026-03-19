@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 """
 Red Team Matrix Bot Handlers
 ==============================
@@ -25,10 +27,9 @@ Features:
 
 import asyncio
 import logging
-import json
-from typing import Optional, Dict, Any, List
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from dataclasses import dataclass, asdict
+from typing import Any
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -36,15 +37,16 @@ except ImportError:
     pass
 
 # Import HoloLoom components
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Red team components
 try:
-    from hololoom.redteam.orchestrator import RedTeamOrchestrator, RedTeamConfig
+    from hololoom.redteam.bandit import BanditStatistics, RedTeamBandit
     from hololoom.redteam.executor import AttackExecutor, AttackResult, AttackStrategy
-    from hololoom.redteam.bandit import RedTeamBandit, BanditStatistics
+    from hololoom.redteam.orchestrator import RedTeamConfig, RedTeamOrchestrator
     REDTEAM_AVAILABLE = True
 except ImportError:
     REDTEAM_AVAILABLE = False
@@ -58,14 +60,16 @@ except ImportError:
 
 # Handler registry
 from hololoom.apps.chatops.handlers.handler_registry import (
-    HandlerRegistry, HandlerCategory, chatops_handler
+    HandlerCategory,
+    HandlerRegistry,
+    chatops_handler,
 )
 
 # Alignment framework imports (graceful degradation if unavailable)
 try:
-    from hololoom.alignment import create_guardrails, create_audit_trail
-    from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+    from hololoom.alignment import create_audit_trail, create_guardrails
     from hololoom.alignment.audit_trail import DecisionType, OutcomeType
+    from hololoom.alignment.safety_guardrails import ActionCategory, ActionRequest
     ALIGNMENT_AVAILABLE = True
 except ImportError:
     ALIGNMENT_AVAILABLE = False
@@ -82,11 +86,11 @@ class AttackStats:
     success: bool
     confidence: float
     reward: float
-    vulnerability_found: Optional[str] = None
+    vulnerability_found: str | None = None
     duration_ms: float = 0.0
-    timestamp: Optional[str] = None
+    timestamp: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -103,7 +107,7 @@ class RedTeamMatrixHandlers:
     - Audit trail for red team operations
     """
 
-    def __init__(self, bot, config: Optional[RedTeamConfig] = None, enable_alignment: bool = True):
+    def __init__(self, bot, config: RedTeamConfig | None = None, enable_alignment: bool = True):
         """
         Initialize handlers with HoloLoom red team orchestrator.
 
@@ -142,8 +146,8 @@ class RedTeamMatrixHandlers:
                 logger.warning("Alignment requested but not available - running without safety gating")
 
         # Track attack history and vulnerabilities
-        self.attack_history: List[AttackStats] = []
-        self.vulnerabilities: List[Dict[str, Any]] = []
+        self.attack_history: list[AttackStats] = []
+        self.vulnerabilities: list[dict[str, Any]] = []
         self.cycle_count = 0
 
         logger.info("Red team handlers initialized with Thompson Sampling bandit learning")
@@ -523,7 +527,7 @@ class RedTeamMatrixHandlers:
                 return
 
             # Group vulnerabilities by category
-            by_category: Dict[str, List] = {}
+            by_category: dict[str, list] = {}
             for vuln in self.vulnerabilities:
                 cat = vuln.get("category", "unknown")
                 if cat not in by_category:
@@ -602,13 +606,13 @@ class RedTeamMatrixHandlers:
             response += f"• **Vulnerabilities Found**: {len(self.vulnerabilities)}\n"
 
             if status:
-                response += f"\n**Orchestrator Status**:\n"
+                response += "\n**Orchestrator Status**:\n"
                 response += f"• **State**: {getattr(status, 'state', 'unknown')}\n"
                 response += f"• **Current Attack**: {getattr(status, 'current_attack', 'none')}\n"
                 response += f"• **Uptime**: {getattr(status, 'uptime_seconds', 0):.0f}s\n"
 
             if bandit_stats:
-                response += f"\n**Bandit Learning**:\n"
+                response += "\n**Bandit Learning**:\n"
                 response += f"• **Strategies Evaluated**: {len(bandit_stats.alpha)}\n"
                 response += f"• **Best Strategy**: {bandit_stats.best_strategy}\n"
                 response += f"• **Best Reward**: {bandit_stats.best_reward:.2f}\n"

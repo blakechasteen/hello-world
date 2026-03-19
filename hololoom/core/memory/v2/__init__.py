@@ -17,129 +17,115 @@ Components:
   demons.py           — Pandemonium pattern monitors (grounding, brevity, hedging)
 """
 
-from .navigator import (
-    Navigator,
-    NavigatorResult,
-    PPRConfig,
-    SeedNode,
-    LiteBusGraph,
-    NetworkXGraph,
-    GraphBackend,
-    extract_seeds,
-    personalized_pagerank,
-)
-
-from .formatter import (
-    Formatter,
-    FormatConfig,
-    ContextBlock,
-    FormattedItem,
-    ResolutionThresholds,
-)
-
-from .hierarchy import (
-    HierarchyManager,
-    HierarchyConfig,
-    ClusterInfo,
-)
-
-from .confidence import (
-    ConfidenceEstimator,
-    ConfidenceConfig,
-    DualConfidence,
-    StructuralConfidence,
-    NarrativeConfidence,
-    find_contradicting_pairs,
-)
-
-from .orchestrator import (
-    MatryoshkaOrchestrator,
-    ShellType,
-    ShellConfig,
-    ShellResult,
-    LoopResult,
-    DEFAULT_SHELLS,
-    VERIFY_SCHEMA,
-    FLAG_SCHEMA,
-    SHELL_SCHEMAS,
-    parse_structured_response,
-)
-
-from .cold_start import (
-    ColdStartHandler,
-    ColdStartConfig,
-)
-
-from .training import (
-    TrainingPipeline,
-    AuditCollector,
-    AuditSummary,
-    ParameterBandit,
-    BanditArm,
-    PromptRefiner,
-    RefinementResult,
-    SignatureOptimizer,
-    Signature,
-    OptimizationResult,
-    TrainingExample,
-    RewardJudge,
-    ContextualBanditAdapter,
-    CONFIG_PRESETS,
-)
-
 from .activation import (
     ActivationAdapter,
     ActivationConfig,
 )
-
 from .blackboard import (
     Blackboard,
-    WorkingMemory,
     ProductionRule,
-    default_skip_verify_rules,
-    default_skip_flag_rules,
+    WorkingMemory,
     compute_ppr_entropy,
+    default_skip_flag_rules,
+    default_skip_verify_rules,
     extract_seed_sources,
 )
-
+from .cbr import (
+    Case,
+    CBRConfig,
+    CBRSystem,
+)
+from .chunk_compiler import (
+    ChunkAction,
+    ChunkCompiler,
+    ChunkConfig,
+    CompiledChunk,
+    ExperienceRecord,
+)
+from .classical_factory import create_classical_sources
+from .cold_start import (
+    ColdStartConfig,
+    ColdStartHandler,
+)
+from .confidence import (
+    ConfidenceConfig,
+    ConfidenceEstimator,
+    DualConfidence,
+    NarrativeConfidence,
+    StructuralConfidence,
+    find_contradicting_pairs,
+)
+from .demons import (
+    DemonAlert,
+    DemonConfig,
+    DemonSystem,
+    check_brevity,
+    check_grounding,
+    check_hedging,
+    check_repetition,
+)
+from .formatter import (
+    ContextBlock,
+    FormatConfig,
+    FormattedItem,
+    Formatter,
+    ResolutionThresholds,
+)
+from .hierarchy import (
+    ClusterInfo,
+    HierarchyConfig,
+    HierarchyManager,
+)
 from .knowledge_source import (
     KnowledgeSource,
     Phase,
     SourceRegistry,
 )
-
+from .navigator import (
+    GraphBackend,
+    LiteBusGraph,
+    Navigator,
+    NavigatorResult,
+    NetworkXGraph,
+    PPRConfig,
+    SeedNode,
+    extract_seeds,
+    personalized_pagerank,
+)
+from .orchestrator import (
+    DEFAULT_SHELLS,
+    FLAG_SCHEMA,
+    SHELL_SCHEMAS,
+    VERIFY_SCHEMA,
+    LoopResult,
+    MatryoshkaOrchestrator,
+    ShellConfig,
+    ShellResult,
+    ShellType,
+    parse_structured_response,
+)
 from .tms import (
-    TruthMaintenanceSystem,
-    TMSConfig,
     JustificationRecord,
     Retraction,
+    TMSConfig,
+    TruthMaintenanceSystem,
 )
-
-from .chunk_compiler import (
-    ChunkCompiler,
-    ChunkConfig,
-    ChunkAction,
-    CompiledChunk,
-    ExperienceRecord,
+from .training import (
+    CONFIG_PRESETS,
+    AuditCollector,
+    AuditSummary,
+    BanditArm,
+    ContextualBanditAdapter,
+    OptimizationResult,
+    ParameterBandit,
+    PromptRefiner,
+    RefinementResult,
+    RewardJudge,
+    Signature,
+    SignatureOptimizer,
+    TrainingExample,
+    TrainingPipeline,
 )
-
-from .cbr import (
-    CBRSystem,
-    CBRConfig,
-    Case,
-)
-
-from .demons import (
-    DemonSystem,
-    DemonConfig,
-    DemonAlert,
-    check_grounding,
-    check_brevity,
-    check_repetition,
-    check_hedging,
-)
-
-from .classical_factory import create_classical_sources
 
 __all__ = [
     # Navigator

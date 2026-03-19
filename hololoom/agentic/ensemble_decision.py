@@ -15,12 +15,12 @@ Author: Claude Code
 Date: 2025-12-09
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional, Union, Callable
-from enum import Enum
-from datetime import datetime
-from collections import Counter
 import statistics
+from collections import Counter
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class EnsembleStrategy(Enum):
@@ -47,7 +47,7 @@ class AgentResponse:
     response: Any
     confidence: float
     latency_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate confidence is in range."""
@@ -65,9 +65,9 @@ class EnsembleResult:
     final_response: Any
     strategy_used: EnsembleStrategy
     agreement_score: float  # 0.0-1.0 (how much agents agreed)
-    individual_responses: List[AgentResponse]
+    individual_responses: list[AgentResponse]
     aggregation_time_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def agent_count(self) -> int:
@@ -140,7 +140,7 @@ class EnsembleAggregator:
 
     def aggregate(
         self,
-        responses: List[AgentResponse],
+        responses: list[AgentResponse],
         strategy: EnsembleStrategy = EnsembleStrategy.CONFIDENCE_WEIGHTED
     ) -> EnsembleResult:
         """
@@ -213,7 +213,7 @@ class EnsembleAggregator:
             }
         )
 
-    def _compute_agreement(self, responses: List[AgentResponse]) -> float:
+    def _compute_agreement(self, responses: list[AgentResponse]) -> float:
         """
         Compute agreement score (how much agents agree).
 
@@ -246,14 +246,14 @@ class EnsembleAggregator:
         most_common_count = counter.most_common(1)[0][1]
         return most_common_count / len(responses)
 
-    def _majority_vote(self, responses: List[AgentResponse]) -> Any:
+    def _majority_vote(self, responses: list[AgentResponse]) -> Any:
         """
         Select response with most votes.
 
         For ties, prefer the response with higher average confidence.
         """
         # Group by response value (normalized for text)
-        response_groups: Dict[str, List[AgentResponse]] = {}
+        response_groups: dict[str, list[AgentResponse]] = {}
 
         for r in responses:
             key = str(r.response).strip().lower()
@@ -283,7 +283,7 @@ class EnsembleAggregator:
 
         return responses[0].response
 
-    def _confidence_weighted(self, responses: List[AgentResponse]) -> Any:
+    def _confidence_weighted(self, responses: list[AgentResponse]) -> Any:
         """
         Compute weighted average/selection by confidence.
 
@@ -303,8 +303,8 @@ class EnsembleAggregator:
             pass
 
         # For text: group and sum confidence
-        confidence_by_response: Dict[str, float] = {}
-        original_by_key: Dict[str, Any] = {}
+        confidence_by_response: dict[str, float] = {}
+        original_by_key: dict[str, Any] = {}
 
         for r in responses:
             key = str(r.response).strip().lower()
@@ -317,14 +317,14 @@ class EnsembleAggregator:
         best_key = max(confidence_by_response, key=confidence_by_response.get)
         return original_by_key[best_key]
 
-    def _best_confidence(self, responses: List[AgentResponse]) -> Any:
+    def _best_confidence(self, responses: list[AgentResponse]) -> Any:
         """
         Select response with highest confidence.
         """
         best = max(responses, key=lambda r: r.confidence)
         return best.response
 
-    def _unanimous(self, responses: List[AgentResponse]) -> Optional[Any]:
+    def _unanimous(self, responses: list[AgentResponse]) -> Any | None:
         """
         Return response only if all agents agree.
 
@@ -341,7 +341,7 @@ class EnsembleAggregator:
 
         return responses[0].response
 
-    def compute_agreement(self, responses: List[AgentResponse]) -> float:
+    def compute_agreement(self, responses: list[AgentResponse]) -> float:
         """
         Public method to compute agreement score.
 
@@ -379,7 +379,7 @@ class NumericEnsemble(EnsembleAggregator):
 
     def aggregate_numeric(
         self,
-        responses: List[AgentResponse],
+        responses: list[AgentResponse],
         strategy: EnsembleStrategy = EnsembleStrategy.CONFIDENCE_WEIGHTED
     ) -> EnsembleResult:
         """
@@ -404,7 +404,7 @@ class NumericEnsemble(EnsembleAggregator):
 
         return result
 
-    def _filter_outliers(self, responses: List[AgentResponse]) -> List[AgentResponse]:
+    def _filter_outliers(self, responses: list[AgentResponse]) -> list[AgentResponse]:
         """Remove outlier responses based on z-score."""
         try:
             values = [float(r.response) for r in responses]
@@ -451,7 +451,7 @@ class TextEnsemble(EnsembleAggregator):
 
     def aggregate_text(
         self,
-        responses: List[AgentResponse],
+        responses: list[AgentResponse],
         strategy: EnsembleStrategy = EnsembleStrategy.MAJORITY_VOTE
     ) -> EnsembleResult:
         """
@@ -477,7 +477,7 @@ class TextEnsemble(EnsembleAggregator):
 
 # Convenience functions
 def aggregate_responses(
-    responses: List[AgentResponse],
+    responses: list[AgentResponse],
     strategy: EnsembleStrategy = EnsembleStrategy.CONFIDENCE_WEIGHTED
 ) -> EnsembleResult:
     """

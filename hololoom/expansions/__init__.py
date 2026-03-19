@@ -31,7 +31,7 @@ from typing import List, Type
 _EXPANSION_REGISTRY: dict = {}
 
 
-def register_expansion(name: str, expansion_class: Type) -> None:
+def register_expansion(name: str, expansion_class: type) -> None:
     """Register an expansion bundle."""
     _EXPANSION_REGISTRY[name] = expansion_class
 
@@ -58,7 +58,7 @@ def get_expansion(name: str):
     return _EXPANSION_REGISTRY[name]
 
 
-def list_expansions() -> List[str]:
+def list_expansions() -> list[str]:
     """List all available expansion bundles."""
     return ["physics", "bayesian", "geometry", "advanced_spectral"]
 

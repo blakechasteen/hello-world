@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Statistical Mechanics Integration
 ==================================
@@ -25,9 +24,10 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-import numpy as np
 from datetime import datetime
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
+import numpy as np
 
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
@@ -36,7 +36,7 @@ from hololoom.protocols.types import MemoryShard
 
 # Check if statistical mechanics is available
 try:
-    from hololoom.physics.statistical_mechanics import Microstate, Macrostate
+    from hololoom.physics.statistical_mechanics import Macrostate, Microstate
     STATISTICAL_MECHANICS_AVAILABLE = True
 except ImportError:
     STATISTICAL_MECHANICS_AVAILABLE = False
@@ -48,9 +48,9 @@ logger = logging.getLogger(__name__)
 
 
 def shards_to_microstates(
-    orchestrator: 'WeavingOrchestrator',
-    shards: List[MemoryShard]
-) -> List['Microstate']:
+    orchestrator: WeavingOrchestrator,
+    shards: list[MemoryShard]
+) -> list[Microstate]:
     """
     Convert memory shards to microstates for statistical mechanics.
 
@@ -114,9 +114,9 @@ def shards_to_microstates(
 
 
 def macrostates_to_shards(
-    orchestrator: 'WeavingOrchestrator',
-    macrostates: List['Macrostate']
-) -> List[MemoryShard]:
+    orchestrator: WeavingOrchestrator,
+    macrostates: list[Macrostate]
+) -> list[MemoryShard]:
     """
     Convert consolidated macrostates back to memory shards.
 
@@ -184,7 +184,7 @@ def macrostates_to_shards(
     return consolidated_shards
 
 
-async def background_consolidation_loop(orchestrator: 'WeavingOrchestrator') -> None:
+async def background_consolidation_loop(orchestrator: WeavingOrchestrator) -> None:
     """
     Background loop for periodic memory consolidation.
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom ChatOps - Quick Start Example
 =======================================
@@ -26,8 +25,8 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from holoLoom.chatops.matrix_bot import MatrixBot, MatrixBotConfig
 from holoLoom.chatops.chatops_bridge import ChatOpsOrchestrator
+from holoLoom.chatops.matrix_bot import MatrixBot, MatrixBotConfig
 
 # Setup logging
 logging.basicConfig(

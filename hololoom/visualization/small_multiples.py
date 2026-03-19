@@ -11,8 +11,8 @@ Date: October 29, 2025
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
 from enum import Enum
+from typing import Any
 
 
 class MultipleLayout(Enum):
@@ -30,7 +30,7 @@ class QueryMultiple:
     confidence: float
     threads_count: int
     cached: bool
-    trend: List[float]  # Recent latency trend
+    trend: list[float]  # Recent latency trend
     timestamp: float
     tool_used: str
 
@@ -71,7 +71,7 @@ class SmallMultiplesRenderer:
 
     def render(
         self,
-        queries: List[QueryMultiple],
+        queries: list[QueryMultiple],
         layout: MultipleLayout = MultipleLayout.GRID,
         max_columns: int = 4
     ) -> str:
@@ -235,7 +235,7 @@ class SmallMultiplesRenderer:
 
         return html
 
-    def _render_sparkline(self, values: List[float], color: str) -> str:
+    def _render_sparkline(self, values: list[float], color: str) -> str:
         """Render sparkline SVG for trend."""
         if not values or len(values) < 2:
             return ''
@@ -305,7 +305,7 @@ class SmallMultiplesRenderer:
 
 # Helper function for easy use
 def render_small_multiples(
-    queries_data: List[Dict[str, Any]],
+    queries_data: list[dict[str, Any]],
     layout: str = 'grid',
     max_columns: int = 4
 ) -> str:

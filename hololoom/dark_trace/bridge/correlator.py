@@ -15,15 +15,14 @@ Research Basis:
 - Fisher's z-transformation for confidence intervals
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Set, Any
-from collections import defaultdict
 import threading
+from dataclasses import dataclass
+
 import numpy as np
 import torch
 
-from hololoom.dark_trace.protocol import LensType, TraceLens
-from hololoom.dark_trace.registry import CorrelationMatrix, FeatureCorrelation
+from hololoom.dark_trace.protocol import TraceLens
+from hololoom.dark_trace.registry import CorrelationMatrix
 
 
 @dataclass
@@ -79,7 +78,7 @@ class CorrelationResult:
     """Result of correlation computation."""
 
     # Correlation matrix
-    correlations: Dict[str, Dict[str, float]]
+    correlations: dict[str, dict[str, float]]
 
     # Number of samples used
     sample_count: int
@@ -96,7 +95,7 @@ class CorrelationResult:
         self,
         feature_id: str,
         k: int = 5,
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """Get top-k correlations for a feature."""
         if feature_id not in self.correlations:
             return []
@@ -134,7 +133,7 @@ class SAESemanticCorrelator:
         self,
         sae_lens: TraceLens,
         semantic_lens: TraceLens,
-        config: Optional[CorrelationConfig] = None,
+        config: CorrelationConfig | None = None,
     ):
         """
         Initialize correlator.
@@ -153,10 +152,10 @@ class SAESemanticCorrelator:
 
         # Observation tracking
         self._observation_count = 0
-        self._batch_buffer: List[torch.Tensor] = []
+        self._batch_buffer: list[torch.Tensor] = []
 
         # Cache for computed correlations
-        self._cached_result: Optional[CorrelationResult] = None
+        self._cached_result: CorrelationResult | None = None
         self._cache_valid = False
 
         # Thread safety
@@ -267,8 +266,8 @@ class SAESemanticCorrelator:
             )
 
             # Extract correlation values
-            correlations: Dict[str, Dict[str, float]] = {}
-            all_correlations: List[float] = []
+            correlations: dict[str, dict[str, float]] = {}
+            all_correlations: list[float] = []
             significant_count = 0
 
             for src_id in self._correlation_matrix._correlations:
@@ -304,7 +303,7 @@ class SAESemanticCorrelator:
         self,
         sae_feature_id: str,
         k: int = 5,
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Get semantic meanings for an SAE feature.
 
@@ -333,7 +332,7 @@ class SAESemanticCorrelator:
         self,
         semantic_axis: str,
         k: int = 5,
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Get SAE features most correlated with a semantic axis.
 
@@ -377,7 +376,7 @@ class SAESemanticCorrelator:
     def get_unmapped_features(
         self,
         min_activation: float = 0.1,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Find SAE features with no strong semantic correlations.
 
@@ -439,7 +438,7 @@ class SAESemanticCorrelator:
         """Load correlation state from file."""
         import json
 
-        with open(path, 'r') as f:
+        with open(path) as f:
             state = json.load(f)
 
         # Restore correlations (simplified - would need more work for full restoration)

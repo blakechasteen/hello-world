@@ -17,9 +17,9 @@ Usage:
 """
 
 from hololoom.safety.locks import (
-    SafetyLock,
-    Layer6Capability,
     Layer6BlockedException,
+    Layer6Capability,
+    SafetyLock,
     SafetyMonitor,
 )
 

@@ -25,7 +25,7 @@ import logging
 import math
 from collections import Counter
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -62,8 +62,8 @@ class ColdStartHandler:
     def __init__(
         self,
         graph,  # GraphBackend
-        config: Optional[ColdStartConfig] = None,
-        embeddings: Optional[Dict[str, Any]] = None,
+        config: ColdStartConfig | None = None,
+        embeddings: dict[str, Any] | None = None,
     ):
         self.graph = graph
         self.config = config or ColdStartConfig()
@@ -151,12 +151,12 @@ class ColdStartHandler:
             return []
 
         # Score each node by keyword overlap
-        scores: List[tuple] = []
+        scores: list[tuple] = []
         all_nodes = self.graph.nodes()
 
         # Build document frequency for IDF-like weighting
         doc_freq: Counter = Counter()
-        node_words: Dict[str, Set[str]] = {}
+        node_words: dict[str, set[str]] = {}
         for nid in all_nodes:
             data = self.graph.node_data(nid)
             content = data.get("content", "")
@@ -207,7 +207,7 @@ class ColdStartHandler:
         ]
 
     @staticmethod
-    def _tokenize(text: str) -> Set[str]:
+    def _tokenize(text: str) -> set[str]:
         """Simple word tokenization (lowercase, strip punctuation, min length)."""
         words = set()
         for word in text.lower().split():

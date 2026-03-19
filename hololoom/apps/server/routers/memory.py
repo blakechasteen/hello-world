@@ -12,11 +12,11 @@ Endpoints:
 - GET /api/todos - Extract TODOs with importance scoring
 """
 
-import re
 import logging
+import re
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field, validator
@@ -48,17 +48,17 @@ class MemoryAddRequest(BaseModel):
         max_length=1000,
         description="Episode/category for the memory (max 1KB)"
     )
-    entities: List[str] = Field(
+    entities: list[str] = Field(
         default_factory=list,
         max_items=100,
         description="List of entities mentioned (max 100 items)"
     )
-    motifs: List[str] = Field(
+    motifs: list[str] = Field(
         default_factory=list,
         max_items=100,
         description="List of motifs/patterns (max 100 items)"
     )
-    metadata: Dict[str, Any] = Field(
+    metadata: dict[str, Any] = Field(
         default_factory=dict,
         description="Additional metadata"
     )
@@ -175,7 +175,7 @@ async def add_memory(memory: MemoryAddRequest, state=Depends(get_server_state)):
 
 
 @router.post("/api/remember")
-async def api_remember(request: Dict[str, Any], state=Depends(get_server_state)):
+async def api_remember(request: dict[str, Any], state=Depends(get_server_state)):
     """
     Store content to HoloLoom memory with IDE context.
 
@@ -220,7 +220,7 @@ async def api_remember(request: Dict[str, Any], state=Depends(get_server_state))
 
             return {
                 "status": "success",
-                "message": f"Saved to HoloLoom memory",
+                "message": "Saved to HoloLoom memory",
                 "memory_id": memory.id
             }
 
@@ -230,7 +230,7 @@ async def api_remember(request: Dict[str, Any], state=Depends(get_server_state))
 
 
 @router.post("/api/recall")
-async def api_recall(request: Dict[str, Any], state=Depends(get_server_state)):
+async def api_recall(request: dict[str, Any], state=Depends(get_server_state)):
     """
     Search HoloLoom memories using semantic + keyword search.
 
@@ -302,7 +302,7 @@ async def api_recall(request: Dict[str, Any], state=Depends(get_server_state)):
 
 @router.get("/api/todos")
 async def get_todos(
-    workspace_id: Optional[str] = None,
+    workspace_id: str | None = None,
     limit: int = 50,
     state=Depends(get_server_state)
 ):

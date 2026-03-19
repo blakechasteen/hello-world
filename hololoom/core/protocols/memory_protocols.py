@@ -17,11 +17,10 @@ Author: HoloLoom Architecture Team
 Date: 2025-01-12 (Phase 0, Task 7: Protocol Consolidation)
 """
 
-from typing import List, Dict, Optional, Protocol, runtime_checkable, Any
+from typing import Any, Protocol, runtime_checkable
 
 # Import types from memory_types (no circular dependency)
 from .memory_types import Memory, MemoryQuery, MemoryRetrievalResult, Strategy
-
 
 # ============================================================================
 # Core Storage Protocol
@@ -62,7 +61,7 @@ class MemoryStore(Protocol):
         """
         ...
 
-    async def store_many(self, memories: List[Memory], user_id: str = "default") -> List[str]:
+    async def store_many(self, memories: list[Memory], user_id: str = "default") -> list[str]:
         """
         Store multiple memories efficiently.
 
@@ -75,7 +74,7 @@ class MemoryStore(Protocol):
         """
         ...
 
-    async def get_by_id(self, memory_id: str) -> Optional[Memory]:
+    async def get_by_id(self, memory_id: str) -> Memory | None:
         """
         Retrieve memory by ID.
 
@@ -116,7 +115,7 @@ class MemoryStore(Protocol):
         """
         ...
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """
         Check backend health and return diagnostics.
 
@@ -155,8 +154,8 @@ class MemoryNavigator(Protocol):
     async def navigate_forward(
         self,
         memory_id: str,
-        relation_type: Optional[str] = None
-    ) -> List[str]:
+        relation_type: str | None = None
+    ) -> list[str]:
         """
         Navigate forward from memory (outgoing edges).
 
@@ -172,8 +171,8 @@ class MemoryNavigator(Protocol):
     async def navigate_backward(
         self,
         memory_id: str,
-        relation_type: Optional[str] = None
-    ) -> List[str]:
+        relation_type: str | None = None
+    ) -> list[str]:
         """
         Navigate backward to memory (incoming edges).
 
@@ -191,7 +190,7 @@ class MemoryNavigator(Protocol):
         start_id: str,
         end_id: str,
         max_depth: int = 5
-    ) -> Optional[List[str]]:
+    ) -> list[str] | None:
         """
         Find shortest path between two memories.
 
@@ -209,7 +208,7 @@ class MemoryNavigator(Protocol):
         self,
         memory_id: str,
         radius: int = 1
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get neighborhood of memory within radius.
 
@@ -268,8 +267,8 @@ class PatternDetector(Protocol):
 
     async def discover_patterns(
         self,
-        memory_ids: Optional[List[str]] = None
-    ) -> List[Dict[str, Any]]:
+        memory_ids: list[str] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Discover patterns across memories.
 
@@ -293,9 +292,9 @@ class PatternDetector(Protocol):
 
     async def find_anomalies(
         self,
-        memory_ids: Optional[List[str]] = None,
+        memory_ids: list[str] | None = None,
         threshold: float = 0.95
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Find memories that don't fit established patterns.
 
@@ -310,9 +309,9 @@ class PatternDetector(Protocol):
 
     async def extract_themes(
         self,
-        memory_ids: Optional[List[str]] = None,
+        memory_ids: list[str] | None = None,
         n_themes: int = 5
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Extract common themes across memories.
 

@@ -21,7 +21,7 @@ import json
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -82,9 +82,9 @@ class SerializedContent:
     content_type: ContentType       # Detected content type
     original_size: int              # Size before compression (if any)
     compressed: bool                # Whether compression was applied
-    encoding: Optional[str] = None  # Text encoding if applicable
+    encoding: str | None = None  # Text encoding if applicable
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dictionary."""
         return {
             'data': base64.b64encode(self.data).decode('ascii'),
@@ -96,7 +96,7 @@ class SerializedContent:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'SerializedContent':
+    def from_dict(cls, data: dict[str, Any]) -> 'SerializedContent':
         """Create from dictionary."""
         return cls(
             data=base64.b64decode(data['data']),
@@ -153,10 +153,10 @@ def detect_content_type(content: bytes) -> ContentType:
 
 
 def serialize_content(
-    content: Union[str, bytes, Any],
+    content: str | bytes | Any,
     compress: bool = True,
     compression_threshold: int = 1024
-) -> Tuple[bytes, SerializedContent]:
+) -> tuple[bytes, SerializedContent]:
     """
     Serialize content for storage.
 
@@ -224,8 +224,8 @@ def serialize_content(
 
 def deserialize_content(
     raw_bytes: bytes,
-    metadata: Optional[SerializedContent] = None
-) -> Union[str, bytes]:
+    metadata: SerializedContent | None = None
+) -> str | bytes:
     """
     Deserialize content from storage.
 
@@ -310,8 +310,8 @@ class ContentSerializer:
 
     def serialize(
         self,
-        content: Union[str, bytes, Any]
-    ) -> Tuple[bytes, SerializedContent]:
+        content: str | bytes | Any
+    ) -> tuple[bytes, SerializedContent]:
         """
         Serialize content.
 
@@ -330,8 +330,8 @@ class ContentSerializer:
     def deserialize(
         self,
         raw_bytes: bytes,
-        metadata: Optional[SerializedContent] = None
-    ) -> Union[str, bytes]:
+        metadata: SerializedContent | None = None
+    ) -> str | bytes:
         """
         Deserialize content.
 
@@ -346,8 +346,8 @@ class ContentSerializer:
 
     def serialize_for_json(
         self,
-        content: Union[str, bytes, Any]
-    ) -> Dict[str, Any]:
+        content: str | bytes | Any
+    ) -> dict[str, Any]:
         """
         Serialize content to a JSON-safe dictionary.
 
@@ -369,8 +369,8 @@ class ContentSerializer:
 
     def deserialize_from_json(
         self,
-        data: Dict[str, Any]
-    ) -> Union[str, bytes]:
+        data: dict[str, Any]
+    ) -> str | bytes:
         """
         Deserialize content from JSON dictionary.
 
@@ -389,7 +389,7 @@ class ContentSerializer:
 # Spacetime Integration Helpers
 # ============================================================================
 
-def serialize_spacetime_artifact(artifact: Any) -> Dict[str, Any]:
+def serialize_spacetime_artifact(artifact: Any) -> dict[str, Any]:
     """
     Serialize a Spacetime Artifact without losing binary content.
 
@@ -428,7 +428,7 @@ def serialize_spacetime_artifact(artifact: Any) -> Dict[str, Any]:
     return result
 
 
-def deserialize_spacetime_artifact(data: Dict[str, Any]) -> Dict[str, Any]:
+def deserialize_spacetime_artifact(data: dict[str, Any]) -> dict[str, Any]:
     """
     Deserialize a Spacetime Artifact from storage.
 

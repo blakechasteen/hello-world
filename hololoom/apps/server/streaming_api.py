@@ -9,34 +9,33 @@ Usage:
 """
 
 import asyncio
-import json
 import logging
 import time
 import uuid
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from typing import Any
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 # HoloLoom imports
 try:
     from hololoom.config import Config
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
-    from hololoom.protocols.types import Query as HoloLoomQuery
-    from hololoom.memory.streaming_expansion import (
-        stream_context_expansion,
-        ContextChunk,
-        ChunkYieldStrategy,
-    )
     from hololoom.memory.interleaved_generation import (
-        stream_interleaved_expansion_generation,
-        StreamMode,
         GenerationToken,
         StreamMetadata,
+        StreamMode,
+        stream_interleaved_expansion_generation,
     )
+    from hololoom.memory.streaming_expansion import (
+        ChunkYieldStrategy,
+        ContextChunk,
+        stream_context_expansion,
+    )
+    from hololoom.protocols.types import Query as HoloLoomQuery
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:
     logging.warning(f"HoloLoom import failed: {e}. Running in mock mode.")
@@ -123,7 +122,7 @@ class WSMessage:
     session_id: str
     sequence: int
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d['type'] = self.type.value
         return d
@@ -133,9 +132,9 @@ class WSMessage:
 class StreamStartMessage(WSMessage):
     query: str
     mode: ReasoningMode
-    expected_stages: List[str]
+    expected_stages: list[str]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = super().to_dict()
         d['mode'] = self.mode.value
         return d
@@ -144,9 +143,9 @@ class StreamStartMessage(WSMessage):
 @dataclass
 class ContextChunkMessage(WSMessage):
     chunk_index: int
-    nodes: List[Dict[str, Any]]
+    nodes: list[dict[str, Any]]
     hop_distance: int
-    relevance_scores: Dict[str, float]
+    relevance_scores: dict[str, float]
     token_count: int
     cumulative_tokens: int
     is_final: bool
@@ -158,7 +157,7 @@ class TokenMessage(WSMessage):
     cumulative_text: str
     token_index: int
     is_final: bool
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
 
 @dataclass
@@ -173,9 +172,9 @@ class ConfidenceUpdateMessage(WSMessage):
 class StageCompleteMessage(WSMessage):
     stage: WeavingStage
     duration_ms: float
-    metrics: Dict[str, Any]
+    metrics: dict[str, Any]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = super().to_dict()
         d['stage'] = self.stage.value
         return d
@@ -187,7 +186,7 @@ class ReasoningStepMessage(WSMessage):
     step_type: str
     description: str
     confidence: float
-    substeps: Optional[List[str]] = None
+    substeps: list[str] | None = None
 
 
 @dataclass
@@ -197,7 +196,7 @@ class StreamEndMessage(WSMessage):
     tokens_generated: int
     context_tokens_used: int
     cache_hit: bool
-    reasoning_steps: Optional[int] = None
+    reasoning_steps: int | None = None
 
 
 @dataclass
@@ -205,13 +204,13 @@ class ErrorMessage(WSMessage):
     error_code: str
     message: str
     recoverable: bool
-    retry_after_ms: Optional[int] = None
+    retry_after_ms: int | None = None
 
 
 @dataclass
 class HeartbeatMessage(WSMessage):
     server_time: str
-    latency_ms: Optional[float] = None
+    latency_ms: float | None = None
 
 
 # ============================================================================
@@ -222,9 +221,9 @@ class HeartbeatMessage(WSMessage):
 class StageStartMessage(WSMessage):
     """Emitted when a weaving stage begins (not just completes)"""
     stage: WeavingStage
-    expected_duration_ms: Optional[float] = None  # From historical averages
+    expected_duration_ms: float | None = None  # From historical averages
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = super().to_dict()
         d['stage'] = self.stage.value
         return d
@@ -237,9 +236,9 @@ class GraphNode:
     label: str
     type: str  # 'concept', 'entity', 'fact', 'memory'
     importance: float  # 0.0-1.0
-    x: Optional[float] = None  # Layout position
-    y: Optional[float] = None
-    metadata: Optional[Dict[str, Any]] = None
+    x: float | None = None  # Layout position
+    y: float | None = None
+    metadata: dict[str, Any] | None = None
 
 
 @dataclass
@@ -254,11 +253,11 @@ class GraphEdge:
 @dataclass
 class GraphSnapshotMessage(WSMessage):
     """Full graph state sent at query start for initial visualization"""
-    nodes: List[Dict[str, Any]]  # Serialized GraphNode objects
-    edges: List[Dict[str, Any]]  # Serialized GraphEdge objects
+    nodes: list[dict[str, Any]]  # Serialized GraphNode objects
+    edges: list[dict[str, Any]]  # Serialized GraphEdge objects
     total_nodes: int
     total_edges: int
-    query_node_id: Optional[str] = None  # The query's position in the graph
+    query_node_id: str | None = None  # The query's position in the graph
 
 
 @dataclass
@@ -266,7 +265,7 @@ class MemoryActivationMessage(WSMessage):
     """Node activation during retrieval - enables real-time graph animation"""
     node_id: str
     activation_level: float  # 0.0-1.0, for animation intensity
-    source_node_id: Optional[str] = None  # Where activation spread from
+    source_node_id: str | None = None  # Where activation spread from
     hop_distance: int = 0
     relevance_to_query: float = 0.0
 
@@ -274,8 +273,8 @@ class MemoryActivationMessage(WSMessage):
 @dataclass
 class RetrievalPathMessage(WSMessage):
     """Ordered path through graph showing retrieval traversal"""
-    path_nodes: List[str]  # Ordered node IDs
-    path_edges: List[Dict[str, str]]  # [{source, target, type}, ...]
+    path_nodes: list[str]  # Ordered node IDs
+    path_edges: list[dict[str, str]]  # [{source, target, type}, ...]
     total_hops: int
     final_relevance: float
 
@@ -283,14 +282,14 @@ class RetrievalPathMessage(WSMessage):
 @dataclass
 class ConfidenceGridMessage(WSMessage):
     """2D confidence grid for terrain visualization"""
-    grid: List[List[float]]  # 2D array of confidence values 0.0-1.0
+    grid: list[list[float]]  # 2D array of confidence values 0.0-1.0
     width: int
     height: int
-    x_labels: List[str]  # Semantic dimension labels (e.g., 'certainty', 'relevance')
-    y_labels: List[str]  # Another dimension (e.g., 'source type', 'recency')
+    x_labels: list[str]  # Semantic dimension labels (e.g., 'certainty', 'relevance')
+    y_labels: list[str]  # Another dimension (e.g., 'source type', 'recency')
     min_value: float = 0.0
     max_value: float = 1.0
-    highlight_cells: Optional[List[Dict[str, Any]]] = None  # Cells to emphasize
+    highlight_cells: list[dict[str, Any]] | None = None  # Cells to emphasize
 
 
 # ============================================================================
@@ -301,8 +300,8 @@ class ConnectionManager:
     """Manages WebSocket connections"""
 
     def __init__(self):
-        self.active_connections: Dict[str, WebSocket] = {}
-        self.session_sequences: Dict[str, int] = {}
+        self.active_connections: dict[str, WebSocket] = {}
+        self.session_sequences: dict[str, int] = {}
 
     async def connect(self, websocket: WebSocket, session_id: str) -> None:
         await websocket.accept()
@@ -381,9 +380,9 @@ class StreamingSession:
     async def send_context_chunk(
         self,
         chunk_index: int,
-        nodes: List[Dict[str, Any]],
+        nodes: list[dict[str, Any]],
         hop_distance: int,
-        relevance_scores: Dict[str, float],
+        relevance_scores: dict[str, float],
         token_count: int,
         is_final: bool,
     ) -> None:
@@ -408,7 +407,7 @@ class StreamingSession:
         token: str,
         cumulative_text: str,
         is_final: bool,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         self.tokens_generated += 1
         msg = TokenMessage(
@@ -449,7 +448,7 @@ class StreamingSession:
         self,
         stage: WeavingStage,
         duration_ms: float,
-        metrics: Dict[str, Any],
+        metrics: dict[str, Any],
     ) -> None:
         msg = StageCompleteMessage(
             type=MessageType.STAGE_COMPLETE,
@@ -468,7 +467,7 @@ class StreamingSession:
         step_type: str,
         description: str,
         confidence: float,
-        substeps: Optional[List[str]] = None,
+        substeps: list[str] | None = None,
     ) -> None:
         msg = ReasoningStepMessage(
             type=MessageType.REASONING_STEP,
@@ -503,7 +502,7 @@ class StreamingSession:
         error_code: str,
         message: str,
         recoverable: bool = False,
-        retry_after_ms: Optional[int] = None,
+        retry_after_ms: int | None = None,
     ) -> None:
         msg = ErrorMessage(
             type=MessageType.ERROR,
@@ -517,7 +516,7 @@ class StreamingSession:
         )
         await self.manager.send_message(self.session_id, msg)
 
-    async def send_heartbeat(self, latency_ms: Optional[float] = None) -> None:
+    async def send_heartbeat(self, latency_ms: float | None = None) -> None:
         msg = HeartbeatMessage(
             type=MessageType.HEARTBEAT,
             timestamp=self._timestamp(),
@@ -535,7 +534,7 @@ class StreamingSession:
     async def send_stage_start(
         self,
         stage: WeavingStage,
-        expected_duration_ms: Optional[float] = None,
+        expected_duration_ms: float | None = None,
     ) -> None:
         """Emit when a weaving stage begins (enables timeline animation)"""
         msg = StageStartMessage(
@@ -550,9 +549,9 @@ class StreamingSession:
 
     async def send_graph_snapshot(
         self,
-        nodes: List[Dict[str, Any]],
-        edges: List[Dict[str, Any]],
-        query_node_id: Optional[str] = None,
+        nodes: list[dict[str, Any]],
+        edges: list[dict[str, Any]],
+        query_node_id: str | None = None,
     ) -> None:
         """Send full graph state for initial visualization"""
         msg = GraphSnapshotMessage(
@@ -572,7 +571,7 @@ class StreamingSession:
         self,
         node_id: str,
         activation_level: float,
-        source_node_id: Optional[str] = None,
+        source_node_id: str | None = None,
         hop_distance: int = 0,
         relevance_to_query: float = 0.0,
     ) -> None:
@@ -592,8 +591,8 @@ class StreamingSession:
 
     async def send_retrieval_path(
         self,
-        path_nodes: List[str],
-        path_edges: List[Dict[str, str]],
+        path_nodes: list[str],
+        path_edges: list[dict[str, str]],
         final_relevance: float,
     ) -> None:
         """Send ordered path through graph after retrieval completes"""
@@ -611,10 +610,10 @@ class StreamingSession:
 
     async def send_confidence_grid(
         self,
-        grid: List[List[float]],
-        x_labels: List[str],
-        y_labels: List[str],
-        highlight_cells: Optional[List[Dict[str, Any]]] = None,
+        grid: list[list[float]],
+        x_labels: list[str],
+        y_labels: list[str],
+        highlight_cells: list[dict[str, Any]] | None = None,
     ) -> None:
         """Send 2D confidence grid for terrain visualization"""
         height = len(grid)
@@ -696,7 +695,7 @@ async def real_stream_response(
                 )
 
         # Track stage timings
-        stage_start_times: Dict[str, float] = {}
+        stage_start_times: dict[str, float] = {}
 
         # Stage 1: Loom Command (Pattern Selection)
         await session.send_stage_start(WeavingStage.LOOM_COMMAND, expected_duration_ms=20)
@@ -1068,8 +1067,8 @@ async def websocket_stream(websocket: WebSocket):
     session_id = str(uuid.uuid4())
     await manager.connect(websocket, session_id)
 
-    current_session: Optional[StreamingSession] = None
-    streaming_task: Optional[asyncio.Task] = None
+    current_session: StreamingSession | None = None
+    streaming_task: asyncio.Task | None = None
 
     try:
         while True:

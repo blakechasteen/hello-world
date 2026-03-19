@@ -14,20 +14,20 @@ Features:
 Created: 2025-11-22 (Phase 5)
 """
 
-from typing import Optional, List, Dict, Any, Tuple
-import numpy as np
+import logging
 from datetime import datetime
 from enum import Enum
-import logging
+
+import numpy as np
 
 try:
     import torch
     import torchvision.transforms as T
     from torchvision.models.segmentation import (
-        deeplabv3_resnet50,
-        deeplabv3_resnet101,
         DeepLabV3_ResNet50_Weights,
         DeepLabV3_ResNet101_Weights,
+        deeplabv3_resnet50,
+        deeplabv3_resnet101,
     )
     TORCH_AVAILABLE = True
 except ImportError:
@@ -40,8 +40,8 @@ except ImportError:
     TRANSFORMERS_AVAILABLE = False
 
 from hololoom.vision.protocol import (
-    VisionProcessor,
     SegmentationMask,
+    VisionProcessor,
 )
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class SegmentationDataset(str, Enum):
 
 
 # Dataset class names
-DATASET_CLASSES: Dict[SegmentationDataset, List[str]] = {
+DATASET_CLASSES: dict[SegmentationDataset, list[str]] = {
     SegmentationDataset.COCO: [
         'background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',
         'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
@@ -273,7 +273,7 @@ class SemanticSegmenter(VisionProcessor):
         self,
         frame: np.ndarray,
         return_visualization: bool = False
-    ) -> Tuple[SegmentationMask, Optional[np.ndarray]]:
+    ) -> tuple[SegmentationMask, np.ndarray | None]:
         """
         Segment image and optionally return visualization.
 
@@ -304,7 +304,7 @@ class SemanticSegmenter(VisionProcessor):
         self.initialized = False
         logger.info("🧹 Semantic segmentation cleaned up")
 
-    def get_capabilities(self) -> Dict[str, bool]:
+    def get_capabilities(self) -> dict[str, bool]:
         """Get processor capabilities"""
         return {
             "semantic_segmentation": True,
@@ -315,7 +315,7 @@ class SemanticSegmenter(VisionProcessor):
             "num_classes": self.num_classes,
         }
 
-    def _create_mock_mask(self, shape: Tuple[int, int]) -> SegmentationMask:
+    def _create_mock_mask(self, shape: tuple[int, int]) -> SegmentationMask:
         """Create mock segmentation mask for testing"""
         height, width = shape
         mock_mask = np.zeros((height, width), dtype=np.uint8)
@@ -337,7 +337,7 @@ class SemanticSegmenter(VisionProcessor):
 
 def visualize_segmentation(
     mask: SegmentationMask,
-    original_image: Optional[np.ndarray] = None,
+    original_image: np.ndarray | None = None,
     alpha: float = 0.6,
     colormap: str = "viridis"
 ) -> np.ndarray:
@@ -376,7 +376,7 @@ def visualize_segmentation(
         return np.zeros((mask.height, mask.width, 3), dtype=np.uint8)
 
 
-def get_class_distribution(mask: SegmentationMask) -> Dict[str, float]:
+def get_class_distribution(mask: SegmentationMask) -> dict[str, float]:
     """
     Get distribution of classes in segmentation mask.
 
@@ -402,7 +402,7 @@ def extract_class_regions(
     mask: SegmentationMask,
     class_id: int,
     min_area: int = 100
-) -> List[Tuple[int, int, int, int]]:
+) -> list[tuple[int, int, int, int]]:
     """
     Extract bounding boxes for connected regions of a class.
 
@@ -444,7 +444,7 @@ def extract_class_regions(
 
 
 def merge_masks(
-    masks: List[SegmentationMask],
+    masks: list[SegmentationMask],
     strategy: str = "majority"
 ) -> SegmentationMask:
     """
@@ -503,7 +503,7 @@ def merge_masks(
 def create_semantic_segmenter(
     model: str = "deeplabv3_resnet50",
     dataset: str = "coco",
-    device: Optional[str] = None,
+    device: str | None = None,
     confidence_threshold: float = 0.5,
 ) -> SemanticSegmenter:
     """
@@ -533,7 +533,7 @@ def create_semantic_segmenter(
 
 
 # Singleton instance for easy access
-_segmenter_instance: Optional[SemanticSegmenter] = None
+_segmenter_instance: SemanticSegmenter | None = None
 
 
 def get_semantic_segmenter(

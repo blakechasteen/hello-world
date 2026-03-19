@@ -15,13 +15,12 @@ Author: Claude Code
 Date: 2025-12-09
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Set, Tuple
-from enum import Enum
-import re
 import math
+import re
 from collections import Counter
-
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # ============================================================================
 # Data Types
@@ -43,14 +42,14 @@ class ContextItem:
     mi_score: float = 0.0
     relevance_score: float = 0.0
     redundancy_score: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class HandoffContext:
     """Result of context handoff preparation."""
-    selected_items: List[ContextItem]
-    dropped_items: List[ContextItem]
+    selected_items: list[ContextItem]
+    dropped_items: list[ContextItem]
 
     # Metrics
     original_count: int
@@ -69,7 +68,7 @@ class HandoffContext:
     target_capability: str
 
     # Budget
-    token_budget: Optional[int] = None
+    token_budget: int | None = None
     estimated_tokens: int = 0
     tokens_saved: int = 0
 
@@ -167,11 +166,11 @@ class ContextHandoff:
         self,
         from_agent: str,
         to_agent: str,
-        full_context: List[str],
+        full_context: list[str],
         target_agent_capability: str,
-        strategy: Optional[HandoffStrategy] = None,
-        token_budget: Optional[int] = None,
-        metadata: Optional[List[Dict[str, Any]]] = None,
+        strategy: HandoffStrategy | None = None,
+        token_budget: int | None = None,
+        metadata: list[dict[str, Any]] | None = None,
     ) -> HandoffContext:
         """
         Prepare context for handoff to target agent.
@@ -293,7 +292,7 @@ class ContextHandoff:
 
     def _score_items_by_mi(
         self,
-        items: List[ContextItem],
+        items: list[ContextItem],
         target_capability: str,
     ) -> None:
         """
@@ -350,7 +349,7 @@ class ContextHandoff:
             # Also set relevance score
             item.relevance_score = keyword_overlap
 
-    def _detect_redundancy(self, items: List[ContextItem]) -> Set[int]:
+    def _detect_redundancy(self, items: list[ContextItem]) -> set[int]:
         """
         Detect redundant items using word overlap similarity.
 
@@ -396,11 +395,11 @@ class ContextHandoff:
 
     def _select_items(
         self,
-        items: List[ContextItem],
+        items: list[ContextItem],
         strategy: HandoffStrategy,
-        token_budget: Optional[int],
-        redundant_indices: Set[int],
-    ) -> Tuple[List[ContextItem], List[ContextItem]]:
+        token_budget: int | None,
+        redundant_indices: set[int],
+    ) -> tuple[list[ContextItem], list[ContextItem]]:
         """
         Select items based on strategy, MI scores, and budget.
 
@@ -463,12 +462,12 @@ class ContextHandoff:
 
         return selected, dropped
 
-    def _estimate_tokens(self, items: List[ContextItem]) -> int:
+    def _estimate_tokens(self, items: list[ContextItem]) -> int:
         """Estimate token count for items (rough: words * 1.3)."""
         total_words = sum(len(item.content.split()) for item in items)
         return int(total_words * 1.3)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get handoff statistics."""
         return {
             "total_handoffs": self._total_handoffs,
@@ -487,10 +486,10 @@ class ContextHandoff:
 def prepare_agent_handoff(
     from_agent: str,
     to_agent: str,
-    context: List[str],
+    context: list[str],
     capability: str,
-    strategy: Optional[HandoffStrategy] = None,
-    token_budget: Optional[int] = None,
+    strategy: HandoffStrategy | None = None,
+    token_budget: int | None = None,
 ) -> HandoffContext:
     """
     Convenience function for preparing agent context handoff.

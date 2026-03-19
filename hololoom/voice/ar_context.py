@@ -10,11 +10,9 @@ Author: HoloLoom Team
 Date: November 15, 2025
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Tuple
-from enum import Enum
 import math
-
+from dataclasses import dataclass, field
+from enum import Enum
 
 # ============================================================================
 # Vector and Spatial Types
@@ -57,7 +55,7 @@ class Quaternion:
     z: float
     w: float
 
-    def to_euler(self) -> Tuple[float, float, float]:
+    def to_euler(self) -> tuple[float, float, float]:
         """Convert to Euler angles (pitch, yaw, roll) in radians."""
         # Pitch (x-axis rotation)
         sinr_cosp = 2 * (self.w * self.x + self.y * self.z)
@@ -106,7 +104,7 @@ class ARObject:
     type: ARObjectType
     position: Vector3
     name: str = ""
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
     visible: bool = True
     selectable: bool = True
 
@@ -138,7 +136,7 @@ class AREvent:
     """Represents an AR event."""
     type: AREventType
     timestamp: float
-    data: Dict = field(default_factory=dict)
+    data: dict = field(default_factory=dict)
 
     def __str__(self) -> str:
         return f"AREvent({self.type.value}, t={self.timestamp:.2f})"
@@ -194,7 +192,7 @@ class GestureType(Enum):
 class GestureEvent(AREvent):
     """Gesture detection event."""
     gesture_type: GestureType = GestureType.UNKNOWN
-    target: Optional[str] = None
+    target: str | None = None
     confidence: float = 0.0
 
     def __post_init__(self):
@@ -235,19 +233,19 @@ class ARContext:
     user_position: Vector3 = field(default_factory=lambda: Vector3(0, 1.7, 0))
     user_orientation: Quaternion = field(default_factory=lambda: Quaternion(0, 0, 0, 1))
     gaze_direction: Vector3 = field(default_factory=lambda: Vector3(0, 0, 1))
-    gaze_target: Optional[str] = None
+    gaze_target: str | None = None
 
     # Environment state
-    visible_objects: List[ARObject] = field(default_factory=list)
-    selected_object: Optional[ARObject] = None
+    visible_objects: list[ARObject] = field(default_factory=list)
+    selected_object: ARObject | None = None
     active_scene: str = "default"
 
     # Interaction state
-    recent_actions: List[str] = field(default_factory=list)
+    recent_actions: list[str] = field(default_factory=list)
     conversation_context: str = ""
 
     # Spatial references (for "this", "that", etc.)
-    nearby_objects: Dict[str, ARObject] = field(default_factory=dict)
+    nearby_objects: dict[str, ARObject] = field(default_factory=dict)
 
     def add_action(self, action: str) -> None:
         """Add an action to the recent actions list (max 5)."""
@@ -255,18 +253,18 @@ class ARContext:
         if len(self.recent_actions) > 5:
             self.recent_actions.pop(0)
 
-    def find_object_by_id(self, object_id: str) -> Optional[ARObject]:
+    def find_object_by_id(self, object_id: str) -> ARObject | None:
         """Find an object by ID in visible objects."""
         for obj in self.visible_objects:
             if obj.id == object_id:
                 return obj
         return None
 
-    def find_objects_by_type(self, object_type: ARObjectType) -> List[ARObject]:
+    def find_objects_by_type(self, object_type: ARObjectType) -> list[ARObject]:
         """Find all objects of a specific type."""
         return [obj for obj in self.visible_objects if obj.type == object_type]
 
-    def find_closest_object(self, object_type: Optional[ARObjectType] = None) -> Optional[ARObject]:
+    def find_closest_object(self, object_type: ARObjectType | None = None) -> ARObject | None:
         """
         Find the closest object to the user.
 
@@ -288,8 +286,8 @@ class ARContext:
     def find_object_in_direction(
         self,
         direction: str,
-        object_type: Optional[ARObjectType] = None
-    ) -> Optional[ARObject]:
+        object_type: ARObjectType | None = None
+    ) -> ARObject | None:
         """
         Find object in a specific direction (left, right, front, back).
 
@@ -381,7 +379,7 @@ class ARContext:
             if len(sorted_by_distance) > 1:
                 self.nearby_objects["that"] = sorted_by_distance[1]
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
         return {
             "user_position": [self.user_position.x, self.user_position.y, self.user_position.z],

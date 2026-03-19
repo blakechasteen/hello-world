@@ -32,22 +32,22 @@ Author: Claude Code
 Date: January 2025
 """
 
+import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Dict, Any, Optional
-import time
-import re
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.ocr_backends import get_all_available_backends
+from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities,
     ImportanceScore,
-    ImportanceSignals
+    ImportanceSignals,
+    SpinnerCapabilities,
+    SpinResult,
 )
-from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
-from hololoom.spinningWheel.ocr_backends import get_all_available_backends
 
 
 @dataclass
@@ -58,8 +58,8 @@ class NoteStructure:
     has_numbering: bool
     has_sketches: bool
     has_signatures: bool
-    sections: List[str]
-    detected_tasks: List[str]
+    sections: list[str]
+    detected_tasks: list[str]
 
 
 class HandwrittenSpinner(BaseSpinner):
@@ -99,7 +99,7 @@ class HandwrittenSpinner(BaseSpinner):
         self.ocr_chain = get_all_available_backends()
 
         print(f"[HandwrittenSpinner] Using OCR backend: {self.ocr_chain.get_name()} ({self.ocr_chain.get_quality().value})")
-        print(f"[HandwrittenSpinner] Note: For best handwriting recognition, use DeepSeek OCR or Google Cloud Vision")
+        print("[HandwrittenSpinner] Note: For best handwriting recognition, use DeepSeek OCR or Google Cloud Vision")
 
     def get_capabilities(self) -> SpinnerCapabilities:
         """Return spinner capabilities."""
@@ -124,7 +124,7 @@ class HandwrittenSpinner(BaseSpinner):
         self,
         source: Any,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Extract text from handwritten note(s).
 
@@ -326,7 +326,7 @@ class HandwrittenSpinner(BaseSpinner):
         self,
         text: str,
         structure: NoteStructure
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Extract entities from handwritten note.
 
@@ -367,7 +367,7 @@ class HandwrittenSpinner(BaseSpinner):
         self,
         text: str,
         structure: NoteStructure
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Extract motifs/topics from handwritten note.
 
@@ -492,7 +492,7 @@ class HandwrittenSpinner(BaseSpinner):
             reason=reason
         )
 
-    async def _enrich_content(self, text: str) -> tuple[List[str], List[str]]:
+    async def _enrich_content(self, text: str) -> tuple[list[str], list[str]]:
         """
         Extract entities and motifs using Ollama.
 

@@ -18,11 +18,12 @@ from __future__ import annotations
 import asyncio
 import logging
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any, Callable, Set
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -126,14 +127,14 @@ class TaskNode:
     thread_id: str
 
     # Tree structure
-    parent_id: Optional[str] = None
-    children_ids: List[str] = field(default_factory=list)
+    parent_id: str | None = None
+    children_ids: list[str] = field(default_factory=list)
     depth: int = 0
 
     # Step info
     step_type: StepType = StepType.INITIAL
     name: str = ""
-    query: Optional[str] = None
+    query: str | None = None
 
     # Status & Progress
     status: ThreadStatus = ThreadStatus.IDLE
@@ -144,17 +145,17 @@ class TaskNode:
     epistemic_confidence: float = 0.0
 
     # Dependencies
-    depends_on: List[str] = field(default_factory=list)
-    blocks: List[str] = field(default_factory=list)
+    depends_on: list[str] = field(default_factory=list)
+    blocks: list[str] = field(default_factory=list)
 
     # Injection
     mrf_eligible: bool = True
     mcts_eligible: bool = True
-    injection_applied: Optional[str] = None
+    injection_applied: str | None = None
 
     # Results
-    response: Optional[str] = None
-    tool_selected: Optional[str] = None
+    response: str | None = None
+    tool_selected: str | None = None
 
 
 @dataclass
@@ -173,43 +174,43 @@ class AgentThread:
     current_step: int = 0
     total_steps: int = 1
     elapsed_time_ms: float = 0.0
-    time_budget_ms: Optional[float] = None
+    time_budget_ms: float | None = None
     tokens_used: int = 0
-    token_budget: Optional[int] = None
+    token_budget: int | None = None
 
     # Cost tracking
     cost: TokenCostEstimate = field(default_factory=TokenCostEstimate)
 
     # Tree structure
-    root_step_id: Optional[str] = None
-    steps: Dict[str, TaskNode] = field(default_factory=dict)
+    root_step_id: str | None = None
+    steps: dict[str, TaskNode] = field(default_factory=dict)
 
     # Dependencies
-    depends_on: List[str] = field(default_factory=list)
-    blocks: List[str] = field(default_factory=list)
+    depends_on: list[str] = field(default_factory=list)
+    blocks: list[str] = field(default_factory=list)
 
     # Swarm
-    swarm_id: Optional[str] = None
-    parent_thread_id: Optional[str] = None
-    child_thread_ids: List[str] = field(default_factory=list)
+    swarm_id: str | None = None
+    parent_thread_id: str | None = None
+    child_thread_ids: list[str] = field(default_factory=list)
 
     # Results
     confidence: float = 0.0
     epistemic_confidence: float = 0.0
-    final_response: Optional[str] = None
-    error: Optional[str] = None
+    final_response: str | None = None
+    error: str | None = None
 
     # Files being modified
-    active_files: List[str] = field(default_factory=list)
+    active_files: list[str] = field(default_factory=list)
 
     # Timestamps
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
-    started_at: Optional[str] = None
-    completed_at: Optional[str] = None
+    started_at: str | None = None
+    completed_at: str | None = None
 
     # Git-style versioning
-    head_commit_id: Optional[str] = None
+    head_commit_id: str | None = None
     current_branch: str = "main"
 
 
@@ -218,12 +219,12 @@ class SwarmConfig:
     """Configuration for swarm execution."""
     name: str
     fan_out: int = 3  # Number of parallel threads
-    reasoning_modes: List[ReasoningMode] = field(
+    reasoning_modes: list[ReasoningMode] = field(
         default_factory=lambda: [ReasoningMode.DIRECT, ReasoningMode.VERIFY, ReasoningMode.RESEARCH]
     )
     merge_strategy: str = "best"  # best, combine, manual
-    token_budget_per_thread: Optional[int] = None
-    time_budget_ms: Optional[float] = None
+    token_budget_per_thread: int | None = None
+    time_budget_ms: float | None = None
 
 
 @dataclass
@@ -235,17 +236,17 @@ class Swarm:
     status: ThreadStatus = ThreadStatus.IDLE
 
     # Child threads
-    thread_ids: List[str] = field(default_factory=list)
-    completed_thread_ids: List[str] = field(default_factory=list)
+    thread_ids: list[str] = field(default_factory=list)
+    completed_thread_ids: list[str] = field(default_factory=list)
 
     # Merged result
-    merged_response: Optional[str] = None
+    merged_response: str | None = None
     merged_confidence: float = 0.0
 
     # Timestamps
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
-    started_at: Optional[str] = None
-    completed_at: Optional[str] = None
+    started_at: str | None = None
+    completed_at: str | None = None
 
 
 @dataclass
@@ -256,11 +257,11 @@ class ThreadConfig:
     agent_type: str = "weaving"
     reasoning_mode: ReasoningMode = ReasoningMode.DIRECT
     priority: int = 0
-    depends_on: List[str] = field(default_factory=list)
-    token_budget: Optional[int] = None
-    time_budget_ms: Optional[float] = None
-    mrf_strategy: Optional[str] = None
-    mcts_budget: Optional[int] = None
+    depends_on: list[str] = field(default_factory=list)
+    token_budget: int | None = None
+    time_budget_ms: float | None = None
+    mrf_strategy: str | None = None
+    mcts_budget: int | None = None
     provider: str = "ollama"
     model: str = "llama3.2:3b"
 
@@ -296,27 +297,27 @@ class AgentManagerHub:
             enable_git_versioning: Enable git-based temporal rollback
             git_repo_path: Path for agent git repositories
         """
-        self._threads: Dict[str, AgentThread] = {}
-        self._swarms: Dict[str, Swarm] = {}
+        self._threads: dict[str, AgentThread] = {}
+        self._swarms: dict[str, Swarm] = {}
         self._max_concurrent = max_concurrent_threads
-        self._running_threads: Set[str] = set()
+        self._running_threads: set[str] = set()
 
         # Git versioning
         self._enable_git = enable_git_versioning
         self._git_repo_path = Path(git_repo_path)
-        self._git_store: Optional[Any] = None  # AgentGitStore instance
+        self._git_store: Any | None = None  # AgentGitStore instance
 
         # Event callbacks (global - receive all events with event_type)
-        self._event_callbacks: List[Callable[[str, Dict[str, Any]], None]] = []
+        self._event_callbacks: list[Callable[[str, dict[str, Any]], None]] = []
 
         # Event-specific handlers (receive only data for their event type)
-        self._event_handlers: Dict[str, List[Callable[[Dict[str, Any]], Any]]] = {}
+        self._event_handlers: dict[str, list[Callable[[dict[str, Any]], Any]]] = {}
 
         # Execution queue (priority queue would be better, but simple list for now)
-        self._queue: List[str] = []
+        self._queue: list[str] = []
 
         # Background task
-        self._scheduler_task: Optional[asyncio.Task] = None
+        self._scheduler_task: asyncio.Task | None = None
         self._shutdown_event = asyncio.Event()
 
         # Integration hooks (set externally)
@@ -1011,8 +1012,8 @@ class AgentManagerHub:
     async def merge_swarm(
         self,
         swarm_id: str,
-        strategy: Optional[str] = None
-    ) -> Dict[str, Any]:
+        strategy: str | None = None
+    ) -> dict[str, Any]:
         """
         Merge swarm results.
 
@@ -1039,7 +1040,7 @@ class AgentManagerHub:
 
         # Use override strategy or swarm's configured strategy
         merge_strategy = strategy or swarm.config.merge_strategy
-        merged_thread_id: Optional[str] = None
+        merged_thread_id: str | None = None
 
         # Merge based on strategy
         if merge_strategy == "best":
@@ -1080,8 +1081,8 @@ class AgentManagerHub:
     async def fork_thread(
         self,
         thread_id: str,
-        from_step_id: Optional[str] = None,
-        new_params: Optional[Dict[str, Any]] = None
+        from_step_id: str | None = None,
+        new_params: dict[str, Any] | None = None
     ) -> str:
         """
         Fork a thread from a specific step.
@@ -1158,8 +1159,9 @@ class AgentManagerHub:
             return
 
         try:
-            from hololoom.apps.server.agent_git_store import StepCommit
             import time
+
+            from hololoom.apps.server.agent_git_store import StepCommit
 
             commit = StepCommit(
                 thread_id=thread.id,
@@ -1184,7 +1186,7 @@ class AgentManagerHub:
         except Exception as e:
             logger.warning(f"Failed to commit step: {e}")
 
-    async def get_thread_history(self, thread_id: str, max_count: int = 50) -> List[Dict]:
+    async def get_thread_history(self, thread_id: str, max_count: int = 50) -> list[dict]:
         """Get git commit history for a thread."""
         if not self._git_store:
             return []
@@ -1214,7 +1216,7 @@ class AgentManagerHub:
         self,
         thread_id: str,
         branch_name: str,
-        from_commit: Optional[str] = None
+        from_commit: str | None = None
     ) -> None:
         """Create a git branch."""
         if not self._git_store:
@@ -1235,11 +1237,11 @@ class AgentManagerHub:
 
         logger.info(f"Created branch '{branch_name}' in {thread_id}")
 
-    async def get_commit_log(self, thread_id: str, max_count: int = 50) -> List[Dict]:
+    async def get_commit_log(self, thread_id: str, max_count: int = 50) -> list[dict]:
         """Get git commit history (alias for get_thread_history)."""
         return await self.get_thread_history(thread_id, max_count)
 
-    async def get_commit(self, thread_id: str, commit_id: str) -> Optional[Dict]:
+    async def get_commit(self, thread_id: str, commit_id: str) -> dict | None:
         """Get details of a specific commit."""
         if not self._git_store:
             raise ValueError("Git versioning not enabled")
@@ -1258,7 +1260,7 @@ class AgentManagerHub:
             logger.warning(f"Failed to get commit {commit_id}: {e}")
             return None
 
-    async def get_diff(self, thread_id: str, from_commit: str, to_commit: str) -> Dict[str, Any]:
+    async def get_diff(self, thread_id: str, from_commit: str, to_commit: str) -> dict[str, Any]:
         """Get diff between two commits."""
         if not self._git_store:
             raise ValueError("Git versioning not enabled")
@@ -1269,7 +1271,7 @@ class AgentManagerHub:
 
         return self._git_store.diff(thread_id, from_commit, to_commit)
 
-    async def list_branches(self, thread_id: str) -> List[str]:
+    async def list_branches(self, thread_id: str) -> list[str]:
         """List all branches for a thread."""
         if not self._git_store:
             raise ValueError("Git versioning not enabled")
@@ -1361,7 +1363,7 @@ class AgentManagerHub:
         thread_id: str,
         source_branch: str,
         strategy: str = "best"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Merge a branch into current branch."""
         if not self._git_store:
             raise ValueError("Git versioning not enabled")
@@ -1393,7 +1395,7 @@ class AgentManagerHub:
         thread_id: str,
         branch1: str,
         branch2: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """Find the common ancestor (merge base) of two branches."""
         if not self._git_store:
             raise ValueError("Git versioning not enabled")
@@ -1404,7 +1406,7 @@ class AgentManagerHub:
 
         return self._git_store.get_merge_base(thread_id, branch1, branch2)
 
-    async def get_reflog(self, thread_id: str, limit: int = 50) -> List[Dict]:
+    async def get_reflog(self, thread_id: str, limit: int = 50) -> list[dict]:
         """Get reflog (operation history) for a thread."""
         if not self._git_store:
             raise ValueError("Git versioning not enabled")
@@ -1419,23 +1421,23 @@ class AgentManagerHub:
     # Query Methods
     # ========================================================================
 
-    def get_thread(self, thread_id: str) -> Optional[AgentThread]:
+    def get_thread(self, thread_id: str) -> AgentThread | None:
         """Get thread by ID."""
         return self._threads.get(thread_id)
 
-    def get_all_threads(self) -> List[AgentThread]:
+    def get_all_threads(self) -> list[AgentThread]:
         """Get all threads."""
         return list(self._threads.values())
 
-    def get_swarm(self, swarm_id: str) -> Optional[Swarm]:
+    def get_swarm(self, swarm_id: str) -> Swarm | None:
         """Get swarm by ID."""
         return self._swarms.get(swarm_id)
 
-    def get_all_swarms(self) -> List[Swarm]:
+    def get_all_swarms(self) -> list[Swarm]:
         """Get all swarms."""
         return list(self._swarms.values())
 
-    def get_queue_status(self) -> Dict[str, Any]:
+    def get_queue_status(self) -> dict[str, Any]:
         """Get current queue status."""
         return {
             "queued": len(self._queue),
@@ -1444,7 +1446,7 @@ class AgentManagerHub:
             "queue_order": self._queue.copy()
         }
 
-    def get_session_cost_summary(self) -> Dict[str, Any]:
+    def get_session_cost_summary(self) -> dict[str, Any]:
         """Get aggregate cost summary for all threads."""
         total_tokens_in = 0
         total_tokens_out = 0
@@ -1472,11 +1474,11 @@ class AgentManagerHub:
         }
 
     # Alias for API compatibility
-    def list_threads(self) -> List[AgentThread]:
+    def list_threads(self) -> list[AgentThread]:
         """List all threads (alias for get_all_threads)."""
         return self.get_all_threads()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get hub statistics for health check."""
         status_counts = {}
         for thread in self._threads.values():
@@ -1502,14 +1504,14 @@ class AgentManagerHub:
     # Event System
     # ========================================================================
 
-    def on_event(self, callback: Callable[[str, Dict[str, Any]], None]) -> None:
+    def on_event(self, callback: Callable[[str, dict[str, Any]], None]) -> None:
         """Register event callback."""
         self._event_callbacks.append(callback)
 
     def register_event_handler(
         self,
         event_type: str,
-        handler: Callable[[Dict[str, Any]], Any]
+        handler: Callable[[dict[str, Any]], Any]
     ) -> None:
         """
         Register handler for specific event type.
@@ -1527,7 +1529,7 @@ class AgentManagerHub:
     def unregister_event_handler(
         self,
         event_type: str,
-        handler: Callable[[Dict[str, Any]], Any]
+        handler: Callable[[dict[str, Any]], Any]
     ) -> None:
         """
         Unregister handler for specific event type.
@@ -1540,7 +1542,7 @@ class AgentManagerHub:
             if handler in self._event_handlers[event_type]:
                 self._event_handlers[event_type].remove(handler)
 
-    async def _emit_event(self, event_type: str, data: Dict[str, Any]) -> None:
+    async def _emit_event(self, event_type: str, data: dict[str, Any]) -> None:
         """Emit event to all registered handlers and callbacks."""
         data["timestamp"] = datetime.now().isoformat()
 

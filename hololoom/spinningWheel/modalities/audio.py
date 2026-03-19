@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Audio Spinner
 =============
@@ -8,8 +7,8 @@ Converts audio data (transcripts, summaries, task lists) into structured
 memory shards that can be processed by the HoloLoom orchestrator.
 """
 
-from typing import List, Dict, Any
 from dataclasses import dataclass
+from typing import Any
 
 from .base import BaseSpinner, SpinnerConfig
 
@@ -25,9 +24,9 @@ except ImportError:
         id: str
         text: str
         episode: Optional[str] = None
-        entities: List[str] = field(default_factory=list)
-        motifs: List[str] = field(default_factory=list)
-        metadata: Dict[str, Any] = field(default_factory=dict)
+        entities: list[str] = field(default_factory=list)
+        motifs: list[str] = field(default_factory=list)
+        metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -48,7 +47,7 @@ class AudioSpinner(BaseSpinner):
             config = AudioSpinnerConfig()
         super().__init__(config)
 
-    async def spin(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
+    async def spin(self, raw_data: dict[str, Any]) -> list[MemoryShard]:
         """
         Convert audio data → MemoryShards.
 
@@ -118,7 +117,7 @@ class AudioSpinner(BaseSpinner):
 
         return shards
 
-    async def _enrich_shards(self, shards: List[MemoryShard]) -> List[MemoryShard]:
+    async def _enrich_shards(self, shards: list[MemoryShard]) -> list[MemoryShard]:
         """
         Enrich shards using optional enrichment services.
         Delegates to parent class enrichment infrastructure.

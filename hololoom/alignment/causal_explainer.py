@@ -17,11 +17,11 @@ References:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Set
 from enum import Enum
-import numpy as np
 from pathlib import Path
-import json
+from typing import Any
+
+import numpy as np
 
 
 class CausalRelationType(Enum):
@@ -63,8 +63,8 @@ class CausalGraph:
     Nodes: Features and decision outcomes
     Edges: Causal relationships with strengths
     """
-    nodes: Set[str] = field(default_factory=set)
-    edges: List[CausalEdge] = field(default_factory=list)
+    nodes: set[str] = field(default_factory=set)
+    edges: list[CausalEdge] = field(default_factory=list)
 
     def add_edge(self, source: str, target: str, strength: float,
                  confidence: float, relation_type: CausalRelationType = CausalRelationType.DIRECT):
@@ -73,15 +73,15 @@ class CausalGraph:
         self.nodes.add(target)
         self.edges.append(CausalEdge(source, target, strength, confidence, relation_type))
 
-    def get_parents(self, node: str) -> List[str]:
+    def get_parents(self, node: str) -> list[str]:
         """Get all parent nodes (direct causes)."""
         return [edge.source for edge in self.edges if edge.target == node]
 
-    def get_children(self, node: str) -> List[str]:
+    def get_children(self, node: str) -> list[str]:
         """Get all child nodes (direct effects)."""
         return [edge.target for edge in self.edges if edge.source == node]
 
-    def get_path(self, source: str, target: str) -> Optional[List[str]]:
+    def get_path(self, source: str, target: str) -> list[str] | None:
         """Find causal path from source to target (if exists)."""
         # Simple BFS to find path
         from collections import deque
@@ -101,7 +101,7 @@ class CausalGraph:
 
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "nodes": list(self.nodes),
@@ -144,8 +144,8 @@ class CausalEffect:
     confidence: float
 
     # Decomposition of effect
-    direct_effect: Optional[float] = None  # Effect not mediated by other variables
-    indirect_effect: Optional[float] = None  # Effect mediated through other variables
+    direct_effect: float | None = None  # Effect not mediated by other variables
+    indirect_effect: float | None = None  # Effect mediated through other variables
 
     def __repr__(self) -> str:
         sign = "+" if self.effect_size > 0 else ""
@@ -165,25 +165,25 @@ class CausalExplanation:
     causal_graph: CausalGraph
 
     # Key causal relationships
-    direct_causes: List[Tuple[str, float]] = field(default_factory=list)  # (feature, effect size)
-    indirect_causes: List[Tuple[str, float]] = field(default_factory=list)
+    direct_causes: list[tuple[str, float]] = field(default_factory=list)  # (feature, effect size)
+    indirect_causes: list[tuple[str, float]] = field(default_factory=list)
 
     # Causal effects of hypothetical interventions
-    intervention_effects: List[CausalEffect] = field(default_factory=list)
+    intervention_effects: list[CausalEffect] = field(default_factory=list)
 
     # Counterfactual analysis
-    counterfactual_confidence: Optional[float] = None
-    counterfactual_tool: Optional[str] = None
+    counterfactual_confidence: float | None = None
+    counterfactual_tool: str | None = None
 
     # Metadata
     timestamp: float = 0.0
     computation_time_ms: float = 0.0
 
-    def get_strongest_causes(self, n: int = 5) -> List[Tuple[str, float]]:
+    def get_strongest_causes(self, n: int = 5) -> list[tuple[str, float]]:
         """Get top N strongest direct causes."""
         return sorted(self.direct_causes, key=lambda x: abs(x[1]), reverse=True)[:n]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "query_id": self.query_id,
@@ -221,7 +221,7 @@ class CausalExplainer:
     def __init__(
         self,
         predict_fn: Any,  # Callable that takes features → confidence
-        feature_names: List[str],
+        feature_names: list[str],
         num_intervention_samples: int = 500,
         intervention_strength: float = 0.2
     ):
@@ -246,7 +246,7 @@ class CausalExplainer:
         features: np.ndarray,
         predicted_tool: str,
         predicted_confidence: float,
-        background_data: Optional[np.ndarray] = None
+        background_data: np.ndarray | None = None
     ) -> CausalExplanation:
         """
         Generate causal explanation using intervention analysis.
@@ -309,7 +309,7 @@ class CausalExplainer:
     async def _build_causal_graph(
         self,
         features: np.ndarray,
-        background_data: Optional[np.ndarray]
+        background_data: np.ndarray | None
     ) -> CausalGraph:
         """
         Build causal graph using interventional data.
@@ -357,7 +357,7 @@ class CausalExplainer:
         features: np.ndarray,
         causal_graph: CausalGraph,
         outcome: float
-    ) -> Tuple[List[Tuple[str, float]], List[Tuple[str, float]]]:
+    ) -> tuple[list[tuple[str, float]], list[tuple[str, float]]]:
         """
         Decompose total effects into direct and indirect (mediated) effects.
 
@@ -385,7 +385,7 @@ class CausalExplainer:
         self,
         features: np.ndarray,
         original_outcome: float
-    ) -> List[CausalEffect]:
+    ) -> list[CausalEffect]:
         """
         Compute effects of hypothetical interventions.
 
@@ -430,8 +430,8 @@ class CausalExplainer:
         self,
         features: np.ndarray,
         predicted_tool: str,
-        direct_causes: List[Tuple[str, float]]
-    ) -> Tuple[Optional[float], Optional[str]]:
+        direct_causes: list[tuple[str, float]]
+    ) -> tuple[float | None, str | None]:
         """
         Generate counterfactual: What if strongest cause had been different?
 
@@ -478,7 +478,7 @@ class CausalDiscovery:
         self,
         feature_data: np.ndarray,
         outcome_data: np.ndarray,
-        feature_names: List[str]
+        feature_names: list[str]
     ) -> CausalGraph:
         """
         Discover causal structure from observational data.
@@ -535,7 +535,7 @@ class CausalDiscovery:
         self,
         x: np.ndarray,
         y: np.ndarray,
-        z: Optional[np.ndarray] = None
+        z: np.ndarray | None = None
     ) -> bool:
         """
         Test whether X ⊥ Y | Z (X independent of Y given Z).

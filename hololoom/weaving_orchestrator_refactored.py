@@ -10,44 +10,37 @@ This is a clean implementation that:
 - Is under 500 lines (vs 2000+ original)
 """
 
-import asyncio
 import logging
 import time
-from typing import Dict, List, Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.protocols import ComplexityLevel
-from hololoom.fabric.spacetime import Spacetime
+from hololoom.chrono.trigger import ChronoTrigger
 from hololoom.config import Config
+from hololoom.convergence.engine import CollapseStrategy, ConvergenceEngine
+from hololoom.fabric.spacetime import Spacetime
+
+# Import components for stage creation
+from hololoom.loom.command import LoomCommand, PatternCard
+
+# Import initialization functions (already extracted)
+# Import core functions (already extracted)
+from hololoom.orchestrator.core import assess_complexity_level
+from hololoom.policy.unified import create_policy
+from hololoom.protocols import ComplexityLevel
+from hololoom.protocols.types import MemoryShard, Query
+from hololoom.tools import ToolExecutor
 
 # Import stage implementations
 from hololoom.weaving.stages import (
-    PatternSelectionStage,
-    TemporalControlStage,
+    DecisionCollapseStage,
     FeatureExtractionStage,
     MemoryRetrievalStage,
-    DecisionCollapseStage,
+    PatternSelectionStage,
+    TemporalControlStage,
 )
 
 # Import strategies
 from hololoom.weaving.strategies import create_strategy
-
-# Import components for stage creation
-from hololoom.loom.command import LoomCommand, PatternCard
-from hololoom.chrono.trigger import ChronoTrigger
-from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
-from hololoom.policy.unified import create_policy
-from hololoom.tools import ToolExecutor
-
-# Import initialization functions (already extracted)
-from hololoom.orchestrator.initialization import (
-    initialize_config_and_memory,
-    initialize_components,
-    initialize_reflection_and_caching,
-)
-
-# Import core functions (already extracted)
-from hololoom.orchestrator.core import assess_complexity_level
 
 if TYPE_CHECKING:
     from hololoom.alignment.safety_guardrails import SafetyGuardrails
@@ -75,12 +68,12 @@ class WeavingOrchestratorRefactored:
     def __init__(
         self,
         cfg: Config,
-        shards: Optional[List[MemoryShard]] = None,
+        shards: list[MemoryShard] | None = None,
         memory=None,
         enable_reflection: bool = True,
         enable_complexity_auto_detect: bool = True,
         guardrails: Optional['SafetyGuardrails'] = None,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         """
         Initialize the refactored orchestrator.
@@ -184,9 +177,9 @@ class WeavingOrchestratorRefactored:
     async def weave(
         self,
         query: Query,
-        pattern_override: Optional[PatternCard] = None,
-        complexity: Optional[ComplexityLevel] = None,
-        auto_enhance: Optional[bool] = None,
+        pattern_override: PatternCard | None = None,
+        complexity: ComplexityLevel | None = None,
+        auto_enhance: bool | None = None,
     ) -> Spacetime:
         """
         Execute the weaving cycle using the appropriate strategy.

@@ -14,11 +14,10 @@ Example:
     >>> enhanced = adapter.enhance(core_prompt, features={'thinking_tags': True})
 """
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Dict, Optional, List
-from pathlib import Path
 import logging
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -86,12 +85,12 @@ class ModelAdapter(ABC):
 
     @property
     @abstractmethod
-    def supported_features(self) -> List[str]:
+    def supported_features(self) -> list[str]:
         """List of supported enhancement features"""
         pass
 
     @abstractmethod
-    def enhance(self, core_prompt: str, features: Optional[Dict[str, bool]] = None) -> str:
+    def enhance(self, core_prompt: str, features: dict[str, bool] | None = None) -> str:
         """
         Apply model-specific enhancements to core prompt.
 
@@ -139,7 +138,7 @@ class ModelAdapter(ABC):
             logger.warning(f"Template not found: {template_path}")
             return ""
 
-        with open(template_path, 'r', encoding='utf-8') as f:
+        with open(template_path, encoding='utf-8') as f:
             content = f.read()
 
         logger.debug(f"Loaded template: {template_name} ({len(content)} chars)")
@@ -190,10 +189,10 @@ class ClaudeAdapter(ModelAdapter):
         return "anthropic"
 
     @property
-    def supported_features(self) -> List[str]:
+    def supported_features(self) -> list[str]:
         return ["thinking_tags", "artifacts", "xml_constraints", "multi_pass_validation"]
 
-    def enhance(self, core_prompt: str, features: Optional[Dict[str, bool]] = None) -> str:
+    def enhance(self, core_prompt: str, features: dict[str, bool] | None = None) -> str:
         """
         Apply Claude-specific enhancements.
 
@@ -417,10 +416,10 @@ class GeminiAdapter(ModelAdapter):
         return "google"
 
     @property
-    def supported_features(self) -> List[str]:
+    def supported_features(self) -> list[str]:
         return ["multimodal", "code_execution", "grounding", "long_context"]
 
-    def enhance(self, core_prompt: str, features: Optional[Dict[str, bool]] = None) -> str:
+    def enhance(self, core_prompt: str, features: dict[str, bool] | None = None) -> str:
         """
         Apply Gemini-specific enhancements.
 
@@ -500,10 +499,10 @@ class GPTAdapter(ModelAdapter):
         return "openai"
 
     @property
-    def supported_features(self) -> List[str]:
+    def supported_features(self) -> list[str]:
         return ["json_mode", "function_calling", "reproducible", "vision"]
 
-    def enhance(self, core_prompt: str, features: Optional[Dict[str, bool]] = None) -> str:
+    def enhance(self, core_prompt: str, features: dict[str, bool] | None = None) -> str:
         """
         Apply GPT-specific enhancements.
 
@@ -593,7 +592,7 @@ def create_adapter(llm_provider: str) -> ModelAdapter:
 
 
 # Convenience function for getting adapter from config
-def create_adapter_from_config(config) -> Optional[ModelAdapter]:
+def create_adapter_from_config(config) -> ModelAdapter | None:
     """
     Create adapter from hololoom Config object.
 

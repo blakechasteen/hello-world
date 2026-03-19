@@ -15,15 +15,16 @@ Research:
 - Myers (1999): Continuous planning and scheduling
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Callable, Any, Tuple
-from enum import Enum
 import logging
-from copy import deepcopy
 import time
+from collections.abc import Callable
+from copy import deepcopy
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 # Import Layer 2 core
-from hololoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action
+from hololoom.planning.planner import Action, Goal, HierarchicalPlanner, Plan
 
 logger = logging.getLogger(__name__)
 
@@ -69,12 +70,12 @@ class ExecutionResult:
     """Result of executing an action."""
     action: Action
     status: ExecutionStatus
-    actual_state: Dict[str, Any]
-    expected_state: Dict[str, Any]
+    actual_state: dict[str, Any]
+    expected_state: dict[str, Any]
     cost: float
     duration: float
     timestamp: float = field(default_factory=time.time)
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     def is_success(self) -> bool:
         """Check if execution succeeded."""
@@ -89,9 +90,9 @@ class ExecutionResult:
 class ExecutionTrace:
     """Complete trace of plan execution."""
     plan: Plan
-    results: List[ExecutionResult] = field(default_factory=list)
+    results: list[ExecutionResult] = field(default_factory=list)
     current_step: int = 0
-    current_state: Dict[str, Any] = field(default_factory=dict)
+    current_state: dict[str, Any] = field(default_factory=dict)
     total_cost: float = 0.0
     total_time: float = 0.0
     start_time: float = field(default_factory=time.time)
@@ -126,7 +127,7 @@ class ExecutionMonitor:
 
     def __init__(self,
                  plan: Plan,
-                 executor: Callable[[Action], Tuple[ExecutionStatus, Dict, float]],
+                 executor: Callable[[Action], tuple[ExecutionStatus, dict, float]],
                  divergence_threshold: float = 0.3,
                  timeout_buffer: float = 0.2):
         """
@@ -153,7 +154,7 @@ class ExecutionMonitor:
     # Action Execution
     # ------------------------------------------------------------------------
 
-    def execute_step(self, action: Action, expected_state: Dict) -> ExecutionResult:
+    def execute_step(self, action: Action, expected_state: dict) -> ExecutionResult:
         """
         Execute single action and monitor result.
 
@@ -214,7 +215,7 @@ class ExecutionMonitor:
     # Divergence Checking
     # ------------------------------------------------------------------------
 
-    def check_divergence(self, expected: Dict, actual: Dict) -> float:
+    def check_divergence(self, expected: dict, actual: dict) -> float:
         """
         Measure state divergence from expected.
 
@@ -266,8 +267,8 @@ class ExecutionMonitor:
         return result.status in [ExecutionStatus.FAILURE, ExecutionStatus.BLOCKED]
 
     def should_replan(self,
-                     deadline: Optional[float] = None,
-                     resources: Optional[Dict[str, float]] = None) -> Optional[ReplanTrigger]:
+                     deadline: float | None = None,
+                     resources: dict[str, float] | None = None) -> ReplanTrigger | None:
         """
         Decide if replanning is needed.
 
@@ -320,7 +321,7 @@ class ExecutionMonitor:
     # Statistics
     # ------------------------------------------------------------------------
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get execution statistics."""
         return {
             'total_steps': self.trace.current_step,
@@ -362,10 +363,10 @@ class ReplanningEngine:
 
     def replan(self,
               trigger: ReplanTrigger,
-              current_state: Dict,
+              current_state: dict,
               goal: Goal,
               original_plan: Plan,
-              failure_step: Optional[int] = None) -> Optional[Plan]:
+              failure_step: int | None = None) -> Plan | None:
         """
         Generate new plan based on trigger.
 
@@ -410,7 +411,7 @@ class ReplanningEngine:
     # Replanning Strategies
     # ------------------------------------------------------------------------
 
-    def _replan_full(self, current_state: Dict, goal: Goal) -> Optional[Plan]:
+    def _replan_full(self, current_state: dict, goal: Goal) -> Plan | None:
         """
         Generate entirely new plan from scratch.
 
@@ -422,9 +423,9 @@ class ReplanningEngine:
 
     def _replan_repair(self,
                       original_plan: Plan,
-                      failure_step: Optional[int],
-                      current_state: Dict,
-                      goal: Goal) -> Optional[Plan]:
+                      failure_step: int | None,
+                      current_state: dict,
+                      goal: Goal) -> Plan | None:
         """
         Repair broken plan minimally.
 
@@ -456,7 +457,7 @@ class ReplanningEngine:
         logger.info(f"Repaired plan: {len(prefix)} kept + {len(suffix_plan.actions)} new")
         return repaired_plan
 
-    def _replan_continuation(self, current_state: Dict, goal: Goal) -> Optional[Plan]:
+    def _replan_continuation(self, current_state: dict, goal: Goal) -> Plan | None:
         """
         Plan continuation from current state.
 
@@ -467,9 +468,9 @@ class ReplanningEngine:
         return self.planner.plan(goal, current_state)
 
     def _replan_opportunistic(self,
-                             current_state: Dict,
+                             current_state: dict,
                              goal: Goal,
-                             original_plan: Plan) -> Optional[Plan]:
+                             original_plan: Plan) -> Plan | None:
         """
         Exploit new opportunities while keeping good parts.
 
@@ -519,8 +520,8 @@ class AdaptivePlanner:
 
     def plan_and_execute(self,
                         goal: Goal,
-                        initial_state: Dict,
-                        deadline: Optional[float] = None) -> ExecutionTrace:
+                        initial_state: dict,
+                        deadline: float | None = None) -> ExecutionTrace:
         """
         Plan, execute, monitor, and replan as needed.
 
@@ -616,9 +617,9 @@ class AdaptivePlanner:
     def _execute_with_monitoring(self,
                                  plan: Plan,
                                  monitor: ExecutionMonitor,
-                                 current_state: Dict,
+                                 current_state: dict,
                                  goal: Goal,
-                                 deadline: Optional[float]) -> ExecutionTrace:
+                                 deadline: float | None) -> ExecutionTrace:
         """Execute plan with continuous monitoring."""
 
         for i, action in enumerate(plan.actions):
@@ -648,7 +649,7 @@ class AdaptivePlanner:
     # Helpers
     # ------------------------------------------------------------------------
 
-    def _check_goal(self, goal: Goal, state: Dict) -> bool:
+    def _check_goal(self, goal: Goal, state: dict) -> bool:
         """Check if goal is satisfied in state."""
         for var, desired_value in goal.desired_state.items():
             actual_value = state.get(var)
@@ -656,7 +657,7 @@ class AdaptivePlanner:
                 return False
         return True
 
-    def _predict_state(self, state: Dict, action: Action) -> Dict:
+    def _predict_state(self, state: dict, action: Action) -> dict:
         """Predict state after action (simple version)."""
         # For now, just copy effects
         # Real system would use causal model

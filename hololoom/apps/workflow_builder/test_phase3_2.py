@@ -11,6 +11,7 @@ Usage:
 
 import asyncio
 import sys
+
 import aiohttp
 
 
@@ -157,7 +158,7 @@ class Phase32Tester:
                         if bottleneck_count > 0:
                             print(f"✓ Bottleneck detection working ({bottleneck_count} detected)")
                         else:
-                            print(f"✓ No bottlenecks detected (queries are well-balanced)")
+                            print("✓ No bottlenecks detected (queries are well-balanced)")
 
                     self.tests_passed += 1
 

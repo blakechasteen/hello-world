@@ -57,15 +57,16 @@ Phase: 11.3 - Plugin Interface (Base Classes)
 
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.engine import DarkTraceEngine
-    from hololoom.dark_trace.plugins.safety_gate import PluginSafetyGate, PluginCapability
-    from hololoom.dark_trace.protocol import TraceLens, CausalValidator, Activations, SteeringVector
+    from hololoom.dark_trace.plugins.safety_gate import PluginCapability, PluginSafetyGate
+    from hololoom.dark_trace.protocol import Activations, CausalValidator, SteeringVector, TraceLens
 
 logger = logging.getLogger("hololoom.dark_trace.plugins.interface")
 
@@ -137,15 +138,15 @@ class PluginMetadata:
     author: str
     description: str
     plugin_type: PluginType
-    dependencies: List[str] = field(default_factory=list)
-    requested_capabilities: List[Union["PluginCapability", str]] = field(default_factory=list)
-    signature: Optional[str] = None
+    dependencies: list[str] = field(default_factory=list)
+    requested_capabilities: list[Union["PluginCapability", str]] = field(default_factory=list)
+    signature: str | None = None
     min_dark_trace_version: str = "1.0.0"
-    tags: List[str] = field(default_factory=list)
-    homepage: Optional[str] = None
-    license: Optional[str] = None
+    tags: list[str] = field(default_factory=list)
+    homepage: str | None = None
+    license: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "name": self.name,
@@ -165,7 +166,7 @@ class PluginMetadata:
             "license": self.license,
         }
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """
         Validate metadata completeness.
 
@@ -202,7 +203,7 @@ class PluginLifecycleEvent:
     event_type: str  # "initialized", "started", "stopped", "error"
     plugin_name: str
     timestamp: datetime = field(default_factory=datetime.now)
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 LifecycleCallback = Callable[[PluginLifecycleEvent], None]
@@ -249,7 +250,7 @@ class DarkTracePlugin(ABC):
     _state: PluginState = PluginState.CREATED
     _engine: Optional["DarkTraceEngine"] = None
     _safety_gate: Optional["PluginSafetyGate"] = None
-    _lifecycle_callbacks: List[LifecycleCallback] = []
+    _lifecycle_callbacks: list[LifecycleCallback] = []
 
     # Flag for built-in plugins (CORE trust level)
     _is_builtin: bool = False
@@ -411,7 +412,7 @@ class LensPlugin(DarkTracePlugin):
     """
 
     @abstractmethod
-    def get_lens_class(self) -> Type["TraceLens"]:
+    def get_lens_class(self) -> type["TraceLens"]:
         """
         Return the TraceLens class implemented by this plugin.
 
@@ -420,7 +421,7 @@ class LensPlugin(DarkTracePlugin):
         """
         pass
 
-    def get_lens_config(self) -> Optional[Dict[str, Any]]:
+    def get_lens_config(self) -> dict[str, Any] | None:
         """
         Return optional configuration for the lens.
 
@@ -450,7 +451,7 @@ class ValidatorPlugin(DarkTracePlugin):
     """
 
     @abstractmethod
-    def get_validator_class(self) -> Type["CausalValidator"]:
+    def get_validator_class(self) -> type["CausalValidator"]:
         """
         Return the CausalValidator class implemented by this plugin.
 
@@ -567,7 +568,7 @@ class SteeringPlugin(DarkTracePlugin):
     async def steer(
         self,
         activations: "Activations",
-        goals: Dict[str, float],
+        goals: dict[str, float],
         safety_gate: "PluginSafetyGate",
     ) -> "SteeringVector":
         """
@@ -635,8 +636,8 @@ class PluginContext:
     """
     engine: "DarkTraceEngine"
     safety_gate: "PluginSafetyGate"
-    trace_id: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    trace_id: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # =============================================================================
@@ -664,14 +665,14 @@ class PluginHook:
     DECEPTION_DETECTED = "deception_detected"
 
 
-HookCallback = Callable[[str, Dict[str, Any]], None]
+HookCallback = Callable[[str, dict[str, Any]], None]
 
 
 class HookRegistry:
     """Registry for plugin hooks."""
 
     def __init__(self) -> None:
-        self._hooks: Dict[str, List[HookCallback]] = {}
+        self._hooks: dict[str, list[HookCallback]] = {}
 
     def register(self, hook_point: str, callback: HookCallback) -> None:
         """Register a callback at a hook point."""
@@ -685,7 +686,7 @@ class HookRegistry:
             if callback in self._hooks[hook_point]:
                 self._hooks[hook_point].remove(callback)
 
-    def emit(self, hook_point: str, data: Dict[str, Any]) -> None:
+    def emit(self, hook_point: str, data: dict[str, Any]) -> None:
         """Emit event to all registered callbacks."""
         if hook_point in self._hooks:
             for callback in self._hooks[hook_point]:
@@ -694,7 +695,7 @@ class HookRegistry:
                 except Exception as e:
                     logger.error(f"Hook callback error at {hook_point}: {e}")
 
-    def clear(self, hook_point: Optional[str] = None) -> None:
+    def clear(self, hook_point: str | None = None) -> None:
         """Clear hooks (all or specific point)."""
         if hook_point:
             self._hooks.pop(hook_point, None)
@@ -706,7 +707,7 @@ class HookRegistry:
 # Built-in Plugin Marker
 # =============================================================================
 
-def builtin_plugin(cls: Type[DarkTracePlugin]) -> Type[DarkTracePlugin]:
+def builtin_plugin(cls: type[DarkTracePlugin]) -> type[DarkTracePlugin]:
     """
     Decorator to mark a plugin as built-in (CORE trust level).
 

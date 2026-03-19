@@ -26,13 +26,13 @@ Configuration:
     - PROMETHEUS_AUTH_PASS: Basic auth password (optional)
 """
 
-import os
 import logging
-from typing import Optional
+import os
 from functools import wraps
-from flask import Flask, Response, request, jsonify
 
-from hololoom.alignment.monitoring import get_global_monitor, AlignmentMonitor
+from flask import Flask, Response, jsonify, request
+
+from hololoom.alignment.monitoring import AlignmentMonitor, get_global_monitor
 
 # Setup logging
 logging.basicConfig(
@@ -171,9 +171,9 @@ def stats():
 
 
 def start_metrics_server(
-    port: Optional[int] = None,
-    host: Optional[str] = None,
-    monitor: Optional[AlignmentMonitor] = None,
+    port: int | None = None,
+    host: str | None = None,
+    monitor: AlignmentMonitor | None = None,
     debug: bool = False
 ):
     """

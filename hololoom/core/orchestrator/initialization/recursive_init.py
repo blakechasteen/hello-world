@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Recursive Learning Initialization
 ==================================
@@ -25,7 +24,7 @@ Date: 2025-11-22
 from __future__ import annotations
 
 import logging
-from typing import Dict, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
@@ -34,7 +33,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def initialize_recursive_learning(orchestrator: 'WeavingOrchestrator') -> None:
+def initialize_recursive_learning(orchestrator: WeavingOrchestrator) -> None:
     """
     Initialize recursive learning components (lazy initialization).
 
@@ -76,21 +75,21 @@ def initialize_recursive_learning(orchestrator: 'WeavingOrchestrator') -> None:
         return  # Already initialized
 
     try:
-        from hololoom.recursive.scratchpad import Scratchpad
-        from hololoom.recursive.loop_integration import PatternLearner
-        from hololoom.recursive.hot_patterns import HotPatternTracker
         from hololoom.recursive.advanced_refinement import AdvancedRefiner
         from hololoom.recursive.full_learning_loop import (
-            ThompsonPriors,
-            PolicyWeights,
             BackgroundLearner,
-            LearningMetrics
+            LearningMetrics,
+            PolicyWeights,
+            ThompsonPriors,
         )
+        from hololoom.recursive.hot_patterns import HotPatternTracker
+        from hololoom.recursive.loop_integration import PatternLearner
+        from hololoom.recursive.scratchpad import Scratchpad
 
         logger.info("Initializing recursive learning components...")
 
         # Components dictionary
-        components: Dict[str, Any] = {}
+        components: dict[str, Any] = {}
 
         # 1. Scratchpad (Phase 1)
         if orchestrator.cfg.recursive_learning_enable_scratchpad:

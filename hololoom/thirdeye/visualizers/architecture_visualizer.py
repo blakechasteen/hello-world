@@ -12,10 +12,10 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, Any, List, Optional, Tuple
-from dataclasses import dataclass, field
 import re
+from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class ComponentType(Enum):
@@ -51,9 +51,9 @@ class ArchComponent:
     component_type: ComponentType
     description: str = ""
     layer: int = 0  # Vertical layer (0=top, increases downward)
-    position: Dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0, "z": 0})
-    children: List[str] = field(default_factory=list)  # Child component IDs
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    position: dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0, "z": 0})
+    children: list[str] = field(default_factory=list)  # Child component IDs
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -72,9 +72,9 @@ class ArchConnection:
 class Architecture:
     """Complete architecture diagram."""
     name: str
-    components: List[ArchComponent]
-    connections: List[ArchConnection]
-    layers: List[str] = field(default_factory=list)  # Layer names top to bottom
+    components: list[ArchComponent]
+    connections: list[ArchConnection]
+    layers: list[str] = field(default_factory=list)  # Layer names top to bottom
 
 
 # Component type styling
@@ -281,8 +281,8 @@ class ArchitectureExtractor:
             connections=connections
         )
 
-    def _infer_layers(self, components: List[ArchComponent],
-                      connections: List[ArchConnection]) -> None:
+    def _infer_layers(self, components: list[ArchComponent],
+                      connections: list[ArchConnection]) -> None:
         """Infer architectural layers from component types."""
         # Default layer ordering
         layer_order = {
@@ -302,7 +302,7 @@ class ArchitectureExtractor:
         for comp in components:
             comp.layer = layer_order.get(comp.component_type, 2)
 
-    def _position_components(self, components: List[ArchComponent]) -> None:
+    def _position_components(self, components: list[ArchComponent]) -> None:
         """Position components in 3D space based on layers."""
         # Group by layer
         layers = {}
@@ -335,7 +335,7 @@ class ArchitectureExtractor:
 class ArchitectureSceneBuilder:
     """Build 3D scene data for architecture visualization."""
 
-    def build_scene(self, arch: Architecture) -> Dict[str, Any]:
+    def build_scene(self, arch: Architecture) -> dict[str, Any]:
         """Convert architecture to 3D scene representation."""
         elements = []
 
@@ -372,7 +372,7 @@ class ArchitectureSceneBuilder:
             }
         }
 
-    def _build_component(self, comp: ArchComponent) -> Dict[str, Any]:
+    def _build_component(self, comp: ArchComponent) -> dict[str, Any]:
         """Build component element."""
         style = COMPONENT_STYLES.get(comp.component_type, COMPONENT_STYLES[ComponentType.SERVICE])
 
@@ -397,7 +397,7 @@ class ArchitectureSceneBuilder:
         }
 
     def _build_connection(self, conn: ArchConnection,
-                         source: ArchComponent, target: ArchComponent) -> Dict[str, Any]:
+                         source: ArchComponent, target: ArchComponent) -> dict[str, Any]:
         """Build connection element."""
         style = CONNECTION_STYLES.get(conn.connection_type, CONNECTION_STYLES[ConnectionType.DATA])
 
@@ -419,7 +419,7 @@ class ArchitectureSceneBuilder:
             }
         }
 
-    def _build_layer_label(self, layer: int, components: List[ArchComponent]) -> Dict[str, Any]:
+    def _build_layer_label(self, layer: int, components: list[ArchComponent]) -> dict[str, Any]:
         """Build layer label element."""
         layer_names = {
             0: 'Presentation',
@@ -450,7 +450,7 @@ class ArchitectureSceneBuilder:
             }
         }
 
-    def _get_camera_settings(self, arch: Architecture) -> Dict[str, Any]:
+    def _get_camera_settings(self, arch: Architecture) -> dict[str, Any]:
         """Get appropriate camera settings for the architecture."""
         if not arch.components:
             return {
@@ -479,7 +479,7 @@ class ArchitectureSceneBuilder:
         }
 
 
-def extract_architecture_from_text(text: str) -> Dict[str, Any]:
+def extract_architecture_from_text(text: str) -> dict[str, Any]:
     """Main entry point: extract architecture and build scene from text."""
     extractor = ArchitectureExtractor()
     builder = ArchitectureSceneBuilder()

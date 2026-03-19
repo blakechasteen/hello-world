@@ -18,27 +18,20 @@ Author: Claude Code
 Date: January 2025
 """
 
-import asyncio
 import json
-from pathlib import Path
-from typing import Dict, Set
 import logging
-
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-import uvicorn
 
 # HoloLoom imports
 import sys
+from pathlib import Path
+
+import uvicorn
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from hololoom.spinningWheel.voice_correction import (
-    VoiceCorrector,
-    SelfTuningEngine,
-    IntentParser
-)
-
+from hololoom.spinningWheel.voice_correction import IntentParser, SelfTuningEngine, VoiceCorrector
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -52,8 +45,8 @@ app = FastAPI(title="Voice Correction Server")
 # Global state
 voice_corrector: VoiceCorrector = None
 tuning_engine: SelfTuningEngine = None
-active_connections: Set[WebSocket] = set()
-transformation_cache: Dict[str, Dict] = {}
+active_connections: set[WebSocket] = set()
+transformation_cache: dict[str, dict] = {}
 
 
 @app.on_event("startup")
@@ -126,7 +119,7 @@ async def websocket_endpoint(websocket: WebSocket):
         active_connections.discard(websocket)
 
 
-async def handle_voice_command(websocket: WebSocket, message: Dict):
+async def handle_voice_command(websocket: WebSocket, message: dict):
     """Handle voice command processing."""
     command = message['command']
     transformation_id = message.get('transformation_id')
@@ -188,7 +181,7 @@ async def handle_voice_command(websocket: WebSocket, message: Dict):
         })
 
 
-async def handle_apply_correction(websocket: WebSocket, message: Dict):
+async def handle_apply_correction(websocket: WebSocket, message: dict):
     """Handle applying a correction."""
     command = message['command']
     transformation_id = message.get('transformation_id')
@@ -242,7 +235,7 @@ async def handle_get_patterns(websocket: WebSocket):
     })
 
 
-def get_stats() -> Dict:
+def get_stats() -> dict:
     """Get current statistics."""
     total_corrections = len(voice_corrector.corrections)
     total_patterns = len(tuning_engine.patterns)
@@ -262,7 +255,7 @@ def get_stats() -> Dict:
     }
 
 
-async def broadcast(message: Dict):
+async def broadcast(message: dict):
     """Broadcast message to all connected clients."""
     for connection in active_connections:
         try:
@@ -272,7 +265,7 @@ async def broadcast(message: Dict):
 
 
 @app.post("/api/transformation")
-async def register_transformation(data: Dict):
+async def register_transformation(data: dict):
     """Register a transformation for voice correction."""
     transformation_id = data['transformation_id']
     extracted_data = data['extracted_data']

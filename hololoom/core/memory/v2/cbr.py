@@ -22,13 +22,12 @@ Graph-native: cases are stored as graph nodes with SIMILAR_CASE edges.
 No external dependencies.
 """
 
-import json
 import logging
 import math
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .knowledge_source import Phase
 
@@ -46,7 +45,7 @@ class CBRConfig:
     max_retrieve: int = 3               # Top-K cases to retrieve
     min_similarity: float = 0.7         # Minimum similarity to retrieve
     min_reward_to_retain: float = 0.5   # Only retain successful cases
-    feature_weights: Dict[str, float] = field(default_factory=lambda: {
+    feature_weights: dict[str, float] = field(default_factory=lambda: {
         "query_length": 1.0,
         "seed_count": 1.5,              # Seed structure matters most
         "ppr_entropy": 1.2,
@@ -62,16 +61,16 @@ class Case:
     """A stored (problem, solution, outcome) triple."""
     case_id: str
     query: str
-    features: Dict[str, float]
+    features: dict[str, float]
     preset_id: str
     reward: float
     response_summary: str           # First 200 chars of response
     shell_count: int
-    node_id: Optional[str] = None   # Graph node ID (if stored)
+    node_id: str | None = None   # Graph node ID (if stored)
     retrieval_count: int = 0        # How often this case was retrieved
     avg_reuse_reward: float = 0.0   # Average reward when this case was reused
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "case_id": self.case_id,
             "query": self.query[:80],
@@ -82,7 +81,7 @@ class Case:
             "retrieval_count": self.retrieval_count,
         }
 
-    def to_snapshot(self) -> Dict[str, Any]:
+    def to_snapshot(self) -> dict[str, Any]:
         """Full serialization for persistence."""
         return {
             "case_id": self.case_id,
@@ -98,7 +97,7 @@ class Case:
         }
 
     @classmethod
-    def from_snapshot(cls, d: Dict[str, Any]) -> "Case":
+    def from_snapshot(cls, d: dict[str, Any]) -> "Case":
         """Reconstruct Case from snapshot dict."""
         return cls(
             case_id=d["case_id"],
@@ -138,9 +137,9 @@ class CBRSystem:
         # CBR automatically retrieves and retains cases
     """
 
-    def __init__(self, config: Optional[CBRConfig] = None):
+    def __init__(self, config: CBRConfig | None = None):
         self._config = config or CBRConfig()
-        self._cases: List[Case] = []
+        self._cases: list[Case] = []
 
     @property
     def name(self) -> str:
@@ -156,7 +155,7 @@ class CBRSystem:
             return 0.7
         return 0.1  # Still active to start retaining
 
-    def contribute(self, blackboard: Any, graph: Any, context: Dict[str, Any]) -> None:
+    def contribute(self, blackboard: Any, graph: Any, context: dict[str, Any]) -> None:
         """Route to appropriate phase handler."""
         if "nav_result" in context and "confidence" not in context:
             # POST_NAVIGATE: retrieve similar cases
@@ -175,7 +174,7 @@ class CBRSystem:
             return
 
         features = blackboard.context_features()
-        scored: List[Tuple[float, Case]] = []
+        scored: list[tuple[float, Case]] = []
 
         for case in self._cases:
             sim = self._similarity(features, case.features)
@@ -204,7 +203,7 @@ class CBRSystem:
                 len(hints), top_cases[0][0],
             )
 
-    def _similarity(self, a: Dict[str, float], b: Dict[str, float]) -> float:
+    def _similarity(self, a: dict[str, float], b: dict[str, float]) -> float:
         """Weighted Euclidean distance converted to similarity [0, 1]."""
         weights = self._config.feature_weights
         sq_sum = 0.0
@@ -329,13 +328,13 @@ class CBRSystem:
     # Public API
     # =========================================================================
 
-    def to_snapshot(self) -> Dict[str, Any]:
+    def to_snapshot(self) -> dict[str, Any]:
         """Serialize case library for persistence."""
         return {
             "cases": [c.to_snapshot() for c in self._cases],
         }
 
-    def from_snapshot(self, data: Dict[str, Any]) -> None:
+    def from_snapshot(self, data: dict[str, Any]) -> None:
         """Restore case library from snapshot dict."""
         self._cases.clear()
         for case_dict in data.get("cases", []):
@@ -343,14 +342,14 @@ class CBRSystem:
         logger.info("CBR: loaded %d cases from snapshot", len(self._cases))
 
     @property
-    def cases(self) -> List[Case]:
+    def cases(self) -> list[Case]:
         return list(self._cases)
 
     @property
     def case_count(self) -> int:
         return len(self._cases)
 
-    def report(self) -> Dict[str, Any]:
+    def report(self) -> dict[str, Any]:
         """Diagnostic info about CBR state."""
         return {
             "total_cases": len(self._cases),

@@ -24,11 +24,12 @@ import os
 import random
 import time
 from collections import defaultdict
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple
+from typing import Any
 
-from .orchestrator import ShellConfig, ShellType, DEFAULT_SHELLS
+from .orchestrator import DEFAULT_SHELLS, ShellConfig, ShellType
 
 logger = logging.getLogger(__name__)
 
@@ -66,14 +67,14 @@ class TrainingExample:
 class AuditSummary:
     """Aggregated statistics from collected audit entries."""
     total: int
-    by_shell: Dict[str, int]
-    by_decision: Dict[str, int]
+    by_shell: dict[str, int]
+    by_decision: dict[str, int]
     avg_confidence: float
     avg_reward: float
     avg_duration_ms: float
     good_rate: float              # fraction with reward > 0.6
     poor_rate: float              # fraction with reward < 0.4
-    examples: List[TrainingExample]
+    examples: list[TrainingExample]
 
 
 # =============================================================================
@@ -191,11 +192,11 @@ class ParameterBandit:
         bandit.update(idx, reward=0.85)
     """
 
-    def __init__(self, name: str, candidates: List[float]):
+    def __init__(self, name: str, candidates: list[float]):
         self.name = name
         self.arms = [BanditArm(value=v) for v in candidates]
 
-    def select(self) -> Tuple[int, float]:
+    def select(self) -> tuple[int, float]:
         """Thompson sample: pick the arm with highest posterior sample."""
         samples = [arm.sample() for arm in self.arms]
         idx = max(range(len(samples)), key=lambda i: samples[i])
@@ -205,12 +206,12 @@ class ParameterBandit:
         """Update arm posterior from observed reward."""
         self.arms[idx].update(reward)
 
-    def best(self) -> Tuple[int, float]:
+    def best(self) -> tuple[int, float]:
         """Return arm with highest posterior mean (exploitation)."""
         idx = max(range(len(self.arms)), key=lambda i: self.arms[i].mean)
         return idx, self.arms[idx].value
 
-    def train_from_examples(self, examples: List[TrainingExample], value_fn: Callable[[TrainingExample], float]):
+    def train_from_examples(self, examples: list[TrainingExample], value_fn: Callable[[TrainingExample], float]):
         """Batch training: assign each example to the closest arm, update."""
         for ex in examples:
             current_value = value_fn(ex)
@@ -219,7 +220,7 @@ class ParameterBandit:
                               key=lambda i: abs(self.arms[i].value - current_value))
             self.arms[closest_idx].update(ex.reward)
 
-    def report(self) -> List[Dict[str, Any]]:
+    def report(self) -> list[dict[str, Any]]:
         """Report arm statistics."""
         return [
             {
@@ -284,7 +285,7 @@ class PromptRefiner:
         self,
         shell_type: ShellType,
         current_template: str,
-        examples: List[TrainingExample],
+        examples: list[TrainingExample],
         max_examples: int = 5,
     ) -> RefinementResult:
         """Run the refinement loop for a shell's prompt template."""
@@ -347,7 +348,7 @@ class PromptRefiner:
         self,
         shell_type: ShellType,
         template: str,
-        examples: List[TrainingExample],
+        examples: list[TrainingExample],
     ) -> str:
         examples_text = "\n".join(
             f"  Query: {e.query[:80]}\n  Reward: {e.reward:.2f}, Confidence: {e.confidence:.2f}"
@@ -367,7 +368,7 @@ class PromptRefiner:
         shell_type: ShellType,
         template: str,
         critique: str,
-        examples: List[TrainingExample],
+        examples: list[TrainingExample],
     ) -> str:
         prompt = (
             f"Improve this {shell_type.value} shell prompt template.\n\n"
@@ -389,7 +390,7 @@ class PromptRefiner:
         shell_type: ShellType,
         original: str,
         improved: str,
-        examples: List[TrainingExample],
+        examples: list[TrainingExample],
     ) -> float:
         prompt = (
             f"Rate the improvement of this prompt template on a scale of 0.0 to 1.0.\n\n"
@@ -419,10 +420,10 @@ class Signature:
     with an instruction that we optimize.
     """
     name: str
-    input_fields: List[str]       # e.g., ["context", "query"]
-    output_fields: List[str]      # e.g., ["response"]
+    input_fields: list[str]       # e.g., ["context", "query"]
+    output_fields: list[str]      # e.g., ["response"]
     instruction: str              # The part we optimize
-    demonstrations: List[Dict[str, str]] = field(default_factory=list)
+    demonstrations: list[dict[str, str]] = field(default_factory=list)
 
 
 class SignatureOptimizer:
@@ -460,7 +461,7 @@ class SignatureOptimizer:
     async def optimize(
         self,
         signature: Signature,
-        examples: List[TrainingExample],
+        examples: list[TrainingExample],
     ) -> Signature:
         """Generate and evaluate instruction candidates."""
         if not examples:
@@ -505,9 +506,9 @@ class SignatureOptimizer:
     async def _bootstrap_instructions(
         self,
         signature: Signature,
-        good: List[TrainingExample],
-        poor: List[TrainingExample],
-    ) -> List[str]:
+        good: list[TrainingExample],
+        poor: list[TrainingExample],
+    ) -> list[str]:
         """Generate candidate instructions by asking LLM to generalize from examples."""
         good_text = "\n".join(
             f"  Query: {e.query[:60]}  Reward: {e.reward:.2f}"
@@ -546,7 +547,7 @@ class SignatureOptimizer:
         self,
         signature: Signature,
         instruction: str,
-        examples: List[TrainingExample],
+        examples: list[TrainingExample],
     ) -> float:
         """Score an instruction against training examples.
 
@@ -571,9 +572,9 @@ class SignatureOptimizer:
 
     def _select_demonstrations(
         self,
-        good_examples: List[TrainingExample],
+        good_examples: list[TrainingExample],
         max_demos: int = 3,
-    ) -> List[Dict[str, str]]:
+    ) -> list[dict[str, str]]:
         """Select diverse high-reward examples as few-shot demonstrations."""
         if not good_examples:
             return []
@@ -597,14 +598,14 @@ class SignatureOptimizer:
 @dataclass
 class OptimizationResult:
     """Output from a full training pipeline run."""
-    shell_configs: Dict[ShellType, ShellConfig]
-    refinements: List[RefinementResult]
-    bandit_reports: Dict[str, List[Dict[str, Any]]]
-    signature_updates: Dict[str, Signature]
+    shell_configs: dict[ShellType, ShellConfig]
+    refinements: list[RefinementResult]
+    bandit_reports: dict[str, list[dict[str, Any]]]
+    signature_updates: dict[str, Signature]
     summary: AuditSummary
     elapsed_seconds: float
 
-    def changes(self) -> List[str]:
+    def changes(self) -> list[str]:
         """Summarize what changed."""
         changes = []
         for name, report in self.bandit_reports.items():
@@ -644,8 +645,8 @@ class TrainingPipeline:
 
     def __init__(
         self,
-        llm_fn: Optional[Callable[[str, int], Coroutine[Any, Any, str]]] = None,
-        base_configs: Optional[Dict[ShellType, ShellConfig]] = None,
+        llm_fn: Callable[[str, int], Coroutine[Any, Any, str]] | None = None,
+        base_configs: dict[ShellType, ShellConfig] | None = None,
         enable_prompt_refinement: bool = True,
         enable_signature_optimization: bool = True,
     ):
@@ -657,7 +658,7 @@ class TrainingPipeline:
         # Initialize parameter bandits
         self.bandits = self._init_bandits()
 
-    def _init_bandits(self) -> Dict[str, ParameterBandit]:
+    def _init_bandits(self) -> dict[str, ParameterBandit]:
         """Create Thompson Sampling bandits for key parameters."""
         return {
             "prime.alpha": ParameterBandit("prime.alpha",
@@ -763,7 +764,7 @@ class TrainingPipeline:
             elif name.startswith("confidence."):
                 bandit.train_from_examples([example], self._value_fn_for(name))
 
-    def get_configs(self) -> Dict[ShellType, ShellConfig]:
+    def get_configs(self) -> dict[ShellType, ShellConfig]:
         """Get current best configs from bandit posteriors."""
         return self._build_configs()
 
@@ -771,14 +772,14 @@ class TrainingPipeline:
     # Internal
     # =========================================================================
 
-    def _train_bandits(self, examples: List[TrainingExample]):
+    def _train_bandits(self, examples: list[TrainingExample]):
         """Batch-train all bandits from examples."""
         for name, bandit in self.bandits.items():
             relevant = self._filter_examples(name, examples)
             if relevant:
                 bandit.train_from_examples(relevant, self._value_fn_for(name))
 
-    def _filter_examples(self, bandit_name: str, examples: List[TrainingExample]) -> List[TrainingExample]:
+    def _filter_examples(self, bandit_name: str, examples: list[TrainingExample]) -> list[TrainingExample]:
         """Filter examples relevant to a specific bandit."""
         prefix = bandit_name.split(".")[0]
         if prefix in ("prime", "verify", "flag"):
@@ -797,7 +798,7 @@ class TrainingPipeline:
         }
         return mapping.get(bandit_name, lambda e: 0.5)
 
-    def _build_configs(self) -> Dict[ShellType, ShellConfig]:
+    def _build_configs(self) -> dict[ShellType, ShellConfig]:
         """Build shell configs from current bandit posteriors."""
         configs = {}
         for shell_type, base in self.base_configs.items():
@@ -902,7 +903,7 @@ class RewardJudge:
 
     def __init__(
         self,
-        llm_fn: Optional[Callable[[str, int], Coroutine[Any, Any, str]]] = None,
+        llm_fn: Callable[[str, int], Coroutine[Any, Any, str]] | None = None,
         structural_weight: float = 0.3,
         substance_weight: float = 0.2,
         llm_weight: float = 0.5,
@@ -1039,14 +1040,14 @@ class ContextualBanditAdapter:
     def __init__(
         self,
         policy=None,  # Optional NeuralThompsonPolicy
-        fallback_bandits: Optional[Dict[str, "ParameterBandit"]] = None,
-        presets: Optional[List[Dict]] = None,
+        fallback_bandits: dict[str, "ParameterBandit"] | None = None,
+        presets: list[dict] | None = None,
     ):
         self._policy = policy  # NeuralThompsonPolicy or None
         self._fallback = fallback_bandits  # Dict[str, ParameterBandit]
         self._presets = presets or CONFIG_PRESETS
-        self._last_action_id: Optional[str] = None
-        self._last_context_id: Optional[str] = None
+        self._last_action_id: str | None = None
+        self._last_context_id: str | None = None
         self._numpy = None
 
         # Try to import numpy for context vector
@@ -1061,7 +1062,7 @@ class ContextualBanditAdapter:
         """Whether the neural contextual bandit is available."""
         return self._policy is not None and self._numpy is not None
 
-    def select_config(self, blackboard) -> Dict[ShellType, ShellConfig]:
+    def select_config(self, blackboard) -> dict[ShellType, ShellConfig]:
         """Select shell configs based on query context.
 
         Uses NeuralThompsonPolicy if available, else falls back to
@@ -1105,10 +1106,10 @@ class ContextualBanditAdapter:
                                               key=lambda i: abs(b.arms[i].value - preset["budget"]))
                                 b.update(closest, reward)
 
-    def _select_contextual(self, blackboard) -> Dict[ShellType, ShellConfig]:
+    def _select_contextual(self, blackboard) -> dict[ShellType, ShellConfig]:
         """Select config using NeuralThompsonPolicy."""
         np = self._numpy
-        from hololoom.bandits.neural_ts.types import Context, Action
+        from hololoom.bandits.neural_ts.types import Action, Context
 
         # Extract context features from blackboard
         features = blackboard.context_features()
@@ -1141,7 +1142,7 @@ class ContextualBanditAdapter:
         # Convert to ShellConfigs
         return self._preset_to_configs(chosen.id)
 
-    def _select_fallback(self) -> Dict[ShellType, ShellConfig]:
+    def _select_fallback(self) -> dict[ShellType, ShellConfig]:
         """Select config using simple ParameterBandit (no context)."""
         configs = {}
         for shell_type, base in DEFAULT_SHELLS.items():
@@ -1169,7 +1170,7 @@ class ContextualBanditAdapter:
 
         return configs
 
-    def _preset_to_configs(self, preset_id: str) -> Dict[ShellType, ShellConfig]:
+    def _preset_to_configs(self, preset_id: str) -> dict[ShellType, ShellConfig]:
         """Convert a preset ID to shell configs."""
         preset = self._get_preset(preset_id)
         if not preset:
@@ -1189,14 +1190,14 @@ class ContextualBanditAdapter:
 
         return configs
 
-    def _get_preset(self, preset_id: str) -> Optional[Dict]:
+    def _get_preset(self, preset_id: str) -> dict | None:
         """Look up a preset by ID."""
         for p in self._presets:
             if p["id"] == preset_id:
                 return p
         return None
 
-    def report(self) -> Dict[str, Any]:
+    def report(self) -> dict[str, Any]:
         """Get diagnostic info about the contextual bandit state."""
         info = {
             "has_neural_policy": self.has_neural_policy,

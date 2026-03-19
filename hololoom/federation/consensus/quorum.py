@@ -14,13 +14,11 @@ Characteristics:
 
 from __future__ import annotations
 
-import asyncio
 import uuid
-from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime
 from difflib import SequenceMatcher
-from typing import Any, Dict, FrozenSet, List, Optional, Set
+from typing import Any
 
 from hololoom.federation.types import Response
 
@@ -31,7 +29,6 @@ from .protocol import (
     ResponseConsensusProtocol,
     ResponseConsensusResult,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  PROPOSAL TRACKING
@@ -45,10 +42,10 @@ class Proposal:
     proposal_id: str
     value: Any
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    votes_for: Set[str] = field(default_factory=set)
-    votes_against: Set[str] = field(default_factory=set)
+    votes_for: set[str] = field(default_factory=set)
+    votes_against: set[str] = field(default_factory=set)
     finalized: bool = False
-    result: Optional[ConsensusResult] = None
+    result: ConsensusResult | None = None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -95,7 +92,7 @@ class QuorumConsensus(ConsensusProtocol):
         self._threshold = threshold
         self._min_votes = min_votes
         self._timeout = timeout_seconds
-        self._proposals: Dict[str, Proposal] = {}
+        self._proposals: dict[str, Proposal] = {}
 
     # ───────────────────────────────────────────────────────────────────────────
     #  PROTOCOL PROPERTIES
@@ -200,7 +197,7 @@ class QuorumConsensus(ConsensusProtocol):
         proposal.result = result
         return result
 
-    async def get_state(self) -> Dict[str, Any]:
+    async def get_state(self) -> dict[str, Any]:
         """Get current protocol state."""
         base = await super().get_state()
         base.update({
@@ -241,8 +238,8 @@ class ResponseQuorumConsensus(ResponseConsensusProtocol):
         self._min_votes = min_votes
         self._similarity_threshold = similarity_threshold
         self._min_confidence = min_confidence
-        self._proposals: Dict[str, Proposal] = {}
-        self._responses: Dict[str, List[Response]] = {}
+        self._proposals: dict[str, Proposal] = {}
+        self._responses: dict[str, list[Response]] = {}
 
     # ───────────────────────────────────────────────────────────────────────────
     #  PROTOCOL PROPERTIES
@@ -306,7 +303,7 @@ class ResponseQuorumConsensus(ResponseConsensusProtocol):
     async def collect_responses(
         self,
         proposal_id: str,
-        responses: List[Response],
+        responses: list[Response],
     ) -> ResponseConsensusResult:
         """
         Collect multiple responses and determine consensus.
@@ -382,13 +379,13 @@ class ResponseQuorumConsensus(ResponseConsensusProtocol):
     #  CLUSTERING & MERGING
     # ───────────────────────────────────────────────────────────────────────────
 
-    def _cluster_responses(self, responses: List[Response]) -> List[List[Response]]:
+    def _cluster_responses(self, responses: list[Response]) -> list[list[Response]]:
         """Cluster responses by text similarity."""
         if not responses:
             return []
 
-        clusters: List[List[Response]] = []
-        assigned: Set[int] = set()
+        clusters: list[list[Response]] = []
+        assigned: set[int] = set()
 
         for i, response in enumerate(responses):
             if i in assigned:
@@ -416,7 +413,7 @@ class ResponseQuorumConsensus(ResponseConsensusProtocol):
             return 0.0
         return SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
-    def _merge_responses(self, responses: List[Response]) -> Optional[Response]:
+    def _merge_responses(self, responses: list[Response]) -> Response | None:
         """Merge cluster of responses - pick highest confidence."""
         if not responses:
             return None

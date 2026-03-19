@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Stage Executor Classes - Protocol-Based Implementations
 ========================================================
@@ -37,18 +36,18 @@ Date: 2025-12-09
 """
 
 # Steps 0-3 executors
-from .meta_prompt_executor import MetaPromptExecutor
-from .pattern_executor import PatternSelectionExecutor
 from .chrono_executor import ChronoTriggerExecutor
-from .thread_executor import ThreadSelectionExecutor
-
-# Steps 4-6 executor
-from .parallel_executor import ParallelFeatureExecutor
 
 # Steps 7-9 executors
 from .convergence_executor import ConvergenceExecutor
-from .tool_executor import ToolExecutionExecutor
+from .meta_prompt_executor import MetaPromptExecutor
+
+# Steps 4-6 executor
+from .parallel_executor import ParallelFeatureExecutor
+from .pattern_executor import PatternSelectionExecutor
 from .spacetime_executor import SpacetimeExecutor
+from .thread_executor import ThreadSelectionExecutor
+from .tool_executor import ToolExecutionExecutor
 
 __all__ = [
     # Steps 0-3

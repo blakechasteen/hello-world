@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Protocol-Based Pipeline Factory - Dependency Injection for Orchestrator
 ========================================================================
@@ -24,33 +23,34 @@ Date: 2025-12-11
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
-from typing import Optional, List, Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from hololoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
     from hololoom.config import Config
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     from hololoom.loom.command import LoomCommand
     from hololoom.memory.graph import KG
-    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     from hololoom.tools.executor import ToolExecutor
-    from hololoom.alignment.safety_guardrails import SafetyGuardrails
-    from hololoom.alignment.audit_trail import AuditTrail
 
-from hololoom.orchestrator.protocols import (
-    PatternSelectorProtocol,
-    ThreadSelectorProtocol,
-    FeatureExtractorProtocol,
-    ConvergenceProtocol,
-    ToolExecutorProtocol,
-    SpacetimeAssemblerProtocol,
-    DefaultPatternSelector,
-    DefaultThreadSelector,
-    DefaultFeatureExtractor,
-    DefaultConvergence,
-    DefaultToolExecutor,
-    DefaultSpacetimeAssembler,
-)
 from hololoom.orchestrator.pipeline import ExecutorPipeline
+from hololoom.orchestrator.protocols import (
+    ConvergenceProtocol,
+    DefaultConvergence,
+    DefaultFeatureExtractor,
+    DefaultPatternSelector,
+    DefaultSpacetimeAssembler,
+    DefaultThreadSelector,
+    DefaultToolExecutor,
+    FeatureExtractorProtocol,
+    PatternSelectorProtocol,
+    SpacetimeAssemblerProtocol,
+    ThreadSelectorProtocol,
+    ToolExecutorProtocol,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -84,12 +84,12 @@ class OrchestratorComponents:
         >>> orchestrator = create_orchestrator_from_protocols(components, cfg=config)
     """
 
-    pattern_selector: Optional[PatternSelectorProtocol] = None
-    thread_selector: Optional[ThreadSelectorProtocol] = None
-    feature_extractor: Optional[FeatureExtractorProtocol] = None
-    convergence: Optional[ConvergenceProtocol] = None
-    tool_executor: Optional[ToolExecutorProtocol] = None
-    spacetime_assembler: Optional[SpacetimeAssemblerProtocol] = None
+    pattern_selector: PatternSelectorProtocol | None = None
+    thread_selector: ThreadSelectorProtocol | None = None
+    feature_extractor: FeatureExtractorProtocol | None = None
+    convergence: ConvergenceProtocol | None = None
+    tool_executor: ToolExecutorProtocol | None = None
+    spacetime_assembler: SpacetimeAssemblerProtocol | None = None
 
     def is_complete(self) -> bool:
         """
@@ -107,7 +107,7 @@ class OrchestratorComponents:
             self.spacetime_assembler is not None,
         ])
 
-    def missing_components(self) -> List[str]:
+    def missing_components(self) -> list[str]:
         """
         Get list of missing component names.
 
@@ -144,20 +144,20 @@ class OrchestratorComponents:
 
 
 def create_component_defaults(
-    cfg: 'Config',
-    loom_command: 'LoomCommand',
-    yarn_graph: 'KG',
-    embedder: 'MatryoshkaEmbeddings',
+    cfg: Config,
+    loom_command: LoomCommand,
+    yarn_graph: KG,
+    embedder: MatryoshkaEmbeddings,
     policy: Any,
-    tool_executor: 'ToolExecutor',
-    memory: Optional[Any] = None,
-    retriever: Optional[Any] = None,
-    guardrails: Optional['SafetyGuardrails'] = None,
-    audit_trail: Optional['AuditTrail'] = None,
-    semantic_cache: Optional[Any] = None,
-    dashboard_constructor: Optional[Any] = None,
-    awareness_context: Optional[dict] = None,
-    logger: Optional[logging.Logger] = None,
+    tool_executor: ToolExecutor,
+    memory: Any | None = None,
+    retriever: Any | None = None,
+    guardrails: SafetyGuardrails | None = None,
+    audit_trail: AuditTrail | None = None,
+    semantic_cache: Any | None = None,
+    dashboard_constructor: Any | None = None,
+    awareness_context: dict | None = None,
+    logger: logging.Logger | None = None,
 ) -> OrchestratorComponents:
     """
     Factory for creating default protocol implementations.
@@ -241,15 +241,15 @@ def create_component_defaults(
 
 def create_orchestrator_from_protocols(
     components: OrchestratorComponents,
-    cfg: 'Config',
+    cfg: Config,
     enable_shuttle: bool = False,
-    shuttle_stage: Optional[Any] = None,
-    gradient_router: Optional[Any] = None,
-    multipass_memory_crawl: Optional[Callable] = None,
-    linguistic_gate: Optional[Any] = None,
-    logger: Optional[logging.Logger] = None,
-    emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
-) -> 'ProtocolOrchestrator':
+    shuttle_stage: Any | None = None,
+    gradient_router: Any | None = None,
+    multipass_memory_crawl: Callable | None = None,
+    linguistic_gate: Any | None = None,
+    logger: logging.Logger | None = None,
+    emit_stage_event: Callable[[int, str, float], None] | None = None,
+) -> ProtocolOrchestrator:
     """
     Create an orchestrator using protocol-based components.
 
@@ -323,14 +323,14 @@ class ProtocolOrchestrator:
     def __init__(
         self,
         components: OrchestratorComponents,
-        cfg: 'Config',
+        cfg: Config,
         enable_shuttle: bool = False,
-        shuttle_stage: Optional[Any] = None,
-        gradient_router: Optional[Any] = None,
-        multipass_memory_crawl: Optional[Callable] = None,
-        linguistic_gate: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
-        emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+        shuttle_stage: Any | None = None,
+        gradient_router: Any | None = None,
+        multipass_memory_crawl: Callable | None = None,
+        linguistic_gate: Any | None = None,
+        logger: logging.Logger | None = None,
+        emit_stage_event: Callable[[int, str, float], None] | None = None,
     ):
         """Initialize the protocol orchestrator."""
         self.components = components
@@ -343,7 +343,7 @@ class ProtocolOrchestrator:
         self.logger = logger or logging.getLogger(__name__)
         self.emit_stage_event = emit_stage_event
 
-    async def orchestrate(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def orchestrate(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute the full weaving cycle using protocol components.
 
@@ -440,16 +440,16 @@ class ProtocolOrchestrator:
 
 def create_pipeline_with_protocols(
     components: OrchestratorComponents,
-    cfg: 'Config',
+    cfg: Config,
     enable_shuttle: bool = False,
-    shuttle_stage: Optional[Any] = None,
-    gradient_router: Optional[Any] = None,
-    multipass_memory_crawl: Optional[Callable] = None,
-    linguistic_gate: Optional[Any] = None,
-    guardrails: Optional['SafetyGuardrails'] = None,
-    audit_trail: Optional['AuditTrail'] = None,
-    logger: Optional[logging.Logger] = None,
-    emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+    shuttle_stage: Any | None = None,
+    gradient_router: Any | None = None,
+    multipass_memory_crawl: Callable | None = None,
+    linguistic_gate: Any | None = None,
+    guardrails: SafetyGuardrails | None = None,
+    audit_trail: AuditTrail | None = None,
+    logger: logging.Logger | None = None,
+    emit_stage_event: Callable[[int, str, float], None] | None = None,
 ) -> ExecutorPipeline:
     """
     Create an ExecutorPipeline using protocol-based components.
@@ -487,14 +487,14 @@ def create_pipeline_with_protocols(
     log = logger or logging.getLogger(__name__)
 
     from hololoom.orchestrator.stages.executors import (
-        MetaPromptExecutor,
-        PatternSelectionExecutor,
         ChronoTriggerExecutor,
-        ThreadSelectionExecutor,
-        ParallelFeatureExecutor,
         ConvergenceExecutor,
-        ToolExecutionExecutor,
+        MetaPromptExecutor,
+        ParallelFeatureExecutor,
+        PatternSelectionExecutor,
         SpacetimeExecutor,
+        ThreadSelectionExecutor,
+        ToolExecutionExecutor,
     )
 
     # Extract underlying dependencies from default implementations

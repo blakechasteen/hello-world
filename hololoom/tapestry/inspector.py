@@ -21,14 +21,9 @@ Created: December 2025
 
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any
 
-from hololoom.tapestry.protocol import (
-    Thread,
-    FabricSignal,
-    SignalResult,
-    FabricCheckResult
-)
+from hololoom.tapestry.protocol import FabricCheckResult, FabricSignal, SignalResult, Thread
 from hololoom.tapestry.signals.registry import SignalRegistry
 
 logger = logging.getLogger(__name__)
@@ -50,7 +45,7 @@ class FabricInspector:
 
     def __init__(
         self,
-        signals: Optional[List[FabricSignal]] = None,
+        signals: list[FabricSignal] | None = None,
         fail_on_missing_signals: bool = False
     ):
         """
@@ -76,7 +71,7 @@ class FabricInspector:
     async def inspect(
         self,
         thread: Thread,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> FabricCheckResult:
         """
         Run all signals, aggregate results.
@@ -98,9 +93,9 @@ class FabricInspector:
                 recommendations=["No verification signals configured"]
             )
 
-        results: Dict[str, SignalResult] = {}
-        blockers: List[str] = []
-        errors: List[str] = []
+        results: dict[str, SignalResult] = {}
+        blockers: list[str] = []
+        errors: list[str] = []
 
         # Run signals in parallel
         tasks = [
@@ -155,8 +150,8 @@ class FabricInspector:
         self,
         signal: FabricSignal,
         thread: Thread,
-        context: Dict[str, Any]
-    ) -> Optional[SignalResult]:
+        context: dict[str, Any]
+    ) -> SignalResult | None:
         """
         Run a signal with error handling.
 
@@ -179,7 +174,7 @@ class FabricInspector:
             logger.error(f"Signal {signal.name} error: {e}")
             return None
 
-    def _calculate_confidence(self, results: Dict[str, SignalResult]) -> float:
+    def _calculate_confidence(self, results: dict[str, SignalResult]) -> float:
         """
         Calculate weighted confidence score.
 
@@ -207,9 +202,9 @@ class FabricInspector:
 
     def _generate_recommendations(
         self,
-        results: Dict[str, SignalResult],
-        blockers: List[str]
-    ) -> List[str]:
+        results: dict[str, SignalResult],
+        blockers: list[str]
+    ) -> list[str]:
         """
         Generate actionable recommendations based on results.
 
@@ -248,7 +243,7 @@ class FabricInspector:
 
         return recommendations[:5]  # Limit to 5 recommendations
 
-    def get_signal_names(self) -> List[str]:
+    def get_signal_names(self) -> list[str]:
         """Get names of all configured signals."""
         return [s.name for s in self.signals]
 
@@ -269,8 +264,8 @@ class FabricInspector:
 
 async def quick_inspect(
     thread: Thread,
-    context: Dict[str, Any],
-    signals: Optional[List[str]] = None
+    context: dict[str, Any],
+    signals: list[str] | None = None
 ) -> FabricCheckResult:
     """
     Quick inspection with default or specified signals.

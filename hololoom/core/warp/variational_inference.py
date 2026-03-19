@@ -34,11 +34,12 @@ Author: HoloLoom Probabilistic Programming Team
 Date: 2025-11-03
 """
 
-from typing import Callable, Optional, Tuple, Dict, Any, List
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
-import numpy as np
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
+import numpy as np
 
 # ============================================================================
 # Variational Distributions
@@ -92,7 +93,7 @@ class VariationalDistribution(ABC):
         pass
 
     @abstractmethod
-    def update_parameters(self, grad: Dict[str, np.ndarray], lr: float):
+    def update_parameters(self, grad: dict[str, np.ndarray], lr: float):
         """
         Update variational parameters via gradient descent.
 
@@ -119,8 +120,8 @@ class GaussianVariational(VariationalDistribution):
     """
 
     dim: int
-    mean: Optional[np.ndarray] = None
-    log_std: Optional[np.ndarray] = None  # Store log(σ) for unconstrained optimization
+    mean: np.ndarray | None = None
+    log_std: np.ndarray | None = None  # Store log(σ) for unconstrained optimization
 
     def __post_init__(self):
         if self.mean is None:
@@ -172,7 +173,7 @@ class GaussianVariational(VariationalDistribution):
         """
         return 0.5 * self.dim * (1 + np.log(2 * np.pi)) + np.sum(self.log_std)
 
-    def update_parameters(self, grad: Dict[str, np.ndarray], lr: float):
+    def update_parameters(self, grad: dict[str, np.ndarray], lr: float):
         """
         Gradient descent on mean and log_std.
 
@@ -192,7 +193,7 @@ class VariationalPosterior:
 
     mean: np.ndarray
     log_sigma: np.ndarray
-    dim: Optional[int] = None
+    dim: int | None = None
 
     def __post_init__(self):
         self.mean = np.asarray(self.mean, dtype=float)
@@ -224,8 +225,8 @@ class VariationalPosterior:
 
     def kl_divergence(
         self,
-        prior_mean: Optional[np.ndarray] = None,
-        prior_log_sigma: Optional[np.ndarray] = None,
+        prior_mean: np.ndarray | None = None,
+        prior_log_sigma: np.ndarray | None = None,
     ) -> float:
         pm = np.zeros(self.dim) if prior_mean is None else np.asarray(prior_mean, dtype=float)
         pls = np.zeros(self.dim) if prior_log_sigma is None else np.asarray(prior_log_sigma, dtype=float)
@@ -250,7 +251,7 @@ def compute_elbo(
     q: VariationalDistribution,
     log_joint: Callable[[np.ndarray], float],
     n_samples: int = 100
-) -> Tuple[float, Dict[str, np.ndarray]]:
+) -> tuple[float, dict[str, np.ndarray]]:
     """
     Compute Evidence Lower BOund (ELBO) via Monte Carlo.
 
@@ -385,9 +386,9 @@ class MeanFieldVI:
         self.q = GaussianVariational(dim=self.dim)
 
         # Metrics
-        self.elbo_history: List[float] = []
+        self.elbo_history: list[float] = []
 
-    def fit(self, verbose: bool = False) -> Dict[str, Any]:
+    def fit(self, verbose: bool = False) -> dict[str, Any]:
         """
         Fit variational distribution via gradient ascent on ELBO.
 
@@ -501,7 +502,7 @@ class BayesianLinearLayer:
         self,
         x: np.ndarray,
         n_samples: int = 100
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Predict with epistemic uncertainty.
 
@@ -533,14 +534,14 @@ class _GaussianLayer:
         self.bias_mean = np.zeros(self.out_features)
         self.bias_log_std = np.log(self.prior_std) * np.ones(self.out_features)
 
-    def sample(self, stochastic: bool) -> Tuple[np.ndarray, np.ndarray]:
+    def sample(self, stochastic: bool) -> tuple[np.ndarray, np.ndarray]:
         if not stochastic:
             return self.weight_mean, self.bias_mean
         weight = self.weight_mean + np.exp(self.weight_log_std) * self.rng.standard_normal(self.weight_mean.shape)
         bias = self.bias_mean + np.exp(self.bias_log_std) * self.rng.standard_normal(self.bias_mean.shape)
         return weight, bias
 
-    def parameters(self) -> List[np.ndarray]:
+    def parameters(self) -> list[np.ndarray]:
         return [self.weight_mean, self.weight_log_std, self.bias_mean, self.bias_log_std]
 
 
@@ -549,7 +550,7 @@ class BayesianNeuralNetwork:
     """Feed-forward Bayesian network with diagonal Gaussian weight posteriors."""
 
     input_dim: int
-    hidden_dims: List[int]
+    hidden_dims: list[int]
     output_dim: int
     prior_std: float = 1.0
     activation: Callable[[np.ndarray], np.ndarray] = np.tanh
@@ -565,15 +566,15 @@ class BayesianNeuralNetwork:
         self.output_mean_layer = _GaussianLayer(last_dim, self.output_dim, self.prior_std)
         self.output_logvar_layer = _GaussianLayer(last_dim, self.output_dim, self.prior_std)
 
-    def parameters(self) -> List[np.ndarray]:
-        params: List[np.ndarray] = []
+    def parameters(self) -> list[np.ndarray]:
+        params: list[np.ndarray] = []
         for layer in self.hidden_layers:
             params.extend(layer.parameters())
         params.extend(self.output_mean_layer.parameters())
         params.extend(self.output_logvar_layer.parameters())
         return params
 
-    def _forward(self, X: np.ndarray, sample: bool) -> Tuple[np.ndarray, np.ndarray]:
+    def _forward(self, X: np.ndarray, sample: bool) -> tuple[np.ndarray, np.ndarray]:
         h = X
         for layer in self.hidden_layers:
             W, b = layer.sample(sample)
@@ -586,7 +587,7 @@ class BayesianNeuralNetwork:
         log_sigma = np.clip(h @ W_log + b_log, -5.0, 3.0)
         return mean, log_sigma
 
-    def predict(self, X: np.ndarray, sample: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+    def predict(self, X: np.ndarray, sample: bool = False) -> tuple[np.ndarray, np.ndarray]:
         X = np.asarray(X, dtype=float).reshape(-1, self.input_dim)
         return self._forward(X, sample)
 

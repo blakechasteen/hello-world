@@ -12,11 +12,8 @@ Usage:
 
 import asyncio
 import json
-import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
-import uuid
 
 # Default categories hierarchy
 DEFAULT_CATEGORIES = [
@@ -485,7 +482,7 @@ TEMPLATE_MARKETPLACE_DATA = {
 }
 
 
-async def seed_categories(persistence) -> Dict[str, str]:
+async def seed_categories(persistence) -> dict[str, str]:
     """Seed default categories and return mapping of id -> id."""
     category_map = {}
 
@@ -510,10 +507,7 @@ async def seed_categories(persistence) -> Dict[str, str]:
 
 async def seed_templates(persistence, templates_dir: Path) -> int:
     """Seed marketplace templates from existing workflow files."""
-    from .workflow_persistence import (
-        WorkflowRecord,
-        MarketplaceTemplateRecord
-    )
+    from .workflow_persistence import MarketplaceTemplateRecord, WorkflowRecord
 
     count = 0
     now = datetime.utcnow()
@@ -526,7 +520,7 @@ async def seed_templates(persistence, templates_dir: Path) -> int:
             continue
 
         # Load the workflow JSON
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             workflow_data = json.load(f)
 
         # Generate IDs

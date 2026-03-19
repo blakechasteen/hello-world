@@ -5,15 +5,14 @@ Analyzes queries and suggests appropriate strategies. Learns from
 user feedback to improve suggestions over time.
 """
 
-from typing import List, Tuple, Dict, Optional
-from dataclasses import dataclass, field
 import json
-from pathlib import Path
 import logging
+from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 
-from .strategy import StrategyContext
 from .registry import get_registry
+from .strategy import StrategyContext
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +26,9 @@ class FeedbackRecord:
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Context similarity features
-    query_words: List[str] = field(default_factory=list)
-    file_path: Optional[str] = None
-    selection_length: Optional[int] = None
+    query_words: list[str] = field(default_factory=list)
+    file_path: str | None = None
+    selection_length: int | None = None
 
     def to_dict(self) -> dict:
         """Serialize to dict"""
@@ -79,7 +78,7 @@ class AutoDetector:
         >>> # Future suggestions will improve
     """
 
-    def __init__(self, feedback_file: Optional[Path] = None):
+    def __init__(self, feedback_file: Path | None = None):
         """
         Initialize auto-detector.
 
@@ -88,7 +87,7 @@ class AutoDetector:
                           Defaults to ~/.promptly/feedback.json
         """
         self.registry = get_registry()
-        self.history: List[FeedbackRecord] = []
+        self.history: list[FeedbackRecord] = []
 
         # Determine feedback file path
         if feedback_file is None:
@@ -112,7 +111,7 @@ class AutoDetector:
         context: StrategyContext,
         top_k: int = 3,
         use_learning: bool = True
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Detect best strategies for context.
 
@@ -147,8 +146,8 @@ class AutoDetector:
     def _apply_learning(
         self,
         context: StrategyContext,
-        base_suggestions: List[Tuple[str, float]]
-    ) -> List[Tuple[str, float]]:
+        base_suggestions: list[tuple[str, float]]
+    ) -> list[tuple[str, float]]:
         """
         Adjust base suggestions using historical feedback.
 
@@ -172,7 +171,7 @@ class AutoDetector:
         logger.debug(f"Found {len(similar)} similar historical contexts")
 
         # Calculate success rates for each strategy
-        strategy_success: Dict[str, List[float]] = {}
+        strategy_success: dict[str, list[float]] = {}
         for record in similar:
             if record.strategy_name not in strategy_success:
                 strategy_success[record.strategy_name] = []
@@ -310,7 +309,7 @@ class AutoDetector:
             return
 
         try:
-            with open(self.feedback_file, 'r') as f:
+            with open(self.feedback_file) as f:
                 data = json.load(f)
 
             self.history = [
@@ -340,7 +339,7 @@ class AutoDetector:
         except Exception as e:
             logger.error(f"Error saving feedback: {e}", exc_info=True)
 
-    def get_stats(self) -> Dict[str, any]:
+    def get_stats(self) -> dict[str, any]:
         """
         Get statistics about learning.
 
@@ -363,7 +362,7 @@ class AutoDetector:
             }
 
         # Calculate success rates per strategy
-        strategy_totals: Dict[str, Tuple[int, int]] = {}  # (successes, total)
+        strategy_totals: dict[str, tuple[int, int]] = {}  # (successes, total)
         for record in self.history:
             if record.strategy_name not in strategy_totals:
                 strategy_totals[record.strategy_name] = (0, 0)
@@ -398,7 +397,7 @@ class AutoDetector:
 
 
 # Global auto-detector instance
-_global_detector: Optional[AutoDetector] = None
+_global_detector: AutoDetector | None = None
 
 
 def get_auto_detector() -> AutoDetector:
@@ -409,7 +408,7 @@ def get_auto_detector() -> AutoDetector:
     return _global_detector
 
 
-async def auto_detect(context: StrategyContext, top_k: int = 3) -> List[Tuple[str, float]]:
+async def auto_detect(context: StrategyContext, top_k: int = 3) -> list[tuple[str, float]]:
     """
     Auto-detect best strategies for context.
 

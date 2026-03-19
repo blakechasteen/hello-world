@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols import BaseStageExecutor
 
@@ -20,7 +20,7 @@ class RateLimitGateExecutor(BaseStageExecutor):
         super().__init__(**kwargs)
         self.rate_limiter = rate_limiter
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         self._log_stage_start()
         start = self._start_timing()
 

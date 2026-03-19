@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 PhotoToken Memory System
 ========================
@@ -28,13 +28,13 @@ Usage:
         similar = await memory.retrieve_by_image("query_image.jpg", k=5)
 """
 
-import asyncio
 import hashlib
 import json
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Any
+
 import numpy as np
 
 # Optional dependencies (graceful degradation)
@@ -89,23 +89,23 @@ class PhotoToken:
     # Visual data
     image_data: bytes
     image_hash: str
-    dimensions: Tuple[int, int]
+    dimensions: tuple[int, int]
 
     # Embeddings (multimodal)
     clip_embedding: np.ndarray
-    caption_embedding: Optional[np.ndarray] = None
-    structural_features: Dict[str, float] = field(default_factory=dict)
+    caption_embedding: np.ndarray | None = None
+    structural_features: dict[str, float] = field(default_factory=dict)
 
     # Semantic info
-    caption: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
-    entities: List[str] = field(default_factory=list)
+    caption: str | None = None
+    tags: list[str] = field(default_factory=list)
+    entities: list[str] = field(default_factory=list)
 
     # Context
     source: str = "upload"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_yarn_node(self) -> Dict:
+    def to_yarn_node(self) -> dict:
         """
         Convert to YarnGraph node format.
 
@@ -135,7 +135,7 @@ class PhotoToken:
             'metadata': self.metadata
         }
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """
         Serialize to dictionary (for JSON export).
 
@@ -150,7 +150,7 @@ class PhotoToken:
         return d
 
     @classmethod
-    def from_dict(cls, d: Dict, image_data: bytes, clip_embedding: np.ndarray) -> 'PhotoToken':
+    def from_dict(cls, d: dict, image_data: bytes, clip_embedding: np.ndarray) -> 'PhotoToken':
         """
         Deserialize from dictionary.
 
@@ -229,9 +229,9 @@ class PhotoTokenMemory:
         self.metadata_file = self.storage_path / "metadata.json"
 
         # In-memory index
-        self.tokens: Dict[str, PhotoToken] = {}
-        self.clip_index: Optional[np.ndarray] = None  # Matrix of CLIP embeddings
-        self.token_ids: List[str] = []  # Ordered list matching clip_index rows
+        self.tokens: dict[str, PhotoToken] = {}
+        self.clip_index: np.ndarray | None = None  # Matrix of CLIP embeddings
+        self.token_ids: list[str] = []  # Ordered list matching clip_index rows
 
         # CLIP model
         self.clip_model = None
@@ -278,7 +278,7 @@ class PhotoTokenMemory:
             return  # No existing tokens
 
         # Load metadata
-        with open(self.metadata_file, 'r') as f:
+        with open(self.metadata_file) as f:
             metadata_list = json.load(f)
 
         # Load embeddings
@@ -333,12 +333,12 @@ class PhotoTokenMemory:
 
     async def store(
         self,
-        image: Union[bytes, np.ndarray, str, Path],
-        caption: Optional[str] = None,
-        tags: List[str] = None,
-        entities: List[str] = None,
+        image: bytes | np.ndarray | str | Path,
+        caption: str | None = None,
+        tags: list[str] = None,
+        entities: list[str] = None,
         source: str = "upload",
-        metadata: Dict = None
+        metadata: dict = None
     ) -> PhotoToken:
         """
         Store a photo as a visual token.
@@ -450,8 +450,8 @@ class PhotoTokenMemory:
         self,
         query: str,
         k: int = 5,
-        filter_tags: List[str] = None
-    ) -> List[Tuple[PhotoToken, float]]:
+        filter_tags: list[str] = None
+    ) -> list[tuple[PhotoToken, float]]:
         """
         Retrieve photos matching text query.
 
@@ -507,10 +507,10 @@ class PhotoTokenMemory:
 
     async def retrieve_by_image(
         self,
-        query_image: Union[bytes, np.ndarray, str, Path],
+        query_image: bytes | np.ndarray | str | Path,
         k: int = 5,
-        filter_tags: List[str] = None
-    ) -> List[Tuple[PhotoToken, float]]:
+        filter_tags: list[str] = None
+    ) -> list[tuple[PhotoToken, float]]:
         """
         Retrieve similar photos by image.
 
@@ -575,10 +575,10 @@ class PhotoTokenMemory:
 
     async def retrieve_by_tags(
         self,
-        tags: List[str],
+        tags: list[str],
         k: int = 10,
         match_all: bool = True
-    ) -> List[PhotoToken]:
+    ) -> list[PhotoToken]:
         """
         Retrieve photos by tags.
 
@@ -625,7 +625,7 @@ class PhotoTokenMemory:
 
         return text_features.cpu().numpy()[0]
 
-    def _extract_structural_features(self, image: np.ndarray) -> Dict[str, float]:
+    def _extract_structural_features(self, image: np.ndarray) -> dict[str, float]:
         """
         Extract basic structural features.
 
@@ -650,7 +650,7 @@ class PhotoTokenMemory:
 
         return features
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Get memory statistics."""
         return {
             'total_tokens': self.stats['total_tokens'],

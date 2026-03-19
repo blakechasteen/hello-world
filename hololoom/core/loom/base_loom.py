@@ -19,31 +19,25 @@ Math bleeds freely. Corrections always propagate. Patterns preserve diversity."
 Author: HoloLoom Architecture Team
 """
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
-import asyncio
 import logging
 import random
-from uuid import uuid4
+from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import Any
 
+from hololoom.fabric.fabric import Fabric
 from hololoom.loom.protocol import (
-    Loom,
+    CorrectionInsight,
+    DiscoveryInsight,
     DreamInsight,
     InsightType,
     MathInsight,
     PatternInsight,
-    CorrectionInsight,
-    DiscoveryInsight,
 )
-from hololoom.fabric.fabric import Fabric, Tension
 from hololoom.protocols.department import (
-    Department,
     DepartmentRequest,
     DepartmentResponse,
     VerificationResult,
-    ConfidenceMetadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -77,10 +71,10 @@ class DreamingMixin:
     def __init__(self):
         """Initialize dreaming state."""
         # Insights waiting to be shared
-        self._dream_buffer: List[DreamInsight] = []
+        self._dream_buffer: list[DreamInsight] = []
 
         # Insights received from other looms
-        self._received_insights: List[DreamInsight] = []
+        self._received_insights: list[DreamInsight] = []
 
         # Integration settings
         self._insight_integration_rate = 0.5
@@ -93,7 +87,7 @@ class DreamingMixin:
         self._insights_received = 0
         self._insights_integrated = 0
 
-    async def dream_share(self) -> List[DreamInsight]:
+    async def dream_share(self) -> list[DreamInsight]:
         """
         Share accumulated insights for collective dreaming.
 
@@ -314,7 +308,7 @@ class DreamingMixin:
             confidence=confidence,
         ))
 
-    def get_dreaming_stats(self) -> Dict[str, Any]:
+    def get_dreaming_stats(self) -> dict[str, Any]:
         """Get dreaming statistics."""
         return {
             "insights_shared": self._insights_shared,
@@ -364,7 +358,7 @@ class BaseLoom(DreamingMixin, ABC):
 
     def __init__(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         enable_learning: bool = True,
         enable_verification: bool = True,
     ):
@@ -385,7 +379,7 @@ class BaseLoom(DreamingMixin, ABC):
         self._enable_verification = enable_verification
 
         # Thompson Sampling priors (α, β for Beta distribution)
-        self._tool_priors: Dict[str, Tuple[float, float]] = {}
+        self._tool_priors: dict[str, tuple[float, float]] = {}
 
         # Metrics
         self._tasks_executed = 0
@@ -395,7 +389,7 @@ class BaseLoom(DreamingMixin, ABC):
         self._total_latency_ms = 0.0
 
         # Cache for common computations
-        self._cache: Dict[str, Any] = {}
+        self._cache: dict[str, Any] = {}
 
     # ====== Abstract Properties (must implement) ======
 
@@ -407,17 +401,17 @@ class BaseLoom(DreamingMixin, ABC):
 
     @property
     @abstractmethod
-    def blind_spots(self) -> List[str]:
+    def blind_spots(self) -> list[str]:
         """Return this loom's blind spots."""
         ...
 
     @abstractmethod
-    def admits_ignorance(self, query: str) -> List[str]:
+    def admits_ignorance(self, query: str) -> list[str]:
         """Return what this loom doesn't know about the query."""
         ...
 
     @abstractmethod
-    def falsifiable_by(self, claim: str) -> List[str]:
+    def falsifiable_by(self, claim: str) -> list[str]:
         """Return what evidence would change this claim."""
         ...
 
@@ -501,7 +495,7 @@ class BaseLoom(DreamingMixin, ABC):
         # (Subclasses can override for sophisticated refinement)
         return response
 
-    async def update_strategy(self, feedback: Dict[str, Any]) -> None:
+    async def update_strategy(self, feedback: dict[str, Any]) -> None:
         """
         Update Thompson Sampling priors based on feedback.
 
@@ -533,7 +527,7 @@ class BaseLoom(DreamingMixin, ABC):
 
         logger.debug(f"Updated priors for {tool_used}: α={alpha:.2f}, β={beta:.2f}")
 
-    async def get_capabilities(self) -> Dict[str, Any]:
+    async def get_capabilities(self) -> dict[str, Any]:
         """
         Report loom capabilities.
 
@@ -549,7 +543,7 @@ class BaseLoom(DreamingMixin, ABC):
             "enable_verification": self._enable_verification,
         }
 
-    async def get_metrics(self) -> Dict[str, Any]:
+    async def get_metrics(self) -> dict[str, Any]:
         """
         Get performance metrics.
 
@@ -610,7 +604,7 @@ class BaseLoom(DreamingMixin, ABC):
         alpha, beta = self._tool_priors[tool]
         return alpha / (alpha + beta)
 
-    def sample_tool(self, tools: List[str]) -> str:
+    def sample_tool(self, tools: list[str]) -> str:
         """
         Sample a tool using Thompson Sampling.
 

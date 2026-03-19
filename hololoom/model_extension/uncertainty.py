@@ -17,10 +17,10 @@ Confidence Tiers:
 - INSUFFICIENT (<0.40): Refuse to answer definitively
 """
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Tuple, Dict, Any
-import math
+from typing import Any
 
 
 class ConfidenceTier(Enum):
@@ -68,7 +68,7 @@ class UncertaintySource:
     """Attribution of uncertainty to a specific source."""
     type: str                    # e.g., "retrieval_sparsity", "source_disagreement"
     contribution: float          # How much this source contributes (0.0-1.0)
-    details: Optional[str] = None  # Human-readable explanation
+    details: str | None = None  # Human-readable explanation
 
     def __post_init__(self):
         if not 0.0 <= self.contribution <= 1.0:
@@ -105,10 +105,10 @@ class UncertaintyEnvelope:
         )
     """
     point_estimate: float
-    credible_interval: Tuple[float, float]
+    credible_interval: tuple[float, float]
     tier: ConfidenceTier
-    sources: List[UncertaintySource] = field(default_factory=list)
-    sample_variance: Optional[float] = None
+    sources: list[UncertaintySource] = field(default_factory=list)
+    sample_variance: float | None = None
     requires_verification: bool = False
 
     def __post_init__(self):
@@ -129,8 +129,8 @@ class UncertaintyEnvelope:
     def from_confidence(
         cls,
         confidence: float,
-        sources: Optional[List[UncertaintySource]] = None,
-        sample_variance: Optional[float] = None,
+        sources: list[UncertaintySource] | None = None,
+        sample_variance: float | None = None,
     ) -> "UncertaintyEnvelope":
         """
         Create UncertaintyEnvelope from a simple confidence score.
@@ -180,7 +180,7 @@ class UncertaintyEnvelope:
         """
         return self.point_estimate < 0.7 and self.requires_verification
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "point_estimate": self.point_estimate,
@@ -206,9 +206,9 @@ class UncertaintyEnvelope:
 
 
 def compute_variance_aware_confidence(
-    samples: List[float],
+    samples: list[float],
     threshold: float = 0.15,
-) -> Tuple[float, float, bool]:
+) -> tuple[float, float, bool]:
     """
     Compute variance-aware confidence from multiple samples.
 
@@ -241,7 +241,7 @@ def should_refuse_to_converge(
     confidence: float,
     stakes: str = "normal",
     confidence_threshold: float = 0.7,
-) -> Tuple[bool, Optional[str]]:
+) -> tuple[bool, str | None]:
     """
     Check if the system should refuse to over-converge.
 

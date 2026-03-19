@@ -30,17 +30,18 @@ Usage:
     result = await spinner.spin_mbox("/path/to/archive.mbox")
 """
 
+import email
+import hashlib
+import imaplib
+import mailbox
+import re
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
-from typing import List, Dict, Any, Optional, AsyncIterator
-import email
 from email import policy
 from email.parser import BytesParser
-import mailbox
-import imaplib
-import hashlib
-import re
+from pathlib import Path
+from typing import Any
 
 # Optional HTML parsing
 HTML_AVAILABLE = False
@@ -51,15 +52,14 @@ except ImportError:
     pass
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities,
-    SpinnerCheckpoint,
     ImportanceScore,
-    ImportanceSignals
+    ImportanceSignals,
+    SpinnerCapabilities,
+    SpinResult,
 )
-from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass
@@ -68,16 +68,16 @@ class EmailMessage:
     message_id: str
     subject: str
     sender: str
-    recipients: List[str]
+    recipients: list[str]
     timestamp: datetime
     body_text: str
-    body_html: Optional[str] = None
-    attachments: List[Dict[str, str]] = field(default_factory=list)  # {filename, content_type}
-    in_reply_to: Optional[str] = None  # Parent message ID
-    references: List[str] = field(default_factory=list)  # Thread references
-    cc: List[str] = field(default_factory=list)
-    bcc: List[str] = field(default_factory=list)
-    headers: Dict[str, str] = field(default_factory=dict)
+    body_html: str | None = None
+    attachments: list[dict[str, str]] = field(default_factory=list)  # {filename, content_type}
+    in_reply_to: str | None = None  # Parent message ID
+    references: list[str] = field(default_factory=list)  # Thread references
+    cc: list[str] = field(default_factory=list)
+    bcc: list[str] = field(default_factory=list)
+    headers: dict[str, str] = field(default_factory=dict)
 
     @property
     def is_reply(self) -> bool:
@@ -164,14 +164,14 @@ class EmailParser:
         )
 
     @staticmethod
-    def _parse_addresses(addresses: str) -> List[str]:
+    def _parse_addresses(addresses: str) -> list[str]:
         """Parse comma-separated email addresses"""
         if not addresses:
             return []
         return [addr.strip() for addr in addresses.split(',')]
 
     @staticmethod
-    def _parse_references(references: str) -> List[str]:
+    def _parse_references(references: str) -> list[str]:
         """Parse References header"""
         if not references:
             return []
@@ -179,7 +179,7 @@ class EmailParser:
         return re.findall(r'<[^>]+>', references)
 
     @staticmethod
-    def _extract_body(msg: email.message.Message) -> tuple[str, Optional[str]]:
+    def _extract_body(msg: email.message.Message) -> tuple[str, str | None]:
         """
         Extract text and HTML body
 
@@ -238,7 +238,7 @@ class EmailParser:
             return text.strip()
 
     @staticmethod
-    def _extract_attachments(msg: email.message.Message) -> List[Dict[str, str]]:
+    def _extract_attachments(msg: email.message.Message) -> list[dict[str, str]]:
         """Extract attachment metadata"""
         attachments = []
 
@@ -272,11 +272,11 @@ class EmailSpinner(BaseSpinner):
 
     def __init__(
         self,
-        imap_server: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
+        imap_server: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
         importance_threshold: float = 0.3,
-        max_messages: Optional[int] = None
+        max_messages: int | None = None
     ):
         """
         Initialize EmailSpinner
@@ -297,7 +297,7 @@ class EmailSpinner(BaseSpinner):
         self.max_messages = max_messages
 
         # IMAP connection (lazy initialization)
-        self.imap_client: Optional[imaplib.IMAP4_SSL] = None
+        self.imap_client: imaplib.IMAP4_SSL | None = None
 
         # Create importance scorer
         self.importance_scorer = ImportanceScorer()
@@ -319,7 +319,7 @@ class EmailSpinner(BaseSpinner):
         """Check if email dependencies are available"""
         return True  # email and imaplib are stdlib
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Spin email source into MemoryShards
 
@@ -343,8 +343,8 @@ class EmailSpinner(BaseSpinner):
     async def spin_imap_mailbox(
         self,
         mailbox_name: str = "INBOX",
-        since_uid: Optional[int] = None
-    ) -> List[MemoryShard]:
+        since_uid: int | None = None
+    ) -> list[MemoryShard]:
         """
         Spin IMAP mailbox
 
@@ -398,7 +398,7 @@ class EmailSpinner(BaseSpinner):
         # Convert to shards
         return self._messages_to_shards(messages)
 
-    async def spin_mbox_file(self, mbox_path: Path) -> List[MemoryShard]:
+    async def spin_mbox_file(self, mbox_path: Path) -> list[MemoryShard]:
         """
         Spin mbox file
 
@@ -452,7 +452,7 @@ class EmailSpinner(BaseSpinner):
             for shard in batch:
                 yield shard
 
-    def _messages_to_shards(self, messages: List[EmailMessage]) -> List[MemoryShard]:
+    def _messages_to_shards(self, messages: list[EmailMessage]) -> list[MemoryShard]:
         """
         Convert EmailMessage objects to MemoryShards
 
@@ -527,7 +527,7 @@ class EmailSpinner(BaseSpinner):
 
         return '\n'.join(parts)
 
-    def _extract_entities(self, msg: EmailMessage) -> List[str]:
+    def _extract_entities(self, msg: EmailMessage) -> list[str]:
         """Extract entities from email"""
         entities = []
 
@@ -540,7 +540,7 @@ class EmailSpinner(BaseSpinner):
 
         return list(set(entities))
 
-    def _extract_motifs(self, msg: EmailMessage) -> List[str]:
+    def _extract_motifs(self, msg: EmailMessage) -> list[str]:
         """Extract motifs from email"""
         motifs = []
 

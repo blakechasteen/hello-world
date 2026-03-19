@@ -42,8 +42,7 @@ import shutil
 import subprocess
 import time
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from ..protocol import (
     AbilityContext,
@@ -55,7 +54,6 @@ from ..protocol import (
     PreflightResult,
     VerificationResult,
 )
-
 
 logger = logging.getLogger("proto.test_runner")
 
@@ -92,8 +90,8 @@ class TestFrameworkInfo:
     """
     name: str
     available: bool
-    version: Optional[str] = None
-    config_files: List[str] = None
+    version: str | None = None
+    config_files: list[str] = None
 
     def __post_init__(self):
         """Initialize default values."""
@@ -128,11 +126,11 @@ class TestResult:
     errors: int = 0
     total: int = 0
     duration_seconds: float = 0.0
-    output: Optional[str] = None
-    coverage_percent: Optional[float] = None
-    coverage_missing: Optional[List[str]] = None
-    test_details: Optional[List[Dict[str, Any]]] = None
-    framework: Optional[str] = None
+    output: str | None = None
+    coverage_percent: float | None = None
+    coverage_missing: list[str] | None = None
+    test_details: list[dict[str, Any]] | None = None
+    framework: str | None = None
 
 
 class TestRunnerAbility(BaseAbility):
@@ -235,7 +233,7 @@ class TestRunnerAbility(BaseAbility):
 
     async def execute(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         context: AbilityContext,
     ) -> AbilityResult:
         """Execute test operation with given parameters.
@@ -446,7 +444,7 @@ class TestRunnerAbility(BaseAbility):
         self,
         test_path: str,
         pattern: str,
-        markers: Optional[str],
+        markers: str | None,
         verbose: bool,
         timeout: float,
         enable_coverage: bool,
@@ -587,7 +585,7 @@ class TestRunnerAbility(BaseAbility):
         self,
         test_path: str,
         pattern: str,
-        markers: Optional[str],
+        markers: str | None,
         timeout: float,
         framework: TestFrameworkInfo,
         working_dir: str,
@@ -616,7 +614,7 @@ class TestRunnerAbility(BaseAbility):
     async def _run_pytest(
         self,
         test_path: str,
-        markers: Optional[str],
+        markers: str | None,
         verbose: bool,
         timeout: float,
         enable_coverage: bool,
@@ -672,7 +670,7 @@ class TestRunnerAbility(BaseAbility):
     async def _run_unittest(
         self,
         test_path: str,
-        pattern: Optional[str],
+        pattern: str | None,
         verbose: bool,
         timeout: float,
         working_dir: str,
@@ -848,7 +846,7 @@ class TestRunnerAbility(BaseAbility):
 
     async def _run_command(
         self,
-        cmd: List[str],
+        cmd: list[str],
         cwd: str,
         timeout: float,
     ) -> str:
@@ -910,7 +908,7 @@ class TestRunnerAbility(BaseAbility):
     def _detect_framework(
         self,
         working_dir: str,
-        force: Optional[str],
+        force: str | None,
     ) -> TestFrameworkInfo:
         """Detect which test framework to use.
 
@@ -1051,7 +1049,7 @@ class TestRunnerAbility(BaseAbility):
 
         return test_path
 
-    def _get_python_executable(self) -> Optional[str]:
+    def _get_python_executable(self) -> str | None:
         """Get Python executable path.
 
         Returns:
@@ -1060,7 +1058,7 @@ class TestRunnerAbility(BaseAbility):
         import sys
         return sys.executable
 
-    def _format_result(self, test_result: TestResult) -> Dict[str, Any]:
+    def _format_result(self, test_result: TestResult) -> dict[str, Any]:
         """Format test result for output.
 
         Args:

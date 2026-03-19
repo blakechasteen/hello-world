@@ -18,15 +18,14 @@ Author: Claude Code
 Date: November 2025
 """
 
-from typing import Dict, Any, Optional, List, Callable, Tuple
-from dataclasses import dataclass
-from datetime import datetime
 import asyncio
 import re
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
+from hololoom.alignment.safety_guardrails import ActionCategory, RiskLevel, SafetyGuardrails
 from hololoom.spinningWheel.live_scratchpad import LiveScratchpad, TemplateField
-from hololoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel, ActionCategory
-
 
 # ============================================================================
 # Voice Interaction Types
@@ -37,9 +36,9 @@ class VoicePrompt:
     """TTS prompt for user interaction"""
     text: str
     prompt_type: str  # 'confirmation', 'clarification', 'guidance', 'readback'
-    field_name: Optional[str] = None
-    expected_response: Optional[str] = None  # 'yes/no', 'value', 'choice'
-    choices: Optional[List[str]] = None
+    field_name: str | None = None
+    expected_response: str | None = None  # 'yes/no', 'value', 'choice'
+    choices: list[str] | None = None
     timeout_seconds: float = 30.0
 
 
@@ -106,11 +105,11 @@ class VoiceScratchpad(LiveScratchpad):
         self.safety = SafetyGuardrails(testing_mode=False) if enable_safety_confirmations else None
 
         # Voice interaction callbacks
-        self.on_voice_prompt: Optional[Callable[[VoicePrompt], None]] = None
-        self.on_voice_response: Optional[Callable[[VoiceResponse], None]] = None
+        self.on_voice_prompt: Callable[[VoicePrompt], None] | None = None
+        self.on_voice_response: Callable[[VoiceResponse], None] | None = None
 
         # Interaction history
-        self.voice_history: List[Tuple[VoicePrompt, VoiceResponse]] = []
+        self.voice_history: list[tuple[VoicePrompt, VoiceResponse]] = []
 
     def register_voice_callbacks(
         self,
@@ -145,7 +144,7 @@ class VoiceScratchpad(LiveScratchpad):
     async def _ask_confirmation(
         self,
         question: str,
-        field_name: Optional[str] = None
+        field_name: str | None = None
     ) -> bool:
         """
         Ask yes/no confirmation via voice.
@@ -175,8 +174,8 @@ class VoiceScratchpad(LiveScratchpad):
         self,
         field_name: str,
         prompt_text: str,
-        choices: Optional[List[str]] = None
-    ) -> Optional[str]:
+        choices: list[str] | None = None
+    ) -> str | None:
         """
         Ask for clarification on ambiguous field.
 
@@ -243,7 +242,7 @@ class VoiceScratchpad(LiveScratchpad):
     async def update_from_transcription(
         self,
         new_transcription: str,
-        detected_domain: Optional[str] = None
+        detected_domain: str | None = None
     ):
         """
         Update template from transcription with voice feedback.
@@ -304,7 +303,7 @@ class VoiceScratchpad(LiveScratchpad):
 
         return False
 
-    async def _clarify_field(self, field: TemplateField, value: Any) -> Optional[Any]:
+    async def _clarify_field(self, field: TemplateField, value: Any) -> Any | None:
         """Request clarification for ambiguous field"""
         field_label = field.name.replace('_', ' ').title()
 
@@ -440,7 +439,7 @@ class VoiceInteractionManager:
     """
 
     def __init__(self):
-        self.pending_prompt: Optional[VoicePrompt] = None
+        self.pending_prompt: VoicePrompt | None = None
         self.response_queue: asyncio.Queue = asyncio.Queue()
 
     async def prompt_user(self, prompt: VoicePrompt) -> VoiceResponse:

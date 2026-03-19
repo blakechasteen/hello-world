@@ -24,12 +24,11 @@ Feed-Forward Mechanisms:
 """
 
 import time
-import math
-from typing import Dict, List, Optional, Any, Set
-from dataclasses import dataclass, field
 from collections import defaultdict, deque
-import numpy as np
+from dataclasses import dataclass, field
+from typing import Any
 
+import numpy as np
 
 # ============================================================================
 # Breakthrough Detection
@@ -44,7 +43,7 @@ class Breakthrough:
     search_id: str  # Which MCTS search found it
 
     # Path information
-    action_sequence: List[Any]  # Actions leading to breakthrough
+    action_sequence: list[Any]  # Actions leading to breakthrough
     state_signature: str  # Hash of state that led to breakthrough
 
     # Metrics
@@ -58,7 +57,7 @@ class Breakthrough:
     generalization_score: float  # How well it generalizes (0-1)
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def decay_impact(self, decay_rate: float = 0.95):
         """Decay impact over time"""
@@ -69,7 +68,7 @@ class Breakthrough:
 class BreakthroughStats:
     """Statistics about breakthrough detection"""
     total_detected: int = 0
-    by_search: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    by_search: dict[str, int] = field(default_factory=lambda: defaultdict(int))
     avg_reward_improvement: float = 0.0
     avg_impact_score: float = 0.0
     false_positives: int = 0  # Breakthroughs that didn't generalize
@@ -103,7 +102,7 @@ class BreakthroughDetector:
         self.max_breakthrough_memory = max_breakthrough_memory
 
         # Short-term memory (current search)
-        self.current_breakthroughs: List[Breakthrough] = []
+        self.current_breakthroughs: list[Breakthrough] = []
 
         # Long-term memory (across searches)
         self.breakthrough_memory: deque = deque(maxlen=max_breakthrough_memory)
@@ -114,7 +113,7 @@ class BreakthroughDetector:
         # Baseline tracking
         self.reward_baseline: float = 0.0
         self.reward_std: float = 0.1
-        self.reward_history: List[float] = []
+        self.reward_history: list[float] = []
 
     def update_baseline(self, reward: float):
         """Update reward baseline statistics"""
@@ -134,11 +133,11 @@ class BreakthroughDetector:
         previous_reward: float,
         confidence: float,
         previous_confidence: float,
-        action_sequence: List[Any],
+        action_sequence: list[Any],
         state_signature: str,
         visits: int,
         search_id: str
-    ) -> Optional[Breakthrough]:
+    ) -> Breakthrough | None:
         """
         Detect if current path is a breakthrough.
 
@@ -275,7 +274,7 @@ class BreakthroughDetector:
 
         return min(1.0, total_bias)
 
-    def get_top_breakthroughs(self, n: int = 10) -> List[Breakthrough]:
+    def get_top_breakthroughs(self, n: int = 10) -> list[Breakthrough]:
         """Get top N breakthroughs by impact score"""
         all_breakthroughs = list(self.breakthrough_memory) + self.current_breakthroughs
         sorted_breakthroughs = sorted(
@@ -299,7 +298,7 @@ class BreakthroughDetector:
         # Could add more sophisticated similarity metrics
         return 0.0
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get breakthrough detection statistics"""
         return {
             'total_detected': self.stats.total_detected,
@@ -327,9 +326,9 @@ class FeedForwardBroadcaster:
     """
 
     def __init__(self):
-        self.listeners: List[Any] = []  # MCTS engines listening
+        self.listeners: list[Any] = []  # MCTS engines listening
         self.broadcast_count = 0
-        self.impact_stats: Dict[str, float] = defaultdict(float)
+        self.impact_stats: dict[str, float] = defaultdict(float)
 
     def register_listener(self, mcts_engine: Any):
         """Register MCTS engine to receive breakthrough broadcasts"""
@@ -358,7 +357,7 @@ class FeedForwardBroadcaster:
         # Track impact
         self.impact_stats[breakthrough.search_id] += breakthrough.impact_score
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get broadcast statistics"""
         return {
             'listeners': len(self.listeners),
@@ -404,7 +403,7 @@ class BreakthroughMCTS:
 
         # Tracking
         self.search_id = f"search_{id(self)}"
-        self.received_breakthroughs: List[Breakthrough] = []
+        self.received_breakthroughs: list[Breakthrough] = []
 
     def search_with_breakthroughs(
         self,
@@ -493,7 +492,7 @@ class BreakthroughMCTS:
         # Update detector's baseline with breakthrough info
         self.detector.update_baseline(breakthrough.reward)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get breakthrough statistics for this search"""
         return {
             'search_id': self.search_id,

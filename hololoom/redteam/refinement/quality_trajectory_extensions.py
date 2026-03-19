@@ -15,9 +15,9 @@ trajectory tracking system. These methods provide:
 Methods to add to QualityTrajectoryTracker class in quality_trajectory.py:
 """
 
-from typing import List, Dict, Optional, Any
-import statistics
 import logging
+import statistics
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 # METHOD 1: get_best_strategy()
 # ============================================================================
 
-def get_best_strategy(self) -> Optional[str]:
+def get_best_strategy(self) -> str | None:
     """
     Get the strategy with the highest average quality.
 
@@ -97,7 +97,7 @@ def get_improvement_rate(self, strategy: str) -> float:
 # METHOD 3: analyze_patterns()
 # ============================================================================
 
-def analyze_patterns(self) -> Dict[str, Any]:
+def analyze_patterns(self) -> dict[str, Any]:
     """
     Comprehensive pattern analysis across all strategies.
 
@@ -239,7 +239,7 @@ def analyze_patterns(self) -> Dict[str, Any]:
 # HELPER METHOD: _generate_recommendations()
 # ============================================================================
 
-def _generate_recommendations(self, analysis: Dict[str, Any]) -> List[str]:
+def _generate_recommendations(self, analysis: dict[str, Any]) -> list[str]:
     """
     Generate actionable recommendations based on pattern analysis.
 

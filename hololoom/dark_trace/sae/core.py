@@ -12,13 +12,13 @@ Based on:
 - "Scaling Monosemanticity" (Anthropic, 2024)
 """
 
+from collections import deque
+from dataclasses import dataclass
+from typing import Any
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
-from collections import deque
-import time
 
 
 @dataclass
@@ -77,7 +77,7 @@ class FeatureHealth:
             if self.consecutive_dead_batches >= dead_threshold_batches:
                 self.is_dead = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "feature_idx": self.feature_idx,
@@ -124,7 +124,7 @@ class ActivationTracker:
         self.history_size = history_size
 
         # Per-feature health tracking
-        self.feature_health: List[FeatureHealth] = [
+        self.feature_health: list[FeatureHealth] = [
             FeatureHealth(feature_idx=i) for i in range(n_features)
         ]
 
@@ -135,7 +135,7 @@ class ActivationTracker:
         self.current_step = 0
         self.total_batches = 0
 
-    def update(self, latents: torch.Tensor) -> Dict[str, Any]:
+    def update(self, latents: torch.Tensor) -> dict[str, Any]:
         """
         Update tracking with a batch of latent activations.
 
@@ -184,11 +184,11 @@ class ActivationTracker:
 
             return batch_stats
 
-    def get_dead_features(self) -> List[int]:
+    def get_dead_features(self) -> list[int]:
         """Return indices of features marked as dead."""
         return [h.feature_idx for h in self.feature_health if h.is_dead]
 
-    def get_alive_features(self) -> List[int]:
+    def get_alive_features(self) -> list[int]:
         """Return indices of features that are still active."""
         return [h.feature_idx for h in self.feature_health if not h.is_dead]
 
@@ -196,7 +196,7 @@ class ActivationTracker:
         """Get health stats for a specific feature."""
         return self.feature_health[feature_idx]
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get overall tracking summary."""
         dead_features = self.get_dead_features()
         alive_features = self.get_alive_features()
@@ -289,7 +289,7 @@ class ResearchSAE(nn.Module):
         )
 
         # Track dead features for ghost gradients
-        self._dead_feature_mask: Optional[torch.Tensor] = None
+        self._dead_feature_mask: torch.Tensor | None = None
 
     def _update_dead_mask(self):
         """Update the dead feature mask from tracker."""
@@ -304,7 +304,7 @@ class ResearchSAE(nn.Module):
         self,
         x: torch.Tensor,
         return_pre_activations: bool = False,
-    ) -> Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor | None]:
         """
         Forward pass with optional ghost gradients.
 
@@ -343,8 +343,8 @@ class ResearchSAE(nn.Module):
         x: torch.Tensor,
         reconstruction: torch.Tensor,
         latents: torch.Tensor,
-        l1_coefficient: Optional[float] = None,
-    ) -> Dict[str, torch.Tensor]:
+        l1_coefficient: float | None = None,
+    ) -> dict[str, torch.Tensor]:
         """
         Compute training losses.
 
@@ -418,7 +418,7 @@ class ResearchSAE(nn.Module):
 
         return auxk_loss
 
-    def update_tracking(self, latents: torch.Tensor) -> Dict[str, Any]:
+    def update_tracking(self, latents: torch.Tensor) -> dict[str, Any]:
         """
         Update activation tracking with a batch of latents.
 
@@ -440,9 +440,9 @@ class ResearchSAE(nn.Module):
     def get_active_features(
         self,
         x: torch.Tensor,
-        threshold: Optional[float] = None,
-        top_k: Optional[int] = None,
-    ) -> Dict[int, float]:
+        threshold: float | None = None,
+        top_k: int | None = None,
+    ) -> dict[int, float]:
         """
         Get active features for an input.
 
@@ -487,7 +487,7 @@ class ResearchSAE(nn.Module):
 
         return results
 
-    def get_feature_vectors(self, feature_indices: List[int]) -> torch.Tensor:
+    def get_feature_vectors(self, feature_indices: list[int]) -> torch.Tensor:
         """
         Get decoder vectors for specified features.
 
@@ -504,11 +504,11 @@ class ResearchSAE(nn.Module):
         # Each column is a feature vector
         return self.decoder.weight[:, feature_indices].T
 
-    def get_health_summary(self) -> Dict[str, Any]:
+    def get_health_summary(self) -> dict[str, Any]:
         """Get summary of feature health statistics."""
         return self.tracker.get_summary()
 
-    def state_dict_extended(self) -> Dict[str, Any]:
+    def state_dict_extended(self) -> dict[str, Any]:
         """Get extended state dict including tracker state."""
         return {
             "model_state_dict": self.state_dict(),

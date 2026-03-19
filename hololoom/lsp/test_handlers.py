@@ -15,8 +15,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from hololoom import HoloLoom
 from hololoom.config import Config
 from hololoom.lsp.server import (
-    extract_word_at_position,
     extract_symbol_at_position,
+    extract_word_at_position,
     format_memory_as_markdown,
 )
 
@@ -50,7 +50,7 @@ async def test_helper_functions():
 
     mem = MockMemory()
     markdown = format_memory_as_markdown(mem)
-    print(f"✓ format_memory_as_markdown:")
+    print("✓ format_memory_as_markdown:")
     print(f"  {markdown[:60]}...")
     assert "Thompson Sampling" in markdown
     assert "Metadata" in markdown

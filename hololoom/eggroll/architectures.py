@@ -6,12 +6,13 @@ next generation of Agentic AI. We move beyond simple Transformers into
 Recursive, Liquid, Neuromorphic, and Sparse MoE designs.
 """
 
+from typing import Any
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
-from typing import Optional, List, Dict, Any, Tuple
-from transformers import AutoModelForCausalLM, AutoConfig
+from transformers import AutoConfig, AutoModelForCausalLM
+
 
 class BaseHoloModel(nn.Module):
     """
@@ -43,32 +44,32 @@ class TinyRecursiveModel(BaseHoloModel):
         super().__init__()
         self.d_model = d_model
         self.recur_depth = recur_depth
-        
+
         self.embed = nn.Embedding(vocab_size, d_model)
         self.pos_enc = nn.Parameter(torch.zeros(1, 1024, d_model)) # Simplistic Pos Enc
-        
+
         # Depth Embedding: Informs the layer which recursion step it is at
         # This helps the model track "Where am I in the thought process?"
         self.depth_embed = nn.Embedding(recur_depth, d_model)
-        
+
         # The Core Recursive Block
         # In a real TRM, this might be a full Transformer Layer (Attn + FFN)
         encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=n_heads, batch_first=True)
         self.recursive_block = nn.TransformerEncoder(encoder_layer, num_layers=1) # Just 1 physical layer!
-        
+
         self.ln_f = nn.LayerNorm(d_model)
         self.head = nn.Linear(d_model, vocab_size, bias=False)
-        
+
     def forward(self, input_ids, attention_mask=None):
         b, t = input_ids.shape
         # Use a simpler pos encoding for stability in recursion
         pos = torch.arange(0, t, dtype=torch.long, device=input_ids.device)
         x = self.embed(input_ids) + self.pos_enc[:, :t, :]
-        
+
         # Recursive Application
         # We apply the SAME weights 'recur_depth' times.
         # This effectively simulates a deep network with a fraction of the params.
-        
+
         # Define the step function for checkpointing
         def run_block(hidden, step_idx):
             # Add depth embedding for this specific step
@@ -80,7 +81,7 @@ class TinyRecursiveModel(BaseHoloModel):
         for i in range(self.recur_depth):
             if self.training and x.requires_grad:
                 # Use gradient checkpointing to save memory
-                # Note: We need to pass 'i' as a tensor or handle it carefully. 
+                # Note: We need to pass 'i' as a tensor or handle it carefully.
                 # Checkpoint needs inputs to require grad for it to track. 'x' does.
                 # However, 'i' is an int. We wrap the closure to bind 'i'.
                 # But checkpoint expects the function and inputs.
@@ -88,7 +89,7 @@ class TinyRecursiveModel(BaseHoloModel):
                 x = checkpoint(lambda h: run_block(h, i), x, use_reentrant=False)
             else:
                 x = run_block(x, i)
-            
+
         x = self.ln_f(x)
         logits = self.head(x)
         return logits # (Batch, Seq, Vocab)
@@ -116,9 +117,9 @@ class LargeReasoningModel(BaseHoloModel):
         except OSError:
             print(f"Warning: Model {model_name} not found, falling back to 'gpt2' config for mock.")
             self.config = AutoConfig.from_pretrained("gpt2")
-        
+
         self.model = AutoModelForCausalLM.from_config(self.config) # Mock model for speed
-        
+
     def forward(self, input_ids, attention_mask=None):
         return self.model(input_ids, attention_mask=attention_mask).logits
 
@@ -139,7 +140,7 @@ class LiquidTimeConstantLayer(nn.Module):
         super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
-        
+
         # Parameters
         self.w = nn.Linear(input_dim, hidden_dim) # Input weight
         self.tau_sys = nn.Parameter(torch.ones(hidden_dim)) # System time constant
@@ -148,7 +149,7 @@ class LiquidTimeConstantLayer(nn.Module):
     def forward(self, x, state, dt=0.01, solver="rk4"):
         # x: (Batch, Input)
         # state: (Batch, Hidden)
-        
+
         # System Dynamics Function: dy/dt = f(y, x)
         def func(y, x_in):
             # f_x modulates the time constant
@@ -160,19 +161,19 @@ class LiquidTimeConstantLayer(nn.Module):
         if solver == "euler":
             dy = func(state, x)
             new_state = state + dt * dy
-            
+
         elif solver == "rk4":
             # Runge-Kutta 4th Order Implementation
             k1 = func(state, x)
             k2 = func(state + 0.5 * dt * k1, x)
             k3 = func(state + 0.5 * dt * k2, x)
             k4 = func(state + dt * k3, x)
-            
+
             new_state = state + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
-            
+
         else:
             raise ValueError(f"Unknown solver: {solver}")
-            
+
         return torch.tanh(new_state)
 
 class LiquidStateMachine(BaseHoloModel):
@@ -190,28 +191,28 @@ class LiquidStateMachine(BaseHoloModel):
     def __init__(self, vocab_size=50257, d_model=128, reservoir_size=256):
         super().__init__()
         self.d_model = d_model
-        
+
         self.embed = nn.Embedding(vocab_size, d_model)
         self.liquid_layer = LiquidTimeConstantLayer(d_model, reservoir_size)
         self.head = nn.Linear(reservoir_size, vocab_size)
-        
+
         self.reservoir_size = reservoir_size
-        
+
     def forward(self, input_ids, attention_mask=None):
         # input_ids: (Batch, Seq)
         b, seq_len = input_ids.shape
-        
+
         x = self.embed(input_ids) # (Batch, Seq, D)
-        
+
         # Initialize state
         h = torch.zeros(b, self.reservoir_size, device=input_ids.device)
         outputs = []
-        
+
         for t in range(seq_len):
             xt = x[:, t, :]
             h = self.liquid_layer(xt, h)
             outputs.append(h)
-            
+
         # Stack: (Batch, Seq, Hidden)
         output_seq = torch.stack(outputs, dim=1)
         logits = self.head(output_seq)
@@ -259,22 +260,22 @@ class SpikingLayer(nn.Module):
         self.fc = nn.Linear(input_dim, output_dim)
         self.threshold = threshold
         self.decay = decay
-        
+
     def forward(self, x, mem):
         # x: Input current
         # mem: Membrane potential
-        
+
         current = self.fc(x)
         mem = mem * self.decay + current
-        
+
         # Spike generation with Surrogate Gradient
         # We shift mem by threshold so 0 is the firing point for the surrogate
         spike = SurrogateSpike.apply(mem - self.threshold)
-        
+
         # Soft Reset: Subtract threshold * spike instead of hard reset
         # This keeps gradients flowing through the reset term too
         mem = mem - (spike * self.threshold)
-        
+
         return spike, mem
 
 class NeuromorphicNet(BaseHoloModel):
@@ -294,26 +295,26 @@ class NeuromorphicNet(BaseHoloModel):
         self.readout = nn.Linear(d_model, vocab_size)
         self.d_model = d_model
         self.n_layers = n_layers
-        
+
     def forward(self, input_ids, attention_mask=None):
         # SNNs usually run over 'time steps' for static input,
         # but here we treat the sequence itself as time.
         b, seq = input_ids.shape
         x = self.embed(input_ids)
-        
+
         # State: Membrane potentials for each layer
         mems = [torch.zeros(b, self.d_model, device=input_ids.device) for _ in range(self.n_layers)]
-        
+
         outputs = []
         for t in range(seq):
             spike = x[:, t, :]
             # Pass through layers
             for i, layer in enumerate(self.layers):
                 spike, mems[i] = layer(spike, mems[i])
-            
+
             # Readout (rate coding approximation)
             outputs.append(mems[-1]) # Use last layer potential as 'logit' precursor
-            
+
         output_seq = torch.stack(outputs, dim=1)
         logits = self.readout(output_seq)
         return logits
@@ -340,10 +341,10 @@ class SparseMoELayer(nn.Module):
         super().__init__()
         self.num_experts = num_experts
         self.top_k = experts_per_token
-        
+
         # Gating network: Decides which experts to use
         self.gate = nn.Linear(d_model, num_experts)
-        
+
         # Experts: Independent Feed-Forward Networks
         # In a real impl, we'd use optimized kernels or distributed experts.
         # Here we use a ModuleList for simplicity.
@@ -354,26 +355,26 @@ class SparseMoELayer(nn.Module):
                 nn.Linear(d_model * 4, d_model)
             ) for _ in range(num_experts)
         ])
-        
+
     def forward(self, x):
         # x: (Batch, Seq, D)
-        
+
         # 1. Gating
         gate_logits = self.gate(x) # (Batch, Seq, NumExperts)
-        
+
         # Top-K selection
         # weights: (Batch, Seq, K), indices: (Batch, Seq, K)
         weights, selected_experts = torch.topk(gate_logits, self.top_k, dim=-1)
         weights = F.softmax(weights, dim=-1)
-        
+
         # 2. Dispatch & Combine
         # This is the naive (slow) implementation for demonstration.
         # Ideally: Gather -> Process -> Scatter
-        
+
         out = torch.zeros_like(x)
-        
+
         batch, seq, _ = x.shape
-        
+
         # Iterate over all tokens (Naive loop - in prod use scatter/gather)
         # Note: This is simplified to be illustrative and runnable without custom CUDA kernels
         for b in range(batch):
@@ -381,10 +382,10 @@ class SparseMoELayer(nn.Module):
                 for k in range(self.top_k):
                     expert_idx = selected_experts[b, t, k].item()
                     w = weights[b, t, k]
-                    
+
                     expert_out = self.experts[expert_idx](x[b:b+1, t:t+1]) # (1, 1, D)
                     out[b, t] += w * expert_out.squeeze()
-        
+
         return out
 
 class SparseMoEModel(BaseHoloModel):
@@ -399,23 +400,23 @@ class SparseMoEModel(BaseHoloModel):
         super().__init__()
         self.embed = nn.Embedding(vocab_size, d_model)
         self.pos_enc = nn.Parameter(torch.zeros(1, 1024, d_model))
-        
+
         self.layers = nn.ModuleList([
             SparseMoELayer(d_model, num_experts=num_experts, experts_per_token=experts_per_token) for _ in range(n_layers)
         ])
         self.ln_f = nn.LayerNorm(d_model)
         self.head = nn.Linear(d_model, vocab_size)
-        
+
     def forward(self, input_ids, attention_mask=None):
         b, t = input_ids.shape
         x = self.embed(input_ids) + self.pos_enc[:, :t, :]
-        
+
         for layer in self.layers:
             x = x + layer(x) # Resid connection
-            
+
         x = self.ln_f(x)
         return self.head(x)
-    
+
     def generate(self, input_ids, max_new_tokens=50, **kwargs):
         generated = input_ids
         for _ in range(max_new_tokens):
@@ -440,31 +441,31 @@ class KanervaMemoryLayer(nn.Module):
         super().__init__()
         self.num_locations = num_locations
         self.d_model = d_model
-        
+
         # Hard Locations (Addresses) - Fixed
         self.address_matrix = nn.Parameter(torch.randn(num_locations, d_model), requires_grad=False)
-        
+
         # Memory Contents (Values) - Trainable/Writable
         self.memory_content = nn.Parameter(torch.zeros(num_locations, d_model))
-        
+
         self.beta = 10.0 # Sharpness of attention (simulates 'radius')
-        
+
     def forward(self, query):
         # query: (Batch, Seq, D)
-        
+
         # Calculate similarity (cosine) between query and addresses
         # (Batch, Seq, NumLocs)
         scores = F.linear(F.normalize(query, dim=-1), F.normalize(self.address_matrix, dim=-1))
-        
+
         # Activate locations
         activations = F.softmax(self.beta * scores, dim=-1)
-        
+
         # Read from memory
         # (Batch, Seq, NumLocs) @ (NumLocs, D) -> (Batch, Seq, D)
         retrieved = activations @ self.memory_content
-        
+
         return retrieved
-        
+
     def write(self, key, value):
         # Conceptual write op (for illustrative purposes, not used in std forward pass of static models)
         # Update memory_content based on key proximity
@@ -481,28 +482,28 @@ class SDMNetwork(BaseHoloModel):
     def __init__(self, vocab_size=50257, d_model=256, num_locations=2048):
         super().__init__()
         self.embed = nn.Embedding(vocab_size, d_model)
-        
+
         self.memory = KanervaMemoryLayer(d_model, num_locations)
-        
+
         # Processor (MLP)
         self.processor = nn.Sequential(
             nn.Linear(d_model * 2, d_model * 4), # cat(input, memory)
             nn.ReLU(),
             nn.Linear(d_model * 4, d_model)
         )
-        
+
         self.head = nn.Linear(d_model, vocab_size)
-        
+
     def forward(self, input_ids, attention_mask=None):
         x = self.embed(input_ids)
-        
+
         # Retrieve context from SDM
         mem_out = self.memory(x)
-        
+
         # Combine input and memory
         combined = torch.cat([x, mem_out], dim=-1)
         processed = self.processor(combined)
-        
+
         # Simple residual
         out = x + processed
         return self.head(out)

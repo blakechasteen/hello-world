@@ -19,24 +19,18 @@ Use Cases:
 - Investigation: "Deep dive into company X's technology stack"
 """
 
-import asyncio
 import logging
-from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.modalities.recursive_crawler import CrawlConfig, RecursiveCrawler
 from hololoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
-from hololoom.spinningWheel.modalities.recursive_crawler import (
-    RecursiveCrawler,
-    CrawlConfig,
-    LinkInfo
-)
 
+from .citation import CitationFormatter, CitationStyle
 from .matryoshka_search import MatryoshkaWebSearch
 from .protocol import SearchConfig, WebSearchResult
-from .citation import CitationFormatter, CitationStyle
-
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +41,7 @@ class WebCrawlerSearchConfig:
 
     # Search configuration
     search_provider: str = "mock"  # or "serpapi", "google", etc.
-    search_api_key: Optional[str] = None
+    search_api_key: str | None = None
     max_search_results: int = 10   # How many search results to use as seeds
 
     # Crawl configuration
@@ -64,7 +58,7 @@ class WebCrawlerSearchConfig:
 
     # Matryoshka importance thresholds (by depth)
     # Higher thresholds = only follow very relevant links
-    importance_thresholds: Dict[int, float] = field(default_factory=lambda: {
+    importance_thresholds: dict[int, float] = field(default_factory=lambda: {
         0: 0.0,   # Seed URLs (always crawl)
         1: 0.65,  # Direct links (medium-high importance)
         2: 0.8,   # Second-level links (high importance)
@@ -106,7 +100,7 @@ class WebCrawlerSearch:
         print(f"Citations: {result.cited_response}")
     """
 
-    def __init__(self, config: Optional[WebCrawlerSearchConfig] = None):
+    def __init__(self, config: WebCrawlerSearchConfig | None = None):
         self.config = config or WebCrawlerSearchConfig()
 
         # Initialize Matryoshka search
@@ -140,8 +134,8 @@ class WebCrawlerSearch:
     async def search_and_crawl(
         self,
         query: str,
-        seed_topic: Optional[str] = None,
-        max_results: Optional[int] = None
+        seed_topic: str | None = None,
+        max_results: int | None = None
     ) -> 'SearchCrawlResult':
         """
         Execute full search + crawl pipeline.
@@ -303,9 +297,9 @@ class WebCrawlerSearch:
     async def _extract_content(
         self,
         url: str,
-        title: Optional[str] = None,
-        snippet: Optional[str] = None
-    ) -> List[MemoryShard]:
+        title: str | None = None,
+        snippet: str | None = None
+    ) -> list[MemoryShard]:
         """Extract content from single URL using WebsiteSpinner."""
         try:
             config = WebsiteSpinnerConfig(
@@ -330,8 +324,8 @@ class WebCrawlerSearch:
     def _format_citations(
         self,
         query: str,
-        search_results: List[WebSearchResult],
-        shards: List[MemoryShard]
+        search_results: list[WebSearchResult],
+        shards: list[MemoryShard]
     ) -> str:
         """Format comprehensive response with citations."""
         if not self.citation_formatter:
@@ -367,7 +361,7 @@ class WebCrawlerSearch:
 
         return f"{cited_response}\n\n{bibliography}"
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get integration statistics."""
         return {
             **self.stats,
@@ -394,9 +388,9 @@ class WebCrawlerSearch:
 class SearchCrawlResult:
     """Result of integrated search + crawl operation."""
     query: str
-    search_results: List[WebSearchResult]
-    crawled_pages: List[Dict[str, Any]]
-    shards: List[MemoryShard]
+    search_results: list[WebSearchResult]
+    crawled_pages: list[dict[str, Any]]
+    shards: list[MemoryShard]
     cited_response: str
     total_duration_ms: float
     search_time_ms: float
@@ -407,7 +401,7 @@ class SearchCrawlResult:
 # Convenience function
 async def search_and_crawl_web(
     query: str,
-    seed_topic: Optional[str] = None,
+    seed_topic: str | None = None,
     enable_recursive_crawl: bool = True,
     max_search_results: int = 5,
     max_crawl_depth: int = 2,

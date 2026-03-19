@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Trough API
 ==========
@@ -15,10 +15,11 @@ Features:
 Created: 2025-01-20
 """
 
+import logging
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
-import logging
 
 router = APIRouter(prefix="/trough", tags=["trough"])
 logger = logging.getLogger(__name__)
@@ -36,8 +37,8 @@ except ImportError as e:
     TroughDetector = None
 
 # Global instances
-trough_detector: Optional[Any] = None
-xterminator_fixer: Optional[Any] = None
+trough_detector: Any | None = None
+xterminator_fixer: Any | None = None
 
 
 def get_trough_detector():
@@ -60,7 +61,7 @@ def get_xterminator_fixer():
 
 class AnalyzeRequest(BaseModel):
     code: str
-    file_path: Optional[str] = None
+    file_path: str | None = None
     language: str = "python"
     enable_ml_logic: bool = True
 
@@ -71,24 +72,24 @@ class Issue(BaseModel):
     severity: str  # "LOW", "MEDIUM", "HIGH", "CRITICAL"
     message: str
     line: int
-    column: Optional[int] = None
+    column: int | None = None
     fixable: bool
-    fix_confidence: Optional[float] = None
+    fix_confidence: float | None = None
 
 
 class AnalyzeResponse(BaseModel):
-    issues: List[Issue]
+    issues: list[Issue]
     total_issues: int
-    by_severity: Dict[str, int]
+    by_severity: dict[str, int]
     fixable_count: int
-    file_path: Optional[str] = None
+    file_path: str | None = None
 
 
 class FixRequest(BaseModel):
     code: str
-    file_path: Optional[str] = None
+    file_path: str | None = None
     language: str = "python"
-    issue_ids: Optional[List[str]] = None  # Fix specific issues, or all if None
+    issue_ids: list[str] | None = None  # Fix specific issues, or all if None
     validate: bool = True
     git_safe: bool = True
 
@@ -103,7 +104,7 @@ class Fix(BaseModel):
 
 
 class FixResponse(BaseModel):
-    fixes: List[Fix]
+    fixes: list[Fix]
     original_code: str
     fixed_code: str
     success_count: int
@@ -114,7 +115,7 @@ class FixResponse(BaseModel):
 class ValidateRequest(BaseModel):
     original_code: str
     fixed_code: str
-    file_path: Optional[str] = None
+    file_path: str | None = None
 
 
 class ValidationStage(BaseModel):
@@ -126,7 +127,7 @@ class ValidationStage(BaseModel):
 
 class ValidateResponse(BaseModel):
     overall_passed: bool
-    stages: List[ValidationStage]
+    stages: list[ValidationStage]
     total_duration_ms: float
     rollback_recommended: bool
 
@@ -136,8 +137,8 @@ class StatsResponse(BaseModel):
     total_issues_found: int
     total_fixes_attempted: int
     fix_success_rate: float
-    by_issue_type: Dict[str, int]
-    top_issues: List[Dict[str, Any]]
+    by_issue_type: dict[str, int]
+    top_issues: list[dict[str, Any]]
 
 
 # ============== 1. ANALYZE CODE ==============

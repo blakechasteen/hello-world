@@ -23,7 +23,7 @@ import time
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Protocol, Tuple, Union
+from typing import Any, Protocol
 
 import numpy as np
 
@@ -66,12 +66,12 @@ class BenchmarkConfig:
     sparsity: float = 0.05
     noise_level: float = 0.1
     difficulty: DifficultyLevel = DifficultyLevel.MEDIUM
-    seed: Optional[int] = 42
+    seed: int | None = 42
     timeout_seconds: float = 300.0
     verbose: bool = False
 
     @classmethod
-    def quick(cls) -> "BenchmarkConfig":
+    def quick(cls) -> BenchmarkConfig:
         """Quick benchmark config for fast iteration."""
         return cls(
             n_samples=100,
@@ -81,7 +81,7 @@ class BenchmarkConfig:
         )
 
     @classmethod
-    def standard(cls) -> "BenchmarkConfig":
+    def standard(cls) -> BenchmarkConfig:
         """Standard benchmark config."""
         return cls(
             n_samples=1000,
@@ -91,7 +91,7 @@ class BenchmarkConfig:
         )
 
     @classmethod
-    def comprehensive(cls) -> "BenchmarkConfig":
+    def comprehensive(cls) -> BenchmarkConfig:
         """Comprehensive benchmark for publication-quality results."""
         return cls(
             n_samples=10000,
@@ -102,7 +102,7 @@ class BenchmarkConfig:
         )
 
     @classmethod
-    def research(cls) -> "BenchmarkConfig":
+    def research(cls) -> BenchmarkConfig:
         """Research-grade benchmark with extreme difficulty."""
         return cls(
             n_samples=50000,
@@ -134,10 +134,10 @@ class BenchmarkResult:
     name: str
     passed: bool
     score: float
-    metrics: Dict[str, float]
+    metrics: dict[str, float]
     duration_seconds: float
     config: BenchmarkConfig
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate score range."""
@@ -159,7 +159,7 @@ class BenchmarkResult:
             lines.append(f"  {key}: {value:.4f}")
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "benchmark_type": self.benchmark_type.value,
@@ -197,7 +197,7 @@ class SAEProtocol(Protocol):
 class BaseBenchmark:
     """Base class for all benchmarks."""
 
-    def __init__(self, config: Optional[BenchmarkConfig] = None):
+    def __init__(self, config: BenchmarkConfig | None = None):
         """Initialize benchmark.
 
         Args:
@@ -222,10 +222,10 @@ class BaseBenchmark:
         benchmark_type: BenchmarkType,
         name: str,
         score: float,
-        metrics: Dict[str, float],
+        metrics: dict[str, float],
         duration: float,
         threshold: float = 0.7,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> BenchmarkResult:
         """Create a benchmark result.
 
@@ -271,7 +271,7 @@ class SyntheticBenchmark(BaseBenchmark):
 
     def __init__(
         self,
-        config: Optional[BenchmarkConfig] = None,
+        config: BenchmarkConfig | None = None,
         feature_type: str = "sparse",
     ):
         """Initialize synthetic benchmark.
@@ -287,7 +287,7 @@ class SyntheticBenchmark(BaseBenchmark):
         self,
         n_features: int,
         input_dim: int,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Generate ground truth features and data.
 
         Args:
@@ -325,7 +325,7 @@ class SyntheticBenchmark(BaseBenchmark):
         ground_truth: np.ndarray,
         learned: np.ndarray,
         threshold: float = 0.8,
-    ) -> Tuple[List[Tuple[int, int]], float]:
+    ) -> tuple[list[tuple[int, int]], float]:
         """Match learned features to ground truth.
 
         Args:
@@ -461,8 +461,8 @@ class FeatureRecoveryBenchmark(BaseBenchmark):
 
     def __init__(
         self,
-        config: Optional[BenchmarkConfig] = None,
-        concept_vectors: Optional[Dict[str, np.ndarray]] = None,
+        config: BenchmarkConfig | None = None,
+        concept_vectors: dict[str, np.ndarray] | None = None,
     ):
         """Initialize feature recovery benchmark.
 
@@ -628,8 +628,8 @@ class InterventionBenchmark(BaseBenchmark):
 
     def __init__(
         self,
-        config: Optional[BenchmarkConfig] = None,
-        target_features: Optional[List[int]] = None,
+        config: BenchmarkConfig | None = None,
+        target_features: list[int] | None = None,
     ):
         """Initialize intervention benchmark.
 
@@ -755,8 +755,8 @@ class ConsistencyBenchmark(BaseBenchmark):
 
     def __init__(
         self,
-        config: Optional[BenchmarkConfig] = None,
-        reference_sae: Optional[SAEProtocol] = None,
+        config: BenchmarkConfig | None = None,
+        reference_sae: SAEProtocol | None = None,
     ):
         """Initialize consistency benchmark.
 
@@ -889,7 +889,7 @@ class BenchmarkSuiteResult:
         duration_seconds: Total execution time
     """
 
-    results: List[BenchmarkResult]
+    results: list[BenchmarkResult]
     overall_score: float
     passed: bool
     duration_seconds: float
@@ -915,7 +915,7 @@ class BenchmarkSuiteResult:
         lines.append("-" * 60)
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "results": [r.to_dict() for r in self.results],
@@ -924,7 +924,7 @@ class BenchmarkSuiteResult:
             "duration_seconds": self.duration_seconds,
         }
 
-    def save(self, path: Union[str, Path]) -> None:
+    def save(self, path: str | Path) -> None:
         """Save results to JSON file.
 
         Args:
@@ -954,8 +954,8 @@ class BenchmarkSuite:
 
     def __init__(
         self,
-        config: Optional[BenchmarkConfig] = None,
-        weights: Optional[Dict[BenchmarkType, float]] = None,
+        config: BenchmarkConfig | None = None,
+        weights: dict[BenchmarkType, float] | None = None,
     ):
         """Initialize benchmark suite.
 
@@ -970,9 +970,9 @@ class BenchmarkSuite:
             BenchmarkType.INTERVENTION: 0.25,
             BenchmarkType.CONSISTENCY: 0.2,
         }
-        self.benchmarks: List[BaseBenchmark] = []
+        self.benchmarks: list[BaseBenchmark] = []
 
-    def add(self, benchmark: BaseBenchmark) -> "BenchmarkSuite":
+    def add(self, benchmark: BaseBenchmark) -> BenchmarkSuite:
         """Add a benchmark to the suite.
 
         Args:
@@ -984,7 +984,7 @@ class BenchmarkSuite:
         self.benchmarks.append(benchmark)
         return self
 
-    def add_all_defaults(self) -> "BenchmarkSuite":
+    def add_all_defaults(self) -> BenchmarkSuite:
         """Add all default benchmarks.
 
         Returns:
@@ -1052,7 +1052,7 @@ class BenchmarkSuite:
 # Convenience functions
 
 def create_benchmark_suite(
-    config: Optional[BenchmarkConfig] = None,
+    config: BenchmarkConfig | None = None,
     include_all: bool = True,
 ) -> BenchmarkSuite:
     """Create a benchmark suite with default benchmarks.

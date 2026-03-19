@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Weaving Pipeline Steps 0-3: Query Setup and Thread Selection
 =============================================================
@@ -24,17 +23,15 @@ Date: 2025-12-09
 
 from __future__ import annotations
 
-import time
 import logging
+from collections.abc import Callable
 from datetime import datetime, timedelta
-from typing import Callable, Optional, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
-    from hololoom.protocols.types import Query
     from hololoom.loom.command import LoomCommand
-    from hololoom.chrono.trigger import ChronoTrigger, TemporalWindow
     from hololoom.memory.graph import KG
+    from hololoom.orchestrator.context import WeavingContext
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +41,11 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 async def execute_step0_meta_prompt(
-    ctx: 'WeavingContext',
+    ctx: WeavingContext,
     enable_enhancement: bool,
-    proto_llm_call: Optional[Callable[[str], Any]],
-    log: Optional[logging.Logger] = None,
-) -> 'WeavingContext':
+    proto_llm_call: Callable[[str], Any] | None,
+    log: logging.Logger | None = None,
+) -> WeavingContext:
     """
     Step 0: Meta-Prompt Enhancement (optional).
 
@@ -124,11 +121,11 @@ async def execute_step0_meta_prompt(
 # ============================================================================
 
 async def execute_step1_pattern_selection(
-    ctx: 'WeavingContext',
-    loom_command: 'LoomCommand',
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
-) -> 'WeavingContext':
+    ctx: WeavingContext,
+    loom_command: LoomCommand,
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
+) -> WeavingContext:
     """
     Step 1: Loom Command selects Pattern Card.
 
@@ -185,12 +182,12 @@ async def execute_step1_pattern_selection(
 # ============================================================================
 
 async def execute_step2_chrono_trigger(
-    ctx: 'WeavingContext',
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
+    ctx: WeavingContext,
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
     lookback_days: int = 365,
     recency_bias: float = 0.5,
-) -> 'WeavingContext':
+) -> WeavingContext:
     """
     Step 2: Chrono Trigger fires, creates TemporalWindow.
 
@@ -261,13 +258,13 @@ async def execute_step2_chrono_trigger(
 # ============================================================================
 
 async def execute_step3_thread_selection(
-    ctx: 'WeavingContext',
-    yarn_graph: 'KG',
-    shuttle_stage: Optional[Any] = None,
+    ctx: WeavingContext,
+    yarn_graph: KG,
+    shuttle_stage: Any | None = None,
     enable_shuttle: bool = False,
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
-) -> 'WeavingContext':
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
+) -> WeavingContext:
     """
     Step 3: Thread Selection from memory.
 

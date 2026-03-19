@@ -37,10 +37,9 @@ Performance:
 """
 
 import logging
-from typing import List, Optional, Dict, Any, Tuple, Set
-from dataclasses import dataclass, field
 import time
-from collections import deque
+from dataclasses import dataclass, field
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -76,13 +75,13 @@ class ReasoningPath:
             edge_weights=[1.0, 1.0]
         )
     """
-    entities: List[str]
-    relationships: List[str]
+    entities: list[str]
+    relationships: list[str]
     confidence: float
     hop_count: int
     explanation: str = ""
-    edge_weights: List[float] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    edge_weights: list[float] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate path structure."""
@@ -94,7 +93,7 @@ class ReasoningPath:
                     f"{len(self.relationships)} relationships (expected {expected_rels})"
                 )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize path for JSON."""
         return {
             'entities': self.entities,
@@ -144,14 +143,14 @@ class MultiHopRAGResult:
         metadata: Additional info (latency_ms, beam_width, etc.)
     """
     response: str
-    sources: List[str]
+    sources: list[str]
     confidence: float
     reasoning_mode: str = "multihop"
-    reasoning_paths: List[ReasoningPath] = field(default_factory=list)
-    best_path: Optional[ReasoningPath] = None
+    reasoning_paths: list[ReasoningPath] = field(default_factory=list)
+    best_path: ReasoningPath | None = None
     hop_count: int = 0
     paths_explored: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         """Human-readable result."""
@@ -229,9 +228,9 @@ class MultiHopRAGMixin:
     async def query_multihop(
         self,
         question: str,
-        max_hops: Optional[int] = None,
+        max_hops: int | None = None,
         return_paths: bool = True,
-        beam_width: Optional[int] = None,
+        beam_width: int | None = None,
         mode: str = "verify"
     ) -> MultiHopRAGResult:
         """
@@ -278,7 +277,6 @@ class MultiHopRAGMixin:
         if not seed_entities:
             logger.warning("No entities extracted from query, falling back to standard query")
             # Fall back to standard RAG
-            from hololoom.rag.simple_rag import RAGResult
             standard_result = await self.query(question, mode=mode)
             # Convert to MultiHopRAGResult
             return MultiHopRAGResult(
@@ -373,11 +371,11 @@ class MultiHopRAGMixin:
 
     async def find_reasoning_paths(
         self,
-        start_entities: List[str],
+        start_entities: list[str],
         goal: str,
         max_hops: int,
         beam_width: int = 5
-    ) -> List[ReasoningPath]:
+    ) -> list[ReasoningPath]:
         """
         Find reasoning paths from start entities using beam search.
 
@@ -409,7 +407,7 @@ class MultiHopRAGMixin:
             return []
 
         # Initialize beam: each seed entity is a 1-node path
-        current_paths: List[Tuple[List[str], List[str], float, List[float]]] = []
+        current_paths: list[tuple[list[str], list[str], float, list[float]]] = []
         for entity in start_entities:
             if entity in kg.G:
                 # (entities, relationships, score, edge_weights)
@@ -419,14 +417,14 @@ class MultiHopRAGMixin:
             logger.debug("No seed entities found in knowledge graph")
             return []
 
-        visited_paths: Set[tuple] = set()
-        all_paths: List[ReasoningPath] = []
+        visited_paths: set[tuple] = set()
+        all_paths: list[ReasoningPath] = []
 
         # Beam search
         for hop in range(max_hops):
             logger.debug(f"Hop {hop + 1}/{max_hops}: {len(current_paths)} paths in beam")
 
-            next_paths: List[Tuple[List[str], List[str], float, List[float]]] = []
+            next_paths: list[tuple[list[str], list[str], float, list[float]]] = []
 
             for entities, rels, current_score, weights in current_paths:
                 last_entity = entities[-1]
@@ -518,7 +516,7 @@ class MultiHopRAGMixin:
         logger.debug(f"Beam search complete: {len(all_paths)} total paths found")
         return all_paths
 
-    def _extract_query_entities(self, query: str) -> List[str]:
+    def _extract_query_entities(self, query: str) -> list[str]:
         """
         Extract entity names from query text.
 
@@ -571,9 +569,9 @@ class MultiHopRAGMixin:
 
     def _score_path_incremental(
         self,
-        entities: List[str],
-        relationships: List[str],
-        edge_weights: List[float],
+        entities: list[str],
+        relationships: list[str],
+        edge_weights: list[float],
         goal: str,
         current_score: float
     ) -> float:
@@ -678,7 +676,7 @@ class MultiHopRAGMixin:
 
         return ", and ".join(explanation_parts)
 
-    def _build_path_context(self, paths: List[ReasoningPath], question: str) -> str:
+    def _build_path_context(self, paths: list[ReasoningPath], question: str) -> str:
         """
         Build LLM context from reasoning paths.
 
@@ -706,7 +704,7 @@ class MultiHopRAGMixin:
 
         return "\n".join(context_lines)
 
-    def get_multihop_stats(self) -> Dict[str, Any]:
+    def get_multihop_stats(self) -> dict[str, Any]:
         """
         Get multi-hop reasoning statistics.
 

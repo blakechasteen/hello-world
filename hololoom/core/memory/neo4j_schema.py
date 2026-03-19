@@ -6,7 +6,6 @@ aligned with the architectural spec. Run ensure_schema() on startup.
 """
 
 import logging
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 

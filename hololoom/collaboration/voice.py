@@ -8,12 +8,13 @@ Phase 3: Multi-User Collaboration - Voice/video infrastructure.
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Set
 import asyncio
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +64,10 @@ class MediaTrack:
     quality: StreamQuality = StreamQuality.MEDIUM
 
     # Track metadata
-    label: Optional[str] = None
-    device_id: Optional[str] = None
-    codec: Optional[str] = None
-    bitrate: Optional[int] = None
+    label: str | None = None
+    device_id: str | None = None
+    codec: str | None = None
+    bitrate: int | None = None
 
     # Stats
     packets_sent: int = 0
@@ -75,7 +76,7 @@ class MediaTrack:
     jitter: float = 0.0
     latency_ms: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "track_id": self.track_id,
             "media_type": self.media_type.value,
@@ -105,19 +106,19 @@ class PeerConnection:
     remote_user_id: str
     state: ConnectionState = ConnectionState.NEW
     created_at: datetime = field(default_factory=datetime.now)
-    connected_at: Optional[datetime] = None
+    connected_at: datetime | None = None
 
     # Tracks
-    local_tracks: Dict[str, MediaTrack] = field(default_factory=dict)
-    remote_tracks: Dict[str, MediaTrack] = field(default_factory=dict)
+    local_tracks: dict[str, MediaTrack] = field(default_factory=dict)
+    remote_tracks: dict[str, MediaTrack] = field(default_factory=dict)
 
     # ICE state
     ice_connection_state: str = "new"
     ice_gathering_state: str = "new"
 
     # SDP state
-    local_description: Optional[str] = None
-    remote_description: Optional[str] = None
+    local_description: str | None = None
+    remote_description: str | None = None
 
     # Stats
     quality_score: float = 1.0  # 0-1, 1 = excellent
@@ -136,7 +137,7 @@ class PeerConnection:
         self.local_tracks.pop(track_id, None)
         self.remote_tracks.pop(track_id, None)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "connection_id": self.connection_id,
             "local_user_id": self.local_user_id,
@@ -161,10 +162,10 @@ class SignalingMessage:
     from_user: str
     to_user: str
     connection_id: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "message_id": self.message_id,
             "message_type": self.message_type.value,
@@ -192,7 +193,7 @@ class VoiceRoomSettings:
     max_video_quality: StreamQuality = StreamQuality.HIGH
     record_enabled: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "max_participants": self.max_participants,
             "allow_video": self.allow_video,
@@ -228,11 +229,11 @@ class VoiceRoomParticipant:
     latency_ms: float = 0.0
 
     # Active tracks
-    audio_track_id: Optional[str] = None
-    video_track_id: Optional[str] = None
-    screen_track_id: Optional[str] = None
+    audio_track_id: str | None = None
+    video_track_id: str | None = None
+    screen_track_id: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "user_id": self.user_id,
             "display_name": self.display_name,
@@ -261,19 +262,19 @@ class VoiceRoom:
         self,
         room_id: str,
         session_id: str,
-        settings: Optional[VoiceRoomSettings] = None
+        settings: VoiceRoomSettings | None = None
     ):
         self.room_id = room_id
         self.session_id = session_id
         self.settings = settings or VoiceRoomSettings()
         self.created_at = datetime.now()
 
-        self.participants: Dict[str, VoiceRoomParticipant] = {}
-        self.connections: Dict[str, PeerConnection] = {}
-        self.pending_messages: List[SignalingMessage] = []
+        self.participants: dict[str, VoiceRoomParticipant] = {}
+        self.connections: dict[str, PeerConnection] = {}
+        self.pending_messages: list[SignalingMessage] = []
 
-        self._event_handlers: Dict[str, List[Callable]] = {}
-        self._speaking_detector_task: Optional[asyncio.Task] = None
+        self._event_handlers: dict[str, list[Callable]] = {}
+        self._speaking_detector_task: asyncio.Task | None = None
         self._running = False
 
     async def start(self):
@@ -314,7 +315,7 @@ class VoiceRoom:
         self,
         user_id: str,
         display_name: str
-    ) -> Optional[VoiceRoomParticipant]:
+    ) -> VoiceRoomParticipant | None:
         """Add a participant to the voice room."""
         if len(self.participants) >= self.settings.max_participants:
             logger.warning(f"Voice room {self.room_id} is full")
@@ -351,7 +352,7 @@ class VoiceRoom:
         self._emit_event("participant_left", {"user_id": user_id})
         return True
 
-    async def toggle_mute(self, user_id: str, muted: Optional[bool] = None) -> bool:
+    async def toggle_mute(self, user_id: str, muted: bool | None = None) -> bool:
         """Toggle or set mute state."""
         participant = self.participants.get(user_id)
         if not participant:
@@ -368,7 +369,7 @@ class VoiceRoom:
         })
         return True
 
-    async def toggle_video(self, user_id: str, video_on: Optional[bool] = None) -> bool:
+    async def toggle_video(self, user_id: str, video_on: bool | None = None) -> bool:
         """Toggle or set video state."""
         if not self.settings.allow_video:
             return False
@@ -436,7 +437,7 @@ class VoiceRoom:
         self,
         local_user_id: str,
         remote_user_id: str
-    ) -> Optional[PeerConnection]:
+    ) -> PeerConnection | None:
         """Create a peer connection between two participants."""
         from uuid import uuid4
 
@@ -503,7 +504,7 @@ class VoiceRoom:
         from_user: str,
         to_user: str,
         connection_id: str,
-        payload: Dict[str, Any]
+        payload: dict[str, Any]
     ) -> SignalingMessage:
         """Create and queue a signaling message."""
         from uuid import uuid4
@@ -522,13 +523,13 @@ class VoiceRoom:
 
         return message
 
-    def get_pending_messages(self, for_user: str) -> List[SignalingMessage]:
+    def get_pending_messages(self, for_user: str) -> list[SignalingMessage]:
         """Get pending signaling messages for a user."""
         messages = [m for m in self.pending_messages if m.to_user == for_user]
         self.pending_messages = [m for m in self.pending_messages if m.to_user != for_user]
         return messages
 
-    def update_connection_quality(self, connection_id: str, stats: Dict[str, Any]):
+    def update_connection_quality(self, connection_id: str, stats: dict[str, Any]):
         """Update connection quality from WebRTC stats."""
         connection = self.connections.get(connection_id)
         if not connection:
@@ -553,7 +554,7 @@ class VoiceRoom:
             participant.connection_quality = connection.quality_score
             participant.latency_ms = latency
 
-    def get_active_speakers(self, limit: int = 4) -> List[VoiceRoomParticipant]:
+    def get_active_speakers(self, limit: int = 4) -> list[VoiceRoomParticipant]:
         """Get currently speaking participants (for spotlight view)."""
         speaking = [p for p in self.participants.values() if p.is_speaking]
         speaking.sort(key=lambda p: p.speaking_volume, reverse=True)
@@ -565,7 +566,7 @@ class VoiceRoom:
             self._event_handlers[event] = []
         self._event_handlers[event].append(handler)
 
-    def _emit_event(self, event: str, data: Dict[str, Any]):
+    def _emit_event(self, event: str, data: dict[str, Any]):
         """Emit event to handlers."""
         handlers = self._event_handlers.get(event, [])
         for handler in handlers:
@@ -574,7 +575,7 @@ class VoiceRoom:
             except Exception as e:
                 logger.error(f"Voice room event handler error: {e}")
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export voice room state."""
         return {
             "room_id": self.room_id,
@@ -594,13 +595,13 @@ class VoiceManager:
     """
 
     def __init__(self):
-        self.rooms: Dict[str, VoiceRoom] = {}
-        self.user_rooms: Dict[str, str] = {}  # user_id -> room_id
+        self.rooms: dict[str, VoiceRoom] = {}
+        self.user_rooms: dict[str, str] = {}  # user_id -> room_id
 
     async def create_room(
         self,
         session_id: str,
-        settings: Optional[VoiceRoomSettings] = None
+        settings: VoiceRoomSettings | None = None
     ) -> VoiceRoom:
         """Create a voice room for a session."""
         from uuid import uuid4
@@ -618,11 +619,11 @@ class VoiceManager:
         logger.info(f"Created voice room {room_id} for session {session_id}")
         return room
 
-    async def get_room(self, room_id: str) -> Optional[VoiceRoom]:
+    async def get_room(self, room_id: str) -> VoiceRoom | None:
         """Get a voice room by ID."""
         return self.rooms.get(room_id)
 
-    async def get_room_for_session(self, session_id: str) -> Optional[VoiceRoom]:
+    async def get_room_for_session(self, session_id: str) -> VoiceRoom | None:
         """Get voice room for a session."""
         for room in self.rooms.values():
             if room.session_id == session_id:
@@ -634,7 +635,7 @@ class VoiceManager:
         room_id: str,
         user_id: str,
         display_name: str
-    ) -> Optional[VoiceRoomParticipant]:
+    ) -> VoiceRoomParticipant | None:
         """Join a voice room."""
         room = self.rooms.get(room_id)
         if not room:
@@ -678,7 +679,7 @@ class VoiceManager:
 
         return True
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export manager state."""
         return {
             "total_rooms": len(self.rooms),
@@ -690,7 +691,7 @@ class VoiceManager:
 # Factory functions
 def create_voice_room(
     session_id: str,
-    settings: Optional[VoiceRoomSettings] = None
+    settings: VoiceRoomSettings | None = None
 ) -> VoiceRoom:
     """Create a voice room."""
     from uuid import uuid4

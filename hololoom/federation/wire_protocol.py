@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Federation Wire Protocol
 ========================
@@ -30,15 +29,13 @@ Author: Claude Code (Phase 4 - December 2025)
 from __future__ import annotations
 
 import base64
-import hashlib
 import json
 import time
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import IntEnum
-from typing import Any, Dict, List, Optional, Sequence, Union
-
+from typing import Any
 
 # ============================================================================
 #  JSON-RPC 2.0 Error Codes
@@ -67,7 +64,7 @@ class ErrorCode(IntEnum):
 
 
 # Error messages for each code
-ERROR_MESSAGES: Dict[ErrorCode, str] = {
+ERROR_MESSAGES: dict[ErrorCode, str] = {
     ErrorCode.PARSE_ERROR: "Parse error",
     ErrorCode.INVALID_REQUEST: "Invalid Request",
     ErrorCode.METHOD_NOT_FOUND: "Method not found",
@@ -95,9 +92,9 @@ class RPCError:
 
     code: int
     message: str
-    data: Optional[Dict[str, Any]] = None
+    data: dict[str, Any] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dict."""
         result = {"code": self.code, "message": self.message}
         if self.data is not None:
@@ -108,8 +105,8 @@ class RPCError:
     def from_code(
         cls,
         code: ErrorCode,
-        data: Optional[Dict[str, Any]] = None,
-    ) -> "RPCError":
+        data: dict[str, Any] | None = None,
+    ) -> RPCError:
         """Create error from standard code."""
         return cls(
             code=code.value,
@@ -128,7 +125,7 @@ class RequestMeta:
     signature: bytes = field(default=b"")  # Ed25519 signature
     sender_public_key: bytes = field(default=b"")  # 32-byte public key
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dict."""
         return {
             "sender_id": self.sender_id,
@@ -139,7 +136,7 @@ class RequestMeta:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "RequestMeta":
+    def from_dict(cls, data: dict[str, Any]) -> RequestMeta:
         """Create from dict (e.g., parsed JSON)."""
         return cls(
             sender_id=data.get("sender_id", ""),
@@ -155,14 +152,14 @@ class RPCRequest:
     """JSON-RPC 2.0 request with federation metadata."""
 
     method: str
-    params: Dict[str, Any] = field(default_factory=dict)
-    id: Optional[str] = None          # None for notifications
-    meta: Optional[RequestMeta] = None
+    params: dict[str, Any] = field(default_factory=dict)
+    id: str | None = None          # None for notifications
+    meta: RequestMeta | None = None
     jsonrpc: str = "2.0"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dict."""
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "jsonrpc": self.jsonrpc,
             "method": self.method,
         }
@@ -195,14 +192,14 @@ class RPCRequest:
 class RPCResponse:
     """JSON-RPC 2.0 response."""
 
-    id: Optional[str]
-    result: Optional[Any] = None
-    error: Optional[RPCError] = None
+    id: str | None
+    result: Any | None = None
+    error: RPCError | None = None
     jsonrpc: str = "2.0"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dict."""
-        response: Dict[str, Any] = {
+        response: dict[str, Any] = {
             "jsonrpc": self.jsonrpc,
             "id": self.id,
         }
@@ -258,8 +255,8 @@ class JSONRPCBuilder:
     def build_request(
         self,
         method: str,
-        params: Optional[Dict[str, Any]] = None,
-        request_id: Optional[str] = None,
+        params: dict[str, Any] | None = None,
+        request_id: str | None = None,
         include_meta: bool = True,
     ) -> RPCRequest:
         """
@@ -296,7 +293,7 @@ class JSONRPCBuilder:
     def build_notification(
         self,
         method: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> RPCRequest:
         """
         Build a JSON-RPC 2.0 notification (no response expected).
@@ -317,9 +314,9 @@ class JSONRPCBuilder:
 
     def build_response(
         self,
-        request_id: Optional[str],
+        request_id: str | None,
         result: Any = None,
-        error: Optional[RPCError] = None,
+        error: RPCError | None = None,
     ) -> RPCResponse:
         """
         Build a JSON-RPC 2.0 response.
@@ -340,9 +337,9 @@ class JSONRPCBuilder:
 
     def build_error_response(
         self,
-        request_id: Optional[str],
+        request_id: str | None,
         code: ErrorCode,
-        data: Optional[Dict[str, Any]] = None,
+        data: dict[str, Any] | None = None,
     ) -> RPCResponse:
         """
         Build an error response from standard error code.
@@ -363,7 +360,7 @@ class JSONRPCBuilder:
     def build_batch(
         self,
         requests: Sequence[RPCRequest],
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Build a batch request (array of requests).
 
@@ -431,7 +428,7 @@ class RequestValidator:
         self._require_signature = require_signature
         self._used_nonces: set[str] = set()
 
-    def validate_json(self, raw_json: str) -> "ValidationResult":
+    def validate_json(self, raw_json: str) -> ValidationResult:
         """
         Validate raw JSON and parse into RPCRequest.
 
@@ -465,7 +462,7 @@ class RequestValidator:
 
         return self.validate_dict(data)
 
-    def validate_dict(self, data: Dict[str, Any]) -> "ValidationResult":
+    def validate_dict(self, data: dict[str, Any]) -> ValidationResult:
         """
         Validate parsed JSON dict.
 
@@ -544,7 +541,7 @@ class RequestValidator:
 
         return ValidationResult(valid=True, request=request)
 
-    def _validate_meta(self, meta_data: Any) -> "ValidationResult":
+    def _validate_meta(self, meta_data: Any) -> ValidationResult:
         """Validate request metadata."""
         if not isinstance(meta_data, dict):
             return ValidationResult(
@@ -628,7 +625,7 @@ class RequestValidator:
     def validate_batch(
         self,
         raw_json: str,
-    ) -> List["ValidationResult"]:
+    ) -> list[ValidationResult]:
         """
         Validate a batch request (array of requests).
 
@@ -687,9 +684,9 @@ class ValidationResult:
     """Result of request validation."""
 
     valid: bool
-    request: Optional[RPCRequest] = None
-    meta: Optional[RequestMeta] = None
-    error: Optional[RPCError] = None
+    request: RPCRequest | None = None
+    meta: RequestMeta | None = None
+    error: RPCError | None = None
 
 
 # ============================================================================
@@ -697,7 +694,7 @@ class ValidationResult:
 # ============================================================================
 
 # HoloLoom RPC method namespace
-HOLOLOOM_METHODS: Dict[str, Dict[str, Any]] = {
+HOLOLOOM_METHODS: dict[str, dict[str, Any]] = {
     # RAG methods
     "hololoom.rag.recall": {
         "description": "Retrieve relevant memories for a query",
@@ -828,7 +825,7 @@ def parse_request(raw_json: str, require_signature: bool = True) -> ValidationRe
     return validator.validate_json(raw_json)
 
 
-def parse_batch(raw_json: str, require_signature: bool = True) -> List[ValidationResult]:
+def parse_batch(raw_json: str, require_signature: bool = True) -> list[ValidationResult]:
     """Parse and validate a batch of JSON-RPC requests."""
     validator = RequestValidator(require_signature=require_signature)
     return validator.validate_batch(raw_json)

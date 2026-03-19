@@ -1,15 +1,15 @@
 # motif/__init__.py
 from .base import (
+    HybridMotifDetector,
     MotifDetector,
     RegexMotifDetector,
     SpacyMotifDetector,
-    HybridMotifDetector,
-    create_motif_detector
+    create_motif_detector,
 )
 
 __all__ = [
     'MotifDetector',
-    'RegexMotifDetector', 
+    'RegexMotifDetector',
     'SpacyMotifDetector',
     'HybridMotifDetector',
     'create_motif_detector'

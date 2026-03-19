@@ -15,11 +15,12 @@ Features:
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any, Callable, Union
-from enum import Enum
-from datetime import datetime
 import math
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class UIAnchorMode(Enum):
@@ -60,7 +61,7 @@ class UIPosition:
     rotation_z: float = 0.0
     scale: float = 1.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {
             "x": self.x, "y": self.y, "z": self.z,
             "rotation_x": self.rotation_x,
@@ -77,7 +78,7 @@ class UISize:
     height: float
     depth: float = 0.01  # Thin by default
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {"width": self.width, "height": self.height, "depth": self.depth}
 
 
@@ -98,7 +99,7 @@ class UIStyle:
     font_family: str = "sans-serif"
     padding: float = 0.01
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "backgroundColor": self.background_color,
             "foregroundColor": self.foreground_color,
@@ -125,16 +126,16 @@ class UIElement:
     size: UISize
     style: UIStyle = field(default_factory=UIStyle)
     anchor_mode: UIAnchorMode = UIAnchorMode.WORLD
-    anchor_node_id: Optional[str] = None
+    anchor_node_id: str | None = None
     interaction_mode: UIInteractionMode = UIInteractionMode.GAZE_DWELL
     state: UIElementState = UIElementState.NORMAL
     visible: bool = True
     enabled: bool = True
-    tooltip: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tooltip: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.element_id,
             "type": self.element_type,
@@ -155,14 +156,14 @@ class UIElement:
 @dataclass
 class Panel(UIElement):
     """3D panel that can contain other elements."""
-    title: Optional[str] = None
+    title: str | None = None
     content: str = ""
-    children: List[str] = field(default_factory=list)  # Child element IDs
+    children: list[str] = field(default_factory=list)  # Child element IDs
 
     def __post_init__(self):
         self.element_type = "panel"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
         data["title"] = self.title
         data["content"] = self.content
@@ -174,13 +175,13 @@ class Panel(UIElement):
 class Button(UIElement):
     """Interactive 3D button."""
     label: str = "Button"
-    icon: Optional[str] = None  # Icon name/URL
-    callback_action: Optional[str] = None  # Action to trigger
+    icon: str | None = None  # Icon name/URL
+    callback_action: str | None = None  # Action to trigger
 
     def __post_init__(self):
         self.element_type = "button"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
         data["label"] = self.label
         data["icon"] = self.icon
@@ -195,14 +196,14 @@ class Slider(UIElement):
     min_value: float = 0.0
     max_value: float = 1.0
     step: float = 0.01
-    label: Optional[str] = None
+    label: str | None = None
     show_value: bool = True
-    callback_action: Optional[str] = None
+    callback_action: str | None = None
 
     def __post_init__(self):
         self.element_type = "slider"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
         data.update({
             "value": self.value,
@@ -220,13 +221,13 @@ class Slider(UIElement):
 class Toggle(UIElement):
     """3D toggle switch."""
     checked: bool = False
-    label: Optional[str] = None
-    callback_action: Optional[str] = None
+    label: str | None = None
+    callback_action: str | None = None
 
     def __post_init__(self):
         self.element_type = "toggle"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
         data.update({
             "checked": self.checked,
@@ -241,12 +242,12 @@ class MenuItem:
     """Item in a radial or linear menu."""
     item_id: str
     label: str
-    icon: Optional[str] = None
-    action: Optional[str] = None
+    icon: str | None = None
+    action: str | None = None
     enabled: bool = True
-    submenu: Optional[List["MenuItem"]] = None
+    submenu: list["MenuItem"] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = {
             "id": self.item_id,
             "label": self.label,
@@ -262,16 +263,16 @@ class MenuItem:
 @dataclass
 class RadialMenu(UIElement):
     """Radial menu for quick actions."""
-    items: List[MenuItem] = field(default_factory=list)
+    items: list[MenuItem] = field(default_factory=list)
     inner_radius: float = 0.05  # Meters
     outer_radius: float = 0.15
     open: bool = False
-    selected_item_id: Optional[str] = None
+    selected_item_id: str | None = None
 
     def __post_init__(self):
         self.element_type = "radial_menu"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
         data.update({
             "items": [item.to_dict() for item in self.items],
@@ -287,17 +288,17 @@ class RadialMenu(UIElement):
 class InfoCard(UIElement):
     """Information card displaying node details."""
     title: str = ""
-    subtitle: Optional[str] = None
+    subtitle: str | None = None
     body: str = ""
-    image_url: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
-    actions: List[MenuItem] = field(default_factory=list)
-    linked_node_id: Optional[str] = None
+    image_url: str | None = None
+    tags: list[str] = field(default_factory=list)
+    actions: list[MenuItem] = field(default_factory=list)
+    linked_node_id: str | None = None
 
     def __post_init__(self):
         self.element_type = "info_card"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
         data.update({
             "title": self.title,
@@ -314,14 +315,14 @@ class InfoCard(UIElement):
 @dataclass
 class TagCloud(UIElement):
     """3D tag cloud around a node."""
-    tags: List[Dict[str, Any]] = field(default_factory=list)  # {label, weight, color, action}
+    tags: list[dict[str, Any]] = field(default_factory=list)  # {label, weight, color, action}
     radius: float = 0.3  # Distribution radius
-    linked_node_id: Optional[str] = None
+    linked_node_id: str | None = None
 
     def __post_init__(self):
         self.element_type = "tag_cloud"
 
-    def add_tag(self, label: str, weight: float = 1.0, color: str = "#3b82f6", action: Optional[str] = None):
+    def add_tag(self, label: str, weight: float = 1.0, color: str = "#3b82f6", action: str | None = None):
         """Add a tag to the cloud."""
         self.tags.append({
             "label": label,
@@ -330,7 +331,7 @@ class TagCloud(UIElement):
             "action": action
         })
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
         data.update({
             "tags": self.tags,
@@ -344,14 +345,14 @@ class TagCloud(UIElement):
 class ProgressRing(UIElement):
     """3D progress ring indicator."""
     progress: float = 0.0  # 0.0 to 1.0
-    label: Optional[str] = None
+    label: str | None = None
     ring_width: float = 0.01
     radius: float = 0.05
 
     def __post_init__(self):
         self.element_type = "progress_ring"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
         data.update({
             "progress": self.progress,
@@ -372,38 +373,38 @@ class SpatialUIManager:
 
     def __init__(
         self,
-        default_style: Optional[UIStyle] = None,
+        default_style: UIStyle | None = None,
         billboard_all: bool = False
     ):
-        self.elements: Dict[str, UIElement] = {}
+        self.elements: dict[str, UIElement] = {}
         self.default_style = default_style or UIStyle()
         self.billboard_all = billboard_all
 
         # Element groups for batch operations
-        self.groups: Dict[str, List[str]] = {}
+        self.groups: dict[str, list[str]] = {}
 
         # Layout helpers
-        self.head_position: Optional[tuple] = None
-        self.head_direction: Optional[tuple] = None
+        self.head_position: tuple | None = None
+        self.head_direction: tuple | None = None
 
         # Interaction callbacks
-        self.action_handlers: Dict[str, Callable[[str, Dict], None]] = {}
+        self.action_handlers: dict[str, Callable[[str, dict], None]] = {}
 
         # Event callbacks
-        self.on_element_click: List[Callable[[str], None]] = []
-        self.on_element_hover: List[Callable[[str, bool], None]] = []
-        self.on_value_change: List[Callable[[str, Any], None]] = []
+        self.on_element_click: list[Callable[[str], None]] = []
+        self.on_element_hover: list[Callable[[str, bool], None]] = []
+        self.on_value_change: list[Callable[[str, Any], None]] = []
 
     def create_panel(
         self,
         panel_id: str,
         position: tuple,
         size: tuple = (0.4, 0.3),
-        title: Optional[str] = None,
+        title: str | None = None,
         content: str = "",
         anchor_mode: UIAnchorMode = UIAnchorMode.WORLD,
-        anchor_node_id: Optional[str] = None,
-        style: Optional[UIStyle] = None
+        anchor_node_id: str | None = None,
+        style: UIStyle | None = None
     ) -> Panel:
         """Create a 3D panel."""
         panel = Panel(
@@ -426,9 +427,9 @@ class SpatialUIManager:
         position: tuple,
         label: str,
         size: tuple = (0.1, 0.05),
-        icon: Optional[str] = None,
-        action: Optional[str] = None,
-        style: Optional[UIStyle] = None
+        icon: str | None = None,
+        action: str | None = None,
+        style: UIStyle | None = None
     ) -> Button:
         """Create a 3D button."""
         button = Button(
@@ -448,7 +449,7 @@ class SpatialUIManager:
         self,
         menu_id: str,
         position: tuple,
-        items: List[Dict[str, str]],
+        items: list[dict[str, str]],
         inner_radius: float = 0.05,
         outer_radius: float = 0.15
     ) -> RadialMenu:
@@ -482,9 +483,9 @@ class SpatialUIManager:
         position: tuple,
         title: str,
         body: str,
-        subtitle: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        linked_node_id: Optional[str] = None,
+        subtitle: str | None = None,
+        tags: list[str] | None = None,
+        linked_node_id: str | None = None,
         size: tuple = (0.3, 0.2)
     ) -> InfoCard:
         """Create an info card."""
@@ -512,9 +513,9 @@ class SpatialUIManager:
         self,
         cloud_id: str,
         position: tuple,
-        tags: List[Dict[str, Any]],
+        tags: list[dict[str, Any]],
         radius: float = 0.3,
-        linked_node_id: Optional[str] = None
+        linked_node_id: str | None = None
     ) -> TagCloud:
         """Create a 3D tag cloud."""
         cloud = TagCloud(
@@ -542,8 +543,8 @@ class SpatialUIManager:
         value: float = 0.5,
         min_value: float = 0.0,
         max_value: float = 1.0,
-        label: Optional[str] = None,
-        action: Optional[str] = None,
+        label: str | None = None,
+        action: str | None = None,
         size: tuple = (0.15, 0.02)
     ) -> Slider:
         """Create a 3D slider."""
@@ -567,7 +568,7 @@ class SpatialUIManager:
         ring_id: str,
         position: tuple,
         progress: float = 0.0,
-        label: Optional[str] = None,
+        label: str | None = None,
         radius: float = 0.05
     ) -> ProgressRing:
         """Create a progress ring indicator."""
@@ -584,7 +585,7 @@ class SpatialUIManager:
         self.elements[ring_id] = ring
         return ring
 
-    def get_element(self, element_id: str) -> Optional[UIElement]:
+    def get_element(self, element_id: str) -> UIElement | None:
         """Get an element by ID."""
         return self.elements.get(element_id)
 
@@ -673,7 +674,7 @@ class SpatialUIManager:
         # Calculate rotation (simplified - Y-axis only for now)
         element.position.rotation_y = math.atan2(dx, dz)
 
-    def handle_interaction(self, element_id: str, interaction_type: str, data: Dict[str, Any] = None):
+    def handle_interaction(self, element_id: str, interaction_type: str, data: dict[str, Any] = None):
         """Handle interaction with an element."""
         element = self.elements.get(element_id)
         if not element or not element.enabled:
@@ -696,7 +697,7 @@ class SpatialUIManager:
         elif interaction_type == "value_change":
             self._handle_value_change(element, data or {})
 
-    def _handle_click(self, element: UIElement, data: Dict[str, Any]):
+    def _handle_click(self, element: UIElement, data: dict[str, Any]):
         """Handle click on element."""
         # Fire click callbacks
         for callback in self.on_element_click:
@@ -718,19 +719,19 @@ class SpatialUIManager:
                     if item.item_id == data["item_id"] and item.action:
                         self._trigger_action(item.action, element.element_id, {"item": item.label})
 
-    def _handle_value_change(self, element: UIElement, data: Dict[str, Any]):
+    def _handle_value_change(self, element: UIElement, data: dict[str, Any]):
         """Handle value change on element."""
         if isinstance(element, Slider) and "value" in data:
             self.update_slider_value(element.element_id, data["value"])
             if element.callback_action:
                 self._trigger_action(element.callback_action, element.element_id, {"value": element.value})
 
-    def _trigger_action(self, action: str, element_id: str, data: Dict[str, Any]):
+    def _trigger_action(self, action: str, element_id: str, data: dict[str, Any]):
         """Trigger an action handler."""
         if action in self.action_handlers:
             self.action_handlers[action](element_id, data)
 
-    def register_action_handler(self, action: str, handler: Callable[[str, Dict], None]):
+    def register_action_handler(self, action: str, handler: Callable[[str, dict], None]):
         """Register a handler for an action."""
         self.action_handlers[action] = handler
 
@@ -739,7 +740,7 @@ class SpatialUIManager:
         node_id: str,
         position: tuple,
         node_label: str,
-        actions: List[Dict[str, str]] = None
+        actions: list[dict[str, str]] = None
     ) -> RadialMenu:
         """Create a context menu for a node."""
         default_actions = [
@@ -785,7 +786,7 @@ class SpatialUIManager:
 
         return panel
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export complete UI state for WebXR client."""
         return {
             "type": "spatial_ui_state",
@@ -798,7 +799,7 @@ class SpatialUIManager:
         self,
         position: tuple,
         radius: float = 0.1
-    ) -> List[UIElement]:
+    ) -> list[UIElement]:
         """Get elements near a position."""
         nearby = []
 
@@ -816,7 +817,7 @@ class SpatialUIManager:
     def layout_around_node(
         self,
         node_position: tuple,
-        elements: List[str],
+        elements: list[str],
         radius: float = 0.3,
         start_angle: float = 0.0
     ):

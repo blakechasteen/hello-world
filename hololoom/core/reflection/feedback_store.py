@@ -20,15 +20,15 @@ Author: Claude Code (with HoloLoom by Blake)
 Date: 2025-11-20
 """
 
-import asyncio
-import aiosqlite
 import json
 import logging
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
 from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any
+
+import aiosqlite
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -58,16 +58,16 @@ class FeedbackRecord:
     # User feedback
     user_rating: float  # 0.0 (bad) to 1.0 (excellent)
     feedback_type: str  # "helpful", "not_helpful", "rating", "explicit"
-    explicit_feedback: Optional[str] = None  # Optional text feedback
+    explicit_feedback: str | None = None  # Optional text feedback
 
     # Context
     user_id: str = "@unknown:matrix.org"
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dict."""
         return {
             'feedback_id': self.feedback_id,
@@ -112,7 +112,7 @@ class LearningSignals:
     window_start: datetime
     window_end: datetime
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dict."""
         return {
             'tool_name': self.tool_name,
@@ -168,7 +168,7 @@ class FeedbackStore:
             db_path: Path to SQLite database file
         """
         self.db_path = Path(db_path)
-        self.db: Optional[aiosqlite.Connection] = None
+        self.db: aiosqlite.Connection | None = None
 
         # Ensure data directory exists
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -238,8 +238,8 @@ class FeedbackStore:
         user_rating: float,
         feedback_type: str,
         user_id: str = "@unknown:matrix.org",
-        explicit_feedback: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        explicit_feedback: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> str:
         """
         Store user feedback on a response.
@@ -307,10 +307,10 @@ class FeedbackStore:
 
     async def get_learning_signals(
         self,
-        tool: Optional[str] = None,
+        tool: str | None = None,
         min_samples: int = 10,
-        time_window: Optional[timedelta] = None
-    ) -> Dict[str, LearningSignals]:
+        time_window: timedelta | None = None
+    ) -> dict[str, LearningSignals]:
         """
         Extract learning signals for tools.
 
@@ -400,7 +400,7 @@ class FeedbackStore:
         self,
         tool: str,
         feedback_id: str
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Update Thompson Sampling priors based on feedback.
 
@@ -450,11 +450,11 @@ class FeedbackStore:
 
     async def get_feedback_history(
         self,
-        tool: Optional[str] = None,
-        user_id: Optional[str] = None,
+        tool: str | None = None,
+        user_id: str | None = None,
         limit: int = 100,
         offset: int = 0
-    ) -> List[FeedbackRecord]:
+    ) -> list[FeedbackRecord]:
         """
         Query feedback history with filtering.
 
@@ -507,7 +507,7 @@ class FeedbackStore:
 
         return records
 
-    async def get_statistics(self) -> Dict[str, Any]:
+    async def get_statistics(self) -> dict[str, Any]:
         """
         Get overall feedback statistics.
 

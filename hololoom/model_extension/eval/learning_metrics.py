@@ -22,11 +22,9 @@ Author: HoloLoom Architecture Team
 Date: December 2025
 """
 
-import math
 import logging
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Tuple, Callable
-from enum import Enum
+from typing import Any
 
 from hololoom.bandits.beta_arm import BetaArm
 
@@ -57,9 +55,9 @@ class LearningMetrics:
     convergence_speed: int = 0
     retention_score: float = 0.0
     total_interactions: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "improvement_rate": self.improvement_rate,
@@ -103,10 +101,10 @@ class LearningInteraction:
     query_id: str
     quality_score: float  # 0-1 quality of response
     confidence: float  # System confidence
-    topic: Optional[str] = None  # Topic for retention tracking
+    topic: str | None = None  # Topic for retention tracking
     patterns_discovered: int = 0  # New patterns found
     timestamp: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -154,7 +152,7 @@ class ThompsonSamplingState:
 # =============================================================================
 
 def improvement_rate(
-    interactions: List[LearningInteraction],
+    interactions: list[LearningInteraction],
     window_size: int = 100,
 ) -> float:
     """
@@ -188,9 +186,9 @@ def improvement_rate(
 
 
 def thompson_sampling_regret(
-    states: List[ThompsonSamplingState],
-    actions_taken: List[str],  # Sequence of arm_ids chosen
-    rewards: List[float],  # Rewards received
+    states: list[ThompsonSamplingState],
+    actions_taken: list[str],  # Sequence of arm_ids chosen
+    rewards: list[float],  # Rewards received
 ) -> float:
     """
     Calculate cumulative regret for Thompson Sampling.
@@ -222,9 +220,9 @@ def thompson_sampling_regret(
 
 
 def thompson_sampling_regret_per_round(
-    optimal_rewards: List[float],  # Optimal reward at each round
-    actual_rewards: List[float],  # Actual reward at each round
-) -> List[float]:
+    optimal_rewards: list[float],  # Optimal reward at each round
+    actual_rewards: list[float],  # Actual reward at each round
+) -> list[float]:
     """
     Calculate per-round regret for Thompson Sampling.
 
@@ -244,7 +242,7 @@ def thompson_sampling_regret_per_round(
 
 
 def pattern_discovery_rate(
-    interactions: List[LearningInteraction],
+    interactions: list[LearningInteraction],
     normalize_per: int = 100,
 ) -> float:
     """
@@ -267,8 +265,8 @@ def pattern_discovery_rate(
 
 
 def convergence_speed(
-    interactions: List[LearningInteraction],
-    target_quality: Optional[float] = None,
+    interactions: list[LearningInteraction],
+    target_quality: float | None = None,
     target_percentile: float = 0.9,
 ) -> int:
     """
@@ -299,8 +297,8 @@ def convergence_speed(
 
 
 def retention_score(
-    old_topic_interactions: List[LearningInteraction],
-    new_topic_interactions: List[LearningInteraction],
+    old_topic_interactions: list[LearningInteraction],
+    new_topic_interactions: list[LearningInteraction],
 ) -> float:
     """
     Calculate retention score for old topics after learning new ones.
@@ -332,8 +330,8 @@ def retention_score(
 
 
 def catastrophic_forgetting_score(
-    before_learning: Dict[str, float],  # topic -> quality before
-    after_learning: Dict[str, float],  # topic -> quality after
+    before_learning: dict[str, float],  # topic -> quality before
+    after_learning: dict[str, float],  # topic -> quality after
 ) -> float:
     """
     Measure catastrophic forgetting across topics.
@@ -394,10 +392,10 @@ class LearningEvaluator:
 
     def evaluate(
         self,
-        interactions: List[LearningInteraction],
-        thompson_states: Optional[List[ThompsonSamplingState]] = None,
-        actions_taken: Optional[List[str]] = None,
-        rewards: Optional[List[float]] = None,
+        interactions: list[LearningInteraction],
+        thompson_states: list[ThompsonSamplingState] | None = None,
+        actions_taken: list[str] | None = None,
+        rewards: list[float] | None = None,
     ) -> LearningMetrics:
         """
         Evaluate learning effectiveness across all dimensions.
@@ -441,9 +439,9 @@ class LearningEvaluator:
 
     def evaluate_learn_query_verify_cycle(
         self,
-        store_interactions: List[LearningInteraction],
-        query_interactions: List[LearningInteraction],
-    ) -> Dict[str, Any]:
+        store_interactions: list[LearningInteraction],
+        query_interactions: list[LearningInteraction],
+    ) -> dict[str, Any]:
         """
         Evaluate Learn-Query-Verify cycle effectiveness.
 
@@ -492,9 +490,9 @@ class LearningEvaluator:
 
     def evaluate_feedback_loop(
         self,
-        positive_feedback_interactions: List[LearningInteraction],
-        negative_feedback_interactions: List[LearningInteraction],
-    ) -> Dict[str, Any]:
+        positive_feedback_interactions: list[LearningInteraction],
+        negative_feedback_interactions: list[LearningInteraction],
+    ) -> dict[str, Any]:
         """
         Evaluate if feedback loop works (positive → weight increase).
 
@@ -529,9 +527,9 @@ class LearningEvaluator:
 
     def evaluate_hot_pattern_effectiveness(
         self,
-        hot_pattern_queries: List[LearningInteraction],
-        cold_pattern_queries: List[LearningInteraction],
-    ) -> Dict[str, Any]:
+        hot_pattern_queries: list[LearningInteraction],
+        cold_pattern_queries: list[LearningInteraction],
+    ) -> dict[str, Any]:
         """
         Evaluate if hot pattern boosting is effective.
 
@@ -572,7 +570,7 @@ def create_learning_interaction(
     query_id: str,
     quality_score: float,
     confidence: float,
-    topic: Optional[str] = None,
+    topic: str | None = None,
     patterns_discovered: int = 0,
     **metadata,
 ) -> LearningInteraction:
@@ -603,7 +601,7 @@ def create_learning_interaction(
 
 
 def evaluate_simple(
-    quality_scores: List[float],
+    quality_scores: list[float],
     window_size: int = 100,
 ) -> LearningMetrics:
     """
@@ -631,7 +629,7 @@ def evaluate_simple(
 
 
 def is_learning_effective(
-    quality_scores: List[float],
+    quality_scores: list[float],
     min_improvement: float = 0.1,
 ) -> bool:
     """

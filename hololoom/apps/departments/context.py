@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Context Department - Wraps existing HoloLoom as a modular department.
 
@@ -19,24 +18,24 @@ Design Philosophy:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional
-from datetime import datetime
-import logging
 
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+import logging
+from datetime import datetime
+from typing import Any
+
 from hololoom.config import Config
-from hololoom.documentation.types import Query, MemoryShard
+from hololoom.documentation.types import MemoryShard, Query
 from hololoom.fabric.spacetime import Spacetime
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+
 from .base import BaseDepartment
 from .protocol import (
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
     VerificationResult,
-    ConfidenceMetadata,
-    ConfidenceLevel,
-    DepartmentConfig
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -84,10 +83,10 @@ class ContextDepartment(BaseDepartment):
 
     def __init__(
         self,
-        config: Optional[Config] = None,
-        shards: Optional[List[MemoryShard]] = None,
-        orchestrator: Optional[WeavingOrchestrator] = None,
-        dept_config: Optional[DepartmentConfig] = None
+        config: Config | None = None,
+        shards: list[MemoryShard] | None = None,
+        orchestrator: WeavingOrchestrator | None = None,
+        dept_config: DepartmentConfig | None = None
     ):
         """
         Initialize Context Department.
@@ -121,10 +120,10 @@ class ContextDepartment(BaseDepartment):
         self._owns_orchestrator = orchestrator is None
 
         # Refinement tracking
-        self._refinement_history: Dict[str, List[Dict[str, Any]]] = {}
+        self._refinement_history: dict[str, list[dict[str, Any]]] = {}
 
         # Performance tracking
-        self._task_performance: Dict[str, Dict[str, float]] = {}
+        self._task_performance: dict[str, dict[str, float]] = {}
 
         logger.info(
             f"Context Department initialized with {len(self.shards)} shards "
@@ -429,7 +428,7 @@ class ContextDepartment(BaseDepartment):
         self,
         spacetime: Spacetime,
         task_type: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Build result dict based on task type."""
         if task_type == "retrieve_context":
             # Return only context, no response
@@ -460,7 +459,7 @@ class ContextDepartment(BaseDepartment):
     def _extract_reasoning(
         self,
         spacetime: Spacetime
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Extract reasoning from spacetime trace."""
         if not spacetime.trace:
             return {}
@@ -478,7 +477,7 @@ class ContextDepartment(BaseDepartment):
         self,
         spacetime: Spacetime,
         request: DepartmentRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Extract learning signals from spacetime."""
         return {
             "task_type": request.task_type,
@@ -490,9 +489,9 @@ class ContextDepartment(BaseDepartment):
 
     async def _build_session_state(
         self,
-        session_id: Optional[str],
+        session_id: str | None,
         spacetime: Spacetime
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Build session state update."""
         if not session_id:
             return None
@@ -507,7 +506,7 @@ class ContextDepartment(BaseDepartment):
     def _apply_refinement_strategy(
         self,
         request: DepartmentRequest,
-        suggestions: Dict[str, Any]
+        suggestions: dict[str, Any]
     ) -> DepartmentRequest:
         """Apply refinement suggestions to create a refined request."""
         # Copy request

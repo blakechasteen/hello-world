@@ -15,14 +15,12 @@ Author: HoloLoom Retrieval Team
 Date: 2025-10-29
 """
 
-from typing import List, Dict, Optional, Any
-import time
 import asyncio
+import time
 
-from hololoom.protocols import RetrievalStrategy, RetrievalResult, SpringActivationMetadata
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.memory.spring_dynamics import SpringDynamics, SpringConfig
-
+from hololoom.memory.spring_dynamics import SpringConfig, SpringDynamics
+from hololoom.protocols import RetrievalResult, RetrievalStrategy, SpringActivationMetadata
+from hololoom.protocols.types import MemoryShard, Query
 
 # ============================================================================
 # Static Retrieval (Default/Fallback)
@@ -41,7 +39,7 @@ class StaticRetrieval:
     Fast, simple, reliable.
     """
 
-    def __init__(self, shards: List[MemoryShard], embedding_fn=None):
+    def __init__(self, shards: list[MemoryShard], embedding_fn=None):
         """
         Initialize static retrieval.
 
@@ -57,7 +55,7 @@ class StaticRetrieval:
         query: Query,
         k: int = 5,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Retrieve top-k shards by similarity.
 
@@ -137,9 +135,9 @@ class SpringActivationRetrieval:
     def __init__(
         self,
         graph,  # KG/YarnGraph
-        shards: List[MemoryShard],
-        shard_map: Dict[str, MemoryShard],  # {node_id: shard}
-        spring_config: Optional[SpringConfig] = None,
+        shards: list[MemoryShard],
+        shard_map: dict[str, MemoryShard],  # {node_id: shard}
+        spring_config: SpringConfig | None = None,
         embedding_fn=None
     ):
         """
@@ -167,7 +165,7 @@ class SpringActivationRetrieval:
         k: int = 5,
         seed_k: int = 3,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Retrieve memories using spring activation.
 
@@ -279,7 +277,7 @@ class SpringActivationRetrieval:
         self,
         query: Query,
         k: int
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Find seed nodes for spring activation.
 
@@ -340,7 +338,7 @@ class HybridRetrieval:
         query: Query,
         k: int = 5,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """Retrieve using hybrid strategy."""
         result = await self.retrieve_with_metadata(query, k, **kwargs)
         return result.shards
@@ -403,9 +401,9 @@ class HybridRetrieval:
 def create_retrieval_strategy(
     strategy_name: str,
     graph=None,
-    shards: Optional[List[MemoryShard]] = None,
-    shard_map: Optional[Dict[str, MemoryShard]] = None,
-    spring_config: Optional[SpringConfig] = None,
+    shards: list[MemoryShard] | None = None,
+    shard_map: dict[str, MemoryShard] | None = None,
+    spring_config: SpringConfig | None = None,
     **kwargs
 ) -> RetrievalStrategy:
     """

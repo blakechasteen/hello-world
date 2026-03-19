@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Beekeeping Department - Domain-specific departments for beekeeping operations.
 

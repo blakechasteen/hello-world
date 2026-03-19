@@ -31,13 +31,8 @@ Example:
 """
 
 import logging
-from typing import Optional, Dict, Any, List
 
-from hololoom.prompting.unified_mrf import (
-    UnifiedMRF,
-    MetapromptConfig,
-    ModelProvider
-)
+from hololoom.prompting.unified_mrf import MetapromptConfig, ModelProvider, UnifiedMRF
 
 logger = logging.getLogger(__name__)
 
@@ -61,10 +56,10 @@ class RAGMode:
 def create_rag_mrf_prompt(
     query: str,
     mode: str = RAGMode.ANSWER,
-    sources: Optional[List[str]] = None,
-    images: Optional[List[str]] = None,
+    sources: list[str] | None = None,
+    images: list[str] | None = None,
     model_provider: str = "claude",
-    constraints: Optional[List[str]] = None
+    constraints: list[str] | None = None
 ) -> str:
     """
     Create UnifiedMRF-enhanced prompt for RAG operations.
@@ -119,7 +114,7 @@ def _map_model_provider(provider_str: str) -> ModelProvider:
 def _create_reformulate_prompt(
     query: str,
     provider: ModelProvider,
-    constraints: List[str]
+    constraints: list[str]
 ) -> str:
     """Create query reformulation prompt with MRF."""
     config = MetapromptConfig(
@@ -162,9 +157,9 @@ def _create_reformulate_prompt(
 
 def _create_answer_prompt(
     query: str,
-    sources: List[str],
+    sources: list[str],
     provider: ModelProvider,
-    constraints: List[str]
+    constraints: list[str]
 ) -> str:
     """Create answer generation prompt with MRF."""
     config = MetapromptConfig(
@@ -215,9 +210,9 @@ def _create_answer_prompt(
 
 def _create_summarize_prompt(
     query: str,
-    sources: List[str],
+    sources: list[str],
     provider: ModelProvider,
-    constraints: List[str]
+    constraints: list[str]
 ) -> str:
     """Create multi-source summarization prompt with MRF."""
     config = MetapromptConfig(
@@ -269,10 +264,10 @@ def _create_summarize_prompt(
 
 def _create_multimodal_prompt(
     query: str,
-    sources: List[str],
-    images: List[str],
+    sources: list[str],
+    images: list[str],
     provider: ModelProvider,
-    constraints: List[str]
+    constraints: list[str]
 ) -> str:
     """Create multimodal (text + image) Q&A prompt with MRF."""
     config = MetapromptConfig(
@@ -328,7 +323,7 @@ def _create_multimodal_prompt(
 def assess_rag_quality(
     query: str,
     response: str,
-    sources: List[str],
+    sources: list[str],
     mode: str = RAGMode.ANSWER
 ) -> float:
     """
@@ -383,10 +378,10 @@ def assess_rag_quality(
 
 def enhance_rag_with_mrf(
     query: str,
-    sources: List[str],
+    sources: list[str],
     model_provider: str = "claude",
     enable_reformulation: bool = True
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """
     Complete RAG pipeline with MRF enhancement.
 

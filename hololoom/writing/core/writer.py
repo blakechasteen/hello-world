@@ -7,17 +7,15 @@ Main Writer class that orchestrates content generation from memory.
 
 import logging
 import time
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 from .protocol import (
-    WriterProtocol,
-    WritingContext,
-    WritingResult,
-    WritingMode,
-    StyleGuide,
+    MemoryShard,
     RefinementStrategy,
-    RefinementPass,
-    MemoryShard
+    StyleGuide,
+    WritingContext,
+    WritingMode,
+    WritingResult,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,8 +36,8 @@ class Writer:
 
     def __init__(
         self,
-        mode_writers: Optional[Dict[WritingMode, Any]] = None,
-        composer: Optional[Any] = None
+        mode_writers: dict[WritingMode, Any] | None = None,
+        composer: Any | None = None
     ):
         """
         Initialize writer.
@@ -176,7 +174,7 @@ class Writer:
     def detect_mode(
         self,
         query: str,
-        memories: List[MemoryShard]
+        memories: list[MemoryShard]
     ) -> WritingMode:
         """
         Auto-detect appropriate writing mode.
@@ -232,7 +230,7 @@ class Writer:
     def detect_style(
         self,
         query: str,
-        memories: List[MemoryShard],
+        memories: list[MemoryShard],
         mode: WritingMode
     ) -> StyleGuide:
         """
@@ -300,7 +298,7 @@ class Writer:
         self,
         text: str,
         context: WritingContext
-    ) -> tuple[float, Dict[str, float]]:
+    ) -> tuple[float, dict[str, float]]:
         """
         Score content quality (simple heuristic version).
 
@@ -348,9 +346,9 @@ class Writer:
 # Standalone write function for simple API
 async def write(
     query: str,
-    memories: List[MemoryShard],
-    mode: Optional[WritingMode] = None,
-    style: Optional[StyleGuide] = None,
+    memories: list[MemoryShard],
+    mode: WritingMode | None = None,
+    style: StyleGuide | None = None,
     refine: bool = True
 ) -> str:
     """

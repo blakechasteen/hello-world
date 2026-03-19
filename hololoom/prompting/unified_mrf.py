@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Unified Metaprompting Refinement Framework (MRF)
 =================================================
@@ -52,19 +53,18 @@ Architecture:
     ```
 """
 
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Any, Callable
-from pathlib import Path
-import time
-import json
+from typing import Any
 
 # Import existing MRF components
 try:
+    from hololoom.prompting.adapters import ClaudeAdapter, GeminiAdapter, GPTAdapter, ModelAdapter
     from hololoom.prompting.metaprompt import create_metaprompt, create_metaprompt_with_strategy
-    from hololoom.prompting.adapters import ModelAdapter, ClaudeAdapter, GeminiAdapter, GPTAdapter
-    from hololoom.prompting.strategy import PromptingStrategy, StrategyContext, StrategyResult
     from hololoom.prompting.registry import StrategyRegistry
+    from hololoom.prompting.strategy import PromptingStrategy, StrategyContext, StrategyResult
 except ImportError:
     # Graceful degradation if prompting module incomplete
     create_metaprompt = None
@@ -93,12 +93,12 @@ class ModelProvider(Enum):
 class MetapromptConfig:
     """Configuration for 7-component metaprompt framework."""
     role: str
-    objective: Dict[str, str]  # {"primary": "...", "secondary": "..."}
-    process: List[str]  # Step-by-step methodology
+    objective: dict[str, str]  # {"primary": "...", "secondary": "..."}
+    process: list[str]  # Step-by-step methodology
     format: str  # Expected output structure
-    constraints: List[str]  # What NOT to do
+    constraints: list[str]  # What NOT to do
     uncertainty: str  # Fallback behavior when uncertain
-    validation: List[str]  # Success criteria checklist
+    validation: list[str]  # Success criteria checklist
 
 
 @dataclass
@@ -115,9 +115,9 @@ class EnhancedPrompt:
     """Result of prompt enhancement."""
     prompt: str
     framework_used: str  # "7-component", "simple", etc.
-    model_optimized_for: Optional[ModelProvider]
-    enhancements_applied: List[str]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    model_optimized_for: ModelProvider | None
+    enhancements_applied: list[str]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -130,7 +130,7 @@ class RefinedResponse:
     quality_improvement: float  # Delta from original
     final_quality: float
     execution_time_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -165,7 +165,7 @@ class MetapromptEngine:
     """
 
     def __init__(self):
-        self.template_cache: Dict[str, str] = {}
+        self.template_cache: dict[str, str] = {}
 
     def build_prompt(self, config: MetapromptConfig) -> str:
         """Build 7-component prompt from config."""
@@ -175,13 +175,13 @@ class MetapromptEngine:
         sections.append(f"# ROLE\n{config.role}")
 
         # 2. OBJECTIVE
-        sections.append(f"# OBJECTIVE")
+        sections.append("# OBJECTIVE")
         sections.append(f"**Primary**: {config.objective.get('primary', 'Not specified')}")
         if 'secondary' in config.objective:
             sections.append(f"**Secondary**: {config.objective['secondary']}")
 
         # 3. PROCESS
-        sections.append(f"\n# PROCESS")
+        sections.append("\n# PROCESS")
         for i, step in enumerate(config.process, 1):
             sections.append(f"{i}. {step}")
 
@@ -190,7 +190,7 @@ class MetapromptEngine:
 
         # 5. CONSTRAINTS
         if config.constraints:
-            sections.append(f"\n# CONSTRAINTS")
+            sections.append("\n# CONSTRAINTS")
             for constraint in config.constraints:
                 sections.append(f"- {constraint}")
 
@@ -199,13 +199,13 @@ class MetapromptEngine:
 
         # 7. VALIDATION
         if config.validation:
-            sections.append(f"\n# VALIDATION CHECKLIST")
+            sections.append("\n# VALIDATION CHECKLIST")
             for criterion in config.validation:
                 sections.append(f"- [ ] {criterion}")
 
         return "\n".join(sections)
 
-    def extract_from_request(self, request: Dict[str, Any], task_type: str) -> MetapromptConfig:
+    def extract_from_request(self, request: dict[str, Any], task_type: str) -> MetapromptConfig:
         """Extract 7-component config from simple request dict."""
         # Default templates based on task type
         templates = {
@@ -315,7 +315,7 @@ class RefinementEngine:
     """
 
     def __init__(self):
-        self.refinement_history: List[Dict[str, Any]] = []
+        self.refinement_history: list[dict[str, Any]] = []
 
     def get_refinement_prompt(
         self,
@@ -488,7 +488,7 @@ class ModelAdapterRegistry:
     """Registry of model-specific adapters."""
 
     def __init__(self):
-        self.adapters: Dict[ModelProvider, Callable] = {}
+        self.adapters: dict[ModelProvider, Callable] = {}
         self._register_default_adapters()
 
     def _register_default_adapters(self):
@@ -566,13 +566,13 @@ class StrategySelector:
 
     def __init__(self):
         # Track (query_type, strategy) → (alpha, beta) for Thompson Sampling
-        self.strategy_stats: Dict[tuple, Dict[str, float]] = {}
-        self.selection_history: List[Dict[str, Any]] = []
+        self.strategy_stats: dict[tuple, dict[str, float]] = {}
+        self.selection_history: list[dict[str, Any]] = []
 
     def select_strategy(
         self,
         query_type: str,
-        available_strategies: List[RefinementStrategyType]
+        available_strategies: list[RefinementStrategyType]
     ) -> RefinementStrategyType:
         """Select best strategy using Thompson Sampling."""
         import random
@@ -630,7 +630,7 @@ class QualityTracker:
     """Track quality trajectories across refinement iterations."""
 
     def __init__(self):
-        self.trajectories: List[List[QualityMetrics]] = []
+        self.trajectories: list[list[QualityMetrics]] = []
 
     def track_iteration(
         self,
@@ -672,9 +672,9 @@ class UnifiedMRF:
 
     async def enhance_prompt(
         self,
-        request: Dict[str, Any],
+        request: dict[str, Any],
         framework: str = "7-component",
-        model: Optional[ModelProvider] = None,
+        model: ModelProvider | None = None,
         task_type: str = "general"
     ) -> EnhancedPrompt:
         """
@@ -721,7 +721,7 @@ class UnifiedMRF:
         strategy: RefinementStrategyType = RefinementStrategyType.AUTO,
         max_iterations: int = 3,
         quality_threshold: float = 0.85,
-        initial_quality: Optional[float] = None
+        initial_quality: float | None = None
     ) -> RefinedResponse:
         """
         Refine a response using recursive refinement strategies.
@@ -845,7 +845,7 @@ class UnifiedMRF:
 
         return result
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get MRF usage statistics."""
         return {
             "refinement_history_count": len(self.refinement_engine.refinement_history),
@@ -857,12 +857,12 @@ class UnifiedMRF:
     async def refine_prompt(
         self,
         original_prompt: str,
-        strategy: Optional[RefinementStrategyType] = None,
-        model_provider: Optional[ModelProvider] = None,
-        context: Optional[Dict[str, Any]] = None,
-        epistemic_confidence: Optional[float] = None,
+        strategy: RefinementStrategyType | None = None,
+        model_provider: ModelProvider | None = None,
+        context: dict[str, Any] | None = None,
+        epistemic_confidence: float | None = None,
         enable_learning: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Refine a prompt using MRF 7-component structure.
 
@@ -1031,9 +1031,9 @@ class UnifiedMRF:
 # Convenience functions
 
 async def enhance_prompt(
-    request: Dict[str, Any],
+    request: dict[str, Any],
     framework: str = "7-component",
-    model: Optional[str] = None,
+    model: str | None = None,
     task_type: str = "general"
 ) -> EnhancedPrompt:
     """

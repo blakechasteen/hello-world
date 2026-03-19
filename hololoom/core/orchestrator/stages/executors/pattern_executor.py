@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Pattern Selection Executor - Step 1: Loom Command
 ==================================================
@@ -17,13 +16,14 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import logging
-from typing import Callable, Optional, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from hololoom.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
     from hololoom.loom.command import LoomCommand
+    from hololoom.orchestrator.context import WeavingContext
 
 
 class PatternSelectionExecutor(BaseStageExecutor):
@@ -50,9 +50,9 @@ class PatternSelectionExecutor(BaseStageExecutor):
 
     def __init__(
         self,
-        loom_command: 'LoomCommand',
-        logger: Optional[logging.Logger] = None,
-        emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+        loom_command: LoomCommand,
+        logger: logging.Logger | None = None,
+        emit_stage_event: Callable[[int, str, float], None] | None = None,
     ):
         """
         Initialize Pattern Selection Executor.
@@ -65,7 +65,7 @@ class PatternSelectionExecutor(BaseStageExecutor):
         super().__init__(logger=logger, emit_stage_event=emit_stage_event)
         self.loom_command = loom_command
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute pattern selection.
 

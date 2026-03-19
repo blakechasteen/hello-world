@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Recursive Scratchpad
 ====================
@@ -20,13 +19,12 @@ thought spawns questions, which spawn deeper thoughts, forming a tree of
 understanding."
 """
 
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import List, Optional, Dict, Any, Callable
-from datetime import datetime
 import uuid
-import asyncio
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
 from pathlib import Path
+from typing import Any
 
 
 class ThoughtType(Enum):
@@ -49,10 +47,10 @@ class Thought:
     type: ThoughtType
     level: int  # Depth in dialogue tree
     timestamp: datetime
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
     confidence: float = 0.5
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    verification: Optional[Dict[str, Any]] = None  # DS-STAR results
+    metadata: dict[str, Any] = field(default_factory=dict)
+    verification: dict[str, Any] | None = None  # DS-STAR results
 
     def __post_init__(self):
         if isinstance(self.timestamp, str):
@@ -60,7 +58,7 @@ class Thought:
         if isinstance(self.type, str):
             self.type = ThoughtType(self.type)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize thought."""
         return {
             'id': self.id,
@@ -75,7 +73,7 @@ class Thought:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Thought':
+    def from_dict(cls, data: dict[str, Any]) -> 'Thought':
         """Deserialize thought."""
         return cls(
             id=data['id'],
@@ -94,7 +92,7 @@ class Thought:
 class DialogueTree:
     """Hierarchical structure of thoughts."""
     root: Thought
-    thoughts: Dict[str, Thought] = field(default_factory=dict)
+    thoughts: dict[str, Thought] = field(default_factory=dict)
 
     def __post_init__(self):
         """Index root thought."""
@@ -104,14 +102,14 @@ class DialogueTree:
         """Add thought to tree."""
         self.thoughts[thought.id] = thought
 
-    def get_children(self, thought_id: str) -> List[Thought]:
+    def get_children(self, thought_id: str) -> list[Thought]:
         """Get child thoughts."""
         return [
             t for t in self.thoughts.values()
             if t.parent_id == thought_id
         ]
 
-    def get_path(self, thought_id: str) -> List[Thought]:
+    def get_path(self, thought_id: str) -> list[Thought]:
         """Get path from root to thought."""
         path = []
         current_id = thought_id
@@ -166,7 +164,7 @@ class DialogueTree:
         visit(self.root)
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize tree."""
         return {
             'root_id': self.root.id,
@@ -176,7 +174,7 @@ class DialogueTree:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'DialogueTree':
+    def from_dict(cls, data: dict[str, Any]) -> 'DialogueTree':
         """Deserialize tree."""
         thoughts = {
             tid: Thought.from_dict(tdata)
@@ -200,7 +198,7 @@ class RecursiveScratchpad:
 
     def __init__(
         self,
-        storage_path: Optional[Path] = None,
+        storage_path: Path | None = None,
         enable_verification: bool = True,
         max_dialogue_depth: int = 10,
     ):
@@ -217,8 +215,8 @@ class RecursiveScratchpad:
         self.max_dialogue_depth = max_dialogue_depth
 
         # Current session
-        self.current_tree: Optional[DialogueTree] = None
-        self.session_id: Optional[str] = None
+        self.current_tree: DialogueTree | None = None
+        self.session_id: str | None = None
 
         # Persistence (lazy loaded)
         self._persistence = None
@@ -271,7 +269,7 @@ class RecursiveScratchpad:
         self,
         text: str,
         thought_type: ThoughtType = ThoughtType.INITIAL,
-        parent_id: Optional[str] = None
+        parent_id: str | None = None
     ) -> Thought:
         """
         Create a single thought.
@@ -317,7 +315,7 @@ class RecursiveScratchpad:
     async def dialogue_loop(
         self,
         initial_thought: Thought,
-        max_depth: Optional[int] = None,
+        max_depth: int | None = None,
         mode: str = "exploratory"
     ) -> DialogueTree:
         """
@@ -370,7 +368,7 @@ class RecursiveScratchpad:
             tree=self.current_tree
         )
 
-    async def load_session(self, session_name: str) -> Optional[DialogueTree]:
+    async def load_session(self, session_name: str) -> DialogueTree | None:
         """
         Load session from persistent storage.
 
@@ -388,7 +386,7 @@ class RecursiveScratchpad:
             self.current_tree = tree
         return tree
 
-    async def list_sessions(self) -> List[Dict[str, Any]]:
+    async def list_sessions(self) -> list[dict[str, Any]]:
         """
         List all saved sessions.
 
@@ -400,7 +398,7 @@ class RecursiveScratchpad:
 
         return await self._persistence.list_sessions()
 
-    async def _verify_thought(self, thought: Thought) -> Dict[str, Any]:
+    async def _verify_thought(self, thought: Thought) -> dict[str, Any]:
         """
         Verify thought using DS-STAR framework.
 
@@ -424,7 +422,7 @@ class RecursiveScratchpad:
         results['overall_score'] = sum(results.values()) / len(results)
         return results
 
-    def get_current_tree(self) -> Optional[DialogueTree]:
+    def get_current_tree(self) -> DialogueTree | None:
         """Get current dialogue tree."""
         return self.current_tree
 

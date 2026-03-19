@@ -25,13 +25,14 @@ Date: 2025-10-27
 """
 
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime
-import numpy as np
 
 from hololoom.reflection.buffer import ReflectionBuffer
 
@@ -99,7 +100,7 @@ class PPOTrainer:
     def __init__(
         self,
         policy: nn.Module,
-        config: Optional[PPOConfig] = None,
+        config: PPOConfig | None = None,
         device: str = 'cpu'
     ):
         """
@@ -128,7 +129,7 @@ class PPOTrainer:
         self.total_samples = 0
 
         # Metrics tracking
-        self.metrics_history: List[Dict[str, float]] = []
+        self.metrics_history: list[dict[str, float]] = []
 
         self.logger = logging.getLogger(__name__)
         self.logger.info(f"PPOTrainer initialized (lr={self.config.learning_rate})")
@@ -137,7 +138,7 @@ class PPOTrainer:
         self,
         buffer: ReflectionBuffer,
         min_samples: int = 32
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Train policy on experience from reflection buffer.
 
@@ -190,7 +191,7 @@ class PPOTrainer:
 
         return metrics
 
-    def _batch_to_tensors(self, batch: Dict[str, List]) -> Dict[str, torch.Tensor]:
+    def _batch_to_tensors(self, batch: dict[str, list]) -> dict[str, torch.Tensor]:
         """
         Convert batch dict to tensors.
 
@@ -247,7 +248,7 @@ class PPOTrainer:
         rewards: torch.Tensor,
         values: torch.Tensor,
         dones: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Compute advantages using Generalized Advantage Estimation (GAE).
 
@@ -289,7 +290,7 @@ class PPOTrainer:
         log_probs_old: torch.Tensor,
         advantages: torch.Tensor,
         returns: torch.Tensor
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Perform PPO update on policy.
 
@@ -382,7 +383,7 @@ class PPOTrainer:
 
         return metrics
 
-    def get_metrics_summary(self) -> Dict[str, Any]:
+    def get_metrics_summary(self) -> dict[str, Any]:
         """
         Get summary of training metrics.
 
@@ -449,9 +450,10 @@ class PPOTrainer:
 
 if __name__ == "__main__":
     import asyncio
-    from hololoom.reflection.buffer import ReflectionBuffer
-    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
     from datetime import datetime
+
+    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.reflection.buffer import ReflectionBuffer
 
     async def demo():
         print("="*80)

@@ -19,7 +19,6 @@ from .code_review_house import (
     CodeReviewHouse,
     create_code_review_house,
 )
-
 from .research_house import (
     ResearchHouse,
     create_research_house,

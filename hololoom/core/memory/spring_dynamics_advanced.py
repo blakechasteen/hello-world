@@ -33,18 +33,18 @@ Author: HoloLoom Mathematical Physics Team
 Date: 2025-11-03
 """
 
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
+from typing import Any
+
 import numpy as np
 
 from hololoom.memory.integrators import (
-    IntegratorType,
     DynamicalState,
     ForceFunction,
-    create_integrator,
+    IntegratorType,
     analyze_stability,
+    create_integrator,
 )
-
 
 # ============================================================================
 # Configuration
@@ -76,7 +76,7 @@ class AdvancedSpringConfig:
     max_energy_drift: float = 0.1            # Maximum allowed energy drift (10%)
 
     # Edge type multipliers
-    edge_type_multipliers: Dict[str, float] = field(default_factory=lambda: {
+    edge_type_multipliers: dict[str, float] = field(default_factory=lambda: {
         'IS_A': 1.2,
         'PART_OF': 1.1,
         'USES': 0.9,
@@ -115,8 +115,8 @@ class SpringForceFunction(ForceFunction):
         self,
         graph,
         config: AdvancedSpringConfig,
-        node_list: List[str],
-        seed_nodes: Dict[str, float]
+        node_list: list[str],
+        seed_nodes: dict[str, float]
     ):
         """
         Initialize force function.
@@ -144,7 +144,7 @@ class SpringForceFunction(ForceFunction):
     def _build_adjacency(self):
         """Precompute edge connectivity and stiffness."""
         n = len(self.node_list)
-        self.neighbors: List[List[Tuple[int, float]]] = [[] for _ in range(n)]
+        self.neighbors: list[list[tuple[int, float]]] = [[] for _ in range(n)]
 
         for u, v, edge_data in self.graph.G.edges(data=True):
             if u not in self.node_to_idx or v not in self.node_to_idx:
@@ -161,7 +161,7 @@ class SpringForceFunction(ForceFunction):
             self.neighbors[i].append((j, k))
             self.neighbors[j].append((i, k))
 
-    def __call__(self, state: DynamicalState) -> Tuple[np.ndarray, np.ndarray]:
+    def __call__(self, state: DynamicalState) -> tuple[np.ndarray, np.ndarray]:
         """
         Compute time derivatives for Hamilton's equations.
 
@@ -227,7 +227,7 @@ class AdvancedSpringDynamics:
         result = dynamics.propagate()
     """
 
-    def __init__(self, graph, config: Optional[AdvancedSpringConfig] = None):
+    def __init__(self, graph, config: AdvancedSpringConfig | None = None):
         """
         Initialize advanced spring dynamics.
 
@@ -240,20 +240,20 @@ class AdvancedSpringDynamics:
 
         # Node tracking
         self.node_list = list(graph.G.nodes())
-        self.seed_nodes: Dict[str, float] = {}
+        self.seed_nodes: dict[str, float] = {}
 
         # Integrator (created on first propagation)
         self.integrator = None
         self.force_fn = None
 
         # State
-        self.state: Optional[DynamicalState] = None
+        self.state: DynamicalState | None = None
 
         # Metrics
         self.iterations = 0
         self.converged = False
         self.final_energy = 0.0
-        self.stability_report: Optional[Dict[str, Any]] = None
+        self.stability_report: dict[str, Any] | None = None
 
     def reset(self):
         """Reset to initial state."""
@@ -263,7 +263,7 @@ class AdvancedSpringDynamics:
         self.converged = False
         self.final_energy = 0.0
 
-    def activate_nodes(self, activations: Dict[str, float]):
+    def activate_nodes(self, activations: dict[str, float]):
         """
         Set initial activation for seed nodes.
 
@@ -420,7 +420,7 @@ class AdvancedSpringDynamics:
 
         return kinetic + potential
 
-    def _get_active_nodes(self, threshold: float = 0.1) -> List[str]:
+    def _get_active_nodes(self, threshold: float = 0.1) -> list[str]:
         """
         Get nodes with activation above threshold.
 
@@ -442,7 +442,7 @@ class AdvancedSpringDynamics:
         active.sort(key=lambda x: x[1], reverse=True)
         return [node_id for node_id, _ in active]
 
-    def _extract_activations(self) -> Dict[str, float]:
+    def _extract_activations(self) -> dict[str, float]:
         """Extract all non-trivial activations."""
         if self.state is None:
             return {}
@@ -453,7 +453,7 @@ class AdvancedSpringDynamics:
             if self.state.q[i] > 0.01
         }
 
-    def _analyze_stability(self) -> Dict[str, Any]:
+    def _analyze_stability(self) -> dict[str, Any]:
         """
         Analyze numerical stability of the integration.
 
@@ -496,10 +496,10 @@ class AdvancedSpringResult:
     converged: bool
     final_energy: float
 
-    activated_nodes: List[str]
-    node_activations: Dict[str, float]
+    activated_nodes: list[str]
+    node_activations: dict[str, float]
 
-    stability_report: Optional[Dict[str, Any]] = None
+    stability_report: dict[str, Any] | None = None
 
     def __str__(self) -> str:
         status = "converged" if self.converged else "max iterations"

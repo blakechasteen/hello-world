@@ -18,19 +18,19 @@ import asyncio
 import logging
 import time
 import uuid
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
-from typing import Any, AsyncIterator, Dict, List, Optional, Set, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  TELEMETRY - OpenTelemetry tracing + Prometheus metrics (Phase 5)
 # ─────────────────────────────────────────────────────────────────────────────
 try:
-    from hololoom.telemetry.tracing import get_tracer, SpanKind
-    from hololoom.telemetry.tracing.context import W3CTraceContext
     from hololoom.telemetry.metrics import get_registry
+    from hololoom.telemetry.tracing import SpanKind, get_tracer
+    from hololoom.telemetry.tracing.context import W3CTraceContext
     TELEMETRY_AVAILABLE = True
 except ImportError:
     TELEMETRY_AVAILABLE = False
@@ -42,13 +42,13 @@ except ImportError:
 # Federation-specific Prometheus metrics (Phase 5)
 try:
     from .metrics import (
-        record_federation_query,
-        record_query_error,
+        dec_pending_queries,
+        inc_pending_queries,
         record_alignment_check,
         record_alignment_failure,
+        record_federation_query,
+        record_query_error,
         set_cluster_nodes,
-        inc_pending_queries,
-        dec_pending_queries,
     )
     FEDERATION_METRICS_AVAILABLE = True
 except ImportError:
@@ -64,59 +64,44 @@ except ImportError:
 if TYPE_CHECKING:
     from hololoom.hololoom import HoloLoom as HoloLoomType
 
+# Alignment imports - Federation Alignment Protocol (Phase 0)
+from .alignment import (
+    AlignmentConsensusEngine,
+    # Protocol and types
+    AlignmentLayer,
+    # Metadata
+    AlignmentMetadata,
+    AlignmentStatus,
+    AlignmentVerification,
+    # Verifier
+    AlignmentVerifier,
+    ConsensusAlignmentResult,
+    # Config
+    FederationAlignmentConfig,
+    NodeProfileRegistry,
+    ResourceUsage,
+    TrustLevel,
+    create_alignment_verifier,
+    create_consensus_engine,
+    create_profile_registry,
+)
 from .gossip import SwimMembership
 from .identity import Identity, create_node, get_or_create_identity
-from .protocols import FederationProtocol
 from .routing import KademliaRouter
 from .transport import (
-    BaseTransport,
     create_http_transport,
-    MessageType,
-    TransportMessage,
 )
 from .types import (
     Capability,
-    FederationError,
     FederationNode,
     Guild,
     NetworkError,
     Query,
     QueryTrace,
     Response,
-    RoutingError,
     TimeoutError,
     Verification,
     VerificationLevel,
-)
-
-# Alignment imports - Federation Alignment Protocol (Phase 0)
-from .alignment import (
-    # Protocol and types
-    AlignmentLayer,
-    AlignmentStatus,
-    AlignmentVerification,
-    ConsensusAlignmentResult,
-    # Metadata
-    AlignmentMetadata,
-    AlignmentProof,
-    AlignedResponse,
-    ResourceUsage,
-    # Verifier
-    AlignmentVerifier,
-    create_alignment_verifier,
-    # Consensus
-    AlignmentConsensusEngine,
-    create_consensus_engine,
-    # Node profiles
-    NodeProfileRegistry,
-    NodeAlignmentProfile,
-    create_profile_registry,
-    get_recommended_verification_level,
-    TrustLevel,
-    # Config
-    FederationAlignmentConfig,
-    AlignmentMode,
-    create_alignment_config,
 )
 
 logger = logging.getLogger(__name__)
@@ -136,7 +121,7 @@ class FederationConfig:
     """
 
     # Identity
-    identity_path: Optional[str] = None       # Path to key file (auto-generates if None)
+    identity_path: str | None = None       # Path to key file (auto-generates if None)
     endpoint: str = "0.0.0.0:9000"           # Listen address
 
     # Network
@@ -159,7 +144,7 @@ class FederationConfig:
     min_trust_score: float = 0.5              # Minimum trust for routing
 
     # Capabilities
-    capabilities: Set[Capability] = field(
+    capabilities: set[Capability] = field(
         default_factory=lambda: {Capability.WEAVING}
     )
 
@@ -174,12 +159,12 @@ class FederationConfig:
     )
 
     @classmethod
-    def default(cls) -> "FederationConfig":
+    def default(cls) -> FederationConfig:
         """Default configuration for most users."""
         return cls()
 
     @classmethod
-    def development(cls) -> "FederationConfig":
+    def development(cls) -> FederationConfig:
         """Relaxed settings for development."""
         return cls(
             default_timeout_ms=30000,
@@ -189,7 +174,7 @@ class FederationConfig:
         )
 
     @classmethod
-    def production(cls) -> "FederationConfig":
+    def production(cls) -> FederationConfig:
         """Strict settings for production."""
         return cls(
             default_timeout_ms=3000,
@@ -199,7 +184,7 @@ class FederationConfig:
         )
 
     @classmethod
-    def high_security(cls) -> "FederationConfig":
+    def high_security(cls) -> FederationConfig:
         """High-security settings with strict alignment verification."""
         return cls(
             default_timeout_ms=3000,
@@ -246,35 +231,35 @@ class Federation:
 
     def __init__(
         self,
-        config: Optional[FederationConfig] = None,
-        identity: Optional[Identity] = None,
-        loom: Optional["HoloLoomType"] = None,
+        config: FederationConfig | None = None,
+        identity: Identity | None = None,
+        loom: HoloLoomType | None = None,
     ):
         self._config = config or FederationConfig.default()
         self._identity = identity
-        self._node: Optional[FederationNode] = None
-        self._loom: Optional["HoloLoomType"] = loom
+        self._node: FederationNode | None = None
+        self._loom: HoloLoomType | None = loom
 
         # Components (initialized on connect)
-        self._membership: Optional[Any] = None  # MembershipProtocol
-        self._router: Optional[Any] = None      # RoutingProtocol
-        self._verifier: Optional[Any] = None    # VerificationProtocol
-        self._guilds: Optional[Any] = None      # GuildProtocol
-        self._transport: Optional[Any] = None   # TransportProtocol
+        self._membership: Any | None = None  # MembershipProtocol
+        self._router: Any | None = None      # RoutingProtocol
+        self._verifier: Any | None = None    # VerificationProtocol
+        self._guilds: Any | None = None      # GuildProtocol
+        self._transport: Any | None = None   # TransportProtocol
 
         # ─────────────────────────────────────────────────────────────────────
         #  ALIGNMENT - Federation Alignment Protocol components
         # ─────────────────────────────────────────────────────────────────────
-        self._alignment_verifier: Optional[AlignmentVerifier] = None
-        self._consensus_engine: Optional[AlignmentConsensusEngine] = None
-        self._node_profiles: Optional[NodeProfileRegistry] = None
+        self._alignment_verifier: AlignmentVerifier | None = None
+        self._consensus_engine: AlignmentConsensusEngine | None = None
+        self._node_profiles: NodeProfileRegistry | None = None
 
         # State
         self._connected = False
-        self._peers: Dict[str, FederationNode] = {}
-        self._my_guilds: Set[str] = set()
-        self._metrics: Dict[str, Any] = {}
-        self._started_at: Optional[datetime] = None
+        self._peers: dict[str, FederationNode] = {}
+        self._my_guilds: set[str] = set()
+        self._metrics: dict[str, Any] = {}
+        self._started_at: datetime | None = None
 
         # ─────────────────────────────────────────────────────────────────────
         #  TELEMETRY - Prometheus metrics (Phase 5)
@@ -324,7 +309,7 @@ class Federation:
     #  LIFECYCLE
     # ───────────────────────────────────────────────────────────────────────
 
-    async def __aenter__(self) -> "Federation":
+    async def __aenter__(self) -> Federation:
         """Async context manager entry."""
         await self._initialize()
         return self
@@ -518,10 +503,10 @@ class Federation:
         text: str,
         *,
         verify: bool = True,
-        level: Optional[VerificationLevel] = None,
-        guild: Optional[str] = None,
-        timeout_ms: Optional[int] = None,
-    ) -> "FederatedResponse":
+        level: VerificationLevel | None = None,
+        guild: str | None = None,
+        timeout_ms: int | None = None,
+    ) -> FederatedResponse:
         """
         Query the federation.
 
@@ -577,7 +562,7 @@ class Federation:
         self,
         query: Query,
         trace: QueryTrace,
-    ) -> "FederatedResponse":
+    ) -> FederatedResponse:
         """
         Execute query through federation with alignment verification.
 
@@ -590,7 +575,6 @@ class Federation:
         6. Update Node Profile - Track trust scores
         7. Return aligned response
         """
-        import time
 
         start = time.perf_counter()
         query_result = "unknown"  # Track result for metrics
@@ -697,7 +681,7 @@ class Federation:
             # ─────────────────────────────────────────────────────────────────────
             #  L2: VERIFY RESPONSE - Full alignment check
             # ─────────────────────────────────────────────────────────────────────
-            l2_result: Optional[AlignmentVerification] = None
+            l2_result: AlignmentVerification | None = None
             if alignment_config.is_enabled and alignment_config.l2.enabled:
                 l2_result = await self._l2_verify_response(
                     responder_id=responder_id,
@@ -743,8 +727,8 @@ class Federation:
             # ─────────────────────────────────────────────────────────────────────
             #  L3: CONSENSUS - Byzantine agreement (if needed)
             # ─────────────────────────────────────────────────────────────────────
-            l3_result: Optional[ConsensusAlignmentResult] = None
-            verified_by: List[str] = []
+            l3_result: ConsensusAlignmentResult | None = None
+            verified_by: list[str] = []
 
             needs_l3 = (
                 alignment_config.is_enabled
@@ -832,9 +816,9 @@ class Federation:
                     ctx.set_result(query_result)
                     # Manually record since we can't use context manager here
                     from .metrics import (
-                        _init_metrics,
                         _federation_queries_total,
                         _federation_query_latency,
+                        _init_metrics,
                     )
                     _init_metrics()
                     if _federation_queries_total:
@@ -870,7 +854,6 @@ class Federation:
 
         Checks if the query can be safely processed before routing.
         """
-        import time
         start = time.perf_counter()
 
         # Start OpenTelemetry span for L1 check
@@ -958,7 +941,6 @@ class Federation:
 
         Verifies alignment metadata and runs deception detection.
         """
-        import time
         start = time.perf_counter()
 
         # Start OpenTelemetry span for L2 verification
@@ -1052,7 +1034,6 @@ class Federation:
 
         Used for high-risk responses or disputed verifications.
         """
-        import time
         start = time.perf_counter()
 
         # Start OpenTelemetry span for L3 consensus
@@ -1150,7 +1131,7 @@ class Federation:
     async def _update_node_profile(
         self,
         node_id: str,
-        verification: Optional[AlignmentVerification],
+        verification: AlignmentVerification | None,
         success: bool,
     ) -> None:
         """Update node trust profile based on verification outcome."""
@@ -1188,9 +1169,8 @@ class Federation:
         self,
         query: Query,
         trace: QueryTrace,
-    ) -> "FederatedResponse":
+    ) -> FederatedResponse:
         """Execute query locally using HoloLoom."""
-        import time
 
         start = time.perf_counter()
 
@@ -1271,7 +1251,7 @@ class Federation:
         self,
         text: str,
         *,
-        level: Optional[VerificationLevel] = None,
+        level: VerificationLevel | None = None,
     ) -> Verification:
         """
         Request verification only (no response generation).
@@ -1320,7 +1300,7 @@ class Federation:
         self._my_guilds.discard(guild_id)
         logger.info(f"Left guild: {guild_id}")
 
-    async def list_guilds(self) -> List[Guild]:
+    async def list_guilds(self) -> list[Guild]:
         """List available guilds."""
         # TODO: Implement guild listing
         return []
@@ -1347,11 +1327,11 @@ class Federation:
         return len(self._peers)
 
     @property
-    def guilds(self) -> Set[str]:
+    def guilds(self) -> set[str]:
         """Guilds this node belongs to."""
         return self._my_guilds.copy()
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Get current statistics."""
         return {
             "node_id": self.node_id[:8] + "...",
@@ -1388,7 +1368,7 @@ class FederatedResponse:
     answer: str
     confidence: float                         # 0.0-1.0
     verified: bool                            # Whether consensus was reached
-    verified_by: List[str]                    # Node IDs that verified
+    verified_by: list[str]                    # Node IDs that verified
     trace: QueryTrace                         # Full execution trace
     source: str                               # "federation" or "local"
     latency_ms: float                         # Total latency
@@ -1396,10 +1376,10 @@ class FederatedResponse:
     # ─────────────────────────────────────────────────────────────────────────
     #  ALIGNMENT - Federation Alignment Protocol metadata
     # ─────────────────────────────────────────────────────────────────────────
-    alignment_metadata: Optional[AlignmentMetadata] = None        # From responder
-    alignment_verification: Optional[AlignmentVerification] = None  # L2 result
-    alignment_consensus: Optional[ConsensusAlignmentResult] = None  # L3 result (if escalated)
-    responder_trust_level: Optional[TrustLevel] = None            # Responder's trust level
+    alignment_metadata: AlignmentMetadata | None = None        # From responder
+    alignment_verification: AlignmentVerification | None = None  # L2 result
+    alignment_consensus: ConsensusAlignmentResult | None = None  # L3 result (if escalated)
+    responder_trust_level: TrustLevel | None = None            # Responder's trust level
 
     @property
     def is_aligned(self) -> bool:
@@ -1443,8 +1423,8 @@ class FederatedResponse:
 @asynccontextmanager
 async def connect(
     bootstrap: str,
-    config: Optional[FederationConfig] = None,
-    loom: Optional["HoloLoomType"] = None,
+    config: FederationConfig | None = None,
+    loom: HoloLoomType | None = None,
 ) -> AsyncIterator[Federation]:
     """
     Quick connect to federation with optional local HoloLoom.

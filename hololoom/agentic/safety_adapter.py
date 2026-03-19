@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Agentic Safety Adapter
 ======================
@@ -23,10 +24,9 @@ Date: 2025-12-01 (Safe Integration Phase)
 
 import logging
 import unicodedata
-from typing import Optional, Dict, Any
+from typing import Any, Optional
 
 from hololoom.protocols.safety import (
-    SafetyGateProtocol,
     SafetyGateDecision,
     SafetyRiskLevel,
 )
@@ -34,10 +34,10 @@ from hololoom.protocols.safety import (
 # Import alignment framework with graceful degradation
 try:
     from hololoom.alignment.safety_guardrails import (
-        SafetyGuardrails,
-        ActionRequest,
         ActionCategory,
+        ActionRequest,
         RiskLevel,
+        SafetyGuardrails,
     )
     ALIGNMENT_AVAILABLE = True
 except ImportError:
@@ -82,7 +82,7 @@ class AgenticSafetyAdapter:
 
     # Map agentic reasoning modes to alignment action categories
     # These mappings reflect the risk profile of each mode
-    MODE_TO_CATEGORY: Dict[str, 'ActionCategory'] = {}
+    MODE_TO_CATEGORY: dict[str, 'ActionCategory'] = {}
 
     # Risk profile explanation:
     # - direct: Simple query → lowest risk (QUERY)
@@ -203,8 +203,8 @@ class AgenticSafetyAdapter:
         self,
         query_text: str,
         reasoning_mode: str,
-        epistemic_confidence: Optional[float] = None,
-        context: Optional[Dict[str, Any]] = None
+        epistemic_confidence: float | None = None,
+        context: dict[str, Any] | None = None
     ) -> SafetyGateDecision:
         """
         Gate agentic reasoning through safety evaluation.

@@ -16,10 +16,8 @@ Features:
 """
 
 import os
-from typing import Optional
 from dataclasses import dataclass
 from enum import Enum
-
 
 # ============================================================================
 # Environment Types

@@ -60,38 +60,35 @@ Usage:
 """
 
 from hololoom.dark_trace.models.adapter import (
-    ModelAdapter,
+    ActivationCache,
     ActivationHook,
+    DummyAdapter,
     HookHandle,
-    SteeringConfig,
     LayerInfo,
     LayerType,
+    ModelAdapter,
     ModelCapabilities,
+    SteeringConfig,
     create_hook,
-    DummyAdapter,
-    ActivationCache,
     make_cache_key,
 )
-
+from hololoom.dark_trace.models.fingerprint import (
+    FeatureFingerprint,
+    FingerprintComparison,
+    FingerprintConfig,
+    ModelFingerprinter,
+    compare_fingerprints,
+    find_model_specific_features,
+    find_universal_features,
+)
 from hololoom.dark_trace.models.policy_adapter import (
     PolicyAdapter,
     PolicyLayerType,
 )
-
 from hololoom.dark_trace.models.transformer_adapter import (
     TransformerAdapter,
     TransformerLayerType,
     get_layer_names,
-)
-
-from hololoom.dark_trace.models.fingerprint import (
-    FeatureFingerprint,
-    ModelFingerprinter,
-    FingerprintConfig,
-    FingerprintComparison,
-    compare_fingerprints,
-    find_universal_features,
-    find_model_specific_features,
 )
 
 __all__ = [

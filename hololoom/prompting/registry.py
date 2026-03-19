@@ -6,14 +6,13 @@ promptly_skills/strategies/ directory. Strategies are loaded lazily
 and cached for performance.
 """
 
-from typing import Dict, List, Optional, Tuple
 import importlib
 import importlib.util
+import logging
 import sys
 from pathlib import Path
-import logging
 
-from .strategy import PromptingStrategy, StrategyContext, StrategyCategory
+from .strategy import PromptingStrategy, StrategyCategory, StrategyContext
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class StrategyRegistry:
     PromptingStrategy and is not the base class itself.
     """
 
-    def __init__(self, strategies_dir: Optional[Path] = None):
+    def __init__(self, strategies_dir: Path | None = None):
         """
         Initialize registry.
 
@@ -37,8 +36,8 @@ class StrategyRegistry:
             strategies_dir: Optional custom strategies directory.
                            Defaults to promptly_skills/strategies/
         """
-        self.strategies: Dict[str, PromptingStrategy] = {}
-        self._lazy_loaded: Dict[str, Path] = {}  # name -> module path
+        self.strategies: dict[str, PromptingStrategy] = {}
+        self._lazy_loaded: dict[str, Path] = {}  # name -> module path
 
         # Determine strategies directory
         if strategies_dir is None:
@@ -77,7 +76,7 @@ class StrategyRegistry:
 
         logger.info(f"Discovered {len(self._lazy_loaded)} strategies")
 
-    def _load_strategy(self, name: str) -> Optional[PromptingStrategy]:
+    def _load_strategy(self, name: str) -> PromptingStrategy | None:
         """
         Lazy-load a strategy by name.
 
@@ -137,7 +136,7 @@ class StrategyRegistry:
             logger.error(f"Error loading strategy {name}: {e}", exc_info=True)
             return None
 
-    def get(self, name: str) -> Optional[PromptingStrategy]:
+    def get(self, name: str) -> PromptingStrategy | None:
         """
         Get strategy by name.
 
@@ -163,7 +162,7 @@ class StrategyRegistry:
 
         return None
 
-    def list_all(self) -> List[Dict[str, str]]:
+    def list_all(self) -> list[dict[str, str]]:
         """
         List all available strategies (loaded + discoverable).
 
@@ -202,7 +201,7 @@ class StrategyRegistry:
 
         return strategies_info
 
-    def list_by_category(self, category: StrategyCategory) -> List[PromptingStrategy]:
+    def list_by_category(self, category: StrategyCategory) -> list[PromptingStrategy]:
         """
         List all strategies in a category.
 
@@ -225,7 +224,7 @@ class StrategyRegistry:
 
         return [s for s in self.strategies.values() if s.category == category]
 
-    def suggest(self, context: StrategyContext, top_k: int = 3) -> List[Tuple[str, float]]:
+    def suggest(self, context: StrategyContext, top_k: int = 3) -> list[tuple[str, float]]:
         """
         Suggest strategies for a context (auto-detection).
 
@@ -287,7 +286,7 @@ class StrategyRegistry:
 
 
 # Global registry instance
-_global_registry: Optional[StrategyRegistry] = None
+_global_registry: StrategyRegistry | None = None
 
 
 def get_registry() -> StrategyRegistry:
@@ -298,7 +297,7 @@ def get_registry() -> StrategyRegistry:
     return _global_registry
 
 
-def get_strategy(name: str) -> Optional[PromptingStrategy]:
+def get_strategy(name: str) -> PromptingStrategy | None:
     """
     Get strategy by name from global registry.
 
@@ -315,7 +314,7 @@ def get_strategy(name: str) -> Optional[PromptingStrategy]:
     return get_registry().get(name)
 
 
-def suggest_strategies(context: StrategyContext, top_k: int = 3) -> List[Tuple[str, float]]:
+def suggest_strategies(context: StrategyContext, top_k: int = 3) -> list[tuple[str, float]]:
     """
     Suggest strategies for a context.
 
@@ -335,7 +334,7 @@ def suggest_strategies(context: StrategyContext, top_k: int = 3) -> List[Tuple[s
     return get_registry().suggest(context, top_k=top_k)
 
 
-def list_strategies(category: Optional[StrategyCategory] = None) -> List[Dict[str, str]]:
+def list_strategies(category: StrategyCategory | None = None) -> list[dict[str, str]]:
     """
     List all available strategies.
 

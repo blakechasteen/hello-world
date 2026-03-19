@@ -7,8 +7,8 @@ Created: 2025-12-31
 """
 
 from hololoom.ml.skills.ml_trainer_skill import (
-    MLTrainerSkill,
     MLOperation,
+    MLTrainerSkill,
 )
 
 __all__ = [

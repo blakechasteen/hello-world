@@ -10,13 +10,13 @@ Provides live visibility into agent reasoning with:
 Status: Production Ready (November 2025)
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Set
-from datetime import datetime
-from enum import Enum
 import asyncio
 import logging
 from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -49,21 +49,21 @@ class AgentTreeNode:
     node_id: str
     agent_id: str
     step_type: StepType
-    query: Optional[str] = None
-    confidence: Optional[float] = None
-    epistemic_confidence: Optional[float] = None
-    finding: Optional[str] = None
-    tool_used: Optional[str] = None
-    latency_ms: Optional[float] = None
+    query: str | None = None
+    confidence: float | None = None
+    epistemic_confidence: float | None = None
+    finding: str | None = None
+    tool_used: str | None = None
+    latency_ms: float | None = None
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
     # Tree structure
-    parent_id: Optional[str] = None
-    children: List[str] = field(default_factory=list)
+    parent_id: str | None = None
+    children: list[str] = field(default_factory=list)
 
     # Status
     status: AgentStatus = AgentStatus.RUNNING
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
@@ -76,11 +76,11 @@ class AgentSession:
     status: AgentStatus
 
     # Tree structure
-    root_node_id: Optional[str] = None
-    nodes: Dict[str, AgentTreeNode] = field(default_factory=dict)
+    root_node_id: str | None = None
+    nodes: dict[str, AgentTreeNode] = field(default_factory=dict)
 
     # Files being worked on
-    files: List[str] = field(default_factory=list)
+    files: list[str] = field(default_factory=list)
 
     # Two-line feed
     feed_line1: str = ""
@@ -90,17 +90,17 @@ class AgentSession:
     total_steps: int = 0
     current_step: int = 0
     start_time: str = field(default_factory=lambda: datetime.now().isoformat())
-    total_duration_ms: Optional[float] = None
+    total_duration_ms: float | None = None
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class AgentTreeBuilder:
     """Converts flat step list to tree structure"""
 
     @staticmethod
-    def build_tree(agent_id: str, steps: List[Dict[str, Any]]) -> Dict[str, AgentTreeNode]:
+    def build_tree(agent_id: str, steps: list[dict[str, Any]]) -> dict[str, AgentTreeNode]:
         """
         Build tree from flat steps list.
 
@@ -164,7 +164,7 @@ class AgentTreeBuilder:
         return nodes
 
     @staticmethod
-    def get_tree_depth(nodes: Dict[str, AgentTreeNode], root_id: str) -> int:
+    def get_tree_depth(nodes: dict[str, AgentTreeNode], root_id: str) -> int:
         """Calculate tree depth"""
         if not root_id or root_id not in nodes:
             return 0
@@ -190,13 +190,13 @@ class AgentMonitor:
 
     def __init__(self):
         # Active sessions
-        self.sessions: Dict[str, AgentSession] = {}
+        self.sessions: dict[str, AgentSession] = {}
 
         # Project-based grouping
-        self.projects: Dict[str, Set[str]] = defaultdict(set)  # project -> agent_ids
+        self.projects: dict[str, set[str]] = defaultdict(set)  # project -> agent_ids
 
         # WebSocket connections
-        self.ws_connections: List[Any] = []  # WebSocket instances
+        self.ws_connections: list[Any] = []  # WebSocket instances
 
         # Performance metrics
         self.total_agents_started: int = 0
@@ -205,7 +205,7 @@ class AgentMonitor:
         self.latencies: deque = deque(maxlen=1000)
 
         # Background cleanup task
-        self._cleanup_task: Optional[asyncio.Task] = None
+        self._cleanup_task: asyncio.Task | None = None
 
     async def start(self):
         """Start monitoring (background cleanup)"""
@@ -269,7 +269,7 @@ class AgentMonitor:
             self.ws_connections.remove(ws)
             logger.info(f"WebSocket disconnected (remaining: {len(self.ws_connections)})")
 
-    async def broadcast(self, message: Dict[str, Any]):
+    async def broadcast(self, message: dict[str, Any]):
         """Broadcast message to all WebSocket clients"""
         disconnected = []
 
@@ -289,7 +289,7 @@ class AgentMonitor:
         project: str,
         query: str,
         mode: str,
-        files: Optional[List[str]] = None
+        files: list[str] | None = None
     ):
         """Agent started reasoning"""
         self.total_agents_started += 1
@@ -329,10 +329,10 @@ class AgentMonitor:
         step: int,
         total_steps: int,
         step_type: str,
-        confidence: Optional[float] = None,
-        epistemic: Optional[float] = None,
-        finding: Optional[str] = None,
-        latency_ms: Optional[float] = None
+        confidence: float | None = None,
+        epistemic: float | None = None,
+        finding: str | None = None,
+        latency_ms: float | None = None
     ):
         """Agent completed a step"""
         if agent_id not in self.sessions:
@@ -364,7 +364,7 @@ class AgentMonitor:
         self,
         agent_id: str,
         status: AgentStatus,
-        files: Optional[List[str]] = None
+        files: list[str] | None = None
     ):
         """Agent status changed"""
         if agent_id not in self.sessions:
@@ -417,7 +417,7 @@ class AgentMonitor:
     async def agent_completed(
         self,
         agent_id: str,
-        steps: List[Dict[str, Any]],
+        steps: list[dict[str, Any]],
         total_duration_ms: float
     ):
         """Agent completed reasoning"""
@@ -481,12 +481,12 @@ class AgentMonitor:
             'timestamp': datetime.now().isoformat()
         })
 
-    def _serialize_tree(self, session: AgentSession) -> Dict[str, Any]:
+    def _serialize_tree(self, session: AgentSession) -> dict[str, Any]:
         """Serialize tree structure for WebSocket transmission"""
         if not session.root_node_id or not session.nodes:
             return {}
 
-        def serialize_node(node_id: str) -> Dict[str, Any]:
+        def serialize_node(node_id: str) -> dict[str, Any]:
             if node_id not in session.nodes:
                 return {}
 
@@ -506,20 +506,20 @@ class AgentMonitor:
 
         return serialize_node(session.root_node_id)
 
-    def get_session(self, agent_id: str) -> Optional[AgentSession]:
+    def get_session(self, agent_id: str) -> AgentSession | None:
         """Get session by agent ID"""
         return self.sessions.get(agent_id)
 
-    def get_project_agents(self, project: str) -> List[AgentSession]:
+    def get_project_agents(self, project: str) -> list[AgentSession]:
         """Get all agents for a project"""
         agent_ids = self.projects.get(project, set())
         return [self.sessions[aid] for aid in agent_ids if aid in self.sessions]
 
-    def get_all_sessions(self) -> List[AgentSession]:
+    def get_all_sessions(self) -> list[AgentSession]:
         """Get all active sessions"""
         return list(self.sessions.values())
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get performance metrics"""
         return {
             'total_agents_started': self.total_agents_started,
@@ -537,7 +537,7 @@ class AgentMonitor:
 
 
 # Global monitor instance
-_monitor: Optional[AgentMonitor] = None
+_monitor: AgentMonitor | None = None
 
 
 def get_monitor() -> AgentMonitor:

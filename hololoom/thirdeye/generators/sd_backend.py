@@ -13,13 +13,12 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from typing import Dict, Any, Optional, List, Protocol, Tuple
-from dataclasses import dataclass, field
-from abc import ABC, abstractmethod
-import json
-import base64
 import asyncio
-from pathlib import Path
+import base64
+import json
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -41,10 +40,10 @@ class GenerationParams:
 class GenerationResult:
     """Result from image generation."""
     success: bool
-    images: List[bytes] = field(default_factory=list)
-    seeds: List[int] = field(default_factory=list)
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    images: list[bytes] = field(default_factory=list)
+    seeds: list[int] = field(default_factory=list)
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class ImageBackend(ABC):
@@ -61,7 +60,7 @@ class ImageBackend(ABC):
         pass
 
     @abstractmethod
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """List available models."""
         pass
 
@@ -216,7 +215,7 @@ class ComfyUIBackend(ImageBackend):
         except Exception as e:
             return GenerationResult(success=False, error=str(e))
 
-    def _build_workflow(self, params: GenerationParams) -> Dict:
+    def _build_workflow(self, params: GenerationParams) -> dict:
         """Build ComfyUI workflow from parameters."""
         import copy
         workflow = copy.deepcopy(self.DEFAULT_WORKFLOW)
@@ -246,7 +245,7 @@ class ComfyUIBackend(ImageBackend):
         self,
         prompt_id: str,
         poll_interval: float = 0.5
-    ) -> Tuple[List[bytes], List[int]]:
+    ) -> tuple[list[bytes], list[int]]:
         """Wait for generation to complete and fetch images."""
         client = await self._get_client()
         images = []
@@ -282,7 +281,7 @@ class ComfyUIBackend(ImageBackend):
         filename: str,
         subfolder: str,
         folder_type: str
-    ) -> Optional[bytes]:
+    ) -> bytes | None:
         """Fetch generated image from ComfyUI."""
         client = await self._get_client()
         params = {
@@ -302,7 +301,7 @@ class ComfyUIBackend(ImageBackend):
             pass
         return None
 
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """List available checkpoint models."""
         # This would need to query ComfyUI's object_info endpoint
         return []
@@ -427,7 +426,7 @@ class A1111Backend(ImageBackend):
         }
         return mapping.get(sampler.lower(), sampler)
 
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """List available models - requires sync request."""
         return []
 
@@ -456,7 +455,7 @@ class StableDiffusionBackend(ImageBackend):
     ):
         self.comfyui = ComfyUIBackend(host=host, port=comfyui_port)
         self.a1111 = A1111Backend(host=host, port=a1111_port)
-        self._active_backend: Optional[ImageBackend] = None
+        self._active_backend: ImageBackend | None = None
 
     async def health_check(self) -> bool:
         """Check if any backend is available."""
@@ -490,7 +489,7 @@ class StableDiffusionBackend(ImageBackend):
 
         return await self._active_backend.generate(params)
 
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """Get models from active backend."""
         if self._active_backend:
             return self._active_backend.get_available_models()

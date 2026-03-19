@@ -20,10 +20,10 @@ Phase: 11.7 - Built-in Plugins
 
 import asyncio
 import logging
-import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.dark_trace.engine import DarkTraceEngine
@@ -31,14 +31,12 @@ if TYPE_CHECKING:
     from hololoom.dark_trace.result import TraceResult
 
 from hololoom.dark_trace.plugins.interface import (
-    DarkTracePlugin,
+    MonitorPlugin,
     PluginMetadata,
     PluginType,
-    MonitorPlugin,
 )
 from hololoom.dark_trace.plugins.safety_gate import (
     PluginCapability,
-    TrustLevel,
 )
 
 logger = logging.getLogger("hololoom.dark_trace.plugins.builtin.metrics_exporter")
@@ -55,8 +53,8 @@ class PrometheusMetric:
     value: float
     metric_type: str  # counter, gauge, histogram, summary
     help_text: str
-    labels: Dict[str, str] = field(default_factory=dict)
-    timestamp: Optional[float] = None
+    labels: dict[str, str] = field(default_factory=dict)
+    timestamp: float | None = None
 
     def to_prometheus_format(self) -> str:
         """Format as Prometheus exposition format."""
@@ -87,14 +85,14 @@ class PrometheusMetric:
 @dataclass
 class MetricsBatch:
     """A batch of metrics for export."""
-    metrics: List[PrometheusMetric] = field(default_factory=list)
+    metrics: list[PrometheusMetric] = field(default_factory=list)
     collection_time: datetime = field(default_factory=datetime.now)
 
     def to_prometheus_format(self) -> str:
         """Format all metrics in Prometheus exposition format."""
         return "\n\n".join(m.to_prometheus_format() for m in self.metrics)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON export."""
         return {
             "collection_time": self.collection_time.isoformat(),
@@ -146,13 +144,13 @@ class MetricsExporterPlugin(MonitorPlugin):
             export_interval_seconds: How often to collect metrics
             enable_histogram: Whether to collect histogram metrics
         """
-        self._engine: Optional["DarkTraceEngine"] = None
-        self._safety_gate: Optional["PluginSafetyGate"] = None
+        self._engine: DarkTraceEngine | None = None
+        self._safety_gate: PluginSafetyGate | None = None
         self._export_interval = export_interval_seconds
         self._enable_histogram = enable_histogram
 
         # Counters (monotonically increasing)
-        self._counters: Dict[str, float] = {
+        self._counters: dict[str, float] = {
             "analysis_total": 0,
             "safety_alerts_info": 0,
             "safety_alerts_warning": 0,
@@ -162,7 +160,7 @@ class MetricsExporterPlugin(MonitorPlugin):
         }
 
         # Gauges (point-in-time values)
-        self._gauges: Dict[str, float] = {
+        self._gauges: dict[str, float] = {
             "plugin_count": 0,
             "active_features": 0,
             "memory_usage_bytes": 0,
@@ -172,18 +170,16 @@ class MetricsExporterPlugin(MonitorPlugin):
         self._latency_buckets = [
             0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0
         ]
-        self._latency_bucket_counts: Dict[float, int] = {
-            b: 0 for b in self._latency_buckets
-        }
+        self._latency_bucket_counts: dict[float, int] = dict.fromkeys(self._latency_buckets, 0)
         self._latency_bucket_counts[float("inf")] = 0
         self._latency_sum = 0.0
         self._latency_count = 0
 
         # Export callbacks
-        self._export_callbacks: List[Callable[[MetricsBatch], None]] = []
+        self._export_callbacks: list[Callable[[MetricsBatch], None]] = []
 
         self._initialized = False
-        self._background_task: Optional[asyncio.Task] = None
+        self._background_task: asyncio.Task | None = None
 
     @property
     def metadata(self) -> PluginMetadata:
@@ -400,7 +396,7 @@ class MetricsExporterPlugin(MonitorPlugin):
         batch = self.collect_metrics()
         return batch.to_prometheus_format()
 
-    def get_metrics_dict(self) -> Dict[str, Any]:
+    def get_metrics_dict(self) -> dict[str, Any]:
         """Get metrics as a dictionary."""
         batch = self.collect_metrics()
         return batch.to_dict()
@@ -454,7 +450,7 @@ class MetricsExporterPlugin(MonitorPlugin):
             self._background_task.cancel()
             logger.info("Stopped background metrics export")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get exporter statistics."""
         return {
             "counters": dict(self._counters),

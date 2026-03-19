@@ -1,16 +1,22 @@
 """Image Processing Skill - Resize, crop, convert images using PIL"""
 
-import time
 import os
-from typing import Dict, Any, List, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+import time
+from typing import Any
 
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 # Check for PIL/Pillow availability
 PIL_AVAILABLE = False
 try:
-    from PIL import Image, ImageFilter, ImageEnhance, ImageOps
+    from PIL import Image, ImageEnhance, ImageFilter, ImageOps
     PIL_AVAILABLE = True
 except ImportError:
     pass
@@ -86,7 +92,7 @@ class ImageProcessingSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    def _dispatch(self, operation: str, parameters: Dict[str, Any]):
+    def _dispatch(self, operation: str, parameters: dict[str, Any]):
         if operation == "resize":
             return self._resize(parameters)
         elif operation == "crop":
@@ -395,4 +401,5 @@ class ImageProcessingSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(ImageProcessingSkill())

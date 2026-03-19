@@ -11,7 +11,6 @@ Run with: PYTHONPATH=. python HoloLoom/web_dashboard/test_workflow_integration.p
 """
 
 import asyncio
-import json
 import os
 import sys
 import tempfile
@@ -48,10 +47,10 @@ async def test_persistence():
 
     try:
         from hololoom.apps.workflow_builder.workflow_persistence import (
+            ExecutionRecord,
+            VersionRecord,
             WorkflowPersistence,
             WorkflowRecord,
-            VersionRecord,
-            ExecutionRecord
         )
     except ImportError as e:
         print(f"  SKIP: Could not import persistence module: {e}")
@@ -165,17 +164,17 @@ def test_authentication():
     try:
         from hololoom.apps.workflow_builder.workflow_auth import (
             AuthContext,
-            NonceTracker,
-            compute_signature,
-            verify_signature,
-            create_signed_headers,
-            get_auth_context_sync,
             AuthenticationError,
-            is_multi_user_enabled,
-            get_current_mode,
+            NonceTracker,
+            UserStore,
+            compute_signature,
+            create_signed_headers,
             generate_api_key,
+            get_auth_context_sync,
+            get_current_mode,
             hash_api_key,
-            UserStore
+            is_multi_user_enabled,
+            verify_signature,
         )
     except ImportError as e:
         print(f"  SKIP: Could not import auth module: {e}")
@@ -274,7 +273,7 @@ def test_authentication():
     store.deactivate(user.id)
     deactivated = store.get_by_id(user.id)
     assert not deactivated.is_active
-    print(f"    + User management: created, retrieved, updated, deactivated")
+    print("    + User management: created, retrieved, updated, deactivated")
 
     # Test 2.9: Permission checking
     print("  2.9 Permission checking...")
@@ -304,12 +303,12 @@ def test_crdt():
 
     try:
         from hololoom.apps.workflow_builder.workflow_crdt import (
-            VectorClock,
+            ConflictResolver,
+            CRDTStateManager,
             Operation,
             OperationType,
+            VectorClock,
             WorkflowCRDTState,
-            CRDTStateManager,
-            ConflictResolver
         )
     except ImportError as e:
         print(f"  SKIP: Could not import CRDT module: {e}")
@@ -481,8 +480,8 @@ async def test_agent_executor():
 
     try:
         from hololoom.apps.workflow_builder.workflow_agents import (
+            AgentResult,
             WorkflowAgentExecutor,
-            AgentResult
         )
     except ImportError as e:
         print(f"  SKIP: Could not import agent executor: {e}")

@@ -8,25 +8,13 @@ Provides standardized HoloLoom department interface for code-related
 operations via MCP protocol.
 """
 
-import asyncio
 import logging
-from typing import Dict, Any, Optional
 from datetime import datetime
+from typing import Any
 
 from ..protocol import DepartmentProtocol
 from .mcp_client import MCPClient
-from .protocol import (
-    ClaudeCodeRequest,
-    ClaudeCodeResponse,
-    CodeAction,
-    create_query_request,
-    create_refactor_request,
-    create_explain_request,
-    create_test_request,
-    create_fix_request,
-    create_context_request
-)
-
+from .protocol import ClaudeCodeRequest, ClaudeCodeResponse, CodeAction
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +60,7 @@ class ClaudeCodeDepartment(DepartmentProtocol):
         self.mcp_server_url = mcp_server_url
         self.auto_reconnect = auto_reconnect
 
-        self.mcp_client: Optional[MCPClient] = None
+        self.mcp_client: MCPClient | None = None
         self.started = False
 
         # Statistics
@@ -127,7 +115,7 @@ class ClaudeCodeDepartment(DepartmentProtocol):
         self.started = False
         logger.info("Claude Code Department stopped")
 
-    async def process(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    async def process(self, request: dict[str, Any]) -> dict[str, Any]:
         """
         Process department request
 
@@ -220,7 +208,7 @@ class ClaudeCodeDepartment(DepartmentProtocol):
     # Internal Methods
     # ========================================================================
 
-    def _parse_request(self, request: Dict[str, Any]) -> ClaudeCodeRequest:
+    def _parse_request(self, request: dict[str, Any]) -> ClaudeCodeRequest:
         """Parse raw request into ClaudeCodeRequest"""
         action_str = request.get("action")
         if not action_str:
@@ -278,7 +266,7 @@ class ClaudeCodeDepartment(DepartmentProtocol):
                 error=f"MCP error: {str(e)}"
             )
 
-    def _response_to_dict(self, response: ClaudeCodeResponse) -> Dict[str, Any]:
+    def _response_to_dict(self, response: ClaudeCodeResponse) -> dict[str, Any]:
         """Convert response to dictionary"""
         result = {
             "success": response.success
@@ -295,12 +283,12 @@ class ClaudeCodeDepartment(DepartmentProtocol):
 
         return result
 
-    async def _handle_file_change(self, params: Dict[str, Any]):
+    async def _handle_file_change(self, params: dict[str, Any]):
         """Handle file change notification from VS Code"""
         logger.info(f"File changed in VS Code: {params.get('uri')}")
         # Could trigger Matrix notifications here
 
-    async def _handle_diagnostics(self, params: Dict[str, Any]):
+    async def _handle_diagnostics(self, params: dict[str, Any]):
         """Handle diagnostics notification from VS Code"""
         uri = params.get("uri", "")
         diagnostics = params.get("diagnostics", [])
@@ -308,7 +296,7 @@ class ClaudeCodeDepartment(DepartmentProtocol):
         logger.info(f"Diagnostics updated for {uri}: {len(diagnostics)} issues")
         # Could trigger Matrix alerts for critical issues
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get department statistics"""
         uptime = None
         if self.stats["start_time"]:

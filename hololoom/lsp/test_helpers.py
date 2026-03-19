@@ -12,8 +12,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from server import (
-    extract_word_at_position,
     extract_symbol_at_position,
+    extract_word_at_position,
     format_memory_as_markdown,
 )
 
@@ -124,7 +124,7 @@ def test_format_memory_as_markdown():
     assert "Timestamp" in markdown, "Should have timestamp"
     assert "2025-11-16T05:58:35" in markdown, "Should show timestamp value"
 
-    print(f"  ✓ Generated markdown:")
+    print("  ✓ Generated markdown:")
     for line in markdown.split('\n')[:5]:
         print(f"      {line}")
     print("      ...")
@@ -135,14 +135,14 @@ def test_format_memory_as_markdown():
     markdown2 = format_memory_as_markdown(mem2)
     assert "Short text" in markdown2
     assert "..." not in markdown2.split('\n')[0], "Short text shouldn't be truncated"
-    print(f"  ✓ Short text formatting works")
+    print("  ✓ Short text formatting works")
 
     # Test with long text
     mem3 = MockMemory()
     mem3.text = "A" * 150
     markdown3 = format_memory_as_markdown(mem3)
     assert "..." in markdown3.split('\n')[0], "Long text should be truncated"
-    print(f"  ✓ Long text truncation works")
+    print("  ✓ Long text truncation works")
 
     print("✅ format_memory_as_markdown: All tests passed\n")
 

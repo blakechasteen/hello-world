@@ -15,9 +15,9 @@ Author: CARTS (Continuous Adversarial Red Team System)
 Date: 2025-12-05
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
 import random
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -29,8 +29,8 @@ class PromptExtractionPayload:
     expected_behavior: str
     severity_estimate: float  # 0.0-1.0
     extraction_method: str  # direct, indirect, completion
-    target_component: Optional[str] = None  # system_prompt, instructions, constraints, etc.
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    target_component: str | None = None  # system_prompt, instructions, constraints, etc.
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         return f"[PROMPT_EXTRACTION] {self.payload[:60]}..."
@@ -44,7 +44,7 @@ class PromptExtractionGenerator:
     indirect tricks, and pattern exploitation.
     """
 
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, seed: int | None = None):
         """Initialize with optional random seed."""
         if seed is not None:
             random.seed(seed)
@@ -171,7 +171,7 @@ class PromptExtractionGenerator:
             ],
         }
 
-    def generate_direct_extraction(self) -> List[PromptExtractionPayload]:
+    def generate_direct_extraction(self) -> list[PromptExtractionPayload]:
         """
         Generate direct system prompt extraction requests.
 
@@ -233,7 +233,7 @@ class PromptExtractionGenerator:
 
         return payloads
 
-    def generate_indirect_leakage(self) -> List[PromptExtractionPayload]:
+    def generate_indirect_leakage(self) -> list[PromptExtractionPayload]:
         """
         Generate indirect context leakage attacks.
 
@@ -281,7 +281,7 @@ class PromptExtractionGenerator:
 
         return payloads
 
-    def generate_completion_exploit(self) -> List[PromptExtractionPayload]:
+    def generate_completion_exploit(self) -> list[PromptExtractionPayload]:
         """
         Generate text completion exploits.
 
@@ -356,7 +356,7 @@ class PromptExtractionGenerator:
 
         return payloads
 
-    def generate_all(self) -> List[PromptExtractionPayload]:
+    def generate_all(self) -> list[PromptExtractionPayload]:
         """
         Generate all prompt extraction payloads.
 
@@ -389,7 +389,7 @@ class PromptExtractionGenerator:
 
         return all_payloads
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get statistics about available payloads."""
         total_indirect = sum(
             len(techniques)

@@ -9,8 +9,6 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import List, Optional
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  ENUMS
@@ -94,7 +92,7 @@ class MetricsConfig:
     http_path: str = "/metrics"
 
     # Histogram buckets for common metrics
-    latency_buckets: List[float] = field(default_factory=lambda: [
+    latency_buckets: list[float] = field(default_factory=lambda: [
         0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0
     ])
 
@@ -102,7 +100,7 @@ class MetricsConfig:
     default_labels: dict = field(default_factory=dict)
 
     # Push gateway (optional)
-    push_gateway_url: Optional[str] = None
+    push_gateway_url: str | None = None
     push_interval_seconds: float = 15.0
 
     @classmethod

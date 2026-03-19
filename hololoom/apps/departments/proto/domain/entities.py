@@ -12,9 +12,9 @@ Status: Production ready
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 from enum import Enum
+from typing import Any
 from uuid import UUID, uuid4
 
 
@@ -60,15 +60,15 @@ class CodeContext:
         git_branch: Current git branch
         metadata: Additional context metadata
     """
-    language: Optional[str] = None
-    file_path: Optional[str] = None
-    content: Optional[str] = None
-    selection: Optional[str] = None
-    cursor_position: Optional[Tuple[int, int]] = None
-    working_directory: Optional[str] = None
-    project_root: Optional[str] = None
-    git_branch: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    language: str | None = None
+    file_path: str | None = None
+    content: str | None = None
+    selection: str | None = None
+    cursor_position: tuple[int, int] | None = None
+    working_directory: str | None = None
+    project_root: str | None = None
+    git_branch: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def has_content(self) -> bool:
         """Check if context has file content."""
@@ -97,9 +97,9 @@ class ProtoIntent:
     intent_id: UUID = field(default_factory=uuid4)
     intent_type: IntentType = IntentType.UNKNOWN
     query: str = ""
-    code_context: Optional[CodeContext] = None
+    code_context: CodeContext | None = None
     created_at: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def is_code_related(self) -> bool:
         """Check if intent is code-related (has context)."""
@@ -130,12 +130,12 @@ class ProtoAction:
     """
     action_id: UUID = field(default_factory=uuid4)
     action_type: str = ""
-    parameters: Dict[str, Any] = field(default_factory=dict)
-    intent_id: Optional[UUID] = None
+    parameters: dict[str, Any] = field(default_factory=dict)
+    intent_id: UUID | None = None
     created_at: datetime = field(default_factory=datetime.now)
-    executed_at: Optional[datetime] = None
-    result: Optional[Any] = None
-    error: Optional[str] = None
+    executed_at: datetime | None = None
+    result: Any | None = None
+    error: str | None = None
     confidence: float = 0.0
 
     def is_executed(self) -> bool:
@@ -146,7 +146,7 @@ class ProtoAction:
         """Check if action executed successfully."""
         return self.is_executed() and self.error is None
 
-    def get_duration_ms(self) -> Optional[float]:
+    def get_duration_ms(self) -> float | None:
         """Get execution duration in milliseconds."""
         if not self.is_executed():
             return None
@@ -172,12 +172,12 @@ class ProtoResponse:
     """
     response_id: UUID = field(default_factory=uuid4)
     content: str = ""
-    actions_taken: List[ProtoAction] = field(default_factory=list)
+    actions_taken: list[ProtoAction] = field(default_factory=list)
     confidence: float = 0.0
-    sources: List[str] = field(default_factory=list)
-    suggestions: List[str] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def is_high_confidence(self, threshold: float = 0.7) -> bool:
         """Check if response confidence exceeds threshold."""
@@ -187,10 +187,10 @@ class ProtoResponse:
         """Check if response includes executed actions."""
         return len(self.actions_taken) > 0
 
-    def get_successful_actions(self) -> List[ProtoAction]:
+    def get_successful_actions(self) -> list[ProtoAction]:
         """Get list of successfully executed actions."""
         return [a for a in self.actions_taken if a.is_success()]
 
-    def get_failed_actions(self) -> List[ProtoAction]:
+    def get_failed_actions(self) -> list[ProtoAction]:
         """Get list of failed actions."""
         return [a for a in self.actions_taken if not a.is_success()]

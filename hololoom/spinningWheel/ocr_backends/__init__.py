@@ -17,7 +17,8 @@ Usage:
 """
 
 from typing import Optional
-from hololoom.spinningWheel.ocr_protocol import OCRProtocol, OCRBackendChain
+
+from hololoom.spinningWheel.ocr_protocol import OCRBackendChain, OCRProtocol
 
 
 def get_best_available_backend() -> OCRProtocol:

@@ -6,12 +6,12 @@ This demonstrates the design BEFORE we modify WeavingOrchestrator.
 """
 
 import asyncio
-import networkx as nx
-import numpy as np
 
-from hololoom.memory.awareness_graph import AwarenessGraph
-from hololoom.memory.awareness_types import ActivationStrategy, ActivationBudget
+import networkx as nx
+
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.memory.awareness_graph import AwarenessGraph
+from hololoom.memory.awareness_types import ActivationBudget, ActivationStrategy
 from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
 
@@ -80,7 +80,7 @@ async def demonstrate_awareness_graph():
         # 1. PERCEIVE
         perception = await awareness.perceive(text)
 
-        print(f"   Perception:")
+        print("   Perception:")
         print(f"      Dominant dimensions: {', '.join(perception.dominant_dimensions[:3])}")
         print(f"      Momentum: {perception.momentum:.3f}")
         print(f"      Complexity: {perception.complexity:.3f}")
@@ -111,7 +111,7 @@ async def demonstrate_awareness_graph():
 
         # 4. METRICS (what policy would see)
         metrics = awareness.get_metrics()
-        print(f"   Awareness state:")
+        print("   Awareness state:")
         print(f"      Total memories: {metrics.n_memories}")
         print(f"      Active memories: {metrics.n_active}")
         print(f"      Graph resonance: {metrics.avg_resonance:.3f}")
@@ -140,7 +140,7 @@ async def demonstrate_awareness_graph():
     )
 
     print(f"   Activated {len(precise_memories)} memories (precise)")
-    print(f"   → Topic continuation detected")
+    print("   → Topic continuation detected")
     print()
 
     # Query with topic shift
@@ -156,7 +156,7 @@ async def demonstrate_awareness_graph():
 
     print(f"   Activated {len(precise_memories)} memories (precise)")
     if len(precise_memories) < 2:
-        print(f"   → ⚠️ TOPIC SHIFT DETECTED (few strong activations)")
+        print("   → ⚠️ TOPIC SHIFT DETECTED (few strong activations)")
     print()
 
     # =========================================================================
@@ -170,7 +170,7 @@ async def demonstrate_awareness_graph():
 
     # Small context window (2k tokens)
     small_budget = ActivationBudget.for_context_window(2000)
-    print(f"Small context (2k tokens):")
+    print("Small context (2k tokens):")
     print(f"   Max memories: {small_budget.max_memories}")
     print(f"   Semantic radius: {small_budget.semantic_radius}")
     print(f"   Spread iterations: {small_budget.spread_iterations}")
@@ -178,7 +178,7 @@ async def demonstrate_awareness_graph():
 
     # Large context window (32k tokens)
     large_budget = ActivationBudget.for_context_window(32000)
-    print(f"Large context (32k tokens):")
+    print("Large context (32k tokens):")
     print(f"   Max memories: {large_budget.max_memories}")
     print(f"   Semantic radius: {large_budget.semantic_radius}")
     print(f"   Spread iterations: {large_budget.spread_iterations}")
@@ -193,7 +193,7 @@ async def demonstrate_awareness_graph():
     print("=" * 80)
     print()
 
-    print(f"Graph statistics:")
+    print("Graph statistics:")
     print(f"   Nodes (memories): {len(awareness.graph.nodes)}")
     print(f"   Edges (connections): {len(awareness.graph.edges)}")
 
@@ -203,7 +203,7 @@ async def demonstrate_awareness_graph():
         edge_type = data.get('type', 'unknown')
         edge_types[edge_type] = edge_types.get(edge_type, 0) + 1
 
-    print(f"   Edge types:")
+    print("   Edge types:")
     for edge_type, count in edge_types.items():
         print(f"      {edge_type}: {count}")
 

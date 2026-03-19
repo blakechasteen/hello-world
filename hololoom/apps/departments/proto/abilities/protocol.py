@@ -28,10 +28,8 @@ Status: Production ready (2025-12-02)
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Protocol, Dict, Any, List, Optional, runtime_checkable
 from enum import Enum
-from datetime import datetime
-import time
+from typing import Any, Protocol, runtime_checkable
 
 
 class AbilityTrustLevel(Enum):
@@ -87,15 +85,15 @@ class AbilityManifest:
     trust_level: AbilityTrustLevel = AbilityTrustLevel.LOCAL
 
     # Permissions
-    permissions: List[str] = field(default_factory=list)
+    permissions: list[str] = field(default_factory=list)
     requires_confirmation: bool = False
 
     # Dependencies
-    requires: List[str] = field(default_factory=list)
+    requires: list[str] = field(default_factory=list)
 
     # Metadata
-    tags: List[str] = field(default_factory=list)
-    homepage: Optional[str] = None
+    tags: list[str] = field(default_factory=list)
+    homepage: str | None = None
 
     def requires_permission(self, permission: str) -> bool:
         """Check if ability requires a specific permission."""
@@ -125,7 +123,7 @@ class AbilityContext:
     user_confirmed: bool = False
     trust_level: AbilityTrustLevel = AbilityTrustLevel.LOCAL
     timeout_seconds: float = 60.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -142,7 +140,7 @@ class PreflightResult:
     """
     can_execute: bool = True
     reason: str = ""
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
     estimated_duration_ms: float = 0.0
 
 
@@ -162,10 +160,10 @@ class AbilityResult:
     """
     success: bool = True
     output: Any = None
-    error: Optional[str] = None
+    error: str | None = None
     confidence: float = 0.8
     duration_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -180,8 +178,8 @@ class VerificationResult:
         suggestions: List of suggestions for improvement
     """
     verified: bool = True
-    issues: List[str] = field(default_factory=list)
-    suggestions: List[str] = field(default_factory=list)
+    issues: list[str] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
 
 
 @runtime_checkable
@@ -241,7 +239,7 @@ class Ability(Protocol):
 
     async def execute(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         context: AbilityContext
     ) -> AbilityResult:
         """Execute the ability with given parameters.
@@ -331,7 +329,7 @@ class BaseAbility(ABC):
     @abstractmethod
     async def execute(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         context: AbilityContext
     ) -> AbilityResult:
         """Execute the ability - must be implemented by subclasses.

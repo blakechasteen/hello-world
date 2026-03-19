@@ -14,12 +14,11 @@ MCP Departments:
 - MasterWeaver: Response synthesis
 """
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
-import uuid
-
+from typing import Any
 
 # ============================================================================
 # MCP Protocol Version
@@ -44,7 +43,7 @@ class ToolParameter:
     type: str  # "string", "number", "boolean", "object", "array"
     description: str
     required: bool = True
-    default: Optional[Any] = None
+    default: Any | None = None
 
 
 @dataclass
@@ -52,7 +51,7 @@ class Tool:
     """MCP tool definition"""
     name: str
     description: str
-    parameters: List[ToolParameter]
+    parameters: list[ToolParameter]
     returns: str  # Return type description
 
 
@@ -98,13 +97,13 @@ class MCPRequest:
     request_id: str
     session_id: str
     request_type: RequestType
-    tool_name: Optional[str] = None
-    parameters: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tool_name: str | None = None
+    parameters: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "MCPRequest":
+    def from_dict(cls, data: dict[str, Any]) -> "MCPRequest":
         """Parse MCP request from dict"""
         return cls(
             request_id=data["request_id"],
@@ -116,7 +115,7 @@ class MCPRequest:
             timestamp=datetime.fromisoformat(data["timestamp"]) if "timestamp" in data else datetime.utcnow()
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dict for serialization"""
         return {
             "request_id": self.request_id,
@@ -182,12 +181,12 @@ class MCPResponse:
     request_id: str
     session_id: str
     status: ResponseStatus
-    result: Optional[Any] = None
-    error: Optional[Dict[str, Any]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    result: Any | None = None
+    error: dict[str, Any] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dict for serialization"""
         return {
             "request_id": self.request_id,
@@ -200,7 +199,7 @@ class MCPResponse:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "MCPResponse":
+    def from_dict(cls, data: dict[str, Any]) -> "MCPResponse":
         """Parse MCP response from dict"""
         return cls(
             request_id=data["request_id"],
@@ -243,10 +242,10 @@ class MCPError:
     """MCP error details"""
     code: ErrorCode
     message: str
-    details: Optional[Dict[str, Any]] = None
-    escalate_to: Optional[str] = None  # Department to escalate to
+    details: dict[str, Any] | None = None
+    escalate_to: str | None = None  # Department to escalate to
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dict"""
         result = {
             "code": self.code.value,
@@ -270,7 +269,7 @@ class Session:
     created_at: datetime = field(default_factory=datetime.utcnow)
     last_request_at: datetime = field(default_factory=datetime.utcnow)
     request_count: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def update(self):
         """Update session activity"""
@@ -336,7 +335,7 @@ def create_success_response(
     request_id: str,
     session_id: str,
     result: Any,
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 ) -> MCPResponse:
     """Create success response"""
     return MCPResponse(
@@ -352,7 +351,7 @@ def create_error_response(
     request_id: str,
     session_id: str,
     error: MCPError,
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 ) -> MCPResponse:
     """Create error response"""
     status = ResponseStatus.ESCALATE if error.escalate_to else ResponseStatus.ERROR
@@ -366,7 +365,7 @@ def create_error_response(
     )
 
 
-def validate_query_sql_params(params: Dict[str, Any]) -> Optional[MCPError]:
+def validate_query_sql_params(params: dict[str, Any]) -> MCPError | None:
     """
     Validate query_sql parameters
 

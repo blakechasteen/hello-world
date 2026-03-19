@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Semantic State for Policy Integration
 ======================================
@@ -35,17 +34,17 @@ Philosophy:
 
 import logging
 import time
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
-from enum import Enum
+from typing import Any, Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
 # Import from existing semantic calculus
 try:
-    from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSnapshot
     from hololoom.semantic_calculus.dimensions import SemanticSpectrum
+    from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSnapshot
     SEMANTIC_CALCULUS_AVAILABLE = True
 except ImportError:
     SEMANTIC_CALCULUS_AVAILABLE = False
@@ -54,8 +53,8 @@ except ImportError:
 # Import 16 semantic categories from semantic_nudging
 try:
     from hololoom.policy.semantic_nudging import (
-        SEMANTIC_CATEGORIES,
         DIM_TO_CATEGORY,
+        SEMANTIC_CATEGORIES,
         aggregate_by_category,
     )
     SEMANTIC_NUDGING_AVAILABLE = True
@@ -95,7 +94,7 @@ SIGNIFICANT_SHIFT_THRESHOLD = 0.5
 # Helper Functions
 # =============================================================================
 
-def _compute_category_scores(position: np.ndarray) -> Dict[str, float]:
+def _compute_category_scores(position: np.ndarray) -> dict[str, float]:
     """
     Aggregate 244D position into 16 semantic categories.
 
@@ -109,7 +108,7 @@ def _compute_category_scores(position: np.ndarray) -> Dict[str, float]:
         Dictionary mapping category name to score (0-1)
     """
     if position is None or len(position) == 0:
-        return {cat: 0.0 for cat in SEMANTIC_CATEGORIES}
+        return dict.fromkeys(SEMANTIC_CATEGORIES, 0.0)
 
     # Ensure position is at least 244D (pad if needed)
     if len(position) < 244:
@@ -162,7 +161,7 @@ def _pad_or_truncate(arr: np.ndarray, target_len: int) -> np.ndarray:
         return padded
 
 
-def _dict_to_position_array(projection: Dict[str, float]) -> np.ndarray:
+def _dict_to_position_array(projection: dict[str, float]) -> np.ndarray:
     """
     Convert projection dictionary to 244D position array.
 
@@ -226,23 +225,23 @@ class SemanticState:
 
     # Full semantic state (244D)
     position: np.ndarray
-    velocity: Optional[np.ndarray] = None
-    acceleration: Optional[np.ndarray] = None
+    velocity: np.ndarray | None = None
+    acceleration: np.ndarray | None = None
 
     # Aggregate metrics (scalars)
     momentum: float = 0.0  # 0-1, alignment of semantic changes
     complexity: float = 0.0  # 0-1, diversity of active dimensions
 
     # Interpretable dimensions
-    dominant_dimensions: List[str] = field(default_factory=list)
-    dimension_values: List[float] = field(default_factory=list)
+    dominant_dimensions: list[str] = field(default_factory=list)
+    dimension_values: list[float] = field(default_factory=list)
 
     # Topic shift detection
     topic_shift_detected: bool = False
     shift_magnitude: float = 0.0
 
     # Category aggregation (16 categories from semantic_nudging)
-    category_scores: Dict[str, float] = field(default_factory=dict)
+    category_scores: dict[str, float] = field(default_factory=dict)
     dominant_category: str = "Core"
 
     # Metadata
@@ -329,7 +328,7 @@ class SemanticState:
         previous_state: Optional['SemanticState'] = None,
         semantic_spectrum: Optional['SemanticSpectrum'] = None,
         query_index: int = 0,
-        timestamp: Optional[float] = None
+        timestamp: float | None = None
     ) -> 'SemanticState':
         """
         Create SemanticState directly from query embedding.
@@ -439,7 +438,7 @@ class SemanticState:
             dimension_values=[],
             topic_shift_detected=False,
             shift_magnitude=0.0,
-            category_scores={cat: 0.0 for cat in SEMANTIC_CATEGORIES},
+            category_scores=dict.fromkeys(SEMANTIC_CATEGORIES, 0.0),
             dominant_category="Core",
             timestamp=0.0,
             word_count=0,
@@ -570,7 +569,7 @@ class SemanticState:
         position: np.ndarray,
         spectrum: Optional['SemanticSpectrum'],
         top_k: int = 5
-    ) -> Tuple[List[str], List[float]]:
+    ) -> tuple[list[str], list[float]]:
         """
         Extract top K dominant semantic dimensions.
 
@@ -735,7 +734,7 @@ class SemanticAwareBandit:
 
     # Map semantic categories to tool boost factors
     # Values > 1.0 boost the tool's α prior, < 1.0 reduce it
-    CATEGORY_TOOL_AFFINITIES: Dict[str, Dict[str, float]] = {
+    CATEGORY_TOOL_AFFINITIES: dict[str, dict[str, float]] = {
         # Core categories (technical queries)
         "Core": {"calc": 1.5, "search": 1.2, "answer": 1.0, "notion_write": 0.8},
         "Cognitive": {"search": 1.5, "calc": 1.3, "answer": 1.0, "notion_write": 0.9},
@@ -767,7 +766,7 @@ class SemanticAwareBandit:
 
     def __init__(
         self,
-        tools: Optional[List[str]] = None,
+        tools: list[str] | None = None,
         base_alpha: float = 1.0,
         base_beta: float = 1.0,
         semantic_weight: float = 0.3
@@ -787,8 +786,8 @@ class SemanticAwareBandit:
         self.semantic_weight = semantic_weight
 
         # Initialize priors for each tool
-        self.alphas = {tool: base_alpha for tool in self.tools}
-        self.betas = {tool: base_beta for tool in self.tools}
+        self.alphas = dict.fromkeys(self.tools, base_alpha)
+        self.betas = dict.fromkeys(self.tools, base_beta)
 
         # Track semantic adjustments for debugging
         self._last_adjustment = {}
@@ -796,7 +795,7 @@ class SemanticAwareBandit:
     def adjust_priors(
         self,
         semantic_state: SemanticState
-    ) -> Dict[str, Tuple[float, float]]:
+    ) -> dict[str, tuple[float, float]]:
         """
         Adjust Thompson Sampling priors based on semantic state.
 
@@ -816,7 +815,7 @@ class SemanticAwareBandit:
         dominant_cat = semantic_state.dominant_category
         affinities = self.CATEGORY_TOOL_AFFINITIES.get(
             dominant_cat,
-            {tool: 1.0 for tool in self.tools}  # Neutral if unknown
+            dict.fromkeys(self.tools, 1.0)  # Neutral if unknown
         )
 
         # Also consider secondary categories from category_scores
@@ -868,7 +867,7 @@ class SemanticAwareBandit:
 
     def sample(
         self,
-        semantic_state: Optional[SemanticState] = None,
+        semantic_state: SemanticState | None = None,
         temperature: float = 1.0
     ) -> str:
         """
@@ -922,8 +921,8 @@ class SemanticAwareBandit:
 
     def get_expected_rewards(
         self,
-        semantic_state: Optional[SemanticState] = None
-    ) -> Dict[str, float]:
+        semantic_state: SemanticState | None = None
+    ) -> dict[str, float]:
         """
         Get expected reward (selection probability) for each tool.
 
@@ -943,7 +942,7 @@ class SemanticAwareBandit:
             for tool, (α, β) in adjusted.items()
         }
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get bandit statistics for debugging."""
         return {
             'tools': self.tools,

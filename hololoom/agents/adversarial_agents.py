@@ -45,11 +45,8 @@ One agent generates, other validates.
 Agents compete, winner's strategy propagates.
 """
 
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass
 from enum import Enum
-import numpy as np
-
+from typing import Any
 
 # ============================================================================
 # Adversarial Relationship Types
@@ -94,7 +91,7 @@ class CreativeAgent:
         self.proposals_accepted = 0
         self.breakthroughs_discovered = 0
 
-    def propose_strategy(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    def propose_strategy(self, context: dict[str, Any]) -> dict[str, Any]:
         """
         Propose creative strategy.
 
@@ -134,7 +131,7 @@ class CreativeAgent:
         if breakthrough:
             self.breakthroughs_discovered += 1
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get creative agent statistics"""
         return {
             'proposals_made': self.proposals_made,
@@ -181,9 +178,9 @@ class QualityControlAgent:
 
     def review_strategy(
         self,
-        strategy: Dict[str, Any],
-        context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        strategy: dict[str, Any],
+        context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Review creative strategy from quality perspective.
 
@@ -244,7 +241,7 @@ class QualityControlAgent:
         if quality_maintained:
             self.quality_violations_prevented += 1
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get QC agent statistics"""
         return {
             'proposals_reviewed': self.proposals_reviewed,
@@ -286,7 +283,7 @@ class AdversarialNegotiationSystem:
         self.negotiation_rounds = negotiation_rounds
 
         # History
-        self.negotiation_history: List[Dict[str, Any]] = []
+        self.negotiation_history: list[dict[str, Any]] = []
 
         # Stats
         self.total_negotiations = 0
@@ -297,8 +294,8 @@ class AdversarialNegotiationSystem:
 
     def negotiate_strategy(
         self,
-        context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Negotiate strategy between creative and QC agents.
 
@@ -386,11 +383,11 @@ class AdversarialNegotiationSystem:
 
     def _negotiate_compromise(
         self,
-        creative_proposal: Dict[str, Any],
-        qc_review: Dict[str, Any],
-        context: Dict[str, Any],
-        negotiation_record: List[Dict]
-    ) -> Dict[str, Any]:
+        creative_proposal: dict[str, Any],
+        qc_review: dict[str, Any],
+        context: dict[str, Any],
+        negotiation_record: list[dict]
+    ) -> dict[str, Any]:
         """
         Negotiate compromise between creative and QC proposals.
 
@@ -457,7 +454,7 @@ class AdversarialNegotiationSystem:
         # QC agent feedback
         self.qc_agent.record_outcome(quality_maintained)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get negotiation system statistics"""
         return {
             'total_negotiations': self.total_negotiations,
@@ -484,7 +481,7 @@ class RedTeamAgent:
     Goals: Find ways to break the system.
     """
 
-    def find_vulnerabilities(self, system: Any) -> List[str]:
+    def find_vulnerabilities(self, system: Any) -> list[str]:
         """Find potential vulnerabilities"""
         vulnerabilities = []
 
@@ -503,7 +500,7 @@ class BlueTeamAgent:
     Goals: Secure the system.
     """
 
-    def patch_vulnerabilities(self, vulnerabilities: List[str]) -> Dict[str, str]:
+    def patch_vulnerabilities(self, vulnerabilities: list[str]) -> dict[str, str]:
         """Patch identified vulnerabilities"""
         patches = {}
 
@@ -559,7 +556,7 @@ def example_adversarial_negotiation():
 
     # Get statistics
     stats = negotiation.get_stats()
-    print(f"\n=== Statistics ===")
+    print("\n=== Statistics ===")
     print(f"Total negotiations: {stats['total_negotiations']}")
     print(f"Creative wins: {stats['creative_wins']}")
     print(f"QC wins: {stats['qc_wins']}")

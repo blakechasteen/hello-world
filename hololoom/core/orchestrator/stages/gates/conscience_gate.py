@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols.stage import GateExecutor
 
@@ -22,7 +22,7 @@ class ConscienceGateExecutor(GateExecutor):
         self.conscience_adapter = conscience_adapter
         self.audit_trail = audit_trail
 
-    async def evaluate(self, ctx: 'WeavingContext') -> Optional[Any]:
+    async def evaluate(self, ctx: WeavingContext) -> Any | None:
         if not self.conscience_adapter:
             return None
 
@@ -43,7 +43,7 @@ class ConscienceGateExecutor(GateExecutor):
             try:
                 from hololoom.alignment.audit_trail import DecisionType, OutcomeType
                 self.audit_trail.log_decision(
-                    decision_type=DecisionType.QUERY_EVALUATION,
+                    decision_type=DecisionType.SAFETY_GATE,
                     outcome=OutcomeType.APPROVED if conscience_decision.allowed else OutcomeType.REJECTED,
                     reason=f"Conscience gate: {conscience_decision.reason}",
                     query_text=ctx.current_query_text,
@@ -54,7 +54,7 @@ class ConscienceGateExecutor(GateExecutor):
                         'guidance': conscience_decision.guidance,
                     }
                 )
-            except ImportError:
+            except (ImportError, AttributeError):
                 pass
 
         if not conscience_decision.allowed:
@@ -64,11 +64,16 @@ class ConscienceGateExecutor(GateExecutor):
             )
             ctx.conscience_blocked = True
 
+            from datetime import datetime
+
             from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+            now = datetime.now()
             return Spacetime(
+                query_text=ctx.current_query_text,
                 response=conscience_decision.guidance or "I cannot process this query at this time.",
+                tool_used="conscience_gate",
                 confidence=0.0,
-                trace=WeavingTrace(),
+                trace=WeavingTrace(start_time=now, end_time=now, duration_ms=0.0),
                 metadata={
                     'blocked_by_conscience': True,
                     'conscience_decision': {

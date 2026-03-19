@@ -10,18 +10,17 @@ Location: HoloLoom/prompting/testing/verification_bridge.py
 Lines: ~200
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from collections import Counter
 import logging
+from dataclasses import dataclass, field
+from typing import Any
 
-from hololoom.prompting.testing.protocol import PromptTestCase, PromptTestResult
 from hololoom.prompting.testing.metrics_collector import MetricsCollector, MetricType
+from hololoom.prompting.testing.protocol import PromptTestCase, PromptTestResult
 
 # Try to import verification module with graceful fallback
 try:
-    from hololoom.verification.protocol import VerificationResult, VerificationStatus
     from hololoom.verification.chain import VerificationChain
+    from hololoom.verification.protocol import VerificationResult, VerificationStatus
     VERIFICATION_AVAILABLE = True
 except ImportError:
     VERIFICATION_AVAILABLE = False
@@ -40,7 +39,7 @@ class EnhancedTestResult:
     test_result: PromptTestResult
     """Original test case result."""
 
-    verification_result: Optional[Any] = None
+    verification_result: Any | None = None
     """Verification result (VerificationResult if available)."""
 
     verified: bool = False
@@ -52,7 +51,7 @@ class EnhancedTestResult:
     quality_after: float = 0.0
     """Quality score after verification."""
 
-    contradictions: List[str] = field(default_factory=list)
+    contradictions: list[str] = field(default_factory=list)
     """List of detected contradictions (as strings)."""
 
     @property
@@ -75,13 +74,13 @@ class VerificationInsights:
     failed_tests: int
     """Number of failed tests."""
 
-    common_contradictions: Dict[str, int] = field(default_factory=dict)
+    common_contradictions: dict[str, int] = field(default_factory=dict)
     """Contradiction type -> count mapping."""
 
     avg_quality_drop: float = 0.0
     """Average quality drop across failed tests."""
 
-    recommendations: List[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
     """Actionable recommendations for improvement."""
 
     @property
@@ -90,7 +89,7 @@ class VerificationInsights:
         return sum(self.common_contradictions.values())
 
     @property
-    def most_common_contradiction(self) -> Optional[str]:
+    def most_common_contradiction(self) -> str | None:
         """Get most frequently occurring contradiction type."""
         if not self.common_contradictions:
             return None
@@ -110,8 +109,8 @@ class PromptVerificationBridge:
 
     def __init__(
         self,
-        verification_chain: Optional[Any] = None,
-        metrics_collector: Optional[MetricsCollector] = None
+        verification_chain: Any | None = None,
+        metrics_collector: MetricsCollector | None = None
     ):
         """Initialize the verification bridge.
 
@@ -191,7 +190,7 @@ class PromptVerificationBridge:
 
     async def analyze_failures(
         self,
-        failed_results: List[PromptTestResult]
+        failed_results: list[PromptTestResult]
     ) -> VerificationInsights:
         """
         Analyze failed test results to identify patterns.
@@ -304,7 +303,7 @@ class PromptVerificationBridge:
         else:
             return 'unknown'
 
-    def _generate_recommendations(self, insights: VerificationInsights) -> List[str]:
+    def _generate_recommendations(self, insights: VerificationInsights) -> list[str]:
         """Generate actionable recommendations based on analysis.
 
         Args:
@@ -356,7 +355,7 @@ class PromptVerificationBridge:
 
 
 def create_verification_bridge(
-    metrics_collector: Optional[MetricsCollector] = None
+    metrics_collector: MetricsCollector | None = None
 ) -> PromptVerificationBridge:
     """
     Factory function to create a verification bridge.

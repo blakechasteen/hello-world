@@ -33,16 +33,16 @@ Usage:
     print(monitor.export_prometheus())
 """
 
-import time
+import json
 import statistics
-from typing import Dict, List, Optional, Tuple, Any
+import time
+from collections import defaultdict
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from contextlib import contextmanager
-import json
 from pathlib import Path
-from collections import defaultdict
+from typing import Any
 
 
 class AlertLevel(Enum):
@@ -56,7 +56,7 @@ class AlertLevel(Enum):
 class LatencyMetrics:
     """Latency statistics for a component."""
     component: str
-    samples: List[float] = field(default_factory=list)
+    samples: list[float] = field(default_factory=list)
     window_size: int = 1000  # Keep last 1000 measurements
 
     def record(self, latency_ms: float):
@@ -77,7 +77,7 @@ class LatencyMetrics:
         index = min(index, len(sorted_samples) - 1)
         return sorted_samples[index]
 
-    def get_stats(self) -> Dict[str, float]:
+    def get_stats(self) -> dict[str, float]:
         """Get comprehensive statistics."""
         if not self.samples:
             return {
@@ -114,7 +114,7 @@ class Alert:
     message: str
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
             "level": self.level.value,
@@ -183,23 +183,23 @@ class AlignmentMetrics:
     Designed for Prometheus export with labeled dimensions.
     """
     # Safety decision counters: {(risk_level, outcome): count}
-    safety_decisions: Dict[Tuple[str, str], int] = field(default_factory=lambda: defaultdict(int))
+    safety_decisions: dict[tuple[str, str], int] = field(default_factory=lambda: defaultdict(int))
 
     # Deception flag counters: {flag_type: count}
-    deception_flags: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    deception_flags: dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     # Convergence violation counters: {violation_type: count}
-    convergence_violations: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    convergence_violations: dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     # Autonomy action counters: {step_type: count}
-    autonomy_actions: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    autonomy_actions: dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     # Resource utilization gauges: {resource_type: ratio (0.0-1.0)}
-    resource_utilization: Dict[str, float] = field(default_factory=dict)
+    resource_utilization: dict[str, float] = field(default_factory=dict)
 
     # Timestamps for rate calculation
-    first_event: Optional[datetime] = None
-    last_event: Optional[datetime] = None
+    first_event: datetime | None = None
+    last_event: datetime | None = None
 
     def reset(self):
         """Reset all counters (useful for testing or periodic reset)."""
@@ -233,9 +233,9 @@ class AlignmentMonitor:
 
     def __init__(
         self,
-        thresholds: Optional[Dict[str, float]] = None,
+        thresholds: dict[str, float] | None = None,
         window_size: int = 1000,
-        persist_path: Optional[Path] = None,
+        persist_path: Path | None = None,
     ):
         """
         Initialize monitor.
@@ -250,11 +250,11 @@ class AlignmentMonitor:
         self.persist_path = persist_path
 
         # Metrics storage
-        self.metrics: Dict[str, LatencyMetrics] = {}
+        self.metrics: dict[str, LatencyMetrics] = {}
 
         # Alert history
-        self.alerts: List[Alert] = []
-        self.alert_cooldown: Dict[str, datetime] = {}  # Prevent spam
+        self.alerts: list[Alert] = []
+        self.alert_cooldown: dict[str, datetime] = {}  # Prevent spam
         self.cooldown_duration = timedelta(minutes=5)
 
         # Session tracking
@@ -367,13 +367,13 @@ class AlignmentMonitor:
         symbol = "🔴" if level == AlertLevel.CRITICAL else "⚠️"
         print(f"{symbol} ALERT [{level.value.upper()}]: {message}")
 
-    def get_stats(self, component: str) -> Dict[str, float]:
+    def get_stats(self, component: str) -> dict[str, float]:
         """Get statistics for a component."""
         if component not in self.metrics:
             return {}
         return self.metrics[component].get_stats()
 
-    def get_all_stats(self) -> Dict[str, Dict[str, float]]:
+    def get_all_stats(self) -> dict[str, dict[str, float]]:
         """Get statistics for all components."""
         return {
             component: metrics.get_stats()
@@ -432,7 +432,7 @@ class AlignmentMonitor:
 
         return "\n".join(lines)
 
-    def check_alerts(self, level: Optional[AlertLevel] = None) -> List[Alert]:
+    def check_alerts(self, level: AlertLevel | None = None) -> list[Alert]:
         """
         Get alerts, optionally filtered by level.
 
@@ -617,7 +617,7 @@ class AlignmentMonitor:
             self.alignment_metrics.first_event = now
         self.alignment_metrics.last_event = now
 
-    def get_alignment_summary(self) -> Dict[str, Any]:
+    def get_alignment_summary(self) -> dict[str, Any]:
         """
         Get summary of alignment-specific metrics.
 
@@ -836,7 +836,7 @@ class AlignmentMonitor:
 
 
 # Global monitor instance (singleton pattern)
-_global_monitor: Optional[AlignmentMonitor] = None
+_global_monitor: AlignmentMonitor | None = None
 
 
 def get_global_monitor() -> AlignmentMonitor:

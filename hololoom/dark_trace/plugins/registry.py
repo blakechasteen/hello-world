@@ -31,36 +31,34 @@ Usage:
     await registry.unregister("my_plugin")
 """
 
+import asyncio
+import logging
+from collections import defaultdict
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Type, Any, Callable, Awaitable
 from datetime import datetime, timezone
 from enum import Enum
-import logging
-import asyncio
-from collections import defaultdict
+from typing import Any, Optional
 
-from hololoom.dark_trace.plugins.safety_gate import (
-    TrustLevel,
-    PluginCapability,
-    PluginSafetyGate,
-    SafetyCheckResult,
-    TRUST_CAPABILITIES,
-)
 from hololoom.dark_trace.plugins.alignment_bridge import (
     PluginAlignmentBridge,
-    PluginAuditEventType,
 )
 from hololoom.dark_trace.plugins.interface import (
     DarkTracePlugin,
-    PluginType,
-    PluginState,
-    PluginMetadata,
     LensPlugin,
-    ValidatorPlugin,
     MonitorPlugin,
-    DomainPlugin,
+    PluginMetadata,
+    PluginState,
+    PluginType,
     SteeringPlugin,
-    IntegrationPlugin,
+    ValidatorPlugin,
+)
+from hololoom.dark_trace.plugins.safety_gate import (
+    TRUST_CAPABILITIES,
+    PluginCapability,
+    PluginSafetyGate,
+    SafetyCheckResult,
+    TrustLevel,
 )
 
 logger = logging.getLogger(__name__)
@@ -88,10 +86,10 @@ class RegistrationResult:
     """Result of a plugin registration attempt."""
     status: RegistrationStatus
     plugin_name: str
-    trust_level: Optional[TrustLevel] = None
-    blocked_capabilities: List[PluginCapability] = field(default_factory=list)
-    reason: Optional[str] = None
-    safety_check: Optional[SafetyCheckResult] = None
+    trust_level: TrustLevel | None = None
+    blocked_capabilities: list[PluginCapability] = field(default_factory=list)
+    reason: str | None = None
+    safety_check: SafetyCheckResult | None = None
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     entry: Optional["PluginEntry"] = None  # The created plugin entry (if successful)
 
@@ -111,7 +109,7 @@ class UnregistrationResult:
     """Result of a plugin unregistration attempt."""
     success: bool
     plugin_name: str
-    reason: Optional[str] = None
+    reason: str | None = None
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -126,10 +124,10 @@ class PluginEntry:
     trust_level: TrustLevel
     state: PluginState
     registered_at: datetime
-    granted_capabilities: Set[PluginCapability]
-    denied_capabilities: Set[PluginCapability]
-    dependency_plugins: Set[str]  # Names of plugins this depends on
-    dependent_plugins: Set[str]   # Names of plugins depending on this
+    granted_capabilities: set[PluginCapability]
+    denied_capabilities: set[PluginCapability]
+    dependency_plugins: set[str]  # Names of plugins this depends on
+    dependent_plugins: set[str]   # Names of plugins depending on this
     last_activity: datetime
     operation_count: int = 0
     error_count: int = 0
@@ -153,7 +151,7 @@ class PluginEntry:
         if not success:
             self.error_count += 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "name": self.name,
@@ -190,7 +188,7 @@ class RegistryEvent:
     """Event emitted by the registry."""
     event_type: RegistryEventType
     plugin_name: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -238,12 +236,12 @@ class PluginRegistry:
         self._allow_untrusted_plugins = allow_untrusted_plugins
 
         # Plugin storage
-        self._plugins: Dict[str, PluginEntry] = {}
-        self._by_type: Dict[PluginType, Set[str]] = defaultdict(set)
-        self._by_trust: Dict[TrustLevel, Set[str]] = defaultdict(set)
+        self._plugins: dict[str, PluginEntry] = {}
+        self._by_type: dict[PluginType, set[str]] = defaultdict(set)
+        self._by_trust: dict[TrustLevel, set[str]] = defaultdict(set)
 
         # Event observers
-        self._observers: List[RegistryEventHandler] = []
+        self._observers: list[RegistryEventHandler] = []
 
         # Lock for thread safety
         self._lock = asyncio.Lock()
@@ -265,8 +263,8 @@ class PluginRegistry:
     async def register(
         self,
         plugin: DarkTracePlugin,
-        engine: Optional[Any] = None,  # DarkTraceEngine passed during init
-        force_trust_level: Optional[TrustLevel] = None,  # For testing/admin
+        engine: Any | None = None,  # DarkTraceEngine passed during init
+        force_trust_level: TrustLevel | None = None,  # For testing/admin
     ) -> RegistrationResult:
         """
         Register a plugin with full safety validation.
@@ -688,42 +686,42 @@ class PluginRegistry:
     # Query Methods
     # =========================================================================
 
-    def get(self, plugin_name: str) -> Optional[PluginEntry]:
+    def get(self, plugin_name: str) -> PluginEntry | None:
         """Get a plugin entry by name."""
         return self._plugins.get(plugin_name)
 
-    def get_plugin(self, plugin_name: str) -> Optional[DarkTracePlugin]:
+    def get_plugin(self, plugin_name: str) -> DarkTracePlugin | None:
         """Get the plugin instance by name."""
         entry = self._plugins.get(plugin_name)
         return entry.plugin if entry else None
 
-    def get_by_type(self, plugin_type: PluginType) -> List[DarkTracePlugin]:
+    def get_by_type(self, plugin_type: PluginType) -> list[DarkTracePlugin]:
         """Get all plugins of a specific type."""
         names = self._by_type.get(plugin_type, set())
         return [self._plugins[n].plugin for n in names if n in self._plugins]
 
-    def get_plugins_by_type(self, plugin_type: PluginType) -> List[DarkTracePlugin]:
+    def get_plugins_by_type(self, plugin_type: PluginType) -> list[DarkTracePlugin]:
         """Get all plugins of a specific type (alias for get_by_type)."""
         return self.get_by_type(plugin_type)
 
-    def get_by_trust(self, trust_level: TrustLevel) -> List[DarkTracePlugin]:
+    def get_by_trust(self, trust_level: TrustLevel) -> list[DarkTracePlugin]:
         """Get all plugins at a specific trust level."""
         names = self._by_trust.get(trust_level, set())
         return [self._plugins[n].plugin for n in names if n in self._plugins]
 
-    def get_lenses(self) -> List[LensPlugin]:
+    def get_lenses(self) -> list[LensPlugin]:
         """Get all lens plugins."""
         return [p for p in self.get_by_type(PluginType.LENS) if isinstance(p, LensPlugin)]
 
-    def get_validators(self) -> List[ValidatorPlugin]:
+    def get_validators(self) -> list[ValidatorPlugin]:
         """Get all validator plugins."""
         return [p for p in self.get_by_type(PluginType.VALIDATOR) if isinstance(p, ValidatorPlugin)]
 
-    def get_monitors(self) -> List[MonitorPlugin]:
+    def get_monitors(self) -> list[MonitorPlugin]:
         """Get all monitor plugins."""
         return [p for p in self.get_by_type(PluginType.MONITOR) if isinstance(p, MonitorPlugin)]
 
-    def get_active_plugins(self) -> List[DarkTracePlugin]:
+    def get_active_plugins(self) -> list[DarkTracePlugin]:
         """Get all active plugins."""
         return [e.plugin for e in self._plugins.values() if e.is_active]
 
@@ -734,15 +732,15 @@ class PluginRegistry:
             return False
         return capability in entry.granted_capabilities
 
-    def list_plugins(self) -> List[Dict[str, Any]]:
+    def list_plugins(self) -> list[dict[str, Any]]:
         """List all plugins with their metadata."""
         return [entry.to_dict() for entry in self._plugins.values()]
 
-    def get_plugin_names(self) -> List[str]:
+    def get_plugin_names(self) -> list[str]:
         """Get list of all registered plugin names."""
         return list(self._plugins.keys())
 
-    def get_plugin_info(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_plugin_info(self, name: str) -> dict[str, Any] | None:
         """
         Get information about a specific plugin.
 
@@ -757,7 +755,7 @@ class PluginRegistry:
             return entry.to_dict()
         return None
 
-    def get_all_plugin_info(self) -> Dict[str, Dict[str, Any]]:
+    def get_all_plugin_info(self) -> dict[str, dict[str, Any]]:
         """
         Get information about all plugins as a dict.
 
@@ -772,7 +770,7 @@ class PluginRegistry:
         return len(self._plugins)
 
     @property
-    def statistics(self) -> Dict[str, Any]:
+    def statistics(self) -> dict[str, Any]:
         """Get registry statistics."""
         return {
             **self._stats,
@@ -807,7 +805,7 @@ class PluginRegistry:
     # Private Helpers
     # =========================================================================
 
-    async def _check_dependencies(self, dependencies: List[str]) -> List[str]:
+    async def _check_dependencies(self, dependencies: list[str]) -> list[str]:
         """Check if dependencies are satisfied. Returns missing dependencies."""
         missing = []
         for dep in dependencies:
@@ -844,7 +842,7 @@ class PluginRegistry:
 
             logger.info(f"Shutdown {len(shutdown_order)} plugins")
 
-    def _get_shutdown_order(self) -> List[str]:
+    def _get_shutdown_order(self) -> list[str]:
         """Get plugins in reverse dependency order for shutdown."""
         # Simple topological sort
         visited = set()
@@ -871,8 +869,8 @@ class PluginRegistry:
 # =============================================================================
 
 def create_registry(
-    safety_gate: Optional[PluginSafetyGate] = None,
-    alignment_bridge: Optional[PluginAlignmentBridge] = None,
+    safety_gate: PluginSafetyGate | None = None,
+    alignment_bridge: PluginAlignmentBridge | None = None,
     **kwargs,
 ) -> PluginRegistry:
     """

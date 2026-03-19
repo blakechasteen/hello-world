@@ -15,12 +15,14 @@ But we keep the causal structure explicit:
     age → recovery, treatment → recovery
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Callable, Any
-from dataclasses import dataclass
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
-from .dag import CausalDAG, CausalNode, CausalEdge
+import numpy as np
+
+from .dag import CausalDAG
 
 # Optional: Use actual neural networks if available
 try:
@@ -45,7 +47,7 @@ class NeuralMechanism:
         f is a neural network that learns the relationship
     """
     variable: str
-    parents: List[str]
+    parents: list[str]
     network: Any  # Neural network or simple function
     trained: bool = False
 
@@ -130,7 +132,7 @@ class NeuralStructuralCausalModel:
         outcome = nscm.intervene({"treatment": 1})
     """
 
-    def __init__(self, dag: Optional[CausalDAG] = None):
+    def __init__(self, dag: CausalDAG | None = None):
         """
         Initialize Neural SCM.
 
@@ -138,8 +140,8 @@ class NeuralStructuralCausalModel:
             dag: Causal DAG (symbolic structure)
         """
         self.dag = dag if dag else CausalDAG()
-        self.mechanisms: Dict[str, NeuralMechanism] = {}
-        self.exogenous: Dict[str, Callable] = {}  # Noise distributions
+        self.mechanisms: dict[str, NeuralMechanism] = {}
+        self.exogenous: dict[str, Callable] = {}  # Noise distributions
 
     def set_structure(self, dag: CausalDAG):
         """Set causal structure."""
@@ -149,7 +151,7 @@ class NeuralStructuralCausalModel:
         self,
         variable: str,
         data: np.ndarray,
-        variable_names: List[str],
+        variable_names: list[str],
         hidden_dim: int = 32,
         epochs: int = 100
     ):
@@ -249,7 +251,7 @@ class NeuralStructuralCausalModel:
     def fit(
         self,
         data: np.ndarray,
-        variable_names: List[str],
+        variable_names: list[str],
         hidden_dim: int = 32,
         epochs: int = 100
     ):
@@ -270,7 +272,7 @@ class NeuralStructuralCausalModel:
 
         logger.info(f"✓ Learned {len(self.mechanisms)} mechanisms")
 
-    def sample(self, n_samples: int = 1, interventions: Optional[Dict[str, float]] = None) -> np.ndarray:
+    def sample(self, n_samples: int = 1, interventions: dict[str, float] | None = None) -> np.ndarray:
         """
         Sample from the causal model.
 
@@ -323,9 +325,9 @@ class NeuralStructuralCausalModel:
 
     def intervene(
         self,
-        interventions: Dict[str, float],
+        interventions: dict[str, float],
         n_samples: int = 1000
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Perform intervention and compute expected outcomes.
 
@@ -384,8 +386,8 @@ class NeuralStructuralCausalModel:
 
     def counterfactual(
         self,
-        intervention: Dict[str, float],
-        evidence: Dict[str, float],
+        intervention: dict[str, float],
+        evidence: dict[str, float],
         query: str,
         n_samples: int = 1000
     ) -> float:

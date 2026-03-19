@@ -34,15 +34,14 @@ Usage:
 """
 
 import ast
-import re
 import logging
-from typing import List, Dict, Optional, Any, Set
+import re
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 from hololoom.agentic.codebase_ingestion import Language
 from hololoom.agentic.hallucination_detector import HallucinationDetector
-
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +82,7 @@ class SlopIssue:
     column: int
     description: str
     context: str  # Surrounding code
-    fix_suggestion: Optional[str] = None
+    fix_suggestion: str | None = None
     confidence: float = 0.8  # 0.0-1.0
 
 
@@ -135,7 +134,7 @@ class AISlopDetector:
         code: str,
         language: Language,
         file_path: str = "temp"
-    ) -> List[SlopIssue]:
+    ) -> list[SlopIssue]:
         """
         Run all detectors and return comprehensive list of issues.
 
@@ -206,7 +205,7 @@ class AISlopDetector:
         code: str,
         language: Language,
         file_path: str
-    ) -> List[SlopIssue]:
+    ) -> list[SlopIssue]:
         """Detect non-existent functions, classes, imports."""
         issues = []
 
@@ -226,7 +225,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_missing_error_handling(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_missing_error_handling(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect missing try/except, null checks, validation."""
         issues = []
 
@@ -314,7 +313,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_hardcoded_secrets(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_hardcoded_secrets(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect hardcoded passwords, API keys, secrets."""
         issues = []
 
@@ -352,7 +351,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_resource_leaks(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_resource_leaks(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect unclosed files, connections, locks."""
         issues = []
 
@@ -396,7 +395,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_security_issues(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_security_issues(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect SQL injection, XSS, command injection."""
         issues = []
 
@@ -450,7 +449,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_performance_issues(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_performance_issues(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect N+1 queries, unnecessary loops, inefficient patterns."""
         issues = []
 
@@ -485,7 +484,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_dead_code(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_dead_code(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect unused imports, variables, functions."""
         issues = []
 
@@ -522,7 +521,7 @@ class AISlopDetector:
                                 column=0,
                                 description=f"Unused import '{name}'",
                                 context=line,
-                                fix_suggestion=f"Remove import statement"
+                                fix_suggestion="Remove import statement"
                             ))
                             break
 
@@ -531,7 +530,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_naming_issues(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_naming_issues(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect inconsistent naming conventions."""
         issues = []
 
@@ -574,7 +573,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_missing_docs(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_missing_docs(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect functions/classes without docstrings."""
         issues = []
 
@@ -608,7 +607,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_incomplete_code(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_incomplete_code(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect TODO comments, pass statements, NotImplementedError."""
         issues = []
 
@@ -660,7 +659,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_off_by_one(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_off_by_one(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect common off-by-one errors in loops and array access."""
         issues = []
 
@@ -696,7 +695,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_timezone_issues(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_timezone_issues(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect naive datetime usage (missing timezone)."""
         issues = []
 
@@ -732,7 +731,7 @@ class AISlopDetector:
 
         return issues
 
-    def _detect_copy_paste_errors(self, code: str, language: Language) -> List[SlopIssue]:
+    def _detect_copy_paste_errors(self, code: str, language: Language) -> list[SlopIssue]:
         """Detect repeated code blocks with minor variations (copy-paste errors)."""
         issues = []
 
@@ -770,7 +769,7 @@ class AISlopDetector:
         end = min(len(lines), line_number + window)
         return '\n'.join(lines[start:end])
 
-    async def get_summary(self, issues: List[SlopIssue]) -> Dict[str, Any]:
+    async def get_summary(self, issues: list[SlopIssue]) -> dict[str, Any]:
         """Generate summary of detected issues."""
         summary = {
             "total_issues": len(issues),

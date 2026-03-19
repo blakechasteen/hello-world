@@ -26,18 +26,14 @@ Date: 2025-11-25
 
 import asyncio
 import logging
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from typing import Any, Union
 
 logger = logging.getLogger(__name__)
 
-from hololoom.memory.streaming_expansion import (
-    ContextChunk,
-    StreamingContextBuilder,
-    stream_context_expansion
-)
-
+from hololoom.memory.streaming_expansion import ContextChunk, StreamingContextBuilder
 
 # ============================================================================
 # Data Structures
@@ -72,7 +68,7 @@ class GenerationToken:
     cumulative_text: str
     token_index: int
     is_final: bool
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -85,7 +81,7 @@ class StreamMetadata:
         data: Event data
     """
     event_type: str  # "expansion_start", "generation_start", "expansion_complete", etc.
-    data: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
 
 
 # Type alias for stream items
@@ -108,13 +104,13 @@ class InterleavedResult:
         metadata: Additional metadata
     """
     response: str
-    context_chunks: List[ContextChunk]
+    context_chunks: list[ContextChunk]
     total_tokens_generated: int
     total_tokens_retrieved: int
     expansion_time_ms: float
     generation_time_ms: float
     total_time_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -158,7 +154,7 @@ class MockLLM(LLMProtocol):
     Simulates streaming generation without requiring real API calls.
     """
 
-    def __init__(self, response_template: Optional[str] = None, tokens_per_second: int = 30):
+    def __init__(self, response_template: str | None = None, tokens_per_second: int = 30):
         """
         Initialize mock LLM.
 
@@ -214,7 +210,7 @@ class OllamaStreamLLM(LLMProtocol):
         Ollama server running locally
     """
 
-    def __init__(self, model: str = "llama3.2:3b", base_url: Optional[str] = None):
+    def __init__(self, model: str = "llama3.2:3b", base_url: str | None = None):
         """
         Initialize Ollama streaming LLM.
 
@@ -287,7 +283,7 @@ class AnthropicStreamLLM(LLMProtocol):
         export ANTHROPIC_API_KEY="your-key"
     """
 
-    def __init__(self, model: str = "claude-3-5-sonnet-20241022", api_key: Optional[str] = None):
+    def __init__(self, model: str = "claude-3-5-sonnet-20241022", api_key: str | None = None):
         """
         Initialize Anthropic streaming LLM.
 
@@ -359,7 +355,7 @@ class OpenAIStreamLLM(LLMProtocol):
         export OPENAI_API_KEY="your-key"
     """
 
-    def __init__(self, model: str = "gpt-4", api_key: Optional[str] = None):
+    def __init__(self, model: str = "gpt-4", api_key: str | None = None):
         """
         Initialize OpenAI streaming LLM.
 
@@ -424,7 +420,7 @@ Answer based on the context above:"""
 
 def create_stream_llm(
     provider: str = "ollama",
-    model: Optional[str] = None,
+    model: str | None = None,
     **kwargs
 ) -> LLMProtocol:
     """
@@ -505,7 +501,7 @@ class InterleavedStreamManager:
     def __init__(
         self,
         llm: LLMProtocol,
-        expansion_builder: Optional[StreamingContextBuilder] = None
+        expansion_builder: StreamingContextBuilder | None = None
     ):
         """
         Initialize interleaved stream manager.
@@ -520,15 +516,15 @@ class InterleavedStreamManager:
     async def stream_interleaved(
         self,
         query: str,
-        seed_nodes: List[str],
+        seed_nodes: list[str],
         graph: Any,
         token_budget: int = 2000,
         max_generation_tokens: int = 500,
         chunk_size: int = 500,
         min_relevance: float = 0.3,
         max_hops: int = 5,
-        importance_scores: Optional[Dict[str, float]] = None,
-        node_contents: Optional[Dict[str, str]] = None,
+        importance_scores: dict[str, float] | None = None,
+        node_contents: dict[str, str] | None = None,
         emit_metadata: bool = False,
         stream_mode: StreamMode = StreamMode.BATCHED
     ) -> AsyncIterator[StreamItem]:
@@ -719,15 +715,15 @@ class InterleavedStreamManager:
     async def _stream_concurrent(
         self,
         query: str,
-        seed_nodes: List[str],
+        seed_nodes: list[str],
         graph: Any,
         token_budget: int,
         max_generation_tokens: int,
         chunk_size: int,
         min_relevance: float,
         max_hops: int,
-        importance_scores: Optional[Dict[str, float]],
-        node_contents: Optional[Dict[str, str]],
+        importance_scores: dict[str, float] | None,
+        node_contents: dict[str, str] | None,
         emit_metadata: bool,
         start_time: float
     ) -> AsyncIterator[StreamItem]:
@@ -888,7 +884,7 @@ class InterleavedStreamManager:
         self,
         expansion_stream: AsyncIterator[ContextChunk],
         generation_stream: AsyncIterator[str]
-    ) -> AsyncIterator[Union[ContextChunk, str]]:
+    ) -> AsyncIterator[ContextChunk | str]:
         """
         Interleave two async streams using task-based concurrency.
 
@@ -990,7 +986,7 @@ class InterleavedStreamManager:
                     logger.error(f"Error waiting for concurrent tasks: {e}", exc_info=True)
                     raise
 
-        except Exception as e:
+        except Exception:
             # Cleanup on error: cancel all tasks
             if expansion_task and not expansion_task.done():
                 expansion_task.cancel()
@@ -1011,7 +1007,7 @@ class InterleavedStreamManager:
 
             raise
 
-    async def _collect_generation_tokens(self, gen_stream: AsyncIterator[str]) -> List[str]:
+    async def _collect_generation_tokens(self, gen_stream: AsyncIterator[str]) -> list[str]:
         """
         Collect all tokens from generation stream.
 
@@ -1022,7 +1018,7 @@ class InterleavedStreamManager:
             tokens.append(token)
         return tokens
 
-    def get_last_result(self) -> Optional[InterleavedResult]:
+    def get_last_result(self) -> InterleavedResult | None:
         """
         Get summary of last interleaved stream.
 
@@ -1039,9 +1035,9 @@ class InterleavedStreamManager:
 
 async def stream_interleaved_expansion_generation(
     query: str,
-    seed_nodes: List[str],
+    seed_nodes: list[str],
     graph: Any,
-    llm: Optional[LLMProtocol] = None,
+    llm: LLMProtocol | None = None,
     token_budget: int = 2000,
     max_generation_tokens: int = 500,
     stream_mode: StreamMode = StreamMode.BATCHED,

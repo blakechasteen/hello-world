@@ -26,10 +26,9 @@ Run:
     PYTHONPATH=. uvicorn HoloLoom.saas.app:app --host 0.0.0.0 --port 8000 --workers 4
 """
 
-import os
 import logging
+import os
 from contextlib import asynccontextmanager
-from typing import Optional
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,11 +40,11 @@ from hololoom.saas import (
     create_saas_backend,
 )
 from hololoom.saas.routes import (
-    customers_router,
     api_keys_router,
+    customers_router,
     health_router,
 )
-from hololoom.saas.routes.health import increment_request_count, increment_error_count
+from hololoom.saas.routes.health import increment_error_count, increment_request_count
 
 # ============================================================================
 # Configuration from Environment
@@ -115,7 +114,7 @@ def create_config() -> SaaSConfig:
 
 
 config = create_config()
-backend: Optional[SaaSBackend] = None
+backend: SaaSBackend | None = None
 
 
 # ============================================================================
@@ -202,7 +201,7 @@ See https://github.com/your-org/hololoom/docs/self-hosting for deployment guides
         try:
             response = await call_next(request)
             return response
-        except Exception as e:
+        except Exception:
             increment_error_count()
             raise
 

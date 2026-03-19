@@ -26,60 +26,63 @@ Updated: 2025-11-22 (Phase 2 - Vision Endpoints)
 Updated: 2025-11-22 (Phase 5 - Advanced Vision)
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile, Request
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional, Dict, Any, List
-from datetime import datetime
-from pydantic import BaseModel
-import logging
-import json
 import asyncio
-import numpy as np
-from io import BytesIO
-from PIL import Image
+import json
+import logging
 import time
 from collections import defaultdict, deque
+from datetime import datetime
+from io import BytesIO
+from typing import Any
 
-# HoloLoom imports
-from hololoom.config import Config
-from hololoom.weaving_orchestrator import WeavingOrchestrator
-from hololoom.protocols.types import Query, MemoryShard
-
-# Vision tools imports (Phase 2)
-from hololoom.vision import (
-    create_object_detector,
-    create_scene_analyzer,
-    create_hand_tracker,
-    DetectedObject,
-    SceneUnderstanding,
-    HandPose,
-)
-
-# Elle imports
-from elle.core.policy import EllePolicy
-from elle.core.llm_client import create_llm_client
+import numpy as np
 
 # AR Adapter imports
 from elle.adapters.ar_adapter import ARAdapter
 from elle.adapters.ar_adapter.ar_events import (
+    ARContext,
     AREvent,
     AREventType,
-    ARContext,
     ARObject,
-    Vector3,
     Quaternion,
+    Vector3,
     VoiceEvent,
 )
-from elle.adapters.ar_adapter.platform_bridge import WebXRBridge
+
+# Elle imports
+from fastapi import (
+    FastAPI,
+    File,
+    HTTPException,
+    Request,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from PIL import Image
+from pydantic import BaseModel
+
+# HoloLoom imports
+from hololoom.config import Config
+from hololoom.protocols.types import Query
+
+# Vision tools imports (Phase 2)
+from hololoom.vision import (
+    create_hand_tracker,
+    create_object_detector,
+    create_scene_analyzer,
+)
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Import the new Redis-based rate limiter
 try:
     from hololoom.apps.server.redis_rate_limiter import (
         EndpointRateLimiter,
-        init_rate_limiter,
         cleanup_rate_limiter,
-        get_rate_limiter
+        get_rate_limiter,
+        init_rate_limiter,
     )
     REDIS_RATE_LIMITER_AVAILABLE = True
 except ImportError:
@@ -185,10 +188,10 @@ class RateLimiter:
         """
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self.requests: Dict[str, deque] = defaultdict(deque)
+        self.requests: dict[str, deque] = defaultdict(deque)
         self._lock = asyncio.Lock()  # Async-safe access
 
-    async def check_rate_limit(self, request: Request) -> Dict[str, Any]:
+    async def check_rate_limit(self, request: Request) -> dict[str, Any]:
         """
         Check if request exceeds rate limit and return rate limit info.
 
@@ -267,26 +270,26 @@ else:
 class ARQueryRequest(BaseModel):
     """AR query request"""
     text: str
-    context: Dict[str, Any]  # ARContext serialized
+    context: dict[str, Any]  # ARContext serialized
     session_id: str
-    intent: Optional[str] = None
+    intent: str | None = None
 
 
 class ARQueryResponse(BaseModel):
     """AR query response"""
     response: str
-    visualizations: List[Dict[str, Any]]
+    visualizations: list[dict[str, Any]]
     confidence: float
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 class ARContextUpdate(BaseModel):
     """AR context update"""
     session_id: str
-    user_position: Dict[str, float]  # {x, y, z}
-    user_rotation: Dict[str, float]  # {x, y, z, w}
-    gaze_direction: Dict[str, float]
-    visible_objects: List[Dict[str, Any]]
+    user_position: dict[str, float]  # {x, y, z}
+    user_rotation: dict[str, float]  # {x, y, z, w}
+    gaze_direction: dict[str, float]
+    visible_objects: list[dict[str, Any]]
 
 
 # ============================================================================
@@ -295,7 +298,7 @@ class ARContextUpdate(BaseModel):
 
 class VisionDetectionResponse(BaseModel):
     """Object detection response"""
-    objects: List[Dict[str, Any]]  # DetectedObject serialized
+    objects: list[dict[str, Any]]  # DetectedObject serialized
     count: int
     processing_time_ms: float
 
@@ -303,17 +306,17 @@ class VisionDetectionResponse(BaseModel):
 class VisionSceneResponse(BaseModel):
     """Scene analysis response"""
     scene_type: str
-    objects: List[Dict[str, Any]]
-    relationships: List[Dict[str, Any]]
-    spatial_layout: Dict[str, Any]
+    objects: list[dict[str, Any]]
+    relationships: list[dict[str, Any]]
+    spatial_layout: dict[str, Any]
     lighting: str
-    dominant_colors: List[List[int]]
+    dominant_colors: list[list[int]]
     processing_time_ms: float
 
 
 class VisionHandsResponse(BaseModel):
     """Hand tracking response"""
-    hands: List[Dict[str, Any]]  # HandPose serialized
+    hands: list[dict[str, Any]]  # HandPose serialized
     count: int
     processing_time_ms: float
 
@@ -331,7 +334,7 @@ class VisionDepthResponse(BaseModel):
 
 class VisionMarkersResponse(BaseModel):
     """Marker detection response (Phase 4)"""
-    markers: List[Dict[str, Any]]  # Marker serialized
+    markers: list[dict[str, Any]]  # Marker serialized
     count: int
     processing_time_ms: float
 
@@ -345,22 +348,22 @@ class VisionSegmentationResponse(BaseModel):
     width: int
     height: int
     num_classes: int
-    class_names: List[str]
-    class_distribution: Dict[str, float]  # Percentage per class
+    class_names: list[str]
+    class_distribution: dict[str, float]  # Percentage per class
     processing_time_ms: float
 
 
 class VisionPoseResponse(BaseModel):
     """Pose estimation response (Phase 5)"""
-    poses: List[Dict[str, Any]]  # BodyPose serialized
+    poses: list[dict[str, Any]]  # BodyPose serialized
     count: int
     processing_time_ms: float
 
 
 class VisionSLAMResponse(BaseModel):
     """SLAM camera tracking response (Phase 5)"""
-    position: List[float]  # [x, y, z]
-    orientation: List[float]  # Quaternion [x, y, z, w]
+    position: list[float]  # [x, y, z]
+    orientation: list[float]  # Quaternion [x, y, z, w]
     tracking_quality: float
     num_features: int
     map_points: int
@@ -378,14 +381,14 @@ class ARSession:
         self.session_id = session_id
         self.orchestrator = orchestrator
         self.ar_adapter = ARAdapter()
-        self.context: Optional[ARContext] = None
+        self.context: ARContext | None = None
         self.created_at = datetime.now()
         self.last_activity = datetime.now()
 
         # Initialize session
         self.ar_adapter.start_session(session_id)
 
-    async def process_ar_event(self, event: AREvent) -> Dict[str, Any]:
+    async def process_ar_event(self, event: AREvent) -> dict[str, Any]:
         """Process AR event through Elle → HoloLoom pipeline"""
         self.last_activity = datetime.now()
         self.context = event.context
@@ -436,7 +439,7 @@ class ARSession:
             },
         }
 
-    def _serialize_visualization(self, viz) -> Dict[str, Any]:
+    def _serialize_visualization(self, viz) -> dict[str, Any]:
         """Serialize visualization for JSON transmission"""
         return {
             "id": viz.id,
@@ -462,8 +465,8 @@ class ARAPI:
 
     def __init__(self):
         self.app = FastAPI(title="HoloLoom AR API", version="1.0.0")
-        self.sessions: Dict[str, ARSession] = {}
-        self.orchestrator: Optional[WeavingOrchestrator] = None
+        self.sessions: dict[str, ARSession] = {}
+        self.orchestrator: WeavingOrchestrator | None = None
 
         # Vision processors (Phase 2)
         self.object_detector = None
@@ -551,8 +554,8 @@ class ARAPI:
         # Initialize Phase 5 processors
         try:
             from hololoom.vision import (
-                create_semantic_segmenter,
                 create_pose_estimator,
+                create_semantic_segmenter,
                 create_slam_processor,
             )
 
@@ -583,7 +586,7 @@ class ARAPI:
 
         logger.info("AR API initialized")
 
-    async def _check_rate_limit(self, request: Request, endpoint: str) -> Dict[str, Any]:
+    async def _check_rate_limit(self, request: Request, endpoint: str) -> dict[str, Any]:
         """
         Check rate limit using either Redis or in-memory limiter.
 
@@ -612,7 +615,7 @@ class ARAPI:
             # Use in-memory rate limiter for single-instance deployments
             return await vision_rate_limiter.check_rate_limit(request)
 
-    def _create_rate_limited_response(self, response_data, rate_limit_info: Dict[str, Any]):
+    def _create_rate_limited_response(self, response_data, rate_limit_info: dict[str, Any]):
         """
         Helper to create a JSON response with rate limit headers.
 
@@ -741,7 +744,7 @@ class ARAPI:
                     - {"type": "error", "error": "..."}
             """
             await websocket.accept()
-            session: Optional[ARSession] = None
+            session: ARSession | None = None
 
             try:
                 while True:
@@ -1340,7 +1343,7 @@ class ARAPI:
                 logger.error(f"SLAM tracking error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
 
-    def _deserialize_context(self, data: Dict[str, Any]) -> ARContext:
+    def _deserialize_context(self, data: dict[str, Any]) -> ARContext:
         """Deserialize AR context from JSON"""
         return ARContext(
             user_position=Vector3(**data["userPosition"]),
@@ -1361,7 +1364,7 @@ class ARAPI:
             platform=data.get("platform", "webxr"),
         )
 
-    def _deserialize_event(self, data: Dict[str, Any]) -> AREvent:
+    def _deserialize_event(self, data: dict[str, Any]) -> AREvent:
         """Deserialize AR event from JSON"""
         event_type = AREventType(data["eventType"])
         context = self._deserialize_context(data["context"])

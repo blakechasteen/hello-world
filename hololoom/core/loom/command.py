@@ -22,9 +22,9 @@ Pattern Cards:
 """
 
 import logging
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 from hololoom.alignment.safety_guardrails import (
     ActionCategory,
@@ -65,8 +65,8 @@ class PatternSpec:
     card: PatternCard
 
     # Threading configuration
-    scales: List[int]  # Embedding scales to activate
-    fusion_weights: Dict[int, float]  # Weights for multi-scale fusion
+    scales: list[int]  # Embedding scales to activate
+    fusion_weights: dict[int, float]  # Weights for multi-scale fusion
 
     # Feature extraction
     enable_motifs: bool = True
@@ -87,7 +87,7 @@ class PatternSpec:
 
     # Temporal control
     pipeline_timeout: float = 5.0
-    stage_timeouts: Dict[str, float] = None
+    stage_timeouts: dict[str, float] = None
 
     # Quality vs speed
     quality_target: float = 0.7  # 0-1 scale
@@ -232,7 +232,7 @@ class LoomCommand:
         self,
         default_pattern: PatternCard = PatternCard.FAST,
         auto_select: bool = True,
-        guardrails: Optional[SafetyGuardrails] = None,
+        guardrails: SafetyGuardrails | None = None,
     ):
         """
         Initialize Loom Command.
@@ -256,18 +256,18 @@ class LoomCommand:
         }
 
         # Current pattern
-        self.current_pattern: Optional[PatternSpec] = None
+        self.current_pattern: PatternSpec | None = None
 
         # Selection history
-        self.selection_history: List[Dict[str, Any]] = []
+        self.selection_history: list[dict[str, Any]] = []
 
         logger.info(f"LoomCommand initialized (default={default_pattern.value}, auto_select={auto_select})")
 
     def select_pattern(
         self,
-        query_text: Optional[str] = None,
-        user_preference: Optional[str] = None,
-        resource_constraints: Optional[Dict[str, Any]] = None
+        query_text: str | None = None,
+        user_preference: str | None = None,
+        resource_constraints: dict[str, Any] | None = None
     ) -> PatternSpec:
         """
         Select pattern card for weaving.
@@ -288,7 +288,7 @@ class LoomCommand:
         """
         selected_card = None
         selection_reason = None
-        safety_decision: Optional[SafetyDecision] = None
+        safety_decision: SafetyDecision | None = None
 
         # Run safety guardrails before selection to block adversarial input
         if self.guardrails:
@@ -364,7 +364,7 @@ class LoomCommand:
 
         return pattern_spec
 
-    def _select_by_constraints(self, constraints: Dict[str, Any]) -> Optional[PatternCard]:
+    def _select_by_constraints(self, constraints: dict[str, Any]) -> PatternCard | None:
         """
         Select pattern based on resource constraints.
 
@@ -416,7 +416,7 @@ class LoomCommand:
             # Long query: quality matters
             return PatternCard.FAST  # Could be FUSED if compute available
 
-    def get_current_pattern(self) -> Optional[PatternSpec]:
+    def get_current_pattern(self) -> PatternSpec | None:
         """Get currently active pattern spec."""
         return self.current_pattern
 
@@ -430,7 +430,7 @@ class LoomCommand:
         self.default_pattern = pattern
         logger.info(f"Default pattern changed to: {pattern.value}")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get selection statistics.
 
@@ -474,7 +474,7 @@ class LoomCommand:
 def create_loom_command(
     default: str = "fast",
     auto_select: bool = True,
-    guardrails: Optional[SafetyGuardrails] = None,
+    guardrails: SafetyGuardrails | None = None,
 ) -> LoomCommand:
     """
     Create Loom Command with default pattern.

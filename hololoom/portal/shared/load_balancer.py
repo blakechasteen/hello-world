@@ -9,9 +9,10 @@ Strategies:
 """
 
 import time
-from enum import Enum
-from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
+
 from .types import NodeRecord
 
 
@@ -26,7 +27,7 @@ class LoadBalanceStrategy(str, Enum):
 @dataclass
 class SelectionResult:
     """Result of node selection with metadata."""
-    node: Optional[NodeRecord]
+    node: NodeRecord | None
     strategy_used: LoadBalanceStrategy
     reason: str
     candidates_considered: int
@@ -37,7 +38,7 @@ class SelectionResult:
 class LoadBalancerStats:
     """Metrics for monitoring."""
     selections_total: int = 0
-    selections_by_strategy: Dict[LoadBalanceStrategy, int] = field(default_factory=dict)
+    selections_by_strategy: dict[LoadBalanceStrategy, int] = field(default_factory=dict)
     fallbacks: int = 0  # Times fell back to another strategy
 
 
@@ -74,8 +75,8 @@ class LoadBalancer:
 
     def select(
         self,
-        nodes: List[NodeRecord],
-        job_requirements: Optional[Dict[str, Any]] = None,
+        nodes: list[NodeRecord],
+        job_requirements: dict[str, Any] | None = None,
     ) -> SelectionResult:
         """
         Select best node for job execution.
@@ -126,9 +127,9 @@ class LoadBalancer:
 
     def _filter_by_requirements(
         self,
-        nodes: List[NodeRecord],
-        requirements: Optional[Dict[str, Any]]
-    ) -> List[NodeRecord]:
+        nodes: list[NodeRecord],
+        requirements: dict[str, Any] | None
+    ) -> list[NodeRecord]:
         """Filter nodes by job requirements."""
         if not requirements:
             return nodes
@@ -155,7 +156,7 @@ class LoadBalancer:
 
         return filtered
 
-    def _apply_strategy(self, nodes: List[NodeRecord]) -> Optional[NodeRecord]:
+    def _apply_strategy(self, nodes: list[NodeRecord]) -> NodeRecord | None:
         """Apply selection strategy to candidate nodes."""
         if not nodes:
             return None
@@ -176,17 +177,17 @@ class LoadBalancer:
         # Fallback
         return nodes[0]
 
-    def _round_robin(self, nodes: List[NodeRecord]) -> NodeRecord:
+    def _round_robin(self, nodes: list[NodeRecord]) -> NodeRecord:
         """Rotate through nodes sequentially."""
         idx = self._rr_index % len(nodes)
         self._rr_index += 1
         return nodes[idx]
 
-    def _least_loaded(self, nodes: List[NodeRecord]) -> NodeRecord:
+    def _least_loaded(self, nodes: list[NodeRecord]) -> NodeRecord:
         """Pick node with fewest current jobs."""
         return min(nodes, key=lambda n: n.current_jobs)
 
-    def _weighted(self, nodes: List[NodeRecord]) -> NodeRecord:
+    def _weighted(self, nodes: list[NodeRecord]) -> NodeRecord:
         """Score nodes by capacity, penalized by load."""
         def score(node: NodeRecord) -> float:
             caps = node.capabilities
@@ -200,7 +201,7 @@ class LoadBalancer:
 
         return max(nodes, key=score)
 
-    def _get_reason(self, node: Optional[NodeRecord], candidates: List[NodeRecord]) -> str:
+    def _get_reason(self, node: NodeRecord | None, candidates: list[NodeRecord]) -> str:
         """Generate human-readable selection reason."""
         if not node:
             return "No suitable node found"
@@ -219,7 +220,7 @@ class LoadBalancer:
 
         return "Selected"
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get metrics for monitoring."""
         return {
             "selections_total": self.stats.selections_total,

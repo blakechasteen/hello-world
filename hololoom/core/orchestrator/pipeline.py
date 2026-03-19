@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Executor Pipeline - Chains Stage Executors into a Pipeline
 ============================================================
@@ -22,18 +21,19 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.protocols import StageExecutorProtocol
-    from hololoom.orchestrator.context import WeavingContext
+    from hololoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
     from hololoom.config import Config
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     from hololoom.loom.command import LoomCommand
     from hololoom.memory.graph import KG
-    from hololoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.orchestrator.context import WeavingContext
+    from hololoom.orchestrator.protocols import StageExecutorProtocol
     from hololoom.tools.executor import ToolExecutor
-    from hololoom.alignment.safety_guardrails import SafetyGuardrails
-    from hololoom.alignment.audit_trail import AuditTrail
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class ExecutorPipeline:
         - Consider wrapping in try/except for graceful error handling
     """
 
-    def __init__(self, executors: List['StageExecutorProtocol']):
+    def __init__(self, executors: list[StageExecutorProtocol]):
         """
         Initialize the executor pipeline.
 
@@ -77,7 +77,7 @@ class ExecutorPipeline:
         """
         self.executors = executors
 
-    async def execute(self, ctx: 'WeavingContext') -> 'WeavingContext':
+    async def execute(self, ctx: WeavingContext) -> WeavingContext:
         """
         Execute all stages in sequence.
 
@@ -102,40 +102,40 @@ class ExecutorPipeline:
         """Iterate over executors."""
         return iter(self.executors)
 
-    def __getitem__(self, index: int) -> 'StageExecutorProtocol':
+    def __getitem__(self, index: int) -> StageExecutorProtocol:
         """Get executor by index."""
         return self.executors[index]
 
-    def stage_ids(self) -> List[int]:
+    def stage_ids(self) -> list[int]:
         """Return list of stage IDs in order."""
         return [e.stage_id for e in self.executors]
 
-    def stage_names(self) -> List[str]:
+    def stage_names(self) -> list[str]:
         """Return list of stage names in order."""
         return [e.stage_name for e in self.executors]
 
 
 def create_default_pipeline(
-    cfg: 'Config',
-    loom_command: 'LoomCommand',
-    yarn_graph: 'KG',
-    embedder: 'MatryoshkaEmbeddings',
+    cfg: Config,
+    loom_command: LoomCommand,
+    yarn_graph: KG,
+    embedder: MatryoshkaEmbeddings,
     policy: Any,
-    tool_executor: 'ToolExecutor',
-    memory: Optional[Any] = None,
-    retriever: Optional[Any] = None,
-    linguistic_gate: Optional[Any] = None,
-    guardrails: Optional['SafetyGuardrails'] = None,
-    audit_trail: Optional['AuditTrail'] = None,
-    semantic_cache: Optional[Any] = None,
-    dashboard_constructor: Optional[Any] = None,
-    multipass_memory_crawl: Optional[Callable] = None,
+    tool_executor: ToolExecutor,
+    memory: Any | None = None,
+    retriever: Any | None = None,
+    linguistic_gate: Any | None = None,
+    guardrails: SafetyGuardrails | None = None,
+    audit_trail: AuditTrail | None = None,
+    semantic_cache: Any | None = None,
+    dashboard_constructor: Any | None = None,
+    multipass_memory_crawl: Callable | None = None,
     enable_shuttle: bool = False,
-    shuttle_stage: Optional[Any] = None,
-    gradient_router: Optional[Any] = None,
-    awareness_context: Optional[dict] = None,
-    logger: Optional[logging.Logger] = None,
-    emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+    shuttle_stage: Any | None = None,
+    gradient_router: Any | None = None,
+    awareness_context: dict | None = None,
+    logger: logging.Logger | None = None,
+    emit_stage_event: Callable[[int, str, float], None] | None = None,
 ) -> ExecutorPipeline:
     """
     Factory for creating a standard 8-executor weaving pipeline.
@@ -187,14 +187,14 @@ def create_default_pipeline(
         >>> ctx = await pipeline.execute(ctx)
     """
     from hololoom.orchestrator.stages.executors import (
-        MetaPromptExecutor,
-        PatternSelectionExecutor,
         ChronoTriggerExecutor,
-        ThreadSelectionExecutor,
-        ParallelFeatureExecutor,
         ConvergenceExecutor,
-        ToolExecutionExecutor,
+        MetaPromptExecutor,
+        ParallelFeatureExecutor,
+        PatternSelectionExecutor,
         SpacetimeExecutor,
+        ThreadSelectionExecutor,
+        ToolExecutionExecutor,
     )
 
     log = logger or logging.getLogger(__name__)
@@ -280,14 +280,14 @@ def create_default_pipeline(
 
 
 def create_minimal_pipeline(
-    cfg: 'Config',
-    loom_command: 'LoomCommand',
-    yarn_graph: 'KG',
-    embedder: 'MatryoshkaEmbeddings',
+    cfg: Config,
+    loom_command: LoomCommand,
+    yarn_graph: KG,
+    embedder: MatryoshkaEmbeddings,
     policy: Any,
-    tool_executor: 'ToolExecutor',
-    logger: Optional[logging.Logger] = None,
-    emit_stage_event: Optional[Callable[[int, str, float], None]] = None,
+    tool_executor: ToolExecutor,
+    logger: logging.Logger | None = None,
+    emit_stage_event: Callable[[int, str, float], None] | None = None,
 ) -> ExecutorPipeline:
     """
     Factory for creating a minimal 5-executor pipeline.
@@ -318,10 +318,10 @@ def create_minimal_pipeline(
         ExecutorPipeline with 5 executors
     """
     from hololoom.orchestrator.stages.executors import (
-        PatternSelectionExecutor,
         ChronoTriggerExecutor,
-        ParallelFeatureExecutor,
         ConvergenceExecutor,
+        ParallelFeatureExecutor,
+        PatternSelectionExecutor,
         SpacetimeExecutor,
     )
 

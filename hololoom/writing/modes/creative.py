@@ -8,16 +8,9 @@ Philosophy: Imagination grounded in context.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
-import random
+from typing import Any
 
-from ..core.protocol import (
-    ModeWriterProtocol,
-    WritingContext,
-    WritingMode,
-    StyleGuide,
-    MemoryShard
-)
+from ..core.protocol import MemoryShard, StyleGuide, WritingContext, WritingMode
 
 logger = logging.getLogger(__name__)
 
@@ -92,8 +85,8 @@ class CreativeWriter:
 
     def _extract_creative_elements(
         self,
-        memories: List[MemoryShard]
-    ) -> Dict[str, Any]:
+        memories: list[MemoryShard]
+    ) -> dict[str, Any]:
         """
         Extract creative elements from memories.
 
@@ -139,8 +132,8 @@ class CreativeWriter:
     def _generate_creative_content(
         self,
         query: str,
-        memories: List[MemoryShard],
-        elements: Dict[str, Any],
+        memories: list[MemoryShard],
+        elements: dict[str, Any],
         creative_type: str,
         style: StyleGuide
     ) -> str:
@@ -171,8 +164,8 @@ class CreativeWriter:
     def _generate_story(
         self,
         query: str,
-        memories: List[MemoryShard],
-        elements: Dict[str, Any]
+        memories: list[MemoryShard],
+        elements: dict[str, Any]
     ) -> str:
         """Generate short story."""
         parts = []
@@ -203,8 +196,8 @@ class CreativeWriter:
 
     def _generate_exposition(
         self,
-        memories: List[MemoryShard],
-        elements: Dict[str, Any]
+        memories: list[MemoryShard],
+        elements: dict[str, Any]
     ) -> str:
         """Generate story exposition."""
         parts = []
@@ -230,8 +223,8 @@ class CreativeWriter:
 
     def _generate_rising_action(
         self,
-        memories: List[MemoryShard],
-        elements: Dict[str, Any]
+        memories: list[MemoryShard],
+        elements: dict[str, Any]
     ) -> str:
         """Generate rising action with conflict."""
         parts = []
@@ -250,8 +243,8 @@ class CreativeWriter:
 
     def _generate_resolution(
         self,
-        memories: List[MemoryShard],
-        elements: Dict[str, Any]
+        memories: list[MemoryShard],
+        elements: dict[str, Any]
     ) -> str:
         """Generate story resolution."""
         # Use last/highest-relevance memory for resolution
@@ -271,8 +264,8 @@ class CreativeWriter:
     def _generate_poem(
         self,
         query: str,
-        memories: List[MemoryShard],
-        elements: Dict[str, Any]
+        memories: list[MemoryShard],
+        elements: dict[str, Any]
     ) -> str:
         """Generate poem."""
         parts = []
@@ -309,8 +302,8 @@ class CreativeWriter:
     def _generate_dialogue(
         self,
         query: str,
-        memories: List[MemoryShard],
-        elements: Dict[str, Any]
+        memories: list[MemoryShard],
+        elements: dict[str, Any]
     ) -> str:
         """Generate dialogue between characters."""
         parts = []
@@ -336,8 +329,8 @@ class CreativeWriter:
     def _generate_description(
         self,
         query: str,
-        memories: List[MemoryShard],
-        elements: Dict[str, Any]
+        memories: list[MemoryShard],
+        elements: dict[str, Any]
     ) -> str:
         """Generate vivid description."""
         parts = []
@@ -355,7 +348,7 @@ class CreativeWriter:
 
         return '\n\n'.join(parts)
 
-    def _add_sensory_details(self, text: str, elements: Dict[str, Any]) -> str:
+    def _add_sensory_details(self, text: str, elements: dict[str, Any]) -> str:
         """Add sensory language to text."""
         # Simple enhancement: add descriptive phrases
         sensory_words = {
@@ -373,7 +366,7 @@ class CreativeWriter:
 
         return enhanced
 
-    def _personify_entities(self, entities: List[str]) -> str:
+    def _personify_entities(self, entities: list[str]) -> str:
         """Create character introductions from entities."""
         if not entities:
             return ""

@@ -21,20 +21,17 @@ Author: BearL Labs
 License: MIT
 """
 
-import numpy as np
-from typing import List, Dict, Tuple, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
-from sklearn.decomposition import PCA
-from sklearn.cluster import DBSCAN
+
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+from sklearn.cluster import DBSCAN
+from sklearn.decomposition import PCA
 
 # Import performance utilities
 from .performance import (
     EmbeddingCache,
-    LazyArray,
-    compute_finite_difference_vectorized,
-    compute_curvature_vectorized,
 )
 
 
@@ -55,13 +52,13 @@ class SemanticState:
     position: np.ndarray
     velocity: np.ndarray
     acceleration: np.ndarray
-    jerk: Optional[np.ndarray] = None
-    potential: Optional[float] = None
-    kinetic: Optional[float] = None
-    word: Optional[str] = None
+    jerk: np.ndarray | None = None
+    potential: float | None = None
+    kinetic: float | None = None
+    word: str | None = None
 
     @property
-    def total_energy(self) -> Optional[float]:
+    def total_energy(self) -> float | None:
         """Hamiltonian H = T + V"""
         if self.potential is not None and self.kinetic is not None:
             return self.kinetic + self.potential
@@ -85,8 +82,8 @@ class SemanticTrajectory:
 
     Contains sequence of states plus derived quantities
     """
-    states: List[SemanticState]
-    words: List[str]
+    states: list[SemanticState]
+    words: list[str]
     dt: float = 1.0  # time step between words
 
     @property
@@ -170,7 +167,7 @@ class SemanticFlowCalculus:
         self.damping = 0.1  # friction coefficient
         self.stiffness = 0.01  # harmonic restoring force
 
-    def compute_trajectory(self, words: List[str]) -> SemanticTrajectory:
+    def compute_trajectory(self, words: list[str]) -> SemanticTrajectory:
         """
         Convert word sequence to complete semantic trajectory
 
@@ -211,7 +208,7 @@ class SemanticFlowCalculus:
 
         return SemanticTrajectory(states=states, words=words, dt=self.dt)
 
-    def get_cache_stats(self) -> Optional[Dict]:
+    def get_cache_stats(self) -> dict | None:
         """Get embedding cache statistics"""
         if self._cache is not None:
             return self._cache.get_stats()
@@ -247,7 +244,7 @@ class SemanticFlowCalculus:
         jerk = np.gradient(accelerations, self.dt, axis=0)
         return jerk
 
-    def infer_potential_field(self, trajectories: List[SemanticTrajectory]) -> Callable:
+    def infer_potential_field(self, trajectories: list[SemanticTrajectory]) -> Callable:
         """
         Reconstruct semantic potential V(q) from observed trajectories
 
@@ -301,8 +298,8 @@ class SemanticFlowCalculus:
 
         return potential_function
 
-    def find_attractors(self, trajectories: List[SemanticTrajectory],
-                       velocity_threshold: float = 0.1) -> List[Dict]:
+    def find_attractors(self, trajectories: list[SemanticTrajectory],
+                       velocity_threshold: float = 0.1) -> list[dict]:
         """
         Find attractor basins (stable semantic concepts)
 
@@ -372,7 +369,7 @@ class SemanticFlowVisualizer:
     def visualize_trajectory_3d(self, trajectory: SemanticTrajectory,
                                 show_velocity: bool = True,
                                 show_acceleration: bool = False,
-                                attractors: Optional[List[Dict]] = None):
+                                attractors: list[dict] | None = None):
         """
         Visualize semantic trajectory in 3D
 
@@ -510,7 +507,7 @@ class SemanticFlowVisualizer:
 
 
 # Convenience function for quick analysis
-def analyze_text_flow(words: List[str], embedding_fn: Callable) -> Tuple[SemanticTrajectory, Dict]:
+def analyze_text_flow(words: list[str], embedding_fn: Callable) -> tuple[SemanticTrajectory, dict]:
     """
     Quick analysis of semantic flow for a text sequence
 

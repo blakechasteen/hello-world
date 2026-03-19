@@ -31,13 +31,11 @@ Date: December 2025
 """
 
 import asyncio
-import json
 import sys
-from dataclasses import asdict
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
-    from mcp import Server, Tool, ToolResult, TextContent
+    from mcp import Server, TextContent, Tool, ToolResult
     from mcp.server.stdio import stdio_server
     MCP_AVAILABLE = True
 except ImportError:
@@ -58,15 +56,15 @@ except ImportError:
 
 try:
     from hololoom.spinningWheel.recursive_crawler import (
-        RecursiveCrawlerSpinner,
         CrawlConfig,
+        RecursiveCrawlerSpinner,
     )
     RECURSIVE_CRAWLER_AVAILABLE = True
 except ImportError:
     RECURSIVE_CRAWLER_AVAILABLE = False
 
 
-def shard_to_dict(shard) -> Dict[str, Any]:
+def shard_to_dict(shard) -> dict[str, Any]:
     """Convert a MemoryShard to a JSON-serializable dict."""
     return {
         'id': shard.id,
@@ -89,7 +87,7 @@ class SpinningWheelMCPServer:
         """Register all available tools."""
 
         @self.server.list_tools()
-        async def list_tools() -> List[Tool]:
+        async def list_tools() -> list[Tool]:
             """Return list of available tools."""
             tools = []
 
@@ -209,7 +207,7 @@ class SpinningWheelMCPServer:
             return tools
 
         @self.server.call_tool()
-        async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+        async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             """Handle tool calls."""
 
             if name == "ingest_webpage":
@@ -223,7 +221,7 @@ class SpinningWheelMCPServer:
             else:
                 return [TextContent(text=f"Unknown tool: {name}")]
 
-    async def _ingest_webpage(self, args: Dict[str, Any]) -> List[TextContent]:
+    async def _ingest_webpage(self, args: dict[str, Any]) -> list[TextContent]:
         """Ingest a single web page."""
         if not WEBSITE_SPINNER_AVAILABLE:
             return [TextContent(text="Error: Website spinner not available. Install beautifulsoup4 and requests.")]
@@ -260,7 +258,7 @@ class SpinningWheelMCPServer:
         except Exception as e:
             return [TextContent(text=f"Error: {str(e)}")]
 
-    async def _ingest_browser_history(self, args: Dict[str, Any]) -> List[TextContent]:
+    async def _ingest_browser_history(self, args: dict[str, Any]) -> list[TextContent]:
         """Ingest browser history."""
         if not BROWSER_HISTORY_AVAILABLE:
             return [TextContent(text="Error: Browser history spinner not available.")]
@@ -296,7 +294,7 @@ class SpinningWheelMCPServer:
         except Exception as e:
             return [TextContent(text=f"Error: {str(e)}")]
 
-    async def _ingest_recursive(self, args: Dict[str, Any]) -> List[TextContent]:
+    async def _ingest_recursive(self, args: dict[str, Any]) -> list[TextContent]:
         """Recursively crawl a website."""
         if not RECURSIVE_CRAWLER_AVAILABLE:
             return [TextContent(text="Error: Recursive crawler not available. Install beautifulsoup4 and requests.")]
@@ -352,10 +350,11 @@ class SpinningWheelMCPServer:
         except Exception as e:
             return [TextContent(text=f"Error: {str(e)}")]
 
-    async def _process_text(self, args: Dict[str, Any]) -> List[TextContent]:
+    async def _process_text(self, args: dict[str, Any]) -> list[TextContent]:
         """Process and chunk text."""
-        from hololoom.documentation.types import MemoryShard
         import hashlib
+
+        from hololoom.documentation.types import MemoryShard
 
         text = args.get("text", "")
         chunk_size = args.get("chunk_size", 1000)

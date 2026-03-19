@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Scratch Pad Handlers for Matrix ChatOps
 ========================================
@@ -27,11 +28,11 @@ Created: December 2025
 
 import logging
 from datetime import datetime
-from typing import Optional, Dict, Any, List, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
-    from hololoom.fabric.spacetime import Spacetime
     from hololoom.apps.chatops.scratchpad.manager import ScratchPadManager
+    from hololoom.fabric.spacetime import Spacetime
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,9 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory, chatops_handler
+        HandlerCategory,
+        HandlerRegistry,
+        chatops_handler,
     )
     REGISTRY_AVAILABLE = True
 except ImportError:
@@ -77,16 +80,16 @@ except ImportError:
 try:
     from hololoom.apps.chatops.scratchpad.manager import (
         ScratchPadManager,
-        create_scratchpad_manager
+        create_scratchpad_manager,
     )
     from hololoom.apps.chatops.scratchpad.types import (
         ArtifactScope,
         ArtifactType,
-        ScratchArtifact,
-        StoreResult,
-        RetrieveResult,
         ListResult,
-        SessionArtifactContext
+        RetrieveResult,
+        ScratchArtifact,
+        SessionArtifactContext,
+        StoreResult,
     )
     SCRATCHPAD_AVAILABLE = True
 except ImportError:
@@ -107,9 +110,7 @@ except ImportError:
 # ============================================================================
 
 try:
-    from hololoom.apps.chatops.handlers.conversation_handlers import (
-        get_session_manager
-    )
+    from hololoom.apps.chatops.handlers.conversation_handlers import get_session_manager
     CONVERSATION_AVAILABLE = True
 except ImportError:
     CONVERSATION_AVAILABLE = False
@@ -121,8 +122,8 @@ except ImportError:
 # ============================================================================
 
 try:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
     from hololoom.fabric.spacetime import Spacetime
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
     ORCHESTRATOR_AVAILABLE = True
 except ImportError:
     ORCHESTRATOR_AVAILABLE = False
@@ -135,7 +136,7 @@ except ImportError:
 # ============================================================================
 
 _scratchpad_manager: Optional['ScratchPadManager'] = None
-_last_results: Dict[str, 'Spacetime'] = {}  # user_id -> last Spacetime result
+_last_results: dict[str, 'Spacetime'] = {}  # user_id -> last Spacetime result
 
 
 def get_scratchpad_manager() -> Optional['ScratchPadManager']:
@@ -494,7 +495,7 @@ async def handle_scratch_list(
             lines.append(f"\n... and {result.total_count - 20} more")
 
         lines.append(
-            f"\n*Use `!scratch list user|room|all` to filter by scope*"
+            "\n*Use `!scratch list user|room|all` to filter by scope*"
         )
 
         return "\n".join(lines)

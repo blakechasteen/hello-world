@@ -11,62 +11,42 @@ Enhanced version of ar_api.py with integrated security features:
 Created: 2025-11-26
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile, Request, Depends
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional, Dict, Any, List
-from datetime import datetime
-from pydantic import BaseModel
 import logging
-import json
-import asyncio
-import numpy as np
-from io import BytesIO
-from PIL import Image
+import os
 import time
 from collections import defaultdict, deque
-import os
+from datetime import datetime
+from io import BytesIO
+from typing import Any
+
+import numpy as np
+
+# AR Adapter imports
+# Elle imports
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    HTTPException,
+    Request,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from PIL import Image
+from pydantic import BaseModel
+
+from hololoom.apps.server.request_signing import APIKey, SignatureValidator, validate_api_request
+from hololoom.apps.server.security_monitor import AlertSeverity, SecurityEventType, SecurityMonitor
 
 # Import security modules
 from hololoom.apps.server.waf_middleware import WAFMiddleware, WAFRule
-from hololoom.apps.server.request_signing import SignatureValidator, APIKey, validate_api_request
-from hololoom.apps.server.security_monitor import (
-    SecurityMonitor,
-    SecurityEventType,
-    AlertSeverity
-)
 
 # HoloLoom imports
-from hololoom.config import Config
-from hololoom.weaving_orchestrator import WeavingOrchestrator
-from hololoom.protocols.types import Query, MemoryShard
 
 # Vision tools imports (Phase 2)
-from hololoom.vision import (
-    create_object_detector,
-    create_scene_analyzer,
-    create_hand_tracker,
-    DetectedObject,
-    SceneUnderstanding,
-    HandPose,
-)
-
-# Elle imports
-from elle.core.policy import EllePolicy
-from elle.core.llm_client import create_llm_client
-
-# AR Adapter imports
-from elle.adapters.ar_adapter import ARAdapter
-from elle.adapters.ar_adapter.ar_events import (
-    AREvent,
-    AREventType,
-    ARContext,
-    ARObject,
-    Vector3,
-    Quaternion,
-    VoiceEvent,
-)
-from elle.adapters.ar_adapter.platform_bridge import WebXRBridge
 
 logger = logging.getLogger(__name__)
 
@@ -96,9 +76,9 @@ ALERT_WAF_VIOLATIONS = 3  # WAF violations before alert
 class ARQueryRequest(BaseModel):
     """AR query request model with validation"""
     text: str
-    context: Optional[Dict[str, Any]] = None
-    session_id: Optional[str] = None
-    user_id: Optional[str] = None
+    context: dict[str, Any] | None = None
+    session_id: str | None = None
+    user_id: str | None = None
 
     class Config:
         schema_extra = {
@@ -116,10 +96,10 @@ class ARQueryRequest(BaseModel):
 class ARContextUpdate(BaseModel):
     """AR context update model"""
     session_id: str
-    location: Optional[Dict[str, float]] = None  # lat, lng, alt
-    rotation: Optional[Dict[str, float]] = None  # x, y, z, w
-    objects: Optional[List[Dict[str, Any]]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    location: dict[str, float] | None = None  # lat, lng, alt
+    rotation: dict[str, float] | None = None  # x, y, z, w
+    objects: list[dict[str, Any]] | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class SecurityConfig(BaseModel):
@@ -129,8 +109,8 @@ class SecurityConfig(BaseModel):
     enable_monitoring: bool = True
     enable_rate_limiting: bool = True
     waf_block_on_violation: bool = True
-    smtp_config: Optional[Dict] = None
-    slack_webhook_url: Optional[str] = None
+    smtp_config: dict | None = None
+    slack_webhook_url: str | None = None
 
 
 # ============================================================================
@@ -145,15 +125,15 @@ class EnhancedRateLimiter:
     def __init__(self, requests: int = 100, window: int = 60):
         self.requests = requests
         self.window = window
-        self.ip_requests: Dict[str, deque] = defaultdict(deque)
-        self.endpoint_requests: Dict[str, Dict[str, deque]] = defaultdict(lambda: defaultdict(deque))
+        self.ip_requests: dict[str, deque] = defaultdict(deque)
+        self.endpoint_requests: dict[str, dict[str, deque]] = defaultdict(lambda: defaultdict(deque))
         self.blocked_ips: set = set()
 
     async def check_rate_limit(
         self,
         client_ip: str,
         endpoint: str,
-        security_monitor: Optional[SecurityMonitor] = None
+        security_monitor: SecurityMonitor | None = None
     ) -> bool:
         """
         Check if request should be rate limited
@@ -226,7 +206,7 @@ class ARSpecificWAFRule(WAFRule):
             "HIGH"
         )
 
-    def check(self, request: Request, body: bytes = b"") -> Optional[str]:
+    def check(self, request: Request, body: bytes = b"") -> str | None:
         """Check for AR-specific attack patterns"""
 
         # Check for coordinate manipulation attacks
@@ -619,8 +599,8 @@ def create_secured_app(security_config: SecurityConfig = None) -> FastAPI:
     @app.post("/admin/api-keys/generate")
     async def generate_api_key(
         client_name: str,
-        expires_in_days: Optional[int] = 30,
-        rate_limit_qps: Optional[float] = 100.0,
+        expires_in_days: int | None = 30,
+        rate_limit_qps: float | None = 100.0,
         admin_key: str = None
     ):
         """Generate new API key (requires admin key)"""

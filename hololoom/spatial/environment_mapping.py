@@ -12,13 +12,14 @@ Real-world environment understanding and persistent XR scenes:
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any, Callable, Tuple, Set
-from enum import Enum
-from datetime import datetime
-import uuid
 import json
 import math
+import uuid
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class SurfaceType(Enum):
@@ -57,11 +58,11 @@ class Vector3:
     y: float = 0.0
     z: float = 0.0
 
-    def to_tuple(self) -> Tuple[float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float]:
         return (self.x, self.y, self.z)
 
     @classmethod
-    def from_tuple(cls, t: Tuple[float, float, float]) -> "Vector3":
+    def from_tuple(cls, t: tuple[float, float, float]) -> "Vector3":
         return cls(t[0], t[1], t[2])
 
     def magnitude(self) -> float:
@@ -76,7 +77,7 @@ class Quaternion:
     z: float = 0.0
     w: float = 1.0
 
-    def to_tuple(self) -> Tuple[float, float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float, float]:
         return (self.x, self.y, self.z, self.w)
 
 
@@ -87,7 +88,7 @@ class BoundingBox:
     size: Vector3 = field(default_factory=Vector3)
     rotation: Quaternion = field(default_factory=Quaternion)
 
-    def get_corners(self) -> List[Vector3]:
+    def get_corners(self) -> list[Vector3]:
         """Get 8 corners of bounding box."""
         half = Vector3(self.size.x/2, self.size.y/2, self.size.z/2)
         corners = []
@@ -104,7 +105,7 @@ class BoundingBox:
     def get_volume(self) -> float:
         return self.size.x * self.size.y * self.size.z
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "center": self.center.to_tuple(),
             "size": self.size.to_tuple(),
@@ -118,7 +119,7 @@ class Plane:
     plane_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     center: Vector3 = field(default_factory=Vector3)
     normal: Vector3 = field(default_factory=lambda: Vector3(0, 1, 0))
-    extents: Tuple[float, float] = (1.0, 1.0)  # Width, height
+    extents: tuple[float, float] = (1.0, 1.0)  # Width, height
     rotation: Quaternion = field(default_factory=Quaternion)
 
     # Classification
@@ -127,8 +128,8 @@ class Plane:
     semantic_label: str = ""
 
     # Geometry
-    vertices: Optional[List[Vector3]] = None  # Polygon outline
-    mesh_id: Optional[str] = None  # Reference to detailed mesh
+    vertices: list[Vector3] | None = None  # Polygon outline
+    mesh_id: str | None = None  # Reference to detailed mesh
 
     # State
     is_vertical: bool = False
@@ -138,7 +139,7 @@ class Plane:
     # Metadata
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
     updated_at: float = field(default_factory=lambda: datetime.now().timestamp())
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def get_area(self) -> float:
         """Calculate plane area."""
@@ -159,7 +160,7 @@ class Plane:
         )
         return distance < tolerance
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.plane_id,
             "center": self.center.to_tuple(),
@@ -179,12 +180,12 @@ class Plane:
 class EnvironmentMesh:
     """3D mesh of environment."""
     mesh_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
-    vertices: List[Vector3] = field(default_factory=list)
-    indices: List[int] = field(default_factory=list)  # Triangle indices
-    normals: Optional[List[Vector3]] = None
+    vertices: list[Vector3] = field(default_factory=list)
+    indices: list[int] = field(default_factory=list)  # Triangle indices
+    normals: list[Vector3] | None = None
 
     # Bounding
-    bounds: Optional[BoundingBox] = None
+    bounds: BoundingBox | None = None
 
     # Metadata
     vertex_count: int = 0
@@ -217,7 +218,7 @@ class EnvironmentMesh:
             )
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.mesh_id,
             "vertexCount": self.vertex_count,
@@ -236,12 +237,12 @@ class PersistentAnchor:
     rotation: Quaternion = field(default_factory=Quaternion)
 
     # Persistence
-    cloud_anchor_id: Optional[str] = None  # Cloud anchor ID for sharing
-    local_storage_id: Optional[str] = None
+    cloud_anchor_id: str | None = None  # Cloud anchor ID for sharing
+    local_storage_id: str | None = None
 
     # Attachment
-    attached_plane_id: Optional[str] = None
-    attached_content_ids: List[str] = field(default_factory=list)
+    attached_plane_id: str | None = None
+    attached_content_ids: list[str] = field(default_factory=list)
 
     # State
     tracking_state: str = "tracking"  # tracking, limited, lost
@@ -251,10 +252,10 @@ class PersistentAnchor:
     # Metadata
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
     created_by: str = ""
-    tags: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.anchor_id,
             "name": self.name,
@@ -277,20 +278,20 @@ class SceneSnapshot:
     description: str = ""
 
     # Content
-    planes: List[Dict[str, Any]] = field(default_factory=list)
-    anchors: List[Dict[str, Any]] = field(default_factory=list)
-    meshes: List[Dict[str, Any]] = field(default_factory=list)
-    content_positions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    planes: list[dict[str, Any]] = field(default_factory=list)
+    anchors: list[dict[str, Any]] = field(default_factory=list)
+    meshes: list[dict[str, Any]] = field(default_factory=list)
+    content_positions: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     # Room bounds
-    room_center: Optional[Tuple[float, float, float]] = None
-    room_size: Optional[Tuple[float, float, float]] = None
+    room_center: tuple[float, float, float] | None = None
+    room_size: tuple[float, float, float] | None = None
 
     # Metadata
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
     created_by: str = ""
     version: str = "1.0"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_json(self) -> str:
         """Export to JSON string."""
@@ -340,8 +341,8 @@ class ScanProgress:
     confidence: float = 0.0
     is_scanning: bool = False
     scan_quality: ScanQuality = ScanQuality.MEDIUM
-    start_time: Optional[float] = None
-    estimated_completion: Optional[float] = None
+    start_time: float | None = None
+    estimated_completion: float | None = None
 
 
 class EnvironmentMapper:
@@ -360,12 +361,12 @@ class EnvironmentMapper:
         self.merge_threshold = plane_merge_threshold
 
         # Detected environment
-        self.planes: Dict[str, Plane] = {}
-        self.meshes: Dict[str, EnvironmentMesh] = {}
-        self.anchors: Dict[str, PersistentAnchor] = {}
+        self.planes: dict[str, Plane] = {}
+        self.meshes: dict[str, EnvironmentMesh] = {}
+        self.anchors: dict[str, PersistentAnchor] = {}
 
         # Room understanding
-        self.room_bounds: Optional[BoundingBox] = None
+        self.room_bounds: BoundingBox | None = None
         self.floor_height: float = 0.0
         self.ceiling_height: float = 2.5
 
@@ -373,13 +374,13 @@ class EnvironmentMapper:
         self.scan_progress = ScanProgress()
 
         # Saved scenes
-        self.saved_snapshots: Dict[str, SceneSnapshot] = {}
+        self.saved_snapshots: dict[str, SceneSnapshot] = {}
 
         # Callbacks
-        self.on_plane_detected: List[Callable[[Plane], None]] = []
-        self.on_plane_updated: List[Callable[[Plane], None]] = []
-        self.on_scan_complete: List[Callable[[ScanProgress], None]] = []
-        self.on_anchor_created: List[Callable[[PersistentAnchor], None]] = []
+        self.on_plane_detected: list[Callable[[Plane], None]] = []
+        self.on_plane_updated: list[Callable[[Plane], None]] = []
+        self.on_scan_complete: list[Callable[[ScanProgress], None]] = []
+        self.on_anchor_created: list[Callable[[PersistentAnchor], None]] = []
 
     def start_scan(self, quality: ScanQuality = ScanQuality.MEDIUM):
         """Start environment scanning."""
@@ -397,10 +398,10 @@ class EnvironmentMapper:
 
     def add_plane(
         self,
-        center: Tuple[float, float, float],
-        normal: Tuple[float, float, float],
-        extents: Tuple[float, float],
-        surface_type: Optional[SurfaceType] = None,
+        center: tuple[float, float, float],
+        normal: tuple[float, float, float],
+        extents: tuple[float, float],
+        surface_type: SurfaceType | None = None,
         confidence: float = 1.0
     ) -> Plane:
         """Add detected plane."""
@@ -472,7 +473,7 @@ class EnvironmentMapper:
 
         return SurfaceType.UNKNOWN
 
-    def _try_merge_plane(self, new_plane: Plane) -> Optional[Plane]:
+    def _try_merge_plane(self, new_plane: Plane) -> Plane | None:
         """Try to merge with existing similar plane."""
         for existing in self.planes.values():
             # Check if normals are similar
@@ -547,9 +548,9 @@ class EnvironmentMapper:
 
     def add_mesh(
         self,
-        vertices: List[Tuple[float, float, float]],
-        indices: List[int],
-        normals: Optional[List[Tuple[float, float, float]]] = None
+        vertices: list[tuple[float, float, float]],
+        indices: list[int],
+        normals: list[tuple[float, float, float]] | None = None
     ) -> EnvironmentMesh:
         """Add environment mesh."""
         mesh = EnvironmentMesh(
@@ -568,10 +569,10 @@ class EnvironmentMapper:
 
     def create_anchor(
         self,
-        position: Tuple[float, float, float],
-        rotation: Tuple[float, float, float, float] = (0, 0, 0, 1),
+        position: tuple[float, float, float],
+        rotation: tuple[float, float, float, float] = (0, 0, 0, 1),
         name: str = "",
-        plane_id: Optional[str] = None,
+        plane_id: str | None = None,
         created_by: str = ""
     ) -> PersistentAnchor:
         """Create persistent anchor."""
@@ -601,8 +602,8 @@ class EnvironmentMapper:
         self,
         anchor_id: str,
         tracking_state: str,
-        position: Optional[Tuple[float, float, float]] = None,
-        rotation: Optional[Tuple[float, float, float, float]] = None
+        position: tuple[float, float, float] | None = None,
+        rotation: tuple[float, float, float, float] | None = None
     ):
         """Update anchor tracking state."""
         if anchor_id not in self.anchors:
@@ -619,9 +620,9 @@ class EnvironmentMapper:
 
     def get_plane_at_point(
         self,
-        point: Tuple[float, float, float],
+        point: tuple[float, float, float],
         tolerance: float = 0.1
-    ) -> Optional[Plane]:
+    ) -> Plane | None:
         """Find plane containing point."""
         point_vec = Vector3.from_tuple(point)
         for plane in self.planes.values():
@@ -629,7 +630,7 @@ class EnvironmentMapper:
                 return plane
         return None
 
-    def get_floor_plane(self) -> Optional[Plane]:
+    def get_floor_plane(self) -> Plane | None:
         """Get main floor plane."""
         floors = [
             p for p in self.planes.values()
@@ -639,14 +640,14 @@ class EnvironmentMapper:
             return max(floors, key=lambda p: p.get_area())
         return None
 
-    def get_walls(self) -> List[Plane]:
+    def get_walls(self) -> list[Plane]:
         """Get all wall planes."""
         return [
             p for p in self.planes.values()
             if p.surface_type == SurfaceType.WALL
         ]
 
-    def get_tables(self) -> List[Plane]:
+    def get_tables(self) -> list[Plane]:
         """Get all table surfaces."""
         return [
             p for p in self.planes.values()
@@ -657,7 +658,7 @@ class EnvironmentMapper:
         self,
         name: str,
         description: str = "",
-        content_positions: Optional[Dict[str, Dict[str, Any]]] = None,
+        content_positions: dict[str, dict[str, Any]] | None = None,
         created_by: str = ""
     ) -> SceneSnapshot:
         """Save current scene state."""
@@ -712,7 +713,7 @@ class EnvironmentMapper:
 
         return True
 
-    def export_snapshot_json(self, snapshot_id: str) -> Optional[str]:
+    def export_snapshot_json(self, snapshot_id: str) -> str | None:
         """Export snapshot to JSON."""
         snapshot = self.saved_snapshots.get(snapshot_id)
         if snapshot:
@@ -733,7 +734,7 @@ class EnvironmentMapper:
         self.room_bounds = None
         self.scan_progress = ScanProgress()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get environment statistics."""
         surfaces_by_type = {}
         for plane in self.planes.values():
@@ -757,7 +758,7 @@ class EnvironmentMapper:
             "is_scanning": self.scan_progress.is_scanning
         }
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export full state for WebXR client."""
         return {
             "type": "environment_state",

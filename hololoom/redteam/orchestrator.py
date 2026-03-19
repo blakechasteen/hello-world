@@ -27,46 +27,45 @@ Date: 2025-12-05
 
 import asyncio
 import json
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
-import logging
+from typing import Any
 
-from .strategies import AttackStrategy, PayloadGenerator, AttackPayload
-from .mutator import PayloadMutator
-from .executor import AttackExecutor, AttackResult
 from .bandit import RedTeamBandit
-from .tracker import VulnerabilityTracker, Vulnerability
-from .reporter import ReportGenerator
-
-# Phase 2: Sandbox Integration
-from .sandbox import (
-    SandboxedExecutor,
-    SandboxConfig,
-    create_sandboxed_executor,
-)
-
-# Phase 3: Swarm Integration
-from .swarm import (
-    SwarmCoordinator,
-    MessageBus,
-    BaseAgent,
-    create_coordinator_agent,
-)
-
-# Phase 4: Refinement Integration
-from .refinement import (
-    AttackRefiner,
-    QualityTrajectoryTracker,
-    AttackRefinementStrategy,
-)
+from .executor import AttackExecutor, AttackResult
+from .mutator import PayloadMutator
 
 # Phase 5: Probes Integration
 from .probes import (
     AttackProber,
     VulnerabilityProbeReport,
 )
+
+# Phase 4: Refinement Integration
+from .refinement import (
+    AttackRefiner,
+    QualityTrajectoryTracker,
+)
+from .reporter import ReportGenerator
+
+# Phase 2: Sandbox Integration
+from .sandbox import (
+    SandboxConfig,
+    SandboxedExecutor,
+    create_sandboxed_executor,
+)
+from .strategies import AttackPayload, AttackStrategy, PayloadGenerator
+
+# Phase 3: Swarm Integration
+from .swarm import (
+    BaseAgent,
+    MessageBus,
+    SwarmCoordinator,
+    create_coordinator_agent,
+)
+from .tracker import VulnerabilityTracker
 
 logger = logging.getLogger(__name__)
 
@@ -77,15 +76,15 @@ class CycleResult:
 
     cycle_id: int
     timestamp: datetime
-    strategies_tested: List[AttackStrategy]
+    strategies_tested: list[AttackStrategy]
     attacks_executed: int
     vulnerabilities_found: int
     regressions_detected: int
     cycle_duration_ms: float
-    results: List[AttackResult] = field(default_factory=list)
+    results: list[AttackResult] = field(default_factory=list)
 
     # Phase 2+: Sandbox & swarm results
-    sandbox_stats: Optional[Dict[str, Any]] = None  # Resource usage from sandboxed execution
+    sandbox_stats: dict[str, Any] | None = None  # Resource usage from sandboxed execution
     swarm_agents_active: int = 0  # Number of swarm agents in this cycle
     swarm_messages_exchanged: int = 0  # Messages between agents
 
@@ -94,9 +93,9 @@ class CycleResult:
     avg_quality_improvement: float = 0.0  # Average quality score improvement
 
     # Phase 5+: Probe results
-    probe_report: Optional[VulnerabilityProbeReport] = None  # Detailed probe testing report
+    probe_report: VulnerabilityProbeReport | None = None  # Detailed probe testing report
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'cycle_id': self.cycle_id,
@@ -124,14 +123,14 @@ class OrchestratorStats:
     total_vulnerabilities: int
     total_regressions: int
     uptime_seconds: float
-    last_cycle_at: Optional[datetime]
-    bandit_stats: Dict[str, Any]
-    tracker_stats: Dict[str, Any]
+    last_cycle_at: datetime | None
+    bandit_stats: dict[str, Any]
+    tracker_stats: dict[str, Any]
 
     # Phase 2+: Sandbox stats
     sandbox_enabled: bool = False
     total_sandboxed_attacks: int = 0
-    sandbox_resource_stats: Optional[Dict[str, Any]] = None
+    sandbox_resource_stats: dict[str, Any] | None = None
 
     # Phase 3+: Swarm stats
     swarm_enabled: bool = False
@@ -201,11 +200,11 @@ class RedTeamOrchestrator:
         safety_adapter=None,
         deception_detector=None,
         convergence_guard=None,
-        state_dir: Optional[Path] = None,
+        state_dir: Path | None = None,
         mutation_rate: float = 0.15,
         crossover_rate: float = 0.7,
         # Phase 2: Sandbox
-        sandbox_config: Optional[SandboxConfig] = None,
+        sandbox_config: SandboxConfig | None = None,
         # Phase 3: Swarm
         enable_swarm: bool = False,
         # Phase 4: Refinement
@@ -250,38 +249,38 @@ class RedTeamOrchestrator:
 
         # Phase 2: Sandbox Integration
         self.sandbox_config = sandbox_config
-        self.sandbox_executor: Optional[SandboxedExecutor] = None
+        self.sandbox_executor: SandboxedExecutor | None = None
         self._sandboxed_attacks = 0
 
         # Phase 3: Swarm Integration
         self.enable_swarm = enable_swarm
-        self.swarm_coordinator: Optional[SwarmCoordinator] = None
-        self.message_bus: Optional[MessageBus] = None
-        self._swarm_agents: Dict[str, BaseAgent] = {}
+        self.swarm_coordinator: SwarmCoordinator | None = None
+        self.message_bus: MessageBus | None = None
+        self._swarm_agents: dict[str, BaseAgent] = {}
         self._total_swarm_messages = 0
 
         # Phase 4: Refinement Integration
         self.enable_refinement = enable_refinement
-        self.attack_refiner: Optional[AttackRefiner] = None
-        self.quality_tracker: Optional[QualityTrajectoryTracker] = None
+        self.attack_refiner: AttackRefiner | None = None
+        self.quality_tracker: QualityTrajectoryTracker | None = None
         self._payloads_refined = 0
-        self._quality_improvements: List[float] = []
+        self._quality_improvements: list[float] = []
 
         # Phase 5: Probes Integration
         self.enable_probes = enable_probes
-        self.attack_prober: Optional[AttackProber] = None
+        self.attack_prober: AttackProber | None = None
         self._total_probes_run = 0
         self._vulnerabilities_from_probes = 0
 
         # State
         self.cycle_count = 0
         self.start_time = datetime.now()
-        self.cycle_history: List[CycleResult] = []
+        self.cycle_history: list[CycleResult] = []
         self._running = False
         self._stop_event = asyncio.Event()
 
         # Successful payloads for evolution
-        self._successful_payloads: Dict[AttackStrategy, List[str]] = {
+        self._successful_payloads: dict[AttackStrategy, list[str]] = {
             strategy: [] for strategy in AttackStrategy
         }
 
@@ -408,10 +407,10 @@ class RedTeamOrchestrator:
 
     def _refine_low_confidence_payloads(
         self,
-        payloads: List[AttackPayload],
+        payloads: list[AttackPayload],
         threshold: float = 0.6,
         max_payloads: int = 5
-    ) -> List[AttackPayload]:
+    ) -> list[AttackPayload]:
         """
         Refine payloads with low confidence scores (Phase 4).
 
@@ -466,7 +465,7 @@ class RedTeamOrchestrator:
         self,
         target: str = "safety_system",
         include_all_types: bool = True
-    ) -> Optional[VulnerabilityProbeReport]:
+    ) -> VulnerabilityProbeReport | None:
         """
         Run comprehensive probe suite for systematic vulnerability testing (Phase 5).
 
@@ -515,7 +514,7 @@ class RedTeamOrchestrator:
         strategies_per_cycle: int = 3,
         payloads_per_strategy: int = 5,
         include_regression_tests: bool = True,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         run_probes: bool = False,  # Phase 5
     ) -> CycleResult:
         """
@@ -544,7 +543,7 @@ class RedTeamOrchestrator:
             f"swarm={self.swarm_coordinator is not None})"
         )
 
-        all_results: List[AttackResult] = []
+        all_results: list[AttackResult] = []
         vulnerabilities_found = 0
         regressions_detected = 0
         strategies_tested = []
@@ -579,7 +578,7 @@ class RedTeamOrchestrator:
                         payloads.append(AttackPayload(
                             strategy=strategy,
                             payload=m,
-                            description=f"Mutated from successful payload",
+                            description="Mutated from successful payload",
                             expected_behavior="Bypass safety",
                             severity_estimate=0.7
                         ))
@@ -701,10 +700,10 @@ class RedTeamOrchestrator:
     async def run_continuous(
         self,
         cycle_interval: float = 60.0,
-        max_cycles: Optional[int] = None,
+        max_cycles: int | None = None,
         strategies_per_cycle: int = 3,
         payloads_per_strategy: int = 5,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ):
         """
         Run continuous red team testing.
@@ -765,7 +764,7 @@ class RedTeamOrchestrator:
 
     async def _run_regression_tests(
         self,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> int:
         """
         Test previously fixed vulnerabilities for regressions.
@@ -799,7 +798,7 @@ class RedTeamOrchestrator:
         strategy: AttackStrategy,
         population_size: int = 20,
         generations: int = 5
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Evolve payloads using genetic algorithm.
 
@@ -963,7 +962,7 @@ class RedTeamOrchestrator:
         # Load successful payloads
         payloads_path = self.state_dir / "successful_payloads.json"
         if payloads_path.exists():
-            with open(payloads_path, 'r') as f:
+            with open(payloads_path) as f:
                 payloads_data = json.load(f)
 
             for strategy_value, payloads in payloads_data.items():
@@ -1002,8 +1001,8 @@ def create_orchestrator(
     safety_adapter=None,
     deception_detector=None,
     convergence_guard=None,
-    state_dir: Optional[Path] = None,
-    sandbox_config: Optional[SandboxConfig] = None,
+    state_dir: Path | None = None,
+    sandbox_config: SandboxConfig | None = None,
     enable_swarm: bool = False,
     enable_refinement: bool = True,
     enable_probes: bool = True,

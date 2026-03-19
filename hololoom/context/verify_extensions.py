@@ -14,11 +14,8 @@ sys.path.insert(0, str(repo_root))
 
 import asyncio
 from datetime import time
-from hololoom.context import (
-    LearningTracker,
-    StrategyUpdater,
-    RoutingEvent
-)
+
+from hololoom.context import LearningTracker, StrategyUpdater
 
 
 def print_header(text: str):

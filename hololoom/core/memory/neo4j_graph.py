@@ -31,19 +31,18 @@ This is the "Yarn Graph" backed by Neo4j - persistent symbolic memory
 that can be "tensioned" into Warp Space for continuous computation.
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Optional, Set, Any
 import json
-from pathlib import Path
-import warnings
 import logging
 import os
 import time
+import warnings
+from dataclasses import dataclass
 from threading import Lock
+from typing import Any
 
 try:
-    from neo4j import GraphDatabase, Driver, Transaction
-    from neo4j.exceptions import ServiceUnavailable, AuthError, SessionExpired
+    from neo4j import Driver, GraphDatabase, Transaction
+    from neo4j.exceptions import AuthError, ServiceUnavailable, SessionExpired
     NEO4J_AVAILABLE = True
 except ImportError:
     NEO4J_AVAILABLE = False
@@ -302,7 +301,7 @@ class Neo4jKG:
     """
 
     # Class-level driver singleton with lock for thread safety
-    _driver_instance: Optional[Driver] = None
+    _driver_instance: Driver | None = None
     _driver_lock = Lock()
     _connection_metrics = {
         'total_connections': 0,
@@ -312,7 +311,7 @@ class Neo4jKG:
         'health_status': 'unknown'
     }
 
-    def __init__(self, config: Optional[Neo4jConfig] = None):
+    def __init__(self, config: Neo4jConfig | None = None):
         """
         Initialize Neo4j knowledge graph with connection pooling.
 
@@ -412,7 +411,7 @@ class Neo4jKG:
                         f"Failed to connect to Neo4j after {max_retries} attempts: {e}"
                     )
 
-    def health_check(self) -> Dict[str, Any]:
+    def health_check(self) -> dict[str, Any]:
         """
         Perform health check on Neo4j connection.
 
@@ -480,7 +479,7 @@ class Neo4jKG:
             try:
                 return func(*args, **kwargs)
 
-            except SessionExpired as e:
+            except SessionExpired:
                 # Session expired, retry with new session
                 logger.warning(f"Session expired on attempt {attempt + 1}, retrying...")
                 if attempt < max_retries - 1:
@@ -563,7 +562,7 @@ class Neo4jKG:
                 finally:
                     cls._driver_instance = None
 
-    def get_pool_metrics(self) -> Dict[str, Any]:
+    def get_pool_metrics(self) -> dict[str, Any]:
         """
         Get connection pool metrics for monitoring.
 
@@ -637,7 +636,7 @@ class Neo4jKG:
                 metadata=edge.metadata or {}
             )
 
-    def add_edges(self, edges: List[KGEdge]) -> None:
+    def add_edges(self, edges: list[KGEdge]) -> None:
         """
         Bulk add edges (more efficient than individual adds).
 
@@ -727,7 +726,7 @@ class Neo4jKG:
         entity: str,
         direction: str = "both",
         max_hops: int = 1
-    ) -> Set[str]:
+    ) -> set[str]:
         """
         Get neighboring entities.
 
@@ -768,7 +767,7 @@ class Neo4jKG:
 
     def subgraph_for_entities(
         self,
-        entities: List[str],
+        entities: list[str],
         expand: bool = True,
         max_hops: int = 1
     ) -> nx.MultiDiGraph:
@@ -850,7 +849,7 @@ class Neo4jKG:
 
         return G
 
-    def get_edge_types(self, src: str, dst: str) -> List[str]:
+    def get_edge_types(self, src: str, dst: str) -> list[str]:
         """
         Get all edge types between two entities.
 
@@ -871,7 +870,7 @@ class Neo4jKG:
         src: str,
         dst: str,
         max_length: int = 3
-    ) -> List[List[str]]:
+    ) -> list[list[str]]:
         """
         Find paths between two entities.
 
@@ -904,7 +903,7 @@ class Neo4jKG:
         entity: str,
         edge_type: str,
         direction: str = "out"
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get entities related by a specific edge type.
 
@@ -933,7 +932,7 @@ class Neo4jKG:
             result = session.run(query, entity=entity, edge_type=edge_type)
             return [record["name"] for record in result]
 
-    def stats(self) -> Dict:
+    def stats(self) -> dict:
         """Get graph statistics."""
         query = """
         MATCH (n)
@@ -963,7 +962,7 @@ class Neo4jKG:
     # Neo4j-Specific Advanced Features
     # ========================================================================
 
-    def run_cypher(self, query: str, parameters: Optional[Dict] = None) -> List[Dict]:
+    def run_cypher(self, query: str, parameters: dict | None = None) -> list[dict]:
         """
         Execute raw Cypher query.
 
@@ -980,7 +979,7 @@ class Neo4jKG:
             result = session.run(query, parameters or {})
             return [dict(record) for record in result]
 
-    def pagerank(self, limit: int = 10) -> List[tuple[str, float]]:
+    def pagerank(self, limit: int = 10) -> list[tuple[str, float]]:
         """
         Compute PageRank centrality using APOC.
 
@@ -1183,7 +1182,7 @@ class Neo4jKG:
 
         return memory.id
 
-    async def store_many(self, memories: List, user_id: str = "default") -> List[str]:
+    async def store_many(self, memories: list, user_id: str = "default") -> list[str]:
         """
         Batch store multiple memories.
 
@@ -1226,14 +1225,15 @@ class Neo4jKG:
         Returns:
             RetrievalResult with memories, scores, and metadata
         """
-        from hololoom.memory.protocol import Memory, RetrievalResult
         from datetime import datetime
+
+        from hololoom.memory.protocol import Memory, RetrievalResult
 
         # Extract query text
         query_text = query.text if hasattr(query, 'text') else str(query)
 
         # Simple entity extraction (could be enhanced with NLP)
-        def extract_entities_simple(text: str) -> List[str]:
+        def extract_entities_simple(text: str) -> list[str]:
             """Extract potential entities from text using basic heuristics."""
             words = text.lower().split()
             # Filter out common stop words and short words

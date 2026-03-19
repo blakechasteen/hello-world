@@ -23,18 +23,18 @@ Author: HoloLoom Team
 Date: 2025-12-01 (Jenny MVP Week 2)
 """
 
-import logging
 import asyncio
+import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Set
 from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 from .jenny_spec import (
+    DissolutionTrigger,
     JennySpec,
     LifecycleStage,
-    DissolutionTrigger,
 )
 from .spec_ledger import SpecLedger
 
@@ -81,7 +81,7 @@ class PanelState:
     session_id: str
     spawned_at: datetime = field(default_factory=datetime.now)
     last_accessed: datetime = field(default_factory=datetime.now)
-    transition_history: List[Dict[str, Any]] = field(default_factory=list)
+    transition_history: list[dict[str, Any]] = field(default_factory=list)
 
     def __post_init__(self):
         """Record initial spawn in transition history."""
@@ -95,7 +95,7 @@ class PanelState:
     def record_transition(
         self,
         new_stage: LifecycleStage,
-        trigger: Optional[DissolutionTrigger] = None
+        trigger: DissolutionTrigger | None = None
     ) -> None:
         """Record a lifecycle transition."""
         self.transition_history.append({
@@ -168,18 +168,18 @@ class JennyLifecycleManagerBase(ABC):
     @abstractmethod
     async def get_active_panels(
         self,
-        session_id: Optional[str] = None
-    ) -> List[JennySpec]:
+        session_id: str | None = None
+    ) -> list[JennySpec]:
         """Get all active panels (NASCENT or STABLE)."""
         ...
 
     @abstractmethod
-    async def get_panel(self, spec_id: str) -> Optional[JennySpec]:
+    async def get_panel(self, spec_id: str) -> JennySpec | None:
         """Get a panel by ID."""
         ...
 
     @abstractmethod
-    async def cleanup_stale(self, max_age_seconds: int = 300) -> List[str]:
+    async def cleanup_stale(self, max_age_seconds: int = 300) -> list[str]:
         """Clean up stale NASCENT panels."""
         ...
 
@@ -187,7 +187,7 @@ class JennyLifecycleManagerBase(ABC):
     async def handle_memory_pressure(
         self,
         target_panel_count: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Handle memory pressure by dissolving low-priority panels."""
         ...
 
@@ -240,7 +240,7 @@ class InMemoryLifecycleManager(JennyLifecycleManagerBase):
 
     def __init__(
         self,
-        spec_ledger: Optional[SpecLedger] = None,
+        spec_ledger: SpecLedger | None = None,
         default_session_id: str = "default",
         max_active_panels: int = 100,
     ):
@@ -253,11 +253,11 @@ class InMemoryLifecycleManager(JennyLifecycleManagerBase):
             max_active_panels: Maximum active panels before memory pressure
         """
         # Panel state storage
-        self._panels: Dict[str, PanelState] = {}
+        self._panels: dict[str, PanelState] = {}
 
         # Indexes for fast queries
-        self._by_session: Dict[str, Set[str]] = defaultdict(set)
-        self._by_lifecycle: Dict[LifecycleStage, Set[str]] = defaultdict(set)
+        self._by_session: dict[str, set[str]] = defaultdict(set)
+        self._by_lifecycle: dict[LifecycleStage, set[str]] = defaultdict(set)
 
         # Configuration
         self.spec_ledger = spec_ledger
@@ -485,8 +485,8 @@ class InMemoryLifecycleManager(JennyLifecycleManagerBase):
 
     async def get_active_panels(
         self,
-        session_id: Optional[str] = None
-    ) -> List[JennySpec]:
+        session_id: str | None = None
+    ) -> list[JennySpec]:
         """
         Get all active panels (NASCENT or STABLE).
 
@@ -517,7 +517,7 @@ class InMemoryLifecycleManager(JennyLifecycleManagerBase):
 
         return result
 
-    async def get_panel(self, spec_id: str) -> Optional[JennySpec]:
+    async def get_panel(self, spec_id: str) -> JennySpec | None:
         """
         Get a panel by ID (any lifecycle stage).
 
@@ -542,7 +542,7 @@ class InMemoryLifecycleManager(JennyLifecycleManagerBase):
     # Cleanup Methods
     # ========================================================================
 
-    async def cleanup_stale(self, max_age_seconds: int = 300) -> List[str]:
+    async def cleanup_stale(self, max_age_seconds: int = 300) -> list[str]:
         """
         Clean up stale NASCENT panels.
 
@@ -577,7 +577,7 @@ class InMemoryLifecycleManager(JennyLifecycleManagerBase):
     async def handle_memory_pressure(
         self,
         target_panel_count: int
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Handle memory pressure by dissolving low-priority panels.
 
@@ -656,7 +656,7 @@ class InMemoryLifecycleManager(JennyLifecycleManagerBase):
     # Utility Methods
     # ========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get lifecycle manager statistics.
 
@@ -677,7 +677,7 @@ class InMemoryLifecycleManager(JennyLifecycleManagerBase):
             "ledger_enabled": self.spec_ledger is not None,
         }
 
-    async def get_session_panels(self, session_id: str) -> List[JennySpec]:
+    async def get_session_panels(self, session_id: str) -> list[JennySpec]:
         """
         Get all panels for a specific session.
 
@@ -698,7 +698,7 @@ class InMemoryLifecycleManager(JennyLifecycleManagerBase):
         self,
         session_id: str,
         trigger: DissolutionTrigger = DissolutionTrigger.ORPHAN
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Dissolve all panels in a session.
 
@@ -764,7 +764,7 @@ async def run_cleanup_loop(
 # ============================================================================
 
 def create_lifecycle_manager(
-    spec_ledger: Optional[SpecLedger] = None,
+    spec_ledger: SpecLedger | None = None,
     default_session_id: str = "default",
     max_active_panels: int = 100,
 ) -> InMemoryLifecycleManager:

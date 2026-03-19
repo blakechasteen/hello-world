@@ -10,13 +10,12 @@ Author: HoloLoom Team
 Date: November 15, 2025
 """
 
-from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
-from enum import Enum
 import re
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 from hololoom.voice.ar_context import ARContext, ARObjectType
-
 
 # ============================================================================
 # Intent Types
@@ -51,8 +50,8 @@ class Intent:
     """
     type: IntentType
     action: str
-    target: Optional[str] = None
-    parameters: Dict[str, Any] = None
+    target: str | None = None
+    parameters: dict[str, Any] = None
     confidence: float = 0.0
     raw_text: str = ""
 
@@ -60,7 +59,7 @@ class Intent:
         if self.parameters is None:
             self.parameters = {}
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
         return {
             "type": self.type.value,
@@ -109,10 +108,10 @@ class ElleAction:
         visual_data: Data for AR visualization
     """
     type: ElleActionType
-    target_object: Optional[str] = None
-    parameters: Dict[str, Any] = None
+    target_object: str | None = None
+    parameters: dict[str, Any] = None
     voice_response: str = ""
-    visual_data: Dict[str, Any] = None
+    visual_data: dict[str, Any] = None
 
     def __post_init__(self):
         if self.parameters is None:
@@ -120,7 +119,7 @@ class ElleAction:
         if self.visual_data is None:
             self.visual_data = {}
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
         return {
             "type": self.type.value,
@@ -310,7 +309,7 @@ class CommandRouter:
         # Fallback to first word
         return words[0] if words else "unknown"
 
-    def _resolve_target(self, text: str, ar_context: ARContext) -> Optional[str]:
+    def _resolve_target(self, text: str, ar_context: ARContext) -> str | None:
         """
         Resolve target object from text using AR context.
 
@@ -367,7 +366,7 @@ class CommandRouter:
         # No target resolved
         return None
 
-    def _extract_object_type(self, text: str) -> Optional[ARObjectType]:
+    def _extract_object_type(self, text: str) -> ARObjectType | None:
         """Extract object type from text."""
         if "hive" in text or "beehive" in text:
             return ARObjectType.BEEHIVE
@@ -379,7 +378,7 @@ class CommandRouter:
             return ARObjectType.MARKER
         return None
 
-    def _extract_parameters(self, text: str, intent_type: IntentType) -> Dict[str, Any]:
+    def _extract_parameters(self, text: str, intent_type: IntentType) -> dict[str, Any]:
         """Extract additional parameters from text."""
         params = {}
 
@@ -407,7 +406,7 @@ class CommandRouter:
         self,
         text: str,
         intent_type: IntentType,
-        target: Optional[str]
+        target: str | None
     ) -> float:
         """
         Calculate confidence score for intent classification.
@@ -478,7 +477,7 @@ class CommandRouter:
 
         return "I'm processing your request."
 
-    def _generate_visual_data(self, intent: Intent, ar_context: ARContext) -> Dict[str, Any]:
+    def _generate_visual_data(self, intent: Intent, ar_context: ARContext) -> dict[str, Any]:
         """Generate AR visualization data based on intent."""
         visual_data = {}
 

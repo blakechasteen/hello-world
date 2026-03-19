@@ -106,14 +106,14 @@ async def test_structured_llm():
     """Test structured output LLM"""
     print("\n4. Testing Structured Output LLM...")
 
-    from hololoom.apps.workflow_builder.llm_executor import execute_llm_agent
-
-    import os
     import json
+    import os
+
+    from hololoom.apps.workflow_builder.llm_executor import execute_llm_agent
 
     # Check if we have OpenAI API key
     if not os.getenv('OPENAI_API_KEY'):
-        print(f"   [WARN] Skipping (no OpenAI API key)")
+        print("   [WARN] Skipping (no OpenAI API key)")
         return True
 
     config = {
@@ -141,7 +141,7 @@ async def test_structured_llm():
         result = await execute_llm_agent('structured_llm', config, inputs)
 
         if 'error' in result:
-            print(f"   [WARN] Skipping (no API key)")
+            print("   [WARN] Skipping (no API key)")
             return True  # Don't fail test
 
         if result.get('valid'):

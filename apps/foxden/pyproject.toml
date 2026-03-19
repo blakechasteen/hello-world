@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "foxden"
+version = "0.1.0"
+description = "Agent-based software testing — a focus group on a chip"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+    "httpx>=0.24.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+web = ["playwright>=1.40.0"]
+ollama = []  # uses httpx
+anthropic = ["anthropic>=0.40.0"]
+hololoom = []  # assumes hololoom is importable
+all = ["foxden[web,anthropic]"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+foxden = "foxden.cli:main"

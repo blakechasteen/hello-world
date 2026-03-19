@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Unified Voice Agent
 
@@ -34,19 +35,17 @@ Example:
     >>> print(response)  # [HoloLoom response]
 """
 
-import asyncio
-from typing import Optional, Dict
 import logging
 
-from .voice_router import VoiceRouter
 from .voice_modes import VoiceMode
+from .voice_router import VoiceRouter
 
 # HoloLoom imports (graceful degradation)
 try:
-    from hololoom.voice.voice_agent import VoiceAgent
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
     from hololoom.config import Config
     from hololoom.protocols.types import Query
+    from hololoom.voice.voice_agent import VoiceAgent
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False
@@ -75,7 +74,7 @@ class UnifiedVoiceAgent:
 
     def __init__(
         self,
-        config: Optional[any] = None,
+        config: any | None = None,
         initial_mode: VoiceMode = VoiceMode.CONVERSATIONAL,
         enable_hololoom: bool = True,
         enable_elle: bool = True
@@ -110,9 +109,9 @@ class UnifiedVoiceAgent:
                    f"Elle={'✓' if self.elle_enabled else '✗'}")
 
         # Initialize components (deferred to initialize())
-        self.hololoom_agent: Optional[VoiceAgent] = None
-        self.elle_agent: Optional[VoiceAssistant] = None
-        self.orchestrator: Optional[WeavingOrchestrator] = None
+        self.hololoom_agent: VoiceAgent | None = None
+        self.elle_agent: VoiceAssistant | None = None
+        self.orchestrator: WeavingOrchestrator | None = None
 
         # Create router
         self.router = VoiceRouter(
@@ -199,7 +198,7 @@ class UnifiedVoiceAgent:
             logger.error(f"Failed to initialize Elle: {e}")
             self.elle_enabled = False
 
-    async def _hololoom_handler(self, text: str, context: Dict) -> str:
+    async def _hololoom_handler(self, text: str, context: dict) -> str:
         """
         Handler for conversational queries via HoloLoom.
 
@@ -225,7 +224,7 @@ class UnifiedVoiceAgent:
             logger.error(f"HoloLoom handler error: {e}")
             return f"Error processing query: {str(e)}"
 
-    async def _elle_handler(self, text: str, command_data: Dict) -> str:
+    async def _elle_handler(self, text: str, command_data: dict) -> str:
         """
         Handler for thread commands via Elle.
 
@@ -288,7 +287,7 @@ class UnifiedVoiceAgent:
         """Get current voice mode."""
         return self.router.current_mode
 
-    def get_status(self) -> Dict:
+    def get_status(self) -> dict:
         """
         Get agent status.
 

@@ -10,13 +10,12 @@ Author: HoloLoom Team
 Date: 2025-12-03
 """
 
-from typing import Dict, Any, List, Optional, Union
-import logging
 import asyncio
+import logging
+from typing import Any, Union
 
-from ..judgment import Concern, Voice, Judgment
+from ..judgment import Concern, Judgment, Voice
 from .base import BaseLens
-
 
 logger = logging.getLogger("hololoom.conscience.lenses.composite")
 
@@ -42,8 +41,8 @@ class CompositeLens:
 
     def __init__(
         self,
-        lenses: Optional[List[BaseLens]] = None,
-        voice_thresholds: Optional[Dict[Voice, float]] = None,
+        lenses: list[BaseLens] | None = None,
+        voice_thresholds: dict[Voice, float] | None = None,
     ):
         """
         Initialize a composite lens.
@@ -52,7 +51,7 @@ class CompositeLens:
             lenses: List of component lenses
             voice_thresholds: Custom thresholds for voice levels
         """
-        self._lenses: List[BaseLens] = lenses or []
+        self._lenses: list[BaseLens] = lenses or []
 
         # Default voice thresholds (can be customized)
         self._voice_thresholds = voice_thresholds or {
@@ -77,15 +76,15 @@ class CompositeLens:
         return "+".join(lens.category for lens in self._lenses)
 
     @property
-    def lenses(self) -> List[BaseLens]:
+    def lenses(self) -> list[BaseLens]:
         """List of component lenses."""
         return self._lenses.copy()
 
     async def examine(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Examine an action through all component lenses.
 
@@ -106,7 +105,7 @@ class CompositeLens:
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Collect all concerns
-        all_concerns: List[Concern] = []
+        all_concerns: list[Concern] = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 logger.error(
@@ -120,7 +119,7 @@ class CompositeLens:
     async def judge(
         self,
         action: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> Judgment:
         """
         Examine and produce a full Judgment.
@@ -156,7 +155,7 @@ class CompositeLens:
             },
         )
 
-    def _determine_voice(self, concerns: List[Concern]) -> Voice:
+    def _determine_voice(self, concerns: list[Concern]) -> Voice:
         """
         Determine voice level from concerns.
 
@@ -179,7 +178,7 @@ class CompositeLens:
 
     def _generate_summary(
         self,
-        concerns: List[Concern],
+        concerns: list[Concern],
         voice: Voice
     ) -> str:
         """Generate a human-readable summary."""
@@ -187,7 +186,7 @@ class CompositeLens:
             return "No concerns raised"
 
         # Group by category
-        by_category: Dict[str, int] = {}
+        by_category: dict[str, int] = {}
         for concern in concerns:
             by_category[concern.category] = by_category.get(concern.category, 0) + 1
 
@@ -205,7 +204,7 @@ class CompositeLens:
 
     def _generate_guidance(
         self,
-        concerns: List[Concern],
+        concerns: list[Concern],
         voice: Voice
     ) -> str:
         """Generate guidance based on voice level."""
@@ -229,8 +228,8 @@ class CompositeLens:
     async def learn(
         self,
         action: str,
-        context: Dict[str, Any],
-        outcome: Dict[str, Any]
+        context: dict[str, Any],
+        outcome: dict[str, Any]
     ) -> None:
         """
         Learn from the outcome across all component lenses.
@@ -279,7 +278,7 @@ class CompositeLens:
 
 def create_composite(
     *lenses: BaseLens,
-    voice_thresholds: Optional[Dict[Voice, float]] = None
+    voice_thresholds: dict[Voice, float] | None = None
 ) -> CompositeLens:
     """
     Factory function to create a composite lens.

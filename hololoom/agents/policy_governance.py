@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Policy & Governance System
 ==========================
@@ -27,12 +26,12 @@ Policies Control:
 5. Escalation rules (when to escalate to human)
 """
 
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional, Dict, Any, List, Set, Callable
-from datetime import datetime
-import json
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -69,10 +68,10 @@ class PolicyRule:
     rule_id: str
     name: str
     description: str
-    condition: Callable[[Dict[str, Any]], bool]
+    condition: Callable[[dict[str, Any]], bool]
     decision: PolicyDecision
     priority: int = 0  # Higher = more important
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -80,11 +79,11 @@ class GovernancePolicy:
     """Complete governance policy."""
     policy_id: str
     name: str
-    rules: List[PolicyRule]
+    rules: list[PolicyRule]
     default_decision: PolicyDecision = PolicyDecision.DENY
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def evaluate(self, context: Dict[str, Any]) -> tuple[PolicyDecision, str]:
+    def evaluate(self, context: dict[str, Any]) -> tuple[PolicyDecision, str]:
         """
         Evaluate policy against context.
 
@@ -120,7 +119,7 @@ class CommunicationRequest:
     topic: str
     content: str
     priority: Priority
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -133,7 +132,7 @@ class PolicyAuditEntry:
     reason: str
     policy_id: str
     enforced_by: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class RoleBasedAccessControl:
@@ -145,8 +144,8 @@ class RoleBasedAccessControl:
 
     def __init__(self):
         """Initialize RBAC."""
-        self.agent_roles: Dict[str, AgentRole] = {}
-        self.role_permissions: Dict[AgentRole, Set[str]] = {
+        self.agent_roles: dict[str, AgentRole] = {}
+        self.role_permissions: dict[AgentRole, set[str]] = {
             AgentRole.ADMIN: {"*"},  # All permissions
             AgentRole.COORDINATOR: {"query", "help_request", "insight"},
             AgentRole.WORKER: {"query", "answer"},
@@ -183,7 +182,7 @@ class RoleBasedAccessControl:
 
         # Admin has all permissions
         if "*" in permissions:
-            return True, f"Admin role"
+            return True, "Admin role"
 
         # Check specific permission
         if permission in permissions:
@@ -246,9 +245,9 @@ class TopicGovernance:
 
     def __init__(self):
         """Initialize topic governance."""
-        self.allowed_topics: Set[str] = set()
-        self.forbidden_topics: Set[str] = set()
-        self.restricted_topics: Dict[str, Set[str]] = {}  # topic → allowed agents
+        self.allowed_topics: set[str] = set()
+        self.forbidden_topics: set[str] = set()
+        self.restricted_topics: dict[str, set[str]] = {}  # topic → allowed agents
 
     def allow_topic(self, topic: str) -> None:
         """Allow topic globally."""
@@ -260,7 +259,7 @@ class TopicGovernance:
         self.forbidden_topics.add(topic.lower())
         logger.info(f"Topic forbidden: {topic}")
 
-    def restrict_topic(self, topic: str, allowed_agents: List[str]) -> None:
+    def restrict_topic(self, topic: str, allowed_agents: list[str]) -> None:
         """Restrict topic to specific agents."""
         self.restricted_topics[topic.lower()] = set(allowed_agents)
         logger.info(f"Topic restricted: {topic} → {allowed_agents}")
@@ -320,12 +319,12 @@ class PolicyEngine:
         """
         self.rbac = rbac
         self.topic_governance = topic_governance
-        self.policies: Dict[str, GovernancePolicy] = {}
-        self.audit_log: List[PolicyAuditEntry] = []
+        self.policies: dict[str, GovernancePolicy] = {}
+        self.audit_log: list[PolicyAuditEntry] = []
 
         # Callbacks
-        self.on_decision: Optional[Callable[[PolicyDecision, str], None]] = None
-        self.on_escalation: Optional[Callable[[CommunicationRequest, str], None]] = None
+        self.on_decision: Callable[[PolicyDecision, str], None] | None = None
+        self.on_escalation: Callable[[CommunicationRequest, str], None] | None = None
 
     def register_policy(self, policy: GovernancePolicy) -> None:
         """Register governance policy."""
@@ -434,9 +433,9 @@ class PolicyEngine:
 
     def get_audit_trail(
         self,
-        from_agent: Optional[str] = None,
+        from_agent: str | None = None,
         limit: int = 100
-    ) -> List[PolicyAuditEntry]:
+    ) -> list[PolicyAuditEntry]:
         """
         Get audit trail.
 
@@ -454,7 +453,7 @@ class PolicyEngine:
 
         return entries[-limit:]
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get policy statistics."""
         total = len(self.audit_log)
         if total == 0:

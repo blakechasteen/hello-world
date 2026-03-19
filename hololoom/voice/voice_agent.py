@@ -16,11 +16,13 @@ Date: November 15, 2025
 import asyncio
 import io
 import time
-import numpy as np
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
-from typing import Optional, AsyncGenerator, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any
+
+import numpy as np
 
 # Structured logging
 try:
@@ -59,9 +61,9 @@ except ImportError:
 
 # HoloLoom imports
 try:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
-    from hololoom.protocols.types import Query, ModalityType
     from hololoom.memory.graph import KG, KGEdge
+    from hololoom.protocols.types import ModalityType, Query
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False
@@ -78,12 +80,12 @@ class ConversationTurn:
     speaker: str  # 'user' or 'agent'
     text: str
     timestamp: float
-    intent: Optional[str] = None
-    confidence: Optional[float] = None
-    tool_used: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    intent: str | None = None
+    confidence: float | None = None
+    tool_used: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'speaker': self.speaker,
             'text': self.text,
@@ -147,7 +149,7 @@ class VoiceActivityDetector:
                 logger.error("vad_error", error=str(e))
             return False
 
-    def get_speech_segments(self, audio_stream: np.ndarray) -> List[tuple]:
+    def get_speech_segments(self, audio_stream: np.ndarray) -> list[tuple]:
         """
         Extract speech segments from audio stream
 
@@ -222,7 +224,7 @@ class TurnTakingManager:
                 silence_threshold=silence_threshold,
                 vad_available=self.vad is not None)
 
-    def update(self, audio_frame: np.ndarray, timestamp: float) -> Optional[str]:
+    def update(self, audio_frame: np.ndarray, timestamp: float) -> str | None:
         """
         Update turn state based on audio input
 
@@ -334,7 +336,7 @@ class OpenAITTS(TTSProvider):
     - 6 voices available
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         if not OPENAI_AVAILABLE:
             raise ImportError("openai not available - install: pip install openai")
 
@@ -479,7 +481,7 @@ class ConversationMemory:
     Long-term: Stored in HoloLoom Yarn Graph
     """
 
-    def __init__(self, max_turns: int = 20, kg_store: Optional[Any] = None):
+    def __init__(self, max_turns: int = 20, kg_store: Any | None = None):
         """
         Args:
             max_turns: Maximum turns to keep in short-term memory
@@ -487,7 +489,7 @@ class ConversationMemory:
         """
         self.max_turns = max_turns
         self.kg_store = kg_store
-        self.turns: List[ConversationTurn] = []
+        self.turns: list[ConversationTurn] = []
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         if STRUCTLOG_AVAILABLE:
@@ -532,7 +534,7 @@ class ConversationMemory:
 
         return "\n".join(context_lines)
 
-    def get_turns(self, n: Optional[int] = None) -> List[ConversationTurn]:
+    def get_turns(self, n: int | None = None) -> list[ConversationTurn]:
         """Get recent turns"""
         if n is None:
             return self.turns
@@ -570,7 +572,7 @@ class ConversationMemory:
             if STRUCTLOG_AVAILABLE:
                 logger.error("kg_storage_failed", error=str(e))
 
-    def export_session(self) -> Dict[str, Any]:
+    def export_session(self) -> dict[str, Any]:
         """Export full session for archival"""
         return {
             'session_id': self.session_id,
@@ -598,8 +600,8 @@ class VoiceAgent:
 
     def __init__(
         self,
-        orchestrator: Optional[Any] = None,
-        tts_provider: Optional[TTSProvider] = None,
+        orchestrator: Any | None = None,
+        tts_provider: TTSProvider | None = None,
         agent_name: str = "Elle",
         voice: str = "nova",
         turn_mode: str = "hybrid"
@@ -728,7 +730,7 @@ class VoiceAgent:
     async def listen_and_respond(
         self,
         audio_stream: AsyncGenerator,
-        max_duration: Optional[float] = None
+        max_duration: float | None = None
     ):
         """
         Main voice interaction loop
@@ -750,7 +752,7 @@ class VoiceAgent:
                 max_duration=max_duration)
         else:
             print(f"\n🎤 {self.agent_name} is ready to chat!")
-            print(f"⏹️  Press Ctrl+C to stop\n")
+            print("⏹️  Press Ctrl+C to stop\n")
 
         try:
             async for chunk in audio_stream:
@@ -811,7 +813,7 @@ class VoiceAgent:
             if STRUCTLOG_AVAILABLE:
                 logger.info("session_interrupted_by_user")
             else:
-                print(f"\n⏹️  Stopped by user")
+                print("\n⏹️  Stopped by user")
 
         finally:
             await self._finalize_session()

@@ -33,140 +33,121 @@ Public API:
 - Factory functions: create_*
 """
 
-from hololoom.context.classifier import (
-    QueryClassifier,
-    BackendSelection,
-    Backend,
-    ConfidenceTier,
-    create_classifier
-)
-
-from hololoom.context.bandit import (
-    ThompsonBandit,
-    BanditArm,
-    create_thompson_bandit
-)
-
-from hololoom.context.router import (
-    QueryRouter,
-    RoutingPattern,
-    RoutingResult,
-    create_query_router
-)
+from hololoom.context.bandit import BanditArm, ThompsonBandit, create_thompson_bandit
 
 # Part 4: Learning Mechanisms
 from hololoom.context.calibration import (
-    ConfidenceCalibrator,
-    CalibrationObservation,
     CalibrationCurve,
-    create_confidence_calibrator
+    CalibrationObservation,
+    ConfidenceCalibrator,
+    create_confidence_calibrator,
 )
-
-from hololoom.context.learning_tracker import (
-    LearningTracker,
-    RoutingEvent,
-    PerformanceMetrics,
-    create_learning_tracker
+from hololoom.context.circuit_breaker import (
+    # Circuit Breaker
+    CircuitBreaker,
+    # Configuration
+    CircuitBreakerConfig,
+    CircuitBreakerRegistry,
+    # States
+    CircuitState,
+    # Factory
+    create_circuit_breaker,
+    create_circuit_breaker_registry,
 )
-
-from hololoom.context.strategy_updater import (
-    StrategyUpdater,
-    StrategyUpdate,
-    create_strategy_updater
+from hololoom.context.classifier import (
+    Backend,
+    BackendSelection,
+    ConfidenceTier,
+    QueryClassifier,
+    create_classifier,
 )
 
 # Part 5: Production Hardening
 from hololoom.context.error_handling import (
-    # Exceptions
-    ContextError,
-    RoutingError,
     BackendError,
     CalibrationError,
-    LearningError,
-    RateLimitExceededError,
     CircuitBreakerOpenError,
+    # Exceptions
+    ContextError,
     # Categorization
     ErrorCategory,
-    categorize_error,
-    is_retryable,
-    should_fallback,
-    # Retry
-    RetryConfig,
-    retry,
-    # Fallback
-    FallbackStrategy,
     # Handler
     ErrorHandler,
-    create_error_handler
+    # Fallback
+    FallbackStrategy,
+    LearningError,
+    RateLimitExceededError,
+    # Retry
+    RetryConfig,
+    RoutingError,
+    categorize_error,
+    create_error_handler,
+    is_retryable,
+    retry,
+    should_fallback,
 )
-
+from hololoom.context.health_check import (
+    # Results
+    ComponentCheck,
+    # Checker
+    HealthChecker,
+    HealthCheckResult,
+    # Status
+    HealthStatus,
+    create_health_checker,
+)
+from hololoom.context.learning_tracker import (
+    LearningTracker,
+    PerformanceMetrics,
+    RoutingEvent,
+    create_learning_tracker,
+)
 from hololoom.context.monitoring import (
+    LearningMetricsMonitor,
     # Monitors
     PerformanceMonitor,
     ResourceMonitor,
-    LearningMetricsMonitor,
     SystemMonitor,
     # Factory
-    create_system_monitor
+    create_system_monitor,
 )
-
-from hololoom.context.circuit_breaker import (
-    # States
-    CircuitState,
-    # Configuration
-    CircuitBreakerConfig,
-    # Circuit Breaker
-    CircuitBreaker,
-    CircuitBreakerRegistry,
-    # Factory
-    create_circuit_breaker,
-    create_circuit_breaker_registry
-)
-
-from hololoom.context.rate_limiter import (
-    # Types
-    RateLimiterType,
-    # Configuration
-    RateLimiterConfig,
-    # Rate Limiters
-    TokenBucketRateLimiter,
-    SlidingWindowRateLimiter,
-    ConcurrentLimiter,
-    RateLimiter,
-    # Factory
-    create_rate_limiter,
-    create_token_bucket_limiter,
-    create_sliding_window_limiter,
-    create_concurrent_limiter
-)
-
+from hololoom.context.production_config import CircuitBreakerConfig as ConfigCircuitBreakerConfig
 from hololoom.context.production_config import (
     # Environment
     Environment,
+    ErrorHandlingConfig,
+    LearningConfig,
+    MonitoringConfig,
     # Configurations
     ProductionConfig,
-    MonitoringConfig,
-    ErrorHandlingConfig,
-    CircuitBreakerConfig as ConfigCircuitBreakerConfig,
-    RateLimitConfig as ConfigRateLimitConfig,
     ResourceConfig,
-    LearningConfig,
     # Factory
     create_config,
-    detect_environment
+    detect_environment,
 )
-
-from hololoom.context.health_check import (
-    # Status
-    HealthStatus,
-    # Results
-    ComponentCheck,
-    HealthCheckResult,
-    # Checker
-    HealthChecker,
-    create_health_checker
+from hololoom.context.production_config import RateLimitConfig as ConfigRateLimitConfig
+from hololoom.context.rate_limiter import (
+    ConcurrentLimiter,
+    RateLimiter,
+    # Configuration
+    RateLimiterConfig,
+    # Types
+    RateLimiterType,
+    SlidingWindowRateLimiter,
+    # Rate Limiters
+    TokenBucketRateLimiter,
+    create_concurrent_limiter,
+    # Factory
+    create_rate_limiter,
+    create_sliding_window_limiter,
+    create_token_bucket_limiter,
 )
-
+from hololoom.context.router import QueryRouter, RoutingPattern, RoutingResult, create_query_router
+from hololoom.context.strategy_updater import (
+    StrategyUpdate,
+    StrategyUpdater,
+    create_strategy_updater,
+)
 
 __all__ = [
     # Classifier

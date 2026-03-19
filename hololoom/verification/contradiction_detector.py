@@ -14,9 +14,9 @@ true semantic understanding of contradictions.
 Created: 2025-12-05
 """
 
-import re
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+import re
+from typing import Any
 
 from hololoom.verification.protocol import (
     Contradiction,
@@ -63,7 +63,7 @@ TEMPORAL_PATTERNS = [
 ]
 
 
-def extract_numbers(text: str) -> List[float]:
+def extract_numbers(text: str) -> list[float]:
     """Extract all numbers from text."""
     matches = re.findall(r'(\d+(?:\.\d+)?)', text)
     return [float(m) for m in matches]
@@ -78,7 +78,7 @@ def has_negation(text: str) -> bool:
     return False
 
 
-def extract_key_entities(text: str) -> List[str]:
+def extract_key_entities(text: str) -> list[str]:
     """Extract key entities/concepts from text."""
     # Remove common words
     stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been',
@@ -91,8 +91,7 @@ def extract_key_entities(text: str) -> List[str]:
                   'and', 'but', 'or', 'nor', 'so', 'yet', 'both', 'either',
                   'neither', 'not', 'only', 'own', 'same', 'than', 'too',
                   'very', 'just', 'also', 'now', 'here', 'there', 'when',
-                  'where', 'why', 'how', 'all', 'each', 'every', 'both',
-                  'few', 'more', 'most', 'other', 'some', 'such', 'no',
+                  'where', 'why', 'how', 'all', 'each', 'every', 'few', 'more', 'most', 'other', 'some', 'such', 'no',
                   'any', 'that', 'this', 'these', 'those', 'it', 'its'}
 
     words = re.findall(r'\b[A-Za-z]+\b', text)
@@ -130,14 +129,14 @@ class RuleBasedContradictionDetector:
     - Semantic dissimilarity (low word overlap with negation)
     """
 
-    def __init__(self, config: Optional[VerificationConfig] = None):
+    def __init__(self, config: VerificationConfig | None = None):
         self.config = config or VerificationConfig()
 
     async def detect(
         self,
         claim: VerifiableClaim,
-        answers: List[VerificationAnswer]
-    ) -> List[Contradiction]:
+        answers: list[VerificationAnswer]
+    ) -> list[Contradiction]:
         """Detect contradictions using rule-based analysis."""
         contradictions = []
 
@@ -153,7 +152,7 @@ class RuleBasedContradictionDetector:
         self,
         claim: VerifiableClaim,
         answer: VerificationAnswer
-    ) -> Optional[Contradiction]:
+    ) -> Contradiction | None:
         """Check for contradiction between claim and answer."""
         claim_text = claim.text.lower()
         answer_text = answer.answer.lower()
@@ -198,7 +197,7 @@ class RuleBasedContradictionDetector:
         self,
         claim: str,
         answer: str
-    ) -> Optional[Tuple[str, float]]:
+    ) -> tuple[str, float] | None:
         """Check if answer negates the claim."""
         claim_has_negation = has_negation(claim)
         answer_has_negation = has_negation(answer)
@@ -225,7 +224,7 @@ class RuleBasedContradictionDetector:
         self,
         claim: str,
         answer: str
-    ) -> Optional[Tuple[str, float]]:
+    ) -> tuple[str, float] | None:
         """Check for contradicting numbers."""
         claim_numbers = extract_numbers(claim)
         answer_numbers = extract_numbers(answer)
@@ -283,7 +282,7 @@ class RuleBasedContradictionDetector:
         self,
         claim: str,
         answer: str
-    ) -> Optional[Tuple[str, float]]:
+    ) -> tuple[str, float] | None:
         """Check for explicit disagreement markers."""
         disagreement_phrases = [
             'is false',
@@ -347,8 +346,8 @@ class LLMContradictionDetector:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.llm_client = llm_client
@@ -357,8 +356,8 @@ class LLMContradictionDetector:
     async def detect(
         self,
         claim: VerifiableClaim,
-        answers: List[VerificationAnswer]
-    ) -> List[Contradiction]:
+        answers: list[VerificationAnswer]
+    ) -> list[Contradiction]:
         """Detect contradictions using LLM analysis."""
         if self.llm_client is None:
             logger.warning("No LLM client available, falling back to rule-based detection")
@@ -383,7 +382,7 @@ class LLMContradictionDetector:
         self,
         claim: VerifiableClaim,
         answer: VerificationAnswer
-    ) -> Optional[Contradiction]:
+    ) -> Contradiction | None:
         """Analyze single claim-answer pair for contradiction."""
         prompt = CONTRADICTION_PROMPT.format(
             claim=claim.text,
@@ -412,7 +411,7 @@ class LLMContradictionDetector:
         response: str,
         claim: VerifiableClaim,
         answer: VerificationAnswer
-    ) -> Optional[Contradiction]:
+    ) -> Contradiction | None:
         """Parse LLM response into Contradiction."""
         import json
 
@@ -463,8 +462,8 @@ class HybridContradictionDetector:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.rule_detector = RuleBasedContradictionDetector(config)
@@ -473,8 +472,8 @@ class HybridContradictionDetector:
     async def detect(
         self,
         claim: VerifiableClaim,
-        answers: List[VerificationAnswer]
-    ) -> List[Contradiction]:
+        answers: list[VerificationAnswer]
+    ) -> list[Contradiction]:
         """
         Detect contradictions using hybrid approach.
 
@@ -497,9 +496,9 @@ class HybridContradictionDetector:
 
     def _merge_contradictions(
         self,
-        rule_results: List[Contradiction],
-        llm_results: List[Contradiction]
-    ) -> List[Contradiction]:
+        rule_results: list[Contradiction],
+        llm_results: list[Contradiction]
+    ) -> list[Contradiction]:
         """Merge contradictions from both sources."""
         # Use LLM results as primary (more accurate)
         merged = list(llm_results)
@@ -535,8 +534,8 @@ class SemanticContradictionDetector:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        embedder: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        embedder: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.embedder = embedder
@@ -545,8 +544,8 @@ class SemanticContradictionDetector:
     async def detect(
         self,
         claim: VerifiableClaim,
-        answers: List[VerificationAnswer]
-    ) -> List[Contradiction]:
+        answers: list[VerificationAnswer]
+    ) -> list[Contradiction]:
         """Detect contradictions using semantic similarity."""
         if self.embedder is None:
             return await self._fallback.detect(claim, answers)
@@ -579,7 +578,7 @@ class SemanticContradictionDetector:
 
         return contradictions
 
-    async def _get_embedding(self, text: str) -> List[float]:
+    async def _get_embedding(self, text: str) -> list[float]:
         """Get embedding for text."""
         if hasattr(self.embedder, 'embed'):
             return await self.embedder.embed(text)
@@ -591,7 +590,7 @@ class SemanticContradictionDetector:
         else:
             raise ValueError(f"Unknown embedder type: {type(self.embedder)}")
 
-    def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
+    def _cosine_similarity(self, vec1: list[float], vec2: list[float]) -> float:
         """Calculate cosine similarity."""
         dot_product = sum(a * b for a, b in zip(vec1, vec2))
         norm1 = sum(a * a for a in vec1) ** 0.5
@@ -648,9 +647,9 @@ class SemanticContradictionDetector:
 # =============================================================================
 
 def create_contradiction_detector(
-    config: Optional[VerificationConfig] = None,
-    llm_client: Optional[Any] = None,
-    embedder: Optional[Any] = None,
+    config: VerificationConfig | None = None,
+    llm_client: Any | None = None,
+    embedder: Any | None = None,
 ) -> ContradictionDetectorProtocol:
     """
     Create appropriate contradiction detector based on configuration.

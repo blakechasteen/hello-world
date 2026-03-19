@@ -18,7 +18,6 @@ Date: December 2025
 """
 
 import asyncio
-from typing import List, Tuple
 
 
 def start_repl(**kwargs) -> None:
@@ -42,7 +41,7 @@ async def _repl_main(**kwargs) -> None:
     print()
 
     # Track conversation history
-    history: List[Tuple[str, str]] = []
+    history: list[tuple[str, str]] = []
 
     async with HoloLoomLite() as loom:
         print("  Ready! Type your first query.\n")
@@ -154,7 +153,7 @@ Regular input is treated as a query and will:
 """)
 
 
-def _print_history(history: List[Tuple[str, str]]):
+def _print_history(history: list[tuple[str, str]]):
     """Print conversation history."""
     if not history:
         print("No history yet.")

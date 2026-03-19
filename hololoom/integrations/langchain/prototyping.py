@@ -17,9 +17,6 @@ Date: 2025-11-20
 """
 
 import asyncio
-from typing import Optional, List, Dict, Any
-from pathlib import Path
-import sys
 
 try:
     from .document_loaders import UniversalDocumentLoader
@@ -101,9 +98,9 @@ class HoloLoomCLI:
 
         if provider == "auto":
             self.llm = create_best_available_llm()
-            print(f"   ✅ Using best available LLM\n")
+            print("   ✅ Using best available LLM\n")
         else:
-            model = self._prompt(f"Model name (or Enter for default)")
+            model = self._prompt("Model name (or Enter for default)")
             if model:
                 self.llm = MultiProviderLLM(provider=provider, model=model)
             else:
@@ -125,7 +122,7 @@ class HoloLoomCLI:
             print(f"   ✅ {store_type.upper()} vector store initialized\n")
         except Exception as e:
             print(f"   ⚠️  Vector store error: {e}")
-            print(f"   Falling back to in-memory\n")
+            print("   Falling back to in-memory\n")
             self.vector_store = VectorStoreFactory(store_type="faiss")
 
         print("✅ Setup complete!\n")
@@ -211,7 +208,7 @@ class HoloLoomCLI:
             if self.hololoom:
                 for shard in shards:
                     await self.hololoom.experience(shard.content)
-                print(f"   ✅ Added to HoloLoom memory")
+                print("   ✅ Added to HoloLoom memory")
 
             # Add to vector store
             if self.vector_store:
@@ -272,7 +269,7 @@ class HoloLoomCLI:
         print("  help            - Show this help")
         print("  exit            - Exit CLI\n")
 
-    def _prompt(self, message: str, default: Optional[str] = None) -> str:
+    def _prompt(self, message: str, default: str | None = None) -> str:
         """Prompt user for input."""
         if default:
             response = input(f"   {message} [{default}]: ").strip()

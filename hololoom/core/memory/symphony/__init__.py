@@ -17,16 +17,16 @@ Date: 2025-11-22
 
 # Protocol exports (always available)
 from .protocol import (
-    MemoryStrategy,
-    MemorySystem,
-    MemoryQuery,
-    MemoryResult,
+    CoordinationPlan,
+    MemoryConductorProtocol,
     MemoryCoordinationResult,
     MemoryPerformanceMetrics,
-    MemoryConductorProtocol,
+    MemoryQuery,
+    MemoryResult,
+    MemoryStrategy,
+    MemorySystem,
     MemorySystemProtocol,
     StrategySelectionCriteria,
-    CoordinationPlan,
 )
 
 __all__ = [

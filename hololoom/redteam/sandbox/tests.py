@@ -8,25 +8,23 @@ Author: CARTS Team
 Date: December 5, 2025
 """
 
-import pytest
 import asyncio
-import time
-from typing import List
+
+import pytest
 
 from hololoom.redteam.sandbox import (
-    SandboxMode,
-    SandboxConfig,
-    SandboxResult,
+    ResourceMonitor,
     ResourceSample,
     ResourceSummary,
-    ResourceMonitor,
+    SandboxConfig,
+    SandboxMode,
+    SandboxResult,
 )
 from hololoom.redteam.sandbox.protocols import (
-    validate_sandbox_config,
     get_sandbox_mode_availability,
     select_best_sandbox_mode,
+    validate_sandbox_config,
 )
-
 
 # =============================================================================
 # Configuration Tests (8 tests)

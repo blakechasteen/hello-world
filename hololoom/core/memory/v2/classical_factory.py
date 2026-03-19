@@ -14,22 +14,21 @@ Usage:
     orchestrator = MatryoshkaOrchestrator(..., sources=sources)
 """
 
-from typing import Optional
 
 from .activation import ActivationAdapter
-from .knowledge_source import SourceRegistry
-from .tms import TruthMaintenanceSystem, TMSConfig
+from .cbr import CBRConfig, CBRSystem
 from .chunk_compiler import ChunkCompiler, ChunkConfig
-from .cbr import CBRSystem, CBRConfig
-from .demons import DemonSystem, DemonConfig
+from .demons import DemonConfig, DemonSystem
+from .knowledge_source import SourceRegistry
+from .tms import TMSConfig, TruthMaintenanceSystem
 
 
 def create_classical_sources(
-    activation_adapter: Optional[ActivationAdapter] = None,
-    tms_config: Optional[TMSConfig] = None,
-    chunk_config: Optional[ChunkConfig] = None,
-    cbr_config: Optional[CBRConfig] = None,
-    demon_config: Optional[DemonConfig] = None,
+    activation_adapter: ActivationAdapter | None = None,
+    tms_config: TMSConfig | None = None,
+    chunk_config: ChunkConfig | None = None,
+    cbr_config: CBRConfig | None = None,
+    demon_config: DemonConfig | None = None,
     activation_threshold: float = 0.1,
 ) -> SourceRegistry:
     """Create a SourceRegistry with all classical AI knowledge sources.

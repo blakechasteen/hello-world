@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 HoloLoom Agentic Intelligence Core
 ===================================
@@ -16,29 +17,27 @@ Integration Points:
 - Extends action_items for goal tracking
 """
 
-import asyncio
 import logging
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any
-from enum import Enum
-from datetime import datetime
 import uuid
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Optional
 
-from hololoom.protocols.types import Query, Context, MemoryShard
-from hololoom.fabric.spacetime import Spacetime, WeavingTrace
-from hololoom.weaving_orchestrator import WeavingOrchestrator
-from hololoom.recursive import FullLearningEngine, ActionItemTracker, ActionStatus
 from hololoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.protocols.types import MemoryShard, Query
+from hololoom.recursive import ActionItemTracker, ActionStatus, FullLearningEngine
 
 # Deception Detection (Dec 2025) - E1.3 Alignment Enrichment
 try:
     from hololoom.alignment.deception_detection import (
-        DeceptionDetector,
+        ActionObservation,
         BehavioralProbe,
-        ProbeType,
+        DeceptionDetector,
         DeceptionSignal,
         GoalStatement,
-        ActionObservation,
+        ProbeType,
     )
     DECEPTION_AVAILABLE = True
 except ImportError:
@@ -53,12 +52,12 @@ except ImportError:
 # Instrumental Convergence Prevention (Dec 2025) - E1.4 Alignment Enrichment
 try:
     from hololoom.alignment.instrumental_convergence import (
-        InstrumentalConvergenceGuard,
-        ResourceType,
-        ResourceBounds,
         AutonomyLimit,
-        ResourceViolation,
+        InstrumentalConvergenceGuard,
         PowerSeekingIndicators,
+        ResourceBounds,
+        ResourceType,
+        ResourceViolation,
         create_guard,
     )
     CONVERGENCE_AVAILABLE = True
@@ -132,15 +131,15 @@ class AgenticIntent:
     intent_id: str
     original_query: str
     goal: str
-    sub_goals: List[str] = field(default_factory=list)
-    evidence_gathered: List[str] = field(default_factory=list)
+    sub_goals: list[str] = field(default_factory=list)
+    evidence_gathered: list[str] = field(default_factory=list)
     confidence_threshold: float = 0.85
     max_verification_loops: int = 3
 
     # Tracking
     created_at: datetime = field(default_factory=datetime.now)
     status: ActionStatus = ActionStatus.PENDING
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -148,13 +147,13 @@ class VerificationResult:
     """Result of verification loop."""
     verified: bool
     confidence: float
-    contradictions: List[str]
-    supporting_evidence: List[str]
-    suggested_refinements: List[str]
+    contradictions: list[str]
+    supporting_evidence: list[str]
+    suggested_refinements: list[str]
 
     # Provenance
-    verification_queries: List[str]
-    sources_checked: List[str]
+    verification_queries: list[str]
+    sources_checked: list[str]
 
 
 @dataclass
@@ -163,17 +162,17 @@ class AgenticResult:
     spacetime: Spacetime
     intent: AgenticIntent
     reasoning_mode: ReasoningMode
-    verification: Optional[VerificationResult] = None
+    verification: VerificationResult | None = None
 
     # Multi-step tracking
-    steps_taken: List[Dict[str, Any]] = field(default_factory=list)
+    steps_taken: list[dict[str, Any]] = field(default_factory=list)
     total_queries: int = 0
     total_duration_ms: float = 0.0
 
     # Consciousness Integration - Phase 1 (Nov 2025)
     # Epistemic confidence aggregated across all reasoning steps
     # Tracks system's self-awareness of knowledge gaps throughout multi-query reasoning
-    aggregated_epistemic_confidence: Optional[float] = None
+    aggregated_epistemic_confidence: float | None = None
 
 
 # ============================================================================
@@ -201,13 +200,13 @@ class AgenticOrchestrator:
     def __init__(
         self,
         learning_engine: FullLearningEngine,
-        audit_trail: Optional[AuditTrail] = None,
+        audit_trail: AuditTrail | None = None,
         enable_verification: bool = True,
         enable_goal_tracking: bool = True,
-        llm: Optional[Any] = None,  # LLM for intelligent query generation
-        awareness_layer: Optional[Any] = None,  # Consciousness Integration - Phase 1 (Nov 2025)
+        llm: Any | None = None,  # LLM for intelligent query generation
+        awareness_layer: Any | None = None,  # Consciousness Integration - Phase 1 (Nov 2025)
         epistemic_threshold: float = 0.3,  # Early stopping threshold for epistemic confidence
-        monitor: Optional[Any] = None,  # Agent Monitor for real-time tracking (Nov 2025)
+        monitor: Any | None = None,  # Agent Monitor for real-time tracking (Nov 2025)
         safety_adapter: Optional['AgenticSafetyAdapter'] = None,  # Safety Integration (Dec 2025)
         enable_safety: bool = True,  # Safe by default - MRF ELEGANCE principle
         conscience_adapter: Optional['AgenticConscienceAdapter'] = None,  # Conscience Integration (Dec 2025)
@@ -339,8 +338,8 @@ class AgenticOrchestrator:
         intent: 'AgenticIntent',
         step_action: str,
         step_type: str,
-        actions_so_far: List[str]
-    ) -> Optional[Dict[str, Any]]:
+        actions_so_far: list[str]
+    ) -> dict[str, Any] | None:
         """
         Check for instrumental convergence patterns during multi-step reasoning.
 
@@ -466,7 +465,7 @@ class AgenticOrchestrator:
         step_action: str,
         step_result: Any,
         step_type: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Check for potential deceptive behavior during multi-step reasoning.
 
@@ -568,7 +567,7 @@ class AgenticOrchestrator:
         self,
         query: Query,
         mode: ReasoningMode
-    ) -> Optional[SafetyGateDecision]:
+    ) -> SafetyGateDecision | None:
         """
         Gate reasoning through safety evaluation.
 
@@ -630,7 +629,7 @@ class AgenticOrchestrator:
         step_type: 'StepType',
         step_index: int,
         parent_decision: Optional['ConscienceDecision'] = None,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> Optional['ConscienceDecision']:
         """
         Gate individual reasoning step through conscience evaluation.
@@ -955,7 +954,7 @@ Please provide a clear and concise answer based on the context above."""
         # Agent Monitoring: Feed update
         if self.monitor:
             try:
-                await self.monitor.agent_feed(agent_id, f"Initial answer...", f"Query: {query.text[:50]}")
+                await self.monitor.agent_feed(agent_id, "Initial answer...", f"Query: {query.text[:50]}")
             except Exception:
                 pass
 
@@ -1385,7 +1384,7 @@ Please provide a clear and concise answer based on the context above."""
     # Helper Methods
     # ========================================================================
 
-    def _extract_epistemic_confidence(self, spacetime: Spacetime) -> Optional[float]:
+    def _extract_epistemic_confidence(self, spacetime: Spacetime) -> float | None:
         """
         Extract epistemic confidence from spacetime metadata.
 
@@ -1421,7 +1420,7 @@ Please provide a clear and concise answer based on the context above."""
     def _should_stop_early(
         self,
         current_step: int,
-        epistemic_confidences: List[float],
+        epistemic_confidences: list[float],
         max_steps: int
     ) -> bool:
         """
@@ -1456,8 +1455,8 @@ Please provide a clear and concise answer based on the context above."""
 
     def _aggregate_epistemic_confidence(
         self,
-        epistemic_confidences: List[float]
-    ) -> Optional[float]:
+        epistemic_confidences: list[float]
+    ) -> float | None:
         """
         Aggregate epistemic confidence across all reasoning steps.
 
@@ -1512,7 +1511,7 @@ Please provide a clear and concise answer based on the context above."""
         self,
         query: Query,
         spacetime: Spacetime
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate queries to verify initial answer."""
         # Extract key claims from response
         response = spacetime.metadata.get("response", "")
@@ -1530,10 +1529,10 @@ Please provide a clear and concise answer based on the context above."""
         self,
         original_query: Query,
         initial_result: Spacetime,
-        verification_queries: List[str],
+        verification_queries: list[str],
         max_loops: int,
-        steps: List[Dict],
-        epistemic_confidences: List[float],  # Consciousness Integration - Phase 1 (Nov 2025)
+        steps: list[dict],
+        epistemic_confidences: list[float],  # Consciousness Integration - Phase 1 (Nov 2025)
         intent: Optional['AgenticIntent'] = None  # Deception Detection - E1.3 (Dec 2025)
     ) -> VerificationResult:
         """Execute verification loops with epistemic tracking, deception detection, and convergence prevention."""
@@ -1661,8 +1660,8 @@ Please provide a clear and concise answer based on the context above."""
         self,
         query: Query,
         max_queries: int,
-        initial_findings: Optional[str] = None
-    ) -> List[str]:
+        initial_findings: str | None = None
+    ) -> list[str]:
         """
         Generate research queries using LLM for intelligent exploration.
 
@@ -1737,7 +1736,7 @@ Questions:"""
 
         return queries[:max_queries]
 
-    def _parse_research_queries(self, llm_response: str, max_queries: int) -> List[str]:
+    def _parse_research_queries(self, llm_response: str, max_queries: int) -> list[str]:
         """Parse research queries from LLM response."""
         lines = llm_response.strip().split('\n')
         queries = []
@@ -1759,7 +1758,7 @@ Questions:"""
 
         return queries
 
-    def _decompose_goal(self, query: Query) -> List[str]:
+    def _decompose_goal(self, query: Query) -> list[str]:
         """Decompose complex goal into sub-goals."""
         # Simple heuristic decomposition
         text = query.text
@@ -1773,7 +1772,7 @@ Questions:"""
 
         return sub_goals
 
-    def _create_synthesis_query(self, original: Query, evidence: List[str]) -> str:
+    def _create_synthesis_query(self, original: Query, evidence: list[str]) -> str:
         """Create synthesis query from gathered evidence."""
         return f"""
 Based on the following research findings, provide a comprehensive answer to: {original.text}
@@ -1796,11 +1795,11 @@ Synthesize these findings into a coherent answer.
 
 async def create_agentic_orchestrator(
     config,
-    shards: List[MemoryShard],
+    shards: list[MemoryShard],
     enable_verification: bool = True,
     enable_goal_tracking: bool = True,
-    audit_trail: Optional[AuditTrail] = None,
-    monitor: Optional[Any] = None,  # Agent Monitor for real-time tracking (Nov 2025)
+    audit_trail: AuditTrail | None = None,
+    monitor: Any | None = None,  # Agent Monitor for real-time tracking (Nov 2025)
     safety_adapter: Optional['AgenticSafetyAdapter'] = None,  # Safety Integration (Dec 2025)
     enable_safety: bool = True,  # Safe by default - MRF ELEGANCE principle
     deception_detector: Optional['DeceptionDetector'] = None,  # Phase 2 singleton consolidation

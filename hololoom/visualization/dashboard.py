@@ -7,10 +7,9 @@ Philosophy: Type-safe, validated, immutable where possible.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Protocol
 from datetime import datetime
 from enum import Enum
-
+from typing import Any, Protocol
 
 # ============================================================================
 # Type Safety Enums
@@ -71,9 +70,9 @@ class SpacetimeLike(Protocol):
     tool_used: str
     confidence: float
     trace: Any
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
-    def to_dict(self) -> Dict[str, Any]: ...
+    def to_dict(self) -> dict[str, Any]: ...
 
 
 # ============================================================================
@@ -91,8 +90,8 @@ class PanelSpec:
     data_source: str  # Which field from Spacetime (e.g., "trace.duration_ms")
     size: PanelSize
     priority: int  # Layout priority (higher = more prominent)
-    title: Optional[str] = None
-    subtitle: Optional[str] = None
+    title: str | None = None
+    subtitle: str | None = None
 
 
 @dataclass
@@ -105,10 +104,10 @@ class Panel:
     id: str
     type: PanelType
     title: str
-    subtitle: Optional[str] = None
-    data: Dict[str, Any] = field(default_factory=dict)
+    subtitle: str | None = None
+    data: dict[str, Any] = field(default_factory=dict)
     size: PanelSize = PanelSize.MEDIUM
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def validate(self) -> bool:
         """Validate panel has minimum required data."""
@@ -137,9 +136,9 @@ class Dashboard:
     """
     title: str
     layout: LayoutType
-    panels: List[Panel]
+    panels: list[Panel]
     spacetime: SpacetimeLike
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=lambda: datetime.now())  # Fix: Use lambda
 
     def __post_init__(self):
@@ -154,7 +153,7 @@ class Dashboard:
         if invalid_panels:
             raise ValueError(f"Invalid panels: {[p.id for p in invalid_panels]}")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary (for JSON serialization)."""
         return {
             'title': self.title,
@@ -180,7 +179,7 @@ class Dashboard:
 # ============================================================================
 
 # Tailwind CSS grid classes for each layout type
-LAYOUT_CONFIGS: Dict[LayoutType, str] = {
+LAYOUT_CONFIGS: dict[LayoutType, str] = {
     LayoutType.METRIC: "grid grid-cols-1 gap-6",
     LayoutType.FLOW: "grid grid-cols-1 md:grid-cols-2 gap-6",
     LayoutType.RESEARCH: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
@@ -188,7 +187,7 @@ LAYOUT_CONFIGS: Dict[LayoutType, str] = {
 }
 
 # Tailwind CSS column span classes for each panel size
-PANEL_SIZE_CLASSES: Dict[PanelSize, str] = {
+PANEL_SIZE_CLASSES: dict[PanelSize, str] = {
     PanelSize.TINY: "col-span-1",           # 1 column (stacks on mobile, 6 per row desktop)
     PanelSize.COMPACT: "col-span-1",        # 1 column (stacks on mobile, 4 per row desktop)
     PanelSize.SMALL: "md:col-span-1",       # 1/3 width (3 per row)
@@ -200,7 +199,7 @@ PANEL_SIZE_CLASSES: Dict[PanelSize, str] = {
 }
 
 # Semantic color mapping for metrics
-METRIC_COLORS: Dict[str, str] = {
+METRIC_COLORS: dict[str, str] = {
     'confidence': 'green',
     'duration': 'blue',
     'tool': 'purple',
@@ -210,7 +209,7 @@ METRIC_COLORS: Dict[str, str] = {
 }
 
 # Stage execution color mapping
-STAGE_COLORS: Dict[str, str] = {
+STAGE_COLORS: dict[str, str] = {
     'features': '#6366f1',    # Indigo
     'retrieval': '#10b981',   # Green
     'decision': '#f59e0b',    # Yellow

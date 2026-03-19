@@ -26,10 +26,11 @@ Date: 2025-12-08 (Jenny Moonshot M3)
 """
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Any, Callable
 from functools import wraps
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -113,36 +114,36 @@ class AriaAttributes:
 
     Generates valid ARIA attribute dictionaries for HTML rendering.
     """
-    role: Optional[AriaRole] = None
-    label: Optional[str] = None
-    labelledby: Optional[str] = None
-    describedby: Optional[str] = None
-    live: Optional[AriaLive] = None
-    atomic: Optional[bool] = None
-    relevant: Optional[AriaRelevant] = None
-    busy: Optional[bool] = None
-    hidden: Optional[bool] = None
-    expanded: Optional[bool] = None
-    selected: Optional[bool] = None
-    pressed: Optional[bool] = None
-    checked: Optional[bool] = None
-    disabled: Optional[bool] = None
-    current: Optional[str] = None  # "page", "step", "location", "date", "time", "true"
-    controls: Optional[str] = None
-    owns: Optional[str] = None
-    haspopup: Optional[str] = None  # "menu", "listbox", "tree", "grid", "dialog"
-    level: Optional[int] = None  # Heading level
-    posinset: Optional[int] = None  # Position in set
-    setsize: Optional[int] = None  # Total items in set
-    valuemin: Optional[float] = None
-    valuemax: Optional[float] = None
-    valuenow: Optional[float] = None
-    valuetext: Optional[str] = None
-    modal: Optional[bool] = None
-    keyshortcuts: Optional[str] = None
-    roledescription: Optional[str] = None
+    role: AriaRole | None = None
+    label: str | None = None
+    labelledby: str | None = None
+    describedby: str | None = None
+    live: AriaLive | None = None
+    atomic: bool | None = None
+    relevant: AriaRelevant | None = None
+    busy: bool | None = None
+    hidden: bool | None = None
+    expanded: bool | None = None
+    selected: bool | None = None
+    pressed: bool | None = None
+    checked: bool | None = None
+    disabled: bool | None = None
+    current: str | None = None  # "page", "step", "location", "date", "time", "true"
+    controls: str | None = None
+    owns: str | None = None
+    haspopup: str | None = None  # "menu", "listbox", "tree", "grid", "dialog"
+    level: int | None = None  # Heading level
+    posinset: int | None = None  # Position in set
+    setsize: int | None = None  # Total items in set
+    valuemin: float | None = None
+    valuemax: float | None = None
+    valuenow: float | None = None
+    valuetext: str | None = None
+    modal: bool | None = None
+    keyshortcuts: str | None = None
+    roledescription: str | None = None
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         """Convert to HTML attribute dictionary."""
         attrs = {}
 
@@ -228,10 +229,10 @@ class FocusManager:
     """
 
     # Stack of previously focused elements (for restoration)
-    _focus_stack: List[str] = field(default_factory=list)
+    _focus_stack: list[str] = field(default_factory=list)
 
     # Currently trapped container ID
-    _trapped_container: Optional[str] = None
+    _trapped_container: str | None = None
 
     def generate_focus_trap_script(self, container_id: str) -> str:
         """
@@ -390,7 +391,7 @@ class KeyboardHandler:
     - Home/End for first/last panel
     """
 
-    def generate_panel_navigation_script(self, panel_ids: List[str]) -> str:
+    def generate_panel_navigation_script(self, panel_ids: list[str]) -> str:
         """
         Generate keyboard navigation script for panel grid.
 
@@ -693,7 +694,7 @@ class ContrastChecker:
         self,
         fg_hex: str,
         bg_hex: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Check panel color contrast.
 
@@ -886,10 +887,10 @@ class JennyAccessibilityLayer:
         title: str,
         content: str,
         role: AriaRole = AriaRole.ARTICLE,
-        position: Optional[int] = None,
-        total: Optional[int] = None,
+        position: int | None = None,
+        total: int | None = None,
         dismissible: bool = True,
-        primary_action: Optional[str] = None,
+        primary_action: str | None = None,
     ) -> str:
         """
         Wrap panel content with accessibility attributes.
@@ -937,7 +938,7 @@ class JennyAccessibilityLayer:
 </div>
 '''
 
-    def generate_navigation(self, panel_ids: List[str]) -> str:
+    def generate_navigation(self, panel_ids: list[str]) -> str:
         """Generate keyboard navigation for panel set."""
         return self.keyboard_handler.generate_panel_navigation_script(panel_ids)
 
@@ -951,7 +952,7 @@ class JennyAccessibilityLayer:
             return f"window.jennyAnnounceAssertive('{message}');"
         return f"window.jennyAnnounce('{message}');"
 
-    def check_contrast(self, fg: str, bg: str) -> Dict[str, Any]:
+    def check_contrast(self, fg: str, bg: str) -> dict[str, Any]:
         """Check color contrast compliance."""
         return self.contrast_checker.check_panel_colors(fg, bg)
 

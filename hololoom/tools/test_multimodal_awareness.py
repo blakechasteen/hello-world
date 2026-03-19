@@ -8,21 +8,22 @@ Falls forward naturally: ProcessedInput → SemanticPerception → Memory
 """
 
 import sys
+
 sys.path.insert(0, '.')
 
 import asyncio
-import numpy as np
-import networkx as nx
 
+import networkx as nx
+import numpy as np
+
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.input.fusion import MultiModalFusion
+from hololoom.input.protocol import ModalityType, ProcessedInput, TextFeatures
+from hololoom.input.structured_processor import StructuredDataProcessor
+from hololoom.input.text_processor import TextProcessor
 from hololoom.memory.awareness_graph import AwarenessGraph
 from hololoom.memory.awareness_types import ActivationStrategy
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
 from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
-
-from hololoom.input.protocol import ModalityType, ProcessedInput, TextFeatures, StructuredFeatures
-from hololoom.input.text_processor import TextProcessor
-from hololoom.input.structured_processor import StructuredDataProcessor
-from hololoom.input.fusion import MultiModalFusion
 
 
 async def test_text_to_awareness():
@@ -40,7 +41,7 @@ async def test_text_to_awareness():
     perception = await awareness.perceive(text)
 
     assert perception.position.shape == (228,), "Position should be 228D"
-    print(f"  ✓ Perceived text: 228D position")
+    print("  ✓ Perceived text: 228D position")
 
     # Remember
     memory_id = await awareness.remember(text, perception)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Advanced ChatOps Features
 ==========================
@@ -24,10 +23,10 @@ Usage:
 
 import logging
 import re
-from typing import Dict, List, Optional, Any, Set
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -43,10 +42,10 @@ class PullRequest:
     title: str
     author: str
     branch: str
-    files_changed: List[str]
+    files_changed: list[str]
     additions: int
     deletions: int
-    comments: List[Dict[str, Any]] = field(default_factory=list)
+    comments: list[dict[str, Any]] = field(default_factory=list)
     status: str = "open"  # open, approved, changes_requested, merged
     created_at: datetime = field(default_factory=datetime.now)
 
@@ -111,7 +110,7 @@ class CodeReviewAssistant:
         await assistant.merge(123)
     """
 
-    def __init__(self, github_token: Optional[str] = None):
+    def __init__(self, github_token: str | None = None):
         """
         Initialize code review assistant.
 
@@ -119,7 +118,7 @@ class CodeReviewAssistant:
             github_token: Optional GitHub API token
         """
         self.github_token = github_token
-        self.active_reviews: Dict[int, PullRequest] = {}
+        self.active_reviews: dict[int, PullRequest] = {}
 
         logger.info("CodeReviewAssistant initialized")
 
@@ -163,7 +162,7 @@ class CodeReviewAssistant:
         self.active_reviews[pr_number] = pr
         return pr
 
-    async def _analyze_code(self, pr: PullRequest) -> Dict[str, List[str]]:
+    async def _analyze_code(self, pr: PullRequest) -> dict[str, list[str]]:
         """Run AI-powered code analysis."""
         # Placeholder - would use AI model for code review
         analysis = {
@@ -187,7 +186,7 @@ class CodeReviewAssistant:
     def _format_review_message(
         self,
         pr: PullRequest,
-        analysis: Dict[str, List[str]]
+        analysis: dict[str, list[str]]
     ) -> str:
         """Format code review message for chat."""
         lines = [
@@ -303,9 +302,9 @@ class ConversationContext:
     context_id: str
     name: str
     type: str  # project, incident, meeting, general
-    participants: List[str] = field(default_factory=list)
-    active_topics: List[str] = field(default_factory=list)
-    variables: Dict[str, Any] = field(default_factory=dict)
+    participants: list[str] = field(default_factory=list)
+    active_topics: list[str] = field(default_factory=list)
+    variables: dict[str, Any] = field(default_factory=dict)
     started_at: datetime = field(default_factory=datetime.now)
     last_activity: datetime = field(default_factory=datetime.now)
 
@@ -357,9 +356,9 @@ class ContextAwareAgent:
 
     def __init__(self):
         """Initialize context-aware agent."""
-        self.contexts: Dict[str, ConversationContext] = {}
-        self.current_context: Optional[str] = None
-        self.context_history: List[str] = []
+        self.contexts: dict[str, ConversationContext] = {}
+        self.current_context: str | None = None
+        self.context_history: list[str] = []
 
         logger.info("ContextAwareAgent initialized")
 
@@ -399,7 +398,7 @@ class ContextAwareAgent:
         # Format switch message
         return self._format_context_message(context)
 
-    def detect_context(self, message: str) -> Optional[str]:
+    def detect_context(self, message: str) -> str | None:
         """
         Detect context from message content.
 
@@ -427,7 +426,7 @@ class ContextAwareAgent:
 
         return None
 
-    def get_context_variables(self) -> Dict[str, Any]:
+    def get_context_variables(self) -> dict[str, Any]:
         """Get current context variables."""
         if not self.current_context or self.current_context not in self.contexts:
             return {}
@@ -514,10 +513,10 @@ class KnowledgeMiner:
 
     def __init__(self):
         """Initialize knowledge miner."""
-        self.knowledge_base: Dict[str, List[Dict]] = defaultdict(list)
-        self.expert_map: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        self.knowledge_base: dict[str, list[dict]] = defaultdict(list)
+        self.expert_map: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
 
-    def mine(self, messages: List[Dict]) -> Dict[str, Any]:
+    def mine(self, messages: list[dict]) -> dict[str, Any]:
         """
         Mine knowledge from messages.
 
@@ -560,7 +559,7 @@ class KnowledgeMiner:
 
         return insights
 
-    def get_experts(self, topic: str, limit: int = 5) -> List[str]:
+    def get_experts(self, topic: str, limit: int = 5) -> list[str]:
         """Get top experts for a topic."""
         if topic not in self.expert_map:
             return []
@@ -573,7 +572,7 @@ class KnowledgeMiner:
 
         return [expert for expert, _ in sorted_experts[:limit]]
 
-    def _extract_topics(self, text: str) -> List[str]:
+    def _extract_topics(self, text: str) -> list[str]:
         """Extract topics from text."""
         # Simple keyword extraction
         tech_keywords = ["api", "auth", "database", "deployment", "testing", "security"]

@@ -32,11 +32,11 @@ TIER 3: USER PREFERENCES
     - Enforcement: Best-effort (preferences, not requirements)
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, IntEnum
-from typing import List, Optional, Dict, Any, Callable
-import asyncio
+from typing import Any
 
 
 class PolicyTier(IntEnum):
@@ -71,13 +71,13 @@ class Policy:
     name: str
     tier: PolicyTier
     description: str
-    patterns: List[str] = field(default_factory=list)  # Patterns to match
+    patterns: list[str] = field(default_factory=list)  # Patterns to match
     decision: DecisionType = DecisionType.ALLOW
     set_by: str = "system"
     version: str = "1.0.0"
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def evaluate(self, request: Any) -> "PolicyEvaluation":
         """Evaluate this policy against a request."""
@@ -97,7 +97,7 @@ class PolicyEvaluation:
     decision: DecisionType
     confidence: float
     reason: str
-    caveats: List[str] = field(default_factory=list)
+    caveats: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -111,17 +111,17 @@ class PolicyDecision:
     - Escalation paths are provided for overrides
     """
     decision: DecisionType
-    winning_policy: Optional[Policy] = None
+    winning_policy: Policy | None = None
     reason: str = ""
     override_possible: bool = True
-    escalation_path: Optional[str] = None
-    policies_evaluated: List[str] = field(default_factory=list)
-    policies_satisfied: List[str] = field(default_factory=list)
-    caveats: List[str] = field(default_factory=list)
+    escalation_path: str | None = None
+    policies_evaluated: list[str] = field(default_factory=list)
+    policies_satisfied: list[str] = field(default_factory=list)
+    caveats: list[str] = field(default_factory=list)
     timestamp: datetime = field(default_factory=datetime.now)
-    audit_id: Optional[str] = None
+    audit_id: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "decision": self.decision.value,
@@ -181,7 +181,7 @@ def get_escalation_path(tier: PolicyTier) -> str:
 
 async def resolve_policy_conflict(
     request: Any,
-    applicable_policies: List[Policy],
+    applicable_policies: list[Policy],
 ) -> PolicyDecision:
     """
     Resolve conflicts between multiple applicable policies.
@@ -219,7 +219,7 @@ async def resolve_policy_conflict(
             )
 
     # Evaluate all policies
-    evaluations: List[PolicyEvaluation] = []
+    evaluations: list[PolicyEvaluation] = []
     for policy in sorted_policies:
         try:
             evaluation = policy.evaluate(request)
@@ -287,7 +287,7 @@ class GovernanceEngine:
     def __init__(
         self,
         enable_audit: bool = True,
-        audit_callback: Optional[Callable[[PolicyDecision], None]] = None,
+        audit_callback: Callable[[PolicyDecision], None] | None = None,
     ):
         """
         Initialize governance engine.
@@ -296,7 +296,7 @@ class GovernanceEngine:
             enable_audit: Whether to log all decisions
             audit_callback: Optional callback for audit events
         """
-        self.policies: Dict[str, Policy] = {}
+        self.policies: dict[str, Policy] = {}
         self.enable_audit = enable_audit
         self.audit_callback = audit_callback
         self._audit_counter = 0
@@ -306,7 +306,6 @@ class GovernanceEngine:
 
     def _register_immutable_policies(self):
         """Register default immutable (Tier 0) policies."""
-        import re
 
         # Dangerous commands policy
         dangerous_policy = Policy(
@@ -360,8 +359,8 @@ class GovernanceEngine:
     def get_applicable_policies(
         self,
         request: Any,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> List[Policy]:
+        context: dict[str, Any] | None = None,
+    ) -> list[Policy]:
         """
         Get all policies that apply to a request.
 
@@ -397,7 +396,7 @@ class GovernanceEngine:
     async def evaluate(
         self,
         request: Any,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> PolicyDecision:
         """
         Evaluate a request against all applicable policies.
@@ -464,7 +463,7 @@ class GovernanceEngine:
 
         return False, ""
 
-    def get_policy_summary(self) -> Dict[str, Any]:
+    def get_policy_summary(self) -> dict[str, Any]:
         """Get summary of all registered policies."""
         summary = {
             "total_policies": len(self.policies),
@@ -472,7 +471,7 @@ class GovernanceEngine:
             "policies": [],
         }
 
-        tier_counts: Dict[PolicyTier, int] = {}
+        tier_counts: dict[PolicyTier, int] = {}
         for policy in self.policies.values():
             tier_counts[policy.tier] = tier_counts.get(policy.tier, 0) + 1
             summary["policies"].append({

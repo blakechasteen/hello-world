@@ -12,18 +12,18 @@ Features:
 - Auto-optimization suggestions
 """
 
-import time
 import statistics
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field
+import time
 from collections import defaultdict
-from datetime import datetime, timedelta
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 from hololoom.memory.routing.protocol import (
     BackendType,
     ExecutionPattern,
     RoutingDecision,
-    RoutingOutcome
+    RoutingOutcome,
 )
 
 
@@ -34,7 +34,7 @@ class LatencyMetrics:
     total_ms: float = 0.0
     min_ms: float = float('inf')
     max_ms: float = 0.0
-    samples: List[float] = field(default_factory=list)
+    samples: list[float] = field(default_factory=list)
 
     def record(self, latency_ms: float):
         """Record a latency sample."""
@@ -86,9 +86,9 @@ class PerformanceSnapshot:
     avg_latency_ms: float
     p95_latency_ms: float
     cache_hit_rate: float
-    backend_distribution: Dict[str, int]
-    pattern_distribution: Dict[str, int]
-    bottlenecks: List[str]
+    backend_distribution: dict[str, int]
+    pattern_distribution: dict[str, int]
+    bottlenecks: list[str]
 
 
 class RoutingProfiler:
@@ -118,9 +118,9 @@ class RoutingProfiler:
 
     def __init__(self):
         # Latency tracking
-        self.backend_latency: Dict[BackendType, LatencyMetrics] = defaultdict(LatencyMetrics)
-        self.pattern_latency: Dict[ExecutionPattern, LatencyMetrics] = defaultdict(LatencyMetrics)
-        self.operation_latency: Dict[str, LatencyMetrics] = defaultdict(LatencyMetrics)
+        self.backend_latency: dict[BackendType, LatencyMetrics] = defaultdict(LatencyMetrics)
+        self.pattern_latency: dict[ExecutionPattern, LatencyMetrics] = defaultdict(LatencyMetrics)
+        self.operation_latency: dict[str, LatencyMetrics] = defaultdict(LatencyMetrics)
 
         # Counters
         self.query_count = 0
@@ -129,11 +129,11 @@ class RoutingProfiler:
         self.start_time = time.time()
 
         # Distribution tracking
-        self.backend_counts: Dict[BackendType, int] = defaultdict(int)
-        self.pattern_counts: Dict[ExecutionPattern, int] = defaultdict(int)
+        self.backend_counts: dict[BackendType, int] = defaultdict(int)
+        self.pattern_counts: dict[ExecutionPattern, int] = defaultdict(int)
 
         # Snapshots for trend analysis
-        self.snapshots: List[PerformanceSnapshot] = []
+        self.snapshots: list[PerformanceSnapshot] = []
         self.last_snapshot_time = time.time()
 
     def time_operation(self, operation_name: str):
@@ -186,7 +186,7 @@ class RoutingProfiler:
         elapsed = time.time() - self.start_time
         return self.query_count / elapsed if elapsed > 0 else 0.0
 
-    def identify_bottlenecks(self) -> List[str]:
+    def identify_bottlenecks(self) -> list[str]:
         """Identify performance bottlenecks."""
         bottlenecks = []
 
@@ -219,7 +219,7 @@ class RoutingProfiler:
 
         return bottlenecks
 
-    def generate_recommendations(self) -> List[str]:
+    def generate_recommendations(self) -> list[str]:
         """Generate performance optimization recommendations."""
         recommendations = []
 
@@ -303,7 +303,7 @@ class RoutingProfiler:
 
         return snapshot
 
-    def generate_report(self) -> Dict[str, Any]:
+    def generate_report(self) -> dict[str, Any]:
         """Generate comprehensive performance report."""
         return {
             'summary': {
@@ -416,7 +416,7 @@ class TimingContext:
 
 
 # Global profiler instance
-_global_profiler: Optional[RoutingProfiler] = None
+_global_profiler: RoutingProfiler | None = None
 
 
 def get_profiler() -> RoutingProfiler:

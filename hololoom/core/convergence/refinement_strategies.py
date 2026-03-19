@@ -10,17 +10,15 @@ Author: HoloLoom Team
 """
 
 import logging
-import numpy as np
-from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 from dataclasses import dataclass, field
 
-from hololoom.bandits.beta_arm import BetaArm
+import numpy as np
 
+from hololoom.bandits.beta_arm import BetaArm
 from hololoom.protocols.recursive_reasoning import (
-    RefinementStrategy,
     RefinementStep,
-    StrategySelectorProtocol
+    RefinementStrategy,
 )
 
 logger = logging.getLogger(__name__)
@@ -163,7 +161,7 @@ class StrategySelector:
 
         # Strategy performance tracking
         # Map: (query_type, strategy) → StrategyStats
-        self.strategy_stats: Dict[Tuple[str, RefinementStrategy], StrategyStats] = {}
+        self.strategy_stats: dict[tuple[str, RefinementStrategy], StrategyStats] = {}
 
         # Initialize all combinations
         for query_type in ["factual", "procedural", "analytical", "comparative", "technical", "creative"]:
@@ -177,7 +175,7 @@ class StrategySelector:
         self,
         query: str,
         current_confidence: float,
-        refinement_history: List[RefinementStep]
+        refinement_history: list[RefinementStep]
     ) -> RefinementStrategy:
         """
         Select optimal refinement strategy.
@@ -278,7 +276,7 @@ class StrategySelector:
             f"query_type={query_type}, success_rate={self.strategy_stats[key].success_rate:.2f}"
         )
 
-    def get_strategy_statistics(self, query_type: Optional[str] = None) -> Dict[str, any]:
+    def get_strategy_statistics(self, query_type: str | None = None) -> dict[str, any]:
         """
         Get strategy performance statistics.
 
@@ -297,7 +295,7 @@ class StrategySelector:
             }
         else:
             # Aggregate across all query types
-            aggregated: Dict[str, List[StrategyStats]] = defaultdict(list)
+            aggregated: dict[str, list[StrategyStats]] = defaultdict(list)
             for (qtype, strategy), stats in self.strategy_stats.items():
                 aggregated[strategy.value].append(stats)
 
@@ -318,7 +316,7 @@ class StrategySelector:
             "strategies": relevant_stats
         }
 
-    def get_best_strategy_for_type(self, query_type: str) -> Tuple[RefinementStrategy, float]:
+    def get_best_strategy_for_type(self, query_type: str) -> tuple[RefinementStrategy, float]:
         """
         Get best performing strategy for a query type.
 
@@ -354,7 +352,7 @@ class StrategyExecutor:
     """
 
     @staticmethod
-    def get_execution_params(strategy: RefinementStrategy) -> Dict[str, any]:
+    def get_execution_params(strategy: RefinementStrategy) -> dict[str, any]:
         """
         Get execution parameters for strategy.
 

@@ -15,16 +15,16 @@ Author: CARTS (Continuous Adversarial Red Team System)
 Date: 2025-12-01
 """
 
-import json
 import hashlib
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+import json
+from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any
 
-from .strategies import AttackStrategy
 from .executor import AttackResult, SeverityLevel
+from .strategies import AttackStrategy
 
 
 class VulnStatus(Enum):
@@ -56,13 +56,13 @@ class Vulnerability:
     target_system: str = ""
     fix_verified: bool = False
     regression_count: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Lifecycle timestamps
-    fixed_at: Optional[datetime] = None
-    verified_at: Optional[datetime] = None
-    last_regression_at: Optional[datetime] = None
-    duplicate_of: Optional[str] = None
+    fixed_at: datetime | None = None
+    verified_at: datetime | None = None
+    last_regression_at: datetime | None = None
+    duplicate_of: str | None = None
 
     @property
     def severity_level(self) -> SeverityLevel:
@@ -96,7 +96,7 @@ class Vulnerability:
             (self.is_critical or self.age_days > 7)
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'vuln_id': self.vuln_id,
@@ -117,9 +117,9 @@ class Vulnerability:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Vulnerability':
+    def from_dict(cls, data: dict[str, Any]) -> 'Vulnerability':
         """Create from dictionary."""
-        def parse_datetime(s: Optional[str]) -> Optional[datetime]:
+        def parse_datetime(s: str | None) -> datetime | None:
             if s is None:
                 return None
             try:
@@ -149,7 +149,7 @@ class Vulnerability:
     def from_attack_result(
         cls,
         result: AttackResult,
-        vuln_id: Optional[str] = None
+        vuln_id: str | None = None
     ) -> 'Vulnerability':
         """Create vulnerability from attack result."""
         if vuln_id is None:
@@ -198,14 +198,14 @@ class VulnerabilityTracker:
         open_vulns = tracker.get_open()
     """
 
-    def __init__(self, persist_path: Optional[Path] = None):
+    def __init__(self, persist_path: Path | None = None):
         """
         Initialize tracker with optional persistence.
 
         Args:
             persist_path: Path to JSON file for persistence
         """
-        self.vulnerabilities: Dict[str, Vulnerability] = {}
+        self.vulnerabilities: dict[str, Vulnerability] = {}
         self.persist_path = Path(persist_path) if persist_path else None
 
         # Load existing if persistence enabled
@@ -238,7 +238,7 @@ class VulnerabilityTracker:
 
         return vuln.vuln_id
 
-    def report_from_result(self, result: AttackResult) -> Optional[str]:
+    def report_from_result(self, result: AttackResult) -> str | None:
         """
         Report vulnerability from attack result if it bypassed.
 
@@ -254,7 +254,7 @@ class VulnerabilityTracker:
         vuln = Vulnerability.from_attack_result(result)
         return self.report(vuln)
 
-    def get(self, vuln_id: str) -> Optional[Vulnerability]:
+    def get(self, vuln_id: str) -> Vulnerability | None:
         """Get vulnerability by ID."""
         return self.vulnerabilities.get(vuln_id)
 
@@ -262,7 +262,7 @@ class VulnerabilityTracker:
         self,
         vuln_id: str,
         status: VulnStatus,
-        notes: Optional[str] = None
+        notes: str | None = None
     ):
         """
         Update vulnerability status.
@@ -301,7 +301,7 @@ class VulnerabilityTracker:
         self,
         vuln_id: str,
         fix_verified: bool = False,
-        notes: Optional[str] = None
+        notes: str | None = None
     ):
         """Mark vulnerability as fixed."""
         status = VulnStatus.VERIFIED if fix_verified else VulnStatus.FIXED
@@ -371,32 +371,32 @@ class VulnerabilityTracker:
     # Query Methods
     # =========================================================================
 
-    def get_all(self) -> List[Vulnerability]:
+    def get_all(self) -> list[Vulnerability]:
         """Get all vulnerabilities."""
         return list(self.vulnerabilities.values())
 
-    def get_open(self) -> List[Vulnerability]:
+    def get_open(self) -> list[Vulnerability]:
         """Get open (unfixed) vulnerabilities."""
         return [
             v for v in self.vulnerabilities.values()
             if v.status == VulnStatus.OPEN
         ]
 
-    def get_fixed(self) -> List[Vulnerability]:
+    def get_fixed(self) -> list[Vulnerability]:
         """Get fixed vulnerabilities (for regression testing)."""
         return [
             v for v in self.vulnerabilities.values()
             if v.status in [VulnStatus.FIXED, VulnStatus.VERIFIED]
         ]
 
-    def get_by_strategy(self, strategy: AttackStrategy) -> List[Vulnerability]:
+    def get_by_strategy(self, strategy: AttackStrategy) -> list[Vulnerability]:
         """Get vulnerabilities by attack strategy."""
         return [
             v for v in self.vulnerabilities.values()
             if v.strategy == strategy
         ]
 
-    def get_open_by_strategy(self, strategy: AttackStrategy) -> List[Vulnerability]:
+    def get_open_by_strategy(self, strategy: AttackStrategy) -> list[Vulnerability]:
         """Get open vulnerabilities by strategy."""
         return [
             v for v in self.vulnerabilities.values()
@@ -407,29 +407,29 @@ class VulnerabilityTracker:
         self,
         min_severity: float = 0.0,
         max_severity: float = 1.0
-    ) -> List[Vulnerability]:
+    ) -> list[Vulnerability]:
         """Get vulnerabilities by severity range."""
         return [
             v for v in self.vulnerabilities.values()
             if min_severity <= v.severity <= max_severity
         ]
 
-    def get_critical(self) -> List[Vulnerability]:
+    def get_critical(self) -> list[Vulnerability]:
         """Get critical severity vulnerabilities."""
         return [v for v in self.vulnerabilities.values() if v.is_critical]
 
-    def get_needing_attention(self) -> List[Vulnerability]:
+    def get_needing_attention(self) -> list[Vulnerability]:
         """Get vulnerabilities needing immediate attention."""
         return [v for v in self.vulnerabilities.values() if v.needs_attention]
 
-    def get_since(self, since: datetime) -> List[Vulnerability]:
+    def get_since(self, since: datetime) -> list[Vulnerability]:
         """Get vulnerabilities discovered since timestamp."""
         return [
             v for v in self.vulnerabilities.values()
             if v.discovered_at >= since
         ]
 
-    def get_regressions(self) -> List[Vulnerability]:
+    def get_regressions(self) -> list[Vulnerability]:
         """Get vulnerabilities that have regressed at least once."""
         return [
             v for v in self.vulnerabilities.values()
@@ -440,7 +440,7 @@ class VulnerabilityTracker:
     # Statistics
     # =========================================================================
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get tracker statistics."""
         vulns = list(self.vulnerabilities.values())
 
@@ -494,7 +494,7 @@ class VulnerabilityTracker:
     # Persistence
     # =========================================================================
 
-    def save(self, path: Optional[Path] = None):
+    def save(self, path: Path | None = None):
         """Save tracker state to file."""
         path = Path(path) if path else self.persist_path
         if not path:
@@ -512,20 +512,20 @@ class VulnerabilityTracker:
         with open(path, 'w') as f:
             json.dump(state, f, indent=2)
 
-    def load(self, path: Optional[Path] = None):
+    def load(self, path: Path | None = None):
         """Load tracker state from file."""
         path = Path(path) if path else self.persist_path
         if not path or not path.exists():
             return
 
-        with open(path, 'r') as f:
+        with open(path) as f:
             state = json.load(f)
 
         self.vulnerabilities = {}
         for vuln_id, vuln_data in state.get('vulnerabilities', {}).items():
             try:
                 self.vulnerabilities[vuln_id] = Vulnerability.from_dict(vuln_data)
-            except Exception as e:
+            except Exception:
                 # Skip invalid entries
                 pass
 
@@ -544,7 +544,7 @@ class VulnerabilityTracker:
 # Convenience Functions
 # =============================================================================
 
-def create_tracker(persist_path: Optional[Path] = None) -> VulnerabilityTracker:
+def create_tracker(persist_path: Path | None = None) -> VulnerabilityTracker:
     """Create a VulnerabilityTracker with optional persistence."""
     return VulnerabilityTracker(persist_path=persist_path)
 

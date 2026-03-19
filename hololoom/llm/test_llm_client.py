@@ -14,7 +14,8 @@ Created: 2025-01-20
 import asyncio
 import logging
 import os
-from hololoom.llm import UnifiedLLMClient, LLMConfig
+
+from hololoom.llm import LLMConfig, UnifiedLLMClient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -214,13 +215,13 @@ async def test_cost_tracking():
         # Get statistics
         stats = client.get_cost_statistics()
 
-        print(f"✓ Statistics:")
+        print("✓ Statistics:")
         print(f"  Total calls: {stats['total_calls']}")
         print(f"  Total tokens: {stats['total_tokens']:,}")
         print(f"  Total cost: ${stats['total_cost_usd']:.4f}")
         print(f"  Avg cost/call: ${stats['avg_cost_per_call']:.4f}")
 
-        print(f"\n  By model:")
+        print("\n  By model:")
         for model, model_stats in stats['by_model'].items():
             print(f"    {model}: {model_stats['calls']} calls, "
                   f"${model_stats['total_cost_usd']:.4f}")

@@ -1,21 +1,27 @@
 """Stable Diffusion Skill - AI image generation"""
 
-import time
 import os
-from pathlib import Path
-from typing import Dict, Any, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+import time
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 # Check for diffusers availability
 try:
+    import torch
     from diffusers import (
-        StableDiffusionPipeline,
         StableDiffusionImg2ImgPipeline,
         StableDiffusionInpaintPipeline,
-        StableDiffusionUpscalePipeline
+        StableDiffusionPipeline,
+        StableDiffusionUpscalePipeline,
     )
-    import torch
     DIFFUSERS_AVAILABLE = True
 except ImportError:
     DIFFUSERS_AVAILABLE = False
@@ -109,7 +115,7 @@ class StableDiffusionSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _txt2img(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _txt2img(self, params: dict[str, Any]) -> dict[str, Any]:
         """Generate image from text prompt."""
         prompt = params["prompt"]
         output_path = params.get("output_path", "output/generated_image.png")
@@ -156,7 +162,7 @@ class StableDiffusionSkill(BaseSkill):
             "model": model_id
         }
 
-    async def _img2img(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _img2img(self, params: dict[str, Any]) -> dict[str, Any]:
         """Transform image using text prompt."""
         prompt = params["prompt"]
         init_image_path = params["init_image"]
@@ -206,7 +212,7 @@ class StableDiffusionSkill(BaseSkill):
             "model": model_id
         }
 
-    async def _inpaint(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _inpaint(self, params: dict[str, Any]) -> dict[str, Any]:
         """Inpaint image using mask and text prompt."""
         prompt = params["prompt"]
         init_image_path = params["init_image"]
@@ -257,7 +263,7 @@ class StableDiffusionSkill(BaseSkill):
             "model": model_id
         }
 
-    async def _upscale(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _upscale(self, params: dict[str, Any]) -> dict[str, Any]:
         """Upscale image using Stable Diffusion."""
         prompt = params["prompt"]
         init_image_path = params["init_image"]
@@ -304,7 +310,7 @@ class StableDiffusionSkill(BaseSkill):
             "upscaled_size": f"{upscaled_image.width}x{upscaled_image.height}"
         }
 
-    async def _controlnet(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _controlnet(self, params: dict[str, Any]) -> dict[str, Any]:
         """Generate image with ControlNet guidance (requires additional setup)."""
         # ControlNet requires additional imports and setup
         # This is a placeholder implementation noting the requirement
@@ -318,4 +324,5 @@ class StableDiffusionSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(StableDiffusionSkill())

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Federated Rate Limiter
 ======================
@@ -23,15 +22,12 @@ Author: Claude Code (Phase 4 - December 2025)
 from __future__ import annotations
 
 import time
-from collections import defaultdict, deque
+from collections import deque
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Deque, Dict, Optional, Tuple
 
-from hololoom.federation.types import GuildTrustLevel
 from hololoom.federation.safety import SafetyCheckResult
-
+from hololoom.federation.types import GuildTrustLevel
 
 # ============================================================================
 #  Rate Limit Configuration
@@ -47,7 +43,7 @@ class RateLimitTier(Enum):
 
 
 # Default rate limits (requests per minute)
-DEFAULT_RATE_LIMITS: Dict[RateLimitTier, int] = {
+DEFAULT_RATE_LIMITS: dict[RateLimitTier, int] = {
     RateLimitTier.OBSERVER: 10,
     RateLimitTier.MEMBER: 60,
     RateLimitTier.CONTRIBUTOR: 300,
@@ -55,7 +51,7 @@ DEFAULT_RATE_LIMITS: Dict[RateLimitTier, int] = {
 }
 
 # Map guild trust level to rate limit tier
-TRUST_TO_TIER: Dict[GuildTrustLevel, RateLimitTier] = {
+TRUST_TO_TIER: dict[GuildTrustLevel, RateLimitTier] = {
     GuildTrustLevel.STARTER: RateLimitTier.OBSERVER,
     GuildTrustLevel.ESTABLISHED: RateLimitTier.MEMBER,
     GuildTrustLevel.VETERAN: RateLimitTier.CONTRIBUTOR,
@@ -74,7 +70,7 @@ class RateLimitState:
     tier: RateLimitTier
     window_seconds: float
     max_requests: int
-    requests: Deque[float] = field(default_factory=deque)
+    requests: deque[float] = field(default_factory=deque)
 
     @property
     def current_count(self) -> int:
@@ -93,7 +89,7 @@ class RateLimitState:
         """Check if this identity has unlimited requests."""
         return self.max_requests < 0
 
-    def reset_time(self) -> Optional[float]:
+    def reset_time(self) -> float | None:
         """Time until oldest request expires (Unix timestamp)."""
         if not self.requests:
             return None
@@ -109,7 +105,7 @@ class RateLimitInfo:
     reset_time: float       # Unix timestamp when window resets
     retry_after: float      # Seconds until next request allowed (0 if not limited)
 
-    def to_headers(self) -> Dict[str, str]:
+    def to_headers(self) -> dict[str, str]:
         """Convert to standard rate limit headers."""
         return {
             "X-RateLimit-Limit": str(self.limit) if self.limit >= 0 else "unlimited",
@@ -142,7 +138,7 @@ class FederatedRateLimiter:
 
     def __init__(
         self,
-        rate_limits: Optional[Dict[RateLimitTier, int]] = None,
+        rate_limits: dict[RateLimitTier, int] | None = None,
         window_seconds: float = 60.0,
         cleanup_interval_seconds: float = 300.0,
     ):
@@ -159,7 +155,7 @@ class FederatedRateLimiter:
         self._cleanup_interval = cleanup_interval_seconds
 
         # Per-identity state
-        self._states: Dict[str, RateLimitState] = {}
+        self._states: dict[str, RateLimitState] = {}
         self._last_cleanup = time.time()
 
     def check(
@@ -232,7 +228,7 @@ class FederatedRateLimiter:
     def get_info(
         self,
         identity_id: str,
-        tier: Optional[RateLimitTier] = None,
+        tier: RateLimitTier | None = None,
     ) -> RateLimitInfo:
         """
         Get rate limit info for an identity.
@@ -335,7 +331,7 @@ def get_tier_for_trust_level(trust_level: GuildTrustLevel) -> RateLimitTier:
 
 
 def create_rate_limiter(
-    custom_limits: Optional[Dict[RateLimitTier, int]] = None,
+    custom_limits: dict[RateLimitTier, int] | None = None,
     window_seconds: float = 60.0,
 ) -> FederatedRateLimiter:
     """

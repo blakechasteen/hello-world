@@ -14,17 +14,15 @@ Supported Gestures:
 Created: 2025-11-22
 """
 
-from typing import List, Dict, Any, Optional
 import logging
+
 import numpy as np
-from datetime import datetime
 
 from hololoom.vision.protocol import (
-    HandPose,
     HandLandmark,
+    HandPose,
     HandTrackerProtocol,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -149,11 +147,11 @@ class HandTracker(HandTrackerProtocol):
             logger.error(f"Failed to initialize MediaPipe: {e}")
             return False
 
-    async def process_frame(self, frame: np.ndarray) -> List[HandPose]:
+    async def process_frame(self, frame: np.ndarray) -> list[HandPose]:
         """Process frame (delegates to track_hands)"""
         return await self.track_hands(frame)
 
-    async def track_hands(self, frame: np.ndarray) -> List[HandPose]:
+    async def track_hands(self, frame: np.ndarray) -> list[HandPose]:
         """
         Track hands in frame.
 
@@ -173,7 +171,7 @@ class HandTracker(HandTrackerProtocol):
         else:
             return []
 
-    async def _track_mediapipe(self, frame: np.ndarray) -> List[HandPose]:
+    async def _track_mediapipe(self, frame: np.ndarray) -> list[HandPose]:
         """Track hands with MediaPipe"""
         if not self.hands:
             return []
@@ -221,7 +219,7 @@ class HandTracker(HandTrackerProtocol):
 
         return hand_poses
 
-    def _track_mock(self) -> List[HandPose]:
+    def _track_mock(self) -> list[HandPose]:
         """Mock hand tracking for testing"""
         # Return dummy hand pose
         landmarks = [
@@ -238,7 +236,7 @@ class HandTracker(HandTrackerProtocol):
             )
         ]
 
-    def recognize_gesture(self, hand_pose: HandPose) -> Optional[str]:
+    def recognize_gesture(self, hand_pose: HandPose) -> str | None:
         """
         Recognize gesture from hand landmarks.
 
@@ -275,7 +273,7 @@ class HandTracker(HandTrackerProtocol):
 
         return Gesture.UNKNOWN
 
-    def _get_finger_states(self, landmarks: List[HandLandmark]) -> Dict[str, bool]:
+    def _get_finger_states(self, landmarks: list[HandLandmark]) -> dict[str, bool]:
         """
         Determine if each finger is extended.
 
@@ -304,7 +302,7 @@ class HandTracker(HandTrackerProtocol):
 
         return states
 
-    def _is_point(self, finger_states: Dict[str, bool]) -> bool:
+    def _is_point(self, finger_states: dict[str, bool]) -> bool:
         """Index finger extended, others closed"""
         return (
             finger_states["index"] and
@@ -313,7 +311,7 @@ class HandTracker(HandTrackerProtocol):
             not finger_states["pinky"]
         )
 
-    def _is_grab(self, finger_states: Dict[str, bool]) -> bool:
+    def _is_grab(self, finger_states: dict[str, bool]) -> bool:
         """All fingers closed (fist)"""
         return not any([
             finger_states["thumb"],
@@ -323,7 +321,7 @@ class HandTracker(HandTrackerProtocol):
             finger_states["pinky"],
         ])
 
-    def _is_open_palm(self, finger_states: Dict[str, bool]) -> bool:
+    def _is_open_palm(self, finger_states: dict[str, bool]) -> bool:
         """All fingers extended"""
         return all([
             finger_states["thumb"],
@@ -333,7 +331,7 @@ class HandTracker(HandTrackerProtocol):
             finger_states["pinky"],
         ])
 
-    def _is_pinch(self, landmarks: List[HandLandmark]) -> bool:
+    def _is_pinch(self, landmarks: list[HandLandmark]) -> bool:
         """Thumb and index finger close together"""
         thumb_tip = landmarks[FINGERTIP_INDICES["thumb"]]
         index_tip = landmarks[FINGERTIP_INDICES["index"]]
@@ -349,8 +347,8 @@ class HandTracker(HandTrackerProtocol):
 
     def _is_thumbs_up(
         self,
-        landmarks: List[HandLandmark],
-        finger_states: Dict[str, bool]
+        landmarks: list[HandLandmark],
+        finger_states: dict[str, bool]
     ) -> bool:
         """Thumb extended upward, other fingers closed"""
         thumb_tip = landmarks[FINGERTIP_INDICES["thumb"]]
@@ -369,7 +367,7 @@ class HandTracker(HandTrackerProtocol):
 
         return thumb_up and others_closed
 
-    def _is_peace(self, finger_states: Dict[str, bool]) -> bool:
+    def _is_peace(self, finger_states: dict[str, bool]) -> bool:
         """Index and middle extended, others closed"""
         return (
             finger_states["index"] and
@@ -385,7 +383,7 @@ class HandTracker(HandTrackerProtocol):
             self.hands = None
         self.initialized = False
 
-    def get_capabilities(self) -> Dict[str, bool]:
+    def get_capabilities(self) -> dict[str, bool]:
         """Get tracker capabilities"""
         return {
             "hand_tracking": True,
@@ -417,7 +415,7 @@ def create_hand_tracker(backend: str = "mock", **kwargs) -> HandTracker:
 # Helper Functions
 # ============================================================================
 
-def get_pointing_direction(hand_pose: HandPose) -> Optional[np.ndarray]:
+def get_pointing_direction(hand_pose: HandPose) -> np.ndarray | None:
     """
     Get 3D pointing direction from hand pose.
 

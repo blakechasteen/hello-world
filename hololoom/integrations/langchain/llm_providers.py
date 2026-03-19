@@ -19,29 +19,35 @@ Author: Claude Code
 Date: 2025-11-20
 """
 
-from typing import Optional, Dict, Any, List, Union
-from enum import Enum
-import warnings
 import os
+import warnings
+from enum import Enum
+from typing import Any
 
 try:
     # Core LangChain
-    from langchain.llms import (
-        OpenAI as LangChainOpenAI,
-        Anthropic as LangChainAnthropic,
-        Cohere as LangChainCohere,
-        HuggingFaceHub,
-        Ollama as LangChainOllama,
-    )
-
     from langchain.chat_models import (
-        ChatOpenAI,
         ChatAnthropic,
         ChatCohere,
         ChatOllama,
+        ChatOpenAI,
     )
-
-    from langchain.schema import HumanMessage, SystemMessage, AIMessage
+    from langchain.llms import (
+        Anthropic as LangChainAnthropic,
+    )
+    from langchain.llms import (
+        Cohere as LangChainCohere,
+    )
+    from langchain.llms import (
+        HuggingFaceHub,
+    )
+    from langchain.llms import (
+        Ollama as LangChainOllama,
+    )
+    from langchain.llms import (
+        OpenAI as LangChainOpenAI,
+    )
+    from langchain.schema import AIMessage, HumanMessage, SystemMessage
 
     LANGCHAIN_AVAILABLE = True
 except ImportError:
@@ -92,9 +98,9 @@ class MultiProviderLLM:
 
     def __init__(
         self,
-        provider: Union[LLMProvider, str] = LLMProvider.OLLAMA,
-        model: Optional[str] = None,
-        api_key: Optional[str] = None,
+        provider: LLMProvider | str = LLMProvider.OLLAMA,
+        model: str | None = None,
+        api_key: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2048,
         **provider_kwargs
@@ -168,7 +174,7 @@ class MultiProviderLLM:
 
     def chat(
         self,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
         **kwargs
     ) -> str:
         """
@@ -241,7 +247,7 @@ class MultiProviderLLM:
             warnings.warn(f"Streaming failed: {e}")
             yield f"[Error: {str(e)}]"
 
-    def get_usage_stats(self) -> Dict[str, Any]:
+    def get_usage_stats(self) -> dict[str, Any]:
         """
         Get usage statistics.
 
@@ -255,7 +261,7 @@ class MultiProviderLLM:
             "estimated_cost_usd": self.total_cost
         }
 
-    def _create_llm(self, provider_kwargs: Dict[str, Any]):
+    def _create_llm(self, provider_kwargs: dict[str, Any]):
         """Create LLM instance for provider."""
         common_args = {
             "temperature": self.temperature,
@@ -304,7 +310,7 @@ class MultiProviderLLM:
         else:
             raise ValueError(f"Provider {self.provider} not yet implemented")
 
-    def _get_api_key(self, provider: LLMProvider) -> Optional[str]:
+    def _get_api_key(self, provider: LLMProvider) -> str | None:
         """Get API key from environment."""
         env_var_map = {
             LLMProvider.OPENAI: "OPENAI_API_KEY",
@@ -333,7 +339,7 @@ class MultiProviderLLM:
 
 def create_llm(
     provider: str = "ollama",
-    model: Optional[str] = None,
+    model: str | None = None,
     **kwargs
 ) -> MultiProviderLLM:
     """
@@ -354,7 +360,7 @@ def create_llm(
     return MultiProviderLLM(provider=provider, model=model, **kwargs)
 
 
-def list_llm_providers() -> Dict[str, List[str]]:
+def list_llm_providers() -> dict[str, list[str]]:
     """
     List all available LLM providers and their models.
 

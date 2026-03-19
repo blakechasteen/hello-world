@@ -24,13 +24,12 @@ Example:
     >>> # Returns: Core 7-component + Claude thinking tags + artifacts
 """
 
-from pathlib import Path
-from typing import Optional, Dict, Tuple
 import logging
+from pathlib import Path
 
-from .adapters import create_adapter_from_config, ModelAdapter
-from .strategy import StrategyContext
+from .adapters import create_adapter_from_config
 from .registry import suggest_strategies
+from .strategy import StrategyContext
 
 logger = logging.getLogger(__name__)
 
@@ -55,14 +54,14 @@ def load_core_template() -> str:
         logger.error(f"CORE_TEMPLATE.md not found at: {template_path}")
         raise FileNotFoundError(f"CORE_TEMPLATE.md not found at: {template_path}")
 
-    with open(template_path, 'r', encoding='utf-8') as f:
+    with open(template_path, encoding='utf-8') as f:
         content = f.read()
 
     logger.debug(f"Loaded CORE_TEMPLATE.md ({len(content)} chars)")
     return content
 
 
-def auto_detect_strategy(request: str) -> Tuple[str, float]:
+def auto_detect_strategy(request: str) -> tuple[str, float]:
     """
     Auto-detect best prompting strategy for request.
 
@@ -101,7 +100,7 @@ def auto_detect_strategy(request: str) -> Tuple[str, float]:
 def create_metaprompt(
     request: str,
     config=None,
-    features: Optional[Dict[str, bool]] = None,
+    features: dict[str, bool] | None = None,
     apply_adapter: bool = True
 ) -> str:
     """
@@ -161,7 +160,7 @@ def create_metaprompt_with_strategy(
     request: str,
     strategy_name: str,
     config=None,
-    features: Optional[Dict[str, bool]] = None
+    features: dict[str, bool] | None = None
 ) -> str:
     """
     Create metaprompt with explicit strategy selection.
@@ -218,7 +217,7 @@ def create_metaprompt_with_strategy(
 def create_metaprompt_auto(
     request: str,
     config=None,
-    features: Optional[Dict[str, bool]] = None,
+    features: dict[str, bool] | None = None,
     confidence_threshold: float = 0.7
 ) -> str:
     """

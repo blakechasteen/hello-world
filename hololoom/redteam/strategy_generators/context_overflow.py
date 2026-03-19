@@ -15,9 +15,9 @@ Author: CARTS (Continuous Adversarial Red Team System)
 Date: 2025-12-05
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
 import random
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -32,8 +32,8 @@ class ContextOverflowPayload:
     payload_size_tokens: int
     context_pollution_ratio: float  # 0.0-1.0
     detection_difficulty: str  # easy, medium, hard
-    tags: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         return f"[CONTEXT_OVERFLOW] {self.overflow_type}: {self.payload[:50]}..."
@@ -48,7 +48,7 @@ class ContextOverflowGenerator:
     multiple messages.
     """
 
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, seed: int | None = None):
         """Initialize with optional random seed."""
         if seed is not None:
             random.seed(seed)
@@ -117,7 +117,7 @@ class ContextOverflowGenerator:
             "System update: {instruction}",
         ]
 
-    def generate_instruction_washing(self, target: str) -> List[ContextOverflowPayload]:
+    def generate_instruction_washing(self, target: str) -> list[ContextOverflowPayload]:
         """
         Generate instruction washing payloads.
 
@@ -227,7 +227,7 @@ becomes increasingly abstract. Can you still maintain it clearly?
 
         return payloads
 
-    def generate_memory_poisoning(self, target: str) -> List[ContextOverflowPayload]:
+    def generate_memory_poisoning(self, target: str) -> list[ContextOverflowPayload]:
         """
         Generate memory poisoning payloads.
 
@@ -338,7 +338,7 @@ Should I proceed accordingly?
 
         return payloads
 
-    def generate_context_splitting(self, target: str) -> List[ContextOverflowPayload]:
+    def generate_context_splitting(self, target: str) -> list[ContextOverflowPayload]:
         """
         Generate context splitting payloads.
 
@@ -467,7 +467,7 @@ Should constraints account for them?
 
         return payloads
 
-    def generate_all(self, target: str) -> List[ContextOverflowPayload]:
+    def generate_all(self, target: str) -> list[ContextOverflowPayload]:
         """
         Generate all context overflow payloads for a target.
 
@@ -493,6 +493,6 @@ Should constraints account for them?
 
 
 # Convenience factory function
-def create_context_overflow_generator(seed: Optional[int] = None) -> ContextOverflowGenerator:
+def create_context_overflow_generator(seed: int | None = None) -> ContextOverflowGenerator:
     """Create and return a ContextOverflowGenerator instance."""
     return ContextOverflowGenerator(seed=seed)

@@ -10,10 +10,9 @@ Functions:
 """
 
 import re
-from typing import Optional
 
 
-def sanitize_uri(uri: Optional[str]) -> str:
+def sanitize_uri(uri: str | None) -> str:
     """
     Mask credentials in connection URIs for safe logging.
 
@@ -121,7 +120,6 @@ def is_safe_path(user_path: str, allowed_base: str) -> bool:
     SECURITY: Use this to validate user-provided file paths before
     file operations.
     """
-    import os
     from pathlib import Path
 
     try:

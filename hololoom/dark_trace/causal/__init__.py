@@ -57,38 +57,38 @@ Usage:
 
 # Ablation testing
 from hololoom.dark_trace.causal.ablation import (
-    FeatureAblator,
     AblationConfig,
-    AblationResult,
     AblationEffect,
+    AblationResult,
     BatchAblationResult,
+    FeatureAblator,
 )
 
 # Injection testing
 from hololoom.dark_trace.causal.injection import (
+    DoseResponseCurve,
     FeatureInjector,
     InjectionConfig,
     InjectionResult,
-    DoseResponseCurve,
     InteractionEffect,
 )
 
 # Activation patching
 from hololoom.dark_trace.causal.patching import (
     ActivationPatcher,
-    PatchConfig,
-    PatchResult,
     CausalTrace,
     InformationFlow,
+    PatchConfig,
+    PatchResult,
 )
 
 # Causal validation
 from hololoom.dark_trace.causal.validator import (
-    CausalValidator,
     CausalHypothesis,
+    CausalValidator,
+    GroundTruthComparison,
     ValidationResult,
     ValidationSuite,
-    GroundTruthComparison,
 )
 
 __all__ = [

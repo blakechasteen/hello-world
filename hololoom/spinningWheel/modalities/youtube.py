@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 YouTube Spinner
 ===============
@@ -29,9 +28,9 @@ Usage:
 """
 
 import re
-from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
-from urllib.parse import urlparse, parse_qs
+from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 from .base import BaseSpinner, SpinnerConfig
 
@@ -46,10 +45,10 @@ except ImportError:
     class MemoryShard:
         id: str
         text: str
-        episode: Optional[str] = None
-        entities: List[str] = field(default_factory=list)
-        motifs: List[str] = field(default_factory=list)
-        metadata: Dict[str, Any] = field(default_factory=dict)
+        episode: str | None = None
+        entities: list[str] = field(default_factory=list)
+        motifs: list[str] = field(default_factory=list)
+        metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -63,7 +62,7 @@ class YouTubeSpinnerConfig(SpinnerConfig):
         include_timestamps: Include timestamp info in shard metadata
         extract_entities: Extract basic entities from video text
     """
-    chunk_duration: Optional[float] = None  # None = single shard per video
+    chunk_duration: float | None = None  # None = single shard per video
     include_timestamps: bool = True
     extract_entities: bool = True
 
@@ -75,7 +74,7 @@ class YouTubeTranscriptExtractor:
     """
 
     @staticmethod
-    def extract_video_id(url: str) -> Optional[str]:
+    def extract_video_id(url: str) -> str | None:
         """
         Extract video ID from various YouTube URL formats.
 
@@ -112,7 +111,7 @@ class YouTubeTranscriptExtractor:
         return None
 
     @staticmethod
-    def get_transcript(video_id: str, languages: List[str] = None) -> Dict[str, Any]:
+    def get_transcript(video_id: str, languages: list[str] = None) -> dict[str, Any]:
         """
         Fetch transcript for a YouTube video.
 
@@ -214,7 +213,7 @@ class YouTubeSpinner(BaseSpinner):
         self.config: YouTubeSpinnerConfig = config
         self.extractor = YouTubeTranscriptExtractor()
 
-    async def spin(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
+    async def spin(self, raw_data: dict[str, Any]) -> list[MemoryShard]:
         """
         Convert YouTube video transcript → MemoryShards.
 
@@ -260,10 +259,10 @@ class YouTubeSpinner(BaseSpinner):
 
     def _create_single_shard(
         self,
-        transcript_data: Dict[str, Any],
+        transcript_data: dict[str, Any],
         episode: str,
-        raw_data: Dict[str, Any]
-    ) -> List[MemoryShard]:
+        raw_data: dict[str, Any]
+    ) -> list[MemoryShard]:
         """Create a single shard for the entire video transcript."""
         video_id = transcript_data['video_id']
 
@@ -311,10 +310,10 @@ class YouTubeSpinner(BaseSpinner):
 
     def _create_chunked_shards(
         self,
-        transcript_data: Dict[str, Any],
+        transcript_data: dict[str, Any],
         episode: str,
-        raw_data: Dict[str, Any]
-    ) -> List[MemoryShard]:
+        raw_data: dict[str, Any]
+    ) -> list[MemoryShard]:
         """Split transcript into time-based chunks."""
         video_id = transcript_data['video_id']
         segments = transcript_data['segments']
@@ -416,7 +415,7 @@ class YouTubeSpinner(BaseSpinner):
 
         return shards
 
-    def _extract_basic_entities(self, text: str) -> List[str]:
+    def _extract_basic_entities(self, text: str) -> list[str]:
         """
         Extract basic entities using simple heuristics.
 
@@ -439,7 +438,7 @@ class YouTubeSpinner(BaseSpinner):
 
         return entities
 
-    async def _enrich_shards(self, shards: List[MemoryShard]) -> List[MemoryShard]:
+    async def _enrich_shards(self, shards: list[MemoryShard]) -> list[MemoryShard]:
         """
         Enrich shards using optional enrichment services.
         Delegates to parent class enrichment infrastructure.
@@ -470,10 +469,10 @@ class YouTubeSpinner(BaseSpinner):
 # Convenience functions for quick usage
 async def transcribe_youtube(
     url: str,
-    languages: List[str] = None,
-    chunk_duration: Optional[float] = None,
+    languages: list[str] = None,
+    chunk_duration: float | None = None,
     enable_enrichment: bool = False
-) -> List[MemoryShard]:
+) -> list[MemoryShard]:
     """
     Quick function to transcribe a YouTube video into MemoryShards.
 

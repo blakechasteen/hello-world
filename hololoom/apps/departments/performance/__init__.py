@@ -13,9 +13,9 @@ Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
-from .department_benchmarks import DepartmentBenchmark, BenchmarkResult
-from .load_testing import LoadTester, LoadTestConfig, LoadTestResult
-from .sla_definitions import SLAValidator, SLADefinition, SLAMetric
+from .department_benchmarks import BenchmarkResult, DepartmentBenchmark
+from .load_testing import LoadTestConfig, LoadTester, LoadTestResult
+from .sla_definitions import SLADefinition, SLAMetric, SLAValidator
 
 __all__ = [
     "DepartmentBenchmark",

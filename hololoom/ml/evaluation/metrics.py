@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
@@ -21,11 +20,11 @@ logger = logging.getLogger(__name__)
 SKLEARN_AVAILABLE = False
 try:
     from sklearn.metrics import (
-        mean_squared_error,
-        mean_absolute_error,
-        r2_score,
-        mean_absolute_percentage_error,
         explained_variance_score,
+        mean_absolute_error,
+        mean_absolute_percentage_error,
+        mean_squared_error,
+        r2_score,
     )
     SKLEARN_AVAILABLE = True
 except ImportError:
@@ -35,8 +34,8 @@ except ImportError:
 def calculate_regression_metrics(
     y_true: np.ndarray,
     y_pred: np.ndarray,
-    n_features: Optional[int] = None,
-) -> Dict[str, float]:
+    n_features: int | None = None,
+) -> dict[str, float]:
     """
     Calculate comprehensive regression metrics.
 
@@ -102,7 +101,7 @@ def calculate_regression_metrics(
 def calculate_residual_stats(
     y_true: np.ndarray,
     y_pred: np.ndarray,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Calculate residual statistics.
 
@@ -160,7 +159,7 @@ def calculate_confidence_intervals(
     y_pred: np.ndarray,
     residuals_std: float,
     confidence_level: float = 0.95,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Calculate confidence intervals for predictions.
 
@@ -218,7 +217,7 @@ class MetricsCalculator:
         self.sum_y_true_squared += np.sum(y_true ** 2)
         self.sum_y_pred += np.sum(y_pred)
 
-    def compute(self) -> Dict[str, float]:
+    def compute(self) -> dict[str, float]:
         """
         Compute final metrics.
 

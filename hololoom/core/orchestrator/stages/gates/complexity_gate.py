@@ -7,7 +7,8 @@ Accepts pre-bound callables (use functools.partial to bind the orchestrator):
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols.stage import GateExecutor
 
@@ -25,14 +26,14 @@ class ComplexityAssessorExecutor(GateExecutor):
     def __init__(
         self,
         assess_fn: Callable,
-        provenance_fn: Optional[Callable] = None,
+        provenance_fn: Callable | None = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.assess_fn = assess_fn
         self.provenance_fn = provenance_fn
 
-    async def evaluate(self, ctx: 'WeavingContext') -> Optional[Any]:
+    async def evaluate(self, ctx: WeavingContext) -> Any | None:
         if ctx.complexity is None:
             ctx.complexity = self.assess_fn(ctx.current_query)
             self.logger.info(

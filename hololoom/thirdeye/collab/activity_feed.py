@@ -23,13 +23,14 @@ Created: 2025-12-03
 Author: HoloLoom Team
 """
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, List, Optional, Set, Any, Callable, Tuple
-from datetime import datetime, timedelta
-from collections import defaultdict
 import logging
 import uuid
+from collections import defaultdict
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,7 @@ class ActivityPriority(Enum):
 
 
 # Activity type to default priority mapping
-ACTIVITY_PRIORITIES: Dict[ActivityType, ActivityPriority] = {
+ACTIVITY_PRIORITIES: dict[ActivityType, ActivityPriority] = {
     # Scene operations
     ActivityType.ELEMENT_ADDED: ActivityPriority.NORMAL,
     ActivityType.ELEMENT_UPDATED: ActivityPriority.LOW,
@@ -144,19 +145,19 @@ class ActivityEntry:
 
     # Details
     summary: str  # Human-readable summary
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
     # Related entities
-    element_id: Optional[str] = None
-    target_user_id: Optional[str] = None  # For role assignments, etc.
-    style_id: Optional[str] = None
+    element_id: str | None = None
+    target_user_id: str | None = None  # For role assignments, etc.
+    style_id: str | None = None
 
     # Aggregation
-    aggregation_key: Optional[str] = None  # For grouping similar activities
+    aggregation_key: str | None = None  # For grouping similar activities
     aggregation_count: int = 1  # Count of aggregated activities
 
     # Read tracking
-    read_by: Set[str] = field(default_factory=set)
+    read_by: set[str] = field(default_factory=set)
 
     def mark_read(self, user_id: str):
         """Mark this activity as read by a user."""
@@ -166,7 +167,7 @@ class ActivityEntry:
         """Check if user has read this activity."""
         return user_id in self.read_by
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             'id': self.id,
@@ -185,7 +186,7 @@ class ActivityEntry:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ActivityEntry':
+    def from_dict(cls, data: dict[str, Any]) -> 'ActivityEntry':
         """Deserialize from dictionary."""
         return cls(
             id=data['id'],
@@ -209,14 +210,14 @@ class ActivityFilter:
     """
     Filter criteria for querying activities.
     """
-    activity_types: Optional[Set[ActivityType]] = None
-    user_ids: Optional[Set[str]] = None
-    priority_min: Optional[ActivityPriority] = None
-    element_ids: Optional[Set[str]] = None
-    style_ids: Optional[Set[str]] = None
-    since: Optional[datetime] = None
-    until: Optional[datetime] = None
-    unread_by: Optional[str] = None  # Filter to unread by this user
+    activity_types: set[ActivityType] | None = None
+    user_ids: set[str] | None = None
+    priority_min: ActivityPriority | None = None
+    element_ids: set[str] | None = None
+    style_ids: set[str] | None = None
+    since: datetime | None = None
+    until: datetime | None = None
+    unread_by: str | None = None  # Filter to unread by this user
 
     def matches(self, entry: ActivityEntry) -> bool:
         """Check if an entry matches this filter."""
@@ -264,9 +265,9 @@ class ActivityFilter:
 class NotificationSubscription:
     """A subscription to activity notifications."""
     subscriber_id: str
-    activity_types: Set[ActivityType]
+    activity_types: set[ActivityType]
     priority_min: ActivityPriority = ActivityPriority.NORMAL
-    callback: Optional[Callable[[ActivityEntry], None]] = None
+    callback: Callable[[ActivityEntry], None] | None = None
     enabled: bool = True
 
 
@@ -325,9 +326,9 @@ class ActivityFeed:
         self.max_entries = max_entries
         self.aggregation_window = timedelta(seconds=aggregation_window_seconds)
 
-        self._entries: List[ActivityEntry] = []
-        self._subscriptions: Dict[str, NotificationSubscription] = {}
-        self._user_display_names: Dict[str, str] = {}  # Cache of user display names
+        self._entries: list[ActivityEntry] = []
+        self._subscriptions: dict[str, NotificationSubscription] = {}
+        self._user_display_names: dict[str, str] = {}  # Cache of user display names
 
     # -------------------------------------------------------------------------
     # Recording Activities
@@ -338,11 +339,11 @@ class ActivityFeed:
         activity_type: ActivityType,
         user_id: str,
         summary: str,
-        details: Optional[Dict[str, Any]] = None,
-        element_id: Optional[str] = None,
-        target_user_id: Optional[str] = None,
-        style_id: Optional[str] = None,
-        priority: Optional[ActivityPriority] = None,
+        details: dict[str, Any] | None = None,
+        element_id: str | None = None,
+        target_user_id: str | None = None,
+        style_id: str | None = None,
+        priority: ActivityPriority | None = None,
         allow_aggregation: bool = True,
     ) -> ActivityEntry:
         """
@@ -415,7 +416,7 @@ class ActivityFeed:
 
         return entry
 
-    def _find_aggregatable(self, aggregation_key: str) -> Optional[ActivityEntry]:
+    def _find_aggregatable(self, aggregation_key: str) -> ActivityEntry | None:
         """Find a recent entry that can be aggregated with."""
         cutoff = datetime.now() - self.aggregation_window
 
@@ -484,7 +485,7 @@ class ActivityFeed:
         self,
         user_id: str,
         element_id: str,
-        changes: Optional[Dict[str, Any]] = None,
+        changes: dict[str, Any] | None = None,
     ) -> ActivityEntry:
         """Record element update."""
         user_name = self._get_user_display_name(user_id)
@@ -538,7 +539,7 @@ class ActivityFeed:
         user_id: str,
         target_user_id: str,
         new_role: str,
-        previous_role: Optional[str] = None,
+        previous_role: str | None = None,
     ) -> ActivityEntry:
         """Record role assignment/change."""
         user_name = self._get_user_display_name(user_id)
@@ -617,7 +618,7 @@ class ActivityFeed:
         self,
         user_id: str,
         comment_text: str,
-        element_id: Optional[str] = None,
+        element_id: str | None = None,
     ) -> ActivityEntry:
         """Record a comment."""
         user_name = self._get_user_display_name(user_id)
@@ -657,8 +658,8 @@ class ActivityFeed:
     def get_recent(
         self,
         limit: int = 50,
-        filter: Optional[ActivityFilter] = None,
-    ) -> List[ActivityEntry]:
+        filter: ActivityFilter | None = None,
+    ) -> list[ActivityEntry]:
         """
         Get recent activities.
 
@@ -682,7 +683,7 @@ class ActivityFeed:
         self,
         user_id: str,
         limit: int = 50,
-    ) -> List[ActivityEntry]:
+    ) -> list[ActivityEntry]:
         """Get unread activities for a user."""
         filter = ActivityFilter(unread_by=user_id)
         return self.get_recent(limit=limit, filter=filter)
@@ -695,7 +696,7 @@ class ActivityFeed:
         self,
         element_id: str,
         limit: int = 50,
-    ) -> List[ActivityEntry]:
+    ) -> list[ActivityEntry]:
         """Get activities related to a specific element."""
         filter = ActivityFilter(element_ids={element_id})
         return self.get_recent(limit=limit, filter=filter)
@@ -704,7 +705,7 @@ class ActivityFeed:
         self,
         user_id: str,
         limit: int = 50,
-    ) -> List[ActivityEntry]:
+    ) -> list[ActivityEntry]:
         """Get activities by a specific user."""
         filter = ActivityFilter(user_ids={user_id})
         return self.get_recent(limit=limit, filter=filter)
@@ -712,15 +713,15 @@ class ActivityFeed:
     def get_high_priority(
         self,
         limit: int = 20,
-    ) -> List[ActivityEntry]:
+    ) -> list[ActivityEntry]:
         """Get high priority activities."""
         filter = ActivityFilter(priority_min=ActivityPriority.HIGH)
         return self.get_recent(limit=limit, filter=filter)
 
     def get_activity_summary(
         self,
-        since: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        since: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Get summary statistics of activities.
 
@@ -737,12 +738,12 @@ class ActivityFeed:
         entries = [e for e in self._entries if filter.matches(e)]
 
         # Count by type
-        by_type: Dict[str, int] = defaultdict(int)
+        by_type: dict[str, int] = defaultdict(int)
         for entry in entries:
             by_type[entry.activity_type.value] += 1
 
         # Count by user
-        by_user: Dict[str, int] = defaultdict(int)
+        by_user: dict[str, int] = defaultdict(int)
         for entry in entries:
             by_user[entry.user_id] += 1
 
@@ -764,7 +765,7 @@ class ActivityFeed:
     def mark_read(
         self,
         user_id: str,
-        entry_ids: Optional[List[str]] = None,
+        entry_ids: list[str] | None = None,
     ):
         """
         Mark activities as read.
@@ -792,9 +793,9 @@ class ActivityFeed:
     def subscribe(
         self,
         subscriber_id: str,
-        activity_types: Optional[Set[ActivityType]] = None,
+        activity_types: set[ActivityType] | None = None,
         priority_min: ActivityPriority = ActivityPriority.NORMAL,
-        callback: Optional[Callable[[ActivityEntry], None]] = None,
+        callback: Callable[[ActivityEntry], None] | None = None,
     ) -> NotificationSubscription:
         """
         Subscribe to activity notifications.
@@ -833,9 +834,9 @@ class ActivityFeed:
     def update_subscription(
         self,
         subscriber_id: str,
-        activity_types: Optional[Set[ActivityType]] = None,
-        priority_min: Optional[ActivityPriority] = None,
-        enabled: Optional[bool] = None,
+        activity_types: set[ActivityType] | None = None,
+        priority_min: ActivityPriority | None = None,
+        enabled: bool | None = None,
     ):
         """Update an existing subscription."""
         sub = self._subscriptions.get(subscriber_id)
@@ -878,7 +879,7 @@ class ActivityFeed:
     # Serialization
     # -------------------------------------------------------------------------
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             'scene_id': self.scene_id,
@@ -889,7 +890,7 @@ class ActivityFeed:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ActivityFeed':
+    def from_dict(cls, data: dict[str, Any]) -> 'ActivityFeed':
         """Deserialize from dictionary."""
         feed = cls(
             scene_id=data['scene_id'],

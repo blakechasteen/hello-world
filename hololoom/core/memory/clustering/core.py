@@ -19,17 +19,24 @@ What makes it smart:
 - Thompson Sampling for k exploration
 """
 
-import numpy as np
-from typing import List, Dict, Any, Optional, Union, Callable
-from dataclasses import dataclass, field
 import warnings
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 # High-performance Rust implementations (30-50x faster)
 try:
     from hololoom_rust import (
         cosine_similarity_batch as _rust_cosine_similarity_batch,
-        normalize_batch as _rust_normalize_batch,
+    )
+    from hololoom_rust import (
         kmeans as _rust_kmeans,
+    )
+    from hololoom_rust import (
+        normalize_batch as _rust_normalize_batch,
+    )
+    from hololoom_rust import (
         silhouette_score as _rust_silhouette_score,
     )
     _HAVE_RUST = True
@@ -39,9 +46,9 @@ except ImportError:
 
 # Optional sklearn for clustering algorithms (fallback when Rust not available)
 try:
-    from sklearn.cluster import KMeans, AgglomerativeClustering
-    from sklearn.metrics import silhouette_score as _sklearn_silhouette_score
+    from sklearn.cluster import AgglomerativeClustering, KMeans
     from sklearn.metrics import calinski_harabasz_score
+    from sklearn.metrics import silhouette_score as _sklearn_silhouette_score
     _HAVE_SKLEARN = True
 except ImportError:
     _HAVE_SKLEARN = False
@@ -78,10 +85,10 @@ def _cosine_similarity_batch(vectors: np.ndarray, centroid: np.ndarray) -> np.nd
 class ClusterResult:
     """Result of clustering operation."""
     label: str
-    items: List[Any]
-    indices: List[int]
+    items: list[Any]
+    indices: list[int]
     confidence: float
-    centroid: Optional[np.ndarray] = None
+    centroid: np.ndarray | None = None
     size: int = 0
 
     def __post_init__(self):
@@ -91,10 +98,10 @@ class ClusterResult:
 @dataclass
 class ClusteringOutput:
     """Complete clustering output with metadata."""
-    clusters: List[ClusterResult]
+    clusters: list[ClusterResult]
     n_clusters: int
     silhouette: float
-    embeddings: Optional[np.ndarray] = None
+    embeddings: np.ndarray | None = None
     scale_used: int = 384
     method: str = "auto"
 
@@ -107,7 +114,7 @@ class ClusteringOutput:
     def __getitem__(self, idx):
         return self.clusters[idx]
 
-    def to_dict(self) -> List[Dict[str, Any]]:
+    def to_dict(self) -> list[dict[str, Any]]:
         """Convert to simple dict format."""
         return [
             {
@@ -121,16 +128,16 @@ class ClusteringOutput:
 
 
 def cluster(
-    data: Union[List[str], List[Dict], np.ndarray],
+    data: list[str] | list[dict] | np.ndarray,
     *,
-    k: Optional[int] = None,
+    k: int | None = None,
     min_k: int = 2,
     max_k: int = 10,
     method: str = "auto",
-    scale: Optional[int] = None,
+    scale: int | None = None,
     label_clusters: bool = True,
     return_embeddings: bool = False,
-    embedder: Optional[Any] = None,
+    embedder: Any | None = None,
     use_thompson: bool = True,
     thompson_budget: int = 15,
 ) -> ClusteringOutput:
@@ -206,9 +213,9 @@ def cluster(
 
 
 def _prepare_data(
-    data: Union[List[str], List[Dict], np.ndarray],
-    scale: Optional[int] = None,
-    embedder: Optional[Any] = None
+    data: list[str] | list[dict] | np.ndarray,
+    scale: int | None = None,
+    embedder: Any | None = None
 ) -> tuple:
     """Prepare data for clustering - extract texts and compute embeddings."""
 
@@ -236,7 +243,7 @@ def _prepare_data(
     return texts, np.array(embeddings)
 
 
-def _get_default_embedder(scale: Optional[int] = None):
+def _get_default_embedder(scale: int | None = None):
     """Get default Matryoshka embedder."""
     try:
         from hololoom.embedding.spectral import MatryoshkaEmbeddings
@@ -250,7 +257,7 @@ def _get_default_embedder(scale: Optional[int] = None):
 class _FallbackEmbedder:
     """Fallback embedder when MatryoshkaEmbeddings not available."""
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         """Generate deterministic embeddings from text hashes."""
         embeddings = []
         for text in texts:
@@ -415,11 +422,11 @@ def _do_clustering(
 
 
 def _build_clusters(
-    texts: List[str],
+    texts: list[str],
     embeddings: np.ndarray,
     labels: np.ndarray,
     centroids: np.ndarray
-) -> List[ClusterResult]:
+) -> list[ClusterResult]:
     """Build ClusterResult objects from clustering output."""
 
     clusters = []
@@ -451,10 +458,10 @@ def _build_clusters(
 
 
 def _label_clusters(
-    clusters: List[ClusterResult],
+    clusters: list[ClusterResult],
     embeddings: np.ndarray,
-    texts: List[str]
-) -> List[ClusterResult]:
+    texts: list[str]
+) -> list[ClusterResult]:
     """Generate semantic labels for clusters."""
     try:
         from .labeler import label_clusters as semantic_label
@@ -465,9 +472,9 @@ def _label_clusters(
 
 
 def _simple_label_clusters(
-    clusters: List[ClusterResult],
-    texts: List[str]
-) -> List[ClusterResult]:
+    clusters: list[ClusterResult],
+    texts: list[str]
+) -> list[ClusterResult]:
     """Simple labeling fallback using common words."""
     import re
     from collections import Counter
@@ -482,8 +489,7 @@ def _simple_label_clusters(
                  'and', 'but', 'or', 'nor', 'so', 'yet', 'both', 'either',
                  'neither', 'not', 'only', 'own', 'same', 'than', 'too',
                  'very', 'just', 'also', 'now', 'here', 'there', 'when',
-                 'where', 'why', 'how', 'all', 'each', 'every', 'both',
-                 'few', 'more', 'most', 'other', 'some', 'such', 'no',
+                 'where', 'why', 'how', 'all', 'each', 'every', 'few', 'more', 'most', 'other', 'some', 'such', 'no',
                  'any', 'this', 'that', 'these', 'those', 'i', 'me', 'my',
                  'we', 'our', 'you', 'your', 'he', 'him', 'his', 'she',
                  'her', 'it', 'its', 'they', 'them', 'their', 'what',

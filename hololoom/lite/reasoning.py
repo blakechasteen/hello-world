@@ -21,7 +21,7 @@ Date: December 2025
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.lite.memory import Memory, MemoryItem
@@ -32,8 +32,8 @@ class Answer:
     """Result of asking a question."""
     response: str
     confidence: float
-    sources: List['MemoryItem'] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    sources: list['MemoryItem'] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         return self.response
@@ -45,9 +45,9 @@ class Analysis:
     response: str
     confidence: float
     steps_taken: int
-    sources: List['MemoryItem'] = field(default_factory=list)
-    reasoning_trace: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    sources: list['MemoryItem'] = field(default_factory=list)
+    reasoning_trace: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         return self.response
@@ -159,8 +159,8 @@ async def research(
         >>> analysis = await research("exploration strategies", mem)
         >>> print(f"Found in {analysis.steps_taken} steps")
     """
-    all_sources: List['MemoryItem'] = []
-    reasoning_trace: List[Dict[str, Any]] = []
+    all_sources: list[MemoryItem] = []
+    reasoning_trace: list[dict[str, Any]] = []
     step = 0
 
     # Initial search
@@ -266,7 +266,7 @@ Cite sources by number when relevant."""
     )
 
 
-def _estimate_confidence(response: str, sources: List['MemoryItem']) -> float:
+def _estimate_confidence(response: str, sources: list['MemoryItem']) -> float:
     """Estimate confidence based on response and sources."""
     if not sources:
         return 0.0
@@ -285,9 +285,9 @@ def _estimate_confidence(response: str, sources: List['MemoryItem']) -> float:
 
 def _generate_sub_questions(
     query: str,
-    results: List['MemoryItem'],
+    results: list['MemoryItem'],
     mode: str
-) -> List[str]:
+) -> list[str]:
     """Generate follow-up questions based on initial results."""
     sub_questions = []
 

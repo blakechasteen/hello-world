@@ -36,10 +36,10 @@ API Documentation:
         - HTML size: ~8-12 KB per trajectory
 """
 
-from dataclasses import dataclass
-from typing import List, Optional, Tuple, Dict, Any
-from enum import Enum
 import math
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 
 class AnomalyType(Enum):
@@ -84,9 +84,9 @@ class ConfidencePoint:
     index: int
     confidence: float
     cached: bool = False
-    query_text: Optional[str] = None
-    timestamp: Optional[float] = None
-    metadata: Optional[Dict[str, Any]] = None
+    query_text: str | None = None
+    timestamp: float | None = None
+    metadata: dict[str, Any] | None = None
 
 
 @dataclass
@@ -117,7 +117,7 @@ class Anomaly:
     end_index: int
     severity: float
     description: str
-    affected_points: List[int]
+    affected_points: list[int]
 
 
 @dataclass
@@ -227,9 +227,9 @@ class ConfidenceTrajectoryRenderer:
 
     def render(
         self,
-        points: List[ConfidencePoint],
+        points: list[ConfidencePoint],
         title: str = "Confidence Trajectory",
-        subtitle: Optional[str] = None
+        subtitle: str | None = None
     ) -> str:
         """
         Render confidence trajectory HTML.
@@ -298,7 +298,7 @@ class ConfidenceTrajectoryRenderer:
         </div>
         """
 
-    def _validate_points(self, points: List[ConfidencePoint]) -> None:
+    def _validate_points(self, points: list[ConfidencePoint]) -> None:
         """Validate points list for common errors."""
         # Check ordering
         for i in range(len(points) - 1):
@@ -310,7 +310,7 @@ class ConfidenceTrajectoryRenderer:
             if not 0.0 <= point.confidence <= 1.0:
                 raise ValueError(f"Confidence must be in [0.0, 1.0], got {point.confidence} at index {point.index}")
 
-    def _render_header(self, title: str, subtitle: Optional[str], metrics: TrajectoryMetrics) -> str:
+    def _render_header(self, title: str, subtitle: str | None, metrics: TrajectoryMetrics) -> str:
         """Render chart header with title and key metrics."""
         subtitle_html = ""
         if subtitle:
@@ -345,7 +345,7 @@ class ConfidenceTrajectoryRenderer:
         </div>
         """
 
-    def _render_chart(self, points: List[ConfidencePoint], anomalies: List[Anomaly], metrics: TrajectoryMetrics) -> str:
+    def _render_chart(self, points: list[ConfidencePoint], anomalies: list[Anomaly], metrics: TrajectoryMetrics) -> str:
         """Render SVG line chart with confidence trajectory."""
         width = 600
         height = 200
@@ -431,7 +431,7 @@ class ConfidenceTrajectoryRenderer:
         </svg>
         """
 
-    def _render_statistics(self, metrics: TrajectoryMetrics, anomalies: List[Anomaly]) -> str:
+    def _render_statistics(self, metrics: TrajectoryMetrics, anomalies: list[Anomaly]) -> str:
         """Render statistics and anomaly list."""
         # Anomalies list
         anomalies_html = ""
@@ -509,10 +509,10 @@ class ConfidenceTrajectoryRenderer:
 
 
 def detect_confidence_anomalies(
-    points: List[ConfidencePoint],
+    points: list[ConfidencePoint],
     threshold: float = 0.7,
     window_size: int = 5
-) -> List[Anomaly]:
+) -> list[Anomaly]:
     """
     Detect confidence anomalies in trajectory.
 
@@ -631,7 +631,7 @@ def detect_confidence_anomalies(
     return anomalies
 
 
-def calculate_trajectory_metrics(points: List[ConfidencePoint]) -> TrajectoryMetrics:
+def calculate_trajectory_metrics(points: list[ConfidencePoint]) -> TrajectoryMetrics:
     """
     Calculate statistical summary of confidence trajectory.
 
@@ -704,11 +704,11 @@ def calculate_trajectory_metrics(points: List[ConfidencePoint]) -> TrajectoryMet
 
 
 def render_confidence_trajectory(
-    confidences: List[float],
-    cached: Optional[List[bool]] = None,
-    query_texts: Optional[List[str]] = None,
+    confidences: list[float],
+    cached: list[bool] | None = None,
+    query_texts: list[str] | None = None,
     title: str = "Confidence Trajectory",
-    subtitle: Optional[str] = None,
+    subtitle: str | None = None,
     detect_anomalies: bool = True
 ) -> str:
     """

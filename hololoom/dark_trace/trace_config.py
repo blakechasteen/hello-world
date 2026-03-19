@@ -6,9 +6,8 @@ Provides presets for different use cases (fast analysis, full research, safety-f
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Set
 from enum import Enum, auto
-from pathlib import Path
+from typing import Any
 
 
 class TraceMode(Enum):
@@ -49,7 +48,7 @@ class SAEConfig:
 
     # Labeling
     auto_label: bool = False            # Use LLM for auto-labeling
-    label_cache_path: Optional[str] = None
+    label_cache_path: str | None = None
 
 
 @dataclass
@@ -60,7 +59,7 @@ class SemanticConfig:
     # Dimensions
     use_standard_16: bool = True        # Use standard 16 interpretable axes
     use_extended_228: bool = False      # Use full 228 extended dimensions
-    custom_dimensions: List[Dict[str, Any]] = field(default_factory=list)
+    custom_dimensions: list[dict[str, Any]] = field(default_factory=list)
 
     # Projection
     projection_method: str = "exemplar" # "exemplar" or "learned"
@@ -76,8 +75,8 @@ class DomainConfig:
     enabled: bool = False               # Off by default
 
     # Domain definition
-    domain_name: Optional[str] = None   # e.g., "medical", "legal", "code"
-    config_path: Optional[str] = None   # Path to domain YAML config
+    domain_name: str | None = None   # e.g., "medical", "legal", "code"
+    config_path: str | None = None   # Path to domain YAML config
 
     # Learning
     learn_from_data: bool = False       # Learn axes from data (vs config-only)
@@ -109,10 +108,10 @@ class SafetyConfig:
     monitor_all_activations: bool = False        # Monitor all vs flagged only
 
     # Forbidden features (by ID)
-    forbidden_features: Set[str] = field(default_factory=set)
+    forbidden_features: set[str] = field(default_factory=set)
 
     # Required features (must be active for safety)
-    required_features: Set[str] = field(default_factory=set)
+    required_features: set[str] = field(default_factory=set)
 
     # Reconstruction loss threshold (high = model "confused")
     confusion_threshold: float = 0.5
@@ -137,7 +136,7 @@ class CorrelationConfig:
 
     # Storage
     persist_correlations: bool = False
-    correlation_cache_path: Optional[str] = None
+    correlation_cache_path: str | None = None
 
 
 @dataclass
@@ -150,7 +149,7 @@ class LoggingConfig:
 
     # Output
     log_to_file: bool = False
-    log_path: Optional[str] = None
+    log_path: str | None = None
     log_format: str = "json"            # "json" or "text"
 
     # What to log
@@ -189,7 +188,7 @@ class TraceConfig:
     logging: LoggingConfig = field(default_factory=LoggingConfig)
 
     # Registry
-    registry_path: Optional[str] = None  # Path to persist feature registry
+    registry_path: str | None = None  # Path to persist feature registry
     enable_history: bool = True          # Track activation history
     history_size: int = 1000             # History entries per feature
 
@@ -441,14 +440,14 @@ class TraceConfig:
         self.safety.required_features.add(feature_id)
         return self
 
-    def set_domain(self, domain_name: str, config_path: Optional[str] = None) -> "TraceConfig":
+    def set_domain(self, domain_name: str, config_path: str | None = None) -> "TraceConfig":
         """Configure domain lens."""
         self.domain.enabled = True
         self.domain.domain_name = domain_name
         self.domain.config_path = config_path
         return self
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize configuration to dictionary."""
         import dataclasses
         return {
@@ -468,7 +467,7 @@ class TraceConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "TraceConfig":
+    def from_dict(cls, data: dict[str, Any]) -> "TraceConfig":
         """Create configuration from dictionary."""
         config = cls()
         config.mode = TraceMode[data.get("mode", "STANDARD")]

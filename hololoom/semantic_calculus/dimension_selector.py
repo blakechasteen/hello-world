@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 🎯 SMART DIMENSION SELECTOR
 ===========================
@@ -23,8 +22,9 @@ Selection Strategies:
 """
 
 # Force UTF-8 encoding for Windows console when executed directly.
-import sys
 import io
+import sys
+
 if __name__ == "__main__" and sys.platform == "win32":
     try:
         if hasattr(sys.stdout, 'reconfigure'):
@@ -38,22 +38,22 @@ if __name__ == "__main__" and sys.platform == "win32":
     except Exception:
         pass
 
-import numpy as np
-from typing import List, Dict, Tuple, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 
+import numpy as np
+
 try:
     from .dimensions import (
-        SemanticDimension,
-        STANDARD_DIMENSIONS,
         EXTENDED_244_DIMENSIONS,
+        STANDARD_DIMENSIONS,
+        SemanticDimension,
     )
 except ImportError:
     from dimensions import (
-        SemanticDimension,
-        STANDARD_DIMENSIONS,
         EXTENDED_244_DIMENSIONS,
+        SemanticDimension,
     )
 
 
@@ -131,7 +131,7 @@ class SmartDimensionSelector:
         ],
     }
 
-    def __init__(self, all_dimensions: Optional[List[SemanticDimension]] = None):
+    def __init__(self, all_dimensions: list[SemanticDimension] | None = None):
         """
         Initialize selector.
 
@@ -157,8 +157,8 @@ class SmartDimensionSelector:
     def compute_variance_scores(
         self,
         embed_fn: Callable,
-        sample_texts: Optional[List[str]] = None
-    ) -> Dict[str, float]:
+        sample_texts: list[str] | None = None
+    ) -> dict[str, float]:
         """
         Compute variance score for each dimension.
 
@@ -199,7 +199,7 @@ class SmartDimensionSelector:
 
         return variances
 
-    def compute_balance_scores(self) -> Dict[str, float]:
+    def compute_balance_scores(self) -> dict[str, float]:
         """
         Compute balance scores based on category representation.
 
@@ -227,7 +227,7 @@ class SmartDimensionSelector:
     def compute_domain_scores(
         self,
         domain: str = 'narrative'
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Compute domain-specific importance scores.
 
@@ -294,10 +294,10 @@ class SmartDimensionSelector:
         self,
         n_dimensions: int = 36,
         strategy: SelectionStrategy = SelectionStrategy.HYBRID,
-        embed_fn: Optional[Callable] = None,
+        embed_fn: Callable | None = None,
         domain: str = 'narrative',
-        weights: Optional[Dict[str, float]] = None
-    ) -> List[SemanticDimension]:
+        weights: dict[str, float] | None = None
+    ) -> list[SemanticDimension]:
         """
         Select optimal subset of dimensions.
 
@@ -392,7 +392,7 @@ class SmartDimensionSelector:
         for cat, count in sorted(category_dist.items()):
             print(f"      {cat}: {count}")
 
-        print(f"\n   Top 10 selected dimensions:")
+        print("\n   Top 10 selected dimensions:")
         for i, score in enumerate(dim_scores[:10], 1):
             print(f"      {i:2d}. {score.dimension.name:<25} "
                   f"[{score.category}] score={score.total_score:.3f}")
@@ -401,8 +401,8 @@ class SmartDimensionSelector:
 
     def get_selection_report(
         self,
-        selected: List[SemanticDimension]
-    ) -> Dict:
+        selected: list[SemanticDimension]
+    ) -> dict:
         """
         Generate detailed report on selection.
 
@@ -438,10 +438,10 @@ class SmartDimensionSelector:
 
 
 def create_fused_36d_selection(
-    embed_fn: Optional[Callable] = None,
+    embed_fn: Callable | None = None,
     strategy: SelectionStrategy = SelectionStrategy.HYBRID,
     domain: str = 'narrative'
-) -> List[SemanticDimension]:
+) -> list[SemanticDimension]:
     """
     Convenience function to create optimal 36D selection for FUSED mode.
 

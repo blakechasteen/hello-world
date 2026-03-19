@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Planning Department - Goal decomposition and action planning.
 
@@ -12,16 +11,16 @@ Exports:
 """
 
 from .planning import (
-    PlanningDepartment,
-    GoalDecomposer,
-    ActionPlanner,
-    ConstraintSolver,
-    PlanValidator,
-    Goal,
     Action,
-    Plan,
+    ActionPlanner,
     Constraint,
-    ConstraintType
+    ConstraintSolver,
+    ConstraintType,
+    Goal,
+    GoalDecomposer,
+    Plan,
+    PlanningDepartment,
+    PlanValidator,
 )
 
 __all__ = [

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 HoloLoom Worker - Execute HoloLoom operations directly in Node Daemon.
 
@@ -11,8 +12,8 @@ Usage:
 
 import asyncio
 import time
-from typing import Any, Dict, Optional
-from ..shared.types import JobResult, JobStatus
+from typing import Any
+
 from ..shared.logging import get_logger
 
 logger = get_logger(__name__, component="node")
@@ -30,8 +31,8 @@ except ImportError:
 
 # Try to import weaving orchestrator for full reasoning
 try:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
     from hololoom.protocols.types import Query
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
     ORCHESTRATOR_AVAILABLE = True
 except ImportError:
     WeavingOrchestrator = None
@@ -55,10 +56,10 @@ class HoloLoomWorker:
             mode: Execution mode - "bare", "fast" (default), or "fused"
         """
         self.mode = mode
-        self._loom: Optional[HoloLoom] = None
-        self._orchestrator: Optional[WeavingOrchestrator] = None
+        self._loom: HoloLoom | None = None
+        self._orchestrator: WeavingOrchestrator | None = None
         self._lock = asyncio.Lock()
-        self._initialized_at: Optional[float] = None
+        self._initialized_at: float | None = None
 
         # Statistics
         self._stats = {
@@ -112,7 +113,7 @@ class HoloLoomWorker:
                 self._loom = None
                 return False
 
-    async def execute(self, operation: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, operation: str, params: dict[str, Any]) -> dict[str, Any]:
         """
         Main dispatch for HoloLoom operations.
 
@@ -181,7 +182,7 @@ class HoloLoomWorker:
                 "execution_time_ms": (time.time() - start_time) * 1000
             }
 
-    async def recall(self, query: str, k: int = 5) -> Dict[str, Any]:
+    async def recall(self, query: str, k: int = 5) -> dict[str, Any]:
         """
         Local memory search.
 
@@ -217,7 +218,7 @@ class HoloLoomWorker:
             logger.error(f"Recall failed for query '{query}': {e}")
             return {"status": "error", "error": str(e)}
 
-    async def experience(self, content: str) -> Dict[str, Any]:
+    async def experience(self, content: str) -> dict[str, Any]:
         """
         Local memory store.
 
@@ -244,7 +245,7 @@ class HoloLoomWorker:
             logger.error(f"Experience failed for content: {e}")
             return {"status": "error", "error": str(e)}
 
-    async def weave(self, query: str, mode: str = "fast") -> Dict[str, Any]:
+    async def weave(self, query: str, mode: str = "fast") -> dict[str, Any]:
         """
         Local reasoning (full weaving cycle).
 
@@ -288,7 +289,7 @@ class HoloLoomWorker:
             logger.error(f"Weave failed for query '{query}': {e}")
             return {"status": "error", "error": str(e)}
 
-    async def _weave_with_orchestrator(self, query: str, mode: str) -> Dict[str, Any]:
+    async def _weave_with_orchestrator(self, query: str, mode: str) -> dict[str, Any]:
         """
         Full weaving with WeavingOrchestrator.
 
@@ -350,7 +351,7 @@ class HoloLoomWorker:
             except Exception as e:
                 logger.error(f"Error closing HoloLoom: {e}")
 
-    def status(self) -> Dict[str, Any]:
+    def status(self) -> dict[str, Any]:
         """
         Get worker status and statistics.
 
@@ -380,7 +381,7 @@ class HoloLoomWorker:
             }
         }
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """
         Perform health check on HoloLoom worker.
 

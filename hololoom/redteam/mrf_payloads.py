@@ -18,30 +18,23 @@ Author: CARTS Team (MRF Integration)
 Date: 2025-12-03
 """
 
+import random
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Any, Optional, Tuple
-import random
+from typing import Any
 
-from .strategies import (
-    AttackStrategy,
-    AttackPayload,
-    PayloadGenerator,
-    AttackCategory,
-    STRATEGY_CATEGORIES,
+from .learning import (
+    HotPayloadTracker,
 )
 from .mutator import (
     PayloadMutator,
-    MutationType,
-    MutationResult,
 )
-from .learning import (
-    HotPayloadTracker,
-    PayloadUsageRecord,
-    HeatScore,
+from .strategies import (
+    AttackPayload,
+    AttackStrategy,
+    PayloadGenerator,
 )
-
 
 # =============================================================================
 # Constants
@@ -130,7 +123,7 @@ class EnhancementType(Enum):
 
 
 # Strategy to enhancement type mapping (which enhancements work best)
-STRATEGY_ENHANCEMENTS: Dict[AttackStrategy, List[EnhancementType]] = {
+STRATEGY_ENHANCEMENTS: dict[AttackStrategy, list[EnhancementType]] = {
     AttackStrategy.UNICODE_BYPASS: [
         EnhancementType.ENCODING_LAYERING,
         EnhancementType.ADVERSARIAL_PERTURBATION,
@@ -192,11 +185,11 @@ class EnhancementResult:
     """Result of MRF-guided payload enhancement."""
 
     original_payload: AttackPayload
-    enhanced_payloads: List[AttackPayload]
+    enhanced_payloads: list[AttackPayload]
     enhancement_type: EnhancementType
     confidence: float  # 0.0-1.0
     rationale: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
     @property
@@ -220,7 +213,7 @@ class EnhancementResult:
             return best
         return (best - original) / original
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "original": {
@@ -251,7 +244,7 @@ class MRFPayloadConfig:
     exploration_rate: float = 0.15
     multi_pass_threshold: float = 0.8  # Quality above this triggers multi-pass
     max_passes: int = 3
-    seed: Optional[int] = None
+    seed: int | None = None
 
     def __post_init__(self):
         if self.seed is not None:
@@ -294,9 +287,9 @@ class MRFPayloadEnhancer:
 
     def __init__(
         self,
-        config: Optional[MRFPayloadConfig] = None,
-        generator: Optional[PayloadGenerator] = None,
-        mutator: Optional[PayloadMutator] = None,
+        config: MRFPayloadConfig | None = None,
+        generator: PayloadGenerator | None = None,
+        mutator: PayloadMutator | None = None,
     ):
         """
         Initialize MRF payload enhancer.
@@ -311,22 +304,18 @@ class MRFPayloadEnhancer:
         self.mutator = mutator or PayloadMutator(seed=self.config.seed)
 
         # Thompson Sampling priors for enhancement types
-        self._enhancement_alphas: Dict[EnhancementType, float] = {
-            e: 1.0 for e in EnhancementType
-        }
-        self._enhancement_betas: Dict[EnhancementType, float] = {
-            e: 1.0 for e in EnhancementType
-        }
+        self._enhancement_alphas: dict[EnhancementType, float] = dict.fromkeys(EnhancementType, 1.0)
+        self._enhancement_betas: dict[EnhancementType, float] = dict.fromkeys(EnhancementType, 1.0)
 
         # Track enhancement statistics
         self._total_enhancements = 0
         self._successful_enhancements = 0
-        self._enhancement_history: List[EnhancementResult] = []
+        self._enhancement_history: list[EnhancementResult] = []
 
     def enhance(
         self,
         payload: AttackPayload,
-        enhancement_type: Optional[EnhancementType] = None,
+        enhancement_type: EnhancementType | None = None,
     ) -> EnhancementResult:
         """
         Enhance a payload using MRF CRITIQUE strategy.
@@ -430,8 +419,8 @@ class MRFPayloadEnhancer:
         self,
         strategy: AttackStrategy,
         count: int = 10,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> List[AttackPayload]:
+        context: dict[str, Any] | None = None,
+    ) -> list[AttackPayload]:
         """
         Generate MRF-enhanced payloads for a strategy.
 
@@ -466,8 +455,8 @@ class MRFPayloadEnhancer:
 
     def select_payload_thompson(
         self,
-        payloads: List[AttackPayload],
-        tracker: Optional[HotPayloadTracker] = None,
+        payloads: list[AttackPayload],
+        tracker: HotPayloadTracker | None = None,
     ) -> AttackPayload:
         """
         Select payload using Thompson Sampling with heat feedback.
@@ -533,7 +522,7 @@ class MRFPayloadEnhancer:
         else:
             self._enhancement_betas[enhancement_type] += 1.0 - severity
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get enhancement statistics."""
         success_rate = (
             self._successful_enhancements / self._total_enhancements
@@ -593,7 +582,7 @@ class MRFPayloadEnhancer:
         self,
         payload: AttackPayload,
         enhancement_type: EnhancementType,
-    ) -> List[AttackPayload]:
+    ) -> list[AttackPayload]:
         """Apply specific enhancement type to payload."""
         enhancers = {
             EnhancementType.SEMANTIC_OBFUSCATION: self._semantic_obfuscation,
@@ -611,7 +600,7 @@ class MRFPayloadEnhancer:
     def _semantic_obfuscation(
         self,
         payload: AttackPayload,
-    ) -> List[AttackPayload]:
+    ) -> list[AttackPayload]:
         """Apply meaning-preserving rewording."""
         variants = []
 
@@ -637,7 +626,7 @@ class MRFPayloadEnhancer:
     def _structural_evasion(
         self,
         payload: AttackPayload,
-    ) -> List[AttackPayload]:
+    ) -> list[AttackPayload]:
         """Apply format/structure changes."""
         variants = []
         base = payload.payload
@@ -670,7 +659,7 @@ class MRFPayloadEnhancer:
     def _contextual_camouflage(
         self,
         payload: AttackPayload,
-    ) -> List[AttackPayload]:
+    ) -> list[AttackPayload]:
         """Wrap payload in innocent-looking context."""
         variants = []
         base = payload.payload
@@ -703,7 +692,7 @@ class MRFPayloadEnhancer:
     def _multi_stage_decomposition(
         self,
         payload: AttackPayload,
-    ) -> List[AttackPayload]:
+    ) -> list[AttackPayload]:
         """Split payload into multiple innocuous-looking stages."""
         variants = []
         words = payload.payload.split()
@@ -752,7 +741,7 @@ class MRFPayloadEnhancer:
     def _encoding_layering(
         self,
         payload: AttackPayload,
-    ) -> List[AttackPayload]:
+    ) -> list[AttackPayload]:
         """Apply multiple encoding layers."""
         import base64
         import urllib.parse
@@ -796,7 +785,7 @@ class MRFPayloadEnhancer:
     def _social_engineering(
         self,
         payload: AttackPayload,
-    ) -> List[AttackPayload]:
+    ) -> list[AttackPayload]:
         """Apply social engineering/persuasion techniques."""
         variants = []
         base = payload.payload
@@ -829,7 +818,7 @@ class MRFPayloadEnhancer:
     def _adversarial_perturbation(
         self,
         payload: AttackPayload,
-    ) -> List[AttackPayload]:
+    ) -> list[AttackPayload]:
         """Apply adversarial perturbations (Unicode, homoglyphs)."""
         variants = []
 
@@ -898,7 +887,7 @@ class MRFPayloadEnhancer:
     def _calculate_confidence(
         self,
         original: AttackPayload,
-        enhanced: List[AttackPayload],
+        enhanced: list[AttackPayload],
     ) -> float:
         """Calculate confidence in enhancement quality."""
         if not enhanced:
@@ -919,7 +908,7 @@ class MRFPayloadEnhancer:
     def _build_rationale(
         self,
         original: AttackPayload,
-        enhanced: List[AttackPayload],
+        enhanced: list[AttackPayload],
         enhancement_type: EnhancementType,
     ) -> str:
         """Build human-readable rationale for enhancement."""
@@ -943,8 +932,8 @@ class MRFPayloadEnhancer:
 # =============================================================================
 
 def create_mrf_enhancer(
-    config: Optional[MRFPayloadConfig] = None,
-    seed: Optional[int] = None,
+    config: MRFPayloadConfig | None = None,
+    seed: int | None = None,
 ) -> MRFPayloadEnhancer:
     """Create an MRF payload enhancer."""
     if config is None:
@@ -954,7 +943,7 @@ def create_mrf_enhancer(
 
 def enhance_payload(
     payload: AttackPayload,
-    enhancement_type: Optional[EnhancementType] = None,
+    enhancement_type: EnhancementType | None = None,
 ) -> EnhancementResult:
     """Convenience function to enhance a single payload."""
     enhancer = MRFPayloadEnhancer()
@@ -964,8 +953,8 @@ def enhance_payload(
 def generate_enhanced_payloads(
     strategy: AttackStrategy,
     count: int = 10,
-    context: Optional[Dict[str, Any]] = None,
-) -> List[AttackPayload]:
+    context: dict[str, Any] | None = None,
+) -> list[AttackPayload]:
     """Convenience function to generate enhanced payloads."""
     enhancer = MRFPayloadEnhancer()
     return enhancer.generate_enhanced(strategy, count, context)

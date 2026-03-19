@@ -8,10 +8,9 @@ Provides extended statistics beyond min/max/avg:
 - Z-score based anomaly detection
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Optional
 import math
 from collections import deque
+from dataclasses import dataclass
 
 
 @dataclass
@@ -22,9 +21,9 @@ class StatisticalSummary:
     std_dev: float
     variance: float
     median: float
-    percentiles: Dict[int, float]
+    percentiles: dict[int, float]
     trend: str  # "increasing", "decreasing", "stable"
-    anomalies: List[int]  # Indices of anomalous values
+    anomalies: list[int]  # Indices of anomalous values
 
 
 class StatisticalAnalyzer:
@@ -38,7 +37,7 @@ class StatisticalAnalyzer:
         """
         self.anomaly_threshold = anomaly_threshold
 
-    def analyze(self, values: List[float]) -> StatisticalSummary:
+    def analyze(self, values: list[float]) -> StatisticalSummary:
         """Compute extended statistics on values.
 
         Args:
@@ -66,7 +65,7 @@ class StatisticalAnalyzer:
             anomalies=self._detect_anomalies(values, mean, std_dev)
         )
 
-    def correlation(self, x: List[float], y: List[float]) -> float:
+    def correlation(self, x: list[float], y: list[float]) -> float:
         """Calculate Pearson correlation coefficient.
 
         Args:
@@ -96,9 +95,9 @@ class StatisticalAnalyzer:
 
     def rolling_stats(
         self,
-        values: List[float],
+        values: list[float],
         window_size: int = 10
-    ) -> List[Dict[str, float]]:
+    ) -> list[dict[str, float]]:
         """Calculate rolling mean and standard deviation.
 
         Args:
@@ -126,7 +125,7 @@ class StatisticalAnalyzer:
 
         return results
 
-    def _median(self, sorted_values: List[float]) -> float:
+    def _median(self, sorted_values: list[float]) -> float:
         """Calculate median from sorted values."""
         n = len(sorted_values)
         if n == 0:
@@ -137,7 +136,7 @@ class StatisticalAnalyzer:
             mid = n // 2
             return (sorted_values[mid - 1] + sorted_values[mid]) / 2
 
-    def _detect_trend(self, values: List[float]) -> str:
+    def _detect_trend(self, values: list[float]) -> str:
         """Simple linear trend detection.
 
         Compares average of first third to average of last third.
@@ -171,10 +170,10 @@ class StatisticalAnalyzer:
 
     def _detect_anomalies(
         self,
-        values: List[float],
+        values: list[float],
         mean: float,
         std_dev: float
-    ) -> List[int]:
+    ) -> list[int]:
         """Z-score based anomaly detection.
 
         Args:
@@ -195,7 +194,7 @@ class StatisticalAnalyzer:
                 anomalies.append(i)
         return anomalies
 
-    def _percentiles(self, sorted_values: List[float]) -> Dict[int, float]:
+    def _percentiles(self, sorted_values: list[float]) -> dict[int, float]:
         """Calculate standard percentiles.
 
         Args:

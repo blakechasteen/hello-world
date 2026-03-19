@@ -21,22 +21,18 @@ Date: 2025-12-03
 """
 
 import json
-import random
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Set, Tuple
+from typing import Any
 
 from hololoom.bandits.beta_arm import BetaArm
-from ..strategies import AttackStrategy
+
 from ..mutator import MutationType
+from ..strategies import AttackStrategy
 from .learning_protocols import (
     LearningLevel,
-    LearningResult,
-    HeatScore,
-    ContextKey,
 )
-
 
 # =============================================================================
 # Data Classes
@@ -52,12 +48,12 @@ class HierarchicalArm:
 
     level: LearningLevel
     arm_id: str  # Strategy name, payload ID, or mutation type
-    parent_id: Optional[str] = None  # Link to parent level
+    parent_id: str | None = None  # Link to parent level
     _arm: BetaArm = field(default_factory=BetaArm)
     total_pulls: int = 0
     total_rewards: float = 0.0
-    children: Set[str] = field(default_factory=set)
-    last_updated: Optional[str] = None
+    children: set[str] = field(default_factory=set)
+    last_updated: str | None = None
 
     @property
     def alpha(self) -> float:
@@ -108,7 +104,7 @@ class HierarchicalArm:
         """Uncertainty (variance of Beta distribution)."""
         return self._arm.variance()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'level': self.level.value,
@@ -126,7 +122,7 @@ class HierarchicalArm:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'HierarchicalArm':
+    def from_dict(cls, data: dict[str, Any]) -> 'HierarchicalArm':
         """Create from dictionary."""
         return cls(
             level=LearningLevel(data['level']),
@@ -145,14 +141,14 @@ class HierarchicalSelection:
     """Result of a hierarchical selection."""
 
     strategy: AttackStrategy
-    payload_id: Optional[str] = None
-    mutation_type: Optional[MutationType] = None
+    payload_id: str | None = None
+    mutation_type: MutationType | None = None
 
-    strategy_arm: Optional[HierarchicalArm] = None
-    payload_arm: Optional[HierarchicalArm] = None
-    mutation_arm: Optional[HierarchicalArm] = None
+    strategy_arm: HierarchicalArm | None = None
+    payload_arm: HierarchicalArm | None = None
+    mutation_arm: HierarchicalArm | None = None
 
-    sampled_values: Dict[str, float] = field(default_factory=dict)
+    sampled_values: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass
@@ -160,8 +156,8 @@ class HierarchicalUpdate:
     """Update to propagate through hierarchy."""
 
     strategy: AttackStrategy
-    payload_id: Optional[str]
-    mutation_type: Optional[MutationType]
+    payload_id: str | None
+    mutation_type: MutationType | None
     success: bool
     severity: float = 0.0
 
@@ -233,26 +229,26 @@ class HierarchicalLearner:
         self.min_samples_for_child = min_samples_for_child
 
         # Level 1: Strategy arms (12 strategies)
-        self.strategy_arms: Dict[AttackStrategy, HierarchicalArm] = {}
+        self.strategy_arms: dict[AttackStrategy, HierarchicalArm] = {}
 
         # Level 2: Payload arms (per strategy)
         # strategy -> payload_id -> arm
         # NOTE: Must be initialized BEFORE _init_strategy_arms() which populates it
-        self.payload_arms: Dict[AttackStrategy, Dict[str, HierarchicalArm]] = {}
+        self.payload_arms: dict[AttackStrategy, dict[str, HierarchicalArm]] = {}
 
         # Level 3: Mutation arms (per payload)
         # payload_id -> mutation_type -> arm
-        self.mutation_arms: Dict[str, Dict[MutationType, HierarchicalArm]] = {}
+        self.mutation_arms: dict[str, dict[MutationType, HierarchicalArm]] = {}
 
         # Initialize strategy arms (must be after payload_arms is defined)
         self._init_strategy_arms()
 
         # Track known entities
-        self._known_payloads: Set[str] = set()
-        self._known_mutations: Set[Tuple[str, MutationType]] = set()
+        self._known_payloads: set[str] = set()
+        self._known_mutations: set[tuple[str, MutationType]] = set()
 
         # Selection history
-        self.selection_history: List[HierarchicalSelection] = []
+        self.selection_history: list[HierarchicalSelection] = []
 
     def _init_strategy_arms(self):
         """Initialize strategy-level arms."""
@@ -337,8 +333,8 @@ class HierarchicalLearner:
     def select_payload(
         self,
         strategy: AttackStrategy,
-        available_payloads: Optional[List[str]] = None
-    ) -> Optional[str]:
+        available_payloads: list[str] | None = None
+    ) -> str | None:
         """
         Select payload for given strategy.
 
@@ -373,8 +369,8 @@ class HierarchicalLearner:
     def select_mutation(
         self,
         payload_id: str,
-        available_mutations: Optional[List[MutationType]] = None
-    ) -> Optional[MutationType]:
+        available_mutations: list[MutationType] | None = None
+    ) -> MutationType | None:
         """
         Select mutation type for given payload.
 
@@ -409,8 +405,8 @@ class HierarchicalLearner:
 
     def select_full_hierarchy(
         self,
-        available_payloads: Optional[Dict[AttackStrategy, List[str]]] = None,
-        available_mutations: Optional[List[MutationType]] = None
+        available_payloads: dict[AttackStrategy, list[str]] | None = None,
+        available_mutations: list[MutationType] | None = None
     ) -> HierarchicalSelection:
         """
         Full hierarchical selection: strategy → payload → mutation.
@@ -464,13 +460,13 @@ class HierarchicalLearner:
         self.selection_history.append(selection)
         return selection
 
-    def _get_global_mutation_priors(self) -> Dict[MutationType, HierarchicalArm]:
+    def _get_global_mutation_priors(self) -> dict[MutationType, HierarchicalArm]:
         """
         Get aggregated mutation priors across all payloads.
 
         Used when a payload has no mutation history.
         """
-        global_priors: Dict[MutationType, Tuple[float, float, int]] = {}
+        global_priors: dict[MutationType, tuple[float, float, int]] = {}
 
         for payload_mutations in self.mutation_arms.values():
             for mutation_type, arm in payload_mutations.items():
@@ -485,7 +481,7 @@ class HierarchicalLearner:
                 )
 
         # Create temporary arms from aggregated priors
-        result: Dict[MutationType, HierarchicalArm] = {}
+        result: dict[MutationType, HierarchicalArm] = {}
 
         for mutation_type in MutationType:
             if mutation_type in global_priors:
@@ -598,7 +594,7 @@ class HierarchicalLearner:
     # Query Methods
     # =========================================================================
 
-    def get_strategy_stats(self) -> Dict[str, Any]:
+    def get_strategy_stats(self) -> dict[str, Any]:
         """Get statistics for all strategies."""
         total_pulls = sum(arm.total_pulls for arm in self.strategy_arms.values())
         total_rewards = sum(arm.total_rewards for arm in self.strategy_arms.values())
@@ -619,8 +615,8 @@ class HierarchicalLearner:
 
     def get_payload_stats(
         self,
-        strategy: Optional[AttackStrategy] = None
-    ) -> Dict[str, Any]:
+        strategy: AttackStrategy | None = None
+    ) -> dict[str, Any]:
         """
         Get statistics for payloads.
 
@@ -650,8 +646,8 @@ class HierarchicalLearner:
 
     def get_mutation_stats(
         self,
-        payload_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        payload_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Get statistics for mutations.
 
@@ -679,7 +675,7 @@ class HierarchicalLearner:
             }
         }
 
-    def get_hierarchy_summary(self) -> Dict[str, Any]:
+    def get_hierarchy_summary(self) -> dict[str, Any]:
         """Get complete hierarchy summary."""
         return {
             'strategy_level': self.get_strategy_stats(),
@@ -689,7 +685,7 @@ class HierarchicalLearner:
             'total_known_mutations': len(self._known_mutations),
         }
 
-    def get_best_path(self, strategy: AttackStrategy) -> Dict[str, Any]:
+    def get_best_path(self, strategy: AttackStrategy) -> dict[str, Any]:
         """
         Get best path through hierarchy for a strategy.
 
@@ -765,7 +761,7 @@ class HierarchicalLearner:
         if not path.exists():
             return
 
-        with open(path, 'r') as f:
+        with open(path) as f:
             state = json.load(f)
 
         self.initial_alpha = state.get('initial_alpha', 1.0)
@@ -832,7 +828,7 @@ def create_hierarchical_learner(
     initial_beta: float = 1.0,
     propagation_decay: float = 0.8,
     min_samples_for_child: int = 3,
-    state_path: Optional[Path] = None
+    state_path: Path | None = None
 ) -> HierarchicalLearner:
     """
     Create a HierarchicalLearner, optionally loading saved state.
@@ -864,8 +860,8 @@ def create_hierarchical_update(
     strategy: AttackStrategy,
     success: bool,
     severity: float = 0.0,
-    payload_id: Optional[str] = None,
-    mutation_type: Optional[MutationType] = None,
+    payload_id: str | None = None,
+    mutation_type: MutationType | None = None,
     strategy_weight: float = 0.5,
     payload_weight: float = 0.3,
     mutation_weight: float = 0.2,

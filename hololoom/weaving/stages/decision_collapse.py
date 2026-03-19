@@ -11,12 +11,11 @@ This stage:
 
 import logging
 import time
-from typing import Dict, Any, Optional, List
-import numpy as np
+from typing import Any
 
-from hololoom.protocols.types import Query, Features, Context
-from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
+from hololoom.convergence.engine import CollapseStrategy, ConvergenceEngine
 from hololoom.loom.command import PatternSpec
+from hololoom.protocols.types import Context, Features, Query
 from hololoom.weaving.protocols import StageResult
 
 
@@ -33,7 +32,7 @@ class DecisionCollapseStage:
         policy_engine: Any,
         convergence_engine: ConvergenceEngine,
         collapse_strategy: CollapseStrategy = CollapseStrategy.BAYESIAN_BLEND,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         """
         Initialize the decision collapse stage.
@@ -52,7 +51,7 @@ class DecisionCollapseStage:
     async def execute(
         self,
         query: Query,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         pattern_spec: PatternSpec,
     ) -> StageResult:
         """
@@ -156,11 +155,11 @@ class DecisionCollapseStage:
         """Get the name of this stage."""
         return "decision_collapse"
 
-    def get_required_context_keys(self) -> List[str]:
+    def get_required_context_keys(self) -> list[str]:
         """Get required context keys."""
         return ["features"]  # Minimum requirement
 
-    def get_output_context_keys(self) -> List[str]:
+    def get_output_context_keys(self) -> list[str]:
         """Get output context keys."""
         return [
             "selected_tool",

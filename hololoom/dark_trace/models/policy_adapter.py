@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Policy Adapter: Interpretability Interface for HoloLoom Policy Networks
 
@@ -45,9 +46,9 @@ Usage:
     )
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 
@@ -61,13 +62,11 @@ except ImportError:
     nn = None
 
 from hololoom.dark_trace.models.adapter import (
-    ModelAdapter,
     LayerInfo,
     LayerType,
+    ModelAdapter,
     ModelCapabilities,
     SteeringConfig,
-    HookHandle,
-    ActivationHook,
 )
 
 
@@ -88,12 +87,12 @@ class PolicyLayerInfo:
 
     name: str
     layer_type: PolicyLayerType
-    block_index: Optional[int] = None
-    input_dim: Optional[int] = None
-    output_dim: Optional[int] = None
-    n_heads: Optional[int] = None
+    block_index: int | None = None
+    input_dim: int | None = None
+    output_dim: int | None = None
+    n_heads: int | None = None
     has_adapter: bool = False
-    adapter_rank: Optional[int] = None
+    adapter_rank: int | None = None
 
     def to_layer_info(self) -> LayerInfo:
         """Convert to generic LayerInfo."""
@@ -139,7 +138,7 @@ class PolicyAdapter(ModelAdapter):
         device: torch device (auto-detected if not provided)
     """
 
-    def __init__(self, neural_core: Any, device: Optional[str] = None):
+    def __init__(self, neural_core: Any, device: str | None = None):
         if not TORCH_AVAILABLE:
             raise RuntimeError("PyTorch required for PolicyAdapter")
 
@@ -155,12 +154,12 @@ class PolicyAdapter(ModelAdapter):
             self._device = torch.device(device)
 
         # Cache layer info
-        self._layer_info_cache: Dict[str, PolicyLayerInfo] = {}
+        self._layer_info_cache: dict[str, PolicyLayerInfo] = {}
         self._build_layer_cache()
 
         # Storage for activations during forward pass
-        self._activation_storage: Dict[str, torch.Tensor] = {}
-        self._native_hooks: Dict[str, Any] = {}  # PyTorch hook handles
+        self._activation_storage: dict[str, torch.Tensor] = {}
+        self._native_hooks: dict[str, Any] = {}  # PyTorch hook handles
 
     def _build_layer_cache(self) -> None:
         """Build cache of layer information."""
@@ -237,7 +236,7 @@ class PolicyAdapter(ModelAdapter):
             output_dim=n_tools,
         )
 
-    def get_layer_names(self) -> List[str]:
+    def get_layer_names(self) -> list[str]:
         """Get names of all hookable layers."""
         return list(self._layer_info_cache.keys())
 
@@ -287,7 +286,7 @@ class PolicyAdapter(ModelAdapter):
 
     def get_activations(
         self,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
         layer: str,
         **kwargs,
     ) -> np.ndarray:
@@ -390,7 +389,7 @@ class PolicyAdapter(ModelAdapter):
         mem: "torch.Tensor",
         ctrl: "torch.Tensor",
         adapter_idx: int,
-    ) -> Tuple["torch.Tensor", "torch.Tensor"]:
+    ) -> tuple["torch.Tensor", "torch.Tensor"]:
         """Internal forward pass implementation."""
         net = self._model
         B = mem.size(0)
@@ -499,7 +498,7 @@ class PolicyAdapter(ModelAdapter):
             supported_dtypes=["float32", "float16"],
         )
 
-    def get_tool_names(self) -> List[str]:
+    def get_tool_names(self) -> list[str]:
         """Get names of tools the policy selects from."""
         if hasattr(self._model, 'tools'):
             return self._model.tools
@@ -507,9 +506,9 @@ class PolicyAdapter(ModelAdapter):
 
     def get_attention_patterns(
         self,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
         layer: str,
-    ) -> Optional[np.ndarray]:
+    ) -> np.ndarray | None:
         """
         Extract attention patterns from an attention layer.
 
@@ -561,7 +560,7 @@ class PolicyAdapter(ModelAdapter):
 
 def create_policy_adapter(
     policy: Any,
-    device: Optional[str] = None,
+    device: str | None = None,
 ) -> PolicyAdapter:
     """
     Create a PolicyAdapter from a UnifiedPolicy.

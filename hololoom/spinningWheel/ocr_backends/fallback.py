@@ -7,14 +7,14 @@ Last-resort OCR backend that extracts filename/metadata only.
 Always available, provides minimal information when no OCR is available.
 """
 
-from typing import Union, Any
 from pathlib import Path
+from typing import Any
 
 from hololoom.spinningWheel.ocr_protocol import (
     BaseOCRBackend,
-    OCRResult,
+    OCROutputFormat,
     OCRQuality,
-    OCROutputFormat
+    OCRResult,
 )
 
 

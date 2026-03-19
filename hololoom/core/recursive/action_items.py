@@ -57,12 +57,12 @@ Integration with Scratchpad:
 import json
 import logging
 import re
-from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Any, Optional, Set
-from datetime import datetime, timedelta
-from pathlib import Path
-from enum import Enum
 from collections import defaultdict
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -125,24 +125,24 @@ class ActionItem:
 
     # Timestamps
     created_at: datetime = field(default_factory=datetime.now)
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    due_date: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    due_date: datetime | None = None
 
     # Relationships
-    context: Dict[str, Any] = field(default_factory=dict)
-    dependencies: Set[str] = field(default_factory=set)
-    blocks: Set[str] = field(default_factory=set)
+    context: dict[str, Any] = field(default_factory=dict)
+    dependencies: set[str] = field(default_factory=set)
+    blocks: set[str] = field(default_factory=set)
 
     # Completion metrics
-    success: Optional[bool] = None
-    quality_score: Optional[float] = None
-    completion_time_ms: Optional[float] = None
+    success: bool | None = None
+    quality_score: float | None = None
+    completion_time_ms: float | None = None
 
     # Learning metadata
     priority_confidence: float = 0.5  # How confident are we in the priority?
-    predicted_duration_ms: Optional[float] = None
-    actual_vs_predicted_ratio: Optional[float] = None
+    predicted_duration_ms: float | None = None
+    actual_vs_predicted_ratio: float | None = None
 
     def is_overdue(self) -> bool:
         """Check if action is overdue"""
@@ -211,16 +211,16 @@ class PriorityModel:
     - What predicts successful completion?
     """
     # Beta distribution parameters per category
-    category_priors: Dict[str, Dict[str, float]] = field(default_factory=lambda: defaultdict(
+    category_priors: dict[str, dict[str, float]] = field(default_factory=lambda: defaultdict(
         lambda: {"alpha": 1.0, "beta": 1.0}
     ))
 
     # Completion time predictions per category
-    avg_completion_times: Dict[str, float] = field(default_factory=lambda: defaultdict(float))
-    completion_counts: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    avg_completion_times: dict[str, float] = field(default_factory=lambda: defaultdict(float))
+    completion_counts: dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     # Priority calibration
-    priority_buckets: Dict[str, List[float]] = field(default_factory=lambda: defaultdict(list))
+    priority_buckets: dict[str, list[float]] = field(default_factory=lambda: defaultdict(list))
 
     def update_from_completion(
         self,
@@ -295,7 +295,7 @@ class PriorityModel:
 # Action Item Extraction
 # ============================================================================
 
-def extract_action_items_from_text(text: str) -> List[Dict[str, Any]]:
+def extract_action_items_from_text(text: str) -> list[dict[str, Any]]:
     """
     Extract action items from free text using pattern matching.
 
@@ -418,7 +418,7 @@ class ActionItemTracker:
         self.persist_path = Path(persist_path)
         self.auto_archive_after_days = auto_archive_after_days
 
-        self.actions: Dict[str, ActionItem] = {}
+        self.actions: dict[str, ActionItem] = {}
         self.priority_model = PriorityModel()
 
         self._next_id = 1
@@ -431,10 +431,10 @@ class ActionItemTracker:
         self,
         description: str,
         priority: float = 0.5,
-        category: Optional[ActionCategory] = None,
-        due_date: Optional[datetime] = None,
-        context: Optional[Dict[str, Any]] = None,
-        dependencies: Optional[Set[str]] = None
+        category: ActionCategory | None = None,
+        due_date: datetime | None = None,
+        context: dict[str, Any] | None = None,
+        dependencies: set[str] | None = None
     ) -> ActionItem:
         """
         Add new action item.
@@ -557,9 +557,9 @@ class ActionItemTracker:
     def get_pending_actions(
         self,
         min_priority: float = 0.0,
-        category: Optional[ActionCategory] = None,
+        category: ActionCategory | None = None,
         limit: int = 10
-    ) -> List[ActionItem]:
+    ) -> list[ActionItem]:
         """
         Get pending actions sorted by effective priority.
 
@@ -583,7 +583,7 @@ class ActionItemTracker:
 
         return pending[:limit]
 
-    def get_overdue_actions(self) -> List[ActionItem]:
+    def get_overdue_actions(self) -> list[ActionItem]:
         """Get all overdue actions"""
         return [
             action for action in self.actions.values()
@@ -614,7 +614,7 @@ class ActionItemTracker:
 
         return archived_count
 
-    def extract_from_text(self, text: str) -> List[ActionItem]:
+    def extract_from_text(self, text: str) -> list[ActionItem]:
         """
         Extract action items from text and add them.
 
@@ -633,7 +633,7 @@ class ActionItemTracker:
 
         return created
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get statistics about action items.
 
@@ -713,7 +713,7 @@ class ActionItemTracker:
 
     def load(self):
         """Load from disk"""
-        with open(self.persist_path, 'r') as f:
+        with open(self.persist_path) as f:
             data = json.load(f)
 
         self.actions = {
@@ -728,7 +728,7 @@ class ActionItemTracker:
 
         logger.info(f"Loaded {len(self.actions)} actions from {self.persist_path}")
 
-    def _action_to_dict(self, action: ActionItem) -> Dict[str, Any]:
+    def _action_to_dict(self, action: ActionItem) -> dict[str, Any]:
         """Convert ActionItem to JSON-serializable dict"""
         d = asdict(action)
         d['status'] = action.status.value
@@ -741,7 +741,7 @@ class ActionItemTracker:
         d['due_date'] = action.due_date.isoformat() if action.due_date else None
         return d
 
-    def _action_from_dict(self, d: Dict[str, Any]) -> ActionItem:
+    def _action_from_dict(self, d: dict[str, Any]) -> ActionItem:
         """Convert dict to ActionItem"""
         return ActionItem(
             id=d['id'],
@@ -764,7 +764,7 @@ class ActionItemTracker:
             actual_vs_predicted_ratio=d.get('actual_vs_predicted_ratio')
         )
 
-    def _model_to_dict(self) -> Dict[str, Any]:
+    def _model_to_dict(self) -> dict[str, Any]:
         """Convert PriorityModel to JSON-serializable dict"""
         return {
             "category_priors": dict(self.priority_model.category_priors),
@@ -773,7 +773,7 @@ class ActionItemTracker:
             "priority_buckets": dict(self.priority_model.priority_buckets)
         }
 
-    def _model_from_dict(self, d: Dict[str, Any]) -> PriorityModel:
+    def _model_from_dict(self, d: dict[str, Any]) -> PriorityModel:
         """Convert dict to PriorityModel"""
         model = PriorityModel()
         model.category_priors = defaultdict(

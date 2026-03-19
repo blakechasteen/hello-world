@@ -19,12 +19,13 @@ Ablation Methods:
 4. Noise Ablation: Add noise to corrupt the feature
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable, Union
 from enum import Enum
+from typing import Any
+
 import numpy as np
 import torch
-from collections import defaultdict
 
 
 class AblationMethod(Enum):
@@ -99,14 +100,14 @@ class AblationEffect:
     # Statistical significance
     p_value: float
     is_significant: bool
-    confidence_interval: Tuple[float, float]
+    confidence_interval: tuple[float, float]
 
     # Effect direction
     increases_output: bool  # True if ablation increases output
     effect_size: float  # Cohen's d or similar
 
     # Breakdown by output dimension (if multi-dimensional)
-    per_dimension_effects: Dict[int, float] = field(default_factory=dict)
+    per_dimension_effects: dict[int, float] = field(default_factory=dict)
 
     # Metadata
     n_samples: int = 0
@@ -123,22 +124,22 @@ class AblationResult:
     """Result of ablating one or more features."""
 
     # Feature(s) ablated
-    feature_ids: List[str]
-    feature_indices: List[int]
+    feature_ids: list[str]
+    feature_indices: list[int]
 
     # Aggregate effects
     total_output_delta: float
     total_relative_change: float
 
     # Per-feature effects
-    per_feature_effects: Dict[str, AblationEffect] = field(default_factory=dict)
+    per_feature_effects: dict[str, AblationEffect] = field(default_factory=dict)
 
     # Interaction effects (for multi-feature ablation)
-    interaction_effect: Optional[float] = None  # Synergy/redundancy
+    interaction_effect: float | None = None  # Synergy/redundancy
 
     # Original vs ablated outputs
-    original_outputs: Optional[torch.Tensor] = None
-    ablated_outputs: Optional[torch.Tensor] = None
+    original_outputs: torch.Tensor | None = None
+    ablated_outputs: torch.Tensor | None = None
 
     # Statistical summary
     mean_effect: float = 0.0
@@ -147,17 +148,17 @@ class AblationResult:
     total_features: int = 0
 
     # Metadata
-    config: Optional[AblationConfig] = None
+    config: AblationConfig | None = None
     computation_time_ms: float = 0.0
 
-    def get_significant_features(self) -> List[AblationEffect]:
+    def get_significant_features(self) -> list[AblationEffect]:
         """Get features with statistically significant effects."""
         return [
             effect for effect in self.per_feature_effects.values()
             if effect.is_significant
         ]
 
-    def get_top_features(self, k: int = 10) -> List[AblationEffect]:
+    def get_top_features(self, k: int = 10) -> list[AblationEffect]:
         """Get top-k features by effect size."""
         sorted_effects = sorted(
             self.per_feature_effects.values(),
@@ -169,7 +170,7 @@ class AblationResult:
     def summary(self) -> str:
         """Generate human-readable summary."""
         lines = [
-            f"Ablation Result Summary:",
+            "Ablation Result Summary:",
             f"  Features ablated: {len(self.feature_ids)}",
             f"  Total output delta: {self.total_output_delta:.4f}",
             f"  Relative change: {self.total_relative_change:.2%}",
@@ -189,7 +190,7 @@ class BatchAblationResult:
     """Results from ablating multiple features independently."""
 
     # Individual results
-    results: Dict[str, AblationResult] = field(default_factory=dict)
+    results: dict[str, AblationResult] = field(default_factory=dict)
 
     # Aggregate statistics
     n_features_tested: int = 0
@@ -198,12 +199,12 @@ class BatchAblationResult:
     max_effect: float = 0.0
 
     # Feature ranking
-    ranked_features: List[Tuple[str, float]] = field(default_factory=list)
+    ranked_features: list[tuple[str, float]] = field(default_factory=list)
 
     # Metadata
     total_computation_time_ms: float = 0.0
 
-    def get_feature_ranking(self) -> List[Tuple[str, float]]:
+    def get_feature_ranking(self) -> list[tuple[str, float]]:
         """Get features ranked by effect size."""
         if self.ranked_features:
             return self.ranked_features
@@ -242,8 +243,8 @@ class FeatureAblator:
         self,
         model: Any,  # Model or hook system
         probe: Any,  # MindProbe for activation access
-        config: Optional[AblationConfig] = None,
-        output_fn: Optional[Callable] = None,  # Custom output extraction
+        config: AblationConfig | None = None,
+        output_fn: Callable | None = None,  # Custom output extraction
     ):
         """
         Initialize FeatureAblator.
@@ -261,7 +262,7 @@ class FeatureAblator:
         self.output_fn = output_fn or self._default_output_fn
 
         # Cache for mean activations (for MEAN ablation method)
-        self._mean_cache: Dict[str, torch.Tensor] = {}
+        self._mean_cache: dict[str, torch.Tensor] = {}
 
         # Statistics tracking
         self._ablation_count = 0
@@ -280,7 +281,7 @@ class FeatureAblator:
         self,
         feature_id: str,
         test_inputs: torch.Tensor,
-        method: Optional[AblationMethod] = None,
+        method: AblationMethod | None = None,
     ) -> AblationResult:
         """
         Ablate a single feature and measure the effect.
@@ -334,9 +335,9 @@ class FeatureAblator:
 
     def ablate_batch(
         self,
-        feature_ids: List[str],
+        feature_ids: list[str],
         test_inputs: torch.Tensor,
-        method: Optional[AblationMethod] = None,
+        method: AblationMethod | None = None,
     ) -> BatchAblationResult:
         """
         Ablate multiple features independently.
@@ -386,9 +387,9 @@ class FeatureAblator:
 
     def ablate_group(
         self,
-        feature_ids: List[str],
+        feature_ids: list[str],
         test_inputs: torch.Tensor,
-        method: Optional[AblationMethod] = None,
+        method: AblationMethod | None = None,
     ) -> AblationResult:
         """
         Ablate multiple features simultaneously.
@@ -475,7 +476,7 @@ class FeatureAblator:
     def _get_ablated_outputs(
         self,
         inputs: torch.Tensor,
-        feature_indices: List[int],
+        feature_indices: list[int],
         method: AblationMethod,
     ) -> torch.Tensor:
         """Get model outputs with specified features ablated."""
@@ -511,9 +512,9 @@ class FeatureAblator:
     def _get_ablation_values(
         self,
         inputs: torch.Tensor,
-        feature_indices: List[int],
+        feature_indices: list[int],
         method: AblationMethod,
-    ) -> List[torch.Tensor]:
+    ) -> list[torch.Tensor]:
         """Get ablation values based on method."""
         values = []
 
@@ -630,7 +631,7 @@ class FeatureAblator:
     def compute_mean_activations(
         self,
         dataset: torch.Tensor,
-        feature_indices: Optional[List[int]] = None,
+        feature_indices: list[int] | None = None,
     ) -> None:
         """
         Compute and cache mean activations from dataset.
@@ -647,7 +648,7 @@ class FeatureAblator:
             # Placeholder for now
             pass
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get ablation statistics."""
         return {
             "total_ablations": self._ablation_count,

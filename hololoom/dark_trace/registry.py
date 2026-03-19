@@ -14,21 +14,21 @@ Key Classes:
 - CorrelationMatrix: SAE ↔ Semantic correlations
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Set, Tuple, Iterator
-from collections import defaultdict
-from datetime import datetime
 import json
 import threading
+from collections import defaultdict
+from collections.abc import Iterator
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Optional
+
 import numpy as np
 
 from hololoom.dark_trace.protocol import (
     Feature,
     FeatureSource,
     SafetyFlag,
-    LensType,
 )
-
 
 # =============================================================================
 # Correlation Matrix
@@ -58,18 +58,18 @@ class CorrelationMatrix:
 
     def __init__(self):
         # {source_id: {target_id: FeatureCorrelation}}
-        self._correlations: Dict[str, Dict[str, FeatureCorrelation]] = defaultdict(dict)
+        self._correlations: dict[str, dict[str, FeatureCorrelation]] = defaultdict(dict)
 
         # Running statistics for online correlation computation
         # {(source_id, target_id): {"n": int, "sum_x": float, "sum_y": float, ...}}
-        self._running_stats: Dict[Tuple[str, str], Dict[str, float]] = {}
+        self._running_stats: dict[tuple[str, str], dict[str, float]] = {}
 
         self._lock = threading.Lock()
 
     def update(
         self,
-        source_activations: Dict[str, float],
-        target_activations: Dict[str, float]
+        source_activations: dict[str, float],
+        target_activations: dict[str, float]
     ) -> None:
         """
         Update correlation estimates with new activation observations.
@@ -150,7 +150,7 @@ class CorrelationMatrix:
                         confidence=confidence,
                     )
 
-    def get_correlation(self, source_id: str, target_id: str) -> Optional[FeatureCorrelation]:
+    def get_correlation(self, source_id: str, target_id: str) -> FeatureCorrelation | None:
         """Get correlation between two features."""
         return self._correlations.get(source_id, {}).get(target_id)
 
@@ -159,7 +159,7 @@ class CorrelationMatrix:
         source_id: str,
         k: int = 5,
         min_confidence: float = 0.9
-    ) -> List[FeatureCorrelation]:
+    ) -> list[FeatureCorrelation]:
         """
         Get top-k correlated features for a source feature.
 
@@ -180,7 +180,7 @@ class CorrelationMatrix:
         correlations.sort(key=lambda c: abs(c.correlation), reverse=True)
         return correlations[:k]
 
-    def get_semantic_meanings(self, sae_feature_id: str, k: int = 3) -> List[Tuple[str, float]]:
+    def get_semantic_meanings(self, sae_feature_id: str, k: int = 3) -> list[tuple[str, float]]:
         """
         Get semantic meanings for an SAE feature.
 
@@ -193,7 +193,7 @@ class CorrelationMatrix:
             if c.target_id.startswith("semantic.")
         ]
 
-    def get_sae_features_for_semantic(self, semantic_id: str, k: int = 5) -> List[Tuple[str, float]]:
+    def get_sae_features_for_semantic(self, semantic_id: str, k: int = 5) -> list[tuple[str, float]]:
         """
         Get SAE features most correlated with a semantic axis.
 
@@ -211,7 +211,7 @@ class CorrelationMatrix:
         results.sort(key=lambda x: abs(x[1]), reverse=True)
         return results[:k]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize correlations to dictionary."""
         return {
             src: {
@@ -253,23 +253,23 @@ class FeatureRegistry:
             history_size: Maximum history entries per feature
         """
         # Main storage: {feature_id: Feature}
-        self._features: Dict[str, Feature] = {}
+        self._features: dict[str, Feature] = {}
 
         # Index by source type
-        self._by_source: Dict[FeatureSource, Set[str]] = defaultdict(set)
+        self._by_source: dict[FeatureSource, set[str]] = defaultdict(set)
 
         # Index by safety flag
-        self._by_safety: Dict[SafetyFlag, Set[str]] = defaultdict(set)
+        self._by_safety: dict[SafetyFlag, set[str]] = defaultdict(set)
 
         # Activation history: {feature_id: [(timestamp, activation), ...]}
         self._enable_history = enable_history
         self._history_size = history_size
-        self._activation_history: Dict[str, List[Tuple[datetime, float]]] = defaultdict(list)
+        self._activation_history: dict[str, list[tuple[datetime, float]]] = defaultdict(list)
 
         # Statistics
-        self._activation_counts: Dict[str, int] = defaultdict(int)
-        self._activation_sums: Dict[str, float] = defaultdict(float)
-        self._activation_sq_sums: Dict[str, float] = defaultdict(float)
+        self._activation_counts: dict[str, int] = defaultdict(int)
+        self._activation_sums: dict[str, float] = defaultdict(float)
+        self._activation_sq_sums: dict[str, float] = defaultdict(float)
 
         # SAE ↔ Semantic correlations
         self.correlations = CorrelationMatrix()
@@ -289,7 +289,7 @@ class FeatureRegistry:
             self._by_source[feature.source].add(feature.id)
             self._by_safety[feature.safety_flag].add(feature.id)
 
-    def register_batch(self, features: List[Feature]) -> None:
+    def register_batch(self, features: list[Feature]) -> None:
         """Register multiple features at once."""
         with self._lock:
             for feature in features:
@@ -297,7 +297,7 @@ class FeatureRegistry:
                 self._by_source[feature.source].add(feature.id)
                 self._by_safety[feature.safety_flag].add(feature.id)
 
-    def get(self, feature_id: str) -> Optional[Feature]:
+    def get(self, feature_id: str) -> Feature | None:
         """Get a feature by ID."""
         return self._features.get(feature_id)
 
@@ -319,15 +319,15 @@ class FeatureRegistry:
         """Iterate over all features."""
         return iter(self._features.values())
 
-    def list_by_source(self, source: FeatureSource) -> List[Feature]:
+    def list_by_source(self, source: FeatureSource) -> list[Feature]:
         """Get all features from a specific source."""
         return [self._features[fid] for fid in self._by_source.get(source, set())]
 
-    def list_by_safety(self, safety_flag: SafetyFlag) -> List[Feature]:
+    def list_by_safety(self, safety_flag: SafetyFlag) -> list[Feature]:
         """Get all features with a specific safety flag."""
         return [self._features[fid] for fid in self._by_safety.get(safety_flag, set())]
 
-    def get_dangerous_features(self) -> List[Feature]:
+    def get_dangerous_features(self) -> list[Feature]:
         """Get all features flagged as dangerous."""
         dangerous = set()
         for flag in [SafetyFlag.DANGEROUS, SafetyFlag.BLOCKED]:
@@ -384,7 +384,7 @@ class FeatureRegistry:
                 if len(history) > self._history_size:
                     self._activation_history[feature_id] = history[-self._history_size:]
 
-    def record_activations_batch(self, activations: Dict[str, float]) -> None:
+    def record_activations_batch(self, activations: dict[str, float]) -> None:
         """Record multiple activations at once."""
         with self._lock:
             now = datetime.now()
@@ -399,7 +399,7 @@ class FeatureRegistry:
                     if len(history) > self._history_size:
                         self._activation_history[feature_id] = history[-self._history_size:]
 
-    def get_activation_stats(self, feature_id: str) -> Dict[str, float]:
+    def get_activation_stats(self, feature_id: str) -> dict[str, float]:
         """
         Get activation statistics for a feature.
 
@@ -419,8 +419,8 @@ class FeatureRegistry:
     def get_history(
         self,
         feature_id: str,
-        limit: Optional[int] = None
-    ) -> List[Tuple[datetime, float]]:
+        limit: int | None = None
+    ) -> list[tuple[datetime, float]]:
         """Get activation history for a feature."""
         history = self._activation_history.get(feature_id, [])
         if limit:
@@ -429,8 +429,8 @@ class FeatureRegistry:
 
     def update_correlations(
         self,
-        sae_activations: Dict[str, float],
-        semantic_activations: Dict[str, float]
+        sae_activations: dict[str, float],
+        semantic_activations: dict[str, float]
     ) -> None:
         """
         Update SAE ↔ Semantic correlations with new observations.
@@ -465,9 +465,9 @@ class FeatureRegistry:
     def search(
         self,
         query: str,
-        source: Optional[FeatureSource] = None,
+        source: FeatureSource | None = None,
         limit: int = 10
-    ) -> List[Feature]:
+    ) -> list[Feature]:
         """
         Search features by label or description.
 
@@ -533,7 +533,7 @@ class FeatureRegistry:
 
     def update_feature_labels(
         self,
-        labels: Dict[int, Any],
+        labels: dict[int, Any],
         source: Optional["FeatureSource"] = None,
         prefix: str = "sae",
     ) -> int:
@@ -620,9 +620,9 @@ class FeatureRegistry:
         self,
         source_layer: int,
         target_layer: int,
-        correlations: List[Tuple[int, int, float]],
+        correlations: list[tuple[int, int, float]],
         source_prefix: str = "sae",
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> int:
         """
         Register cross-layer feature correlations from CorrelationTracker.
@@ -685,7 +685,7 @@ class FeatureRegistry:
             # Store layer pair metadata
             pair_key = f"layer_pair.{source_layer}.{target_layer}"
             if not hasattr(self, "_layer_pair_metadata"):
-                self._layer_pair_metadata: Dict[str, Dict[str, Any]] = {}
+                self._layer_pair_metadata: dict[str, dict[str, Any]] = {}
 
             self._layer_pair_metadata[pair_key] = {
                 "source_layer": source_layer,
@@ -703,7 +703,7 @@ class FeatureRegistry:
         target_layer: int,
         min_correlation: float = 0.3,
         source_prefix: str = "sae",
-    ) -> List[FeatureCorrelation]:
+    ) -> list[FeatureCorrelation]:
         """
         Get all correlations between two layers.
 
@@ -737,7 +737,7 @@ class FeatureRegistry:
         self,
         source_layer: int,
         target_layer: int,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Get metadata for a layer pair correlation registration."""
         if not hasattr(self, "_layer_pair_metadata"):
             return None
@@ -751,7 +751,7 @@ class FeatureRegistry:
         end_layer: int,
         min_correlation: float = 0.3,
         source_prefix: str = "sae",
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Trace a feature's propagation path through layers.
 
@@ -817,7 +817,7 @@ class FeatureRegistry:
 
         return path
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize registry to dictionary."""
         return {
             "features": {
@@ -846,7 +846,7 @@ class FeatureRegistry:
     @classmethod
     def load(cls, path: str) -> "FeatureRegistry":
         """Load registry from JSON file."""
-        with open(path, "r") as f:
+        with open(path) as f:
             data = json.load(f)
 
         registry = cls(enable_history=False)
@@ -870,7 +870,7 @@ class FeatureRegistry:
 # Convenience Functions
 # =============================================================================
 
-def create_sae_features(n_features: int, prefix: str = "sae") -> List[Feature]:
+def create_sae_features(n_features: int, prefix: str = "sae") -> list[Feature]:
     """
     Create SAE feature objects for registration.
 
@@ -893,8 +893,8 @@ def create_sae_features(n_features: int, prefix: str = "sae") -> List[Feature]:
 
 
 def create_semantic_features(
-    dimensions: List[Dict[str, Any]]
-) -> List[Feature]:
+    dimensions: list[dict[str, Any]]
+) -> list[Feature]:
     """
     Create Semantic feature objects from dimension definitions.
 

@@ -15,9 +15,9 @@ Tests:
 """
 
 import asyncio
+import json
 import time
 from pathlib import Path
-import json
 
 from smart_weaving_orchestrator import create_smart_orchestrator
 
@@ -56,11 +56,11 @@ class PipelineValidator:
                 print(f"  Query: '{query[:40]}...'")
                 print(f"    Expected: {expected_intent}")
                 print(f"    Confidence: {spacetime.confidence:.2f}")
-                print(f"    Status: PASS")
+                print("    Status: PASS")
                 passed += 1
             else:
                 print(f"  Query: '{query[:40]}...'")
-                print(f"    Status: FAIL (no math metrics)")
+                print("    Status: FAIL (no math metrics)")
 
         print(f"\nResult: {passed}/{len(test_cases)} passed")
         return {"test": "classification", "passed": passed, "total": len(test_cases)}
@@ -95,7 +95,7 @@ class PipelineValidator:
                     passed += 1
             else:
                 print(f"  Query: '{query[:40]}...'")
-                print(f"    Status: FAIL (no operations)")
+                print("    Status: FAIL (no operations)")
 
         print(f"\nResult: {passed}/{len(test_cases)} passed")
         return {"test": "operation_selection", "passed": passed, "total": len(test_cases)}
@@ -163,7 +163,7 @@ class PipelineValidator:
 
             return {"test": "rl_learning", "passed": 1 if improving else 0, "total": 1}
         else:
-            print(f"\n  Status: FAIL (insufficient data)")
+            print("\n  Status: FAIL (insufficient data)")
             return {"test": "rl_learning", "passed": 0, "total": 1}
 
     async def test_cost_efficiency(self):
@@ -274,11 +274,11 @@ class PipelineValidator:
 
         print(f"  Query: '{query[:60]}...'")
         print(f"  Duration: {duration:.0f}ms")
-        print(f"\n  Component Checks:")
+        print("\n  Component Checks:")
         for check, status in checks.items():
             print(f"    {check}: {'PASS' if status else 'FAIL'}")
 
-        print(f"\n  Response preview:")
+        print("\n  Response preview:")
         print(f"    {spacetime.response[:200] if spacetime.response else 'None'}...")
 
         print(f"\nResult: {passed}/{total} checks passed")

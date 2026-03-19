@@ -32,27 +32,27 @@ Usage:
     print(project.get_most_connected_files())
 """
 
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Set, AsyncIterator, Tuple
-from collections import defaultdict
 import ast
 import hashlib
-import re
 import json
-import time
+import re
 import subprocess
+import time
+from collections import defaultdict
+from collections.abc import AsyncIterator
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Optional
 
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities,
-    SpinnerCheckpoint,
     ImportanceScore,
-    ImportanceSignals
+    ImportanceSignals,
+    SpinnerCapabilities,
+    SpinResult,
 )
-from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass
@@ -87,7 +87,7 @@ class ComplexityMetrics:
         else:
             return "very_high"    # Refactor strongly recommended
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'cyclomatic_complexity': self.cyclomatic_complexity,
@@ -121,9 +121,9 @@ class APISymbol:
     symbol_type: str            # "function", "method", "class", "constant"
     visibility: str             # "public", "protected", "private"
     line_number: int
-    docstring: Optional[str] = None
+    docstring: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'name': self.name,
             'type': self.symbol_type,
@@ -137,13 +137,13 @@ class APISymbol:
 class APISurface:
     """API surface analysis for a file."""
     # Symbol classification
-    public_symbols: List[APISymbol] = field(default_factory=list)
-    protected_symbols: List[APISymbol] = field(default_factory=list)  # _prefix
-    private_symbols: List[APISymbol] = field(default_factory=list)    # __prefix
+    public_symbols: list[APISymbol] = field(default_factory=list)
+    protected_symbols: list[APISymbol] = field(default_factory=list)  # _prefix
+    private_symbols: list[APISymbol] = field(default_factory=list)    # __prefix
 
     # __all__ tracking
     has_all_export: bool = False
-    all_exports: List[str] = field(default_factory=list)
+    all_exports: list[str] = field(default_factory=list)
 
     @property
     def exposure_ratio(self) -> float:
@@ -165,7 +165,7 @@ class APISurface:
         """Total number of symbols analyzed."""
         return len(self.public_symbols) + len(self.protected_symbols) + len(self.private_symbols)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'public_count': len(self.public_symbols),
             'protected_count': len(self.protected_symbols),
@@ -231,7 +231,7 @@ class CohesionMetrics:
         else:
             return "low"       # Consider refactoring
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'internal_calls': self.internal_calls,
             'external_calls': self.external_calls,
@@ -262,9 +262,9 @@ class DeadCodeSymbol:
 
     # Entry point check results
     is_entry_point: bool = False
-    entry_point_reason: Optional[str] = None  # Why it's an entry point (if it is)
+    entry_point_reason: str | None = None  # Why it's an entry point (if it is)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'name': self.name,
             'type': self.symbol_type,
@@ -284,9 +284,9 @@ class DeadCodeAnalysis:
 
     Identifies functions/methods/classes with no callers that aren't entry points.
     """
-    dead_functions: List[DeadCodeSymbol] = field(default_factory=list)
-    dead_methods: List[DeadCodeSymbol] = field(default_factory=list)
-    dead_classes: List[DeadCodeSymbol] = field(default_factory=list)
+    dead_functions: list[DeadCodeSymbol] = field(default_factory=list)
+    dead_methods: list[DeadCodeSymbol] = field(default_factory=list)
+    dead_classes: list[DeadCodeSymbol] = field(default_factory=list)
 
     # Totals for context
     total_functions: int = 0
@@ -330,7 +330,7 @@ class DeadCodeAnalysis:
         else:
             return "critical"     # >30% dead code
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'dead_functions': [s.to_dict() for s in self.dead_functions],
             'dead_methods': [s.to_dict() for s in self.dead_methods],
@@ -362,26 +362,26 @@ class CodeFunction:
     """Parsed function/method"""
     name: str
     signature: str
-    docstring: Optional[str]
+    docstring: str | None
     line_start: int
     line_end: int
     is_async: bool = False
     is_method: bool = False
-    decorators: List[str] = field(default_factory=list)
-    calls: List[str] = field(default_factory=list)  # Functions called
-    complexity: Optional[ComplexityMetrics] = None  # Cyclomatic complexity metrics
+    decorators: list[str] = field(default_factory=list)
+    calls: list[str] = field(default_factory=list)  # Functions called
+    complexity: ComplexityMetrics | None = None  # Cyclomatic complexity metrics
 
 
 @dataclass
 class CodeClass:
     """Parsed class"""
     name: str
-    bases: List[str]
-    docstring: Optional[str]
+    bases: list[str]
+    docstring: str | None
     line_start: int
     line_end: int
-    methods: List[CodeFunction] = field(default_factory=list)
-    decorators: List[str] = field(default_factory=list)
+    methods: list[CodeFunction] = field(default_factory=list)
+    decorators: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -389,16 +389,16 @@ class CodeFile:
     """Parsed code file"""
     file_path: Path
     language: str
-    imports: List[str] = field(default_factory=list)
-    classes: List[CodeClass] = field(default_factory=list)
-    functions: List[CodeFunction] = field(default_factory=list)
-    docstring: Optional[str] = None
+    imports: list[str] = field(default_factory=list)
+    classes: list[CodeClass] = field(default_factory=list)
+    functions: list[CodeFunction] = field(default_factory=list)
+    docstring: str | None = None
     total_lines: int = 0
     code_lines: int = 0
     comment_lines: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    api_surface: Optional[APISurface] = None  # API visibility analysis
-    cohesion: Optional[CohesionMetrics] = None  # Module cohesion metrics
+    metadata: dict[str, Any] = field(default_factory=dict)
+    api_surface: APISurface | None = None  # API visibility analysis
+    cohesion: CohesionMetrics | None = None  # Module cohesion metrics
 
     @property
     def complexity_score(self) -> float:
@@ -419,11 +419,11 @@ class CodeFile:
 class GitFileInfo:
     """Git history information for a file"""
     file_path: Path
-    first_commit_date: Optional[float] = None  # Unix timestamp
-    last_commit_date: Optional[float] = None
+    first_commit_date: float | None = None  # Unix timestamp
+    last_commit_date: float | None = None
     commit_count: int = 0
-    authors: List[str] = field(default_factory=list)
-    primary_author: Optional[str] = None
+    authors: list[str] = field(default_factory=list)
+    primary_author: str | None = None
     lines_added: int = 0
     lines_deleted: int = 0
 
@@ -521,7 +521,7 @@ class GitAnalyzer:
         except (subprocess.SubprocessError, ValueError):
             return GitFileInfo(file_path=file_path)
 
-    def get_file_blame_stats(self, file_path: Path) -> Dict[str, int]:
+    def get_file_blame_stats(self, file_path: Path) -> dict[str, int]:
         """Get line count per author via git blame"""
         if not self._git_available:
             return {}
@@ -562,10 +562,10 @@ class IncrementalUpdateResult:
 
     Tracks which files were added, modified, or removed since last analysis.
     """
-    added_files: List[str] = field(default_factory=list)
-    modified_files: List[str] = field(default_factory=list)
-    removed_files: List[str] = field(default_factory=list)
-    unchanged_files: List[str] = field(default_factory=list)
+    added_files: list[str] = field(default_factory=list)
+    modified_files: list[str] = field(default_factory=list)
+    removed_files: list[str] = field(default_factory=list)
+    unchanged_files: list[str] = field(default_factory=list)
 
     # Updated project (includes all files, but only changed ones were re-parsed)
     project: Optional['CodebaseProject'] = None
@@ -596,7 +596,7 @@ class DependencyEdge:
     """Edge in dependency graph"""
     source_file: str  # File that imports
     target_file: str  # File being imported
-    import_names: List[str] = field(default_factory=list)  # What's imported
+    import_names: list[str] = field(default_factory=list)  # What's imported
     import_type: str = "import"  # "import", "from_import", "dynamic"
 
 
@@ -622,13 +622,13 @@ class CodebaseProject:
     - Most connected/important file detection
     """
     root_path: Path
-    files: Dict[str, CodeFile] = field(default_factory=dict)  # path -> CodeFile
-    dependency_edges: List[DependencyEdge] = field(default_factory=list)
-    call_edges: List[CallEdge] = field(default_factory=list)
-    git_info: Dict[str, GitFileInfo] = field(default_factory=dict)  # path -> GitFileInfo
+    files: dict[str, CodeFile] = field(default_factory=dict)  # path -> CodeFile
+    dependency_edges: list[DependencyEdge] = field(default_factory=list)
+    call_edges: list[CallEdge] = field(default_factory=list)
+    git_info: dict[str, GitFileInfo] = field(default_factory=dict)  # path -> GitFileInfo
 
     # Analysis results
-    dead_code_analysis: Optional[DeadCodeAnalysis] = None  # Dead code detection results
+    dead_code_analysis: DeadCodeAnalysis | None = None  # Dead code detection results
 
     # Codebase-level stats
     total_files: int = 0
@@ -636,10 +636,10 @@ class CodebaseProject:
     total_code_lines: int = 0
     total_classes: int = 0
     total_functions: int = 0
-    languages: Set[str] = field(default_factory=set)
+    languages: set[str] = field(default_factory=set)
 
     @property
-    def dependency_graph(self) -> Dict[str, List[str]]:
+    def dependency_graph(self) -> dict[str, list[str]]:
         """Adjacency list: file -> [files it imports from]"""
         graph = defaultdict(list)
         for edge in self.dependency_edges:
@@ -648,7 +648,7 @@ class CodebaseProject:
         return dict(graph)
 
     @property
-    def reverse_dependency_graph(self) -> Dict[str, List[str]]:
+    def reverse_dependency_graph(self) -> dict[str, list[str]]:
         """Reverse adjacency: file -> [files that import it]"""
         graph = defaultdict(list)
         for edge in self.dependency_edges:
@@ -657,7 +657,7 @@ class CodebaseProject:
         return dict(graph)
 
     @property
-    def call_graph(self) -> Dict[str, List[Tuple[str, str]]]:
+    def call_graph(self) -> dict[str, list[tuple[str, str]]]:
         """Call graph: (file, func) -> [(file, func) it calls]"""
         graph = defaultdict(list)
         for edge in self.call_edges:
@@ -675,7 +675,7 @@ class CodebaseProject:
         """Number of files this file imports from (within project)"""
         return len(self.dependency_graph.get(file_path, []))
 
-    def get_most_imported_files(self, limit: int = 10) -> List[Tuple[str, int]]:
+    def get_most_imported_files(self, limit: int = 10) -> list[tuple[str, int]]:
         """Files with most imports (most depended upon)"""
         import_counts = {
             path: self.get_import_count(path)
@@ -684,7 +684,7 @@ class CodebaseProject:
         sorted_files = sorted(import_counts.items(), key=lambda x: x[1], reverse=True)
         return sorted_files[:limit]
 
-    def get_most_connected_files(self, limit: int = 10) -> List[Tuple[str, float]]:
+    def get_most_connected_files(self, limit: int = 10) -> list[tuple[str, float]]:
         """
         Files with highest connectivity score.
 
@@ -703,7 +703,7 @@ class CodebaseProject:
         sorted_files = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         return sorted_files[:limit]
 
-    def get_orphan_files(self) -> List[str]:
+    def get_orphan_files(self) -> list[str]:
         """Files with no imports and not imported by anyone"""
         orphans = []
         for path in self.files.keys():
@@ -711,13 +711,13 @@ class CodebaseProject:
                 orphans.append(path)
         return orphans
 
-    def get_circular_dependencies(self) -> List[List[str]]:
+    def get_circular_dependencies(self) -> list[list[str]]:
         """Find circular import chains"""
         cycles = []
         visited = set()
         rec_stack = set()
 
-        def dfs(node: str, path: List[str]) -> None:
+        def dfs(node: str, path: list[str]) -> None:
             visited.add(node)
             rec_stack.add(node)
             path.append(node)
@@ -740,7 +740,7 @@ class CodebaseProject:
 
         return cycles
 
-    def get_high_complexity_functions(self, threshold: int = 10) -> List[Tuple[str, str, int]]:
+    def get_high_complexity_functions(self, threshold: int = 10) -> list[tuple[str, str, int]]:
         """
         Get functions with cyclomatic complexity above threshold.
 
@@ -772,7 +772,7 @@ class CodebaseProject:
 
         return sorted(results, key=lambda x: x[2], reverse=True)
 
-    def get_complexity_summary(self) -> Dict[str, Any]:
+    def get_complexity_summary(self) -> dict[str, Any]:
         """
         Get aggregated complexity statistics across the codebase.
 
@@ -818,7 +818,7 @@ class CodebaseProject:
             'high_complexity_count': sum(1 for cc in cc_values if cc > 10)
         }
 
-    def get_api_surface_summary(self) -> Dict[str, Any]:
+    def get_api_surface_summary(self) -> dict[str, Any]:
         """
         Get aggregated API surface statistics across the codebase.
 
@@ -885,7 +885,7 @@ class CodebaseProject:
             ]
         }
 
-    def get_low_cohesion_modules(self, threshold: float = 0.3) -> List[Tuple[str, float, int]]:
+    def get_low_cohesion_modules(self, threshold: float = 0.3) -> list[tuple[str, float, int]]:
         """
         Get modules with cohesion score below threshold.
 
@@ -910,7 +910,7 @@ class CodebaseProject:
 
         return sorted(results, key=lambda x: x[1])
 
-    def get_cohesion_summary(self) -> Dict[str, Any]:
+    def get_cohesion_summary(self) -> dict[str, Any]:
         """
         Get aggregated cohesion statistics across the codebase.
 
@@ -965,7 +965,7 @@ class CodebaseProject:
             'low_cohesion_count': sum(1 for c in cohesion_data if c.total_calls > 0 and c.cohesion_score < 0.3)
         }
 
-    def get_dead_code_summary(self) -> Dict[str, Any]:
+    def get_dead_code_summary(self) -> dict[str, Any]:
         """
         Get dead code analysis summary for the codebase.
 
@@ -997,7 +997,7 @@ class CodebaseProject:
         analysis = self.dead_code_analysis
 
         # Find files with most dead code
-        dead_by_file: Dict[str, int] = {}
+        dead_by_file: dict[str, int] = {}
         for symbol in analysis.dead_functions + analysis.dead_methods + analysis.dead_classes:
             file_path = symbol.file_path
             dead_by_file[file_path] = dead_by_file.get(file_path, 0) + 1
@@ -1034,7 +1034,7 @@ class CodebaseProject:
             ]
         }
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export project analysis to dictionary"""
         return {
             'root_path': str(self.root_path),
@@ -1096,7 +1096,7 @@ class TypeScriptParser:
     @staticmethod
     def parse_file(file_path: Path) -> CodeFile:
         """Parse TypeScript/JavaScript file"""
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             source = f.read()
 
         # Determine language
@@ -1425,7 +1425,7 @@ class APISurfaceAnalyzer:
         return surface
 
     @staticmethod
-    def _find_all_export(tree: ast.AST) -> Tuple[bool, List[str]]:
+    def _find_all_export(tree: ast.AST) -> tuple[bool, list[str]]:
         """Find __all__ assignment and extract exported names."""
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
@@ -1444,7 +1444,7 @@ class APISurfaceAnalyzer:
 
     @staticmethod
     def _classify_symbol(name: str, symbol_type: str, line_number: int,
-                         docstring: Optional[str]) -> APISymbol:
+                         docstring: str | None) -> APISymbol:
         """Classify a symbol's visibility based on naming convention."""
         visibility = APISurfaceAnalyzer._get_visibility(name)
         return APISymbol(
@@ -1499,7 +1499,7 @@ class CohesionCalculator:
     """
 
     @staticmethod
-    def calculate_for_project(project: 'CodebaseProject') -> Dict[str, CohesionMetrics]:
+    def calculate_for_project(project: 'CodebaseProject') -> dict[str, CohesionMetrics]:
         """
         Calculate cohesion metrics for all files in a project.
 
@@ -1512,10 +1512,10 @@ class CohesionCalculator:
         Returns:
             Dict mapping file_path -> CohesionMetrics
         """
-        cohesion_by_file: Dict[str, CohesionMetrics] = {}
+        cohesion_by_file: dict[str, CohesionMetrics] = {}
 
         # Get all functions per file for fast lookup
-        functions_by_file: Dict[str, Set[str]] = {}
+        functions_by_file: dict[str, set[str]] = {}
         for file_path, code_file in project.files.items():
             func_names = set()
             for func in code_file.functions:
@@ -1551,7 +1551,7 @@ class CohesionCalculator:
         return cohesion_by_file
 
     @staticmethod
-    def calculate_for_file(code_file: CodeFile, all_functions_in_file: Set[str]) -> CohesionMetrics:
+    def calculate_for_file(code_file: CodeFile, all_functions_in_file: set[str]) -> CohesionMetrics:
         """
         Calculate cohesion metrics for a single file based on function calls.
 
@@ -1673,14 +1673,14 @@ class DeadCodeDetector:
         analysis = DeadCodeAnalysis()
 
         # Build reverse call graph: callee -> set of callers
-        callee_to_callers: Dict[str, Set[str]] = defaultdict(set)
+        callee_to_callers: dict[str, set[str]] = defaultdict(set)
         for edge in project.call_edges:
             caller_key = f"{edge.caller_file}::{edge.caller_function}"
             callee_key = f"{edge.callee_file}::{edge.callee_function}"
             callee_to_callers[callee_key].add(caller_key)
 
         # Get all symbols defined in __all__ for each file
-        all_exports: Dict[str, Set[str]] = {}
+        all_exports: dict[str, set[str]] = {}
         for file_path, code_file in project.files.items():
             if code_file.api_surface and code_file.api_surface.has_all_export:
                 all_exports[file_path] = set(code_file.api_surface.all_exports)
@@ -1772,10 +1772,10 @@ class DeadCodeDetector:
     @staticmethod
     def _is_entry_point(
         name: str,
-        decorators: List[str],
-        file_exports: Set[str],
+        decorators: list[str],
+        file_exports: set[str],
         is_method: bool
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """
         Check if a function/method/class is an entry point.
 
@@ -1790,7 +1790,7 @@ class DeadCodeDetector:
         """
         # Check if in __all__
         if name in file_exports:
-            return True, f"Exported in __all__"
+            return True, "Exported in __all__"
 
         # Check entry point names
         if name in DeadCodeDetector.ENTRY_POINT_NAMES:
@@ -1833,7 +1833,7 @@ class PythonParser:
         Returns:
             CodeFile object
         """
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             source = f.read()
 
         try:
@@ -1880,7 +1880,7 @@ class PythonParser:
         )
 
     @staticmethod
-    def _extract_imports(tree: ast.AST) -> List[str]:
+    def _extract_imports(tree: ast.AST) -> list[str]:
         """Extract import statements"""
         imports = []
 
@@ -1896,7 +1896,7 @@ class PythonParser:
         return imports
 
     @staticmethod
-    def _extract_classes(tree: ast.AST, source: str) -> List[CodeClass]:
+    def _extract_classes(tree: ast.AST, source: str) -> list[CodeClass]:
         """Extract class definitions"""
         classes = []
 
@@ -1932,7 +1932,7 @@ class PythonParser:
         return classes
 
     @staticmethod
-    def _extract_functions(tree: ast.AST, source: str) -> List[CodeFunction]:
+    def _extract_functions(tree: ast.AST, source: str) -> list[CodeFunction]:
         """Extract top-level function definitions"""
         functions = []
 
@@ -2041,9 +2041,9 @@ class CodebaseSpinner(BaseSpinner):
     def __init__(
         self,
         importance_threshold: float = 0.3,
-        languages: Optional[List[str]] = None,
+        languages: list[str] | None = None,
         include_tests: bool = False,
-        max_files: Optional[int] = None,
+        max_files: int | None = None,
         enable_git: bool = True
     ):
         """
@@ -2065,8 +2065,8 @@ class CodebaseSpinner(BaseSpinner):
         self.enable_git = enable_git
 
         # Git analyzer (initialized lazily per directory)
-        self._git_analyzer: Optional[GitAnalyzer] = None
-        self._git_cache: Dict[str, GitFileInfo] = {}
+        self._git_analyzer: GitAnalyzer | None = None
+        self._git_cache: dict[str, GitFileInfo] = {}
 
         # Language file extensions
         self.extensions = {
@@ -2088,7 +2088,7 @@ class CodebaseSpinner(BaseSpinner):
         )
 
         # File hash cache for incremental updates
-        self._file_hashes: Dict[str, str] = {}
+        self._file_hashes: dict[str, str] = {}
 
     def _get_git_info(self, file_path: Path) -> GitFileInfo:
         """
@@ -2128,7 +2128,7 @@ class CodebaseSpinner(BaseSpinner):
         try:
             with open(file_path, 'rb') as f:
                 return hashlib.sha256(f.read()).hexdigest()
-        except (IOError, OSError):
+        except OSError:
             return ""
 
     def has_file_changed(self, file_path: Path) -> bool:
@@ -2172,7 +2172,6 @@ class CodebaseSpinner(BaseSpinner):
             spinner.load_hash_cache(Path("./cache/file_hashes.json"))
             result = await spinner.analyze_codebase_incremental(...)
         """
-        import json
 
         cache_data = {
             'version': 1,
@@ -2204,14 +2203,13 @@ class CodebaseSpinner(BaseSpinner):
                 # No cache, full analysis needed
                 project = await spinner.analyze_codebase(...)
         """
-        import json
 
         path = Path(path)
         if not path.exists():
             return False
 
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, encoding='utf-8') as f:
                 cache_data = json.load(f)
 
             # Validate cache format
@@ -2221,7 +2219,7 @@ class CodebaseSpinner(BaseSpinner):
             self._file_hashes = cache_data.get('hashes', {})
             return True
 
-        except (json.JSONDecodeError, IOError, KeyError):
+        except (OSError, json.JSONDecodeError, KeyError):
             return False
 
     def get_capabilities(self) -> SpinnerCapabilities:
@@ -2241,7 +2239,7 @@ class CodebaseSpinner(BaseSpinner):
         """Check if code parsing dependencies are available"""
         return True  # ast is stdlib for Python
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Spin code file(s) into MemoryShards
 
@@ -2268,7 +2266,7 @@ class CodebaseSpinner(BaseSpinner):
         self,
         directory: Path,
         recursive: bool = True
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Spin entire directory
 
@@ -2389,7 +2387,7 @@ class CodebaseSpinner(BaseSpinner):
     async def analyze_codebase_incremental(
         self,
         directory: Path,
-        previous_project: Optional[CodebaseProject] = None,
+        previous_project: CodebaseProject | None = None,
         recursive: bool = True
     ) -> IncrementalUpdateResult:
         """
@@ -2548,7 +2546,7 @@ class CodebaseSpinner(BaseSpinner):
         source_path: str,
         project: CodebaseProject,
         root_dir: Path
-    ) -> Optional[Tuple[str, List[str]]]:
+    ) -> tuple[str, list[str]] | None:
         """
         Resolve an import statement to a project file.
 
@@ -2632,7 +2630,7 @@ class CodebaseSpinner(BaseSpinner):
         Tracks which functions call which other functions across files.
         """
         # First, build a map of all functions/methods in the project
-        function_map: Dict[str, str] = {}  # function_name -> file_path
+        function_map: dict[str, str] = {}  # function_name -> file_path
 
         for file_path, code_file in project.files.items():
             # Top-level functions
@@ -2668,7 +2666,7 @@ class CodebaseSpinner(BaseSpinner):
         caller_file: str,
         caller_func: str,
         func: CodeFunction,
-        function_map: Dict[str, str]
+        function_map: dict[str, str]
     ) -> None:
         """Find function calls within a function body"""
         # Look for calls in the function's calls list
@@ -2716,7 +2714,7 @@ class CodebaseSpinner(BaseSpinner):
         - Low cohesion = functions mostly call external modules
         """
         # Count internal vs external calls per file
-        file_calls: Dict[str, Dict[str, int]] = {
+        file_calls: dict[str, dict[str, int]] = {
             file_path: {'internal': 0, 'external': 0}
             for file_path in project.files
         }
@@ -2767,7 +2765,7 @@ class CodebaseSpinner(BaseSpinner):
             for shard in batch:
                 yield shard
 
-    def _get_code_files(self, directory: Path, recursive: bool) -> List[Path]:
+    def _get_code_files(self, directory: Path, recursive: bool) -> list[Path]:
         """Get all code files in directory"""
         files = []
 
@@ -2814,7 +2812,7 @@ class CodebaseSpinner(BaseSpinner):
             return TypeScriptParser.parse_file(file_path)
         else:
             # Unsupported language - create minimal CodeFile
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding='utf-8') as f:
                 source = f.read()
 
             return CodeFile(
@@ -2823,7 +2821,7 @@ class CodebaseSpinner(BaseSpinner):
                 total_lines=source.count('\n') + 1
             )
 
-    def _file_to_shards(self, code_file: CodeFile) -> List[MemoryShard]:
+    def _file_to_shards(self, code_file: CodeFile) -> list[MemoryShard]:
         """
         Convert CodeFile to MemoryShards
 
@@ -2914,7 +2912,7 @@ class CodebaseSpinner(BaseSpinner):
 
         return '\n'.join(parts)
 
-    def _extract_entities(self, code_file: CodeFile) -> List[str]:
+    def _extract_entities(self, code_file: CodeFile) -> list[str]:
         """Extract entities from code file"""
         entities = []
 
@@ -2929,7 +2927,7 @@ class CodebaseSpinner(BaseSpinner):
 
         return list(set(entities))
 
-    def _extract_motifs(self, code_file: CodeFile) -> List[str]:
+    def _extract_motifs(self, code_file: CodeFile) -> list[str]:
         """Extract motifs from code file"""
         motifs = []
 
@@ -3080,7 +3078,7 @@ class CodebaseSpinner(BaseSpinner):
 async def spin_codebase(
     directory: str,
     importance_threshold: float = 0.3,
-    languages: Optional[List[str]] = None
+    languages: list[str] | None = None
 ) -> SpinResult:
     """
     Convenience function to spin a codebase directory

@@ -13,12 +13,12 @@ Spatial Notifications and Alerts for HoloLoom Spatial Computing.
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any, Callable, Tuple
-from enum import Enum
-from datetime import datetime
 import uuid
-import math
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class NotificationType(Enum):
@@ -70,10 +70,10 @@ class AnimationType(Enum):
 @dataclass
 class NotificationStyle:
     """Visual style for notifications."""
-    background_color: Tuple[float, float, float, float] = (0.1, 0.1, 0.2, 0.9)
-    text_color: Tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0)
-    accent_color: Tuple[float, float, float, float] = (0.3, 0.6, 1.0, 1.0)
-    border_color: Tuple[float, float, float, float] = (0.4, 0.4, 0.5, 0.5)
+    background_color: tuple[float, float, float, float] = (0.1, 0.1, 0.2, 0.9)
+    text_color: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0)
+    accent_color: tuple[float, float, float, float] = (0.3, 0.6, 1.0, 1.0)
+    border_color: tuple[float, float, float, float] = (0.4, 0.4, 0.5, 0.5)
     border_width: float = 0.002
     border_radius: float = 0.01
     padding: float = 0.015
@@ -81,7 +81,7 @@ class NotificationStyle:
     icon_size: float = 0.03
     shadow: bool = True
     glow: bool = False
-    glow_color: Optional[Tuple[float, float, float, float]] = None
+    glow_color: tuple[float, float, float, float] | None = None
 
 
 # Preset styles for notification types
@@ -130,9 +130,9 @@ class NotificationAction:
     """Action button in notification."""
     action_id: str
     label: str
-    icon: Optional[str] = None
+    icon: str | None = None
     primary: bool = False
-    callback_data: Dict[str, Any] = field(default_factory=dict)
+    callback_data: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -146,14 +146,14 @@ class Notification:
 
     # Position
     position: NotificationPosition = NotificationPosition.HEAD_LOCKED
-    world_position: Optional[Tuple[float, float, float]] = None
-    attached_node_id: Optional[str] = None
-    offset: Tuple[float, float, float] = (0, 0, 0)
+    world_position: tuple[float, float, float] | None = None
+    attached_node_id: str | None = None
+    offset: tuple[float, float, float] = (0, 0, 0)
 
     # Timing
     duration: float = 5.0  # Seconds, 0 = persistent
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
-    expires_at: Optional[float] = None
+    expires_at: float | None = None
 
     # Animation
     enter_animation: AnimationType = AnimationType.FADE
@@ -161,12 +161,12 @@ class Notification:
     animation_duration: float = 0.3
 
     # Style
-    style: Optional[NotificationStyle] = None
-    icon: Optional[str] = None
-    image_url: Optional[str] = None
+    style: NotificationStyle | None = None
+    icon: str | None = None
+    image_url: str | None = None
 
     # Actions
-    actions: List[NotificationAction] = field(default_factory=list)
+    actions: list[NotificationAction] = field(default_factory=list)
     dismissible: bool = True
 
     # State
@@ -174,13 +174,13 @@ class Notification:
     is_dismissed: bool = False
 
     # Audio
-    sound: Optional[str] = None
-    haptic: Optional[str] = None  # Haptic pattern ID
+    sound: str | None = None
+    haptic: str | None = None  # Haptic pattern ID
 
     # Metadata
     source: str = ""
     category: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         if self.duration > 0 and not self.expires_at:
@@ -205,7 +205,7 @@ class Notification:
         """Dismiss notification."""
         self.is_dismissed = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.notification_id,
             "title": self.title,
@@ -248,14 +248,14 @@ class Badge:
     attached_to: str = ""  # Node or object ID
     value: Any = None  # Number, text, or icon
     badge_type: str = "count"  # count, dot, icon, text
-    color: Tuple[float, float, float, float] = (1.0, 0.3, 0.3, 1.0)
+    color: tuple[float, float, float, float] = (1.0, 0.3, 0.3, 1.0)
     position: str = "top_right"  # top_left, top_right, bottom_left, bottom_right
-    offset: Tuple[float, float] = (0, 0)
+    offset: tuple[float, float] = (0, 0)
     pulse: bool = False
     visible: bool = True
     max_value: int = 99
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         display_value = self.value
         if self.badge_type == "count" and isinstance(self.value, int):
             if self.value > self.max_value:
@@ -278,13 +278,13 @@ class Badge:
 class ProgressIndicator:
     """Progress indicator in 3D space."""
     indicator_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
-    position: Tuple[float, float, float] = (0, 0, 0)
-    attached_to: Optional[str] = None
+    position: tuple[float, float, float] = (0, 0, 0)
+    attached_to: str | None = None
     progress: float = 0.0  # 0-1
     style: str = "ring"  # ring, bar, dots, spinner
     size: float = 0.1  # Meters
-    color: Tuple[float, float, float, float] = (0.3, 0.6, 1.0, 1.0)
-    background_color: Tuple[float, float, float, float] = (0.2, 0.2, 0.3, 0.5)
+    color: tuple[float, float, float, float] = (0.3, 0.6, 1.0, 1.0)
+    background_color: tuple[float, float, float, float] = (0.2, 0.2, 0.3, 0.5)
     label: str = ""
     show_percentage: bool = True
     indeterminate: bool = False
@@ -294,7 +294,7 @@ class ProgressIndicator:
         """Set progress value (0-1)."""
         self.progress = max(0.0, min(1.0, value))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.indicator_id,
             "position": self.position,
@@ -315,10 +315,10 @@ class ProgressIndicator:
 class AttentionGuide:
     """Visual guide to draw attention to something."""
     guide_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
-    target_position: Tuple[float, float, float] = (0, 0, 0)
-    target_node_id: Optional[str] = None
+    target_position: tuple[float, float, float] = (0, 0, 0)
+    target_node_id: str | None = None
     guide_type: str = "arrow"  # arrow, highlight, pulse, beam, orbit
-    color: Tuple[float, float, float, float] = (1.0, 0.8, 0.2, 1.0)
+    color: tuple[float, float, float, float] = (1.0, 0.8, 0.2, 1.0)
     intensity: float = 1.0
     duration: float = 5.0
     label: str = ""
@@ -330,7 +330,7 @@ class AttentionGuide:
             return False
         return datetime.now().timestamp() > self.created_at + self.duration
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.guide_id,
             "targetPosition": self.target_position,
@@ -349,9 +349,9 @@ class NotificationQueue:
 
     def __init__(self, max_visible: int = 3):
         self.max_visible = max_visible
-        self.pending: List[Notification] = []
-        self.visible: List[Notification] = []
-        self.history: List[Notification] = []
+        self.pending: list[Notification] = []
+        self.visible: list[Notification] = []
+        self.history: list[Notification] = []
 
     def add(self, notification: Notification):
         """Add notification to queue."""
@@ -363,7 +363,7 @@ class NotificationQueue:
             insert_index = i + 1
         self.pending.insert(insert_index, notification)
 
-    def update(self) -> List[Notification]:
+    def update(self) -> list[Notification]:
         """Update queue, return newly visible notifications."""
         # Remove expired/dismissed from visible
         self.visible = [
@@ -413,22 +413,22 @@ class SpatialNotificationManager:
         self.default_duration = default_duration
 
         # Notification queues by position
-        self.queues: Dict[NotificationPosition, NotificationQueue] = {
+        self.queues: dict[NotificationPosition, NotificationQueue] = {
             pos: NotificationQueue(max_visible_notifications)
             for pos in NotificationPosition
         }
 
         # All notifications by ID
-        self.notifications: Dict[str, Notification] = {}
+        self.notifications: dict[str, Notification] = {}
 
         # Badges
-        self.badges: Dict[str, Badge] = {}
+        self.badges: dict[str, Badge] = {}
 
         # Progress indicators
-        self.progress_indicators: Dict[str, ProgressIndicator] = {}
+        self.progress_indicators: dict[str, ProgressIndicator] = {}
 
         # Attention guides
-        self.attention_guides: Dict[str, AttentionGuide] = {}
+        self.attention_guides: dict[str, AttentionGuide] = {}
 
         # Settings
         self.sounds_enabled: bool = True
@@ -437,9 +437,9 @@ class SpatialNotificationManager:
         self.priority_filter: NotificationPriority = NotificationPriority.LOW
 
         # Callbacks
-        self.on_notification_shown: List[Callable[[Notification], None]] = []
-        self.on_notification_dismissed: List[Callable[[str], None]] = []
-        self.on_action_clicked: List[Callable[[str, str], None]] = []
+        self.on_notification_shown: list[Callable[[Notification], None]] = []
+        self.on_notification_dismissed: list[Callable[[str], None]] = []
+        self.on_action_clicked: list[Callable[[str, str], None]] = []
 
     def notify(
         self,
@@ -448,12 +448,12 @@ class SpatialNotificationManager:
         notification_type: NotificationType = NotificationType.INFO,
         priority: NotificationPriority = NotificationPriority.NORMAL,
         position: NotificationPosition = NotificationPosition.HEAD_LOCKED,
-        duration: Optional[float] = None,
-        actions: Optional[List[NotificationAction]] = None,
-        sound: Optional[str] = None,
-        haptic: Optional[str] = None,
+        duration: float | None = None,
+        actions: list[NotificationAction] | None = None,
+        sound: str | None = None,
+        haptic: str | None = None,
         **kwargs
-    ) -> Optional[Notification]:
+    ) -> Notification | None:
         """Create and queue a notification."""
         # Check do not disturb
         if self.do_not_disturb and priority.value < NotificationPriority.URGENT.value:
@@ -482,23 +482,23 @@ class SpatialNotificationManager:
 
         return notification
 
-    def info(self, title: str, message: str = "", **kwargs) -> Optional[Notification]:
+    def info(self, title: str, message: str = "", **kwargs) -> Notification | None:
         """Show info notification."""
         return self.notify(title, message, NotificationType.INFO, **kwargs)
 
-    def success(self, title: str, message: str = "", **kwargs) -> Optional[Notification]:
+    def success(self, title: str, message: str = "", **kwargs) -> Notification | None:
         """Show success notification."""
         kwargs.setdefault("sound", "success")
         kwargs.setdefault("haptic", "success")
         return self.notify(title, message, NotificationType.SUCCESS, **kwargs)
 
-    def warning(self, title: str, message: str = "", **kwargs) -> Optional[Notification]:
+    def warning(self, title: str, message: str = "", **kwargs) -> Notification | None:
         """Show warning notification."""
         kwargs.setdefault("priority", NotificationPriority.HIGH)
         kwargs.setdefault("sound", "warning")
         return self.notify(title, message, NotificationType.WARNING, **kwargs)
 
-    def error(self, title: str, message: str = "", **kwargs) -> Optional[Notification]:
+    def error(self, title: str, message: str = "", **kwargs) -> Notification | None:
         """Show error notification."""
         kwargs.setdefault("priority", NotificationPriority.HIGH)
         kwargs.setdefault("duration", 0)  # Persistent
@@ -510,9 +510,9 @@ class SpatialNotificationManager:
         self,
         title: str,
         message: str = "",
-        node_id: Optional[str] = None,
+        node_id: str | None = None,
         **kwargs
-    ) -> Optional[Notification]:
+    ) -> Notification | None:
         """Show knowledge-related notification."""
         kwargs.setdefault("attached_node_id", node_id)
         if node_id:
@@ -523,9 +523,9 @@ class SpatialNotificationManager:
         self,
         title: str,
         message: str = "",
-        user_name: Optional[str] = None,
+        user_name: str | None = None,
         **kwargs
-    ) -> Optional[Notification]:
+    ) -> Notification | None:
         """Show social notification (user joined, message, etc)."""
         kwargs.setdefault("sound", "social")
         if user_name:
@@ -537,7 +537,7 @@ class SpatialNotificationManager:
         title: str,
         message: str = "",
         **kwargs
-    ) -> Optional[Notification]:
+    ) -> Notification | None:
         """Show achievement notification."""
         kwargs.setdefault("priority", NotificationPriority.HIGH)
         kwargs.setdefault("duration", 8.0)
@@ -546,7 +546,7 @@ class SpatialNotificationManager:
         kwargs.setdefault("enter_animation", AnimationType.SCALE)
         return self.notify(title, message, NotificationType.ACHIEVEMENT, **kwargs)
 
-    def update(self) -> Dict[str, List[Notification]]:
+    def update(self) -> dict[str, list[Notification]]:
         """Update all queues, return newly visible notifications by position."""
         newly_visible = {}
         for position, queue in self.queues.items():
@@ -593,7 +593,7 @@ class SpatialNotificationManager:
         attached_to: str,
         value: Any = None,
         badge_type: str = "count",
-        color: Tuple[float, float, float, float] = (1.0, 0.3, 0.3, 1.0),
+        color: tuple[float, float, float, float] = (1.0, 0.3, 0.3, 1.0),
         **kwargs
     ) -> Badge:
         """Add badge to object/node."""
@@ -625,10 +625,10 @@ class SpatialNotificationManager:
 
     def create_progress(
         self,
-        position: Tuple[float, float, float] = (0, 0, 0),
+        position: tuple[float, float, float] = (0, 0, 0),
         style: str = "ring",
         label: str = "",
-        attached_to: Optional[str] = None,
+        attached_to: str | None = None,
         **kwargs
     ) -> ProgressIndicator:
         """Create progress indicator."""
@@ -659,8 +659,8 @@ class SpatialNotificationManager:
 
     def guide_attention(
         self,
-        target_position: Optional[Tuple[float, float, float]] = None,
-        target_node_id: Optional[str] = None,
+        target_position: tuple[float, float, float] | None = None,
+        target_node_id: str | None = None,
         guide_type: str = "arrow",
         duration: float = 5.0,
         label: str = "",
@@ -694,7 +694,7 @@ class SpatialNotificationManager:
             if not n.is_read and not n.is_dismissed
         )
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get notification statistics."""
         total = len(self.notifications)
         by_type = {}
@@ -717,7 +717,7 @@ class SpatialNotificationManager:
             "do_not_disturb": self.do_not_disturb
         }
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export full state for WebXR client."""
         visible_notifications = []
         for position, queue in self.queues.items():

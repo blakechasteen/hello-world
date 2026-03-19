@@ -15,13 +15,12 @@ Features:
 
 import asyncio
 import json
+import logging
 import sqlite3
-from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-import logging
+from typing import Any
 
 # Optional PostgreSQL support (graceful degradation)
 try:
@@ -38,11 +37,11 @@ logger = logging.getLogger(__name__)
 @dataclass
 class QueryResult:
     """SQL query result with metadata"""
-    rows: List[Dict[str, Any]]
+    rows: list[dict[str, Any]]
     row_count: int
     latency_ms: float
     success: bool
-    error: Optional[str] = None
+    error: str | None = None
     backend: str = "postgresql"  # or "sqlite"
 
 
@@ -78,8 +77,8 @@ class SQLBackend:
 
     def __init__(self, config: SQLConfig):
         self.config = config
-        self.pool: Optional[Any] = None  # asyncpg pool or None
-        self.sqlite_conn: Optional[sqlite3.Connection] = None
+        self.pool: Any | None = None  # asyncpg pool or None
+        self.sqlite_conn: sqlite3.Connection | None = None
         self.backend_type: str = "uninitialized"
         self._closed = False
 
@@ -200,7 +199,7 @@ class SQLBackend:
     async def execute_query(
         self,
         query: str,
-        params: Optional[List[Any]] = None
+        params: list[Any] | None = None
     ) -> QueryResult:
         """
         Execute SQL query and return results
@@ -251,8 +250,8 @@ class SQLBackend:
     async def _execute_postgresql(
         self,
         query: str,
-        params: Optional[List[Any]] = None
-    ) -> List[Dict[str, Any]]:
+        params: list[Any] | None = None
+    ) -> list[dict[str, Any]]:
         """Execute query on PostgreSQL"""
         async with self.pool.acquire() as conn:
             if params:
@@ -265,8 +264,8 @@ class SQLBackend:
     async def _execute_sqlite(
         self,
         query: str,
-        params: Optional[List[Any]] = None
-    ) -> List[Dict[str, Any]]:
+        params: list[Any] | None = None
+    ) -> list[dict[str, Any]]:
         """Execute query on SQLite (wrapped in asyncio)"""
         # SQLite is synchronous - run in thread pool
         loop = asyncio.get_event_loop()
@@ -291,10 +290,10 @@ class SQLBackend:
         rule_id: str,
         rule_name: str,
         rule_type: str,
-        rule_logic: Dict[str, Any],
+        rule_logic: dict[str, Any],
         confidence: float = 1.0,
         domain: str = "beekeeping",
-        neo4j_node_id: Optional[str] = None
+        neo4j_node_id: str | None = None
     ) -> QueryResult:
         """Insert policy rule"""
         query = """
@@ -331,8 +330,8 @@ class SQLBackend:
         entity_type: str,
         entity_id: str,
         user_id: str,
-        action_data: Dict[str, Any],
-        neo4j_node_id: Optional[str] = None
+        action_data: dict[str, Any],
+        neo4j_node_id: str | None = None
     ) -> QueryResult:
         """Insert transaction log"""
         query = """
@@ -359,8 +358,8 @@ class SQLBackend:
         resource_type: str,
         resource_id: str,
         user_id: str,
-        before_state: Optional[Dict[str, Any]] = None,
-        after_state: Optional[Dict[str, Any]] = None,
+        before_state: dict[str, Any] | None = None,
+        after_state: dict[str, Any] | None = None,
         compliance_flag: bool = False
     ) -> QueryResult:
         """Insert audit trail"""
@@ -389,8 +388,8 @@ class SQLBackend:
         user_id: str,
         resource_type: str,
         permission_level: str,
-        neo4j_user_node: Optional[str] = None,
-        expires_at: Optional[datetime] = None
+        neo4j_user_node: str | None = None,
+        expires_at: datetime | None = None
     ) -> QueryResult:
         """Insert user permission"""
         query = """
@@ -433,7 +432,7 @@ class SQLBackend:
 # Factory Function
 # ============================================================================
 
-def create_sql_backend(config: Optional[SQLConfig] = None) -> SQLBackend:
+def create_sql_backend(config: SQLConfig | None = None) -> SQLBackend:
     """
     Create SQL backend with default or custom configuration
 

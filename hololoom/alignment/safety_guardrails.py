@@ -16,18 +16,18 @@ Following best practices from:
 - DeepMind (Safe Exploration)
 """
 
+import hashlib
+import hmac
+import logging
 import os
 import re
-import hmac
-import hashlib
-import logging
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from threading import Lock
 from types import MappingProxyType
-from typing import List, Dict, Any, Optional, Set, Callable, Tuple, Mapping
-from dataclasses import dataclass, field
-from datetime import datetime
-
+from typing import Any
 
 # =============================================================================
 # SECURITY: Environment validation for testing mode
@@ -67,7 +67,7 @@ def _validate_override_token(token: str, action: str = "override") -> bool:
         return False
 
     # Compute expected HMAC
-    message = f"override:{action}".encode('utf-8')
+    message = f"override:{action}".encode()
     expected = hmac.new(secret.encode('utf-8'), message, hashlib.sha256).hexdigest()
 
     # Constant-time comparison to prevent timing attacks
@@ -187,12 +187,12 @@ class SafetyDecision:
     risk_level: RiskLevel
     reason: str
     requires_approval: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
-    context: Dict[str, Any] = field(default_factory=dict)
-    alternative_action: Optional[str] = None
+    context: dict[str, Any] = field(default_factory=dict)
+    alternative_action: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "allowed": self.allowed,
@@ -237,9 +237,9 @@ class ActionRequest:
     action_id: str
     category: ActionCategory
     description: str = ""
-    context: Dict[str, Any] = field(default_factory=dict)
-    user_id: Optional[str] = None
-    session_id: Optional[str] = None
+    context: dict[str, Any] = field(default_factory=dict)
+    user_id: str | None = None
+    session_id: str | None = None
 
     @property
     def action(self) -> str:
@@ -332,7 +332,7 @@ class SafetyPolicy:
     for development environments while maintaining full logging.
     """
 
-    def __init__(self, testing_mode: bool = False, auto_approve_categories: Optional[Set[str]] = None):
+    def __init__(self, testing_mode: bool = False, auto_approve_categories: set[str] | None = None):
         """
         Initialize with default policies.
 
@@ -371,16 +371,16 @@ class SafetyPolicy:
         # Actions that always require approval (unless testing_mode or auto_approve)
         if testing_mode:
             # Testing mode: Don't require approval for anything
-            self.approval_required: Set[ActionCategory] = set()
+            self.approval_required: set[ActionCategory] = set()
         else:
             # Production: Require approval for critical actions
-            self.approval_required: Set[ActionCategory] = {
+            self.approval_required: set[ActionCategory] = {
                 ActionCategory.DELETION,
                 ActionCategory.SYSTEM,
             }
 
         # Custom risk evaluators (can be registered)
-        self.custom_evaluators: List[Callable[[ActionRequest], Optional[RiskLevel]]] = []
+        self.custom_evaluators: list[Callable[[ActionRequest], RiskLevel | None]] = []
 
     def get_risk_level(self, request: ActionRequest) -> RiskLevel:
         """
@@ -439,7 +439,7 @@ class SafetyPolicy:
 
         return False
 
-    def register_evaluator(self, evaluator: Callable[[ActionRequest], Optional[RiskLevel]]):
+    def register_evaluator(self, evaluator: Callable[[ActionRequest], RiskLevel | None]):
         """
         Register custom risk evaluator.
 
@@ -486,12 +486,12 @@ class SafetyGuardrails:
 
     def __init__(
         self,
-        policy: Optional[SafetyPolicy] = None,
+        policy: SafetyPolicy | None = None,
         enable_adversarial_detection: bool = True,
         testing_mode: bool = False,
-        auto_approve_categories: Optional[Set[str]] = None,
+        auto_approve_categories: set[str] | None = None,
         enable_mrf_enhancement: bool = False,
-        llm_provider: Optional[str] = None,
+        llm_provider: str | None = None,
     ):
         """
         Initialize safety guardrails.
@@ -520,14 +520,14 @@ class SafetyGuardrails:
         # Prevents race conditions in concurrent approval flows
         self._state_lock = Lock()
 
-        self.action_history: List[ActionRequest] = []
-        self.decisions: List[SafetyDecision] = []
-        self._decision_records: List[Tuple[ActionRequest, SafetyDecision]] = []
+        self.action_history: list[ActionRequest] = []
+        self.decisions: list[SafetyDecision] = []
+        self._decision_records: list[tuple[ActionRequest, SafetyDecision]] = []
         # Policy overrides: category -> OutcomeType (ALLOW, BLOCK, REQUIRE_APPROVAL)
         # SECURITY: Policy overrides are IMMUTABLE after initialization.
         # Use set_policy_override() method with HMAC authentication token.
         # Direct assignment is blocked - use the authenticated setter.
-        self._policy_overrides: Dict[ActionCategory, OutcomeType] = {}
+        self._policy_overrides: dict[ActionCategory, OutcomeType] = {}
 
         # MRF integration (Phase 1 - November 2025)
         self.enable_mrf_enhancement = enable_mrf_enhancement
@@ -537,9 +537,9 @@ class SafetyGuardrails:
         if enable_mrf_enhancement:
             try:
                 from hololoom.alignment.mrf_integration import (
-                    create_risk_assessment_prompt,
                     create_adversarial_detection_prompt,
-                    create_approval_request_prompt
+                    create_approval_request_prompt,
+                    create_risk_assessment_prompt,
                 )
                 self._create_risk_prompt = create_risk_assessment_prompt
                 self._create_adversarial_prompt = create_adversarial_detection_prompt
@@ -651,8 +651,8 @@ class SafetyGuardrails:
     def get_mrf_risk_assessment_prompt(
         self,
         request: ActionRequest,
-        epistemic_confidence: Optional[float] = None
-    ) -> Optional[str]:
+        epistemic_confidence: float | None = None
+    ) -> str | None:
         """
         Get MRF-enhanced risk assessment prompt (if available).
 
@@ -683,7 +683,7 @@ class SafetyGuardrails:
         self,
         text: str,
         sensitivity: str = "balanced"
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get MRF-enhanced adversarial detection prompt (if available).
 
@@ -712,7 +712,7 @@ class SafetyGuardrails:
         self,
         request: ActionRequest,
         risk_level: RiskLevel
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get MRF-enhanced approval request text (if available).
 
@@ -742,8 +742,8 @@ class SafetyGuardrails:
     def evaluate(
         self,
         request: ActionRequest,
-        text_input: Optional[str] = None,
-        epistemic_confidence: Optional[float] = None  # Consciousness Integration - Phase 1 (Nov 2025)
+        text_input: str | None = None,
+        epistemic_confidence: float | None = None  # Consciousness Integration - Phase 1 (Nov 2025)
     ) -> SafetyDecision:
         """
         Evaluate action request against safety policies.
@@ -868,7 +868,7 @@ class SafetyGuardrails:
         # Determine if allowed
         allowed = True
         reason = f"Action category: {request.category.value}, Risk level: {risk_level.value}"
-        alternative_action: Optional[str] = None
+        alternative_action: str | None = None
 
         # Block critical risk by default
         if risk_level == RiskLevel.CRITICAL:
@@ -944,15 +944,15 @@ class SafetyGuardrails:
         self,
         action: str,
         category: ActionCategory,
-        context: Optional[Dict[str, Any]] = None,
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        text_input: Optional[str] = None,
+        context: dict[str, Any] | None = None,
+        user_id: str | None = None,
+        session_id: str | None = None,
+        text_input: str | None = None,
     ) -> SafetyDecision:
         """Legacy wrapper used throughout tests and older integrations."""
 
         request = ActionRequest(
-            action=action,
+            action_id=action,
             category=category,
             context=context or {},
             user_id=user_id,
@@ -964,7 +964,7 @@ class SafetyGuardrails:
     def check_action(
         self,
         request: ActionRequest,
-        text_input: Optional[str] = None,
+        text_input: str | None = None,
     ) -> SafetyDecision:
         """Compatibility shim for alignment orchestrator tests."""
 
@@ -1010,9 +1010,9 @@ class SafetyGuardrails:
 
     def get_action_history(
         self,
-        category: Optional[ActionCategory] = None,
+        category: ActionCategory | None = None,
         limit: int = 100
-    ) -> List[ActionRequest]:
+    ) -> list[ActionRequest]:
         """
         Get action history, optionally filtered by category.
 
@@ -1032,7 +1032,7 @@ class SafetyGuardrails:
 
         return history[-limit:]
 
-    def get_recent_decisions(self, limit: int = 100) -> List[SafetyDecision]:
+    def get_recent_decisions(self, limit: int = 100) -> list[SafetyDecision]:
         """Return the most recent safety decisions."""
         # SECURITY: Thread-safe read of shared state
         with self._state_lock:
@@ -1046,7 +1046,7 @@ class SafetyGuardrails:
             self.decisions.clear()
             self._decision_records.clear()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get safety statistics.
 
@@ -1068,7 +1068,7 @@ class SafetyGuardrails:
             for level in RiskLevel
         }
 
-        by_category: Dict[str, int] = {}
+        by_category: dict[str, int] = {}
         for category in ActionCategory:
             by_category[category.value] = sum(
                 1 for request, _ in records_copy if request.category == category
@@ -1086,9 +1086,9 @@ class SafetyGuardrails:
 # Convenience function
 def create_guardrails(
     enable_adversarial_detection: bool = True,
-    custom_policy: Optional[SafetyPolicy] = None,
+    custom_policy: SafetyPolicy | None = None,
     testing_mode: bool = False,
-    auto_approve_categories: Optional[Set[str]] = None,
+    auto_approve_categories: set[str] | None = None,
 ) -> SafetyGuardrails:
     """
     Create safety guardrails with optional configuration.

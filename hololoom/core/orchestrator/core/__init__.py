@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom Orchestrator Core Logic Module
 ========================================
@@ -28,23 +27,23 @@ Public API:
 Created: 2025-11-22 (Elegance Pass Refactoring - Phase 3)
 """
 
+from .background_tasks import (
+    spawn_background_task,
+    start_background_consolidation,
+)
 from .complexity_detection import (
     assess_complexity_level,
     create_provenance_trace,
 )
 from .metrics_collection import (
-    get_reflection_metrics,
-    get_recursive_learning_stats,
     get_metrics,
-)
-from .background_tasks import (
-    start_background_consolidation,
-    spawn_background_task,
+    get_recursive_learning_stats,
+    get_reflection_metrics,
 )
 from .stat_mech_integration import (
-    shards_to_microstates,
-    macrostates_to_shards,
     background_consolidation_loop,
+    macrostates_to_shards,
+    shards_to_microstates,
 )
 
 __all__ = [

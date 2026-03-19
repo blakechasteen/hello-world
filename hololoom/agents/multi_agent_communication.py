@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Multi-Agent Communication System
 ================================
@@ -26,17 +26,20 @@ Architecture:
 """
 
 import asyncio
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional, Dict, Any, List, Callable, Set
-from datetime import datetime, timedelta
-import uuid
 import logging
+import uuid
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 # Safety Integration (Dec 2025) - MRF Safe Integration Phase
 # Import alignment framework's adversarial detection for inter-agent messages
 try:
-    from hololoom.alignment.safety_guardrails import AdversarialDetector as AlignmentAdversarialDetector
+    from hololoom.alignment.safety_guardrails import (
+        AdversarialDetector as AlignmentAdversarialDetector,
+    )
     ALIGNMENT_ADVERSARIAL_AVAILABLE = True
 except ImportError:
     ALIGNMENT_ADVERSARIAL_AVAILABLE = False
@@ -65,19 +68,19 @@ class Message:
     content: str
     timestamp: datetime
     conversation_id: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    parent_message_id: Optional[str] = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    parent_message_id: str | None = None
 
 
 @dataclass
 class Conversation:
     """Multi-agent conversation."""
     id: str
-    participants: List[str]
-    messages: List[Message]
+    participants: list[str]
+    messages: list[Message]
     started_at: datetime
     topic: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def message_count(self) -> int:
@@ -124,7 +127,7 @@ class SafetyGuardrails:
         self,
         min_insight_length: int = 20,
         similarity_threshold: float = 0.8,
-        relevance_keywords: Optional[List[str]] = None
+        relevance_keywords: list[str] | None = None
     ):
         """
         Initialize safety guardrails.
@@ -293,7 +296,7 @@ class BudgetManager:
             default_budget: Default budget for conversations
         """
         self.default_budget = default_budget
-        self.conversation_budgets: Dict[str, Budget] = {}
+        self.conversation_budgets: dict[str, Budget] = {}
         self.hourly_reset_time = datetime.now()
 
     def get_budget(self, conversation_id: str) -> Budget:
@@ -355,10 +358,10 @@ class MessageBus:
 
     def __init__(self):
         """Initialize message bus."""
-        self.subscribers: Dict[str, List[Callable]] = {}
+        self.subscribers: dict[str, list[Callable]] = {}
         self.message_queue: asyncio.Queue = asyncio.Queue()
         self._running = False
-        self._dispatch_task: Optional[asyncio.Task] = None
+        self._dispatch_task: asyncio.Task | None = None
 
     async def start(self) -> None:
         """Start message bus."""
@@ -461,23 +464,23 @@ class ConversationManager:
         self.budget_manager = budget_manager
         self.safety = safety_guardrails
 
-        self.active_conversations: Dict[str, Conversation] = {}
-        self.conversation_history: List[Conversation] = []
+        self.active_conversations: dict[str, Conversation] = {}
+        self.conversation_history: list[Conversation] = []
 
         # Callbacks
-        self.on_conversation_start: Optional[Callable] = None
-        self.on_conversation_end: Optional[Callable] = None
-        self.on_message: Optional[Callable] = None
-        self.on_insight: Optional[Callable] = None
-        self.on_budget_exceeded: Optional[Callable] = None
-        self.on_safety_violation: Optional[Callable] = None
+        self.on_conversation_start: Callable | None = None
+        self.on_conversation_end: Callable | None = None
+        self.on_message: Callable | None = None
+        self.on_insight: Callable | None = None
+        self.on_budget_exceeded: Callable | None = None
+        self.on_safety_violation: Callable | None = None
 
     async def start_conversation(
         self,
         topic: str,
         initiator: str,
-        participants: List[str]
-    ) -> Optional[str]:
+        participants: list[str]
+    ) -> str | None:
         """
         Start new conversation.
 
@@ -528,8 +531,8 @@ class ConversationManager:
         to_agent: str,
         message_type: MessageType,
         content: str,
-        parent_message_id: Optional[str] = None
-    ) -> Optional[Message]:
+        parent_message_id: str | None = None
+    ) -> Message | None:
         """
         Send message in conversation.
 
@@ -646,11 +649,11 @@ class ConversationManager:
         if self.on_conversation_end:
             self.on_conversation_end(conversation)
 
-    def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
+    def get_conversation(self, conversation_id: str) -> Conversation | None:
         """Get conversation by ID."""
         return self.active_conversations.get(conversation_id)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get conversation statistics."""
         return {
             "active_conversations": len(self.active_conversations),

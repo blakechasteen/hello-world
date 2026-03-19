@@ -26,19 +26,19 @@ Environment Variables:
 
 import asyncio
 import hashlib
-import json
 import logging
 import os
 import smtplib
 import ssl
 import time
+from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
-from typing import Dict, List, Optional, Set, Any, Callable
-from collections import defaultdict
+from typing import Any
 
 try:
     import aiohttp
@@ -71,7 +71,7 @@ class Alert:
     message: str
     source: str = "hololoom"
     timestamp: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def fingerprint(self) -> str:
@@ -79,7 +79,7 @@ class Alert:
         content = f"{self.severity.value}:{self.title}:{self.source}"
         return hashlib.md5(content.encode()).hexdigest()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "severity": self.severity.value,
@@ -95,31 +95,31 @@ class Alert:
 class AlertConfig:
     """Configuration for alert dispatcher."""
     # Slack
-    slack_webhook_url: Optional[str] = None
+    slack_webhook_url: str | None = None
 
     # Discord
-    discord_webhook_url: Optional[str] = None
+    discord_webhook_url: str | None = None
 
     # Email
-    email_smtp_host: Optional[str] = None
+    email_smtp_host: str | None = None
     email_smtp_port: int = 587
-    email_from: Optional[str] = None
-    email_to: List[str] = field(default_factory=list)
-    email_username: Optional[str] = None
-    email_password: Optional[str] = None
+    email_from: str | None = None
+    email_to: list[str] = field(default_factory=list)
+    email_username: str | None = None
+    email_password: str | None = None
     email_use_tls: bool = True
 
     # Deduplication
     dedup_window_seconds: float = 300.0  # 5 minutes
 
     # Routing
-    warning_channels: List[AlertChannel] = field(
+    warning_channels: list[AlertChannel] = field(
         default_factory=lambda: [AlertChannel.SLACK]
     )
-    critical_channels: List[AlertChannel] = field(
+    critical_channels: list[AlertChannel] = field(
         default_factory=lambda: [AlertChannel.SLACK, AlertChannel.DISCORD, AlertChannel.EMAIL]
     )
-    info_channels: List[AlertChannel] = field(
+    info_channels: list[AlertChannel] = field(
         default_factory=lambda: [AlertChannel.SLACK]
     )
 
@@ -163,7 +163,7 @@ class AlertDispatcher:
         await dispatcher.warning("High Risk Action", "User requested file deletion")
     """
 
-    def __init__(self, config: Optional[AlertConfig] = None):
+    def __init__(self, config: AlertConfig | None = None):
         """
         Initialize dispatcher.
 
@@ -173,7 +173,7 @@ class AlertDispatcher:
         self.config = config or AlertConfig.from_env()
 
         # Deduplication cache: fingerprint -> last_sent_timestamp
-        self._sent_alerts: Dict[str, float] = {}
+        self._sent_alerts: dict[str, float] = {}
         self._lock = asyncio.Lock()
 
         # Statistics
@@ -186,13 +186,13 @@ class AlertDispatcher:
         }
 
         # Channel handlers
-        self._handlers: Dict[AlertChannel, Callable] = {
+        self._handlers: dict[AlertChannel, Callable] = {
             AlertChannel.SLACK: self._send_slack,
             AlertChannel.DISCORD: self._send_discord,
             AlertChannel.EMAIL: self._send_email
         }
 
-    async def dispatch(self, alert: Alert) -> Dict[str, bool]:
+    async def dispatch(self, alert: Alert) -> dict[str, bool]:
         """
         Dispatch alert to appropriate channels.
 
@@ -244,8 +244,8 @@ class AlertDispatcher:
         title: str,
         message: str,
         source: str = "hololoom",
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, bool]:
+        metadata: dict[str, Any] | None = None
+    ) -> dict[str, bool]:
         """Send CRITICAL severity alert."""
         alert = Alert(
             severity=AlertSeverity.CRITICAL,
@@ -261,8 +261,8 @@ class AlertDispatcher:
         title: str,
         message: str,
         source: str = "hololoom",
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, bool]:
+        metadata: dict[str, Any] | None = None
+    ) -> dict[str, bool]:
         """Send WARNING severity alert."""
         alert = Alert(
             severity=AlertSeverity.WARNING,
@@ -278,8 +278,8 @@ class AlertDispatcher:
         title: str,
         message: str,
         source: str = "hololoom",
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, bool]:
+        metadata: dict[str, Any] | None = None
+    ) -> dict[str, bool]:
         """Send INFO severity alert."""
         alert = Alert(
             severity=AlertSeverity.INFO,
@@ -300,7 +300,7 @@ class AlertDispatcher:
         elapsed = time.time() - last_sent
         return elapsed < self.config.dedup_window_seconds
 
-    def _get_channels_for_severity(self, severity: AlertSeverity) -> List[AlertChannel]:
+    def _get_channels_for_severity(self, severity: AlertSeverity) -> list[AlertChannel]:
         """Get channels to use for given severity."""
         if severity == AlertSeverity.CRITICAL:
             return self.config.critical_channels
@@ -600,7 +600,7 @@ Message:
         }
         return emojis.get(severity, "📢")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get dispatcher statistics."""
         return {
             "total_dispatched": self._stats["total_dispatched"],
@@ -627,7 +627,7 @@ Message:
 
 
 # Global instance for easy access
-_alert_dispatcher: Optional[AlertDispatcher] = None
+_alert_dispatcher: AlertDispatcher | None = None
 
 
 def get_alert_dispatcher() -> AlertDispatcher:
@@ -650,8 +650,8 @@ async def dispatch_alignment_alert(
     title: str,
     message: str,
     source: str = "AlignmentMonitor",
-    metadata: Optional[Dict[str, Any]] = None
-) -> Dict[str, bool]:
+    metadata: dict[str, Any] | None = None
+) -> dict[str, bool]:
     """
     Dispatch an alignment-related alert.
 
@@ -683,8 +683,8 @@ async def alert_deception_detected(
     flag_type: str,
     description: str,
     confidence: float,
-    metadata: Optional[Dict[str, Any]] = None
-) -> Dict[str, bool]:
+    metadata: dict[str, Any] | None = None
+) -> dict[str, bool]:
     """Alert for deception detection."""
     meta = metadata or {}
     meta["flag_type"] = flag_type
@@ -703,8 +703,8 @@ async def alert_convergence_violation(
     violation_type: str,
     description: str,
     severity_str: str = "WARNING",
-    metadata: Optional[Dict[str, Any]] = None
-) -> Dict[str, bool]:
+    metadata: dict[str, Any] | None = None
+) -> dict[str, bool]:
     """Alert for convergence violation."""
     meta = metadata or {}
     meta["violation_type"] = violation_type
@@ -724,8 +724,8 @@ async def alert_high_risk_action(
     action: str,
     risk_level: str,
     outcome: str,
-    metadata: Optional[Dict[str, Any]] = None
-) -> Dict[str, bool]:
+    metadata: dict[str, Any] | None = None
+) -> dict[str, bool]:
     """Alert for high-risk action gating."""
     meta = metadata or {}
     meta["action"] = action

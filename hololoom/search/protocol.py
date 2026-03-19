@@ -10,10 +10,9 @@ This module defines the contracts that all search providers must implement,
 enabling swapping providers without changing orchestrator code.
 """
 
-from typing import Protocol, List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
-
+from typing import Any, Protocol
 
 # ============================================================================
 # Configuration
@@ -25,7 +24,7 @@ class SearchConfig:
 
     # Provider settings
     provider: str = "serpapi"  # "serpapi", "bing", "tavily", "brave"
-    api_key: Optional[str] = None
+    api_key: str | None = None
 
     # Matryoshka settings
     stage1_size: int = 96   # Broad search dimension
@@ -85,8 +84,8 @@ class WebSearchResult:
     # Metadata
     result_type: SearchResultType = SearchResultType.ORGANIC
     domain: str = ""
-    published_date: Optional[str] = None
-    author: Optional[str] = None
+    published_date: str | None = None
+    author: str | None = None
 
     # Multi-scale similarity scores
     score_96d: float = 0.0   # Coarse similarity (stage 1)
@@ -106,7 +105,7 @@ class WebSearchResult:
         """Format as citation [1], [2], etc."""
         return f"[{index}] {self.title} - {self.url}"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "url": self.url,
@@ -140,7 +139,7 @@ class RawSearchResult:
     snippet: str
     rank: int = 0
     result_type: SearchResultType = SearchResultType.ORGANIC
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -168,7 +167,7 @@ class SearchProvider(Protocol):
         query: str,
         limit: int = 100,
         **kwargs
-    ) -> List[RawSearchResult]:
+    ) -> list[RawSearchResult]:
         """
         Execute search query and return raw results.
 
@@ -231,9 +230,9 @@ class ContentScraper(Protocol):
 
     async def scrape_batch(
         self,
-        urls: List[str],
+        urls: list[str],
         max_parallel: int = 5
-    ) -> Dict[str, tuple[str, str]]:
+    ) -> dict[str, tuple[str, str]]:
         """
         Scrape multiple URLs in parallel.
 

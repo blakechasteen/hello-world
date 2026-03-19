@@ -3,11 +3,13 @@
 
 import asyncio
 import sys
+
 sys.path.insert(0, 'c:/Users/blake/Documents/mythRL')
 
-from hololoom.config import Config, MemoryBackend
 from hololoom.memory.backend_factory import create_memory_backend
 from hololoom.memory.protocol import MemoryQuery
+
+from hololoom.config import Config, MemoryBackend
 
 
 async def test():

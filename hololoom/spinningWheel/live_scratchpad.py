@@ -16,13 +16,13 @@ Author: Claude Code
 Date: November 2025
 """
 
-from typing import Dict, Any, Optional, List, Callable
+import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-import re
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
-
 
 # ============================================================================
 # Template System
@@ -35,25 +35,25 @@ class TemplateField:
     field_type: str  # 'text', 'number', 'list', 'currency', 'duration'
     default: Any = None
     required: bool = False
-    validation_pattern: Optional[str] = None
-    suggestions: List[str] = field(default_factory=list)
+    validation_pattern: str | None = None
+    suggestions: list[str] = field(default_factory=list)
 
 
 @dataclass
 class DomainTemplate:
     """Domain-specific template structure"""
     name: str
-    fields: List[TemplateField]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    fields: list[TemplateField]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export as editable dictionary"""
         return {
             field.name: field.default if field.default is not None else ""
             for field in self.fields
         }
 
-    def validate(self, data: Dict[str, Any]) -> List[str]:
+    def validate(self, data: dict[str, Any]) -> list[str]:
         """Validate filled template, return list of errors"""
         errors = []
 
@@ -207,13 +207,13 @@ class LiveScratchpad:
         }
 
         # Active session
-        self.active_domain: Optional[str] = None
-        self.active_template: Optional[DomainTemplate] = None
-        self.current_data: Dict[str, Any] = {}
+        self.active_domain: str | None = None
+        self.active_template: DomainTemplate | None = None
+        self.current_data: dict[str, Any] = {}
         self.transcription_buffer: str = ""
 
         # Callbacks for UI updates
-        self.on_update_callbacks: List[Callable] = []
+        self.on_update_callbacks: list[Callable] = []
 
     def register_update_callback(self, callback: Callable):
         """Register callback for real-time UI updates"""
@@ -256,7 +256,7 @@ class LiveScratchpad:
         print(f"[LiveScratchpad] Recording started for domain: {domain}")
         self._notify_update()
 
-    async def update_from_transcription(self, new_transcription: str, detected_domain: Optional[str] = None):
+    async def update_from_transcription(self, new_transcription: str, detected_domain: str | None = None):
         """
         Update template from new transcription text.
 
@@ -293,7 +293,7 @@ class LiveScratchpad:
         self,
         text: str,
         template: DomainTemplate
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Extract structured data from transcription based on template"""
 
         if template.name == 'recipe':
@@ -311,7 +311,7 @@ class LiveScratchpad:
         else:
             return {}
 
-    def _extract_recipe(self, text: str) -> Dict[str, Any]:
+    def _extract_recipe(self, text: str) -> dict[str, Any]:
         """Extract recipe data from natural language"""
         data = {}
 
@@ -351,7 +351,7 @@ class LiveScratchpad:
 
         return data
 
-    def _extract_budget(self, text: str) -> Dict[str, Any]:
+    def _extract_budget(self, text: str) -> dict[str, Any]:
         """Extract budget entry from natural language"""
         data = {}
 
@@ -387,7 +387,7 @@ class LiveScratchpad:
 
         return data
 
-    def _extract_time_tracking(self, text: str) -> Dict[str, Any]:
+    def _extract_time_tracking(self, text: str) -> dict[str, Any]:
         """Extract time tracking from natural language"""
         data = {}
 
@@ -420,7 +420,7 @@ class LiveScratchpad:
 
         return data
 
-    def _extract_expense(self, text: str) -> Dict[str, Any]:
+    def _extract_expense(self, text: str) -> dict[str, Any]:
         """Extract expense from natural language"""
         # Similar to budget but with vendor and receipt details
         data = self._extract_budget(text)  # Reuse budget extraction
@@ -437,7 +437,7 @@ class LiveScratchpad:
 
         return data
 
-    def _extract_bee_inspection(self, text: str) -> Dict[str, Any]:
+    def _extract_bee_inspection(self, text: str) -> dict[str, Any]:
         """Extract bee inspection from natural language"""
         data = {}
 
@@ -489,7 +489,7 @@ class LiveScratchpad:
 
         return data
 
-    def _extract_sop(self, text: str) -> Dict[str, Any]:
+    def _extract_sop(self, text: str) -> dict[str, Any]:
         """Extract SOP from natural language"""
         data = {}
 
@@ -544,7 +544,7 @@ class LiveScratchpad:
         self.current_data[field_name] = value
         self._notify_update()
 
-    def get_current_state(self) -> Dict[str, Any]:
+    def get_current_state(self) -> dict[str, Any]:
         """Get current template state (for UI rendering)"""
         validation_errors = []
         if self.active_template:

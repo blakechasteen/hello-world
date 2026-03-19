@@ -7,11 +7,11 @@ protocol-based architecture.
 Created: 2025-11-22
 """
 
-from typing import Protocol, List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
-import numpy as np
+from typing import Any, Protocol
 
+import numpy as np
 
 # ============================================================================
 # Core Data Models
@@ -25,7 +25,7 @@ class BoundingBox:
     x_max: float
     y_max: float
 
-    def center(self) -> Tuple[float, float]:
+    def center(self) -> tuple[float, float]:
         """Get center point"""
         return ((self.x_min + self.x_max) / 2, (self.y_min + self.y_max) / 2)
 
@@ -58,22 +58,22 @@ class DetectedObject:
     bbox: BoundingBox
     class_id: int
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # 3D information (if available)
-    position_3d: Optional[Tuple[float, float, float]] = None
-    depth: Optional[float] = None
+    position_3d: tuple[float, float, float] | None = None
+    depth: float | None = None
 
 
 @dataclass
 class SceneUnderstanding:
     """Complete scene analysis"""
-    objects: List[DetectedObject]
-    dominant_colors: List[str] = field(default_factory=list)
+    objects: list[DetectedObject]
+    dominant_colors: list[str] = field(default_factory=list)
     scene_type: str = "unknown"  # indoor, outdoor, workshop, etc.
     lighting_condition: str = "normal"  # bright, dim, backlit, etc.
-    spatial_layout: Dict[str, Any] = field(default_factory=dict)
-    relationships: List["SpatialRelationship"] = field(default_factory=list)
+    spatial_layout: dict[str, Any] = field(default_factory=dict)
+    relationships: list["SpatialRelationship"] = field(default_factory=list)
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -99,9 +99,9 @@ class HandLandmark:
 class HandPose:
     """Complete hand pose with landmarks"""
     hand_id: str  # "left" or "right"
-    landmarks: List[HandLandmark]  # 21 landmarks (MediaPipe)
+    landmarks: list[HandLandmark]  # 21 landmarks (MediaPipe)
     confidence: float
-    gesture: Optional[str] = None  # Recognized gesture
+    gesture: str | None = None  # Recognized gesture
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -114,7 +114,7 @@ class DepthMap:
     min_depth: float
     max_depth: float
     unit: str = "normalized"  # normalized, meters, disparity
-    confidence_map: Optional[np.ndarray] = None
+    confidence_map: np.ndarray | None = None
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -123,11 +123,11 @@ class Marker:
     """Detected marker (QR code, ArUco, AprilTag)"""
     id: str  # Marker ID or decoded data
     marker_type: str  # "aruco", "qr_code", "apriltag"
-    corners: List[List[float]]  # 4 corner points [[x, y], ...]
-    center: Tuple[float, float]  # Center point (x, y)
-    position: Optional[List[float]] = None  # 3D position [x, y, z] in meters
-    rotation: Optional[List[float]] = None  # Rotation vector [rx, ry, rz]
-    data: Optional[str] = None  # Decoded data (for QR codes)
+    corners: list[list[float]]  # 4 corner points [[x, y], ...]
+    center: tuple[float, float]  # Center point (x, y)
+    position: list[float] | None = None  # 3D position [x, y, z] in meters
+    rotation: list[float] | None = None  # Rotation vector [rx, ry, rz]
+    data: str | None = None  # Decoded data (for QR codes)
     confidence: float = 1.0
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -136,11 +136,11 @@ class Marker:
 class SegmentationMask:
     """Semantic segmentation result (Phase 5)"""
     mask: np.ndarray  # HxW segmentation mask (class IDs per pixel)
-    class_names: List[str]  # Class names indexed by ID
+    class_names: list[str]  # Class names indexed by ID
     num_classes: int
     width: int
     height: int
-    confidence_map: Optional[np.ndarray] = None  # HxW confidence per pixel
+    confidence_map: np.ndarray | None = None  # HxW confidence per pixel
     timestamp: datetime = field(default_factory=datetime.now)
 
     def get_class_mask(self, class_id: int) -> np.ndarray:
@@ -165,8 +165,8 @@ class Keypoint:
 @dataclass
 class BodyPose:
     """Full-body pose with 33 keypoints (MediaPipe Pose) (Phase 5)"""
-    keypoints: List[Keypoint]  # 33 keypoints
-    world_keypoints: Optional[List[Keypoint]] = None  # 3D world coordinates
+    keypoints: list[Keypoint]  # 33 keypoints
+    world_keypoints: list[Keypoint] | None = None  # 3D world coordinates
     confidence: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -174,9 +174,9 @@ class BodyPose:
 @dataclass
 class SLAMPose:
     """SLAM camera pose estimate (Phase 5)"""
-    position: Tuple[float, float, float]  # (x, y, z) in meters
-    orientation: Tuple[float, float, float, float]  # Quaternion (x, y, z, w)
-    covariance: Optional[np.ndarray] = None  # 6x6 pose covariance
+    position: tuple[float, float, float]  # (x, y, z) in meters
+    orientation: tuple[float, float, float, float]  # Quaternion (x, y, z, w)
+    covariance: np.ndarray | None = None  # 6x6 pose covariance
     tracking_quality: float = 0.0  # 0.0-1.0
     num_features: int = 0  # Number of tracked features
     timestamp: datetime = field(default_factory=datetime.now)
@@ -186,8 +186,8 @@ class SLAMPose:
 class MapPoint:
     """3D map point from SLAM (Phase 5)"""
     id: int
-    position: Tuple[float, float, float]  # (x, y, z) in meters
-    descriptor: Optional[np.ndarray] = None
+    position: tuple[float, float, float]  # (x, y, z) in meters
+    descriptor: np.ndarray | None = None
     num_observations: int = 0
     confidence: float = 1.0
 
@@ -228,7 +228,7 @@ class VisionProcessor(Protocol):
         """Clean up resources"""
         ...
 
-    def get_capabilities(self) -> Dict[str, bool]:
+    def get_capabilities(self) -> dict[str, bool]:
         """
         Get processor capabilities.
 
@@ -249,7 +249,7 @@ class ObjectDetectorProtocol(VisionProcessor):
         self,
         frame: np.ndarray,
         confidence_threshold: float = 0.5
-    ) -> List[DetectedObject]:
+    ) -> list[DetectedObject]:
         """
         Detect objects in frame.
 
@@ -269,7 +269,7 @@ class SceneAnalyzerProtocol(VisionProcessor):
     async def analyze_scene(
         self,
         frame: np.ndarray,
-        objects: Optional[List[DetectedObject]] = None
+        objects: list[DetectedObject] | None = None
     ) -> SceneUnderstanding:
         """
         Analyze scene for spatial understanding.
@@ -290,7 +290,7 @@ class HandTrackerProtocol(VisionProcessor):
     async def track_hands(
         self,
         frame: np.ndarray
-    ) -> List[HandPose]:
+    ) -> list[HandPose]:
         """
         Track hands in frame.
 
@@ -302,7 +302,7 @@ class HandTrackerProtocol(VisionProcessor):
         """
         ...
 
-    def recognize_gesture(self, hand_pose: HandPose) -> Optional[str]:
+    def recognize_gesture(self, hand_pose: HandPose) -> str | None:
         """
         Recognize gesture from hand pose.
 
@@ -340,8 +340,8 @@ class MarkerDetectorProtocol(VisionProcessor):
     async def detect_markers(
         self,
         frame: np.ndarray,
-        marker_types: Optional[List[str]] = None
-    ) -> List[Marker]:
+        marker_types: list[str] | None = None
+    ) -> list[Marker]:
         """
         Detect markers in frame.
 
@@ -362,11 +362,11 @@ class MarkerDetectorProtocol(VisionProcessor):
 @dataclass
 class VisionPipelineResult:
     """Complete vision pipeline result"""
-    objects: List[DetectedObject]
+    objects: list[DetectedObject]
     scene: SceneUnderstanding
-    hands: List[HandPose]
-    depth: Optional[DepthMap] = None
-    markers: List[Marker] = field(default_factory=list)
+    hands: list[HandPose]
+    depth: DepthMap | None = None
+    markers: list[Marker] = field(default_factory=list)
     processing_time_ms: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -380,11 +380,11 @@ class VisionPipeline:
 
     def __init__(
         self,
-        object_detector: Optional[ObjectDetectorProtocol] = None,
-        scene_analyzer: Optional[SceneAnalyzerProtocol] = None,
-        hand_tracker: Optional[HandTrackerProtocol] = None,
-        depth_estimator: Optional[DepthEstimatorProtocol] = None,
-        marker_detector: Optional[MarkerDetectorProtocol] = None,
+        object_detector: ObjectDetectorProtocol | None = None,
+        scene_analyzer: SceneAnalyzerProtocol | None = None,
+        hand_tracker: HandTrackerProtocol | None = None,
+        depth_estimator: DepthEstimatorProtocol | None = None,
+        marker_detector: MarkerDetectorProtocol | None = None,
     ):
         self.object_detector = object_detector
         self.scene_analyzer = scene_analyzer

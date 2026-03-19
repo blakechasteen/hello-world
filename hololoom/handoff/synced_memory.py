@@ -16,31 +16,22 @@ import logging
 import sqlite3
 import time
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum, auto
+from enum import Enum
 from pathlib import Path
 from typing import (
-    Any,
-    AsyncIterator,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Tuple,
     TYPE_CHECKING,
+    Any,
 )
 
 if TYPE_CHECKING:
     from .identity import UnifiedIdentity
 
 from .types import (
+    HandoffError,
     MergeResult,
     SignedOp,
-    HandoffError,
-    InvalidSignatureError,
-    ReplayAttackError,
 )
 
 logger = logging.getLogger(__name__)
@@ -120,11 +111,11 @@ class MemoryOp:
 
     op_type: MemoryOpType
     content: str
-    memory_id: Optional[str] = None      # Target memory (for update/delete)
-    tags: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    memory_id: str | None = None      # Target memory (for update/delete)
+    tags: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def with_clock(self, clock: int) -> "MemoryOp":
+    def with_clock(self, clock: int) -> MemoryOp:
         """Return copy with clock value in metadata."""
         new_meta = dict(self.metadata)
         new_meta["clock"] = clock
@@ -146,7 +137,7 @@ class MemoryOp:
         }, sort_keys=True)
 
     @classmethod
-    def from_content_string(cls, op_type: str, content_str: str) -> "MemoryOp":
+    def from_content_string(cls, op_type: str, content_str: str) -> MemoryOp:
         """Deserialize from SignedOp content string."""
         data = json.loads(content_str)
         return cls(
@@ -173,7 +164,7 @@ class LocalMemoryStore:
     def __init__(self, db_path: str | Path = "~/.hololoom/memory.db"):
         self.db_path = Path(db_path).expanduser()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._conn: Optional[sqlite3.Connection] = None
+        self._conn: sqlite3.Connection | None = None
         self._init_db()
 
     def _init_db(self) -> None:
@@ -229,7 +220,7 @@ class LocalMemoryStore:
             self._conn.close()
             self._conn = None
 
-    async def apply(self, signed_op: SignedOp) -> Dict[str, Any]:
+    async def apply(self, signed_op: SignedOp) -> dict[str, Any]:
         """
         Apply a signed operation to local store.
 
@@ -341,7 +332,7 @@ class LocalMemoryStore:
         await self.apply(signed_op)
         return True
 
-    def get_unsynced_ops(self, limit: int = 100) -> List[SignedOp]:
+    def get_unsynced_ops(self, limit: int = 100) -> list[SignedOp]:
         """Get operations not yet synced to other devices."""
         cursor = self._conn.execute("""
             SELECT op_id, op_type, content, clock, device_id, identity_did, timestamp, signature
@@ -365,7 +356,7 @@ class LocalMemoryStore:
             ))
         return ops
 
-    def mark_synced(self, op_ids: List[str]) -> None:
+    def mark_synced(self, op_ids: list[str]) -> None:
         """Mark operations as synced."""
         if not op_ids:
             return
@@ -384,7 +375,7 @@ class LocalMemoryStore:
         row = cursor.fetchone()
         return row["max_clock"] or 0
 
-    def query(self, query_text: str, limit: int = 10) -> List[Dict[str, Any]]:
+    def query(self, query_text: str, limit: int = 10) -> list[dict[str, Any]]:
         """
         Simple query of local memories.
 
@@ -415,7 +406,7 @@ class LocalMemoryStore:
 
     def _generate_memory_id(self, content: str, clock: int) -> str:
         """Generate deterministic memory ID from content."""
-        data = f"{content}:{clock}".encode("utf-8")
+        data = f"{content}:{clock}".encode()
         return f"mem_{hashlib.sha256(data).hexdigest()[:16]}"
 
 
@@ -446,7 +437,7 @@ class SyncedMemory:
 
     def __init__(
         self,
-        identity: "UnifiedIdentity",
+        identity: UnifiedIdentity,
         db_path: str | Path = "~/.hololoom/memory.db",
         pending_capacity: int = 10000,
     ):
@@ -456,14 +447,14 @@ class SyncedMemory:
         self.pending: deque[SignedOp] = deque(maxlen=pending_capacity)
 
         # Nonce tracking for replay protection
-        self._seen_nonces: Set[str] = set()
-        self._nonce_expiry: Dict[str, float] = {}
+        self._seen_nonces: set[str] = set()
+        self._nonce_expiry: dict[str, float] = {}
         self._nonce_window = 300.0  # 5 minute window
 
         # Sync callbacks
-        self._on_sync_callbacks: List[Callable[[MergeResult], None]] = []
+        self._on_sync_callbacks: list[Callable[[MergeResult], None]] = []
 
-    async def apply(self, op: MemoryOp) -> Dict[str, Any]:
+    async def apply(self, op: MemoryOp) -> dict[str, Any]:
         """
         Apply memory operation locally and queue for sync.
 
@@ -490,7 +481,7 @@ class SyncedMemory:
 
         return result
 
-    async def experience(self, content: str, tags: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def experience(self, content: str, tags: list[str] | None = None) -> dict[str, Any]:
         """
         Form a new memory (convenience method).
 
@@ -508,7 +499,7 @@ class SyncedMemory:
         )
         return await self.apply(op)
 
-    async def recall(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+    async def recall(self, query: str, limit: int = 10) -> list[dict[str, Any]]:
         """
         Retrieve memories matching query.
 
@@ -521,7 +512,7 @@ class SyncedMemory:
         """
         return self.local.query(query, limit)
 
-    async def merge(self, remote_ops: List[SignedOp]) -> MergeResult:
+    async def merge(self, remote_ops: list[SignedOp]) -> MergeResult:
         """
         CRDT merge remote operations.
 
@@ -586,7 +577,7 @@ class SyncedMemory:
 
         return result
 
-    def pending_delta(self) -> List[SignedOp]:
+    def pending_delta(self) -> list[SignedOp]:
         """
         Get operations not yet synced.
 
@@ -607,7 +598,7 @@ class SyncedMemory:
 
         return combined
 
-    def mark_synced(self, ops: List[SignedOp]) -> None:
+    def mark_synced(self, ops: list[SignedOp]) -> None:
         """Mark operations as successfully synced."""
         op_ids = [op.op_id for op in ops]
         self.local.mark_synced(op_ids)
@@ -666,7 +657,7 @@ class SyncedMemory:
         """Close resources."""
         self.local.close()
 
-    async def __aenter__(self) -> "SyncedMemory":
+    async def __aenter__(self) -> SyncedMemory:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -679,8 +670,8 @@ class SyncedMemory:
 
 
 def create_synced_memory(
-    identity: "UnifiedIdentity",
-    db_path: Optional[str | Path] = None,
+    identity: UnifiedIdentity,
+    db_path: str | Path | None = None,
 ) -> SyncedMemory:
     """
     Create a SyncedMemory instance.

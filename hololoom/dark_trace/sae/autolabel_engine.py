@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Dark Trace SAE: Auto-Label Engine
 =================================
@@ -17,29 +18,27 @@ Features:
 Created: 2025-12-28
 """
 
-import asyncio
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Callable, Tuple
-import json
+from typing import Any
 
-import torch
 import numpy as np
+import torch
 
-from hololoom.dark_trace.sae.labeler import (
-    FeatureLabel,
-    ActivationPatternAnalyzer,
-    SemanticAlignmentScorer,
-    LabelCache,
-)
 from hololoom.dark_trace.sae.label_prompts import (
     LabelPromptBuilder,
     LabelPromptContext,
     LabelResponseParser,
-    ParsedLabelResponse,
+)
+from hololoom.dark_trace.sae.labeler import (
+    ActivationPatternAnalyzer,
+    FeatureLabel,
+    LabelCache,
+    SemanticAlignmentScorer,
 )
 
 logger = logging.getLogger(__name__)
@@ -86,8 +85,8 @@ class AutoLabelConfig:
     # LLM settings
     llm_provider: str = "ollama"
     llm_model: str = "llama3.2:3b"
-    fallback_provider: Optional[str] = None
-    fallback_model: Optional[str] = None
+    fallback_provider: str | None = None
+    fallback_model: str | None = None
 
     # Labeling strategy
     strategy: LabelingStrategy = LabelingStrategy.SINGLE
@@ -101,7 +100,7 @@ class AutoLabelConfig:
     max_retries: int = 2
 
     # Storage
-    cache_dir: Optional[Path] = None
+    cache_dir: Path | None = None
 
     # Examples
     top_k_examples: int = 10
@@ -150,8 +149,8 @@ class QualityAssessment:
     confidence_score: float
     evidence_score: float
     coherence_score: float
-    issues: List[str] = field(default_factory=list)
-    suggestions: List[str] = field(default_factory=list)
+    issues: list[str] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
 
 
 class LabelQualityAssessor:
@@ -176,7 +175,7 @@ class LabelQualityAssessor:
     def assess(
         self,
         label: FeatureLabel,
-        context: Optional[LabelPromptContext] = None,
+        context: LabelPromptContext | None = None,
     ) -> QualityAssessment:
         """
         Assess the quality of a feature label.
@@ -258,9 +257,9 @@ class LabelQualityAssessor:
 
     def filter_by_quality(
         self,
-        labels: Dict[int, FeatureLabel],
+        labels: dict[int, FeatureLabel],
         min_level: QualityLevel = QualityLevel.LOW,
-    ) -> Dict[int, FeatureLabel]:
+    ) -> dict[int, FeatureLabel]:
         """
         Filter labels by quality level.
 
@@ -320,8 +319,8 @@ class AutoLabelEngine:
 
     def __init__(
         self,
-        config: Optional[AutoLabelConfig] = None,
-        registry: Optional[Any] = None,  # FeatureRegistry
+        config: AutoLabelConfig | None = None,
+        registry: Any | None = None,  # FeatureRegistry
     ):
         """
         Initialize auto-labeling engine.
@@ -369,7 +368,7 @@ class AutoLabelEngine:
     def _init_llm_client(self) -> None:
         """Initialize the LLM client."""
         try:
-            from hololoom.llm import UnifiedLLMClient, LLMConfig
+            from hololoom.llm import LLMConfig, UnifiedLLMClient
 
             primary = LLMConfig(
                 provider=self.config.llm_provider,
@@ -395,7 +394,7 @@ class AutoLabelEngine:
             logger.warning("UnifiedLLMClient not available, falling back to direct ollama")
             self._llm_client = None
 
-    def set_semantic_axes(self, axes: Dict[str, np.ndarray]) -> None:
+    def set_semantic_axes(self, axes: dict[str, np.ndarray]) -> None:
         """Set semantic axes for alignment scoring."""
         self.alignment_scorer.set_semantic_axes(axes)
 
@@ -403,7 +402,7 @@ class AutoLabelEngine:
         self,
         sae: torch.nn.Module,
         activations: torch.Tensor,
-        example_texts: List[str],
+        example_texts: list[str],
     ) -> None:
         """
         Collect activation examples for labeling.
@@ -424,10 +423,10 @@ class AutoLabelEngine:
     async def label_features(
         self,
         sae: torch.nn.Module,
-        feature_indices: Optional[List[int]] = None,
+        feature_indices: list[int] | None = None,
         force_relabel: bool = False,
-        progress_callback: Optional[Callable[[int, int], None]] = None,
-    ) -> Dict[int, FeatureLabel]:
+        progress_callback: Callable[[int, int], None] | None = None,
+    ) -> dict[int, FeatureLabel]:
         """
         Label features using LLM.
 
@@ -492,9 +491,9 @@ class AutoLabelEngine:
 
     async def _label_single(
         self,
-        feature_indices: List[int],
-        progress_callback: Optional[Callable[[int, int], None]] = None,
-    ) -> Dict[int, FeatureLabel]:
+        feature_indices: list[int],
+        progress_callback: Callable[[int, int], None] | None = None,
+    ) -> dict[int, FeatureLabel]:
         """Label features one at a time."""
         results = {}
         total = len(feature_indices)
@@ -515,9 +514,9 @@ class AutoLabelEngine:
 
     async def _label_batch(
         self,
-        feature_indices: List[int],
-        progress_callback: Optional[Callable[[int, int], None]] = None,
-    ) -> Dict[int, FeatureLabel]:
+        feature_indices: list[int],
+        progress_callback: Callable[[int, int], None] | None = None,
+    ) -> dict[int, FeatureLabel]:
         """Label features in batches."""
         results = {}
         batch_size = self.config.batch_size
@@ -553,9 +552,9 @@ class AutoLabelEngine:
 
     async def _label_hierarchical(
         self,
-        feature_indices: List[int],
-        progress_callback: Optional[Callable[[int, int], None]] = None,
-    ) -> Dict[int, FeatureLabel]:
+        feature_indices: list[int],
+        progress_callback: Callable[[int, int], None] | None = None,
+    ) -> dict[int, FeatureLabel]:
         """Label features hierarchically (group similar first)."""
         # First, get activation patterns to cluster
         patterns = {}
@@ -657,8 +656,8 @@ class AutoLabelEngine:
 
     async def _label_feature_batch(
         self,
-        feature_indices: List[int],
-    ) -> Dict[int, FeatureLabel]:
+        feature_indices: list[int],
+    ) -> dict[int, FeatureLabel]:
         """Label a batch of features."""
         contexts = []
 
@@ -709,9 +708,9 @@ class AutoLabelEngine:
 
     async def verify_labels(
         self,
-        labels: Dict[int, FeatureLabel],
-        confidence_threshold: Optional[float] = None,
-    ) -> Dict[int, FeatureLabel]:
+        labels: dict[int, FeatureLabel],
+        confidence_threshold: float | None = None,
+    ) -> dict[int, FeatureLabel]:
         """
         Verify and refine low-confidence labels.
 
@@ -827,7 +826,7 @@ class AutoLabelEngine:
         feature_b: int,
         label_a: FeatureLabel,
         label_b: FeatureLabel,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compare two features and their relationship.
 
@@ -900,8 +899,8 @@ class AutoLabelEngine:
 
     def get_quality_report(
         self,
-        labels: Dict[int, FeatureLabel],
-    ) -> Dict[str, Any]:
+        labels: dict[int, FeatureLabel],
+    ) -> dict[str, Any]:
         """
         Generate quality report for labels.
 
@@ -912,7 +911,7 @@ class AutoLabelEngine:
             Dict with quality statistics and breakdown
         """
         assessments = {}
-        quality_counts = {level: 0 for level in QualityLevel}
+        quality_counts = dict.fromkeys(QualityLevel, 0)
         total_score = 0.0
 
         for idx, label in labels.items():
@@ -941,7 +940,7 @@ class AutoLabelEngine:
             },
         }
 
-    def _update_registry(self, labels: Dict[int, FeatureLabel]) -> None:
+    def _update_registry(self, labels: dict[int, FeatureLabel]) -> None:
         """Update feature registry with new labels."""
         if not self.registry:
             return
@@ -967,7 +966,7 @@ class AutoLabelEngine:
         self.analyzer.clear()
         self.alignment_scorer.clear()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get labeling statistics."""
         return {
             **self._stats,
@@ -1006,11 +1005,11 @@ def create_autolabel_engine(
 async def label_sae_features(
     sae: torch.nn.Module,
     activations: torch.Tensor,
-    example_texts: List[str],
-    feature_indices: Optional[List[int]] = None,
+    example_texts: list[str],
+    feature_indices: list[int] | None = None,
     provider: str = "ollama",
     model: str = "llama3.2:3b",
-) -> Dict[int, FeatureLabel]:
+) -> dict[int, FeatureLabel]:
     """
     Convenience function to label SAE features.
 

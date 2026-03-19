@@ -21,13 +21,12 @@ Usage:
 
 import asyncio
 import logging
-from typing import List, Tuple, Optional, Dict, Any
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
 try:
-    from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
+    from vllm import AsyncEngineArgs, AsyncLLMEngine, SamplingParams
     from vllm.lora.request import LoRARequest
     VLLM_AVAILABLE = True
 except ImportError:
@@ -43,29 +42,29 @@ except ImportError:
 @dataclass
 class InferenceRequest:
     prompt: str
-    adapter_path: Optional[str] = None
-    adapter_name: Optional[str] = None
-    request_id: Optional[str] = None
+    adapter_path: str | None = None
+    adapter_name: str | None = None
+    request_id: str | None = None
 
 
 class VLLMInferenceEngine:
     """
     Manages a vLLM engine for high-throughput Multi-LoRA inference.
     """
-    
+
     def __init__(self, model_id: str, max_loras: int = 16, gpu_memory_utilization: float = 0.8):
         self.model_id = model_id
-        self.engine: Optional[AsyncLLMEngine] = None
+        self.engine: AsyncLLMEngine | None = None
         self.max_loras = max_loras
         self.gpu_memory_utilization = gpu_memory_utilization
-        
+
         if VLLM_AVAILABLE:
             self._initialize_engine()
-            
+
     def _initialize_engine(self):
         """Initialize the vLLM Async Engine with LoRA support enabled."""
         logger.info(f"Initializing vLLM Engine with model: {self.model_id}")
-        
+
         engine_args = AsyncEngineArgs(
             model=self.model_id,
             enable_lora=True,
@@ -74,7 +73,7 @@ class VLLMInferenceEngine:
             gpu_memory_utilization=self.gpu_memory_utilization,
             trust_remote_code=True
         )
-        
+
         try:
             self.engine = AsyncLLMEngine.from_engine_args(engine_args)
             logger.info("vLLM Engine initialized successfully.")
@@ -83,11 +82,11 @@ class VLLMInferenceEngine:
             self.engine = None
 
     async def generate_batch(
-        self, 
-        requests: List[InferenceRequest], 
+        self,
+        requests: list[InferenceRequest],
         max_tokens: int = 256,
         temperature: float = 0.7
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Generate responses for a batch of requests, each potentially using a different LoRA adapter.
         """
@@ -105,7 +104,7 @@ class VLLMInferenceEngine:
         for i, req in enumerate(requests):
             # Unique request ID is required by vLLM
             request_id = req.request_id or f"req_{i}_{hash(req.prompt)}"
-            
+
             # Construct LoRA request if adapter is specified
             lora_request = None
             if req.adapter_path and req.adapter_name:
@@ -114,12 +113,12 @@ class VLLMInferenceEngine:
                     lora_int_id=i + 1, # Unique integer ID for this adapter in the batch
                     lora_path=req.adapter_path
                 )
-            
+
             # Create generation task
             tasks.append(self._generate_single(
-                request_id, 
-                req.prompt, 
-                sampling_params, 
+                request_id,
+                req.prompt,
+                sampling_params,
                 lora_request
             ))
 
@@ -128,11 +127,11 @@ class VLLMInferenceEngine:
         return results
 
     async def _generate_single(
-        self, 
-        request_id: str, 
-        prompt: str, 
-        sampling_params: SamplingParams, 
-        lora_request: Optional[LoRARequest]
+        self,
+        request_id: str,
+        prompt: str,
+        sampling_params: SamplingParams,
+        lora_request: LoRARequest | None
     ) -> str:
         """Helper to await a single generation request."""
         try:
@@ -142,16 +141,16 @@ class VLLMInferenceEngine:
                 request_id=request_id,
                 lora_request=lora_request
             )
-            
+
             # Stream the results, we only care about the final output
             final_output = None
             async for request_output in results_generator:
                 final_output = request_output
-                
+
             if final_output:
                 return final_output.outputs[0].text
             return ""
-            
+
         except Exception as e:
             logger.error(f"Generation failed for {request_id}: {e}")
             return f"Error: {e}"
@@ -164,7 +163,7 @@ class VLLMLoomNode:
     def __init__(self, engine: VLLMInferenceEngine, worker_id: int):
         self.engine = engine
         self.worker_id = worker_id
-        
+
     async def evaluate_perturbation(self, prompt: str, adapter_path: str) -> str:
         """
         Evaluate a specific perturbation (saved as an adapter) on a task.
@@ -174,7 +173,7 @@ class VLLMLoomNode:
             adapter_path=adapter_path,
             adapter_name=f"worker_{self.worker_id}_adapter"
         )
-        
+
         # In a real scenario, we would batch these at the Integration level,
         # but here we show the node-level API.
         results = await self.engine.generate_batch([req])
@@ -183,10 +182,10 @@ class VLLMLoomNode:
 async def main():
     """Demonstration of vLLM Worker Logic"""
     print("Initializing vLLM Integration Prototype...")
-    
+
     # Initialize Engine (Simulated if vLLM not installed)
     engine = VLLMInferenceEngine(model_id="gpt2")
-    
+
     # Create a batch of requests simulating different workers/perturbations
     requests = [
         InferenceRequest(
@@ -205,10 +204,10 @@ async def main():
             adapter_name="worker_3"
         )
     ]
-    
+
     print(f"\nSubmitting batch of {len(requests)} requests...")
     results = await engine.generate_batch(requests)
-    
+
     print("\nResults:")
     for i, res in enumerate(results):
         print(f"[{requests[i].adapter_name}]: {res}")

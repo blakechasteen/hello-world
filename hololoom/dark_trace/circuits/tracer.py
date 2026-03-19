@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Circuit Tracing for Mechanistic Interpretability
 
@@ -14,7 +15,8 @@ Research Basis:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Any, Tuple, Set, Callable
+from typing import Any
+
 import numpy as np
 
 try:
@@ -106,7 +108,7 @@ class TraceNode:
     node_id: str
     layer_idx: int
     component_type: ComponentType
-    position: Optional[int] = None  # Token position
+    position: int | None = None  # Token position
 
     # Activation info
     activation: float = 0.0
@@ -117,10 +119,10 @@ class TraceNode:
     gradient_norm: float = 0.0
 
     # Metadata
-    label: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    label: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "node_id": self.node_id,
@@ -152,9 +154,9 @@ class TraceEdge:
     is_causal: bool = False  # Causally verified via patching
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "source_id": self.source_id,
@@ -172,8 +174,8 @@ class CircuitTrace:
     """Complete circuit trace through the model."""
 
     # Trace content
-    nodes: List[TraceNode] = field(default_factory=list)
-    edges: List[TraceEdge] = field(default_factory=list)
+    nodes: list[TraceNode] = field(default_factory=list)
+    edges: list[TraceEdge] = field(default_factory=list)
 
     # Trace metadata
     direction: TraceDirection = TraceDirection.FORWARD
@@ -181,41 +183,41 @@ class CircuitTrace:
     end_layer: int = -1
 
     # Input/output info
-    input_tokens: Optional[List[int]] = None
-    target_position: Optional[int] = None
-    target_token: Optional[int] = None
+    input_tokens: list[int] | None = None
+    target_position: int | None = None
+    target_token: int | None = None
 
     # Statistics
     total_activation: float = 0.0
     total_effect: float = 0.0
     n_layers_traced: int = 0
 
-    def get_nodes_at_layer(self, layer_idx: int) -> List[TraceNode]:
+    def get_nodes_at_layer(self, layer_idx: int) -> list[TraceNode]:
         """Get all nodes at a specific layer."""
         return [n for n in self.nodes if n.layer_idx == layer_idx]
 
-    def get_node_by_id(self, node_id: str) -> Optional[TraceNode]:
+    def get_node_by_id(self, node_id: str) -> TraceNode | None:
         """Get node by ID."""
         for node in self.nodes:
             if node.node_id == node_id:
                 return node
         return None
 
-    def get_edges_from(self, node_id: str) -> List[TraceEdge]:
+    def get_edges_from(self, node_id: str) -> list[TraceEdge]:
         """Get all edges from a node."""
         return [e for e in self.edges if e.source_id == node_id]
 
-    def get_edges_to(self, node_id: str) -> List[TraceEdge]:
+    def get_edges_to(self, node_id: str) -> list[TraceEdge]:
         """Get all edges to a node."""
         return [e for e in self.edges if e.target_id == node_id]
 
-    def get_critical_path(self) -> List[TraceNode]:
+    def get_critical_path(self) -> list[TraceNode]:
         """Get the path with highest total importance."""
         if not self.nodes:
             return []
 
         # Group by layer
-        layers: Dict[int, List[TraceNode]] = {}
+        layers: dict[int, list[TraceNode]] = {}
         for node in self.nodes:
             if node.layer_idx not in layers:
                 layers[node.layer_idx] = []
@@ -231,7 +233,7 @@ class CircuitTrace:
 
         return path
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "nodes": [n.to_dict() for n in self.nodes],
@@ -279,7 +281,7 @@ class CircuitTracer:
         model: Any,
         probe: Any = None,  # MindProbe for hook access
         sae_manager: Any = None,  # LayerSAEManager for feature tracing
-        config: Optional[TracerConfig] = None
+        config: TracerConfig | None = None
     ):
         """
         Initialize circuit tracer.
@@ -296,14 +298,14 @@ class CircuitTracer:
         self.config = config or TracerConfig.default()
 
         # Cache
-        self._activation_cache: Dict[str, Any] = {}
-        self._gradient_cache: Dict[str, Any] = {}
+        self._activation_cache: dict[str, Any] = {}
+        self._gradient_cache: dict[str, Any] = {}
 
     def trace_forward(
         self,
         input_ids: Any,
         target_position: int = -1,
-        layers: Optional[List[int]] = None
+        layers: list[int] | None = None
     ) -> CircuitTrace:
         """
         Trace circuit forward from input to output.
@@ -371,9 +373,9 @@ class CircuitTracer:
     def trace_backward(
         self,
         input_ids: Any,
-        target_token_id: Optional[int] = None,
+        target_token_id: int | None = None,
         target_position: int = -1,
-        layers: Optional[List[int]] = None
+        layers: list[int] | None = None
     ) -> CircuitTrace:
         """
         Trace circuit backward from output to input.
@@ -431,7 +433,7 @@ class CircuitTracer:
         self,
         input_ids: Any,
         target_position: int = -1,
-        layers: Optional[List[int]] = None
+        layers: list[int] | None = None
     ) -> CircuitTrace:
         """
         Trace circuit in both directions and combine.
@@ -457,7 +459,7 @@ class CircuitTracer:
         )
 
         # Merge nodes (taking max importance)
-        node_map: Dict[str, TraceNode] = {}
+        node_map: dict[str, TraceNode] = {}
         for node in forward.nodes + backward.nodes:
             if node.node_id in node_map:
                 existing = node_map[node.node_id]
@@ -469,7 +471,7 @@ class CircuitTracer:
         combined.nodes = list(node_map.values())
 
         # Merge edges
-        edge_map: Dict[Tuple[str, str], TraceEdge] = {}
+        edge_map: dict[tuple[str, str], TraceEdge] = {}
         for edge in forward.edges + backward.edges:
             key = (edge.source_id, edge.target_id)
             if key in edge_map:
@@ -524,7 +526,7 @@ class CircuitTracer:
             edge.is_causal = edge.effect_size > self.config.min_effect_size
 
         # Update node importance based on causal effects
-        node_effects: Dict[str, float] = {}
+        node_effects: dict[str, float] = {}
         for edge in trace.edges:
             if edge.is_causal:
                 node_effects[edge.source_id] = node_effects.get(edge.source_id, 0) + edge.effect_size
@@ -548,8 +550,8 @@ class CircuitTracer:
     def _record_activations(
         self,
         input_ids: Any,
-        layers: List[int]
-    ) -> Dict[int, Any]:
+        layers: list[int]
+    ) -> dict[int, Any]:
         """Record activations at specified layers."""
         activations = {}
 
@@ -577,9 +579,9 @@ class CircuitTracer:
     def _build_layer_nodes(
         self,
         layer_idx: int,
-        activations: Dict[int, Any],
+        activations: dict[int, Any],
         target_position: int
-    ) -> List[TraceNode]:
+    ) -> list[TraceNode]:
         """Build trace nodes for a layer."""
         nodes = []
 
@@ -631,9 +633,9 @@ class CircuitTracer:
     def _build_layer_nodes_gradient(
         self,
         layer_idx: int,
-        gradients: Dict[int, Any],
+        gradients: dict[int, Any],
         target_position: int
-    ) -> List[TraceNode]:
+    ) -> list[TraceNode]:
         """Build trace nodes from gradients."""
         nodes = []
 
@@ -674,9 +676,9 @@ class CircuitTracer:
         self,
         source_layer: int,
         target_layer: int,
-        activations: Dict[int, Any],
-        nodes: List[TraceNode]
-    ) -> List[TraceEdge]:
+        activations: dict[int, Any],
+        nodes: list[TraceNode]
+    ) -> list[TraceEdge]:
         """Build edges between layers."""
         edges = []
 
@@ -745,9 +747,9 @@ class CircuitTracer:
         self,
         source_layer: int,
         target_layer: int,
-        gradients: Dict[int, Any],
-        nodes: List[TraceNode]
-    ) -> List[TraceEdge]:
+        gradients: dict[int, Any],
+        nodes: list[TraceNode]
+    ) -> list[TraceEdge]:
         """Build edges from gradients."""
         edges = []
 
@@ -771,8 +773,8 @@ class CircuitTracer:
         self,
         input_ids: Any,
         target_position: int,
-        target_token_id: Optional[int]
-    ) -> Dict[int, Any]:
+        target_token_id: int | None
+    ) -> dict[int, Any]:
         """Compute gradients for backward tracing."""
         gradients = {}
 
@@ -836,7 +838,7 @@ def trace_circuit(
     model: Any,
     input_ids: Any,
     probe: Any = None,
-    config: Optional[TracerConfig] = None,
+    config: TracerConfig | None = None,
     direction: TraceDirection = TraceDirection.FORWARD
 ) -> CircuitTrace:
     """

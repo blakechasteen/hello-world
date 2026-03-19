@@ -12,20 +12,15 @@ Commands:
 - !routing learn - Trigger optimization
 """
 
-from typing import Dict, Any, Optional
 from datetime import datetime
+from typing import Any
 
 from hololoom.memory.routing import (
-    RuleBasedRouter,
-    LearnedRouter,
-    RoutingExperiment,
     BackendType,
-    QueryType
+    LearnedRouter,
+    RuleBasedRouter,
 )
-from hololoom.memory.routing.orchestrator import (
-    RoutingOrchestrator,
-    OrchestratorExperiment
-)
+from hololoom.memory.routing.orchestrator import OrchestratorExperiment, RoutingOrchestrator
 
 
 class RoutingCommandHandler:
@@ -33,7 +28,7 @@ class RoutingCommandHandler:
 
     def __init__(self, orchestrator: RoutingOrchestrator):
         self.orchestrator = orchestrator
-        self.active_experiment: Optional[OrchestratorExperiment] = None
+        self.active_experiment: OrchestratorExperiment | None = None
 
     async def handle_routing_stats(self) -> str:
         """
@@ -127,9 +122,9 @@ class RoutingCommandHandler:
 
         # Add variants
         from hololoom.memory.routing.execution_patterns import (
+            ExecutionPattern,
             FeedForwardEngine,
             RecursiveEngine,
-            ExecutionPattern
         )
 
         self.active_experiment.add_variant(
@@ -178,7 +173,7 @@ Need at least 10 queries per variant.
 Keep using !weave and reacting with 👍/👎
 """
 
-        response = f"**Experiment Results**\n\n"
+        response = "**Experiment Results**\n\n"
         response += f"**Winner: {winner}** 🏆\n\n"
 
         response += "**Performance by Variant:**\n\n"
@@ -238,7 +233,7 @@ Keep using !weave and reacting with 👍/👎
 
         # If learned router, show stats
         if hasattr(self.orchestrator.routing_strategy, 'bandits'):
-            response += f"\n**Learned Statistics:**\n"
+            response += "\n**Learned Statistics:**\n"
 
             router = self.orchestrator.routing_strategy
             bandit_stats = router.get_statistics()
@@ -321,7 +316,7 @@ class ReactionFeedbackHandler:
 
     def __init__(self, orchestrator: RoutingOrchestrator):
         self.orchestrator = orchestrator
-        self.spacetime_cache: Dict[str, Any] = {}  # event_id -> spacetime
+        self.spacetime_cache: dict[str, Any] = {}  # event_id -> spacetime
 
     def cache_spacetime(self, event_id: str, spacetime: Any):
         """Cache spacetime for later reaction processing."""

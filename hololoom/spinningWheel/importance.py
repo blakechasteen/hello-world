@@ -17,12 +17,9 @@ Date: November 2025
 
 import re
 import time
-from typing import Dict, List, Optional, Set, Callable
-from dataclasses import dataclass
-from datetime import datetime
+from collections.abc import Callable
 
-from .protocol import ImportanceSignals, ImportanceScore
-
+from .protocol import ImportanceScore, ImportanceSignals
 
 # ============================================================================
 # Signal Calculators
@@ -86,7 +83,7 @@ class TechnicalScorer:
 
     def __init__(
         self,
-        technical_terms: Optional[Set[str]] = None,
+        technical_terms: set[str] | None = None,
         domain_specific: bool = True
     ):
         """
@@ -99,7 +96,7 @@ class TechnicalScorer:
         self.technical_terms = technical_terms or self._default_terms()
         self.domain_specific = domain_specific
 
-    def _default_terms(self) -> Set[str]:
+    def _default_terms(self) -> set[str]:
         """Default technical terms (HoloLoom domain)."""
         return {
             # AI/ML
@@ -141,7 +138,7 @@ class TechnicalScorer:
         # 0 matches = 0.0, 5+ matches = 1.0
         return min(1.0, density / 5.0)
 
-    def add_terms(self, terms: List[str]):
+    def add_terms(self, terms: list[str]):
         """Add domain-specific terms."""
         self.technical_terms.update(t.lower() for t in terms)
 
@@ -189,7 +186,7 @@ class StructuralScorer:
 class AuthorityScorer:
     """Score based on source authority/credibility."""
 
-    def __init__(self, authority_map: Optional[Dict[str, float]] = None):
+    def __init__(self, authority_map: dict[str, float] | None = None):
         """
         Initialize authority scorer.
 
@@ -202,8 +199,8 @@ class AuthorityScorer:
     def score(
         self,
         source: str,
-        author: Optional[str] = None,
-        metadata: Optional[Dict] = None
+        author: str | None = None,
+        metadata: dict | None = None
     ) -> float:
         """
         Score source authority.
@@ -269,7 +266,7 @@ class RecencyScorer:
         self.half_life_days = half_life_days
         self.max_age_days = max_age_days
 
-    def score(self, timestamp: Optional[float] = None) -> float:
+    def score(self, timestamp: float | None = None) -> float:
         """
         Score based on age.
 
@@ -405,9 +402,9 @@ class ImportanceScorer:
 
     def __init__(
         self,
-        technical_terms: Optional[Set[str]] = None,
-        authority_map: Optional[Dict[str, float]] = None,
-        custom_scorers: Optional[Dict[str, Callable]] = None
+        technical_terms: set[str] | None = None,
+        authority_map: dict[str, float] | None = None,
+        custom_scorers: dict[str, Callable] | None = None
     ):
         """
         Initialize importance scorer.
@@ -431,10 +428,10 @@ class ImportanceScorer:
         self,
         text: str,
         source: str = "unknown",
-        timestamp: Optional[float] = None,
-        author: Optional[str] = None,
-        engagement: Optional[Dict[str, int]] = None,
-        metadata: Optional[Dict] = None
+        timestamp: float | None = None,
+        author: str | None = None,
+        engagement: dict[str, int] | None = None,
+        metadata: dict | None = None
     ) -> ImportanceScore:
         """
         Compute complete importance score.
@@ -484,8 +481,8 @@ class ImportanceScorer:
 
     def score_batch(
         self,
-        items: List[Dict]
-    ) -> List[ImportanceScore]:
+        items: list[dict]
+    ) -> list[ImportanceScore]:
         """
         Score multiple items in batch.
 
@@ -510,7 +507,7 @@ class ImportanceScorer:
 
         return results
 
-    def add_technical_terms(self, terms: List[str]):
+    def add_technical_terms(self, terms: list[str]):
         """Add domain-specific technical terms."""
         self.technical_scorer.add_terms(terms)
 

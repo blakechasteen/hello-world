@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Matrix Agent Room Abstraction
 =============================
@@ -20,12 +19,12 @@ from __future__ import annotations
 
 import json
 import uuid
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
+from typing import Any
 
 from hololoom.federation.types import Capability
-
 
 # ============================================================================
 #  Constants
@@ -48,12 +47,12 @@ class AgentCapabilities:
 
     node_id: str
     matrix_user: str
-    capabilities: Set[Capability]
-    models: Set[str] = field(default_factory=set)
+    capabilities: set[Capability]
+    models: set[str] = field(default_factory=set)
     version: str = "1.0.0"
     announced_at: datetime = field(default_factory=datetime.utcnow)
 
-    def to_state_content(self) -> Dict[str, Any]:
+    def to_state_content(self) -> dict[str, Any]:
         """Convert to Matrix state event content."""
         return {
             "node_id": self.node_id,
@@ -67,8 +66,8 @@ class AgentCapabilities:
     def from_state_content(
         cls,
         matrix_user: str,
-        content: Dict[str, Any],
-    ) -> "AgentCapabilities":
+        content: dict[str, Any],
+    ) -> AgentCapabilities:
         """Parse from Matrix state event content."""
         capabilities = set()
         for cap_name in content.get("capabilities", []):
@@ -91,16 +90,16 @@ class RoomCapabilitySummary:
     """Summary of all agent capabilities in a room."""
 
     room_id: str
-    agents: List[AgentCapabilities]
+    agents: list[AgentCapabilities]
     total_agents: int
-    available_capabilities: Set[Capability]
-    available_models: Set[str]
+    available_capabilities: set[Capability]
+    available_models: set[str]
 
     def has_capability(self, capability: Capability) -> bool:
         """Check if any agent has this capability."""
         return capability in self.available_capabilities
 
-    def agents_with_capability(self, capability: Capability) -> List[str]:
+    def agents_with_capability(self, capability: Capability) -> list[str]:
         """Get node_ids of agents with this capability."""
         return [
             agent.node_id
@@ -108,7 +107,7 @@ class RoomCapabilitySummary:
             if capability in agent.capabilities
         ]
 
-    def agents_with_model(self, model: str) -> List[str]:
+    def agents_with_model(self, model: str) -> list[str]:
         """Get node_ids of agents with this model."""
         return [
             agent.node_id
@@ -148,10 +147,10 @@ class MatrixAgentRoom:
         room_id: str,
         client: Any,  # AsyncClient from matrix-nio
         node_id: str,
-        our_capabilities: Set[Capability],
-        our_models: Optional[Set[str]] = None,
+        our_capabilities: set[Capability],
+        our_models: set[str] | None = None,
         version: str = "1.0.0",
-        on_rpc_request: Optional[Callable[[Dict[str, Any]], Coroutine[Any, Any, Dict[str, Any]]]] = None,
+        on_rpc_request: Callable[[dict[str, Any]], Coroutine[Any, Any, dict[str, Any]]] | None = None,
     ):
         """
         Initialize room abstraction.
@@ -248,8 +247,8 @@ class MatrixAgentRoom:
     async def send_rpc(
         self,
         method: str,
-        params: Optional[Dict[str, Any]] = None,
-        request_id: Optional[str] = None,
+        params: dict[str, Any] | None = None,
+        request_id: str | None = None,
     ) -> str:
         """
         Send JSON-RPC request to room.
@@ -291,8 +290,8 @@ class MatrixAgentRoom:
     async def send_rpc_response(
         self,
         request_id: str,
-        result: Optional[Any] = None,
-        error: Optional[Dict[str, Any]] = None,
+        result: Any | None = None,
+        error: dict[str, Any] | None = None,
     ) -> None:
         """
         Send JSON-RPC response.
@@ -306,7 +305,7 @@ class MatrixAgentRoom:
             raise RuntimeError("Must join room before sending response")
 
         # Build JSON-RPC 2.0 response
-        rpc_response: Dict[str, Any] = {
+        rpc_response: dict[str, Any] = {
             "jsonrpc": "2.0",
             "id": request_id,
         }
@@ -334,9 +333,9 @@ class MatrixAgentRoom:
         Returns:
             Summary of room capabilities
         """
-        agents: List[AgentCapabilities] = []
-        all_capabilities: Set[Capability] = set()
-        all_models: Set[str] = set()
+        agents: list[AgentCapabilities] = []
+        all_capabilities: set[Capability] = set()
+        all_models: set[str] = set()
 
         try:
             # Get all capability state events
@@ -370,9 +369,9 @@ class MatrixAgentRoom:
 
     async def find_agents_for_task(
         self,
-        required_capabilities: Set[Capability],
-        preferred_models: Optional[Set[str]] = None,
-    ) -> List[str]:
+        required_capabilities: set[Capability],
+        preferred_models: set[str] | None = None,
+    ) -> list[str]:
         """
         Find agents that can handle a task.
 
@@ -411,8 +410,8 @@ def create_agent_room(
     room_id: str,
     client: Any,
     node_id: str,
-    capabilities: Set[Capability],
-    models: Optional[Set[str]] = None,
+    capabilities: set[Capability],
+    models: set[str] | None = None,
     version: str = "1.0.0",
 ) -> MatrixAgentRoom:
     """

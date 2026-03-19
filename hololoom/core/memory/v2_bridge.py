@@ -19,33 +19,32 @@ No external dependencies beyond HoloLoom.
 import json
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from types import SimpleNamespace
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from .lite_bus import LiteMemoryBus, StoredItem
 from .bus import MemoryItem
-
-from .v2.navigator import Navigator, NavigatorResult, PPRConfig, LiteBusGraph
-from .v2.formatter import Formatter, FormatConfig, ContextBlock
-from .v2.confidence import ConfidenceEstimator, ConfidenceConfig, DualConfidence
+from .lite_bus import LiteMemoryBus
+from .v2.activation import ActivationAdapter
 from .v2.blackboard import (
     Blackboard,
     WorkingMemory,
     compute_ppr_entropy,
     extract_seed_sources,
 )
-from .v2.activation import ActivationAdapter
-from .v2.knowledge_source import Phase
 from .v2.classical_factory import create_classical_sources
+from .v2.confidence import ConfidenceEstimator
+from .v2.formatter import FormatConfig, Formatter
+from .v2.knowledge_source import Phase
+from .v2.navigator import Navigator, PPRConfig
 
 try:
     from .graph import extract_entities_simple
 except ImportError:
     # Fallback: extract capitalized words
     import re
-    def extract_entities_simple(text: str) -> List[str]:
+    def extract_entities_simple(text: str) -> list[str]:
         return list(set(re.findall(r'\b[A-Z][a-z]{2,}\b', text)))
 
 logger = logging.getLogger(__name__)
@@ -86,13 +85,13 @@ PATTERN_PPR = {
 @dataclass
 class EnhancedRecallResult:
     """Result from the v2 cognitive pipeline."""
-    memories: List[Dict[str, Any]]     # [{id, text, score, memory_type}, ...]
+    memories: list[dict[str, Any]]     # [{id, text, score, memory_type}, ...]
     confidence: float                   # Combined confidence [0, 1]
     decision: str                       # "sufficient" / "verify" / "flag"
     context_text: str                   # Token-budgeted formatted context
-    justifications: List[Dict]          # TMS justification records
-    retractions: List[Dict]             # TMS retractions
-    cbr_hints: List[Dict]              # Similar past case hints
+    justifications: list[dict]          # TMS justification records
+    retractions: list[dict]             # TMS retractions
+    cbr_hints: list[dict]              # Similar past case hints
     seed_count: int
     ppr_converged: bool
     node_count: int                     # Total graph nodes
@@ -115,12 +114,12 @@ class CognitiveBridge:
         result = await bridge.enhanced_recall("Thompson Sampling vs epsilon-greedy")
     """
 
-    def __init__(self, memory: Any, persist_path: Optional[str] = None):
+    def __init__(self, memory: Any, persist_path: str | None = None):
         self.memory = memory
         self.persist_path = persist_path  # None = in-memory only
         self.bus = LiteMemoryBus()
-        self.navigator: Optional[Navigator] = None
-        self.confidence_estimator: Optional[ConfidenceEstimator] = None
+        self.navigator: Navigator | None = None
+        self.confidence_estimator: ConfidenceEstimator | None = None
 
         # Persistent across queries
         self.activation = ActivationAdapter()
@@ -213,8 +212,8 @@ class CognitiveBridge:
     async def _index_memory(
         self,
         text: str,
-        mem_id: Optional[str] = None,
-        context: Optional[Dict] = None,
+        mem_id: str | None = None,
+        context: dict | None = None,
     ) -> str:
         """Index a single memory into LiteMemoryBus with entity edges."""
         context = context or {}
@@ -258,8 +257,8 @@ class CognitiveBridge:
     async def store_and_index(
         self,
         text: str,
-        context: Dict = None,
-        tags: List[str] = None,
+        context: dict = None,
+        tags: list[str] = None,
         user_id: str = "",
     ):
         """Public: index a newly stored memory into the graph layer."""
@@ -309,7 +308,7 @@ class CognitiveBridge:
         if not p.exists():
             return False
 
-        with open(p, "r") as f:
+        with open(p) as f:
             combined = json.load(f)
 
         version = combined.get("_version", 0)
@@ -517,14 +516,14 @@ class CognitiveBridge:
 
         self._save_if_persistent()
 
-    def demon_report(self) -> Dict[str, Any]:
+    def demon_report(self) -> dict[str, Any]:
         """Get the latest demon alerts report."""
         demons = self._find_source("demons")
         if demons is not None:
             return demons.report()
         return {"alerts": [], "total_alerts": 0}
 
-    def report(self) -> Dict[str, Any]:
+    def report(self) -> dict[str, Any]:
         """Diagnostic info about bridge state."""
         return {
             "initialized": self._initialized,

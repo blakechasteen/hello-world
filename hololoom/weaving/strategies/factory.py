@@ -5,20 +5,19 @@ Factory for creating complexity-based strategies.
 """
 
 import logging
-from typing import Dict, Optional
 
 from hololoom.protocols import ComplexityLevel
-from hololoom.weaving.protocols import WeavingStageProtocol, ComplexityStrategyProtocol
-from hololoom.weaving.strategies.lite_strategy import LiteStrategy
+from hololoom.weaving.protocols import ComplexityStrategyProtocol, WeavingStageProtocol
 from hololoom.weaving.strategies.fast_strategy import FastStrategy
 from hololoom.weaving.strategies.full_strategy import FullStrategy
+from hololoom.weaving.strategies.lite_strategy import LiteStrategy
 from hololoom.weaving.strategies.research_strategy import ResearchStrategy
 
 
 def create_strategy(
     complexity: ComplexityLevel,
-    stages: Dict[str, WeavingStageProtocol],
-    logger: Optional[logging.Logger] = None,
+    stages: dict[str, WeavingStageProtocol],
+    logger: logging.Logger | None = None,
 ) -> ComplexityStrategyProtocol:
     """
     Create a strategy for the given complexity level.

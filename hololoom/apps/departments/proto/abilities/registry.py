@@ -19,14 +19,12 @@ Status: Production ready (2025-12-02)
 """
 
 import logging
-from typing import Dict, List, Optional, Set
-from datetime import datetime
 
 from .protocol import (
     Ability,
-    AbilityTrustLevel,
-    AbilityTier,
     AbilityManifest,
+    AbilityTier,
+    AbilityTrustLevel,
 )
 
 
@@ -53,7 +51,7 @@ class AbilityRegistry:
             max_trust_level: Maximum trust level for abilities to register
                 (default: LOCAL - user-defined abilities)
         """
-        self._abilities: Dict[str, Ability] = {}
+        self._abilities: dict[str, Ability] = {}
         self._max_trust_level = max_trust_level
         self.logger = logging.getLogger("proto.abilities.registry")
 
@@ -106,7 +104,7 @@ class AbilityRegistry:
             return True
         return False
 
-    def get(self, name: str) -> Optional[Ability]:
+    def get(self, name: str) -> Ability | None:
         """Get ability instance by name.
 
         Args:
@@ -128,7 +126,7 @@ class AbilityRegistry:
         """
         return name in self._abilities
 
-    def list_all(self) -> List[str]:
+    def list_all(self) -> list[str]:
         """List all registered ability names.
 
         Returns:
@@ -136,7 +134,7 @@ class AbilityRegistry:
         """
         return list(self._abilities.keys())
 
-    def list_by_tier(self, tier: AbilityTier) -> List[str]:
+    def list_by_tier(self, tier: AbilityTier) -> list[str]:
         """List abilities filtered by tier.
 
         Args:
@@ -150,7 +148,7 @@ class AbilityRegistry:
             if ability.manifest.tier == tier
         ]
 
-    def list_by_trust(self, trust_level: AbilityTrustLevel) -> List[str]:
+    def list_by_trust(self, trust_level: AbilityTrustLevel) -> list[str]:
         """List abilities filtered by trust level.
 
         Args:
@@ -164,7 +162,7 @@ class AbilityRegistry:
             if ability.manifest.trust_level == trust_level
         ]
 
-    def list_by_tag(self, tag: str) -> List[str]:
+    def list_by_tag(self, tag: str) -> list[str]:
         """List abilities filtered by tag.
 
         Args:
@@ -178,7 +176,7 @@ class AbilityRegistry:
             if ability.manifest.has_tag(tag)
         ]
 
-    def list_by_permission(self, permission: str) -> List[str]:
+    def list_by_permission(self, permission: str) -> list[str]:
         """List abilities that require a specific permission.
 
         Args:
@@ -192,7 +190,7 @@ class AbilityRegistry:
             if ability.manifest.requires_permission(permission)
         ]
 
-    def get_manifest(self, name: str) -> Optional[AbilityManifest]:
+    def get_manifest(self, name: str) -> AbilityManifest | None:
         """Get manifest for an ability.
 
         Args:
@@ -204,7 +202,7 @@ class AbilityRegistry:
         ability = self._abilities.get(name)
         return ability.manifest if ability else None
 
-    def get_all_manifests(self) -> Dict[str, AbilityManifest]:
+    def get_all_manifests(self) -> dict[str, AbilityManifest]:
         """Get manifests for all registered abilities.
 
         Returns:
@@ -215,7 +213,7 @@ class AbilityRegistry:
             for name, ability in self._abilities.items()
         }
 
-    def find_by_tags(self, tags: List[str], match_all: bool = False) -> List[str]:
+    def find_by_tags(self, tags: list[str], match_all: bool = False) -> list[str]:
         """Find abilities matching tags.
 
         Args:
@@ -240,7 +238,7 @@ class AbilityRegistry:
 
         return results
 
-    def find_by_requirement(self, requirement: str) -> List[str]:
+    def find_by_requirement(self, requirement: str) -> list[str]:
         """Find abilities that require a specific package/tool.
 
         Args:
@@ -293,7 +291,7 @@ class AbilityRegistry:
         self._abilities.clear()
         self.logger.warning(f"Cleared {count} abilities from registry")
 
-    def get_summary(self) -> Dict[str, any]:
+    def get_summary(self) -> dict[str, any]:
         """Get registry summary statistics.
 
         Returns:

@@ -8,10 +8,9 @@ Status: Phase 3 TUI (2025-12-05)
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
 
-from textual.widgets import Static
 from textual.containers import ScrollableContainer
+from textual.widgets import Static
 
 
 class MessageType(Enum):
@@ -104,9 +103,9 @@ class ResponsePanel(ScrollableContainer):
 
     def __init__(self):
         super().__init__()
-        self.messages: List[Message] = []
+        self.messages: list[Message] = []
         self._thinking: bool = False
-        self._thinking_widget: Optional[Static] = None
+        self._thinking_widget: Static | None = None
 
     def compose(self):
         """Compose initial content."""
@@ -121,7 +120,7 @@ class ResponsePanel(ScrollableContainer):
         self,
         content: str,
         message_type: MessageType = MessageType.PROTO,
-        metadata: Optional[dict] = None
+        metadata: dict | None = None
     ) -> None:
         """Add a message to the response panel."""
         # Remove welcome message on first real message
@@ -152,7 +151,7 @@ class ResponsePanel(ScrollableContainer):
         """Convenience method for adding user messages."""
         self.add_message(content, MessageType.USER)
 
-    def add_proto_message(self, content: str, metadata: Optional[dict] = None) -> None:
+    def add_proto_message(self, content: str, metadata: dict | None = None) -> None:
         """Convenience method for adding Proto responses."""
         self.add_message(content, MessageType.PROTO, metadata)
 
@@ -203,7 +202,7 @@ class ResponsePanel(ScrollableContainer):
         )
         self.mount(welcome)
 
-    def get_history(self, limit: int = 20) -> List[Message]:
+    def get_history(self, limit: int = 20) -> list[Message]:
         """Get recent message history."""
         return self.messages[-limit:]
 

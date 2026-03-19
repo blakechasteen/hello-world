@@ -11,15 +11,12 @@ Tests cover:
 - Verification
 """
 
-import asyncio
 import os
 import subprocess
-import tempfile
-from pathlib import Path
 
 import pytest
-
 from git_operations import GitOperationsAbility
+
 from ..protocol import AbilityContext
 
 

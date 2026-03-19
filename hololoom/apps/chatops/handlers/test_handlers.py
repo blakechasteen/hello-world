@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 ChatOps Test Handlers - Integration for running tests via chat commands.
 
@@ -12,15 +13,14 @@ Author: Claude Code
 """
 
 import asyncio
-import subprocess
 import sys
 import time
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from nio import AsyncClient, MatrixRoom, RoomMessageText
+    from nio import MatrixRoom, RoomMessageText
 
 
 @dataclass
@@ -32,7 +32,7 @@ class TestResult:
     failed: int = 0
     skipped: int = 0
     duration_ms: float = 0.0
-    errors: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
 
 class TestRunner:
@@ -47,7 +47,7 @@ class TestRunner:
     - benchmark: Performance regression tests
     """
 
-    def __init__(self, project_root: Optional[Path] = None):
+    def __init__(self, project_root: Path | None = None):
         """Initialize test runner with project root."""
         self.project_root = project_root or Path(__file__).parent.parent.parent.parent
         self.test_base = self.project_root / "hololoom" / "tests"
@@ -75,7 +75,7 @@ class TestRunner:
             return TestResult(
                 success=False,
                 output=f"Unknown test type: {test_type}",
-                errors=[f"Valid types: unit, integration, e2e, parametrized, all"]
+                errors=["Valid types: unit, integration, e2e, parametrized, all"]
             )
 
         # Build pytest command
@@ -135,7 +135,7 @@ class TestRunner:
                 errors=[str(e)]
             )
 
-    def _get_test_paths(self, test_type: str) -> List[str]:
+    def _get_test_paths(self, test_type: str) -> list[str]:
         """Get test paths for test type."""
         paths = {
             "unit": [str(self.test_base / "unit")],
@@ -147,7 +147,7 @@ class TestRunner:
         }
         return paths.get(test_type, [])
 
-    def _parse_results(self, output: str) -> Tuple[int, int, int]:
+    def _parse_results(self, output: str) -> tuple[int, int, int]:
         """Parse passed/failed/skipped counts from pytest output."""
         import re
 
@@ -193,7 +193,7 @@ class TestRunner:
 
         return '\n'.join(summary_lines) if summary_lines else output[-500:]
 
-    def _extract_errors(self, output: str) -> List[str]:
+    def _extract_errors(self, output: str) -> list[str]:
         """Extract error messages from pytest output."""
         errors = []
         lines = output.split('\n')
@@ -224,8 +224,8 @@ class TestStatusTracker:
     """Tracks test run status and history."""
 
     def __init__(self):
-        self.last_results: Dict[str, TestResult] = {}
-        self.run_history: List[Dict[str, Any]] = []
+        self.last_results: dict[str, TestResult] = {}
+        self.run_history: list[dict[str, Any]] = []
 
     def record(self, test_type: str, result: TestResult):
         """Record a test run."""
@@ -243,7 +243,7 @@ class TestStatusTracker:
         if len(self.run_history) > 50:
             self.run_history = self.run_history[-50:]
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get current test status."""
         return {
             "last_results": {
@@ -271,8 +271,8 @@ class TestStatusTracker:
 
 
 # Global instances
-_test_runner: Optional[TestRunner] = None
-_status_tracker: Optional[TestStatusTracker] = None
+_test_runner: TestRunner | None = None
+_status_tracker: TestStatusTracker | None = None
 
 
 def get_test_runner() -> TestRunner:
@@ -298,8 +298,8 @@ def get_status_tracker() -> TestStatusTracker:
 async def handle_test_run(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
-    bot: Optional[Any] = None
+    args: list[str],
+    bot: Any | None = None
 ) -> str:
     """
     Handle !test run [type] command.
@@ -356,8 +356,8 @@ async def handle_test_run(
 async def handle_test_status(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
-    bot: Optional[Any] = None
+    args: list[str],
+    bot: Any | None = None
 ) -> str:
     """
     Handle !test status command.
@@ -392,8 +392,8 @@ async def handle_test_status(
 async def handle_test_coverage(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
-    bot: Optional[Any] = None
+    args: list[str],
+    bot: Any | None = None
 ) -> str:
     """
     Handle !test coverage command.
@@ -462,8 +462,8 @@ _Run `!test run unit -v` for detailed test output._
 async def handle_test_benchmark(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
-    bot: Optional[Any] = None
+    args: list[str],
+    bot: Any | None = None
 ) -> str:
     """
     Handle !test benchmark command.
@@ -509,8 +509,8 @@ Check the errors above for details on which benchmarks regressed.
 async def handle_test_ci(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
-    bot: Optional[Any] = None
+    args: list[str],
+    bot: Any | None = None
 ) -> str:
     """
     Handle !test ci command.
@@ -551,8 +551,8 @@ _Note: Actual CI status would require GitHub API integration._
 async def handle_test_help(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
-    args: List[str],
-    bot: Optional[Any] = None
+    args: list[str],
+    bot: Any | None = None
 ) -> str:
     """Handle !test help command."""
     return """
@@ -592,7 +592,7 @@ async def handle_test_help(
 
 def register_test_handlers(
     bot: Any,
-    orchestrator: Optional[Any] = None
+    orchestrator: Any | None = None
 ) -> None:
     """
     Register test command handlers with a Matrix bot.
@@ -668,9 +668,7 @@ if __name__ == "__main__":
 # =============================================================================
 
 try:
-    from hololoom.apps.chatops.handlers.handler_registry import (
-        HandlerRegistry, HandlerCategory
-    )
+    from hololoom.apps.chatops.handlers.handler_registry import HandlerCategory, HandlerRegistry
     REGISTRY_AVAILABLE = True
 except ImportError:
     REGISTRY_AVAILABLE = False
@@ -692,7 +690,7 @@ class TestHandlers:
         self.runner = get_test_runner()
         self.tracker = get_status_tracker()
 
-    def _parse_args(self, args: str) -> List[str]:
+    def _parse_args(self, args: str) -> list[str]:
         """Convert args string to list."""
         return args.split() if args.strip() else []
 

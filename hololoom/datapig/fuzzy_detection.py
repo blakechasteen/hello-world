@@ -8,8 +8,8 @@ Author: DATAPIG Enhancement
 Date: 2025-11-22
 """
 
-from typing import List, Dict, Any, Tuple, Set
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -80,10 +80,10 @@ def normalized_similarity(s1: str, s2: str) -> float:
 
 
 def find_fuzzy_duplicates(
-    data: List[Dict[str, Any]],
-    fields: List[str],
+    data: list[dict[str, Any]],
+    fields: list[str],
     similarity_threshold: float = 0.85
-) -> List[FuzzyMatch]:
+) -> list[FuzzyMatch]:
     """
     Find fuzzy duplicate records based on Levenshtein distance.
 
@@ -96,7 +96,7 @@ def find_fuzzy_duplicates(
         List of FuzzyMatch objects for near-duplicate pairs
     """
     matches = []
-    seen_pairs: Set[Tuple[int, int]] = set()
+    seen_pairs: set[tuple[int, int]] = set()
 
     # Compare all pairs of records
     for i in range(len(data)):
@@ -196,11 +196,11 @@ def combined_similarity(
 
 
 def find_fuzzy_duplicates_advanced(
-    data: List[Dict[str, Any]],
-    fields: List[str],
+    data: list[dict[str, Any]],
+    fields: list[str],
     similarity_threshold: float = 0.85,
     use_phonetic: bool = True
-) -> List[FuzzyMatch]:
+) -> list[FuzzyMatch]:
     """
     Advanced fuzzy duplicate detection with phonetic matching.
 
@@ -214,7 +214,7 @@ def find_fuzzy_duplicates_advanced(
         List of FuzzyMatch objects for near-duplicate pairs
     """
     matches = []
-    seen_pairs: Set[Tuple[int, int]] = set()
+    seen_pairs: set[tuple[int, int]] = set()
 
     for i in range(len(data)):
         for j in range(i + 1, len(data)):

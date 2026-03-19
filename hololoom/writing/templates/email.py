@@ -6,15 +6,9 @@ Templates for email generation.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
+from typing import Any
 
-from .base import (
-    TemplateProtocol,
-    TemplateType,
-    TemplateContext,
-    TemplateResult
-)
+from .base import TemplateContext, TemplateResult, TemplateType
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +111,7 @@ class EmailTemplate:
         self,
         subject: str,
         purpose: str,
-        variables: Dict[str, Any]
+        variables: dict[str, Any]
     ) -> str:
         """Generate subject line."""
         # If explicit subject provided, use it
@@ -155,7 +149,7 @@ class EmailTemplate:
     def _generate_opening(
         self,
         purpose: str,
-        memories: List,
+        memories: list,
         style: str
     ) -> str:
         """Generate opening line."""
@@ -202,7 +196,7 @@ class EmailTemplate:
     def _generate_body(
         self,
         purpose: str,
-        memories: List,
+        memories: list,
         structure: str
     ) -> str:
         """Generate email body."""
@@ -275,11 +269,11 @@ class EmailTemplate:
         else:
             return f"Best,\n{sender}"
 
-    def get_required_variables(self) -> List[str]:
+    def get_required_variables(self) -> list[str]:
         """Get required template variables."""
         return ['recipient']
 
-    def get_optional_variables(self) -> List[str]:
+    def get_optional_variables(self) -> list[str]:
         """Get optional template variables."""
         return ['subject', 'purpose', 'sender']
 

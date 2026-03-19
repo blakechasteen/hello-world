@@ -21,21 +21,20 @@ Date: November 2025
 import asyncio
 import logging
 import time
-from typing import Any, Dict, List, Optional, Tuple
-from datetime import datetime
-from enum import Enum
 from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
+from hololoom.apps.departments.base import BaseDepartment
 from hololoom.apps.departments.protocol import (
+    ConfidenceMetadata,
     Department,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
-    VerificationResult,
     DSStarCheck,
-    DepartmentConfig,
+    VerificationResult,
 )
-from hololoom.apps.departments.base import BaseDepartment
 
 logger = logging.getLogger(__name__)
 
@@ -73,11 +72,11 @@ class WorkflowStep:
     """
     department_id: str                                   # Which department to use
     request: DepartmentRequest                           # Request to send
-    depends_on: List[str] = field(default_factory=list) # Step dependencies
+    depends_on: list[str] = field(default_factory=list) # Step dependencies
     optional: bool = False                               # Can this step fail?
-    fallback_department: Optional[str] = None            # Fallback if primary fails
+    fallback_department: str | None = None            # Fallback if primary fails
     timeout_ms: float = 5000.0                           # Max execution time
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -88,12 +87,12 @@ class WorkflowResult:
     Contains results from all steps, aggregated confidence, and timing info.
     """
     workflow_id: str                                     # Workflow identifier
-    results: Dict[str, DepartmentResponse]               # step_id → response
+    results: dict[str, DepartmentResponse]               # step_id → response
     aggregated_confidence: float                         # Overall confidence
     total_latency_ms: float                              # Total execution time
-    successful_steps: List[str]                          # Steps that succeeded
-    failed_steps: List[str]                              # Steps that failed
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    successful_steps: list[str]                          # Steps that succeeded
+    failed_steps: list[str]                              # Steps that failed
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ===== Orchestration Department =====
@@ -133,7 +132,7 @@ class OrchestrationDepartment(BaseDepartment):
 
     def __init__(
         self,
-        department_registry: Optional[Dict[str, Department]] = None,
+        department_registry: dict[str, Department] | None = None,
         department_id: str = "orchestration"
     ):
         """
@@ -167,10 +166,10 @@ class OrchestrationDepartment(BaseDepartment):
         self.department_id = department_id
 
         # Department registry (department_id → Department instance)
-        self.registry: Dict[str, Department] = department_registry or {}
+        self.registry: dict[str, Department] = department_registry or {}
 
         # Routing rules (task_type → department_id)
-        self._routing_rules: Dict[str, str] = {
+        self._routing_rules: dict[str, str] = {
             "retrieve_context": "rag",
             "question_answering": "rag",
             "document_search": "rag",
@@ -181,8 +180,8 @@ class OrchestrationDepartment(BaseDepartment):
         }
 
         # Learning statistics
-        self._workflow_history: List[WorkflowResult] = []
-        self._department_success_rates: Dict[str, float] = {}  # dept_id → success_rate
+        self._workflow_history: list[WorkflowResult] = []
+        self._department_success_rates: dict[str, float] = {}  # dept_id → success_rate
         self._aggregation_stats = {
             "total_aggregations": 0,
             "avg_departments_per_workflow": 0.0,
@@ -412,7 +411,7 @@ class OrchestrationDepartment(BaseDepartment):
 
         return response
 
-    async def update_strategy(self, feedback: Dict[str, Any]) -> None:
+    async def update_strategy(self, feedback: dict[str, Any]) -> None:
         """
         Learn from workflow execution outcomes.
 
@@ -447,7 +446,7 @@ class OrchestrationDepartment(BaseDepartment):
 
         logger.info(f"✓ Strategy updated: {len(self._department_success_rates)} departments tracked")
 
-    async def get_capabilities(self) -> Dict[str, Any]:
+    async def get_capabilities(self) -> dict[str, Any]:
         """
         Get Orchestration Department capabilities.
 
@@ -483,7 +482,7 @@ class OrchestrationDepartment(BaseDepartment):
             },
         }
 
-    async def get_metrics(self) -> Dict[str, Any]:
+    async def get_metrics(self) -> dict[str, Any]:
         """
         Get Orchestration Department metrics.
 
@@ -527,7 +526,7 @@ class OrchestrationDepartment(BaseDepartment):
     # Orchestration Logic
     # ========================================================================
 
-    async def _route_single_task(self, parameters: Dict[str, Any]) -> DepartmentResponse:
+    async def _route_single_task(self, parameters: dict[str, Any]) -> DepartmentResponse:
         """
         Route single task to appropriate department.
 
@@ -566,7 +565,7 @@ class OrchestrationDepartment(BaseDepartment):
 
         return response
 
-    async def _parallel_execution(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _parallel_execution(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """
         Execute multiple departments in parallel.
 
@@ -626,7 +625,7 @@ class OrchestrationDepartment(BaseDepartment):
             "aggregated_confidence": aggregated_confidence,
         }
 
-    async def _sequential_workflow(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _sequential_workflow(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """
         Execute workflow steps sequentially.
 
@@ -676,7 +675,7 @@ class OrchestrationDepartment(BaseDepartment):
             "aggregated_confidence": aggregated_confidence,
         }
 
-    async def _aggregate_results(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _aggregate_results(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """
         Aggregate results from multiple departments.
 

@@ -4,11 +4,11 @@ Thread Merging
 Enables combining multiple conversation threads with LLM-powered synthesis.
 """
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional, Dict, Any
 from enum import Enum, auto
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +24,14 @@ class MergeStrategy(Enum):
 class MergeResult:
     """Result of a thread merge operation"""
     target_thread_id: str
-    source_thread_ids: List[str]
+    source_thread_ids: list[str]
     strategy: MergeStrategy
     messages_merged: int
-    synthesis: Optional[str] = None  # LLM synthesis (if SYNTHESIZE strategy)
+    synthesis: str | None = None  # LLM synthesis (if SYNTHESIZE strategy)
     timestamp: float = field(default_factory=lambda: datetime.now().timestamp())
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
             'target_thread_id': self.target_thread_id,
@@ -58,8 +58,8 @@ class ThreadMerger:
     def __init__(
         self,
         thread_manager: Any,  # elle.ThreadManager
-        yarn_graph: Optional[Any] = None,  # HoloLoom.memory.graph.KG
-        llm_client: Optional[Any] = None,  # LLM client for SYNTHESIZE
+        yarn_graph: Any | None = None,  # HoloLoom.memory.graph.KG
+        llm_client: Any | None = None,  # LLM client for SYNTHESIZE
         default_strategy: MergeStrategy = MergeStrategy.APPEND
     ):
         """
@@ -85,9 +85,9 @@ class ThreadMerger:
     async def merge_threads(
         self,
         target_thread_id: str,
-        source_thread_ids: List[str],
-        strategy: Optional[MergeStrategy] = None,
-        custom_synthesis_prompt: Optional[str] = None
+        source_thread_ids: list[str],
+        strategy: MergeStrategy | None = None,
+        custom_synthesis_prompt: str | None = None
     ) -> MergeResult:
         """
         Merge source threads into target thread.
@@ -180,8 +180,8 @@ class ThreadMerger:
     def _collect_messages(
         self,
         target: Any,
-        sources: List[Any]
-    ) -> List[Dict[str, Any]]:
+        sources: list[Any]
+    ) -> list[dict[str, Any]]:
         """
         Collect all messages from target and source threads.
 
@@ -225,8 +225,8 @@ class ThreadMerger:
     async def _merge_append(
         self,
         target: Any,
-        sources: List[Any],
-        messages: List[Dict[str, Any]]
+        sources: list[Any],
+        messages: list[dict[str, Any]]
     ) -> int:
         """
         APPEND strategy: Simple chronological concatenation.
@@ -246,7 +246,7 @@ class ThreadMerger:
             role: str
             content: str
             timestamp: float
-            metadata: Dict[str, Any]
+            metadata: dict[str, Any]
 
         # Clear target messages and rebuild chronologically
         original_count = len(target.messages)
@@ -270,9 +270,9 @@ class ThreadMerger:
     async def _merge_synthesize(
         self,
         target: Any,
-        sources: List[Any],
-        messages: List[Dict[str, Any]],
-        custom_prompt: Optional[str] = None
+        sources: list[Any],
+        messages: list[dict[str, Any]],
+        custom_prompt: str | None = None
     ) -> tuple[str, int]:
         """
         SYNTHESIZE strategy: LLM-generated synthesis of insights.
@@ -298,8 +298,8 @@ class ThreadMerger:
 
         # Enhance with metaprompt (if available)
         try:
-            from hololoom.prompting import create_metaprompt
             from hololoom.config import Config
+            from hololoom.prompting import create_metaprompt
 
             config = Config.fast()
             config.llm_provider = "anthropic"  # Or configured provider
@@ -320,7 +320,7 @@ class ThreadMerger:
             role: str
             content: str
             timestamp: float
-            metadata: Dict[str, Any]
+            metadata: dict[str, Any]
 
         synthesis_message = Message(
             role="assistant",
@@ -340,8 +340,8 @@ class ThreadMerger:
     def _build_synthesis_prompt(
         self,
         target: Any,
-        sources: List[Any],
-        messages: List[Dict[str, Any]]
+        sources: list[Any],
+        messages: list[dict[str, Any]]
     ) -> str:
         """
         Build LLM prompt for synthesis.
@@ -387,8 +387,8 @@ Format your response as a clear synthesis that captures the essential insights f
     async def _merge_preserve_all(
         self,
         target: Any,
-        sources: List[Any],
-        messages: List[Dict[str, Any]]
+        sources: list[Any],
+        messages: list[dict[str, Any]]
     ) -> int:
         """
         PRESERVE_ALL strategy: Keep all messages with thread markers.
@@ -408,7 +408,7 @@ Format your response as a clear synthesis that captures the essential insights f
             role: str
             content: str
             timestamp: float
-            metadata: Dict[str, Any]
+            metadata: dict[str, Any]
 
         original_count = len(target.messages)
         target.messages.clear()
@@ -436,7 +436,7 @@ Format your response as a clear synthesis that captures the essential insights f
     async def _add_merge_edges(
         self,
         target_id: str,
-        source_ids: List[str]
+        source_ids: list[str]
     ) -> None:
         """
         Add MERGED_INTO edges to YarnGraph.
@@ -469,7 +469,7 @@ Format your response as a clear synthesis that captures the essential insights f
         except Exception as e:
             logger.warning(f"Failed to add YarnGraph edges: {e}")
 
-    def get_merge_history(self, thread_id: str) -> List[Dict[str, Any]]:
+    def get_merge_history(self, thread_id: str) -> list[dict[str, Any]]:
         """
         Get merge history for a thread.
 

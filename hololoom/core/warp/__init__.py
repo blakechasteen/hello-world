@@ -19,10 +19,10 @@ from .space import WarpSpace
 # Optional advanced operations
 try:
     from .advanced import (
+        FisherInformationGeometry,
+        QuantumWarpOperations,
         RiemannianManifold,
         TensorDecomposer,
-        QuantumWarpOperations,
-        FisherInformationGeometry
     )
     HAS_ADVANCED = True
 except ImportError:
@@ -31,11 +31,11 @@ except ImportError:
 # Optional optimizations
 try:
     from .optimized import (
+        BatchedWarpProcessor,
         GPUWarpSpace,
-        SparseTensorField,
         LazyWarpOperation,
+        SparseTensorField,
         TensorMemoryPool,
-        BatchedWarpProcessor
     )
     HAS_OPTIMIZED = True
 except ImportError:
@@ -44,12 +44,12 @@ except ImportError:
 # Optional topology
 try:
     from .topology import (
-        PersistentHomology,
+        MapperAlgorithm,
         PersistenceDiagram,
         PersistenceInterval,
+        PersistentHomology,
+        TopologicalFeatureExtractor,
         VietorisRipsComplex,
-        MapperAlgorithm,
-        TopologicalFeatureExtractor
     )
     HAS_TOPOLOGY = True
 except ImportError:
@@ -57,11 +57,7 @@ except ImportError:
 
 # Optional combinatorics
 try:
-    from .combinatorics import (
-        ChainComplex,
-        DiscreteMorseFunction,
-        Sheaf
-    )
+    from .combinatorics import ChainComplex, DiscreteMorseFunction, Sheaf
     HAS_COMBINATORICS = True
 except ImportError:
     HAS_COMBINATORICS = False
@@ -70,13 +66,13 @@ except ImportError:
 try:
     from .category import (
         Category,
-        Morphism,
-        Functor,
-        NaturalTransformation,
-        Limit,
         Colimit,
+        Functor,
+        Limit,
+        MonoidalCategory,
+        Morphism,
+        NaturalTransformation,
         YonedaEmbedding,
-        MonoidalCategory
     )
     HAS_CATEGORY = True
 except ImportError:
@@ -85,14 +81,14 @@ except ImportError:
 # Optional representation theory
 try:
     from .representation import (
-        Group,
-        Representation,
         CharacterTable,
         EquivariantMap,
+        Group,
+        Representation,
         cyclic_group,
+        regular_representation,
         symmetric_group,
         trivial_representation,
-        regular_representation
     )
     HAS_REPRESENTATION = True
 except ImportError:

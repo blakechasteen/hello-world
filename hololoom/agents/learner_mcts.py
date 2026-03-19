@@ -13,15 +13,15 @@ State Space:
 This prevents bad patterns from degrading performance.
 """
 
-from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 
 from hololoom.agents.learner import WorkingMemoryLearner
-from hololoom.agents.mcts_core import MCTSStateSpace, MCTSEngine
-from hololoom.agents.types import LearnedPattern, WorkingMemoryState, AgentProfile
+from hololoom.agents.mcts_core import MCTSEngine, MCTSStateSpace
+from hololoom.agents.types import AgentProfile, LearnedPattern, WorkingMemoryState
 from hololoom.protocols.types import Query
-
 
 # ============================================================================
 # Pattern Validation Actions
@@ -31,8 +31,8 @@ from hololoom.protocols.types import Query
 class PatternAction:
     """Action for pattern application"""
     type: str  # "apply", "skip", "modify_focus", "modify_activation", "modify_tension"
-    pattern_id: Optional[str] = None
-    modification: Optional[Dict[str, Any]] = None
+    pattern_id: str | None = None
+    modification: dict[str, Any] | None = None
 
 
 @dataclass
@@ -40,8 +40,8 @@ class PatternValidationState:
     """State for pattern validation"""
     query: Query
     base_state: WorkingMemoryState
-    pattern: Optional[LearnedPattern] = None
-    applied_modifications: List[str] = None
+    pattern: LearnedPattern | None = None
+    applied_modifications: list[str] = None
 
     def __post_init__(self):
         if self.applied_modifications is None:
@@ -64,7 +64,7 @@ class PatternValidationStateSpace(MCTSStateSpace):
 
     def __init__(
         self,
-        patterns: Dict[str, LearnedPattern],
+        patterns: dict[str, LearnedPattern],
         profile: AgentProfile,
         embedding_model
     ):
@@ -72,7 +72,7 @@ class PatternValidationStateSpace(MCTSStateSpace):
         self.profile = profile
         self.emb = embedding_model
 
-    def get_legal_actions(self, state: PatternValidationState) -> List[PatternAction]:
+    def get_legal_actions(self, state: PatternValidationState) -> list[PatternAction]:
         """Get legal actions from validation state"""
         actions = []
 
@@ -288,7 +288,7 @@ class MCTSLearner(WorkingMemoryLearner):
         query: Query,
         current_state: WorkingMemoryState,
         embedding_model
-    ) -> Dict:
+    ) -> dict:
         """
         Validate patterns using MCTS and suggest best option.
 
@@ -377,7 +377,7 @@ class MCTSLearner(WorkingMemoryLearner):
             'expected_confidence': expected_confidence
         }
 
-    def get_mcts_statistics(self) -> Dict:
+    def get_mcts_statistics(self) -> dict:
         """Get MCTS validation statistics"""
         return {
             'total_validations': self.mcts_validations,

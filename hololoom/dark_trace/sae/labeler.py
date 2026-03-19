@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Dark Trace SAE: Auto-Labeling Pipeline
 
@@ -15,21 +16,20 @@ Research Foundation:
 - Semantic alignment with interpretable dimensions
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple, Callable
-from pathlib import Path
 import json
-import hashlib
-import asyncio
-from datetime import datetime
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Optional
 
-import torch
 import numpy as np
+import torch
 
 # Optional: UnifiedLLMClient for multi-provider support
 try:
-    from hololoom.llm.unified_client import UnifiedLLMClient, LLMConfig
+    from hololoom.llm.unified_client import LLMConfig, UnifiedLLMClient
     HAS_UNIFIED_CLIENT = True
 except ImportError:
     HAS_UNIFIED_CLIENT = False
@@ -52,20 +52,20 @@ class FeatureLabel:
     confidence: float  # 0.0-1.0 confidence in label
 
     # Supporting evidence
-    top_activating_examples: List[str] = field(default_factory=list)
+    top_activating_examples: list[str] = field(default_factory=list)
     activation_pattern: str = ""  # Summary of activation pattern
 
     # Semantic alignment
-    semantic_alignments: Dict[str, float] = field(default_factory=dict)  # axis -> correlation
-    primary_semantic_axis: Optional[str] = None
+    semantic_alignments: dict[str, float] = field(default_factory=dict)  # axis -> correlation
+    primary_semantic_axis: str | None = None
     semantic_alignment_score: float = 0.0
 
     # Metadata
-    labeled_at: Optional[str] = None
+    labeled_at: str | None = None
     labeler_model: str = "unknown"
     version: str = "1.0"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "feature_idx": self.feature_idx,
@@ -82,7 +82,7 @@ class FeatureLabel:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "FeatureLabel":
+    def from_dict(cls, data: dict[str, Any]) -> "FeatureLabel":
         """Deserialize from dictionary."""
         return cls(
             feature_idx=data["feature_idx"],
@@ -120,14 +120,14 @@ class ActivationPatternAnalyzer:
         self.min_activation_threshold = min_activation_threshold
 
         # Storage for examples and their activations
-        self._example_texts: List[str] = []
-        self._activations: Optional[torch.Tensor] = None  # [n_examples, n_features]
+        self._example_texts: list[str] = []
+        self._activations: torch.Tensor | None = None  # [n_examples, n_features]
 
     def collect_activations(
         self,
         sae: torch.nn.Module,
         activations: torch.Tensor,  # [n_examples, input_dim]
-        example_texts: List[str],
+        example_texts: list[str],
     ) -> None:
         """
         Collect activation patterns from a batch of examples.
@@ -151,7 +151,7 @@ class ActivationPatternAnalyzer:
     def get_top_activating_examples(
         self,
         feature_idx: int,
-    ) -> Tuple[List[str], List[float]]:
+    ) -> tuple[list[str], list[float]]:
         """
         Get top-k examples that maximally activate a feature.
 
@@ -245,7 +245,7 @@ class SemanticAlignmentScorer:
 
     def __init__(
         self,
-        semantic_axes: Optional[Dict[str, np.ndarray]] = None,
+        semantic_axes: dict[str, np.ndarray] | None = None,
         n_top_alignments: int = 5,
     ):
         """
@@ -257,10 +257,10 @@ class SemanticAlignmentScorer:
         self.n_top_alignments = n_top_alignments
 
         # Storage for semantic projections
-        self._semantic_projections: Optional[Dict[str, np.ndarray]] = None  # axis -> [n_examples]
-        self._feature_activations: Optional[np.ndarray] = None  # [n_examples, n_features]
+        self._semantic_projections: dict[str, np.ndarray] | None = None  # axis -> [n_examples]
+        self._feature_activations: np.ndarray | None = None  # [n_examples, n_features]
 
-    def set_semantic_axes(self, axes: Dict[str, np.ndarray]) -> None:
+    def set_semantic_axes(self, axes: dict[str, np.ndarray]) -> None:
         """Set semantic axes for alignment scoring."""
         self.semantic_axes = axes
 
@@ -306,7 +306,7 @@ class SemanticAlignmentScorer:
     def score_feature_alignment(
         self,
         feature_idx: int,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Score a feature's alignment with all semantic axes.
 
@@ -328,7 +328,7 @@ class SemanticAlignmentScorer:
     def get_top_alignments(
         self,
         feature_idx: int,
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Get top-k semantic alignments for a feature.
 
@@ -380,7 +380,7 @@ class LabelCache:
 
     def __init__(
         self,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         cache_file: str = "feature_labels.json",
     ):
         self.cache_dir = cache_dir or Path(".cache/sae_labels")
@@ -388,8 +388,8 @@ class LabelCache:
         self.cache_path = self.cache_dir / cache_file
 
         # In-memory cache
-        self._labels: Dict[int, FeatureLabel] = {}
-        self._metadata: Dict[str, Any] = {
+        self._labels: dict[int, FeatureLabel] = {}
+        self._metadata: dict[str, Any] = {
             "version": "1.0",
             "created_at": None,
             "updated_at": None,
@@ -403,7 +403,7 @@ class LabelCache:
         """Load cache from disk if exists."""
         if self.cache_path.exists():
             try:
-                with open(self.cache_path, "r") as f:
+                with open(self.cache_path) as f:
                     data = json.load(f)
 
                 self._metadata = data.get("metadata", self._metadata)
@@ -435,7 +435,7 @@ class LabelCache:
         with open(self.cache_path, "w") as f:
             json.dump(data, f, indent=2)
 
-    def get(self, feature_idx: int) -> Optional[FeatureLabel]:
+    def get(self, feature_idx: int) -> FeatureLabel | None:
         """Get label for a feature if cached."""
         return self._labels.get(feature_idx)
 
@@ -447,7 +447,7 @@ class LabelCache:
         """Check if feature has a cached label."""
         return feature_idx in self._labels
 
-    def get_all(self) -> Dict[int, FeatureLabel]:
+    def get_all(self) -> dict[int, FeatureLabel]:
         """Get all cached labels."""
         return self._labels.copy()
 
@@ -513,12 +513,12 @@ Description:"""
         self,
         llm_provider: str = "ollama",
         llm_model: str = "llama3.2:3b",
-        llm_call_fn: Optional[Callable[[str], str]] = None,
+        llm_call_fn: Callable[[str], str] | None = None,
         unified_client: Optional["UnifiedLLMClient"] = None,
-        semantic_axes: Optional[Dict[str, np.ndarray]] = None,
-        cache_dir: Optional[Path] = None,
+        semantic_axes: dict[str, np.ndarray] | None = None,
+        cache_dir: Path | None = None,
         top_k_examples: int = 10,
-        prompt_template: Optional[str] = None,
+        prompt_template: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
     ):
@@ -571,7 +571,7 @@ Description:"""
         self,
         sae: torch.nn.Module,
         activations: torch.Tensor,
-        example_texts: List[str],
+        example_texts: list[str],
     ) -> None:
         """
         Collect activation examples for labeling.
@@ -594,10 +594,10 @@ Description:"""
     async def label_features(
         self,
         sae: torch.nn.Module,
-        feature_indices: Optional[List[int]] = None,
+        feature_indices: list[int] | None = None,
         force_relabel: bool = False,
         batch_size: int = 10,
-    ) -> Dict[int, FeatureLabel]:
+    ) -> dict[int, FeatureLabel]:
         """
         Label features using LLM and semantic alignment.
 
@@ -624,7 +624,7 @@ Description:"""
             ]
 
         # Label in batches
-        results: Dict[int, FeatureLabel] = {}
+        results: dict[int, FeatureLabel] = {}
 
         for i in range(0, len(feature_indices), batch_size):
             batch_indices = feature_indices[i:i + batch_size]
@@ -692,8 +692,8 @@ Description:"""
 
     async def _generate_description(
         self,
-        examples: List[str],
-        act_values: List[float],
+        examples: list[str],
+        act_values: list[float],
         activation_pattern: str,
     ) -> str:
         """Generate LLM description for a feature."""

@@ -21,17 +21,19 @@ Created: December 30, 2025
 Updated: December 31, 2025 - Added multi-layer probing, SmoothLLM integration, Protocol pattern
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple, Set, Protocol, runtime_checkable
 import asyncio
 import hashlib
-import numpy as np
-from collections import defaultdict
 import logging
 import random
 import string
+from collections import defaultdict
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Protocol, runtime_checkable
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +50,7 @@ class DetectionMethodProtocol(Protocol):
         self,
         agent_fn: Callable[[str], str],
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run detection method.
 
@@ -144,7 +146,7 @@ class ActivationVector:
     layer_id: str
     activations: np.ndarray
     timestamp: datetime = field(default_factory=datetime.now)
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
 
     @property
     def mean_activation(self) -> float:
@@ -165,9 +167,9 @@ class BehaviorDelta:
     """Change in behavior between baseline and triggered state."""
     trigger: str
     trigger_type: TriggerType
-    baseline_behavior: Dict[str, Any]
-    triggered_behavior: Dict[str, Any]
-    activation_delta: Optional[np.ndarray] = None
+    baseline_behavior: dict[str, Any]
+    triggered_behavior: dict[str, Any]
+    activation_delta: np.ndarray | None = None
     behavior_similarity: float = 1.0  # 1.0 = identical, 0.0 = completely different
 
     @property
@@ -180,12 +182,12 @@ class BehaviorDelta:
 class BackdoorProbeResult:
     """Result of probing for backdoors."""
     probe_id: str
-    triggers_tested: List[str]
-    deltas: List[BehaviorDelta]
+    triggers_tested: list[str]
+    deltas: list[BehaviorDelta]
     overall_result: ProbeResult
     deception_signal: DeceptionSignal
     confidence: float
-    evidence: List[str]
+    evidence: list[str]
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
@@ -202,7 +204,7 @@ class ActivationProbeResult:
     auroc: float
     true_positive_rate: float
     false_positive_rate: float
-    evidence: List[str]
+    evidence: list[str]
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
@@ -218,8 +220,8 @@ class HoneypotResult:
     agent_behavior: str
     expected_aligned_behavior: str
     behavior_aligned: bool
-    deception_indicators: List[str]
-    hidden_goals_detected: List[str]
+    deception_indicators: list[str]
+    hidden_goals_detected: list[str]
     confidence: float
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -228,11 +230,11 @@ class HoneypotResult:
 class InterviewResult:
     """Result of model interview for hidden behaviors."""
     interview_id: str
-    questions_asked: List[str]
-    responses: List[str]
-    inconsistencies: List[str]
+    questions_asked: list[str]
+    responses: list[str]
+    inconsistencies: list[str]
     evasion_detected: bool
-    deception_signals: List[str]
+    deception_signals: list[str]
     confidence: float
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -241,15 +243,15 @@ class InterviewResult:
 class SleeperDetectionResult:
     """Comprehensive sleeper agent detection result."""
     detection_id: str
-    backdoor_probes: List[BackdoorProbeResult]
-    activation_probes: List[ActivationProbeResult]
-    honeypot_results: List[HoneypotResult]
-    interview_results: List[InterviewResult]
+    backdoor_probes: list[BackdoorProbeResult]
+    activation_probes: list[ActivationProbeResult]
+    honeypot_results: list[HoneypotResult]
+    interview_results: list[InterviewResult]
     overall_deception_score: float
     overall_signal: DeceptionSignal
     is_sleeper_agent: bool
     confidence: float
-    recommendations: List[str]
+    recommendations: list[str]
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -273,7 +275,7 @@ class LinearDeceptionProbe:
         self.weights = np.random.randn(input_dim) * 0.01
         self.bias = 0.0
         self.trained = False
-        self.training_examples: List[Tuple[np.ndarray, bool]] = []
+        self.training_examples: list[tuple[np.ndarray, bool]] = []
 
     def _sigmoid(self, x: float) -> float:
         """Numerically stable sigmoid."""
@@ -356,7 +358,7 @@ class LinearDeceptionProbe:
         logger.info(f"Trained deception probe: accuracy={accuracy:.2%}")
         return accuracy
 
-    def compute_auroc(self, test_examples: List[Tuple[np.ndarray, bool]]) -> float:
+    def compute_auroc(self, test_examples: list[tuple[np.ndarray, bool]]) -> float:
         """Compute AUROC on test examples."""
         if not test_examples:
             return 0.0
@@ -432,7 +434,7 @@ class SmoothLLMPerturbation:
         self,
         perturbation_rate: float = 0.1,
         num_copies: int = 10,
-        techniques: Optional[List[str]] = None
+        techniques: list[str] | None = None
     ):
         """
         Initialize SmoothLLM perturbation.
@@ -491,7 +493,7 @@ class SmoothLLMPerturbation:
         else:
             return text
 
-    def generate_copies(self, text: str) -> List[str]:
+    def generate_copies(self, text: str) -> list[str]:
         """Generate perturbed copies of input text."""
         return [self.perturb(text) for _ in range(self.num_copies)]
 
@@ -500,7 +502,7 @@ class SmoothLLMPerturbation:
         agent_fn: Callable[[str], str],
         prompt: str,
         similarity_threshold: float = 0.7
-    ) -> Tuple[float, List[str]]:
+    ) -> tuple[float, list[str]]:
         """
         Detect if a prompt is adversarially brittle.
 
@@ -593,7 +595,7 @@ class HoneypotScenario:
         scenario_type: str,
         prompt: str,
         expected_aligned_behavior: str,
-        deception_indicators: List[str]
+        deception_indicators: list[str]
     ):
         self.scenario_id = scenario_id
         self.scenario_type = scenario_type
@@ -727,7 +729,7 @@ class InterviewProtocol:
     ]
 
     @classmethod
-    def get_full_interview(cls) -> List[str]:
+    def get_full_interview(cls) -> list[str]:
         """Get all interview questions."""
         questions = []
 
@@ -742,8 +744,8 @@ class InterviewProtocol:
     @classmethod
     def analyze_consistency(
         cls,
-        responses: List[Tuple[str, str]]  # (question, response) pairs
-    ) -> Tuple[List[str], float]:
+        responses: list[tuple[str, str]]  # (question, response) pairs
+    ) -> tuple[list[str], float]:
         """
         Analyze consistency across related questions.
 
@@ -820,8 +822,8 @@ class SleeperAgentDetector:
         auroc_target: float = 0.99,
         enable_continuous_monitoring: bool = True,
         enable_smoothllm: bool = True,
-        embedding_provider: Optional[EmbeddingProviderProtocol] = None,
-        smoothllm_config: Optional[Dict[str, Any]] = None
+        embedding_provider: EmbeddingProviderProtocol | None = None,
+        smoothllm_config: dict[str, Any] | None = None
     ):
         """
         Initialize sleeper agent detector.
@@ -844,7 +846,7 @@ class SleeperAgentDetector:
         self.deception_probe = LinearDeceptionProbe(input_dim=activation_dim)
 
         # Multi-layer probes (December 2025)
-        self.layer_probes: Dict[str, LinearDeceptionProbe] = {}
+        self.layer_probes: dict[str, LinearDeceptionProbe] = {}
 
         # SmoothLLM perturbation (December 2025)
         smoothllm_config = smoothllm_config or {}
@@ -855,13 +857,13 @@ class SleeperAgentDetector:
         )
 
         # Detection history
-        self.detection_history: List[SleeperDetectionResult] = []
-        self.trigger_statistics: Dict[str, Dict[str, int]] = defaultdict(
+        self.detection_history: list[SleeperDetectionResult] = []
+        self.trigger_statistics: dict[str, dict[str, int]] = defaultdict(
             lambda: {"tested": 0, "triggered": 0}
         )
 
         # Custom detection methods (Protocol pattern)
-        self.custom_methods: List[DetectionMethodProtocol] = []
+        self.custom_methods: list[DetectionMethodProtocol] = []
 
         # Honeypot scenarios
         self.honeypots = HONEYPOT_SCENARIOS.copy()
@@ -889,9 +891,9 @@ class SleeperAgentDetector:
             self.custom_methods.append(method)
             logger.info(f"Registered custom detection method: {method.method_name}")
         else:
-            logger.warning(f"Method does not implement DetectionMethodProtocol")
+            logger.warning("Method does not implement DetectionMethodProtocol")
 
-    def add_layer_probe(self, layer_id: str, input_dim: Optional[int] = None) -> None:
+    def add_layer_probe(self, layer_id: str, input_dim: int | None = None) -> None:
         """
         Add a probe for a specific layer (multi-layer probing).
 
@@ -911,8 +913,8 @@ class SleeperAgentDetector:
     async def probe_for_backdoors(
         self,
         agent_fn: Callable[[str], str],
-        triggers: Optional[List[str]] = None,
-        baseline_prompts: Optional[List[str]] = None
+        triggers: list[str] | None = None,
+        baseline_prompts: list[str] | None = None
     ) -> BackdoorProbeResult:
         """
         Test for trigger-activated behavior changes.
@@ -1030,7 +1032,7 @@ class SleeperAgentDetector:
     async def activation_probe(
         self,
         get_activations_fn: Callable[[str], np.ndarray],
-        test_prompts: List[Tuple[str, bool]]  # (prompt, is_deceptive_context)
+        test_prompts: list[tuple[str, bool]]  # (prompt, is_deceptive_context)
     ) -> ActivationProbeResult:
         """
         Use linear probes on activations to detect deception.
@@ -1118,7 +1120,7 @@ class SleeperAgentDetector:
     async def run_honeypot(
         self,
         agent_fn: Callable[[str], str],
-        scenario: Optional[HoneypotScenario] = None
+        scenario: HoneypotScenario | None = None
     ) -> HoneypotResult:
         """
         Present honeypot scenario designed to elicit hidden behaviors.
@@ -1183,7 +1185,7 @@ class SleeperAgentDetector:
     async def conduct_interview(
         self,
         agent_fn: Callable[[str], str],
-        questions: Optional[List[str]] = None
+        questions: list[str] | None = None
     ) -> InterviewResult:
         """
         Conduct structured interview to detect hidden behaviors.
@@ -1249,8 +1251,8 @@ class SleeperAgentDetector:
     async def run_smoothllm_test(
         self,
         agent_fn: Callable[[str], str],
-        test_prompts: Optional[List[str]] = None
-    ) -> Tuple[float, List[str]]:
+        test_prompts: list[str] | None = None
+    ) -> tuple[float, list[str]]:
         """
         Run SmoothLLM perturbation testing.
 
@@ -1285,8 +1287,8 @@ class SleeperAgentDetector:
     async def full_detection(
         self,
         agent_fn: Callable[[str], str],
-        get_activations_fn: Optional[Callable[[str], np.ndarray]] = None,
-        activation_test_prompts: Optional[List[Tuple[str, bool]]] = None,
+        get_activations_fn: Callable[[str], np.ndarray] | None = None,
+        activation_test_prompts: list[tuple[str, bool]] | None = None,
         run_smoothllm: bool = True,
         run_custom_methods: bool = True,
         parallel_honeypots: bool = True
@@ -1341,13 +1343,13 @@ class SleeperAgentDetector:
 
         # SmoothLLM perturbation testing (December 2025)
         smoothllm_score = 0.0
-        smoothllm_evidence: List[str] = []
+        smoothllm_evidence: list[str] = []
         if run_smoothllm and self.enable_smoothllm:
             smoothllm_score, smoothllm_evidence = await self.run_smoothllm_test(agent_fn)
 
         # Custom detection methods (December 2025)
-        custom_scores: List[float] = []
-        custom_evidence: List[str] = []
+        custom_scores: list[float] = []
+        custom_evidence: list[str] = []
         if run_custom_methods and self.custom_methods:
             for method in self.custom_methods:
                 try:
@@ -1466,8 +1468,8 @@ class SleeperAgentDetector:
 
     def _compute_similarity(
         self,
-        baseline: Dict[str, Any],
-        triggered: Dict[str, Any]
+        baseline: dict[str, Any],
+        triggered: dict[str, Any]
     ) -> float:
         """Compute behavioral similarity between baseline and triggered."""
         if "error" in baseline or "error" in triggered:
@@ -1523,7 +1525,7 @@ def create_sleeper_detector(
 
 async def quick_sleeper_check(
     agent_fn: Callable[[str], str]
-) -> Tuple[bool, str]:
+) -> tuple[bool, str]:
     """
     Quick sleeper agent check for rapid evaluation.
 

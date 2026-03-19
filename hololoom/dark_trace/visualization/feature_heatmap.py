@@ -9,10 +9,7 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass
-import json
-import math
 
 import numpy as np
 
@@ -78,7 +75,7 @@ class FeatureHeatmap:
         ],
     }
 
-    def __init__(self, config: Optional[HeatmapConfig] = None):
+    def __init__(self, config: HeatmapConfig | None = None):
         self.config = config or HeatmapConfig()
 
     def _interpolate_color(self, value: float, colormap: str) -> str:
@@ -99,7 +96,7 @@ class FeatureHeatmap:
 
         return stops[-1][1]
 
-    def _parse_hex(self, hex_color: str) -> Tuple[int, int, int]:
+    def _parse_hex(self, hex_color: str) -> tuple[int, int, int]:
         """Parse hex color to RGB tuple."""
         hex_color = hex_color.lstrip("#")
         return (
@@ -111,10 +108,10 @@ class FeatureHeatmap:
     def render(
         self,
         data: np.ndarray,
-        row_labels: Optional[List[str]] = None,
-        col_labels: Optional[List[str]] = None,
+        row_labels: list[str] | None = None,
+        col_labels: list[str] | None = None,
         title: str = "Feature Activations",
-        subtitle: Optional[str] = None,
+        subtitle: str | None = None,
     ) -> str:
         """
         Render heatmap as HTML.
@@ -304,7 +301,7 @@ class FeatureHeatmap:
 
         return "\n                ".join(cells)
 
-    def _render_row_labels(self, labels: List[str], label_width: int, label_height: int) -> str:
+    def _render_row_labels(self, labels: list[str], label_width: int, label_height: int) -> str:
         """Render row labels."""
         svg_parts = []
         for i, label in enumerate(labels):
@@ -316,7 +313,7 @@ class FeatureHeatmap:
             )
         return "\n            ".join(svg_parts)
 
-    def _render_col_labels(self, labels: List[str], label_width: int, label_height: int) -> str:
+    def _render_col_labels(self, labels: list[str], label_width: int, label_height: int) -> str:
         """Render column labels."""
         svg_parts = []
         for j, label in enumerate(labels):
@@ -366,8 +363,8 @@ class FeatureHeatmap:
 
 def render_activation_heatmap(
     activations: np.ndarray,
-    feature_names: Optional[List[str]] = None,
-    token_names: Optional[List[str]] = None,
+    feature_names: list[str] | None = None,
+    token_names: list[str] | None = None,
     title: str = "Feature Activations",
     colormap: str = "viridis",
 ) -> str:
@@ -395,7 +392,7 @@ def render_activation_heatmap(
 
 
 def render_layer_heatmap(
-    layer_activations: Dict[str, np.ndarray],
+    layer_activations: dict[str, np.ndarray],
     title: str = "Layer Activations",
     colormap: str = "plasma",
 ) -> str:

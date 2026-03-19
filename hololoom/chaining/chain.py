@@ -11,10 +11,11 @@ Author: HoloLoom Architecture Team
 Date: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Callable, Set
-from enum import Enum
 import json
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 
 class StepType(Enum):
@@ -33,17 +34,17 @@ class StepType(Enum):
 class ChainStep:
     """Single step in a chain."""
     step_type: StepType
-    params: Dict[str, Any] = field(default_factory=dict)
-    next_step: Optional[str] = None  # Next step ID (sequential)
-    condition: Optional[Callable] = None  # Conditional branch function
-    on_success: Optional[str] = None  # Next step on success (alternative to next_step)
-    on_failure: Optional[str] = None  # Next step on failure
+    params: dict[str, Any] = field(default_factory=dict)
+    next_step: str | None = None  # Next step ID (sequential)
+    condition: Callable | None = None  # Conditional branch function
+    on_success: str | None = None  # Next step on success (alternative to next_step)
+    on_failure: str | None = None  # Next step on failure
     max_iterations: int = 1  # For loops
-    timeout_seconds: Optional[float] = None  # Step timeout
+    timeout_seconds: float | None = None  # Step timeout
     retry_count: int = 0  # Max retries on failure
-    skip_condition: Optional[Callable] = None  # Skip step if condition true
+    skip_condition: Callable | None = None  # Skip step if condition true
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """Validate step configuration."""
         errors = []
 
@@ -67,8 +68,8 @@ class Chain:
     """Declarative chain definition."""
     name: str
     entry_point: str = "start"  # Starting step ID
-    steps: Dict[str, ChainStep] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    steps: dict[str, ChainStep] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate chain on creation."""
@@ -81,8 +82,8 @@ class Chain:
             raise ValueError(f"Step '{step_id}' already exists")
         self.steps[step_id] = step
 
-    def add_sequential_steps(self, step_ids: List[str], step_type: StepType,
-                            params: Dict[str, Any] = None) -> None:
+    def add_sequential_steps(self, step_ids: list[str], step_type: StepType,
+                            params: dict[str, Any] = None) -> None:
         """Add multiple sequential steps."""
         params = params or {}
         for i, step_id in enumerate(step_ids):
@@ -94,7 +95,7 @@ class Chain:
             )
             self.add_step(step_id, step)
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """Validate entire chain."""
         errors = []
 
@@ -134,7 +135,7 @@ class Chain:
 
         return errors
 
-    def _get_reachable_steps(self) -> Set[str]:
+    def _get_reachable_steps(self) -> set[str]:
         """Get all reachable steps from entry point."""
         reachable = set()
         queue = [self.entry_point]
@@ -161,13 +162,13 @@ class Chain:
 
         return reachable
 
-    def _detect_cycles(self) -> List[List[str]]:
+    def _detect_cycles(self) -> list[list[str]]:
         """Detect cycles in the chain graph."""
         cycles = []
         visited = set()
         rec_stack = set()
 
-        def dfs(node: str, path: List[str]) -> None:
+        def dfs(node: str, path: list[str]) -> None:
             if node in rec_stack:
                 # Found a cycle
                 cycle_start = path.index(node)
@@ -196,7 +197,7 @@ class Chain:
         dfs(self.entry_point, [])
         return cycles
 
-    def get_execution_order(self) -> List[str]:
+    def get_execution_order(self) -> list[str]:
         """Get step execution order (topological sort)."""
         order = []
         visited = set()
@@ -275,7 +276,7 @@ class Chain:
         lines.append(f"{'='*60}\n")
         return "\n".join(lines)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert chain to dictionary (for JSON serialization)."""
         return {
             "name": self.name,

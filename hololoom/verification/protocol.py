@@ -14,9 +14,9 @@ Created: 2025-12-05
 """
 
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, Tuple
 from datetime import datetime
+from enum import Enum
+from typing import Any, Protocol
 
 
 class VerificationStatus(Enum):
@@ -76,10 +76,10 @@ class VerifiableClaim:
     text: str
     claim_type: ClaimType = ClaimType.UNKNOWN
     confidence: float = 0.5
-    source_span: Tuple[int, int] = (0, 0)
+    source_span: tuple[int, int] = (0, 0)
     importance: float = 0.5
-    entities: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    entities: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate claim attributes."""
@@ -121,7 +121,7 @@ class VerificationAnswer:
     question: VerificationQuestion
     answer: str
     confidence: float = 0.5
-    sources: List[str] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)
     reasoning: str = ""
 
     def __post_init__(self):
@@ -182,10 +182,10 @@ class VerificationResult:
     """
     original_response: str
     verified_response: str
-    claims_extracted: List[VerifiableClaim] = field(default_factory=list)
-    verification_questions: List[VerificationQuestion] = field(default_factory=list)
-    verification_answers: List[VerificationAnswer] = field(default_factory=list)
-    contradictions_found: List[Contradiction] = field(default_factory=list)
+    claims_extracted: list[VerifiableClaim] = field(default_factory=list)
+    verification_questions: list[VerificationQuestion] = field(default_factory=list)
+    verification_answers: list[VerificationAnswer] = field(default_factory=list)
+    contradictions_found: list[Contradiction] = field(default_factory=list)
     confidence_before: float = 0.0
     confidence_after: float = 0.0
     verification_passed: bool = False
@@ -194,7 +194,7 @@ class VerificationResult:
     iterations: int = 0
     latency_ms: float = 0.0
     degradation_level: DegradationLevel = DegradationLevel.FULL
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
     def summary(self) -> str:
@@ -244,8 +244,8 @@ class ClaimExtractorProtocol(Protocol):
     async def extract(
         self,
         text: str,
-        context: Dict[str, Any]
-    ) -> List[VerifiableClaim]:
+        context: dict[str, Any]
+    ) -> list[VerifiableClaim]:
         """
         Extract verifiable claims from text.
 
@@ -270,8 +270,8 @@ class VerificationPlannerProtocol(Protocol):
     async def plan(
         self,
         claim: VerifiableClaim,
-        context: Dict[str, Any]
-    ) -> List[VerificationQuestion]:
+        context: dict[str, Any]
+    ) -> list[VerificationQuestion]:
         """
         Generate verification questions for a claim.
 
@@ -296,9 +296,9 @@ class IndependentVerifierProtocol(Protocol):
 
     async def verify(
         self,
-        questions: List[VerificationQuestion],
-        context: Dict[str, Any]
-    ) -> List[VerificationAnswer]:
+        questions: list[VerificationQuestion],
+        context: dict[str, Any]
+    ) -> list[VerificationAnswer]:
         """
         Answer verification questions without seeing original response.
 
@@ -323,8 +323,8 @@ class ContradictionDetectorProtocol(Protocol):
     async def detect(
         self,
         claim: VerifiableClaim,
-        answers: List[VerificationAnswer]
-    ) -> List[Contradiction]:
+        answers: list[VerificationAnswer]
+    ) -> list[Contradiction]:
         """
         Detect contradictions between a claim and verification answers.
 
@@ -346,11 +346,11 @@ class ResultSynthesizerProtocol(Protocol):
     async def synthesize(
         self,
         original_response: str,
-        claims: List[VerifiableClaim],
-        answers: List[VerificationAnswer],
-        contradictions: List[Contradiction],
-        context: Dict[str, Any]
-    ) -> Tuple[str, float]:
+        claims: list[VerifiableClaim],
+        answers: list[VerificationAnswer],
+        contradictions: list[Contradiction],
+        context: dict[str, Any]
+    ) -> tuple[str, float]:
         """
         Synthesize a verified response.
 
@@ -383,7 +383,7 @@ class VerificationChainProtocol(Protocol):
         query: str,
         response: str,
         confidence: float,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         max_iterations: int = 3,
         confidence_threshold: float = 0.85,
     ) -> "VerificationResult":
@@ -432,8 +432,8 @@ class VerificationConfig:
     fallback_on_error: bool = True          # Fall back to lower level on error
 
     # LLM settings
-    llm_provider: Optional[str] = None      # "anthropic", "openai", "ollama"
-    llm_model: Optional[str] = None         # Model name
+    llm_provider: str | None = None      # "anthropic", "openai", "ollama"
+    llm_model: str | None = None         # Model name
     llm_temperature: float = 0.1            # Low temp for factual verification
 
     # Timeouts

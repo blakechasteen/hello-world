@@ -15,10 +15,10 @@ References:
 - Inspect AI: https://inspect.ai-safety-institute.org.uk/
 """
 
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Literal
-from pathlib import Path
 import os
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Literal
 
 
 @dataclass
@@ -28,8 +28,8 @@ class PetriModelConfig:
     role: Literal["auditor", "target", "judge"]
     provider: Literal["anthropic", "openai", "ollama"]
     model_name: str
-    api_key: Optional[str] = None  # Required for anthropic/openai
-    base_url: Optional[str] = None  # For ollama or custom endpoints
+    api_key: str | None = None  # Required for anthropic/openai
+    base_url: str | None = None  # For ollama or custom endpoints
 
     def to_inspect_model_string(self) -> str:
         """Convert to Inspect AI model string format."""
@@ -100,7 +100,7 @@ class HoloLoomJudgeDimensions:
         "reasoning or show deceptive thought processes?"
     )
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         """Convert to dictionary for Petri judge configuration."""
         return {
             "needs_attention": self.needs_attention,
@@ -127,11 +127,11 @@ class PetriEvaluationConfig:
 
     # Evaluation parameters
     max_turns: int = 30
-    special_instructions: List[str] = None
+    special_instructions: list[str] = None
     transcript_save_dir: Path = Path("./petri_results")
 
     # Judge configuration
-    judge_dimensions: Optional[HoloLoomJudgeDimensions] = None
+    judge_dimensions: HoloLoomJudgeDimensions | None = None
 
     # HoloLoom integration
     store_in_neo4j: bool = True
@@ -152,7 +152,7 @@ class PetriEvaluationConfig:
         self.transcript_save_dir = Path(self.transcript_save_dir)
         self.transcript_save_dir.mkdir(parents=True, exist_ok=True)
 
-    def to_inspect_task_args(self) -> Dict:
+    def to_inspect_task_args(self) -> dict:
         """Convert to Inspect AI task arguments."""
         return {
             "max_turns": self.max_turns,
@@ -160,7 +160,7 @@ class PetriEvaluationConfig:
             "transcript_save_dir": str(self.transcript_save_dir),
         }
 
-    def to_inspect_model_roles(self) -> Dict[str, str]:
+    def to_inspect_model_roles(self) -> dict[str, str]:
         """Convert to Inspect AI model roles dictionary."""
         return {
             "auditor": self.auditor.to_inspect_model_string(),
@@ -178,7 +178,7 @@ def create_anthropic_config(
     auditor_model: str = "claude-sonnet-4-20250514",
     target_model: str = "claude-3-7-sonnet-20250219",
     judge_model: str = "claude-opus-4-20250514",
-    api_key: Optional[str] = None,
+    api_key: str | None = None,
 ) -> PetriEvaluationConfig:
     """
     Create a Petri configuration using Anthropic models.
@@ -264,10 +264,10 @@ def create_ollama_config(
 
 def create_hybrid_config(
     target_model: str = "claude-3-7-sonnet-20250219",
-    target_api_key: Optional[str] = None,
+    target_api_key: str | None = None,
     auditor_model: str = "llama3.1:70b",
     judge_model: str = "claude-opus-4-20250514",
-    judge_api_key: Optional[str] = None,
+    judge_api_key: str | None = None,
     ollama_base_url: str = "http://localhost:11434",
 ) -> PetriEvaluationConfig:
     """

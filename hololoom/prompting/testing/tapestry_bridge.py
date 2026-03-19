@@ -10,7 +10,7 @@ Maps Tapestry verification signals to MetricType values:
 - Aggregated → FABRIC_CONFIDENCE, THREAD_BLOCKERS
 """
 
-from typing import Dict, Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .metrics_collector import MetricsCollector
@@ -35,9 +35,9 @@ class TapestryMetricsBridge:
 
     def record_fabric_check(
         self,
-        check_result: Dict[str, Any],
+        check_result: dict[str, Any],
         thread_id: str,
-        extra_tags: Optional[Dict[str, str]] = None
+        extra_tags: dict[str, str] | None = None
     ) -> None:
         """Record all metrics from a FabricCheckResult.
 
@@ -84,9 +84,9 @@ class TapestryMetricsBridge:
     def record_signal_result(
         self,
         signal_name: str,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         thread_id: str,
-        extra_tags: Optional[Dict[str, str]] = None
+        extra_tags: dict[str, str] | None = None
     ) -> None:
         """Record metrics from a single signal result.
 
@@ -105,7 +105,7 @@ class TapestryMetricsBridge:
         self,
         signal_name: str,
         result: Any,
-        base_tags: Dict[str, str]
+        base_tags: dict[str, str]
     ) -> None:
         """Map signal to appropriate metric type.
 

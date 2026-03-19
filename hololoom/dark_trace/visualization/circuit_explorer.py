@@ -9,11 +9,11 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Set
-from dataclasses import dataclass, field
-from enum import Enum
 import json
 import math
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 
 class NodeType(Enum):
@@ -36,7 +36,7 @@ class CircuitNode:
     layer: int
     importance: float = 0.0
     activation: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def color(self) -> str:
@@ -60,7 +60,7 @@ class CircuitEdge:
     target: str
     weight: float = 1.0
     edge_type: str = "causal"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class CircuitExplorer:
@@ -82,8 +82,8 @@ class CircuitExplorer:
         self.height = height
         self.node_radius = node_radius
         self.layer_spacing = layer_spacing
-        self.nodes: List[CircuitNode] = []
-        self.edges: List[CircuitEdge] = []
+        self.nodes: list[CircuitNode] = []
+        self.edges: list[CircuitEdge] = []
 
     def add_node(self, node: CircuitNode) -> None:
         """Add a node to the circuit."""
@@ -93,20 +93,20 @@ class CircuitExplorer:
         """Add an edge to the circuit."""
         self.edges.append(edge)
 
-    def add_nodes(self, nodes: List[CircuitNode]) -> None:
+    def add_nodes(self, nodes: list[CircuitNode]) -> None:
         """Add multiple nodes."""
         self.nodes.extend(nodes)
 
-    def add_edges(self, edges: List[CircuitEdge]) -> None:
+    def add_edges(self, edges: list[CircuitEdge]) -> None:
         """Add multiple edges."""
         self.edges.extend(edges)
 
-    def _compute_layout(self) -> Dict[str, Tuple[float, float]]:
+    def _compute_layout(self) -> dict[str, tuple[float, float]]:
         """Compute node positions using layer-constrained force layout."""
-        positions: Dict[str, Tuple[float, float]] = {}
+        positions: dict[str, tuple[float, float]] = {}
 
         # Group nodes by layer
-        layers: Dict[int, List[CircuitNode]] = {}
+        layers: dict[int, list[CircuitNode]] = {}
         for node in self.nodes:
             if node.layer not in layers:
                 layers[node.layer] = []
@@ -131,7 +131,7 @@ class CircuitExplorer:
     def render(
         self,
         title: str = "Circuit Explorer",
-        highlighted_path: Optional[List[str]] = None,
+        highlighted_path: list[str] | None = None,
         show_importance: bool = True,
     ) -> str:
         """Render the circuit as interactive HTML/SVG."""
@@ -281,8 +281,8 @@ class CircuitExplorer:
 
     def _render_edges(
         self,
-        positions: Dict[str, Tuple[float, float]],
-        highlighted: Set[str]
+        positions: dict[str, tuple[float, float]],
+        highlighted: set[str]
     ) -> str:
         """Render edge SVG elements."""
         edges_svg = []
@@ -327,8 +327,8 @@ class CircuitExplorer:
 
     def _render_nodes(
         self,
-        positions: Dict[str, Tuple[float, float]],
-        highlighted: Set[str],
+        positions: dict[str, tuple[float, float]],
+        highlighted: set[str],
         show_importance: bool
     ) -> str:
         """Render node SVG elements."""
@@ -477,10 +477,10 @@ class CircuitExplorer:
 
 
 def render_circuit_graph(
-    nodes: List[CircuitNode],
-    edges: List[CircuitEdge],
+    nodes: list[CircuitNode],
+    edges: list[CircuitEdge],
     title: str = "Circuit Explorer",
-    highlighted_path: Optional[List[str]] = None,
+    highlighted_path: list[str] | None = None,
     width: int = 900,
     height: int = 600,
 ) -> str:

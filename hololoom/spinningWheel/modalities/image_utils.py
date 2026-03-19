@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Image Utilities for Multimodal Web Scraping
 ============================================
@@ -13,19 +14,19 @@ Features:
 - Store images with metadata
 """
 
-import logging
-import hashlib
-import re
-from pathlib import Path
-from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass
-from urllib.parse import urljoin, urlparse
 import base64
+import hashlib
+import logging
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from urllib.parse import urljoin
 
 try:
+    from io import BytesIO
+
     import requests
     from PIL import Image
-    from io import BytesIO
     IMAGING_AVAILABLE = True
 except ImportError:
     IMAGING_AVAILABLE = False
@@ -51,13 +52,13 @@ class ImageInfo:
     title: str                        # Title attribute
     caption: str                      # Caption text (from <figcaption>, nearby text)
     context: str                      # Surrounding text context
-    width: Optional[int] = None       # Image dimensions
-    height: Optional[int] = None
-    size_bytes: Optional[int] = None  # File size
-    format: Optional[str] = None      # JPEG, PNG, etc.
+    width: int | None = None       # Image dimensions
+    height: int | None = None
+    size_bytes: int | None = None  # File size
+    format: str | None = None      # JPEG, PNG, etc.
     relevance_score: float = 0.0      # How relevant to main content (0-1)
-    local_path: Optional[str] = None  # Where image is stored locally
-    hash: Optional[str] = None        # Content hash for deduplication
+    local_path: str | None = None  # Where image is stored locally
+    hash: str | None = None        # Content hash for deduplication
 
 
 class ImageExtractor:
@@ -88,7 +89,7 @@ class ImageExtractor:
 
     def __init__(
         self,
-        storage_dir: Optional[Path] = None,
+        storage_dir: Path | None = None,
         min_width: int = MIN_WIDTH,
         min_height: int = MIN_HEIGHT,
         max_images: int = 10
@@ -114,7 +115,7 @@ class ImageExtractor:
         self,
         soup: "BeautifulSoup",
         base_url: str
-    ) -> List[ImageInfo]:
+    ) -> list[ImageInfo]:
         """
         Extract meaningful images from HTML.
 
@@ -155,7 +156,7 @@ class ImageExtractor:
         img_tag,
         base_url: str,
         soup: "BeautifulSoup"
-    ) -> Optional[ImageInfo]:
+    ) -> ImageInfo | None:
         """Extract information from <img> tag."""
 
         # Get image URL
@@ -234,8 +235,8 @@ class ImageExtractor:
         title: str,
         caption: str,
         context: str,
-        width: Optional[int],
-        height: Optional[int]
+        width: int | None,
+        height: int | None
     ) -> float:
         """
         Calculate image relevance score (0-1).
@@ -303,7 +304,7 @@ class ImageExtractor:
 
         return True
 
-    def _parse_dimension(self, value) -> Optional[int]:
+    def _parse_dimension(self, value) -> int | None:
         """Parse width/height attribute."""
         if not value:
             return None
@@ -363,7 +364,7 @@ class ImageExtractor:
             logger.warning(f"Failed to download {info.url}: {e}")
             return False
 
-    async def download_all(self, images: List[ImageInfo]) -> List[ImageInfo]:
+    async def download_all(self, images: list[ImageInfo]) -> list[ImageInfo]:
         """Download all images and update metadata."""
         downloaded = []
 
@@ -387,9 +388,9 @@ def image_to_base64(image_path: str) -> str:
 def extract_and_download_images(
     html_content: str,
     base_url: str,
-    storage_dir: Optional[Path] = None,
+    storage_dir: Path | None = None,
     max_images: int = 10
-) -> List[ImageInfo]:
+) -> list[ImageInfo]:
     """
     Convenience function to extract and download images from HTML.
 

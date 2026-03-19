@@ -6,11 +6,10 @@ Permission-based access control for knowledge resources.
 Supports user, team, and resource-level permissions.
 """
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Union
-import json
 
 
 class Permission(Enum):
@@ -41,11 +40,11 @@ class AccessRule:
     resource_id: str
     grantee_type: str  # "user", "team", "role"
     grantee_id: str
-    permissions: Set[Permission]
+    permissions: set[Permission]
     granted_by: str
     granted_at: datetime = field(default_factory=datetime.now)
-    expires_at: Optional[datetime] = None
-    metadata: Dict = field(default_factory=dict)
+    expires_at: datetime | None = None
+    metadata: dict = field(default_factory=dict)
 
     def is_expired(self) -> bool:
         """Check if rule has expired."""
@@ -73,7 +72,7 @@ class AccessRule:
 
         return False
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "rule_id": self.rule_id,
@@ -94,10 +93,10 @@ class ResourcePolicy:
     resource_id: str
     owner_id: str
     access_level: AccessLevel = AccessLevel.PRIVATE
-    default_permissions: Set[Permission] = field(default_factory=lambda: {Permission.READ})
+    default_permissions: set[Permission] = field(default_factory=lambda: {Permission.READ})
     created_at: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize to dictionary."""
         return {
             "resource_id": self.resource_id,
@@ -119,7 +118,7 @@ class AccessController:
     - Audit logging
     """
 
-    def __init__(self, storage_path: Optional[str] = None):
+    def __init__(self, storage_path: str | None = None):
         """
         Initialize access controller.
 
@@ -127,10 +126,10 @@ class AccessController:
             storage_path: Path to persist data
         """
         self.storage_path = storage_path
-        self.policies: Dict[str, ResourcePolicy] = {}
-        self.rules: Dict[str, AccessRule] = {}
-        self._rules_by_resource: Dict[str, Set[str]] = {}
-        self._rules_by_grantee: Dict[str, Set[str]] = {}
+        self.policies: dict[str, ResourcePolicy] = {}
+        self.rules: dict[str, AccessRule] = {}
+        self._rules_by_resource: dict[str, set[str]] = {}
+        self._rules_by_grantee: dict[str, set[str]] = {}
         self._rule_counter = 0
 
         # External callbacks
@@ -149,7 +148,7 @@ class AccessController:
 
     def set_policy(self, resource_id: str, owner_id: str,
                    access_level: AccessLevel = AccessLevel.PRIVATE,
-                   default_permissions: Set[Permission] = None) -> ResourcePolicy:
+                   default_permissions: set[Permission] = None) -> ResourcePolicy:
         """Set access policy for a resource."""
         policy = ResourcePolicy(
             resource_id=resource_id,
@@ -161,7 +160,7 @@ class AccessController:
         self._save()
         return policy
 
-    def get_policy(self, resource_id: str) -> Optional[ResourcePolicy]:
+    def get_policy(self, resource_id: str) -> ResourcePolicy | None:
         """Get policy for a resource."""
         return self.policies.get(resource_id)
 
@@ -183,7 +182,7 @@ class AccessController:
     # === Rules ===
 
     def grant_access(self, resource_id: str, grantee_type: str,
-                     grantee_id: str, permissions: Set[Permission],
+                     grantee_id: str, permissions: set[Permission],
                      granted_by: str, expires_at: datetime = None) -> AccessRule:
         """
         Grant access to a resource.
@@ -249,12 +248,12 @@ class AccessController:
         self._save()
         return True
 
-    def get_rules_for_resource(self, resource_id: str) -> List[AccessRule]:
+    def get_rules_for_resource(self, resource_id: str) -> list[AccessRule]:
         """Get all access rules for a resource."""
         rule_ids = self._rules_by_resource.get(resource_id, set())
         return [self.rules[rid] for rid in rule_ids if rid in self.rules and not self.rules[rid].is_expired()]
 
-    def get_rules_for_user(self, user_id: str) -> List[AccessRule]:
+    def get_rules_for_user(self, user_id: str) -> list[AccessRule]:
         """Get all access rules for a user."""
         all_rules = []
 
@@ -348,7 +347,7 @@ class AccessController:
         return False
 
     def get_accessible_resources(self, user_id: str,
-                                   permission: Permission = Permission.READ) -> List[str]:
+                                   permission: Permission = Permission.READ) -> list[str]:
         """Get all resources accessible to user."""
         accessible = []
 
@@ -380,7 +379,7 @@ class AccessController:
             return
 
         try:
-            with open(self.storage_path, 'r') as f:
+            with open(self.storage_path) as f:
                 data = json.load(f)
 
             self._rule_counter = data.get("rule_counter", 0)

@@ -9,12 +9,11 @@ Author: HoloLoom Team
 Date: 2025-12-03
 """
 
-from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
 import logging
+from abc import ABC, abstractmethod
+from typing import Any
 
 from ..judgment import Concern, Wisdom
-
 
 logger = logging.getLogger("hololoom.conscience.lenses")
 
@@ -49,7 +48,7 @@ class BaseLens(ABC):
         """
         self.threshold = threshold
         self.enabled = enabled
-        self._wisdom: Dict[str, Wisdom] = {}
+        self._wisdom: dict[str, Wisdom] = {}
 
     @property
     @abstractmethod
@@ -67,8 +66,8 @@ class BaseLens(ABC):
     async def _examine_impl(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Internal examination implementation.
 
@@ -86,8 +85,8 @@ class BaseLens(ABC):
     async def examine(
         self,
         action: str,
-        context: Dict[str, Any]
-    ) -> List[Concern]:
+        context: dict[str, Any]
+    ) -> list[Concern]:
         """
         Examine an action through this lens.
 
@@ -123,8 +122,8 @@ class BaseLens(ABC):
     async def learn(
         self,
         action: str,
-        context: Dict[str, Any],
-        outcome: Dict[str, Any]
+        context: dict[str, Any],
+        outcome: dict[str, Any]
     ) -> None:
         """
         Learn from the outcome of an action.
@@ -165,7 +164,7 @@ class BaseLens(ABC):
     def _generate_pattern_id(
         self,
         action: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> str:
         """Generate a pattern ID from action and context."""
         # Simple hash-based pattern ID
@@ -173,11 +172,11 @@ class BaseLens(ABC):
         action_key = action[:20].replace(" ", "_").lower()
         return f"{self.category}:{action_key}:{context_key}"
 
-    def get_wisdom(self, pattern_id: str) -> Optional[Wisdom]:
+    def get_wisdom(self, pattern_id: str) -> Wisdom | None:
         """Get wisdom for a pattern."""
         return self._wisdom.get(pattern_id)
 
-    def suggest_threshold(self, context: Dict[str, Any]) -> float:
+    def suggest_threshold(self, context: dict[str, Any]) -> float:
         """
         Suggest a threshold based on learned patterns.
 

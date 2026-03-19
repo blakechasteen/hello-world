@@ -18,12 +18,10 @@ Research Basis:
 Created: 2025-12-28
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
-from enum import Enum
 import math
-import time
-
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 # =============================================================================
 # Data Structures
@@ -46,14 +44,14 @@ class CausalStrength:
     confidence: float           # Confidence in estimate [0, 1]
     relation_type: CausalRelationType = CausalRelationType.DIRECT
     n_samples: int = 0
-    intervention_effect: Optional[float] = None
+    intervention_effect: float | None = None
     confounding_score: float = 0.0
 
     def is_significant(self, threshold: float = 0.1) -> bool:
         """Check if causal strength is significant."""
         return abs(self.strength) >= threshold and self.confidence >= 0.5
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "source_feature": self.source_feature,
@@ -85,7 +83,7 @@ class TransferEntropyResult:
             return "bidirectional"
         return "forward" if self.net_information_flow > 0 else "reverse"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "source_feature": self.source_feature,
@@ -148,16 +146,16 @@ class CausalStrengthEstimator:
         self.min_samples = min_samples
 
         # Storage for observations
-        self._observations: List[Dict[str, Dict[str, float]]] = []
-        self._source_stats: Dict[str, Dict[str, float]] = {}
-        self._target_stats: Dict[str, Dict[str, float]] = {}
-        self._joint_stats: Dict[Tuple[str, str], Dict[str, float]] = {}
+        self._observations: list[dict[str, dict[str, float]]] = []
+        self._source_stats: dict[str, dict[str, float]] = {}
+        self._target_stats: dict[str, dict[str, float]] = {}
+        self._joint_stats: dict[tuple[str, str], dict[str, float]] = {}
 
     def observe(
         self,
-        source_activations: Dict[str, float],
-        target_activations: Dict[str, float],
-        confounders: Optional[Dict[str, float]] = None
+        source_activations: dict[str, float],
+        target_activations: dict[str, float],
+        confounders: dict[str, float] | None = None
     ) -> None:
         """
         Add an observation for causal estimation.
@@ -179,8 +177,8 @@ class CausalStrengthEstimator:
 
     def _update_stats(
         self,
-        source_acts: Dict[str, float],
-        target_acts: Dict[str, float]
+        source_acts: dict[str, float],
+        target_acts: dict[str, float]
     ) -> None:
         """Update running statistics for features."""
         n = len(self._observations)
@@ -323,7 +321,7 @@ class CausalStrengthEstimator:
         source_feature: str,
         target_feature: str,
         raw_correlation: float
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Adjust correlation for potential confounders.
 
@@ -374,7 +372,7 @@ class CausalStrengthEstimator:
         self,
         feat1: str,
         feat2: str,
-        obs: Dict
+        obs: dict
     ) -> float:
         """Quick correlation estimate from a single observation."""
         # This is a placeholder - real implementation would use
@@ -453,8 +451,8 @@ class CausalStrengthEstimator:
 
     def batch_estimate(
         self,
-        feature_pairs: List[Tuple[str, str]]
-    ) -> Dict[Tuple[str, str], CausalStrength]:
+        feature_pairs: list[tuple[str, str]]
+    ) -> dict[tuple[str, str], CausalStrength]:
         """Estimate causal strength for multiple feature pairs."""
         results = {}
         for source, target in feature_pairs:
@@ -520,7 +518,7 @@ class TransferEntropyEstimator:
         self.min_samples = min_samples
 
         # Time series storage
-        self._series: Dict[str, List[float]] = {}
+        self._series: dict[str, list[float]] = {}
 
     def observe(
         self,
@@ -540,7 +538,7 @@ class TransferEntropyEstimator:
 
     def observe_batch(
         self,
-        observations: Dict[str, float]
+        observations: dict[str, float]
     ) -> None:
         """Add observations for multiple features at once."""
         for feat_id, value in observations.items():
@@ -604,7 +602,7 @@ class TransferEntropyEstimator:
             n_samples=n
         )
 
-    def _discretize(self, series: List[float]) -> List[int]:
+    def _discretize(self, series: list[float]) -> list[int]:
         """Discretize continuous values into bins."""
         if not series:
             return []
@@ -627,8 +625,8 @@ class TransferEntropyEstimator:
 
     def _compute_transfer_entropy(
         self,
-        source: List[int],
-        target: List[int]
+        source: list[int],
+        target: list[int]
     ) -> float:
         """
         Compute transfer entropy TE(source → target).
@@ -642,9 +640,9 @@ class TransferEntropyEstimator:
             return 0.0
 
         # Count joint and marginal frequencies
-        joint_counts: Dict[Tuple[int, int, int], int] = {}   # (y_past, x_past, y_now)
-        target_cond_counts: Dict[Tuple[int, int], int] = {}  # (y_past, y_now)
-        source_cond_counts: Dict[Tuple[int, int, int], int] = {}  # (y_past, x_past, y_now) marginal
+        joint_counts: dict[tuple[int, int, int], int] = {}   # (y_past, x_past, y_now)
+        target_cond_counts: dict[tuple[int, int], int] = {}  # (y_past, y_now)
+        source_cond_counts: dict[tuple[int, int, int], int] = {}  # (y_past, x_past, y_now) marginal
 
         for t in range(lag, n):
             y_past = target[t - lag]
@@ -662,7 +660,7 @@ class TransferEntropyEstimator:
         # Compute conditional entropies
         # H(Y_t | Y_t-1)
         h_y_given_ypast = 0.0
-        ypast_counts: Dict[int, int] = {}
+        ypast_counts: dict[int, int] = {}
         for (y_past, y_now), count in target_cond_counts.items():
             ypast_counts[y_past] = ypast_counts.get(y_past, 0) + count
 
@@ -675,7 +673,7 @@ class TransferEntropyEstimator:
 
         # H(Y_t | Y_t-1, X_t-1)
         h_y_given_yxpast = 0.0
-        yxpast_counts: Dict[Tuple[int, int], int] = {}
+        yxpast_counts: dict[tuple[int, int], int] = {}
         for (y_past, x_past, y_now), count in joint_counts.items():
             key = (y_past, x_past)
             yxpast_counts[key] = yxpast_counts.get(key, 0) + count
@@ -694,8 +692,8 @@ class TransferEntropyEstimator:
 
     def _compute_significance(
         self,
-        source: List[int],
-        target: List[int],
+        source: list[int],
+        target: list[int],
         observed_te: float,
         n_shuffles: int = 100
     ) -> float:
@@ -723,8 +721,8 @@ class TransferEntropyEstimator:
 
     def get_information_flow_matrix(
         self,
-        feature_ids: List[str]
-    ) -> Dict[Tuple[str, str], float]:
+        feature_ids: list[str]
+    ) -> dict[tuple[str, str], float]:
         """
         Compute pairwise net information flow for multiple features.
 

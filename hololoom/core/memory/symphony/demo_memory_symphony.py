@@ -15,8 +15,8 @@ Author: Claude Code
 Date: 2025-11-22
 """
 
-import sys
 import asyncio
+import sys
 from pathlib import Path
 
 # Add repo root to path
@@ -24,15 +24,9 @@ repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
 # Import from new location (moved to HoloLoom/memory/symphony/ in Dec 2025)
-from hololoom.memory.symphony import (
-    MemoryConductor,
-    MemoryQuery,
-    MemoryStrategy,
-    create_memory_conductor
-)
 from hololoom.config import Config, MemoryBackend
 from hololoom.memory.backend_factory import create_memory_backend
-from hololoom.protocols.types import MemoryShard
+from hololoom.memory.symphony import MemoryQuery, MemoryStrategy, create_memory_conductor
 
 
 async def create_sample_memory():

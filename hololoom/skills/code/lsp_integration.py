@@ -5,12 +5,17 @@ LSP Integration Skill - Deep code intelligence via Language Server Protocol
 import asyncio
 import json
 import time
-import subprocess
-from pathlib import Path
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 # Check for jedi availability (Python code intelligence)
 try:
@@ -33,7 +38,7 @@ class CodeSymbol:
     name: str
     kind: str  # function, class, method, variable, etc.
     location: str  # file:line:col
-    detail: Optional[str] = None
+    detail: str | None = None
 
 
 class LSPIntegrationSkill(BaseSkill):
@@ -111,7 +116,7 @@ class LSPIntegrationSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _dispatch(self, operation: str, parameters: Dict[str, Any]):
+    async def _dispatch(self, operation: str, parameters: dict[str, Any]):
         if operation == "goto_definition":
             return await self._goto_definition(parameters)
         elif operation == "find_references":
@@ -135,7 +140,7 @@ class LSPIntegrationSkill(BaseSkill):
         line, col = params["position"]["line"], params["position"]["character"]
 
         # Read source code
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             source = f.read()
 
         # Use jedi to find definition
@@ -165,7 +170,7 @@ class LSPIntegrationSkill(BaseSkill):
         line, col = params["position"]["line"], params["position"]["character"]
 
         # Read source code
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             source = f.read()
 
         # Use jedi to find references
@@ -192,7 +197,7 @@ class LSPIntegrationSkill(BaseSkill):
         line, col = params["position"]["line"], params["position"]["character"]
 
         # Read source code
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             source = f.read()
 
         # Use jedi to get help
@@ -220,7 +225,7 @@ class LSPIntegrationSkill(BaseSkill):
         workspace = params.get("workspace", False)
 
         # Read source code
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             source = f.read()
 
         # Use jedi to get symbols
@@ -248,7 +253,7 @@ class LSPIntegrationSkill(BaseSkill):
         line, col = params["position"]["line"], params["position"]["character"]
 
         # Read source code
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             source = f.read()
 
         # Use jedi to get completions
@@ -365,7 +370,7 @@ class LSPIntegrationSkill(BaseSkill):
         new_name = params["new_name"]
 
         # Read source code
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             source = f.read()
 
         # Use jedi to find symbol name at position
@@ -434,7 +439,7 @@ class LSPIntegrationSkill(BaseSkill):
                 )
                 stdout, stderr = await proc.communicate()
                 success = proc.returncode == 0
-                message = f"File formatted with autopep8" if success else stderr.decode('utf-8', errors='ignore')
+                message = "File formatted with autopep8" if success else stderr.decode('utf-8', errors='ignore')
 
             else:
                 return {
@@ -461,4 +466,5 @@ class LSPIntegrationSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(LSPIntegrationSkill())

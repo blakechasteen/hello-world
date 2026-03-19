@@ -13,7 +13,6 @@ Steps:
 7. Synthesis Bridge
 """
 
-from typing import List
 
 from hololoom.protocols import ComplexityLevel
 from hololoom.weaving.strategies.base import BaseStrategy
@@ -31,7 +30,7 @@ class FullStrategy(BaseStrategy):
         """Get the complexity level this strategy handles."""
         return ComplexityLevel.FULL
 
-    def get_stage_names(self) -> List[str]:
+    def get_stage_names(self) -> list[str]:
         """
         Get the ordered list of stages for FULL execution.
 

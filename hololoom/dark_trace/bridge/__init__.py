@@ -39,27 +39,27 @@ Usage:
 
 # SAE ↔ Semantic Correlation Learning
 from hololoom.dark_trace.bridge.correlator import (
-    SAESemanticCorrelator,
     CorrelationConfig,
     CorrelationResult,
-)
-
-# Semantic Lens (TraceLens implementation)
-from hololoom.dark_trace.bridge.semantic_lens import (
-    SemanticLens,
-)
-
-# Bidirectional Feature ↔ Semantic Mapping
-from hololoom.dark_trace.bridge.mapper import (
-    FeatureSemanticMapper,
-    SemanticMeaning,
-    FeatureMapping,
+    SAESemanticCorrelator,
 )
 
 # Bridged Explanations
 from hololoom.dark_trace.bridge.explainer import (
     BridgedExplainer,
     BridgedExplanation,
+)
+
+# Bidirectional Feature ↔ Semantic Mapping
+from hololoom.dark_trace.bridge.mapper import (
+    FeatureMapping,
+    FeatureSemanticMapper,
+    SemanticMeaning,
+)
+
+# Semantic Lens (TraceLens implementation)
+from hololoom.dark_trace.bridge.semantic_lens import (
+    SemanticLens,
 )
 
 __all__ = [

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Learned Value Functions
 
@@ -23,11 +24,11 @@ Public API:
     train_value_function: TD learning
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Tuple
 import logging
+from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
-from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ class ValueEstimate:
     """
     value: float
     confidence: float = 1.0
-    advantage: Optional[float] = None
+    advantage: float | None = None
 
 
 # ============================================================================
@@ -101,7 +102,7 @@ if PYTORCH_AVAILABLE:
 
         def __init__(self,
                      state_dim: int,
-                     hidden_dims: List[int],
+                     hidden_dims: list[int],
                      activation: str = 'relu'):
             """
             Initialize value network.
@@ -162,7 +163,7 @@ if PYTORCH_AVAILABLE:
         def __init__(self,
                      state_dim: int,
                      action_dim: int,
-                     hidden_dims: List[int],
+                     hidden_dims: list[int],
                      dueling: bool = False):
             """
             Initialize Q-network.
@@ -258,7 +259,7 @@ if PYTORCH_AVAILABLE:
         def __init__(self,
                      state_dim: int,
                      action_dim: int,
-                     hidden_dims: List[int],
+                     hidden_dims: list[int],
                      continuous: bool = False):
             """
             Initialize actor-critic.
@@ -303,7 +304,7 @@ if PYTORCH_AVAILABLE:
             logger.info(f"ActorCritic: state_dim={state_dim}, action_dim={action_dim}, "
                        f"continuous={continuous}")
 
-        def forward(self, state: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        def forward(self, state: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
             """
             Forward pass through actor-critic.
 
@@ -407,8 +408,8 @@ class ValueFunctionLearner:
         logger.info(f"ValueFunctionLearner: lr={learning_rate}, gamma={gamma}")
 
     def train_td(self,
-                experiences: List[Experience],
-                batch_size: int = 32) -> Dict[str, float]:
+                experiences: list[Experience],
+                batch_size: int = 32) -> dict[str, float]:
         """
         Train using TD(0) learning.
 

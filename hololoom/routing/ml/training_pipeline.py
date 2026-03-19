@@ -13,9 +13,9 @@ Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
 import time
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -33,7 +33,7 @@ class TrainingConfig:
 class TrainingExample:
     """Single training example"""
     query: str
-    context: Dict[str, Any]
+    context: dict[str, Any]
     true_department: str
     feedback_score: float  # 0.0-1.0
 
@@ -70,13 +70,13 @@ class OnlineTrainingPipeline:
             config: Training configuration
         """
         self.config = config
-        self.feedback_buffer: List[TrainingExample] = []
-        self.training_history: List[Dict] = []
+        self.feedback_buffer: list[TrainingExample] = []
+        self.training_history: list[dict] = []
 
     def add_feedback(
         self,
         query: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         true_department: str,
         feedback_score: float
     ):
@@ -106,7 +106,7 @@ class OnlineTrainingPipeline:
         """
         return len(self.feedback_buffer) >= self.config.batch_size
 
-    async def train(self) -> Optional[Any]:
+    async def train(self) -> Any | None:
         """
         Train new model from feedback buffer.
 
@@ -143,7 +143,7 @@ class OnlineTrainingPipeline:
 
     def _prepare_training_data(
         self,
-        examples: List[TrainingExample]
+        examples: list[TrainingExample]
     ) -> tuple:
         """
         Prepare training data from examples.
@@ -183,7 +183,7 @@ class OnlineTrainingPipeline:
         # - Trigger gradual rollout via A/B testing
         pass
 
-    def get_training_stats(self) -> Dict:
+    def get_training_stats(self) -> dict:
         """
         Get training pipeline statistics.
 

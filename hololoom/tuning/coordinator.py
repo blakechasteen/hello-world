@@ -7,19 +7,19 @@ Selects which agent to run based on impact history.
 
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional
-from collections import defaultdict
 import time
+from collections import defaultdict
+from typing import Any
 
-from hololoom.tuning.base import TuningAgent, ThompsonBandit
-from hololoom.tuning.persistence import TuningStateManager
-from hololoom.tuning.timeout_tuner import TimeoutTuner
+from hololoom.tuning.base import ThompsonBandit, TuningAgent
 from hololoom.tuning.cache_tuner import CacheTuner
-from hololoom.tuning.threshold_tuner import ThresholdTuner
-from hololoom.tuning.memory_tuner import MemoryTuner
 from hololoom.tuning.complexity_tuner import ComplexityTuner
-from hololoom.tuning.policy_tuner import PolicyTuner
+from hololoom.tuning.memory_tuner import MemoryTuner
+from hololoom.tuning.persistence import TuningStateManager
 from hololoom.tuning.physics_tuner import PhysicsTuner
+from hololoom.tuning.policy_tuner import PolicyTuner
+from hololoom.tuning.threshold_tuner import ThresholdTuner
+from hololoom.tuning.timeout_tuner import TimeoutTuner
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +33,8 @@ class MasterTuningCoordinator:
     """
 
     def __init__(self, state_dir: str = "./tuning_state"):
-        self.agents: Dict[str, TuningAgent] = {}
-        self.meta_bandit: Optional[ThompsonBandit] = None
+        self.agents: dict[str, TuningAgent] = {}
+        self.meta_bandit: ThompsonBandit | None = None
         self.persistence = TuningStateManager(state_dir)
 
         # Global metrics
@@ -43,7 +43,7 @@ class MasterTuningCoordinator:
         self.agent_impact_history = defaultdict(list)
 
         # Performance baseline
-        self.baseline_metrics: Dict[str, float] = {}
+        self.baseline_metrics: dict[str, float] = {}
 
         # Circuit breaker
         self.circuit_breaker_open = False
@@ -84,7 +84,7 @@ class MasterTuningCoordinator:
 
         logger.info(f"Initialized {len(self.agents)} tuning agents")
 
-    async def run_tuning_cycle(self) -> Dict[str, Any]:
+    async def run_tuning_cycle(self) -> dict[str, Any]:
         """
         Run one tuning iteration.
 
@@ -156,7 +156,7 @@ class MasterTuningCoordinator:
             self.consecutive_failures += 1
             return {'status': 'error', 'error': str(e)}
 
-    async def measure_system_performance(self) -> Dict[str, float]:
+    async def measure_system_performance(self) -> dict[str, float]:
         """
         Measure overall system performance.
 
@@ -179,7 +179,7 @@ class MasterTuningCoordinator:
 
         return metrics
 
-    def _calculate_impact(self, baseline: Dict[str, float], new: Dict[str, float]) -> float:
+    def _calculate_impact(self, baseline: dict[str, float], new: dict[str, float]) -> float:
         """
         Calculate tuning impact score.
 
@@ -237,7 +237,7 @@ class MasterTuningCoordinator:
 
         return weighted_impact / total_weight if total_weight > 0 else 0.0
 
-    def get_agent_stats(self) -> Dict[str, Dict[str, Any]]:
+    def get_agent_stats(self) -> dict[str, dict[str, Any]]:
         """Get statistics for all agents."""
         stats = {}
 
@@ -251,7 +251,7 @@ class MasterTuningCoordinator:
 
         return stats
 
-    def get_meta_bandit_stats(self) -> Dict[int, Dict[str, float]]:
+    def get_meta_bandit_stats(self) -> dict[int, dict[str, float]]:
         """Get meta-bandit statistics (which agents selected)."""
         return self.meta_bandit.get_stats()
 
@@ -330,7 +330,7 @@ class MasterTuningCoordinator:
         """Record that a query was processed (for tuning frequency)."""
         self.total_queries += 1
 
-    def get_tuning_summary(self) -> Dict[str, Any]:
+    def get_tuning_summary(self) -> dict[str, Any]:
         """Get comprehensive tuning summary."""
         return {
             'total_queries': self.total_queries,

@@ -14,12 +14,13 @@ Eliminates Parameters:
 - bayesian_blend_weight (weight for Bayesian blending)
 """
 
-from typing import Dict, Any, List, Optional
-from collections import deque, defaultdict
+from collections import deque
 from dataclasses import dataclass
-from enum import Enum
+from typing import Any
+
 import numpy as np
-from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
+
+from hololoom.tuning.base import SafeParameter, ThompsonBandit, TuningAgent
 
 # Epsilon values (exploration rate) - 5 arms
 EPSILON_VALUES = [0.05, 0.10, 0.15, 0.20, 0.25]
@@ -90,7 +91,7 @@ class PolicyTuner(TuningAgent):
         self.current_bayesian_idx = BAYESIAN_BLEND_VALUES.index(BASELINE_BAYESIAN_BLEND)
 
         # Safe parameters
-        self.safe_params: Dict[str, SafeParameter] = {
+        self.safe_params: dict[str, SafeParameter] = {
             'epsilon': SafeParameter(
                 name='epsilon',
                 current_value=BASELINE_EPSILON,
@@ -128,7 +129,7 @@ class PolicyTuner(TuningAgent):
         """
         return self.safe_params['bayesian_blend'].current_value
 
-    async def measure_performance(self) -> Dict[str, Any]:
+    async def measure_performance(self) -> dict[str, Any]:
         """
         Measure policy performance metrics.
 
@@ -172,7 +173,7 @@ class PolicyTuner(TuningAgent):
 
         return metrics
 
-    async def tune_parameters(self) -> Dict[str, Any]:
+    async def tune_parameters(self) -> dict[str, Any]:
         """
         Propose new policy parameters using Thompson Sampling.
 
@@ -235,7 +236,7 @@ class PolicyTuner(TuningAgent):
         """
         self.metrics_history.append(metrics)
 
-    def update_bandits(self, baseline_metrics: Dict[str, Any], new_metrics: Dict[str, Any]):
+    def update_bandits(self, baseline_metrics: dict[str, Any], new_metrics: dict[str, Any]):
         """
         Update Thompson Sampling bandits based on quality change.
 
@@ -261,7 +262,7 @@ class PolicyTuner(TuningAgent):
             # Last cycle tuned bayesian_blend
             self.bayesian_bandit.update(self.current_bayesian_idx, success=success, confidence=confidence)
 
-    async def run_tuning_cycle(self) -> Dict[str, Any]:
+    async def run_tuning_cycle(self) -> dict[str, Any]:
         """
         Run one tuning cycle.
 
@@ -295,7 +296,7 @@ class PolicyTuner(TuningAgent):
             'bandit_stats': self.get_bandit_stats(),
         }
 
-    def _calculate_impact(self, baseline: Dict[str, Any], new: Dict[str, Any]) -> float:
+    def _calculate_impact(self, baseline: dict[str, Any], new: dict[str, Any]) -> float:
         """
         Calculate impact of tuning changes.
 
@@ -311,7 +312,7 @@ class PolicyTuner(TuningAgent):
 
         return new_quality - baseline_quality
 
-    def get_bandit_stats(self) -> Dict[str, Any]:
+    def get_bandit_stats(self) -> dict[str, Any]:
         """
         Get Thompson Sampling bandit statistics.
 
@@ -364,7 +365,7 @@ class PolicyTuner(TuningAgent):
         """Persist tuning state (handled by coordinator)."""
         pass
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """
         Get tuning state for persistence.
 
@@ -397,7 +398,7 @@ class PolicyTuner(TuningAgent):
             },
         }
 
-    def load_state(self, state: Dict[str, Any]):
+    def load_state(self, state: dict[str, Any]):
         """
         Load tuning state from persistence.
 

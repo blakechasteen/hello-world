@@ -1,11 +1,17 @@
 """REST API Client Skill - Generic HTTP operations"""
 
 import asyncio
-import json
 import time
-from typing import Dict, Any, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 try:
     import aiohttp
@@ -71,7 +77,7 @@ class RESTAPIClientSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    def _build_auth_header(self, auth: Optional[Dict[str, Any]]) -> Dict[str, str]:
+    def _build_auth_header(self, auth: dict[str, Any] | None) -> dict[str, str]:
         """Build authentication headers."""
         if not auth:
             return {}
@@ -96,7 +102,7 @@ class RESTAPIClientSkill(BaseSkill):
 
         return {}
 
-    async def _make_http_request(self, method: str, params: Dict[str, Any]):
+    async def _make_http_request(self, method: str, params: dict[str, Any]):
         """Make real HTTP request using aiohttp."""
         url = params["url"]
         headers = params.get("headers", {})
@@ -164,4 +170,5 @@ class RESTAPIClientSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(RESTAPIClientSkill())

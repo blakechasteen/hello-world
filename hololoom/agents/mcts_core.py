@@ -15,13 +15,13 @@ Key Innovation: Hierarchical MCTS at multiple scales:
 Philosophy: Don't guess the best path - simulate thousands and learn.
 """
 
-from typing import Optional, List, Dict, Any, Callable, Tuple
-from dataclasses import dataclass, field
-import numpy as np
 import math
 import time
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import Any, Optional
 
+import numpy as np
 
 # ============================================================================
 # MCTS Node - Universal Tree Node
@@ -40,18 +40,18 @@ class MCTSNode:
     """
     state: Any  # Can be WorkingMemoryState, Pattern, Query, etc.
     parent: Optional['MCTSNode'] = None
-    action: Optional[Any] = None  # Action that led here
+    action: Any | None = None  # Action that led here
 
     # MCTS statistics
     visits: int = 0
     total_value: float = 0.0
 
     # Tree structure
-    children: List['MCTSNode'] = field(default_factory=list)
+    children: list['MCTSNode'] = field(default_factory=list)
 
     # Metadata
     depth: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def value(self) -> float:
         """Average value (exploitation)"""
@@ -114,7 +114,7 @@ class MCTSStateSpace(ABC):
     """
 
     @abstractmethod
-    def get_legal_actions(self, state: Any) -> List[Any]:
+    def get_legal_actions(self, state: Any) -> list[Any]:
         """Get all legal actions from this state"""
         pass
 
@@ -169,7 +169,7 @@ class MCTSEngine:
         exploration_weight: float = 1.414,
         discount_factor: float = 0.95,
         max_depth: int = 10,
-        breakthrough_detector: Optional[Any] = None  # BreakthroughDetector
+        breakthrough_detector: Any | None = None  # BreakthroughDetector
     ):
         self.state_space = state_space
         self.exploration_weight = exploration_weight
@@ -184,14 +184,14 @@ class MCTSEngine:
         # Breakthrough tracking
         self.previous_reward = 0.0
         self.previous_confidence = 0.0
-        self.received_breakthroughs: List[Any] = []  # From parallel searches
+        self.received_breakthroughs: list[Any] = []  # From parallel searches
 
     async def search(
         self,
         initial_state: Any,
         n_simulations: int = 100,
-        time_budget: Optional[float] = None
-    ) -> Tuple[Any, MCTSNode]:
+        time_budget: float | None = None
+    ) -> tuple[Any, MCTSNode]:
         """
         Run MCTS search from initial state.
 
@@ -391,7 +391,7 @@ class MCTSEngine:
             current.total_value += value
             current = current.parent
 
-    def _get_action_sequence(self, node: MCTSNode) -> List[Any]:
+    def _get_action_sequence(self, node: MCTSNode) -> list[Any]:
         """Get sequence of actions from root to node"""
         sequence = []
         current = node
@@ -420,7 +420,7 @@ class MCTSEngine:
         if self.breakthrough_detector:
             self.breakthrough_detector.update_baseline(breakthrough.reward)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get MCTS engine statistics"""
         stats = {
             'total_simulations': self.total_simulations,
@@ -470,7 +470,7 @@ class HierarchicalMCTS:
         self.meso_budget = meso_budget
         self.micro_budget = micro_budget
 
-    async def plan(self, initial_state: Any) -> List[Any]:
+    async def plan(self, initial_state: Any) -> list[Any]:
         """
         Hierarchical planning.
 
@@ -515,7 +515,7 @@ class HierarchicalMCTS:
 
         return complete_plan
 
-    def _extract_sequence(self, root: MCTSNode) -> List[Any]:
+    def _extract_sequence(self, root: MCTSNode) -> list[Any]:
         """Extract action sequence from MCTS tree (follow most visited path)"""
         sequence = []
         node = root

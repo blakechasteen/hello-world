@@ -6,10 +6,8 @@ Implements span export to Jaeger using Thrift over HTTP.
 
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 from hololoom.telemetry.protocol import SpanData, SpanProcessorProtocol
 
@@ -36,7 +34,7 @@ class JaegerExporter(SpanProcessorProtocol):
     service_name: str = "hololoom"
 
     # Internal state
-    _pending_spans: List[SpanData] = field(default_factory=list, init=False)
+    _pending_spans: list[SpanData] = field(default_factory=list, init=False)
     _shutdown: bool = field(default=False, init=False)
 
     @property

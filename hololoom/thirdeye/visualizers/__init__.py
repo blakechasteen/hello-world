@@ -17,9 +17,9 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
-from enum import Enum
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class VisualizationMode(Enum):
@@ -39,13 +39,13 @@ class VisualElement:
     id: str
     element_type: str  # 'panel', 'character', 'box', 'chart', 'object', etc.
     label: str
-    position: Dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0, "z": 0})
-    size: Dict[str, float] = field(default_factory=lambda: {"w": 1, "h": 1, "d": 1})
-    style: Dict[str, Any] = field(default_factory=dict)
-    content: Optional[str] = None  # HTML, text, or data
-    children: List['VisualElement'] = field(default_factory=list)
-    connections: List[str] = field(default_factory=list)  # IDs of connected elements
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    position: dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0, "z": 0})
+    size: dict[str, float] = field(default_factory=lambda: {"w": 1, "h": 1, "d": 1})
+    style: dict[str, Any] = field(default_factory=dict)
+    content: str | None = None  # HTML, text, or data
+    children: list['VisualElement'] = field(default_factory=list)
+    connections: list[str] = field(default_factory=list)  # IDs of connected elements
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -53,15 +53,15 @@ class VisualScene:
     """A complete scene to render."""
     mode: VisualizationMode
     title: str
-    elements: List[VisualElement]
-    camera: Dict[str, Any] = field(default_factory=lambda: {
+    elements: list[VisualElement]
+    camera: dict[str, Any] = field(default_factory=lambda: {
         "position": {"x": 0, "y": 5, "z": 15},
         "target": {"x": 0, "y": 0, "z": 0}
     })
     lighting: str = "soft"  # 'soft', 'dramatic', 'neutral', 'warm', 'cool'
-    background: Dict[str, Any] = field(default_factory=lambda: {"type": "gradient", "colors": ["#f8fafc", "#e2e8f0"]})
-    animation: Optional[Dict[str, Any]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    background: dict[str, Any] = field(default_factory=lambda: {"type": "gradient", "colors": ["#f8fafc", "#e2e8f0"]})
+    animation: dict[str, Any] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # Detection keywords for each mode

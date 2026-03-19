@@ -27,13 +27,12 @@ Usage:
 import asyncio
 import json
 import logging
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from pathlib import Path
-from collections import defaultdict, deque
 import re
-import math
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -44,10 +43,10 @@ class QualityPrediction:
     confidence: float  # 0.0-1.0
     difficulty_score: float  # 0.0-1.0
     predicted_retry_probability: float
-    recommended_config: Dict[str, Any]
+    recommended_config: dict[str, Any]
 
     # Features used
-    features: Dict[str, float] = field(default_factory=dict)
+    features: dict[str, float] = field(default_factory=dict)
 
     # Prediction metadata
     predicted_at: datetime = field(default_factory=datetime.now)
@@ -77,7 +76,7 @@ class QueryFeatures:
 
     # Domain features
     query_type: str = "general"
-    topics: List[str] = field(default_factory=list)
+    topics: list[str] = field(default_factory=list)
 
     # Context features
     has_context: bool = False
@@ -110,7 +109,7 @@ class PredictiveQualitySystem:
 
     def __init__(
         self,
-        storage_path: Optional[Path] = None,
+        storage_path: Path | None = None,
         history_size: int = 1000
     ):
         self.storage_path = storage_path or Path("./chatops_data/predictive_quality")
@@ -165,8 +164,8 @@ class PredictiveQualitySystem:
     async def predict_quality(
         self,
         query: str,
-        context: Optional[Dict[str, Any]] = None,
-        conversation_history: Optional[List] = None
+        context: dict[str, Any] | None = None,
+        conversation_history: list | None = None
     ) -> QualityPrediction:
         """
         Predict quality metrics for a query before processing.
@@ -220,8 +219,8 @@ class PredictiveQualitySystem:
     def _extract_features(
         self,
         query: str,
-        context: Optional[Dict],
-        history: Optional[List]
+        context: dict | None,
+        history: list | None
     ) -> QueryFeatures:
         """Extract features from query"""
 
@@ -382,7 +381,7 @@ class PredictiveQualitySystem:
         predicted_quality: float,
         difficulty: float,
         retry_prob: float
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get optimal configuration based on prediction"""
 
         config = {}
@@ -525,7 +524,7 @@ class PredictiveQualitySystem:
             if error > 0.15:
                 self.feature_weights[feature_name] *= (1 - learning_rate)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get prediction statistics"""
 
         stats = self.stats.copy()
@@ -542,7 +541,7 @@ class PredictiveQualitySystem:
 
         return stats
 
-    def get_insights(self) -> Dict[str, Any]:
+    def get_insights(self) -> dict[str, Any]:
         """Get insights from prediction history"""
 
         if len(self.outcome_history) == 0:
@@ -581,7 +580,7 @@ class PredictiveQualitySystem:
         else:
             return "general"
 
-    def _extract_topics(self, query: str) -> List[str]:
+    def _extract_topics(self, query: str) -> list[str]:
         """Extract topics from query"""
         topics = []
 
@@ -601,7 +600,7 @@ class PredictiveQualitySystem:
 
         return topics
 
-    def _features_to_dict(self, features: QueryFeatures) -> Dict[str, Any]:
+    def _features_to_dict(self, features: QueryFeatures) -> dict[str, Any]:
         """Convert features to dict"""
         return {
             "char_count": features.char_count,
@@ -644,7 +643,7 @@ class PredictiveQualitySystem:
 
         if model_file.exists():
             try:
-                with open(model_file, 'r') as f:
+                with open(model_file) as f:
                     model_data = json.load(f)
 
                 self.feature_weights = model_data.get("feature_weights", self.feature_weights)

@@ -8,15 +8,16 @@ Phase 3: Multi-User Collaboration - Attribution infrastructure.
 Created: November 2025
 """
 
+import logging
+from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Set, Tuple, TYPE_CHECKING
-from collections import defaultdict
-import logging
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
-    from .annotation_refinement import AnnotationRefiner, RefinementResult, AnnotationType
+    from .annotation_refinement import AnnotationRefiner, RefinementResult
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class QualityRating(Enum):
 
 
 # Numeric mapping for quality ratings
-QUALITY_RATING_SCORES: Dict[QualityRating, float] = {
+QUALITY_RATING_SCORES: dict[QualityRating, float] = {
     QualityRating.EXCELLENT: 1.0,
     QualityRating.GOOD: 0.8,
     QualityRating.ACCEPTABLE: 0.6,
@@ -67,7 +68,7 @@ class RaterRole(Enum):
 
 
 # Weight multipliers for different rater roles
-RATER_WEIGHTS: Dict[RaterRole, float] = {
+RATER_WEIGHTS: dict[RaterRole, float] = {
     RaterRole.OWNER: 2.0,
     RaterRole.EDITOR: 1.5,
     RaterRole.CONTRIBUTOR: 1.0,
@@ -142,7 +143,7 @@ class QualityRatingRecord:
         """Get the weighted score based on rater role."""
         return self.score * RATER_WEIGHTS[self.rater_role]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "rater_id": self.rater_id,
             "rater_role": self.rater_role.value,
@@ -169,17 +170,17 @@ class Contribution:
     content_size: int = 0      # Bytes or token count
 
     # Context
-    session_id: Optional[str] = None
-    query_id: Optional[str] = None
-    parent_contribution_id: Optional[str] = None  # For edits/reviews
+    session_id: str | None = None
+    query_id: str | None = None
+    parent_contribution_id: str | None = None  # For edits/reviews
 
     # Quality metrics (legacy single rating - kept for backward compatibility)
-    quality_rating: Optional[QualityRating] = None
-    rating_by: Optional[str] = None
-    rating_at: Optional[datetime] = None
+    quality_rating: QualityRating | None = None
+    rating_by: str | None = None
+    rating_at: datetime | None = None
 
     # Quality metrics (new multi-rater support)
-    ratings: List['QualityRatingRecord'] = field(default_factory=list)
+    ratings: list['QualityRatingRecord'] = field(default_factory=list)
 
     # Impact metrics
     view_count: int = 0
@@ -189,7 +190,7 @@ class Contribution:
     downvotes: int = 0
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def quality_score(self) -> float:
@@ -319,7 +320,7 @@ class Contribution:
         total = usage_score + citation_score + vote_score + view_score
         return min(total / 1.1, 1.0)  # Normalize
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "contribution_id": self.contribution_id,
             "contribution_type": self.contribution_type.value,
@@ -355,11 +356,11 @@ class UserContributionStats:
     display_name: str
 
     # Counts by type
-    contribution_counts: Dict[str, int] = field(default_factory=dict)
+    contribution_counts: dict[str, int] = field(default_factory=dict)
 
     # Quality metrics
     avg_quality_score: float = 0.0
-    quality_distribution: Dict[str, int] = field(default_factory=dict)
+    quality_distribution: dict[str, int] = field(default_factory=dict)
 
     # Impact metrics
     total_views: int = 0
@@ -370,8 +371,8 @@ class UserContributionStats:
     avg_impact_score: float = 0.0
 
     # Activity metrics
-    first_contribution: Optional[datetime] = None
-    last_contribution: Optional[datetime] = None
+    first_contribution: datetime | None = None
+    last_contribution: datetime | None = None
     active_days: int = 0
     current_streak: int = 0
 
@@ -387,7 +388,7 @@ class UserContributionStats:
         """Get net vote score."""
         return self.total_upvotes - self.total_downvotes
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "user_id": self.user_id,
             "display_name": self.display_name,
@@ -419,15 +420,15 @@ class AttributionContext:
     created_by: str
     created_by_name: str
     created_at: datetime
-    last_modified_by: Optional[str] = None
-    last_modified_by_name: Optional[str] = None
-    last_modified_at: Optional[datetime] = None
+    last_modified_by: str | None = None
+    last_modified_by_name: str | None = None
+    last_modified_at: datetime | None = None
     contributor_count: int = 1
-    contributors: List[Dict[str, str]] = field(default_factory=list)
+    contributors: list[dict[str, str]] = field(default_factory=list)
     edit_count: int = 0
     version: int = 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "target_id": self.target_id,
             "target_type": self.target_type,
@@ -465,21 +466,21 @@ class AttributionManager:
     - Quality tracking
     """
 
-    def __init__(self, knowledge_base_id: Optional[str] = None):
+    def __init__(self, knowledge_base_id: str | None = None):
         self.knowledge_base_id = knowledge_base_id
 
         # Storage
-        self.contributions: Dict[str, Contribution] = {}
-        self.target_contributions: Dict[str, List[str]] = defaultdict(list)  # target_id -> contribution_ids
-        self.user_contributions: Dict[str, List[str]] = defaultdict(list)   # user_id -> contribution_ids
-        self.user_names: Dict[str, str] = {}
+        self.contributions: dict[str, Contribution] = {}
+        self.target_contributions: dict[str, list[str]] = defaultdict(list)  # target_id -> contribution_ids
+        self.user_contributions: dict[str, list[str]] = defaultdict(list)   # user_id -> contribution_ids
+        self.user_names: dict[str, str] = {}
 
         # Statistics cache
-        self._user_stats_cache: Dict[str, UserContributionStats] = {}
-        self._stats_cache_time: Optional[datetime] = None
+        self._user_stats_cache: dict[str, UserContributionStats] = {}
+        self._stats_cache_time: datetime | None = None
 
         # Event handlers
-        self._event_handlers: Dict[str, List[Callable]] = {}
+        self._event_handlers: dict[str, list[Callable]] = {}
 
     def record_contribution(
         self,
@@ -490,10 +491,10 @@ class AttributionManager:
         target_id: str,
         content_preview: str = "",
         content_size: int = 0,
-        session_id: Optional[str] = None,
-        query_id: Optional[str] = None,
-        parent_contribution_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        session_id: str | None = None,
+        query_id: str | None = None,
+        parent_contribution_id: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> Contribution:
         """Record a new contribution."""
         from uuid import uuid4
@@ -537,7 +538,7 @@ class AttributionManager:
         rater_id: str,
         rater_role: RaterRole = RaterRole.CONTRIBUTOR,
         comment: str = ""
-    ) -> Optional[QualityRatingRecord]:
+    ) -> QualityRatingRecord | None:
         """
         Rate a contribution's quality.
 
@@ -583,7 +584,7 @@ class AttributionManager:
         rater_id: str,
         rater_role: RaterRole = RaterRole.CONTRIBUTOR,
         comment: str = ""
-    ) -> Optional[QualityRatingRecord]:
+    ) -> QualityRatingRecord | None:
         """
         Rate a contribution with a numeric score (0.0-1.0).
 
@@ -622,7 +623,7 @@ class AttributionManager:
 
         return record
 
-    def get_contribution_quality(self, contribution_id: str) -> Optional[float]:
+    def get_contribution_quality(self, contribution_id: str) -> float | None:
         """
         Get the aggregated quality score for a contribution.
 
@@ -633,7 +634,7 @@ class AttributionManager:
             return None
         return contribution.quality_score
 
-    def get_contribution_ratings(self, contribution_id: str) -> List[QualityRatingRecord]:
+    def get_contribution_ratings(self, contribution_id: str) -> list[QualityRatingRecord]:
         """Get all ratings for a contribution."""
         contribution = self.contributions.get(contribution_id)
         if not contribution:
@@ -688,7 +689,7 @@ class AttributionManager:
             if contribution:
                 contribution.citation_count += 1
 
-    def get_attribution(self, target_id: str) -> Optional[AttributionContext]:
+    def get_attribution(self, target_id: str) -> AttributionContext | None:
         """Get attribution context for a target."""
         contribution_ids = self.target_contributions.get(target_id, [])
         if not contribution_ids:
@@ -741,10 +742,10 @@ class AttributionManager:
     def get_user_contributions(
         self,
         user_id: str,
-        contribution_type: Optional[ContributionType] = None,
-        since: Optional[datetime] = None,
+        contribution_type: ContributionType | None = None,
+        since: datetime | None = None,
         limit: int = 100
-    ) -> List[Contribution]:
+    ) -> list[Contribution]:
         """Get contributions by a user."""
         contribution_ids = self.user_contributions.get(user_id, [])
         contributions = [
@@ -767,7 +768,7 @@ class AttributionManager:
         self,
         target_id: str,
         limit: int = 100
-    ) -> List[Contribution]:
+    ) -> list[Contribution]:
         """Get contribution history for a target."""
         contribution_ids = self.target_contributions.get(target_id, [])
         contributions = [
@@ -780,7 +781,7 @@ class AttributionManager:
 
         return contributions[:limit]
 
-    def get_user_stats(self, user_id: str, display_name: Optional[str] = None) -> UserContributionStats:
+    def get_user_stats(self, user_id: str, display_name: str | None = None) -> UserContributionStats:
         """Get comprehensive statistics for a user."""
         contribution_ids = self.user_contributions.get(user_id, [])
         contributions = [
@@ -851,7 +852,7 @@ class AttributionManager:
 
         return stats
 
-    def _calculate_streak(self, active_days: List) -> int:
+    def _calculate_streak(self, active_days: list) -> int:
         """Calculate current contribution streak."""
         if not active_days:
             return 0
@@ -875,8 +876,8 @@ class AttributionManager:
         self,
         metric: str = "contributions",  # contributions, impact, quality, uses
         limit: int = 10,
-        time_period: Optional[timedelta] = None
-    ) -> List[Dict[str, Any]]:
+        time_period: timedelta | None = None
+    ) -> list[dict[str, Any]]:
         """Get contribution leaderboard."""
         user_ids = list(self.user_contributions.keys())
 
@@ -925,7 +926,7 @@ class AttributionManager:
             self._event_handlers[event] = []
         self._event_handlers[event].append(handler)
 
-    def _emit_event(self, event: str, data: Dict[str, Any]):
+    def _emit_event(self, event: str, data: dict[str, Any]):
         """Emit event to handlers."""
         handlers = self._event_handlers.get(event, [])
         for handler in handlers:
@@ -934,7 +935,7 @@ class AttributionManager:
             except Exception as e:
                 logger.error(f"Attribution event handler error: {e}")
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export attribution state for persistence."""
         return {
             "knowledge_base_id": self.knowledge_base_id,
@@ -946,7 +947,7 @@ class AttributionManager:
 
 
 # Factory function
-def create_attribution_manager(knowledge_base_id: Optional[str] = None) -> AttributionManager:
+def create_attribution_manager(knowledge_base_id: str | None = None) -> AttributionManager:
     """Create an attribution manager."""
     return AttributionManager(knowledge_base_id=knowledge_base_id)
 
@@ -964,14 +965,14 @@ class AnnotationWithRefinement:
     """
     contribution: Contribution
     original_text: str
-    refined_text: Optional[str] = None
+    refined_text: str | None = None
     refinement_applied: bool = False
-    refinement_strategy: Optional[str] = None
+    refinement_strategy: str | None = None
     quality_before: float = 0.0
     quality_after: float = 0.0
-    refinement_suggestions: List[Dict[str, Any]] = field(default_factory=list)
-    user_accepted_refinement: Optional[bool] = None
-    refinement_timestamp: Optional[datetime] = None
+    refinement_suggestions: list[dict[str, Any]] = field(default_factory=list)
+    user_accepted_refinement: bool | None = None
+    refinement_timestamp: datetime | None = None
 
     @property
     def quality_improvement(self) -> float:
@@ -985,7 +986,7 @@ class AnnotationWithRefinement:
             return self.refined_text
         return self.original_text
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "contribution": self.contribution.to_dict(),
             "original_text": self.original_text,
@@ -1014,7 +1015,7 @@ class RefinementAwareAttributionManager(AttributionManager):
 
     def __init__(
         self,
-        knowledge_base_id: Optional[str] = None,
+        knowledge_base_id: str | None = None,
         refiner: Optional['AnnotationRefiner'] = None,
         auto_refine: bool = True,
         refinement_threshold: float = 0.7
@@ -1035,7 +1036,7 @@ class RefinementAwareAttributionManager(AttributionManager):
         self.refinement_threshold = refinement_threshold
 
         # Refinement tracking
-        self.refined_annotations: Dict[str, AnnotationWithRefinement] = {}
+        self.refined_annotations: dict[str, AnnotationWithRefinement] = {}
         self.refinement_stats = {
             "total_refined": 0,
             "accepted": 0,
@@ -1062,10 +1063,10 @@ class RefinementAwareAttributionManager(AttributionManager):
         target_id: str,
         annotation_text: str,
         annotation_type: str = "note",
-        session_id: Optional[str] = None,
-        auto_refine: Optional[bool] = None,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> Tuple[Contribution, Optional['RefinementResult']]:
+        session_id: str | None = None,
+        auto_refine: bool | None = None,
+        metadata: dict[str, Any] | None = None
+    ) -> tuple[Contribution, Optional['RefinementResult']]:
         """
         Record an annotation with optional refinement.
 
@@ -1209,7 +1210,7 @@ class RefinementAwareAttributionManager(AttributionManager):
         self,
         contribution_id: str,
         user_id: str,
-        reason: Optional[str] = None
+        reason: str | None = None
     ) -> bool:
         """
         Reject a refinement suggestion.
@@ -1263,14 +1264,14 @@ class RefinementAwareAttributionManager(AttributionManager):
     def get_refinement_suggestions(
         self,
         contribution_id: str
-    ) -> Optional[AnnotationWithRefinement]:
+    ) -> AnnotationWithRefinement | None:
         """Get refinement suggestions for an annotation."""
         return self.refined_annotations.get(contribution_id)
 
     def get_pending_refinements(
         self,
-        user_id: Optional[str] = None
-    ) -> List[AnnotationWithRefinement]:
+        user_id: str | None = None
+    ) -> list[AnnotationWithRefinement]:
         """
         Get annotations with pending refinement suggestions.
 
@@ -1288,7 +1289,7 @@ class RefinementAwareAttributionManager(AttributionManager):
 
         return pending
 
-    def get_refinement_stats(self) -> Dict[str, Any]:
+    def get_refinement_stats(self) -> dict[str, Any]:
         """Get refinement statistics."""
         stats = self.refinement_stats.copy()
         stats["pending"] = len(self.get_pending_refinements())
@@ -1312,7 +1313,7 @@ class RefinementAwareAttributionManager(AttributionManager):
 
 # Factory for refinement-aware manager
 def create_refinement_aware_attribution_manager(
-    knowledge_base_id: Optional[str] = None,
+    knowledge_base_id: str | None = None,
     auto_refine: bool = True,
     refinement_threshold: float = 0.7
 ) -> RefinementAwareAttributionManager:

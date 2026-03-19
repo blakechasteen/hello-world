@@ -10,9 +10,9 @@ Core mathematical primitives used across all spatial modules:
 Created: November 2025
 """
 
-from dataclasses import dataclass
-from typing import Tuple, Dict, Any
 import math
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -75,14 +75,14 @@ class Vector3:
         """Linear interpolation."""
         return self + (other - self) * t
 
-    def to_tuple(self) -> Tuple[float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float]:
         return (self.x, self.y, self.z)
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {"x": self.x, "y": self.y, "z": self.z}
 
     @classmethod
-    def from_tuple(cls, t: Tuple[float, float, float]) -> "Vector3":
+    def from_tuple(cls, t: tuple[float, float, float]) -> "Vector3":
         return cls(t[0], t[1], t[2])
 
     @classmethod
@@ -199,7 +199,7 @@ class Quaternion:
             s0*self.w + s1*other.w
         )
 
-    def to_euler(self) -> Tuple[float, float, float]:
+    def to_euler(self) -> tuple[float, float, float]:
         """Convert to Euler angles (pitch, yaw, roll) in radians."""
         # Roll (x-axis rotation)
         sinr_cosp = 2 * (self.w * self.x + self.y * self.z)
@@ -220,10 +220,10 @@ class Quaternion:
 
         return (pitch, yaw, roll)
 
-    def to_tuple(self) -> Tuple[float, float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float, float]:
         return (self.x, self.y, self.z, self.w)
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {"x": self.x, "y": self.y, "z": self.z, "w": self.w}
 
     @classmethod
@@ -330,10 +330,10 @@ class Color:
         """Convert to hex string with alpha (#RRGGBBAA)."""
         return f"#{int(self.r*255):02x}{int(self.g*255):02x}{int(self.b*255):02x}{int(self.a*255):02x}"
 
-    def to_tuple(self) -> Tuple[float, float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float, float]:
         return (self.r, self.g, self.b, self.a)
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {"r": self.r, "g": self.g, "b": self.b, "a": self.a}
 
     def lerp(self, other: "Color", t: float) -> "Color":
@@ -461,7 +461,7 @@ class Transform:
             rotated.z / self.scale.z if self.scale.z != 0 else 0
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "position": self.position.to_dict(),
             "rotation": self.rotation.to_dict(),
@@ -531,7 +531,7 @@ class BoundingBox:
                     ))
         return corners
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "center": self.center.to_dict(),
             "size": self.size.to_dict()

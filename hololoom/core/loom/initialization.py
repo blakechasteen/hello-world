@@ -13,35 +13,29 @@ Author: HoloLoom Architecture Team
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-from hololoom.loom.weave_house import WeaveHouse, create_weave_house
-from hololoom.loom.dreaming import DreamOrchestrator, create_dream_orchestrator
-from hololoom.loom.consensus import LoomConsensus, create_loom_consensus
+from hololoom.loom.consensus import create_loom_consensus
 from hololoom.loom.core_looms import (
-    RecallLoom,
-    ReasonLoom,
-    ReachLoom,
-    ReflectLoom,
-    RefuseLoom,
     create_all_looms,
 )
-from hololoom.loom.protocol import Loom
+from hololoom.loom.dreaming import DreamOrchestrator, create_dream_orchestrator
+from hololoom.loom.weave_house import WeaveHouse
 
 logger = logging.getLogger(__name__)
 
 
 async def create_weave_house_system(
-    config: Optional[Any] = None,
-    memory_backend: Optional[Any] = None,
+    config: Any | None = None,
+    memory_backend: Any | None = None,
     enable_dreaming: bool = True,
     dreaming_interval: float = 3600.0,
     math_bleed_rate: float = 0.3,
     pattern_bleed_rate: float = 0.2,
     exploration_depth: int = 2,
     tension_threshold: float = 0.3,
-    loom_kwargs: Optional[Dict[str, Any]] = None,
-) -> Tuple[WeaveHouse, Optional[DreamOrchestrator]]:
+    loom_kwargs: dict[str, Any] | None = None,
+) -> tuple[WeaveHouse, DreamOrchestrator | None]:
     """
     Factory function to create a complete WeaveHouse system.
 
@@ -145,8 +139,8 @@ async def create_weave_house_system(
 
 
 def create_research_weave_house(
-    config: Optional[Any] = None,
-    memory_backend: Optional[Any] = None,
+    config: Any | None = None,
+    memory_backend: Any | None = None,
     **kwargs
 ) -> WeaveHouse:
     """
@@ -163,7 +157,7 @@ def create_research_weave_house(
     Returns:
         Research-optimized WeaveHouse
     """
-    from hololoom.loom.domain_houses.research_house import ResearchHouse, ResearchConfig
+    from hololoom.loom.domain_houses.research_house import ResearchConfig, ResearchHouse
 
     research_config = ResearchConfig(
         exploration_depth=3,
@@ -176,8 +170,8 @@ def create_research_weave_house(
 
 
 def create_code_review_weave_house(
-    config: Optional[Any] = None,
-    memory_backend: Optional[Any] = None,
+    config: Any | None = None,
+    memory_backend: Any | None = None,
     **kwargs
 ) -> WeaveHouse:
     """
@@ -193,10 +187,7 @@ def create_code_review_weave_house(
     Returns:
         Code-review-optimized WeaveHouse
     """
-    from hololoom.loom.domain_houses.code_review_house import (
-        CodeReviewHouse,
-        CodeReviewConfig
-    )
+    from hololoom.loom.domain_houses.code_review_house import CodeReviewConfig, CodeReviewHouse
 
     review_config = CodeReviewConfig(
         exploration_depth=2,

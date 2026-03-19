@@ -12,13 +12,14 @@ Based on:
 - "Scaling Monosemanticity" (Anthropic, 2024)
 """
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Callable
-import time
 import math
+import time
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
+
+import torch
+import torch.optim as optim
 
 from hololoom.dark_trace.sae.core import ResearchSAE
 
@@ -60,7 +61,7 @@ class TrainingConfig:
     adam_beta1: float = 0.9
     adam_beta2: float = 0.999
     adam_eps: float = 1e-8
-    grad_clip_norm: Optional[float] = 1.0    # Gradient clipping
+    grad_clip_norm: float | None = 1.0    # Gradient clipping
 
     # Training
     batch_size: int = 32
@@ -113,7 +114,7 @@ class TrainingMetrics:
     samples_seen: int = 0
     elapsed_time: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for logging."""
         return {
             "step": self.step,
@@ -215,14 +216,14 @@ class DeadFeatureResampler:
         self.resample_scale = resample_scale
         self.min_dead_to_resample = min_dead_to_resample
         self.total_resampled = 0
-        self.resample_history: List[Dict[str, Any]] = []
+        self.resample_history: list[dict[str, Any]] = []
 
     def resample(
         self,
         sae: ResearchSAE,
         activations: torch.Tensor,
-        losses: Optional[torch.Tensor] = None,
-    ) -> Dict[str, Any]:
+        losses: torch.Tensor | None = None,
+    ) -> dict[str, Any]:
         """
         Resample dead features.
 
@@ -321,7 +322,7 @@ class ResearchTrainer:
     def __init__(
         self,
         sae: ResearchSAE,
-        config: Optional[TrainingConfig] = None,
+        config: TrainingConfig | None = None,
     ):
         """
         Args:
@@ -359,7 +360,7 @@ class ResearchTrainer:
         self.start_time = time.time()
 
         # Metrics history
-        self.metrics_history: List[TrainingMetrics] = []
+        self.metrics_history: list[TrainingMetrics] = []
 
     def train_step(
         self,
@@ -458,8 +459,8 @@ class ResearchTrainer:
     def train_epoch(
         self,
         dataloader,
-        callbacks: Optional[List[Callable[[TrainingMetrics], None]]] = None,
-    ) -> List[TrainingMetrics]:
+        callbacks: list[Callable[[TrainingMetrics], None]] | None = None,
+    ) -> list[TrainingMetrics]:
         """
         Train for one epoch.
 
@@ -505,7 +506,7 @@ class ResearchTrainer:
             f"L0: {metrics.l0_sparsity:.3f}"
         )
 
-    def get_training_summary(self) -> Dict[str, Any]:
+    def get_training_summary(self) -> dict[str, Any]:
         """Get summary of training progress."""
         if not self.metrics_history:
             return {"status": "no training yet"}

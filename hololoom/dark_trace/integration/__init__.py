@@ -49,53 +49,49 @@ Usage:
     print(trace.safety_relevant)
 """
 
-from hololoom.dark_trace.integration.orchestrator import (
-    DarkTraceOrchestrator,
-    TracedSpacetime,
-    OrchestratorConfig,
-    create_traced_orchestrator,
-)
-
 from hololoom.dark_trace.integration.alignment import (
     AlignmentBridge,
-    SafetyFeatureMapping,
     AlignmentConfig,
+    SafetyFeatureMapping,
     create_alignment_bridge,
 )
-
 from hololoom.dark_trace.integration.monitoring import (
-    InterpretabilityMonitor,
-    FeatureStatistics,
     DriftDetector,
+    FeatureStatistics,
+    InterpretabilityMonitor,
     MonitorConfig,
     create_monitor,
 )
-
-from hololoom.dark_trace.integration.safety_gate import (
-    SafetyAction,
-    ConcernType,
-    SafetyConcern,
-    GateDecision,
-    SafetyGateConfig,
-    SafetyPatternDetector,
-    DarkTraceSafetyGate,
-    create_safety_gate,
+from hololoom.dark_trace.integration.orchestrator import (
+    DarkTraceOrchestrator,
+    OrchestratorConfig,
+    TracedSpacetime,
+    create_traced_orchestrator,
 )
-
 from hololoom.dark_trace.integration.orchestrator_hooks import (
-    IntegrationMode,
-    HookPoint,
-    HookContext,
-    HookResult,
-    PreWeaveHook,
-    PostWeaveHook,
-    DecisionHook,
-    MiddlewareConfig,
-    DarkTraceMiddleware,
     DarkTraceIntegrator,
+    DarkTraceMiddleware,
+    DecisionHook,
+    HookContext,
+    HookPoint,
+    HookResult,
     IntegrationBlockedError,
+    IntegrationMode,
+    MiddlewareConfig,
+    PostWeaveHook,
+    PreWeaveHook,
     create_integrator,
     integrate_dark_trace,
+)
+from hololoom.dark_trace.integration.safety_gate import (
+    ConcernType,
+    DarkTraceSafetyGate,
+    GateDecision,
+    SafetyAction,
+    SafetyConcern,
+    SafetyGateConfig,
+    SafetyPatternDetector,
+    create_safety_gate,
 )
 
 __all__ = [

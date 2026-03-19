@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Component Initialization
 ========================
@@ -34,12 +33,11 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from hololoom.weaving_orchestrator import WeavingOrchestrator
 
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 from hololoom.loom.command import LoomCommand
 from hololoom.memory.graph import KG
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.routing.flow_router import ToolConfig, ToolRouter
 from hololoom.tools import ToolExecutor
-from hololoom.routing.flow_router import ToolRouter, ToolConfig
-
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +66,7 @@ except ImportError:
     pass
 
 
-def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
+def initialize_components(orchestrator: WeavingOrchestrator) -> None:
     """
     Initialize all weaving architecture components.
 

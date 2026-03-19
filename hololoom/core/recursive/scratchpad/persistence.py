@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Thought Persistence
 ===================
@@ -20,18 +19,17 @@ Features:
 - Search capabilities
 """
 
-from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
-from pathlib import Path
-from datetime import datetime
-import asyncio
-import aiosqlite
 import json
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import aiosqlite
 
 from hololoom.recursive.scratchpad.recursive_scratchpad import (
+    DialogueTree,
     Thought,
     ThoughtType,
-    DialogueTree,
 )
 
 
@@ -46,7 +44,7 @@ class ThoughtPersistence:
             db_path: Path to SQLite database
         """
         self.db_path = db_path
-        self.db: Optional[aiosqlite.Connection] = None
+        self.db: aiosqlite.Connection | None = None
 
     async def initialize(self) -> None:
         """Initialize database schema."""
@@ -176,7 +174,7 @@ class ThoughtPersistence:
         await self.db.commit()
         return session_id
 
-    async def load_session(self, session_name: str) -> Optional[DialogueTree]:
+    async def load_session(self, session_name: str) -> DialogueTree | None:
         """
         Load dialogue tree from session.
 
@@ -240,7 +238,7 @@ class ThoughtPersistence:
         tree = DialogueTree(root=root, thoughts=thoughts)
         return tree
 
-    async def list_sessions(self) -> List[Dict[str, Any]]:
+    async def list_sessions(self) -> list[dict[str, Any]]:
         """
         List all sessions.
 
@@ -297,9 +295,9 @@ class ThoughtPersistence:
     async def search_thoughts(
         self,
         query: str,
-        session_name: Optional[str] = None,
+        session_name: str | None = None,
         limit: int = 10
-    ) -> List[Thought]:
+    ) -> list[Thought]:
         """
         Search thoughts by text.
 
@@ -375,11 +373,11 @@ class SessionManager:
         # Session creation is implicit in save
         return name
 
-    async def get_session(self, name: str) -> Optional[DialogueTree]:
+    async def get_session(self, name: str) -> DialogueTree | None:
         """Get session by name."""
         return await self.persistence.load_session(name)
 
-    async def list_all_sessions(self) -> List[Dict[str, Any]]:
+    async def list_all_sessions(self) -> list[dict[str, Any]]:
         """List all sessions."""
         return await self.persistence.list_sessions()
 
@@ -391,11 +389,11 @@ class SessionManager:
         self,
         query: str,
         limit: int = 20
-    ) -> List[Thought]:
+    ) -> list[Thought]:
         """Search thoughts across all sessions."""
         return await self.persistence.search_thoughts(query, limit=limit)
 
-    async def get_session_stats(self, name: str) -> Optional[Dict[str, Any]]:
+    async def get_session_stats(self, name: str) -> dict[str, Any] | None:
         """
         Get session statistics.
 

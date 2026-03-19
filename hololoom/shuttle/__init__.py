@@ -39,73 +39,72 @@ from .config import (
     validate_config,
 )
 
-from .exceptions import (
-    ShuttleError,
-    ConfigurationError,
-    BackendUnavailableError,
-    TimeoutError,
-    EntityExtractionError,
-    WarpSearchError,
-    YarnTraversalError,
-)
-
 # Entity extraction
 from .entity_extraction import (
     Anchor,
+    EntityExtractionFactory,
     EntityExtractor,
     PayloadExtractor,
     RegexExtractor,
     SpacyExtractor,
-    EntityExtractionFactory,
 )
-
-# Trajectory strategies (renamed from "policies")
-from .trajectories import (
-    TraversalConfig,
-    TrajectoryStrategy,
-    ProjectBlockersTrajectory,
-    OwnershipTrajectory,
-    TimelineTrajectory,
-    ConceptualTrajectory,
-    HierarchicalTrajectory,
-    ExploratoryTrajectory,
-    ALL_TRAJECTORIES,
-    TRAJECTORY_BY_NAME,
-)
-
-# Trajectory bandit (renamed from "PolicyBandit")
-from .trajectory_bandit import (
-    TrajectoryStats,
-    TrajectoryBandit,
-    TrajectorySelector,
-    RewardCalculator,
-)
-
-# MCTS
-from .mcts import (
-    MCTSState,
-    MCTSNode,
-    MCTS,
-    MCTSResult,
-    NeighborMap,
-    run_mcts_search,
-)
-
-# Orchestrator (v2 with error handling)
-from .orchestrator_v2 import (
-    WarpInterface,
-    YarnInterface,
-    WeaveResult,
-    Shuttle,
+from .exceptions import (
+    BackendUnavailableError,
+    ConfigurationError,
+    EntityExtractionError,
+    ShuttleError,
+    TimeoutError,
+    WarpSearchError,
+    YarnTraversalError,
 )
 
 # HoloLoom-specific adapters
 from .hololoom_adapters import (
     HoloLoomWarp,
     HoloLoomYarn,
+    create_hololoom_shuttle,
     create_hololoom_warp,
     create_hololoom_yarn,
-    create_hololoom_shuttle,
+)
+
+# MCTS
+from .mcts import (
+    MCTS,
+    MCTSNode,
+    MCTSResult,
+    MCTSState,
+    NeighborMap,
+    run_mcts_search,
+)
+
+# Orchestrator (v2 with error handling)
+from .orchestrator_v2 import (
+    Shuttle,
+    WarpInterface,
+    WeaveResult,
+    YarnInterface,
+)
+
+# Trajectory strategies (renamed from "policies")
+from .trajectories import (
+    ALL_TRAJECTORIES,
+    TRAJECTORY_BY_NAME,
+    ConceptualTrajectory,
+    ExploratoryTrajectory,
+    HierarchicalTrajectory,
+    OwnershipTrajectory,
+    ProjectBlockersTrajectory,
+    TimelineTrajectory,
+    TrajectoryStrategy,
+    TraversalConfig,
+)
+
+# Trajectory bandit (renamed from "PolicyBandit")
+from .trajectory_bandit import (
+    RewardCalculator,
+    TrajectoryBandit,
+    TrajectorySelector,
+    TrajectoryStats,
 )
 
 # Weaving Orchestrator Integration (Step 3 replacement)

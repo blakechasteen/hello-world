@@ -4,11 +4,11 @@ Learned Routing with Thompson Sampling
 Uses multi-armed bandit to learn optimal backend selection from performance data.
 """
 
-import numpy as np
-from typing import Dict, List, Optional
-from dataclasses import dataclass, field
 import json
+from dataclasses import dataclass, field
 from pathlib import Path
+
+import numpy as np
 
 
 @dataclass
@@ -22,11 +22,11 @@ class ThompsonBandit:
     
     Naturally balances exploration (try new backends) vs exploitation (use best backend).
     """
-    
-    backends: List[str]
+
+    backends: list[str]
     alpha: np.ndarray = field(default=None)
     beta: np.ndarray = field(default=None)
-    
+
     def __post_init__(self):
         """Initialize alpha/beta parameters."""
         n_backends = len(self.backends)
@@ -34,7 +34,7 @@ class ThompsonBandit:
             self.alpha = np.ones(n_backends, dtype=float)
         if self.beta is None:
             self.beta = np.ones(n_backends, dtype=float)
-    
+
     def select(self) -> str:
         """
         Select backend using Thompson Sampling.
@@ -44,11 +44,11 @@ class ThompsonBandit:
         """
         # Sample from Beta distribution for each backend
         samples = np.random.beta(self.alpha, self.beta)
-        
+
         # Select backend with highest sample
         idx = np.argmax(samples)
         return self.backends[idx]
-    
+
     def update(self, backend: str, success: bool):
         """
         Update bandit parameters based on outcome.
@@ -58,32 +58,32 @@ class ThompsonBandit:
             success: Whether the query was successful
         """
         idx = self.backends.index(backend)
-        
+
         if success:
             self.alpha[idx] += 1
         else:
             self.beta[idx] += 1
-    
-    def get_stats(self) -> Dict:
+
+    def get_stats(self) -> dict:
         """Get statistics for each backend."""
         stats = {}
-        
+
         for i, backend in enumerate(self.backends):
             # Expected value of Beta distribution
             expected_success_rate = self.alpha[i] / (self.alpha[i] + self.beta[i])
-            
+
             # Total observations
             total = (self.alpha[i] + self.beta[i] - 2)  # Subtract initial prior
-            
+
             stats[backend] = {
                 'expected_success_rate': float(expected_success_rate),
                 'total_observations': int(total),
                 'alpha': float(self.alpha[i]),
                 'beta': float(self.beta[i])
             }
-        
+
         return stats
-    
+
     def save(self, path: Path):
         """Save bandit parameters to file."""
         data = {
@@ -91,16 +91,16 @@ class ThompsonBandit:
             'alpha': self.alpha.tolist(),
             'beta': self.beta.tolist()
         }
-        
+
         with open(path, 'w') as f:
             json.dump(data, f, indent=2)
-    
+
     @classmethod
     def load(cls, path: Path) -> 'ThompsonBandit':
         """Load bandit parameters from file."""
-        with open(path, 'r') as f:
+        with open(path) as f:
             data = json.load(f)
-        
+
         return cls(
             backends=data['backends'],
             alpha=np.array(data['alpha']),
@@ -114,12 +114,12 @@ class LearnedRouter:
     
     Maintains separate bandits for each query type to learn specialized routing.
     """
-    
+
     def __init__(
         self,
-        backends: List[str],
-        query_types: List[str],
-        storage_path: Optional[Path] = None
+        backends: list[str],
+        query_types: list[str],
+        storage_path: Path | None = None
     ):
         """
         Initialize learned router.
@@ -132,15 +132,15 @@ class LearnedRouter:
         self.backends = backends
         self.query_types = query_types
         self.storage_path = storage_path or Path(__file__).parent / 'bandit_params.json'
-        
+
         # Create bandit for each query type
-        self.bandits: Dict[str, ThompsonBandit] = {}
+        self.bandits: dict[str, ThompsonBandit] = {}
         for query_type in query_types:
             self.bandits[query_type] = ThompsonBandit(backends=backends)
-        
+
         # Load saved parameters if available
         self._load_params()
-    
+
     def select_backend(self, query_type: str) -> str:
         """
         Select backend for a query using Thompson Sampling.
@@ -154,9 +154,9 @@ class LearnedRouter:
         # Default to 'conversational' if unknown type
         if query_type not in self.bandits:
             query_type = 'conversational'
-        
+
         return self.bandits[query_type].select()
-    
+
     def update(self, query_type: str, backend: str, success: bool):
         """
         Update routing policy based on outcome.
@@ -169,19 +169,19 @@ class LearnedRouter:
         # Default to 'conversational' if unknown type
         if query_type not in self.bandits:
             query_type = 'conversational'
-        
+
         self.bandits[query_type].update(backend, success)
-        
+
         # Save updated parameters
         self._save_params()
-    
-    def get_stats(self) -> Dict:
+
+    def get_stats(self) -> dict:
         """Get statistics for all query types and backends."""
         stats = {}
         for query_type, bandit in self.bandits.items():
             stats[query_type] = bandit.get_stats()
         return stats
-    
+
     def _save_params(self):
         """Save all bandit parameters."""
         data = {}
@@ -190,18 +190,18 @@ class LearnedRouter:
                 'alpha': bandit.alpha.tolist(),
                 'beta': bandit.beta.tolist()
             }
-        
+
         with open(self.storage_path, 'w') as f:
             json.dump(data, f, indent=2)
-    
+
     def _load_params(self):
         """Load saved bandit parameters."""
         if not self.storage_path.exists():
             return
-        
-        with open(self.storage_path, 'r') as f:
+
+        with open(self.storage_path) as f:
             data = json.load(f)
-        
+
         for query_type, params in data.items():
             if query_type in self.bandits:
                 self.bandits[query_type].alpha = np.array(params['alpha'])

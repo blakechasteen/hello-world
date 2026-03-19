@@ -16,34 +16,30 @@ Created: 2025-11-30
 Author: HoloLoom Team
 """
 
-from typing import Dict, List, Optional, Any, Union
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+
 import numpy as np
 
 from hololoom.cve.cognitive_protocol import (
+    ActivationField,
     CognitiveEvent,
     CognitiveFrame,
-    CognitiveVizType,
-    ActivationField,
+    ConfidenceFlow,
+    ContextExpansion,
+    DecisionCollapse,
+    KnowledgeGraph3D,
+    MemoryRetrieval,
     ProbabilityManifold,
+    ReflectionLoop,
     SemanticPosition,
     SemanticTrajectory,
-    KnowledgeGraph3D,
     TokenStream,
-    DecisionCollapse,
-    AttentionFlow,
-    ReasoningChain,
-    MemoryRetrieval,
-    ConfidenceFlow,
     ToolSelection,
-    ContextExpansion,
     WeavingCycle,
-    ReflectionLoop,
-    create_event,
     create_frame,
 )
-
 
 # ============================================================================
 # Extractor Protocol
@@ -52,10 +48,10 @@ from hololoom.cve.cognitive_protocol import (
 @dataclass
 class ExtractionResult:
     """Result of extracting cognitive events from a source."""
-    events: List[CognitiveEvent]
+    events: list[CognitiveEvent]
     source_type: str
     timestamp: datetime
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 class CognitiveExtractor:
@@ -68,7 +64,7 @@ class CognitiveExtractor:
     def __init__(self):
         self.extraction_count = 0
 
-    def extract(self, source: Any) -> List[CognitiveEvent]:
+    def extract(self, source: Any) -> list[CognitiveEvent]:
         """Extract events from source (to be overridden)."""
         raise NotImplementedError
 
@@ -87,7 +83,7 @@ class AwarenessGraphExtractor(CognitiveExtractor):
     - SemanticTrajectory (position history)
     """
 
-    def extract(self, awareness_graph: Any) -> List[CognitiveEvent]:
+    def extract(self, awareness_graph: Any) -> list[CognitiveEvent]:
         """
         Extract events from AwarenessGraph.
 
@@ -117,7 +113,7 @@ class AwarenessGraphExtractor(CognitiveExtractor):
         self.extraction_count += len(events)
         return events
 
-    def _extract_activation_field(self, ag: Any) -> Optional[CognitiveEvent]:
+    def _extract_activation_field(self, ag: Any) -> CognitiveEvent | None:
         """Extract spreading activation data."""
         try:
             # Get activation field from awareness graph
@@ -155,11 +151,11 @@ class AwarenessGraphExtractor(CognitiveExtractor):
 
             return activation.to_event()
 
-        except Exception as e:
+        except Exception:
             # Graceful degradation
             return None
 
-    def _extract_semantic_position(self, ag: Any) -> Optional[CognitiveEvent]:
+    def _extract_semantic_position(self, ag: Any) -> CognitiveEvent | None:
         """Extract current semantic position."""
         try:
             # Get trajectory
@@ -197,10 +193,10 @@ class AwarenessGraphExtractor(CognitiveExtractor):
 
             return semantic_pos.to_event()
 
-        except Exception as e:
+        except Exception:
             return None
 
-    def _extract_trajectory(self, ag: Any) -> Optional[CognitiveEvent]:
+    def _extract_trajectory(self, ag: Any) -> CognitiveEvent | None:
         """Extract semantic trajectory."""
         try:
             trajectory = getattr(ag, 'trajectory', None)
@@ -242,10 +238,10 @@ class AwarenessGraphExtractor(CognitiveExtractor):
 
             return trajectory_data.to_event()
 
-        except Exception as e:
+        except Exception:
             return None
 
-    def _position_to_axes(self, position: List[float]) -> Dict[str, float]:
+    def _position_to_axes(self, position: list[float]) -> dict[str, float]:
         """Convert position to named interpretable axes."""
         AXIS_NAMES = [
             'sentiment', 'formality', 'technicality', 'certainty',
@@ -274,11 +270,11 @@ class PolicyExtractor(CognitiveExtractor):
     - DecisionCollapse (final decision)
     """
 
-    def __init__(self, tool_names: Optional[List[str]] = None):
+    def __init__(self, tool_names: list[str] | None = None):
         super().__init__()
         self.tool_names = tool_names or ['answer', 'research', 'explore', 'clarify']
 
-    def extract_from_bandit(self, bandit: Any) -> List[CognitiveEvent]:
+    def extract_from_bandit(self, bandit: Any) -> list[CognitiveEvent]:
         """Extract events from TSBandit."""
         events = []
 
@@ -300,7 +296,7 @@ class PolicyExtractor(CognitiveExtractor):
         selected_tool: str,
         strategy: str = 'bayesian_blend',
         confidence: float = 0.8,
-    ) -> List[CognitiveEvent]:
+    ) -> list[CognitiveEvent]:
         """
         Extract events from a tool selection decision.
 
@@ -334,7 +330,7 @@ class PolicyExtractor(CognitiveExtractor):
         self.extraction_count += len(events)
         return events
 
-    def _extract_manifold(self, bandit: Any) -> Optional[CognitiveEvent]:
+    def _extract_manifold(self, bandit: Any) -> CognitiveEvent | None:
         """Extract probability manifold from bandit."""
         try:
             # Get alpha/beta values
@@ -402,7 +398,7 @@ class WeavingCycleExtractor(CognitiveExtractor):
         self,
         spacetime: Any,
         pattern_card: str = 'FAST',
-    ) -> List[CognitiveEvent]:
+    ) -> list[CognitiveEvent]:
         """
         Extract events from Spacetime result.
 
@@ -434,7 +430,7 @@ class WeavingCycleExtractor(CognitiveExtractor):
         self,
         trace: Any,
         pattern_card: str = 'FAST',
-    ) -> List[CognitiveEvent]:
+    ) -> list[CognitiveEvent]:
         """Extract events from WeavingTrace."""
         events = []
 
@@ -488,7 +484,7 @@ class WeavingCycleExtractor(CognitiveExtractor):
 
         return events
 
-    def _extract_cycle(self, spacetime: Any, pattern_card: str) -> Optional[CognitiveEvent]:
+    def _extract_cycle(self, spacetime: Any, pattern_card: str) -> CognitiveEvent | None:
         """Extract weaving cycle from spacetime."""
         try:
             trace = getattr(spacetime, 'trace', None)
@@ -519,7 +515,7 @@ class WeavingCycleExtractor(CognitiveExtractor):
         except Exception:
             return None
 
-    def _extract_expansion(self, spacetime: Any) -> Optional[CognitiveEvent]:
+    def _extract_expansion(self, spacetime: Any) -> CognitiveEvent | None:
         """Extract context expansion from spacetime."""
         try:
             metadata = getattr(spacetime, 'metadata', {})
@@ -559,8 +555,8 @@ class MemoryExtractor(CognitiveExtractor):
     def extract_from_retrieval(
         self,
         query: str,
-        retrieved_ids: List[str],
-        scores: List[float],
+        retrieved_ids: list[str],
+        scores: list[float],
         method: str = 'hybrid',
         total_candidates: int = 0,
     ) -> CognitiveEvent:
@@ -579,7 +575,7 @@ class MemoryExtractor(CognitiveExtractor):
     def extract_from_graph(
         self,
         graph: Any,
-        highlighted_path: Optional[List[str]] = None,
+        highlighted_path: list[str] | None = None,
         layout: str = 'force_directed',
     ) -> CognitiveEvent:
         """Extract event from knowledge graph."""
@@ -644,9 +640,9 @@ class ReflectionExtractor(CognitiveExtractor):
 
     def extract_confidence_flow(
         self,
-        confidences: List[float],
-        cache_hits: Optional[List[bool]] = None,
-        timestamps: Optional[List[datetime]] = None,
+        confidences: list[float],
+        cache_hits: list[bool] | None = None,
+        timestamps: list[datetime] | None = None,
     ) -> CognitiveEvent:
         """Extract confidence trajectory event."""
         # Detect anomalies
@@ -671,7 +667,7 @@ class ReflectionExtractor(CognitiveExtractor):
         query: str,
         outcome: str,
         confidence: float,
-        pattern_learned: Optional[str] = None,
+        pattern_learned: str | None = None,
         policy_updated: bool = False,
     ) -> CognitiveEvent:
         """Extract reflection loop event."""
@@ -686,7 +682,7 @@ class ReflectionExtractor(CognitiveExtractor):
         self.extraction_count += 1
         return reflection.to_event()
 
-    def _detect_anomalies(self, confidences: List[float]) -> List[Dict[str, Any]]:
+    def _detect_anomalies(self, confidences: list[float]) -> list[dict[str, Any]]:
         """Detect anomalies in confidence trajectory."""
         anomalies = []
 
@@ -796,7 +792,7 @@ class UnifiedCognitiveExtractor:
         renderer.render_frame(frame)
     """
 
-    def __init__(self, tool_names: Optional[List[str]] = None):
+    def __init__(self, tool_names: list[str] | None = None):
         self.awareness_extractor = AwarenessGraphExtractor()
         self.policy_extractor = PolicyExtractor(tool_names=tool_names)
         self.weaving_extractor = WeavingCycleExtractor()
@@ -806,11 +802,11 @@ class UnifiedCognitiveExtractor:
 
     def create_frame(
         self,
-        awareness_graph: Optional[Any] = None,
-        bandit: Optional[Any] = None,
-        spacetime: Optional[Any] = None,
-        graph: Optional[Any] = None,
-        confidences: Optional[List[float]] = None,
+        awareness_graph: Any | None = None,
+        bandit: Any | None = None,
+        spacetime: Any | None = None,
+        graph: Any | None = None,
+        confidences: list[float] | None = None,
         query_id: str = '',
         weaving_stage: str = '',
         pattern_card: str = 'FAST',
@@ -871,7 +867,7 @@ class UnifiedCognitiveExtractor:
             confidence=confidence,
         )
 
-    def get_extraction_stats(self) -> Dict[str, int]:
+    def get_extraction_stats(self) -> dict[str, int]:
         """Get extraction statistics."""
         return {
             'awareness': self.awareness_extractor.extraction_count,
@@ -887,28 +883,28 @@ class UnifiedCognitiveExtractor:
 # Convenience Functions
 # ============================================================================
 
-def extract_from_awareness(awareness_graph: Any) -> List[CognitiveEvent]:
+def extract_from_awareness(awareness_graph: Any) -> list[CognitiveEvent]:
     """Extract all events from an AwarenessGraph."""
     extractor = AwarenessGraphExtractor()
     return extractor.extract(awareness_graph)
 
 
-def extract_from_bandit(bandit: Any, tool_names: Optional[List[str]] = None) -> List[CognitiveEvent]:
+def extract_from_bandit(bandit: Any, tool_names: list[str] | None = None) -> list[CognitiveEvent]:
     """Extract events from a TSBandit."""
     extractor = PolicyExtractor(tool_names=tool_names)
     return extractor.extract_from_bandit(bandit)
 
 
-def extract_from_spacetime(spacetime: Any, pattern_card: str = 'FAST') -> List[CognitiveEvent]:
+def extract_from_spacetime(spacetime: Any, pattern_card: str = 'FAST') -> list[CognitiveEvent]:
     """Extract events from a Spacetime result."""
     extractor = WeavingCycleExtractor()
     return extractor.extract_from_spacetime(spacetime, pattern_card)
 
 
 def create_cognitive_frame(
-    awareness_graph: Optional[Any] = None,
-    bandit: Optional[Any] = None,
-    spacetime: Optional[Any] = None,
+    awareness_graph: Any | None = None,
+    bandit: Any | None = None,
+    spacetime: Any | None = None,
     **kwargs
 ) -> CognitiveFrame:
     """Create a complete cognitive frame (convenience function)."""

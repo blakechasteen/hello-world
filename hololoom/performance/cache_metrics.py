@@ -28,11 +28,11 @@ Usage in production:
 
 import time
 from contextlib import contextmanager
-from typing import Optional, Dict, Any
 from dataclasses import dataclass
+from typing import Any
 
 try:
-    from prometheus_client import Counter, Gauge, Histogram, CollectorRegistry
+    from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram
     PROMETHEUS_AVAILABLE = True
 except ImportError:
     PROMETHEUS_AVAILABLE = False
@@ -68,7 +68,7 @@ class CacheMetricsCollector:
     def __init__(
         self,
         cache,
-        registry: Optional[Any] = None,
+        registry: Any | None = None,
         namespace: str = "phase5"
     ):
         """
@@ -171,7 +171,7 @@ class CacheMetricsCollector:
                 self.collector = collector
                 self.start_time = start_time
 
-            def record_result(self, trace: Optional[Dict] = None):
+            def record_result(self, trace: dict | None = None):
                 """Record query result with trace info."""
                 duration_s = time.perf_counter() - self.start_time
 
@@ -278,7 +278,7 @@ class CacheMetricsCollector:
         tracker = QueryTracker(self)
         yield tracker
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get current metrics summary (for debugging/logging)."""
         if not self._enabled:
             return {"enabled": False}
@@ -338,7 +338,7 @@ def create_metrics_endpoint(collector: CacheMetricsCollector):
     if not PROMETHEUS_AVAILABLE:
         raise RuntimeError("Prometheus client not available. Install: pip install prometheus-client")
 
-    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
     def metrics_handler():
         return generate_latest(collector.registry), 200, {'Content-Type': CONTENT_TYPE_LATEST}

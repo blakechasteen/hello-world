@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom Weaving Shuttle - Compatibility Shim
 ==============================================
@@ -24,13 +23,14 @@ See: SCOPE_AND_SEQUENCE.md Task 1.2 for integration details.
 
 import warnings
 
-# Import the canonical implementation
-from hololoom.weaving_orchestrator import (
-    WeavingOrchestrator,
-    ToolExecutor,
-)
 # YarnGraph has been moved to memory module - use LegacyShardsAdapter for compatibility
 from hololoom.memory.graph import LegacyShardsAdapter as YarnGraph
+
+# Import the canonical implementation
+from hololoom.weaving_orchestrator import (
+    ToolExecutor,
+    WeavingOrchestrator,
+)
 
 # Compatibility alias
 WeavingShuttle = WeavingOrchestrator

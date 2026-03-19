@@ -20,16 +20,14 @@ Author: Claude Code
 Date: December 2025
 """
 
-import re
 import asyncio
 import hashlib
-from io import BytesIO
-from pathlib import Path
-from typing import List, Optional, Dict, Any, Tuple, Set, TYPE_CHECKING
-from dataclasses import dataclass, field
-from urllib.parse import urlparse, urljoin
-from datetime import datetime
+import re
 import warnings
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import TYPE_CHECKING
+from urllib.parse import urljoin, urlparse
 
 # Type checking imports (don't execute at runtime)
 if TYPE_CHECKING:
@@ -53,15 +51,14 @@ try:
 except ImportError:
     PIL_AVAILABLE = False
 
+from hololoom.protocols.types import MemoryShard
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities,
+    ImportanceScore,
     ImportanceSignals,
-    ImportanceScore
+    SpinnerCapabilities,
+    SpinResult,
 )
-from hololoom.protocols.types import MemoryShard
-
 
 # =============================================================================
 # Data Classes
@@ -74,10 +71,10 @@ class ExtractedImage:
     alt_text: str = ''
     caption: str = ''
     surrounding_text: str = ''
-    width: Optional[int] = None
-    height: Optional[int] = None
-    file_size: Optional[int] = None
-    image_data: Optional[bytes] = None
+    width: int | None = None
+    height: int | None = None
+    file_size: int | None = None
+    image_data: bytes | None = None
     context_element: str = ''  # 'figure', 'article', 'content'
 
     @property
@@ -104,11 +101,11 @@ class WebPageContent:
     url: str
     title: str
     text_content: str
-    images: List[ExtractedImage]
-    links: List[str]
+    images: list[ExtractedImage]
+    links: list[str]
     meta_description: str = ''
-    meta_keywords: List[str] = field(default_factory=list)
-    headings: List[str] = field(default_factory=list)
+    meta_keywords: list[str] = field(default_factory=list)
+    headings: list[str] = field(default_factory=list)
     fetch_time: datetime = field(default_factory=datetime.now)
 
 
@@ -171,7 +168,7 @@ class ImageExtractor:
         self,
         soup: "BeautifulSoup",
         base_url: str
-    ) -> List[ExtractedImage]:
+    ) -> list[ExtractedImage]:
         """
         Extract meaningful images from parsed HTML.
 
@@ -183,7 +180,7 @@ class ImageExtractor:
             List of ExtractedImage objects
         """
         images = []
-        seen_urls: Set[str] = set()
+        seen_urls: set[str] = set()
 
         # Find all img tags
         for img in soup.find_all('img'):
@@ -252,7 +249,7 @@ class ImageExtractor:
 
         return False
 
-    def _parse_dimension(self, value) -> Optional[int]:
+    def _parse_dimension(self, value) -> int | None:
         """Parse dimension value (handles 'px', '%', etc.)."""
         if not value:
             return None
@@ -268,7 +265,7 @@ class ImageExtractor:
         self,
         img,
         url: str
-    ) -> Optional[ExtractedImage]:
+    ) -> ExtractedImage | None:
         """Extract image with surrounding context."""
         # Get alt text
         alt_text = img.get('alt', '')
@@ -403,7 +400,7 @@ class WebsiteSpinner(BaseSpinner):
         self,
         source: str,
         **kwargs
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Extract content from web page.
 
@@ -473,7 +470,7 @@ class WebsiteSpinner(BaseSpinner):
 
         return shards
 
-    async def _fetch_page(self, url: str) -> Optional[WebPageContent]:
+    async def _fetch_page(self, url: str) -> WebPageContent | None:
         """Fetch and parse web page."""
         loop = asyncio.get_event_loop()
 
@@ -556,7 +553,7 @@ class WebsiteSpinner(BaseSpinner):
             warnings.warn(f"Error fetching {url}: {e}")
             return None
 
-    def _fetch_sync(self, url: str) -> Optional[str]:
+    def _fetch_sync(self, url: str) -> str | None:
         """Synchronous fetch for thread pool."""
         try:
             response = requests.get(

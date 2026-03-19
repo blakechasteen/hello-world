@@ -25,7 +25,8 @@ Usage:
 
 import json
 import logging
-from typing import Type, TypeVar, Optional, Any, Dict, Generic
+from typing import TypeVar
+
 from pydantic import BaseModel, ValidationError
 
 from hololoom.awareness.llm_integration import LLMProtocol
@@ -55,8 +56,8 @@ class TheComb:
     async def align(
         self,
         energy: str,
-        geometry: Type[T],
-        context: Optional[str] = None
+        geometry: type[T],
+        context: str | None = None
     ) -> T:
         """
         Aligns the raw 'energy' (prompt/intent) into the 'geometry' (Schema).
@@ -95,7 +96,7 @@ class TheComb:
 
         # 3. The Beat: Iterative refinement
         last_error = None
-        
+
         for attempt in range(self.max_retries + 1):
             try:
                 # The Cast: Pour logits into the mold
@@ -114,14 +115,14 @@ class TheComb:
                 # The Crystallization: Validate against the schema
                 # This performs type coercion and validation
                 instance = geometry.model_validate_json(raw_json)
-                
+
                 logger.debug(f"Aligned energy into {geometry.__name__} (Attempt {attempt+1})")
                 return instance
 
             except (json.JSONDecodeError, ValidationError) as e:
                 last_error = e
                 logger.warning(f"Alignment snagged on attempt {attempt+1}: {e}")
-                
+
                 # The Correction: Feed the error back into the system
                 # "The thread snagged. Align it again."
                 user_prompt += (

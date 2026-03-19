@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 HoloLoom Embedding Module
 =========================
@@ -17,16 +18,18 @@ We generate multi-scale embeddings (like Russian nesting dolls) to enable
 coarse-to-fine processing across the pipeline.
 """
 
-import os
 import hashlib
+import os
 import time as _time
 import warnings
-from typing import List, Dict, Tuple, Optional, Protocol, Callable, Union
+from collections.abc import Callable
 from dataclasses import dataclass, field
-import numpy as np
-import networkx as nx
+from typing import Optional, Protocol
 
-from hololoom.dark_trace.sae.activation_buffer import get_activation_buffer, ActivationSample
+import networkx as nx
+import numpy as np
+
+from hololoom.dark_trace.sae.activation_buffer import ActivationSample, get_activation_buffer
 
 # Feature flag: embedding drift detection (default OFF, log-only when on)
 _DRIFT_DETECT = os.environ.get("HOLOLOOM_DRIFT_DETECT", "").lower() in ("true", "1", "yes")
@@ -37,9 +40,7 @@ from hololoom.protocols.types import Vector
 
 # Import Riemannian geometry for geodesic distance support
 try:
-    from hololoom.warp.riemannian_geometry import (
-        ProductManifold, ManifoldConfig, ManifoldType
-    )
+    from hololoom.warp.riemannian_geometry import ManifoldConfig, ManifoldType, ProductManifold
     _HAVE_RIEMANNIAN = True
 except ImportError:
     ProductManifold = None
@@ -85,8 +86,8 @@ class Embedder(Protocol):
     All embedders must implement encode methods.
     This enables the orchestrator to swap implementations without code changes.
     """
-    
-    def encode(self, texts: List[str]) -> np.ndarray:
+
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts into vectors.
         
@@ -121,11 +122,11 @@ class MatryoshkaEmbeddings:
     - Project to smaller dimensions using learned/random projections
     - Maintain semantic quality at each scale
     """
-    
-    sizes: List[int] = field(default_factory=lambda: [768])
-    base_model_name: Optional[str] = None
-    external_heads: Optional[Dict[int, Callable[[np.ndarray], np.ndarray]]] = None
-    
+
+    sizes: list[int] = field(default_factory=lambda: [768])
+    base_model_name: str | None = None
+    external_heads: dict[int, Callable[[np.ndarray], np.ndarray]] | None = None
+
     def __post_init__(self):
         assert sorted(self.sizes) == self.sizes, "Sizes must be in ascending order"
 
@@ -170,7 +171,7 @@ class MatryoshkaEmbeddings:
             self.base_dim = max(self.sizes)
 
         self._model_loaded = True
-    
+
     def _build_projection(self, seed: int = 12345):
         """
         Build orthogonal projection matrices for each scale.
@@ -181,11 +182,11 @@ class MatryoshkaEmbeddings:
         rng = np.random.default_rng(seed)
         # Create random matrix and orthogonalize
         Q, _ = np.linalg.qr(rng.normal(size=(self.base_dim, self.base_dim)))
-        
+
         # Store projections for each target dimension
         self.proj = {d: Q[:, :d] for d in self.sizes}
-    
-    def refresh_runtime_qr(self, corpus_texts: List[str]):
+
+    def refresh_runtime_qr(self, corpus_texts: list[str]):
         """
         Refresh projection matrices based on corpus.
         
@@ -198,13 +199,13 @@ class MatryoshkaEmbeddings:
         # Hash corpus for deterministic seed
         corpus_str = "\n".join(corpus_texts)
         h = hashlib.sha256(corpus_str.encode("utf-8")).hexdigest()
-        
+
         if h != self._last_hash:
             seed = int(h[:8], 16)  # Use first 8 hex chars as seed
             self._build_projection(seed=seed)
             self._last_hash = h
-    
-    def encode_base(self, texts: List[str]) -> np.ndarray:
+
+    def encode_base(self, texts: list[str]) -> np.ndarray:
         """
         Generate base (full-dimensional) embeddings with caching.
 
@@ -257,12 +258,12 @@ class MatryoshkaEmbeddings:
         # Sort by original index and extract vectors
         vecs.sort(key=lambda x: x[0])
         return np.vstack([v for _, v in vecs])
-    
+
     def encode_scales(
-        self, 
-        texts: List[str], 
-        size: Optional[int] = None
-    ) -> Union[Dict[int, np.ndarray], np.ndarray]:
+        self,
+        texts: list[str],
+        size: int | None = None
+    ) -> dict[int, np.ndarray] | np.ndarray:
         """
         Encode texts at one or all scales.
         
@@ -279,18 +280,18 @@ class MatryoshkaEmbeddings:
             if size is not None:
                 return np.zeros((0, size))
             return {d: np.zeros((0, d)) for d in self.sizes}
-        
+
         # Generate base embeddings
         base = self.encode_base(texts)
-        
+
         # Single size requested
         if size is not None:
             if size in self.external_heads:
                 return self.external_heads[size](base)
             return base @ self.proj[size]
-        
+
         # All sizes requested
-        out: Dict[int, np.ndarray] = {}
+        out: dict[int, np.ndarray] = {}
         for d in self.sizes:
             if d in self.external_heads:
                 out[d] = self.external_heads[d](base)
@@ -309,8 +310,8 @@ class MatryoshkaEmbeddings:
                     ))
 
         return out
-    
-    def encode(self, texts: List[str]) -> np.ndarray:
+
+    def encode(self, texts: list[str]) -> np.ndarray:
         """
         Encode texts at largest scale (for Protocol compatibility).
         
@@ -364,18 +365,18 @@ class SpectralFusion:
 
     # Wavelet configuration
     use_wavelets: bool = False  # Enable multi-scale wavelet features
-    wavelet_scales: List[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])
+    wavelet_scales: list[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])
 
     # Diffusion map configuration
     use_diffusion_maps: bool = False  # Enable diffusion geometry
     diffusion_map_dims: int = 32  # Diffusion embedding dimension
-    
+
     async def features(
         self,
         kg_sub: nx.MultiDiGraph,
-        shard_texts: List[str],
+        shard_texts: list[str],
         emb: MatryoshkaEmbeddings
-    ) -> Tuple[Vector, Dict[str, float]]:
+    ) -> tuple[Vector, dict[str, float]]:
         """
         Extract spectral features from graph and text.
 
@@ -403,7 +404,11 @@ class SpectralFusion:
         if self.use_wavelets and kg_sub.number_of_nodes() > 1:
             try:
                 # Import spectral methods
-                from hololoom.warp.spectral_methods import GraphLaplacian, SpectralWavelet, LaplacianType
+                from hololoom.warp.spectral_methods import (
+                    GraphLaplacian,
+                    LaplacianType,
+                    SpectralWavelet,
+                )
 
                 # Create temporary KG wrapper for spectral methods
                 # We need to wrap the NetworkX graph in a KG-like object
@@ -450,7 +455,11 @@ class SpectralFusion:
         diffusion_variance = 0.0
         if self.use_diffusion_maps and kg_sub.number_of_nodes() > self.diffusion_map_dims:
             try:
-                from hololoom.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
+                from hololoom.warp.spectral_methods import (
+                    DiffusionMap,
+                    GraphLaplacian,
+                    LaplacianType,
+                )
 
                 class _TempKG:
                     def __init__(self, G):
@@ -500,8 +509,8 @@ class SpectralFusion:
         }
 
         return psi, metrics
-    
-    def _graph_spectrum(self, kg_sub: nx.MultiDiGraph) -> Tuple[np.ndarray, float]:
+
+    def _graph_spectrum(self, kg_sub: nx.MultiDiGraph) -> tuple[np.ndarray, float]:
         """
         Compute graph Laplacian spectrum.
         
@@ -516,15 +525,15 @@ class SpectralFusion:
             - fiedler_value: Second smallest eigenvalue
         """
         n = kg_sub.number_of_nodes()
-        
+
         if n <= 1:
             # Trivial graph
             return np.zeros(self.k_eigen), 0.0
-        
+
         # Build adjacency matrix
         nodes = list(kg_sub.nodes())
         idx = {u: i for i, u in enumerate(nodes)}
-        
+
         rows, cols, data = [], [], []
         for u, v, d in kg_sub.edges(data=True):
             w = float(d.get("weight", 1.0))
@@ -532,14 +541,14 @@ class SpectralFusion:
             rows.extend([idx[u], idx[v]])
             cols.extend([idx[v], idx[u]])
             data.extend([w, w])
-        
+
         # Compute Laplacian: L = D - A
         if _HAVE_SCIPY:
             # Sparse computation (efficient for large graphs)
             A = coo_matrix((data, (rows, cols)), shape=(n, n)).tocsr()
             D = np.asarray(A.sum(axis=1)).ravel()
             L = np.diag(D) - A.toarray()
-            
+
             # Compute smallest k eigenvalues
             k = min(self.k_eigen, n - 1)
             try:
@@ -554,24 +563,24 @@ class SpectralFusion:
             A = np.zeros((n, n))
             for r, c, w in zip(rows, cols, data):
                 A[r, c] += w
-            
+
             D = np.diag(A.sum(axis=1))
             L = D - A
-            
+
             vals = np.linalg.eigvalsh(L)
             vals = np.sort(vals)
-        
+
         # Pad to k eigenvalues
         spectrum = np.pad(vals[:self.k_eigen], (0, max(0, self.k_eigen - len(vals))), constant_values=0.0)
         fiedler = float(spectrum[1]) if len(spectrum) > 1 else 0.0
-        
+
         return spectrum, fiedler
-    
+
     def _topic_features(
         self,
-        shard_texts: List[str],
+        shard_texts: list[str],
         emb: MatryoshkaEmbeddings
-    ) -> Tuple[np.ndarray, float]:
+    ) -> tuple[np.ndarray, float]:
         """
         Extract topic features via SVD of embeddings.
         
@@ -586,32 +595,32 @@ class SpectralFusion:
         """
         if not shard_texts:
             return np.zeros(self.svd_components), 0.0
-        
+
         # Encode at maximum scale for quality
         V = emb.encode_scales(shard_texts, size=max(emb.sizes))
-        
+
         try:
             # Compute SVD (use subset for efficiency)
             m = min(len(V), 64)  # Cap at 64 texts
             if m == 0:
                 return np.zeros(self.svd_components), 0.0
-            
+
             _, s, _ = np.linalg.svd(V[:max(16, m), :], full_matrices=False)
-            
+
             # Extract top components
             topic = s[:self.svd_components]
             # Pad if necessary
             if len(topic) < self.svd_components:
                 topic = np.pad(topic, (0, self.svd_components - len(topic)))
-            
+
             # Topic variance: how much is captured by top components
             topic_var = float(topic.sum() / (s.sum() + 1e-9))
-            
+
         except Exception as e:
             warnings.warn(f"SVD failed: {e}")
             topic = np.zeros(self.svd_components)
             topic_var = 0.0
-        
+
         return topic, topic_var
 
 
@@ -621,8 +630,8 @@ class SpectralFusion:
 
 def create_embedder(
     mode: str = "matryoshka",
-    sizes: List[int] = [768],
-    base_model_name: Optional[str] = None
+    sizes: list[int] = [768],
+    base_model_name: str | None = None
 ) -> Embedder:
     """
     Factory function to create embedder.
@@ -674,11 +683,11 @@ class EmbeddingDriftDetector:
         """
         self.window_size = window_size
         self.alarm_threshold = alarm_threshold
-        self._reference_mu: Optional[np.ndarray] = None
-        self._reference_sigma: Optional[np.ndarray] = None
-        self._buffer: List[np.ndarray] = []
+        self._reference_mu: np.ndarray | None = None
+        self._reference_sigma: np.ndarray | None = None
+        self._buffer: list[np.ndarray] = []
 
-    def observe(self, embedding: np.ndarray) -> Optional[Dict]:
+    def observe(self, embedding: np.ndarray) -> dict | None:
         """
         Observe a new embedding. Returns drift report if window is full.
 
@@ -770,47 +779,47 @@ def create_drift_detector(
 
 if __name__ == "__main__":
     import asyncio
-    
+
     async def demo():
         print("=== Matryoshka Embeddings Demo ===\n")
-        
+
         # Create embedder
         emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
-        
+
         # Test texts
         texts = [
             "Multi-head attention processes multiple representation subspaces",
             "Transformers use self-attention mechanisms",
             "Neural networks learn hierarchical features"
         ]
-        
+
         # Encode at all scales
         print("Encoding at all scales:")
         multi_scale = emb.encode_scales(texts)
         for size, vecs in multi_scale.items():
             print(f"  {size}d: shape={vecs.shape}, norm={np.linalg.norm(vecs[0]):.3f}")
-        
+
         # Encode at single scale
         print("\nEncoding at 192d:")
         vecs_192 = emb.encode_scales(texts, size=192)
         print(f"  Shape: {vecs_192.shape}")
-        
+
         # Test spectral features + drift detection
         print("\n=== Spectral Features Demo ===\n")
-        
+
         # Create sample graph
         G = nx.MultiDiGraph()
         G.add_edge("attention", "transformer", type="USES")
         G.add_edge("transformer", "neural_network", type="IS_A")
         G.add_edge("attention", "neural_network", type="PART_OF")
-        
+
         spectral = SpectralFusion()
         psi, metrics = await spectral.features(G, texts, emb)
-        
+
         print(f"Ψ vector: {psi}")
         print(f"Metrics: {metrics}")
         print(f"  Fiedler value: {metrics['fiedler']:.3f} (connectivity)")
         print(f"  Topic variance: {metrics['topic_var']:.3f} (coherence)")
         print(f"  Overall coherence: {metrics['coherence']:.3f}")
-    
+
     asyncio.run(demo())

@@ -1,30 +1,27 @@
+from __future__ import annotations
 import asyncio
 import logging
-from pathlib import Path
-from typing import List, Dict, Optional, Set, Any
 from datetime import datetime
-import json
-import uuid
+from pathlib import Path
+from typing import Any
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Body
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
+import uvicorn
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import uvicorn
 
 # Import repository context manager
 # Import repository context manager
 try:
     import sys
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-    from hololoom.memory.repository_context import (
-        create_repo_manager,
-        RepositoryContextManager,
-        AgentQueryContext,
-        AccessLevel
-    )
     from hololoom.memory.mcp_rag_server import rag_query
+    from hololoom.memory.repository_context import (
+        AccessLevel,
+        AgentQueryContext,
+        RepositoryContextManager,
+        create_repo_manager,
+    )
 except ImportError as e:
     print(f"Warning: Could not import RAG modules: {e}")
     RepositoryContextManager = None
@@ -59,11 +56,11 @@ app.add_middleware(
 )
 
 # Global state
-repo_manager: Optional[RepositoryContextManager] = None
-eggroll: Optional[EggrollIntegration] = None
+repo_manager: RepositoryContextManager | None = None
+eggroll: EggrollIntegration | None = None
 llm: Any = None
-agent_contexts: Dict[str, AgentQueryContext] = {}
-threads: Dict[str, Dict[str, Any]] = {}
+agent_contexts: dict[str, AgentQueryContext] = {}
+threads: dict[str, dict[str, Any]] = {}
 
 
 # ============================================================================
@@ -76,7 +73,7 @@ class RepositoryInfo(BaseModel):
     name: str
     description: str
     path: str
-    tags: List[str]
+    tags: list[str]
     access: str
     file_count: int
     indexed: bool
@@ -87,30 +84,30 @@ class ChatMessage(BaseModel):
     role: str  # 'user' or 'assistant'
     content: str
     sender: str
-    attached_repos: List[str] = []
-    citations: List[Dict] = []
-    timestamp: Optional[str] = None
-    mode: Optional[str] = "direct"
+    attached_repos: list[str] = []
+    citations: list[dict] = []
+    timestamp: str | None = None
+    mode: str | None = "direct"
 
 
 class ChatRequest(BaseModel):
     """Chat request."""
     message: str
     session_id: str
-    attached_repos: List[str] = []
+    attached_repos: list[str] = []
     mode: str = "direct"
 
 
 class CreateThreadRequest(BaseModel):
     user_id: str
     agent_name: str
-    initial_message: Optional[str] = None
+    initial_message: str | None = None
 
 
 class ChatResponse(BaseModel):
     """Chat response."""
     message: str
-    citations: List[Dict]
+    citations: list[dict]
     timestamp: str
     mode: str = "direct"
 
@@ -131,7 +128,7 @@ async def startup():
         repo_manager = await create_repo_manager()
         # ... (Register default repositories logic kept simple for brevity) ...
         logger.info("Repository Manager initialized")
-    
+
     if EggrollIntegration:
         try:
             eggroll = EggrollIntegration()
@@ -163,20 +160,20 @@ async def chat(request: ChatRequest) -> ChatResponse:
     if request.mode == "eggroll" and eggroll:
         # Use Eggroll to generate response
         response_text = await eggroll.generate(request.message)
-        
+
     elif llm:
         # Use Standard LLM (RAG or Direct)
         prompt = request.message
-        
+
         # If RAG context is available (simulated for now as we don't have full RAG pipeline here yet)
         # In a real implementation, we would retrieve context from repo_manager here
-        
+
         try:
             llm_resp = await llm.generate(prompt)
             response_text = llm_resp.content
         except Exception as e:
             response_text = f"LLM Error: {e}"
-            
+
     else:
         # Fallback
         response_text = f"Echo ({request.mode}): {request.message} (LLM unavailable)"
@@ -207,7 +204,7 @@ async def websocket_thread(websocket: WebSocket, thread_id: str):
             data = await websocket.receive_json()
             message = data.get('message', '')
             mode = data.get('mode', 'direct')
-            
+
             logger.info(f"WS message: {message[:50]}... Mode: {mode}")
 
             # Send "Thinking" status
@@ -219,25 +216,25 @@ async def websocket_thread(websocket: WebSocket, thread_id: str):
             # Process
             response_text = ""
             confidence = 1.0
-            
+
             if mode == "eggroll" and eggroll:
                 # Trigger Eggroll
                 # 1. Select Pattern
                 pattern = eggroll.forced_pattern if eggroll.forced_pattern else eggroll.shuttle.select_pattern()
-                
+
                 await websocket.send_json({
                     'type': 'status',
                     'message': f'Selected Strategy: {pattern}...'
                 })
-                
+
                 # 2. Generate with Eggroll (MirrorCore)
                 try:
                     response_text = await eggroll.generate(message)
                 except Exception as e:
                     response_text = f"Eggroll Error: {e}"
-                
+
                 confidence = 0.95
-                
+
             elif llm:
                 # Standard LLM
                 try:

@@ -40,16 +40,16 @@ from hololoom.prompting.analytics.dashboard import (
     MRFDashboard,
     MRFEnhancementLog,
     SystemStatistics,
-    create_dashboard
+    create_dashboard,
 )
 
 # Thompson Sampling Learning (optional)
 try:
     from hololoom.prompting.analytics.learning import (
-        ThompsonLearner,
-        StrategyStats,
         QueryTypeProfile,
-        create_learner
+        StrategyStats,
+        ThompsonLearner,
+        create_learner,
     )
     LEARNING_AVAILABLE = True
 except ImportError:
@@ -62,12 +62,12 @@ except ImportError:
 # A/B Testing (optional)
 try:
     from hololoom.prompting.analytics.ab_testing import (
-        ABTest,
         ABGroup,
         ABResult,
+        ABTest,
         ABTestConfig,
         DeploymentDecision,
-        create_ab_test
+        create_ab_test,
     )
     AB_TESTING_AVAILABLE = True
 except ImportError:

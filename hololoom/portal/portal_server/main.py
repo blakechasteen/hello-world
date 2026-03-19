@@ -16,24 +16,22 @@ Endpoints:
 import argparse
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
-from .config import PortalConfig, load_config
-from .registry import NodeRegistry
+from ..shared.logging import configure_logging, get_logger
 from ..shared.types import (
+    LoomStatus,
     NodeRecord,
     NodeRegistration,
-    NodeCapabilities,
-    LoomStatus,
 )
-from ..shared.logging import configure_logging, get_logger
+from .config import PortalConfig, load_config
+from .registry import NodeRegistry
 
 # Global instances (set during lifespan)
-registry: Optional[NodeRegistry] = None
-config: Optional[PortalConfig] = None
+registry: NodeRegistry | None = None
+config: PortalConfig | None = None
 logger = get_logger(__name__, component="portal")
 
 
@@ -78,7 +76,7 @@ async def lifespan(app: FastAPI):
     logger.info("Portal Server shutting down")
 
 
-def create_app(portal_config: Optional[PortalConfig] = None) -> FastAPI:
+def create_app(portal_config: PortalConfig | None = None) -> FastAPI:
     """
     Create FastAPI application with optional config.
 
@@ -107,6 +105,7 @@ def create_app(portal_config: Optional[PortalConfig] = None) -> FastAPI:
 
 # Router with all endpoints
 from fastapi import APIRouter
+
 router = APIRouter()
 
 
@@ -176,7 +175,7 @@ async def node_heartbeat(
     return node
 
 
-@router.get("/nodes", response_model=List[NodeRecord])
+@router.get("/nodes", response_model=list[NodeRecord])
 async def list_nodes(
     online_only: bool = False,
     _: str = Depends(verify_secret),

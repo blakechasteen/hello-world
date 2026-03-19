@@ -50,12 +50,12 @@ Optional advanced features:
 
 # Core handler registry - always available
 from hololoom.apps.chatops.handlers.handler_registry import (
-    HandlerRegistry,
     HandlerCategory,
+    HandlerRegistry,
     HandlerSpec,
     chatops_handler,
     get_global_registry,
-    register_handlers_from
+    register_handlers_from,
 )
 
 # Graceful imports - these are optional
@@ -106,16 +106,16 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.test_handlers import (
-        register_test_handlers,
+        TestHandlers,
         TestRunner,
         TestStatusTracker,
-        TestHandlers,
-        handle_test_run,
-        handle_test_status,
-        handle_test_coverage,
         handle_test_benchmark,
         handle_test_ci,
-        handle_test_help
+        handle_test_coverage,
+        handle_test_help,
+        handle_test_run,
+        handle_test_status,
+        register_test_handlers,
     )
     __all__.extend([
         "register_test_handlers",
@@ -134,16 +134,16 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.code_handlers import (
-        register_code_handlers,
         CodeHandlers,
+        handle_code_context,
+        handle_code_explain,
+        handle_code_fix,
+        handle_code_help,
         handle_code_query,
         handle_code_refactor,
-        handle_code_explain,
-        handle_code_test,
-        handle_code_fix,
-        handle_code_context,
         handle_code_status,
-        handle_code_help
+        handle_code_test,
+        register_code_handlers,
     )
     __all__.extend([
         "register_code_handlers",
@@ -162,13 +162,13 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.rag_handlers import (
-        register_rag_handlers,
         RAGHandlers,
-        handle_rag_query,
+        handle_rag_help,
         handle_rag_ingest,
+        handle_rag_query,
         handle_rag_search,
         handle_rag_stats,
-        handle_rag_help
+        register_rag_handlers,
     )
     __all__.extend([
         "register_rag_handlers",
@@ -184,13 +184,13 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.agentic_handlers import (
-        register_agentic_handlers,
         AgenticHandlers,
-        handle_research,
-        handle_verify,
+        handle_agentic_help,
         handle_plan,
         handle_reason,
-        handle_agentic_help
+        handle_research,
+        handle_verify,
+        register_agentic_handlers,
     )
     __all__.extend([
         "register_agentic_handlers",
@@ -206,17 +206,17 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.visualization_handlers import (
-        register_visualization_handlers,
-        VisualizationHandlers,
         SessionMetrics,
+        VisualizationHandlers,
         get_session_metrics,
-        handle_dashboard_confidence,
         handle_dashboard_cache,
-        handle_dashboard_waterfall,
+        handle_dashboard_confidence,
+        handle_dashboard_help,
         handle_dashboard_knowledge,
         handle_dashboard_rag,
-        handle_dashboard_help,
-        handle_dashboard_reset
+        handle_dashboard_reset,
+        handle_dashboard_waterfall,
+        register_visualization_handlers,
     )
     __all__.extend([
         "register_visualization_handlers",
@@ -236,13 +236,13 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.memory_symphony_handlers import (
-        register_memory_symphony_handlers,
         MemorySymphonyHandlers,
-        handle_memory_strategy,
-        handle_memory_metrics,
-        handle_memory_systems,
+        handle_memory_help,
         handle_memory_history,
-        handle_memory_help
+        handle_memory_metrics,
+        handle_memory_strategy,
+        handle_memory_systems,
+        register_memory_symphony_handlers,
     )
     __all__.extend([
         "register_memory_symphony_handlers",
@@ -258,12 +258,12 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.temporal_handlers import (
-        register_temporal_handlers,
         TemporalHandlers,
-        handle_temporal_travel,
         handle_temporal_between,
+        handle_temporal_help,
         handle_temporal_patterns,
-        handle_temporal_help
+        handle_temporal_travel,
+        register_temporal_handlers,
     )
     __all__.extend([
         "register_temporal_handlers",
@@ -278,13 +278,13 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.department_handlers import (
-        register_department_handlers,
         DepartmentHandlers,
-        handle_dept_list,
-        handle_dept_status,
-        handle_dept_process,
         handle_dept_capabilities,
-        handle_dept_help
+        handle_dept_help,
+        handle_dept_list,
+        handle_dept_process,
+        handle_dept_status,
+        register_department_handlers,
     )
     __all__.extend([
         "register_department_handlers",
@@ -300,17 +300,17 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.feedback_handler import (
-        FeedbackProcessor,
         BotMessageTracker,
+        FeedbackHandlers,
+        FeedbackProcessor,
         ThompsonFeedbackUpdater,
         get_feedback_processor,
-        set_feedback_processor,
-        handle_reaction_event,
-        FeedbackHandlers,
-        handle_feedback_stats,
-        handle_feedback_process,
         handle_feedback_help,
-        register_feedback_handlers
+        handle_feedback_process,
+        handle_feedback_stats,
+        handle_reaction_event,
+        register_feedback_handlers,
+        set_feedback_processor,
     )
     __all__.extend([
         "FeedbackProcessor",
@@ -330,18 +330,18 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.ingestion_handlers import (
-        register_ingestion_handlers,
         IngestionHandlers,
         SourceDetection,
         detect_source_type,
         handle_ingest,
-        handle_ingest_youtube,
-        handle_ingest_pdf,
-        handle_ingest_url,
         handle_ingest_git,
+        handle_ingest_help,
         handle_ingest_image,
+        handle_ingest_pdf,
         handle_ingest_status,
-        handle_ingest_help
+        handle_ingest_url,
+        handle_ingest_youtube,
+        register_ingestion_handlers,
     )
     __all__.extend([
         "register_ingestion_handlers",
@@ -363,10 +363,10 @@ except ImportError:
 try:
     from hololoom.apps.chatops.handlers.websocket_progress import (
         JobMessageType,
-        JobProgressMessage,
-        JobProgressManager,
         JobProgressBroadcaster,
-        create_progress_router
+        JobProgressManager,
+        JobProgressMessage,
+        create_progress_router,
     )
     __all__.extend([
         "JobMessageType",
@@ -381,12 +381,12 @@ except ImportError:
 try:
     from hololoom.apps.chatops.handlers.prometheus_metrics import (
         JobMetricsCollector,
+        LatencyHistogram,
         MetricType,
         MetricValue,
-        LatencyHistogram,
         create_metrics_router,
         get_metrics_collector,
-        set_metrics_collector
+        set_metrics_collector,
     )
     __all__.extend([
         "JobMetricsCollector",
@@ -402,14 +402,14 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.conversation_handlers import (
-        register_conversation_handlers,
         ConversationHandlers,
         SessionManager,
         UserSessionState,
         get_session_manager,
-        handle_continue,
         handle_context,
-        handle_conversation_help
+        handle_continue,
+        handle_conversation_help,
+        register_conversation_handlers,
     )
     __all__.extend([
         "register_conversation_handlers",
@@ -426,18 +426,18 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.cluster_handlers import (
-        register_cluster_handlers,
         ClusterHandlers,
+        ClusterInfo,
         ClusterManager,
         NodeInfo,
-        ClusterInfo,
         NodeStatus,
         get_cluster_manager,
-        set_cluster_manager,
-        handle_cluster_status,
-        handle_cluster_nodes,
         handle_cluster_balance,
-        handle_cluster_help
+        handle_cluster_help,
+        handle_cluster_nodes,
+        handle_cluster_status,
+        register_cluster_handlers,
+        set_cluster_manager,
     )
     __all__.extend([
         "register_cluster_handlers",
@@ -458,19 +458,19 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.alignment_handlers import (
-        register_alignment_handlers,
         AlignmentHandlers,
-        get_guardrails,
-        set_guardrails,
         get_audit_trail,
-        set_audit_trail,
-        handle_safety_check,
-        handle_safety_stats,
-        handle_safety_history,
+        get_guardrails,
+        handle_alignment_help,
         handle_audit_log,
-        handle_audit_trace,
         handle_audit_search,
-        handle_alignment_help
+        handle_audit_trace,
+        handle_safety_check,
+        handle_safety_history,
+        handle_safety_stats,
+        register_alignment_handlers,
+        set_audit_trail,
+        set_guardrails,
     )
     __all__.extend([
         "register_alignment_handlers",
@@ -492,13 +492,15 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.agent_manager_ws import (
-        AgentManagerMessageType,
-        AgentManagerMessage,
-        AgentManagerWSManager,
         AgentManagerBroadcaster,
+        AgentManagerMessage,
+        AgentManagerMessageType,
+        AgentManagerWSManager,
         create_agent_manager_router,
+        get_global_broadcaster,
+    )
+    from hololoom.apps.chatops.handlers.agent_manager_ws import (
         get_global_manager as get_global_ws_manager,
-        get_global_broadcaster
     )
     __all__.extend([
         "AgentManagerMessageType",
@@ -514,20 +516,20 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.workflow_handlers import (
-        register_workflow_handlers,
         WorkflowHandlers,
         get_executor_url,
-        set_executor_url,
         get_generator,
-        set_generator,
+        handle_workflow_agents,
+        handle_workflow_generate,
+        handle_workflow_help,
         handle_workflow_list,
+        handle_workflow_optimize,
         handle_workflow_run,
         handle_workflow_status,
         handle_workflow_validate,
-        handle_workflow_generate,
-        handle_workflow_agents,
-        handle_workflow_optimize,
-        handle_workflow_help
+        register_workflow_handlers,
+        set_executor_url,
+        set_generator,
     )
     __all__.extend([
         "register_workflow_handlers",
@@ -551,22 +553,22 @@ except ImportError:
 # Learning handlers (December 2025) - Thompson Sampling, hot patterns, refinement
 try:
     from hololoom.apps.chatops.handlers.learning_handlers import (
-        register_learning_handlers,
         LearningHandlers,
-        get_learning_engine,
-        set_learning_engine,
         get_hot_tracker,
-        set_hot_tracker,
+        get_learning_engine,
         get_reflection_buffer,
-        set_reflection_buffer,
+        handle_learn_cold,
+        handle_learn_help,
+        handle_learn_hot,
+        handle_learn_patterns,
+        handle_learn_refine,
+        handle_learn_reflect,
         handle_learn_stats,
         handle_learn_tool,
-        handle_learn_hot,
-        handle_learn_cold,
-        handle_learn_refine,
-        handle_learn_patterns,
-        handle_learn_reflect,
-        handle_learn_help
+        register_learning_handlers,
+        set_hot_tracker,
+        set_learning_engine,
+        set_reflection_buffer,
     )
     __all__.extend([
         "register_learning_handlers",
@@ -592,22 +594,22 @@ except ImportError:
 # Awareness handlers (December 2025) - Activation, spring dynamics, brain waves
 try:
     from hololoom.apps.chatops.handlers.awareness_handlers import (
-        register_awareness_handlers,
         AwarenessHandlers,
         get_awareness_graph,
-        set_awareness_graph,
         get_spring_dynamics,
-        set_spring_dynamics,
         get_wave_engine,
-        set_wave_engine,
-        handle_aware_metrics,
         handle_aware_activate,
+        handle_aware_confidence,
+        handle_aware_consolidate,
+        handle_aware_gaps,
+        handle_aware_help,
+        handle_aware_metrics,
         handle_aware_spring,
         handle_aware_wave_mode,
-        handle_aware_consolidate,
-        handle_aware_confidence,
-        handle_aware_gaps,
-        handle_aware_help
+        register_awareness_handlers,
+        set_awareness_graph,
+        set_spring_dynamics,
+        set_wave_engine,
     )
     __all__.extend([
         "register_awareness_handlers",
@@ -633,24 +635,24 @@ except ImportError:
 # Context handlers (December 2025) - Context packing, adaptive expansion, streaming
 try:
     from hololoom.apps.chatops.handlers.context_handlers import (
-        register_context_handlers,
         ContextHandlers,
-        get_context_packer,
-        set_context_packer,
         get_activation_spreader,
-        set_activation_spreader,
+        get_context_packer,
         get_importance_scorer,
-        set_importance_scorer,
         get_knowledge_graph,
-        set_knowledge_graph,
-        handle_context_pack,
         handle_context_budget,
         handle_context_expand,
-        handle_context_stream,
-        handle_context_spread,
+        handle_context_help,
         handle_context_importance,
+        handle_context_pack,
+        handle_context_spread,
         handle_context_stats,
-        handle_context_help
+        handle_context_stream,
+        register_context_handlers,
+        set_activation_spreader,
+        set_context_packer,
+        set_importance_scorer,
+        set_knowledge_graph,
     )
     __all__.extend([
         "register_context_handlers",
@@ -678,11 +680,11 @@ except ImportError:
 # Semantic handlers (December 2025) - Phase 8: Semantic State -> Policy integration
 try:
     from hololoom.apps.chatops.handlers.semantic_handlers import (
-        SemanticMatrixHandlers,
         ConversationSemanticContext,
+        SemanticMatrixHandlers,
         create_semantic_handlers,
         get_semantic_handlers,
-        set_semantic_handlers
+        set_semantic_handlers,
     )
     __all__.extend([
         "SemanticMatrixHandlers",
@@ -697,15 +699,15 @@ except ImportError:
 # Multi-agent semantic coordination (December 2025) - Phase 7
 try:
     from hololoom.apps.chatops.handlers.multi_agent_semantic import (
-        SharedSemanticRegistry,
         AgentInfo,
         AgentStatus,
-        TopicThread,
         HandoffContext,
         MultiAgentHandlers,
+        SharedSemanticRegistry,
+        TopicThread,
         get_semantic_registry,
+        notify_semantic_update,
         register_multi_agent_handlers,
-        notify_semantic_update
     )
     __all__.extend([
         "SharedSemanticRegistry",
@@ -724,9 +726,9 @@ except ImportError:
 # Voice handlers (December 2025) - Voice-to-code via Matrix voice messages
 try:
     from hololoom.apps.chatops.handlers.voice_handler import (
-        VoiceHandler,
         TranscriptionResult,
-        VoiceCommandResult
+        VoiceCommandResult,
+        VoiceHandler,
     )
     __all__.extend([
         "VoiceHandler",
@@ -739,9 +741,9 @@ except ImportError:
 # Code voice grammar (December 2025) - Patterns for voice-to-code commands
 try:
     from hololoom.apps.chatops.handlers.code_voice_grammar import (
-        CodeVoiceGrammar,
+        CodeCommandIntent,
         CodeIntent,
-        CodeCommandIntent
+        CodeVoiceGrammar,
     )
     __all__.extend([
         "CodeVoiceGrammar",

@@ -20,13 +20,10 @@ Date: October 30, 2025
 """
 
 import asyncio
-import numpy as np
 from datetime import datetime, timedelta
-from spring_dynamics_engine import (
-    SpringDynamicsEngine,
-    SpringEngineConfig,
-    MemoryNode
-)
+
+import numpy as np
+from spring_dynamics_engine import SpringDynamicsEngine, SpringEngineConfig
 
 
 async def demo_beta_wave_retrieval():
@@ -115,7 +112,7 @@ async def demo_beta_wave_retrieval():
     print(f"  - {len(ml_cluster)} ML concepts")
     print(f"  - {len(rl_cluster)} RL concepts")
     print(f"  - {len(memory_cluster)} Memory/Cognition concepts")
-    print(f"  - 1 bridge node (PPO)")
+    print("  - 1 bridge node (PPO)")
     print()
 
     # ========================================================================
@@ -136,7 +133,7 @@ async def demo_beta_wave_retrieval():
         await asyncio.sleep(0.2)  # Brief pause between accesses
 
     print("✓ Accessed thompson_sampling (5×) and bandits (5×)")
-    print(f"  Spring constants after access:")
+    print("  Spring constants after access:")
     print(f"    thompson_sampling: k = {engine.nodes['thompson_sampling'].spring_constant:.2f}")
     print(f"    bandits: k = {engine.nodes['bandits'].spring_constant:.2f}")
     print(f"    neural_networks: k = {engine.nodes['neural_networks'].spring_constant:.2f} (not accessed)")
@@ -202,7 +199,7 @@ async def demo_beta_wave_retrieval():
             print(f"  💡 {node_id}")
             print(f"      activation = {activation:.3f}")
             print(f"      type = {insight_type}")
-            print(f"      (semantically distant from query but activated through spreading)")
+            print("      (semantically distant from query but activated through spreading)")
         print()
     else:
         print("No creative insights detected in this query.")
@@ -225,7 +222,7 @@ async def demo_beta_wave_retrieval():
     # Apply forgetting decay
     engine._apply_forgetting_decay()
 
-    print(f"✓ After 24 hours without access:")
+    print("✓ After 24 hours without access:")
     print(f"    neural_networks: k = {nn_node.spring_constant:.2f} (decayed)")
     print(f"    thompson_sampling: k = {engine.nodes['thompson_sampling'].spring_constant:.2f} (still strong)")
     print()
@@ -233,7 +230,7 @@ async def demo_beta_wave_retrieval():
     print("Accessing neural_networks to restore it...")
     engine.on_memory_accessed('neural_networks', pulse_strength=0.5)
 
-    print(f"✓ After access:")
+    print("✓ After access:")
     print(f"    neural_networks: k = {nn_node.spring_constant:.2f} (restored!)")
     print()
 

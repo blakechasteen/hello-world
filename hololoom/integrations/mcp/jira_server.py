@@ -13,14 +13,14 @@ Provides tools for:
 - Assigning issues
 """
 
-import os
 import asyncio
-import json
-from typing import Any, Dict, List, Optional
-from mcp.server import Server, NotificationOptions
-from mcp.server.models import InitializationOptions
+import os
+from typing import Any
+
 import mcp.server.stdio
 import mcp.types as types
+from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
 
 # Jira API client
 try:
@@ -34,7 +34,7 @@ except ImportError:
 app = Server("jira")
 
 # Global Jira client (initialized on first use)
-jira_client: Optional[JIRA] = None
+jira_client: JIRA | None = None
 
 
 def get_jira_client() -> JIRA:
@@ -288,7 +288,7 @@ async def call_tool(name: str, arguments: Any) -> list[types.TextContent]:
         )]
 
 
-async def tool_create_issue(args: Dict[str, Any]) -> list[types.TextContent]:
+async def tool_create_issue(args: dict[str, Any]) -> list[types.TextContent]:
     """Create a new Jira issue."""
     jira = get_jira_client()
 
@@ -332,7 +332,7 @@ async def tool_create_issue(args: Dict[str, Any]) -> list[types.TextContent]:
     return [types.TextContent(type="text", text=result)]
 
 
-async def tool_get_issue(args: Dict[str, Any]) -> list[types.TextContent]:
+async def tool_get_issue(args: dict[str, Any]) -> list[types.TextContent]:
     """Get details of a Jira issue."""
     jira = get_jira_client()
     issue = jira.issue(args['issue_key'])
@@ -374,7 +374,7 @@ async def tool_get_issue(args: Dict[str, Any]) -> list[types.TextContent]:
     return [types.TextContent(type="text", text=result)]
 
 
-async def tool_update_issue(args: Dict[str, Any]) -> list[types.TextContent]:
+async def tool_update_issue(args: dict[str, Any]) -> list[types.TextContent]:
     """Update a Jira issue."""
     jira = get_jira_client()
     issue = jira.issue(args['issue_key'])
@@ -407,7 +407,7 @@ Updated fields:
     return [types.TextContent(type="text", text=result)]
 
 
-async def tool_add_comment(args: Dict[str, Any]) -> list[types.TextContent]:
+async def tool_add_comment(args: dict[str, Any]) -> list[types.TextContent]:
     """Add a comment to a Jira issue."""
     jira = get_jira_client()
     comment = jira.add_comment(args['issue_key'], args['comment'])
@@ -422,7 +422,7 @@ async def tool_add_comment(args: Dict[str, Any]) -> list[types.TextContent]:
     return [types.TextContent(type="text", text=result)]
 
 
-async def tool_search_issues(args: Dict[str, Any]) -> list[types.TextContent]:
+async def tool_search_issues(args: dict[str, Any]) -> list[types.TextContent]:
     """Search for Jira issues using JQL."""
     jira = get_jira_client()
     max_results = args.get('max_results', 50)
@@ -445,7 +445,7 @@ async def tool_search_issues(args: Dict[str, Any]) -> list[types.TextContent]:
     return [types.TextContent(type="text", text=result)]
 
 
-async def tool_transition_issue(args: Dict[str, Any]) -> list[types.TextContent]:
+async def tool_transition_issue(args: dict[str, Any]) -> list[types.TextContent]:
     """Transition an issue to a different status."""
     jira = get_jira_client()
     issue = jira.issue(args['issue_key'])
@@ -481,7 +481,7 @@ async def tool_transition_issue(args: Dict[str, Any]) -> list[types.TextContent]
     return [types.TextContent(type="text", text=result)]
 
 
-async def tool_add_labels(args: Dict[str, Any]) -> list[types.TextContent]:
+async def tool_add_labels(args: dict[str, Any]) -> list[types.TextContent]:
     """Add labels to a Jira issue."""
     jira = get_jira_client()
     issue = jira.issue(args['issue_key'])
@@ -501,7 +501,7 @@ async def tool_add_labels(args: Dict[str, Any]) -> list[types.TextContent]:
     return [types.TextContent(type="text", text=result)]
 
 
-async def tool_list_projects(args: Dict[str, Any]) -> list[types.TextContent]:
+async def tool_list_projects(args: dict[str, Any]) -> list[types.TextContent]:
     """List all accessible Jira projects."""
     jira = get_jira_client()
     projects = jira.projects()
@@ -519,7 +519,7 @@ async def tool_list_projects(args: Dict[str, Any]) -> list[types.TextContent]:
     return [types.TextContent(type="text", text=result)]
 
 
-async def tool_get_transitions(args: Dict[str, Any]) -> list[types.TextContent]:
+async def tool_get_transitions(args: dict[str, Any]) -> list[types.TextContent]:
     """Get available transitions for an issue."""
     jira = get_jira_client()
     issue = jira.issue(args['issue_key'])

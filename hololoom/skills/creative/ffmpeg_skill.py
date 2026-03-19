@@ -3,10 +3,16 @@
 import asyncio
 import os
 import time
-from pathlib import Path
-from typing import Dict, Any, List, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 
 class FFmpegSkill(BaseSkill):
@@ -72,7 +78,7 @@ class FFmpegSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _run_ffmpeg(self, args: List[str]) -> str:
+    async def _run_ffmpeg(self, args: list[str]) -> str:
         """Run ffmpeg command."""
         cmd = ["ffmpeg", "-y"] + args  # -y to overwrite output files
         proc = await asyncio.create_subprocess_exec(
@@ -88,7 +94,7 @@ class FFmpegSkill(BaseSkill):
 
         return stdout.decode('utf-8', errors='ignore')
 
-    async def _get_file_info(self, file_path: str) -> Dict[str, Any]:
+    async def _get_file_info(self, file_path: str) -> dict[str, Any]:
         """Get video/audio file information using ffprobe."""
         cmd = [
             "ffprobe",
@@ -111,7 +117,7 @@ class FFmpegSkill(BaseSkill):
             return json.loads(stdout.decode('utf-8'))
         return {}
 
-    async def _convert(self, params: Dict[str, Any]):
+    async def _convert(self, params: dict[str, Any]):
         """Convert video/audio format."""
         input_file = params["input"]
         output_file = params["output"]
@@ -146,7 +152,7 @@ class FFmpegSkill(BaseSkill):
             "preset": preset
         }
 
-    async def _extract_audio(self, params: Dict[str, Any]):
+    async def _extract_audio(self, params: dict[str, Any]):
         """Extract audio track from video."""
         input_file = params["input"]
         output_file = params["output"]
@@ -174,7 +180,7 @@ class FFmpegSkill(BaseSkill):
             "size_mb": round(output_size, 2)
         }
 
-    async def _thumbnail(self, params: Dict[str, Any]):
+    async def _thumbnail(self, params: dict[str, Any]):
         """Extract thumbnail/frame from video."""
         input_file = params["input"]
         output_file = params["output"]
@@ -199,7 +205,7 @@ class FFmpegSkill(BaseSkill):
             "timestamp": timestamp
         }
 
-    async def _trim(self, params: Dict[str, Any]):
+    async def _trim(self, params: dict[str, Any]):
         """Trim video to specific duration."""
         input_file = params["input"]
         output_file = params["output"]
@@ -227,7 +233,7 @@ class FFmpegSkill(BaseSkill):
             "end": end_time
         }
 
-    async def _resize(self, params: Dict[str, Any]):
+    async def _resize(self, params: dict[str, Any]):
         """Resize video resolution."""
         input_file = params["input"]
         output_file = params["output"]
@@ -249,7 +255,7 @@ class FFmpegSkill(BaseSkill):
             "resolution": f"{width}x{height}"
         }
 
-    async def _watermark(self, params: Dict[str, Any]):
+    async def _watermark(self, params: dict[str, Any]):
         """Add watermark to video."""
         input_file = params["input"]
         watermark_file = params["watermark"]
@@ -284,7 +290,7 @@ class FFmpegSkill(BaseSkill):
             "position": position
         }
 
-    async def _concat(self, params: Dict[str, Any]):
+    async def _concat(self, params: dict[str, Any]):
         """Concatenate multiple video files."""
         inputs = params["inputs"]
         output_file = params["output"]
@@ -317,4 +323,5 @@ class FFmpegSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(FFmpegSkill())

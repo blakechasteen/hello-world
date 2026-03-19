@@ -8,7 +8,7 @@ stage, bypassing the full convergence engine.
 """
 
 import logging
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -29,9 +29,9 @@ class QuickDecisionStage:
     def __init__(
         self,
         tool_executor: Any,
-        routing_table: Optional[dict] = None,
+        routing_table: dict | None = None,
         default_tool: str = "knowledge_base",
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         self.tool_executor = tool_executor
         self.routing_table = routing_table or {}

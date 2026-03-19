@@ -22,12 +22,12 @@ Philosophy:
 fluid agentic reasoning and natural conversation flow."
 """
 
-import torch
-import torch.nn as nn
-from typing import Optional, Dict, List, Tuple
+import time
 from dataclasses import dataclass
 from enum import Enum
-import time
+
+import torch
+import torch.nn as nn
 
 
 class AgentType(Enum):
@@ -65,7 +65,7 @@ class SubQueryContext:
 class UltraFastDecision:
     """Result of an ultra-fast decision"""
     decision_type: DecisionType
-    agent_type: Optional[AgentType]
+    agent_type: AgentType | None
     confidence: float
     reasoning: str
     latency_ms: float
@@ -173,7 +173,7 @@ class SubQueryRouter(nn.Module):
         self,
         logits: torch.Tensor,
         temperature: float = 0.1
-    ) -> Tuple[AgentType, float]:
+    ) -> tuple[AgentType, float]:
         """
         Select agent from logits.
 
@@ -293,9 +293,9 @@ class UltraFastOptimizer:
         # Statistics tracking
         self.stats = {
             'total_decisions': 0,
-            'decisions_by_type': {dt: 0 for dt in DecisionType},
+            'decisions_by_type': dict.fromkeys(DecisionType, 0),
             'average_latency_ms': 0.0,
-            'routing_distribution': {at: 0 for at in AgentType}
+            'routing_distribution': dict.fromkeys(AgentType, 0)
         }
 
     async def route_subquery(
@@ -446,9 +446,9 @@ class UltraFastOptimizer:
 
     async def prioritize_subqueries(
         self,
-        subqueries: List[str],
+        subqueries: list[str],
         working_memory_state: torch.Tensor
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Prioritize sub-queries for execution order.
 
@@ -487,14 +487,14 @@ class UltraFastOptimizer:
         """Reset working memory (new query session)"""
         self.working_memory.reset()
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get optimizer statistics"""
         return self.stats.copy()
 
     def _update_stats(
         self,
         decision_type: DecisionType,
-        agent_type: Optional[AgentType],
+        agent_type: AgentType | None,
         latency_ms: float
     ):
         """Update internal statistics"""
@@ -542,7 +542,7 @@ class UltraFastOptimizer:
 async def route_subquery_fast(
     text: str,
     parent_query: str,
-    optimizer: Optional[UltraFastOptimizer] = None
+    optimizer: UltraFastOptimizer | None = None
 ) -> UltraFastDecision:
     """
     Quick sub-query routing without manual memory management.
@@ -566,7 +566,7 @@ async def route_subquery_fast(
 
 async def should_verify_fast(
     claim: str,
-    optimizer: Optional[UltraFastOptimizer] = None
+    optimizer: UltraFastOptimizer | None = None
 ) -> bool:
     """
     Quick verification check.

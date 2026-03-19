@@ -9,23 +9,22 @@ Created: 2025-11-30
 Author: HoloLoom Team
 """
 
-import asyncio
-import math
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Dict, Any, List, Optional, Tuple, Callable
 import logging
+import math
+from collections.abc import Callable
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 from hololoom.thirdeye.concept import (
     Concept,
-    ConceptType,
     ConceptWorld,
     SemanticPosition,
 )
 from hololoom.thirdeye.transition import (
     Transition,
-    TransitionType,
     TransitionConfig,
+    TransitionType,
 )
 
 logger = logging.getLogger(__name__)
@@ -71,7 +70,7 @@ class CameraState:
     is_animating: bool = False
     animation_progress: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON for WebSocket streaming."""
         return {
             "position": {"x": self.x, "y": self.y, "z": self.z},
@@ -98,7 +97,7 @@ class ThoughtspaceState:
     background_color: str = "#f8fafc"  # Cream background
     ambient_light: float = 0.6
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON for WebSocket streaming."""
         return {
             "mode": self.mode.value,
@@ -129,12 +128,12 @@ class SemanticPositioner:
 
     def __init__(self):
         """Initialize the positioner."""
-        self._positions: Dict[str, SemanticPosition] = {}
+        self._positions: dict[str, SemanticPosition] = {}
 
     def position_concept(
         self,
         concept: Concept,
-        existing_concepts: List[Concept],
+        existing_concepts: list[Concept],
     ) -> SemanticPosition:
         """
         Calculate position for a new concept.
@@ -181,8 +180,8 @@ class SemanticPositioner:
     def _position_by_connections(
         self,
         concept: Concept,
-        existing: List[Concept],
-    ) -> Tuple[float, float, float]:
+        existing: list[Concept],
+    ) -> tuple[float, float, float]:
         """Position concept near its connections."""
         if not concept.connections:
             # No connections - random position
@@ -217,8 +216,8 @@ class SemanticPositioner:
     def _apply_separation(
         self,
         x: float, y: float, z: float,
-        existing: List[Concept],
-    ) -> Tuple[float, float, float]:
+        existing: list[Concept],
+    ) -> tuple[float, float, float]:
         """Apply separation force to avoid overlaps."""
         min_distance = 2.5  # Minimum distance between concepts
 
@@ -237,7 +236,7 @@ class SemanticPositioner:
 
         return (x, y, z)
 
-    def reposition_all(self, concepts: List[Concept]) -> Dict[str, SemanticPosition]:
+    def reposition_all(self, concepts: list[Concept]) -> dict[str, SemanticPosition]:
         """
         Reposition all concepts using force-directed layout.
 
@@ -253,7 +252,7 @@ class SemanticPositioner:
             return {}
 
         # Initialize positions (use existing or random)
-        positions: Dict[str, Tuple[float, float, float]] = {}
+        positions: dict[str, tuple[float, float, float]] = {}
         for c in concepts:
             if c.position.x != 0 or c.position.y != 0 or c.position.z != 0:
                 positions[c.id] = (c.position.x, c.position.y, c.position.z)
@@ -269,7 +268,7 @@ class SemanticPositioner:
 
         # Force-directed iterations
         for _ in range(50):  # 50 iterations
-            forces: Dict[str, Tuple[float, float, float]] = {
+            forces: dict[str, tuple[float, float, float]] = {
                 c.id: (0.0, 0.0, 0.0) for c in concepts
             }
 
@@ -330,7 +329,7 @@ class SemanticPositioner:
                 )
 
         # Convert to SemanticPosition objects
-        result: Dict[str, SemanticPosition] = {}
+        result: dict[str, SemanticPosition] = {}
         for c in concepts:
             x, y, z = positions[c.id]
             result[c.id] = SemanticPosition(
@@ -351,7 +350,7 @@ class Thoughtspace:
 
     def __init__(
         self,
-        on_state_change: Optional[Callable[[ThoughtspaceState], None]] = None,
+        on_state_change: Callable[[ThoughtspaceState], None] | None = None,
     ):
         """
         Initialize the Thoughtspace.
@@ -467,7 +466,7 @@ class Thoughtspace:
 
         self._emit_state()
 
-    def focus_concept(self, concept_id: str) -> Optional[Transition]:
+    def focus_concept(self, concept_id: str) -> Transition | None:
         """Focus camera on a specific concept."""
         concept = self._world.get_concept(concept_id)
         if not concept:
@@ -558,7 +557,7 @@ class Thoughtspace:
 
 # Factory function
 def create_thoughtspace(
-    on_state_change: Optional[Callable[[ThoughtspaceState], None]] = None,
+    on_state_change: Callable[[ThoughtspaceState], None] | None = None,
 ) -> Thoughtspace:
     """
     Create a Thoughtspace instance.

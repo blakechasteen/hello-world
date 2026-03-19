@@ -12,10 +12,11 @@ Author: HoloLoom Architecture Team
 Date: November 2025
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Callable
 from enum import Enum
+from typing import Any
 
 
 class StepStatus(Enum):
@@ -35,16 +36,16 @@ class StepResult:
     step_type: str
     status: StepStatus
     output: Any = None
-    error: Optional[str] = None
+    error: str | None = None
     duration_ms: float = 0.0
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class LoopConfig:
     """Configuration for loop steps."""
-    condition: Optional[Callable] = None  # Loop while condition is true
+    condition: Callable | None = None  # Loop while condition is true
     max_iterations: int = 10  # Max iterations (safety limit)
     exit_on_success: bool = False  # Exit if step succeeds
     exit_on_failure: bool = False  # Exit if step fails
@@ -56,17 +57,17 @@ class ConditionalBranch:
     """Configuration for conditional branching."""
     condition: Callable  # Returns bool
     true_step: str  # Next step if condition is true
-    false_step: Optional[str] = None  # Next step if condition is false (optional)
+    false_step: str | None = None  # Next step if condition is false (optional)
 
 
 @dataclass
 class ExecutionContext:
     """Shared context across chain execution."""
     initial_input: Any = None
-    shared_state: Dict[str, Any] = field(default_factory=dict)
-    step_outputs: Dict[str, Any] = field(default_factory=dict)  # step_id -> output
-    loop_counters: Dict[str, int] = field(default_factory=dict)  # loop_id -> count
-    errors: List[str] = field(default_factory=list)
+    shared_state: dict[str, Any] = field(default_factory=dict)
+    step_outputs: dict[str, Any] = field(default_factory=dict)  # step_id -> output
+    loop_counters: dict[str, int] = field(default_factory=dict)  # loop_id -> count
+    errors: list[str] = field(default_factory=list)
 
     def get_step_output(self, step_id: str) -> Any:
         """Get output from a previous step."""
@@ -95,7 +96,7 @@ class ExecutionContext:
 class RollbackPoint:
     """Point in execution that can be rolled back to."""
     step_id: str
-    context_snapshot: Dict[str, Any]  # Snapshot of context state
+    context_snapshot: dict[str, Any]  # Snapshot of context state
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
 
@@ -108,7 +109,7 @@ class ChainExecutionStats:
     skipped_steps: int = 0
     total_duration_ms: float = 0.0
     start_time: datetime = field(default_factory=datetime.utcnow)
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
 
     def get_success_rate(self) -> float:
         """Get success rate (completed / total)."""
@@ -122,5 +123,5 @@ class ChainValidationError:
     """Error from chain validation."""
     error_type: str
     message: str
-    step_id: Optional[str] = None
-    context: Dict[str, Any] = field(default_factory=dict)
+    step_id: str | None = None
+    context: dict[str, Any] = field(default_factory=dict)

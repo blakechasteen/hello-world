@@ -17,7 +17,7 @@ Created: 2025-12-05
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from hololoom.verification.protocol import (
     DegradationLevel,
@@ -117,17 +117,17 @@ class KnowledgeBaseVerifier:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        memory_backend: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        memory_backend: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.memory_backend = memory_backend
 
     async def verify(
         self,
-        questions: List[VerificationQuestion],
-        context: Dict[str, Any]
-    ) -> List[VerificationAnswer]:
+        questions: list[VerificationQuestion],
+        context: dict[str, Any]
+    ) -> list[VerificationAnswer]:
         """
         Answer verification questions using knowledge base.
 
@@ -149,7 +149,7 @@ class KnowledgeBaseVerifier:
     async def _verify_single(
         self,
         question: VerificationQuestion,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> VerificationAnswer:
         """Answer a single verification question."""
         # Search knowledge base
@@ -173,7 +173,7 @@ class KnowledgeBaseVerifier:
             reasoning="Answer derived from knowledge base search",
         )
 
-    async def _search_knowledge_base(self, query: str) -> List[Dict[str, Any]]:
+    async def _search_knowledge_base(self, query: str) -> list[dict[str, Any]]:
         """Search the knowledge base for relevant information."""
         if self.memory_backend is None:
             return []
@@ -198,7 +198,7 @@ class KnowledgeBaseVerifier:
     def _synthesize_answer(
         self,
         question: VerificationQuestion,
-        info: List[Dict[str, Any]]
+        info: list[dict[str, Any]]
     ) -> str:
         """Synthesize an answer from knowledge base results."""
         if not info:
@@ -212,7 +212,7 @@ class KnowledgeBaseVerifier:
         # Simple synthesis: take most relevant text
         return texts[0]
 
-    def _assess_confidence(self, info: List[Dict[str, Any]]) -> float:
+    def _assess_confidence(self, info: list[dict[str, Any]]) -> float:
         """Assess confidence based on knowledge base results."""
         if not info:
             return 0.2
@@ -227,7 +227,7 @@ class KnowledgeBaseVerifier:
 
         return avg_confidence
 
-    def _sanitize_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    def _sanitize_context(self, context: dict[str, Any]) -> dict[str, Any]:
         """
         Sanitize context to remove original response.
 
@@ -269,9 +269,9 @@ class LLMIndependentVerifier:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
-        memory_backend: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
+        memory_backend: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.llm_client = llm_client
@@ -280,9 +280,9 @@ class LLMIndependentVerifier:
 
     async def verify(
         self,
-        questions: List[VerificationQuestion],
-        context: Dict[str, Any]
-    ) -> List[VerificationAnswer]:
+        questions: list[VerificationQuestion],
+        context: dict[str, Any]
+    ) -> list[VerificationAnswer]:
         """
         Answer verification questions using LLM in fresh context.
 
@@ -307,7 +307,7 @@ class LLMIndependentVerifier:
             logger.error(f"LLM verification failed: {e}, falling back to knowledge base")
             return await self._fallback.verify(questions, safe_context)
 
-    def _sanitize_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    def _sanitize_context(self, context: dict[str, Any]) -> dict[str, Any]:
         """
         Remove any trace of original response from context.
 
@@ -339,7 +339,7 @@ class LLMIndependentVerifier:
     async def _verify_single(
         self,
         question: VerificationQuestion,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> VerificationAnswer:
         """Answer a single verification question."""
         # Gather context information (NOT including original response)
@@ -359,9 +359,9 @@ class LLMIndependentVerifier:
 
     async def _verify_batch(
         self,
-        questions: List[VerificationQuestion],
-        context: Dict[str, Any]
-    ) -> List[VerificationAnswer]:
+        questions: list[VerificationQuestion],
+        context: dict[str, Any]
+    ) -> list[VerificationAnswer]:
         """Answer multiple verification questions in batch."""
         # Format questions
         questions_text = "\n".join([
@@ -387,7 +387,7 @@ class LLMIndependentVerifier:
     async def _gather_context(
         self,
         query: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> str:
         """Gather relevant context from knowledge base."""
         context_parts = []
@@ -464,8 +464,8 @@ class LLMIndependentVerifier:
     def _parse_batch_response(
         self,
         response: str,
-        questions: List[VerificationQuestion]
-    ) -> List[VerificationAnswer]:
+        questions: list[VerificationQuestion]
+    ) -> list[VerificationAnswer]:
         """Parse batch response."""
         import json
 
@@ -529,9 +529,9 @@ class HybridIndependentVerifier:
 
     def __init__(
         self,
-        config: Optional[VerificationConfig] = None,
-        llm_client: Optional[Any] = None,
-        memory_backend: Optional[Any] = None,
+        config: VerificationConfig | None = None,
+        llm_client: Any | None = None,
+        memory_backend: Any | None = None,
     ):
         self.config = config or VerificationConfig()
         self.llm_verifier = LLMIndependentVerifier(config, llm_client, memory_backend)
@@ -539,9 +539,9 @@ class HybridIndependentVerifier:
 
     async def verify(
         self,
-        questions: List[VerificationQuestion],
-        context: Dict[str, Any]
-    ) -> List[VerificationAnswer]:
+        questions: list[VerificationQuestion],
+        context: dict[str, Any]
+    ) -> list[VerificationAnswer]:
         """
         Verify using hybrid approach.
 
@@ -564,9 +564,9 @@ class HybridIndependentVerifier:
 
     def _merge_answers(
         self,
-        llm_answers: List[VerificationAnswer],
-        kb_answers: List[VerificationAnswer]
-    ) -> List[VerificationAnswer]:
+        llm_answers: list[VerificationAnswer],
+        kb_answers: list[VerificationAnswer]
+    ) -> list[VerificationAnswer]:
         """Merge and cross-validate answers from different sources."""
         merged = []
 
@@ -625,9 +625,9 @@ class HybridIndependentVerifier:
 # =============================================================================
 
 def create_independent_verifier(
-    config: Optional[VerificationConfig] = None,
-    llm_client: Optional[Any] = None,
-    memory_backend: Optional[Any] = None,
+    config: VerificationConfig | None = None,
+    llm_client: Any | None = None,
+    memory_backend: Any | None = None,
 ) -> IndependentVerifierProtocol:
     """
     Create appropriate independent verifier based on configuration.

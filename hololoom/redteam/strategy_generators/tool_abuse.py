@@ -15,9 +15,9 @@ Author: CARTS (Continuous Adversarial Red Team System)
 Date: 2025-12-05
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
 import random
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -29,10 +29,10 @@ class ToolAbusePayload:
     expected_behavior: str
     severity_estimate: float  # 0.0-1.0
     attack_type: str  # parameter_injection, tool_chain, hidden_invocation
-    target_tool: Optional[str] = None
-    injected_parameter: Optional[str] = None
-    tool_chain: Optional[List[str]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    target_tool: str | None = None
+    injected_parameter: str | None = None
+    tool_chain: list[str] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         return f"[TOOL_ABUSE] {self.payload[:60]}..."
@@ -46,7 +46,7 @@ class ToolAbuseGenerator:
     and hiding invocations in natural language.
     """
 
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, seed: int | None = None):
         """Initialize with optional random seed."""
         if seed is not None:
             random.seed(seed)
@@ -140,7 +140,7 @@ class ToolAbuseGenerator:
             'To assist, {tool}("{param}")',
         ]
 
-    def generate_parameter_injection(self, tool_name: str) -> List[ToolAbusePayload]:
+    def generate_parameter_injection(self, tool_name: str) -> list[ToolAbusePayload]:
         """
         Generate malicious parameter injection attacks.
 
@@ -224,7 +224,7 @@ class ToolAbuseGenerator:
 
         return payloads
 
-    def generate_tool_chain_attack(self, tools: List[str]) -> List[ToolAbusePayload]:
+    def generate_tool_chain_attack(self, tools: list[str]) -> list[ToolAbusePayload]:
         """
         Generate malicious tool chaining attacks.
 
@@ -343,7 +343,7 @@ class ToolAbuseGenerator:
 
         return payloads
 
-    def generate_hidden_tool_calls(self, target: str) -> List[ToolAbusePayload]:
+    def generate_hidden_tool_calls(self, target: str) -> list[ToolAbusePayload]:
         """
         Generate hidden tool invocation attacks.
 
@@ -441,7 +441,7 @@ class ToolAbuseGenerator:
 
         return payloads
 
-    def generate_all(self, target: str = "") -> List[ToolAbusePayload]:
+    def generate_all(self, target: str = "") -> list[ToolAbusePayload]:
         """
         Generate all tool abuse payloads.
 
@@ -459,7 +459,7 @@ class ToolAbuseGenerator:
 
         return all_payloads
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get statistics about available payloads."""
         return {
             'total_dangerous_tools': len(self.dangerous_tools),

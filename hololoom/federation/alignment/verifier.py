@@ -17,12 +17,26 @@ Layered Verification:
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import time
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
+from ...alignment.deception_detection import (
+    DeceptionDetector,
+)
+from ...alignment.instrumental_convergence import (
+    InstrumentalConvergenceGuard,
+    ResourceBounds,
+    ResourceType,
+)
+
+# Import existing alignment primitives
+from ...alignment.safety_guardrails import (
+    ActionCategory,
+    ActionRequest,
+    RiskLevel,
+    SafetyGuardrails,
+)
+from ..types import Query, Response
 from .protocol import (
     AlignmentLayer,
     AlignmentStatus,
@@ -31,30 +45,6 @@ from .protocol import (
     ConsensusAlignmentResult,
     DeceptionFlag,
 )
-from .metadata import AlignmentMetadata, AlignmentProof, ResourceUsage
-from ..types import Query, Response
-
-# Import existing alignment primitives
-from ...alignment.safety_guardrails import (
-    SafetyGuardrails,
-    SafetyDecision,
-    RiskLevel,
-    ActionRequest,
-    ActionCategory,
-)
-from ...alignment.deception_detection import (
-    DeceptionDetector,
-    BehavioralProbe,
-    ProbeType,
-    DeceptionReport,
-)
-from ...alignment.instrumental_convergence import (
-    InstrumentalConvergenceGuard,
-    ResourceType,
-    ResourceBounds,
-    ResourceViolation,
-)
-
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  ALIGNMENT VERIFIER - Composes existing primitives
@@ -90,9 +80,9 @@ class AlignmentVerifier(AlignmentVerifierBase):
 
     def __init__(
         self,
-        safety_guardrails: Optional[SafetyGuardrails] = None,
-        deception_detector: Optional[DeceptionDetector] = None,
-        convergence_guard: Optional[InstrumentalConvergenceGuard] = None,
+        safety_guardrails: SafetyGuardrails | None = None,
+        deception_detector: DeceptionDetector | None = None,
+        convergence_guard: InstrumentalConvergenceGuard | None = None,
         node_id: str = "local",
     ):
         """
@@ -162,7 +152,7 @@ class AlignmentVerifier(AlignmentVerifierBase):
         Latency: <10ms
         """
         start_time = time.perf_counter()
-        reasoning_chain: List[str] = []
+        reasoning_chain: list[str] = []
 
         # Quick safety check on query content
         action_request = ActionRequest(
@@ -235,7 +225,7 @@ class AlignmentVerifier(AlignmentVerifierBase):
         Latency: 10-100ms
         """
         start_time = time.perf_counter()
-        reasoning_chain: List[str] = []
+        reasoning_chain: list[str] = []
 
         # Run all checks concurrently for L2
         if layer == AlignmentLayer.L1_LOCAL:
@@ -307,7 +297,7 @@ class AlignmentVerifier(AlignmentVerifierBase):
     async def consensus_alignment_verify(
         self,
         response: Response,
-        verifier_nodes: List[str],
+        verifier_nodes: list[str],
         min_agreements: int = 2,
     ) -> ConsensusAlignmentResult:
         """
@@ -330,7 +320,7 @@ class AlignmentVerifier(AlignmentVerifierBase):
 
         # For now, run local verification for each "node"
         # In production, this would make network calls to actual verifier nodes
-        individual_results: List[AlignmentVerification] = []
+        individual_results: list[AlignmentVerification] = []
 
         # Simulate multi-node verification
         for node_id in verifier_nodes:
@@ -388,7 +378,7 @@ class AlignmentVerifier(AlignmentVerifierBase):
     async def _verify_safety(
         self,
         response: Response,
-    ) -> Tuple[str, bool]:
+    ) -> tuple[str, bool]:
         """
         Check response against safety guardrails.
 
@@ -450,7 +440,7 @@ class AlignmentVerifier(AlignmentVerifierBase):
         self,
         node_id: str,
         response: Response,
-    ) -> Tuple[float, List[DeceptionFlag]]:
+    ) -> tuple[float, list[DeceptionFlag]]:
         """
         Detect deception in federated responses.
 
@@ -461,8 +451,8 @@ class AlignmentVerifier(AlignmentVerifierBase):
         Returns:
             (deception_score, flags) tuple
         """
-        flags: List[DeceptionFlag] = []
-        deception_indicators: List[float] = []
+        flags: list[DeceptionFlag] = []
+        deception_indicators: list[float] = []
 
         response_text = response.text.lower()
 
@@ -636,7 +626,7 @@ def _risk_level_score_str(risk_level: str) -> int:
 
 def create_alignment_verifier(
     node_id: str = "local",
-    safety_config: Optional[Dict[str, Any]] = None,
+    safety_config: dict[str, Any] | None = None,
 ) -> AlignmentVerifier:
     """
     Create an alignment verifier with default configuration.

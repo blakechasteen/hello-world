@@ -23,69 +23,157 @@
 # - Mobile-Responsive Spatial UI (touch gestures, adaptive layouts)
 
 # Shared math types (used across all spatial modules)
-from hololoom.spatial.math_types import (
-    Vector3, Quaternion, Color, Transform, BoundingBox
-)
-
-from hololoom.spatial.webxr_graph import WebXRKnowledgeGraph, XRNode, XRAnchor
-from hololoom.spatial.spatial_anchors import SpatialAnchorManager, SpatialAnchor
-from hololoom.spatial.hand_tracking import HandTracker, HandGesture, GestureType
-from hololoom.spatial.voice_commands import VoiceCommandSystem, VoiceCommand
-from hololoom.spatial.presence import SpatialPresence, UserPresence, PresenceEvent
-from hololoom.spatial.spatial_audio import SpatialAudioManager, AudioSource, AudioListener
-from hololoom.spatial.gaze_tracking import GazeTracker, GazeRay, AttentionHeatMap, GazeHighlighter
-from hololoom.spatial.spatial_ui import SpatialUIManager, Panel, Button, RadialMenu, InfoCard, TagCloud
-from hololoom.spatial.session_recording import SessionRecorder, SessionPlayer, Recording, RecordingStorage
-from hololoom.spatial.haptic_feedback import (
-    HapticFeedbackManager, HapticPattern, HapticPulse, HapticEnvelope,
-    HapticDevice, HapticWaveform, SpatialHapticZone, HapticPatternLibrary
-)
-from hololoom.spatial.physics_objects import (
-    PhysicsWorld, PhysicsBody, PhysicsConstraint, PhysicsMaterial,
-    CollisionShape, BodyType as PhysicsBodyType, PhysicsShape, CollisionLayer, ConstraintType
-)
-from hololoom.spatial.whiteboard_3d import (
-    Whiteboard3D, WhiteboardManager, Stroke, Shape3D, TextAnnotation, StickyNote,
-    WhiteboardLayer, DrawingTool, BrushStyle, BrushSettings
-)
-from hololoom.spatial.spatial_notifications import (
-    SpatialNotificationManager, Notification, NotificationQueue,
-    Badge, ProgressIndicator, AttentionGuide,
-    NotificationType, NotificationPriority, NotificationPosition, AnimationType
-)
-from hololoom.spatial.environment_mapping import (
-    EnvironmentMapper, Plane, EnvironmentMesh, PersistentAnchor, SceneSnapshot,
-    SurfaceType, MeshType, ScanQuality, ScanProgress
-)
 from hololoom.spatial.avatar_system import (
-    AvatarManager, Avatar, AvatarAnimator, AvatarIKSolver, AvatarPresets,
-    BodySettings, HeadSettings, HandSettings, Expression, IKState, NameTag, StatusIndicator,
-    AvatarStyle, BodyType as AvatarBodyType, HeadShape, HandStyle, ExpressionType,
-    AnimationState, StatusType, IKTarget, AnimationClip
+    AnimationClip,
+    AnimationState,
+    Avatar,
+    AvatarAnimator,
+    AvatarIKSolver,
+    AvatarManager,
+    AvatarPresets,
+    AvatarStyle,
+    BodySettings,
+    Expression,
+    ExpressionType,
+    HandSettings,
+    HandStyle,
+    HeadSettings,
+    HeadShape,
+    IKState,
+    IKTarget,
+    NameTag,
+    StatusIndicator,
+    StatusType,
 )
+from hololoom.spatial.avatar_system import BodyType as AvatarBodyType
 
 # Phase 4 Enhancement: Collaborative Spatial Session (November 2025)
 from hololoom.spatial.collaborative_session import (
-    CollaborativeSpatialSession, ARContextProvider, GestureCollaborationBridge,
-    SharedSpatialObject, SpatialZone, SpatialContext, SpatialActivityType,
-    SpatialZoneType, GestureAction, GestureMapping, create_collaborative_spatial_session
+    ARContextProvider,
+    CollaborativeSpatialSession,
+    GestureAction,
+    GestureCollaborationBridge,
+    GestureMapping,
+    SharedSpatialObject,
+    SpatialActivityType,
+    SpatialContext,
+    SpatialZone,
+    SpatialZoneType,
+    create_collaborative_spatial_session,
+)
+from hololoom.spatial.environment_mapping import (
+    EnvironmentMapper,
+    EnvironmentMesh,
+    MeshType,
+    PersistentAnchor,
+    Plane,
+    ScanProgress,
+    ScanQuality,
+    SceneSnapshot,
+    SurfaceType,
+)
+from hololoom.spatial.gaze_tracking import AttentionHeatMap, GazeHighlighter, GazeRay, GazeTracker
+from hololoom.spatial.hand_tracking import GestureType, HandGesture, HandTracker
+from hololoom.spatial.haptic_feedback import (
+    HapticDevice,
+    HapticEnvelope,
+    HapticFeedbackManager,
+    HapticPattern,
+    HapticPatternLibrary,
+    HapticPulse,
+    HapticWaveform,
+    SpatialHapticZone,
 )
 
 # Phase 4 Enhancement: AR Knowledge Overlay (November 2025)
 from hololoom.spatial.knowledge_overlay import (
-    KnowledgeOverlayManager, KnowledgeNodeOverlay, KnowledgeEdgeOverlay,
-    OverlayCluster, MemoryPalaceRoom, LayoutEngine,
-    OverlayStyle, VisibilityMode, LayoutAlgorithm, EdgeStyle,
-    create_knowledge_overlay_manager
+    EdgeStyle,
+    KnowledgeEdgeOverlay,
+    KnowledgeNodeOverlay,
+    KnowledgeOverlayManager,
+    LayoutAlgorithm,
+    LayoutEngine,
+    MemoryPalaceRoom,
+    OverlayCluster,
+    OverlayStyle,
+    VisibilityMode,
+    create_knowledge_overlay_manager,
 )
+from hololoom.spatial.math_types import BoundingBox, Color, Quaternion, Transform, Vector3
 
 # Phase 4 Enhancement: Mobile-Responsive Spatial UI (November 2025)
 from hololoom.spatial.mobile_spatial_ui import (
-    MobileSpatialUIManager, TouchGestureRecognizer, SpatialHUD,
-    UIComponent, FloatingActionButton, BottomSheet, RadialMenu as MobileRadialMenu,
-    DeviceCapabilities, TouchGesture, TouchGestureType,
-    DeviceType, ScreenOrientation, InputMode, UIScale, UIAnchor,
-    create_mobile_ui_manager, create_default_spatial_ui
+    BottomSheet,
+    DeviceCapabilities,
+    DeviceType,
+    FloatingActionButton,
+    InputMode,
+    MobileSpatialUIManager,
+    ScreenOrientation,
+    SpatialHUD,
+    TouchGesture,
+    TouchGestureRecognizer,
+    TouchGestureType,
+    UIAnchor,
+    UIComponent,
+    UIScale,
+    create_default_spatial_ui,
+    create_mobile_ui_manager,
+)
+from hololoom.spatial.mobile_spatial_ui import RadialMenu as MobileRadialMenu
+from hololoom.spatial.physics_objects import BodyType as PhysicsBodyType
+from hololoom.spatial.physics_objects import (
+    CollisionLayer,
+    CollisionShape,
+    ConstraintType,
+    PhysicsBody,
+    PhysicsConstraint,
+    PhysicsMaterial,
+    PhysicsShape,
+    PhysicsWorld,
+)
+from hololoom.spatial.presence import PresenceEvent, SpatialPresence, UserPresence
+from hololoom.spatial.session_recording import (
+    Recording,
+    RecordingStorage,
+    SessionPlayer,
+    SessionRecorder,
+)
+from hololoom.spatial.spatial_anchors import SpatialAnchor, SpatialAnchorManager
+from hololoom.spatial.spatial_audio import AudioListener, AudioSource, SpatialAudioManager
+from hololoom.spatial.spatial_notifications import (
+    AnimationType,
+    AttentionGuide,
+    Badge,
+    Notification,
+    NotificationPosition,
+    NotificationPriority,
+    NotificationQueue,
+    NotificationType,
+    ProgressIndicator,
+    SpatialNotificationManager,
+)
+from hololoom.spatial.spatial_ui import (
+    Button,
+    InfoCard,
+    Panel,
+    RadialMenu,
+    SpatialUIManager,
+    TagCloud,
+)
+from hololoom.spatial.voice_commands import VoiceCommand, VoiceCommandSystem
+from hololoom.spatial.webxr_graph import WebXRKnowledgeGraph, XRAnchor, XRNode
+from hololoom.spatial.whiteboard_3d import (
+    BrushSettings,
+    BrushStyle,
+    DrawingTool,
+    Shape3D,
+    StickyNote,
+    Stroke,
+    TextAnnotation,
+    Whiteboard3D,
+    WhiteboardLayer,
+    WhiteboardManager,
 )
 
 __all__ = [

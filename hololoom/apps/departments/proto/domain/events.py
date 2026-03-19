@@ -11,9 +11,9 @@ Status: Production ready
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any
 from uuid import UUID, uuid4
 
 
@@ -56,8 +56,8 @@ class ProtoEvent:
     """
     event_id: UUID = field(default_factory=uuid4)
     event_type: ProtoEventType = ProtoEventType.SESSION_STARTED
-    session_id: Optional[UUID] = None
-    data: Dict[str, Any] = field(default_factory=dict)
+    session_id: UUID | None = None
+    data: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
     def get_event_name(self) -> str:
@@ -80,7 +80,7 @@ class ProtoEvent:
         """
         return self.data.get(key, default)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert event to dictionary representation.
 
         Returns:
@@ -270,8 +270,8 @@ class ProtoEvent:
     def context_updated(
         cls,
         session_id: UUID,
-        file_path: Optional[str] = None,
-        language: Optional[str] = None,
+        file_path: str | None = None,
+        language: str | None = None,
     ) -> "ProtoEvent":
         """Create CONTEXT_UPDATED event.
 

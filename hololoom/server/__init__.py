@@ -6,8 +6,8 @@ Import from ``HoloLoom.apps.server`` instead.
 """
 
 import importlib
-import warnings
 import sys
+import warnings
 
 
 class _DeprecatedFinder:

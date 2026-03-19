@@ -17,8 +17,9 @@ real tokenizer via the token_fn parameter.
 """
 
 import logging
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class FormattedItem:
     score: float
     memory_type: str
     token_count: int
-    confidence: Optional[float] = None
+    confidence: float | None = None
     prefix: str = ""
 
     @property
@@ -112,17 +113,17 @@ class Formatter:
 
     def __init__(
         self,
-        config: Optional[FormatConfig] = None,
-        token_fn: Optional[Callable[[str], int]] = None,
+        config: FormatConfig | None = None,
+        token_fn: Callable[[str], int] | None = None,
     ):
         self.config = config or FormatConfig()
         self.token_fn = token_fn or default_token_estimate
 
     def pack(
         self,
-        ranked_nodes: List[Tuple[str, float]],
-        node_data: Dict[str, Dict[str, Any]],
-        confidence_scores: Optional[Dict[str, float]] = None,
+        ranked_nodes: list[tuple[str, float]],
+        node_data: dict[str, dict[str, Any]],
+        confidence_scores: dict[str, float] | None = None,
     ) -> "ContextBlock":
         """Pack ranked nodes into a fixed-budget context block.
 
@@ -141,7 +142,7 @@ class Formatter:
         confidence_scores = confidence_scores or {}
 
         available = cfg.token_budget - cfg.header_tokens
-        packed: List[FormattedItem] = []
+        packed: list[FormattedItem] = []
         total_tokens = cfg.header_tokens
 
         resolution = cfg.resolution  # May be None (no multi-resolution)
@@ -217,8 +218,8 @@ class Formatter:
         self,
         content: str,
         score: float,
-        data: Dict[str, Any],
-        resolution: Optional[ResolutionThresholds],
+        data: dict[str, Any],
+        resolution: ResolutionThresholds | None,
     ) -> str:
         """Apply multi-resolution formatting based on PPR score.
 
@@ -247,7 +248,7 @@ class Formatter:
         return self._format_compact(content, data)
 
     @staticmethod
-    def _format_compact(content: str, data: Dict[str, Any]) -> str:
+    def _format_compact(content: str, data: dict[str, Any]) -> str:
         """Compact key-value format for mid-priority items.
 
         Extracts the first sentence and any structured metadata,
@@ -274,7 +275,7 @@ class Formatter:
         self,
         memory_type: str,
         score: float,
-        confidence: Optional[float],
+        confidence: float | None,
     ) -> str:
         """Build the structural prefix for an item."""
         if not self.config.include_provenance:
@@ -314,7 +315,7 @@ class Formatter:
 class ContextBlock:
     """A packed context block ready for LLM consumption."""
     text: str
-    items: List[FormattedItem]
+    items: list[FormattedItem]
     token_count: int
     token_budget: int
     items_packed: int

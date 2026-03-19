@@ -19,11 +19,11 @@ The fabric can be:
 
 import json
 import logging
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +54,11 @@ class Artifact:
     """
     name: str                           # Filename or identifier
     type: ArtifactType                  # Type of artifact
-    content: Optional[Any] = None       # The payload (str for text/code, bytes for binary)
-    destination_path: Optional[str] = None  # Suggested relative path
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    
-    def to_dict(self) -> Dict[str, Any]:
+    content: Any | None = None       # The payload (str for text/code, bytes for binary)
+    destination_path: str | None = None  # Suggested relative path
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary (content excluded if binary/too large)."""
         # We might want to handle content carefully if it's huge bytes
         is_binary = isinstance(self.content, bytes)
@@ -71,7 +71,7 @@ class Artifact:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Artifact':
+    def from_dict(cls, data: dict[str, Any]) -> 'Artifact':
         """Create from dictionary."""
         return cls(
             name=data['name'],
@@ -100,15 +100,15 @@ class WeavingTrace:
     duration_ms: float
 
     # Stage timings
-    stage_durations: Dict[str, float] = field(default_factory=dict)
+    stage_durations: dict[str, float] = field(default_factory=dict)
 
     # Feature extraction trace
-    motifs_detected: List[str] = field(default_factory=list)
-    embedding_scales_used: List[int] = field(default_factory=list)
-    spectral_features: Optional[Dict[str, Any]] = None
+    motifs_detected: list[str] = field(default_factory=list)
+    embedding_scales_used: list[int] = field(default_factory=list)
+    spectral_features: dict[str, Any] | None = None
 
     # Memory retrieval trace
-    threads_activated: List[str] = field(default_factory=list)
+    threads_activated: list[str] = field(default_factory=list)
     context_shards_count: int = 0
     retrieval_mode: str = "unknown"
 
@@ -116,18 +116,18 @@ class WeavingTrace:
     policy_adapter: str = "unknown"
     tool_selected: str = "unknown"
     tool_confidence: float = 0.0
-    bandit_statistics: Optional[Dict[str, Any]] = None
+    bandit_statistics: dict[str, Any] | None = None
 
     # Warp space trace (if used)
-    warp_operations: List[tuple] = field(default_factory=list)
-    tensor_field_stats: Optional[Dict[str, Any]] = None
+    warp_operations: list[tuple] = field(default_factory=list)
+    tensor_field_stats: dict[str, Any] | None = None
 
     # Analytical metrics (mathematical guarantees)
-    analytical_metrics: Optional[Dict[str, Any]] = None
+    analytical_metrics: dict[str, Any] | None = None
 
     # Error tracking
-    errors: List[Dict[str, str]] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
+    errors: list[dict[str, str]] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -167,28 +167,28 @@ class Spacetime:
     tool_used: str
 
     confidence: float
-    
+
 
 
     # Computational lineage
     trace: WeavingTrace
 
     # Material outputs
-    artifacts: List[Artifact] = field(default_factory=list)
+    artifacts: list[Artifact] = field(default_factory=list)
 
     # Additional metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     # Context preservation
-    context_summary: Optional[str] = None
-    sources_used: List[str] = field(default_factory=list)
+    context_summary: str | None = None
+    sources_used: list[str] = field(default_factory=list)
 
     # Timestamp
     created_at: datetime = field(default_factory=datetime.now)
 
     # Quality metrics (can be added post-hoc)
-    quality_score: Optional[float] = None
-    user_feedback: Optional[str] = None
+    quality_score: float | None = None
+    user_feedback: str | None = None
 
     def __post_init__(self):
         """Calculate derived metrics on initialization."""
@@ -203,7 +203,7 @@ class Spacetime:
         if 'threads_activated' not in self.metadata and self.trace:
             self.metadata['threads_activated'] = len(self.trace.threads_activated)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert to serializable dictionary.
 
@@ -226,7 +226,7 @@ class Spacetime:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Spacetime':
+    def from_dict(cls, data: dict[str, Any]) -> 'Spacetime':
         """
         Create Spacetime from dictionary.
 
@@ -258,7 +258,7 @@ class Spacetime:
             errors=trace_data.get('errors', []),
             warnings=trace_data.get('warnings', [])
         )
-        
+
         # Parse artifacts
         artifacts_data = data.get('artifacts', [])
         artifacts = [Artifact.from_dict(a) for a in artifacts_data]
@@ -308,13 +308,13 @@ class Spacetime:
         Returns:
             Spacetime instance
         """
-        with open(path, 'r') as f:
+        with open(path) as f:
             data = json.load(f)
 
         logger.info(f"Spacetime loaded from {path}")
         return cls.from_dict(data)
 
-    def add_quality_score(self, score: float, feedback: Optional[str] = None) -> None:
+    def add_quality_score(self, score: float, feedback: str | None = None) -> None:
         """
         Add quality assessment to fabric.
 
@@ -328,7 +328,7 @@ class Spacetime:
 
         logger.info(f"Quality score added: {score}")
 
-    def summarize(self) -> Dict[str, Any]:
+    def summarize(self) -> dict[str, Any]:
         """
         Get concise summary of spacetime.
 
@@ -346,7 +346,7 @@ class Spacetime:
             'timestamp': self.created_at.isoformat()
         }
 
-    def get_reflection_signal(self) -> Dict[str, Any]:
+    def get_reflection_signal(self) -> dict[str, Any]:
         """
         Extract signal for reflection learning.
 
@@ -395,14 +395,14 @@ class FabricCollection:
     - Reflection learning from corpus
     """
 
-    def __init__(self, fabrics: Optional[List[Spacetime]] = None):
+    def __init__(self, fabrics: list[Spacetime] | None = None):
         """
         Initialize fabric collection.
 
         Args:
             fabrics: Optional initial list of Spacetime instances
         """
-        self.fabrics: List[Spacetime] = fabrics or []
+        self.fabrics: list[Spacetime] = fabrics or []
         self.logger = logging.getLogger(__name__)
 
     def add(self, fabric: Spacetime) -> None:
@@ -449,7 +449,7 @@ class FabricCollection:
         logger.info(f"Loaded {len(fabrics)} fabrics from {directory}")
         return cls(fabrics)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get aggregate statistics across all fabrics.
 
@@ -487,7 +487,7 @@ class FabricCollection:
             }
         }
 
-    def get_reflection_corpus(self) -> List[Dict[str, Any]]:
+    def get_reflection_corpus(self) -> list[dict[str, Any]]:
         """
         Extract reflection learning signals from all fabrics.
 

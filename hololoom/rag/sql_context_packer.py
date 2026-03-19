@@ -19,12 +19,11 @@ Author: Claude Code
 Date: 2025-12-09
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Tuple
-from enum import Enum
 import logging
 import re
-from collections import Counter
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +44,8 @@ class PackedSQLContext:
     Contains the optimized rows and columns with MI scores.
     """
     # Packed data
-    rows: List[Dict[str, Any]]
-    columns: List[str]
+    rows: list[dict[str, Any]]
+    columns: list[str]
 
     # Original data for comparison
     original_row_count: int
@@ -58,8 +57,8 @@ class PackedSQLContext:
     total_compression_ratio: float
 
     # MI scores
-    column_mi_scores: Dict[str, float]  # column -> MI score
-    row_mi_scores: List[float]  # MI score per packed row
+    column_mi_scores: dict[str, float]  # column -> MI score
+    row_mi_scores: list[float]  # MI score per packed row
     total_mi: float  # Total MI preserved
 
     # Token estimates
@@ -130,7 +129,7 @@ class SQLContextPacker:
         self.enable_adaptive_strategy = enable_adaptive_strategy
 
         # Caches
-        self._column_mi_cache: Dict[Tuple[str, str], float] = {}
+        self._column_mi_cache: dict[tuple[str, str], float] = {}
 
         # Statistics
         self._stats = {
@@ -146,12 +145,12 @@ class SQLContextPacker:
 
     def pack_sql_results(
         self,
-        rows: List[Dict[str, Any]],
+        rows: list[dict[str, Any]],
         query: str,
-        max_rows: Optional[int] = None,
-        max_columns: Optional[int] = None,
-        token_budget: Optional[int] = None,
-        strategy: Optional[PackingStrategy] = None
+        max_rows: int | None = None,
+        max_columns: int | None = None,
+        token_budget: int | None = None,
+        strategy: PackingStrategy | None = None
     ) -> PackedSQLContext:
         """
         Pack SQL results with MI-aware row/column selection.
@@ -279,10 +278,7 @@ class SQLContextPacker:
         Integrates with Phase 6.1 AdaptiveCompressionStrategy if available.
         """
         try:
-            from hololoom.context_packing import (
-                AdaptiveCompressionStrategy,
-                AdaptiveComplexity
-            )
+            from hololoom.context_packing import AdaptiveComplexity, AdaptiveCompressionStrategy
 
             strategy_obj = AdaptiveCompressionStrategy()
             result = strategy_obj.select_strategy(query)
@@ -328,10 +324,10 @@ class SQLContextPacker:
 
     def _score_columns_by_mi(
         self,
-        columns: List[str],
-        rows: List[Dict[str, Any]],
+        columns: list[str],
+        rows: list[dict[str, Any]],
         query: str
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Score columns by mutual information with query.
 
@@ -400,10 +396,10 @@ class SQLContextPacker:
 
     def _select_columns(
         self,
-        column_mi_scores: Dict[str, float],
+        column_mi_scores: dict[str, float],
         mi_threshold: float,
-        max_columns: Optional[int] = None
-    ) -> List[str]:
+        max_columns: int | None = None
+    ) -> list[str]:
         """
         Select columns based on MI scores.
 
@@ -444,10 +440,10 @@ class SQLContextPacker:
 
     def _score_rows_by_mi(
         self,
-        rows: List[Dict[str, Any]],
-        selected_columns: List[str],
+        rows: list[dict[str, Any]],
+        selected_columns: list[str],
         query: str
-    ) -> List[float]:
+    ) -> list[float]:
         """
         Score rows by mutual information with query.
 
@@ -489,13 +485,13 @@ class SQLContextPacker:
 
     def _select_rows(
         self,
-        rows: List[Dict[str, Any]],
-        row_mi_scores: List[float],
-        selected_columns: List[str],
-        max_rows: Optional[int],
-        token_budget: Optional[int],
+        rows: list[dict[str, Any]],
+        row_mi_scores: list[float],
+        selected_columns: list[str],
+        max_rows: int | None,
+        token_budget: int | None,
         strategy: PackingStrategy
-    ) -> Tuple[List[Dict[str, Any]], List[float]]:
+    ) -> tuple[list[dict[str, Any]], list[float]]:
         """
         Select rows based on MI scores and budget.
 
@@ -556,8 +552,8 @@ class SQLContextPacker:
 
     def _estimate_tokens(
         self,
-        rows: List[Dict[str, Any]],
-        columns: List[str]
+        rows: list[dict[str, Any]],
+        columns: list[str]
     ) -> int:
         """
         Estimate token count for rows and columns.
@@ -590,7 +586,7 @@ class SQLContextPacker:
 
         return {t for t in terms if len(t) > 2 and t not in stopwords}
 
-    def _empty_result(self, token_budget: Optional[int]) -> PackedSQLContext:
+    def _empty_result(self, token_budget: int | None) -> PackedSQLContext:
         """Return empty result for empty input."""
         return PackedSQLContext(
             rows=[],
@@ -635,7 +631,7 @@ class SQLContextPacker:
                 self._stats['total_columns_kept'] / self._stats['total_columns_processed']
             )
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get packing statistics."""
         return {
             **self._stats,
@@ -650,11 +646,11 @@ class SQLContextPacker:
 # Convenience functions
 
 def pack_sql_results(
-    rows: List[Dict[str, Any]],
+    rows: list[dict[str, Any]],
     query: str,
-    max_rows: Optional[int] = None,
-    max_columns: Optional[int] = None,
-    token_budget: Optional[int] = None
+    max_rows: int | None = None,
+    max_columns: int | None = None,
+    token_budget: int | None = None
 ) -> PackedSQLContext:
     """
     Convenience function for one-shot SQL packing.
@@ -684,7 +680,7 @@ def pack_sql_results(
     )
 
 
-def get_adaptive_sql_budget(query: str) -> Tuple[int, int, int]:
+def get_adaptive_sql_budget(query: str) -> tuple[int, int, int]:
     """
     Get adaptive row/column/token budget based on query complexity.
 
@@ -701,7 +697,7 @@ def get_adaptive_sql_budget(query: str) -> Tuple[int, int, int]:
         >>> print(f"Limits: {max_rows} rows, {max_cols} cols, {budget} tokens")
     """
     try:
-        from hololoom.context_packing import get_adaptive_mi_budget, AdaptiveComplexity
+        from hololoom.context_packing import AdaptiveComplexity, get_adaptive_mi_budget
         from hololoom.context_packing.adaptive_strategy import AdaptiveCompressionStrategy
 
         strategy = AdaptiveCompressionStrategy()

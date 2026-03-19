@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Inference Router - Capability-Based Distributed Inference
 ==========================================================
@@ -45,44 +44,33 @@ import asyncio
 import logging
 import time
 import uuid
+from collections.abc import AsyncGenerator, Callable
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum, auto
 from typing import (
     Any,
-    AsyncGenerator,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Union,
 )
 
-from hololoom.federation.types import FederationNode, GuildTrustLevel
 from hololoom.federation.load_balancer import (
     LoadBalancer,
-    SelectionResult,
     LoadBalanceStrategy,
-)
-from hololoom.federation.safety import (
-    FederationSafetyGate,
-    SignedRequest,
-    SafetyCheckResult,
-    FederationSafetyResult,
+    SelectionResult,
 )
 from hololoom.federation.rate_limiter import (
     FederatedRateLimiter,
     RateLimitTier,
     get_tier_for_trust_level,
 )
+from hololoom.federation.safety import (
+    FederationSafetyGate,
+    FederationSafetyResult,
+    SafetyCheckResult,
+    SignedRequest,
+)
+from hololoom.federation.types import FederationNode, GuildTrustLevel
 from hololoom.federation.wire_protocol import (
     JSONRPCBuilder,
     RPCRequest,
-    RPCResponse,
-    RPCError,
-    ErrorCode,
 )
 
 logger = logging.getLogger(__name__)
@@ -127,14 +115,14 @@ class InferenceRequest:
     """Request for inference generation."""
 
     prompt: str
-    model: Optional[str] = None
+    model: str | None = None
     max_tokens: int = 500
     temperature: float = 0.7
     stream: bool = False
     request_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_params(self) -> Dict[str, Any]:
+    def to_params(self) -> dict[str, Any]:
         """Convert to RPC params dict."""
         return {
             "prompt": self.prompt,
@@ -154,8 +142,8 @@ class InferenceToken:
     token_index: int
     is_final: bool = False
     cumulative_text: str = ""
-    logprobs: Optional[List[float]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    logprobs: list[float] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -165,12 +153,12 @@ class InferenceResult:
     request_id: str
     status: InferenceStatus
     response_text: str = ""
-    model_used: Optional[str] = None
-    node_id: Optional[str] = None
+    model_used: str | None = None
+    node_id: str | None = None
     tokens_generated: int = 0
     latency_ms: float = 0.0
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def success(self) -> bool:
@@ -191,11 +179,11 @@ class NodeCapabilities:
     """Inference capabilities of a federation node."""
 
     node_id: str
-    models: Set[str]
+    models: set[str]
     max_tokens: int = 4096
     supports_streaming: bool = True
     current_load: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def supports_model(self, model: str) -> bool:
         """Check if node supports a model."""
@@ -229,7 +217,7 @@ class StreamingProxy:
         node: FederationNode,
         request: InferenceRequest,
         timeout_seconds: float = DEFAULT_STREAM_TIMEOUT_SECONDS,
-        on_token: Optional[Callable[[InferenceToken], None]] = None,
+        on_token: Callable[[InferenceToken], None] | None = None,
     ):
         """
         Initialize streaming proxy.
@@ -245,13 +233,13 @@ class StreamingProxy:
         self._timeout = timeout_seconds
         self._on_token = on_token
 
-        self._started_at: Optional[float] = None
+        self._started_at: float | None = None
         self._token_count = 0
         self._cumulative_text = ""
         self._is_active = False
-        self._error: Optional[str] = None
+        self._error: str | None = None
 
-    async def __aenter__(self) -> 'StreamingProxy':
+    async def __aenter__(self) -> StreamingProxy:
         """Start streaming session."""
         self._started_at = time.time()
         self._is_active = True
@@ -339,7 +327,7 @@ class StreamingProxy:
         return (time.time() - self._started_at) * 1000
 
     @property
-    def error(self) -> Optional[str]:
+    def error(self) -> str | None:
         return self._error
 
 
@@ -368,10 +356,10 @@ class InferenceRouter:
 
     def __init__(
         self,
-        load_balancer: Optional[LoadBalancer] = None,
-        safety_gate: Optional[FederationSafetyGate] = None,
-        rate_limiter: Optional[FederatedRateLimiter] = None,
-        rpc_builder: Optional[JSONRPCBuilder] = None,
+        load_balancer: LoadBalancer | None = None,
+        safety_gate: FederationSafetyGate | None = None,
+        rate_limiter: FederatedRateLimiter | None = None,
+        rpc_builder: JSONRPCBuilder | None = None,
         default_model: str = "llama3",
         inference_timeout: float = DEFAULT_INFERENCE_TIMEOUT_SECONDS,
         enable_retries: bool = True,
@@ -406,8 +394,8 @@ class InferenceRouter:
     async def generate(
         self,
         request: InferenceRequest,
-        sender_node: Optional[FederationNode] = None,
-        trust_level: Optional[GuildTrustLevel] = None,
+        sender_node: FederationNode | None = None,
+        trust_level: GuildTrustLevel | None = None,
     ) -> InferenceResult:
         """
         Generate text using a capable federation node.
@@ -484,8 +472,8 @@ class InferenceRouter:
     async def generate_stream(
         self,
         request: InferenceRequest,
-        sender_node: Optional[FederationNode] = None,
-        trust_level: Optional[GuildTrustLevel] = None,
+        sender_node: FederationNode | None = None,
+        trust_level: GuildTrustLevel | None = None,
     ) -> AsyncGenerator[InferenceToken, None]:
         """
         Generate text with streaming token output.
@@ -551,8 +539,8 @@ class InferenceRouter:
 
     async def get_capabilities(
         self,
-        node_id: Optional[str] = None,
-    ) -> Union[NodeCapabilities, List[NodeCapabilities]]:
+        node_id: str | None = None,
+    ) -> NodeCapabilities | list[NodeCapabilities]:
         """
         Get inference capabilities of federation nodes.
 
@@ -599,7 +587,7 @@ class InferenceRouter:
     def register_node(
         self,
         node: FederationNode,
-        models: Set[str],
+        models: set[str],
         initial_load: float = 0.0,
     ) -> None:
         """
@@ -620,11 +608,11 @@ class InferenceRouter:
         """Unregister a node from the router."""
         self._load_balancer.unregister_node(node_id)
 
-    def get_available_models(self) -> Set[str]:
+    def get_available_models(self) -> set[str]:
         """Get set of all available models across all nodes."""
         return self._load_balancer.get_models()
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get router statistics."""
         return {
             "total_requests": self._total_requests,
@@ -650,7 +638,7 @@ class InferenceRouter:
         self,
         request: InferenceRequest,
         sender_node: FederationNode,
-        trust_level: Optional[GuildTrustLevel],
+        trust_level: GuildTrustLevel | None,
     ) -> FederationSafetyResult:
         """Run safety gate checks on request."""
         # Build signed request for safety check
@@ -674,7 +662,7 @@ class InferenceRouter:
     def _check_rate_limit(
         self,
         identity_id: str,
-        trust_level: Optional[GuildTrustLevel],
+        trust_level: GuildTrustLevel | None,
     ) -> SafetyCheckResult:
         """Check rate limits for identity."""
         tier = RateLimitTier.OBSERVER
@@ -685,8 +673,8 @@ class InferenceRouter:
 
     def _select_node(
         self,
-        model: Optional[str],
-        required_trust: Optional[GuildTrustLevel],
+        model: str | None,
+        required_trust: GuildTrustLevel | None,
     ) -> SelectionResult:
         """Select best node for inference request."""
         return self._load_balancer.select_node(
@@ -702,7 +690,7 @@ class InferenceRouter:
         """Execute inference on selected node."""
         node = selection.node
         retries = MAX_RETRIES if self._enable_retries else 1
-        last_error: Optional[str] = None
+        last_error: str | None = None
 
         for attempt in range(retries):
             try:
@@ -799,9 +787,9 @@ class InferenceRouter:
 # ============================================================================
 
 def create_inference_router(
-    load_balancer: Optional[LoadBalancer] = None,
-    safety_gate: Optional[FederationSafetyGate] = None,
-    rate_limiter: Optional[FederatedRateLimiter] = None,
+    load_balancer: LoadBalancer | None = None,
+    safety_gate: FederationSafetyGate | None = None,
+    rate_limiter: FederatedRateLimiter | None = None,
     default_model: str = "llama3",
     **kwargs,
 ) -> InferenceRouter:

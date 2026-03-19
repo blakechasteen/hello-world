@@ -23,10 +23,10 @@ Usage:
 
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -50,11 +50,11 @@ class SearchStrategy(Enum):
 class SearchQuery:
     """Structured search query."""
     text: str
-    strategy: Optional[SearchStrategy] = None
+    strategy: SearchStrategy | None = None
     max_documents: int = 10
     require_sources: bool = True
-    time_limit_ms: Optional[int] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    time_limit_ms: int | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -62,12 +62,12 @@ class SearchResult:
     """Unified search result."""
     query: str
     answer: str
-    sources: List[Dict[str, Any]]
+    sources: list[dict[str, Any]]
     confidence: float
     strategy_used: SearchStrategy
-    agent_reasoning: List[str]
+    agent_reasoning: list[str]
     elapsed_ms: float
-    sub_queries: Optional[List[str]] = None
+    sub_queries: list[str] | None = None
 
 
 # ============================================================================
@@ -86,7 +86,7 @@ class SearchAgent:
         """Execute search with this agent's strategy."""
         raise NotImplementedError
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get agent statistics."""
         avg_time = self.total_time_ms / self.query_count if self.query_count > 0 else 0
         return {
@@ -220,13 +220,13 @@ class AnalyticalAgent(SearchAgent):
             elapsed_ms=elapsed
         )
 
-    def _extract_comparison_entities(self, query: str) -> List[str]:
+    def _extract_comparison_entities(self, query: str) -> list[str]:
         """Extract entities being compared."""
         # Simple keyword extraction (in production, use NER)
         keywords = ['bread', 'brewing', 'honey', 'seeds', 'lettuce']
         return [kw for kw in keywords if kw in query.lower()]
 
-    def _synthesize_comparison(self, entities: List[str], sources: List[Dict]) -> str:
+    def _synthesize_comparison(self, entities: list[str], sources: list[dict]) -> str:
         """Synthesize multi-document comparison."""
         if len(entities) >= 2:
             return f"""Comparison of {' vs '.join(entities)}:
@@ -322,7 +322,7 @@ class MultiHopAgent(SearchAgent):
             sub_queries=steps
         )
 
-    def _decompose_query(self, query: str) -> List[str]:
+    def _decompose_query(self, query: str) -> list[str]:
         """Decompose complex query into reasoning steps."""
         # Simple decomposition (in production, use LLM)
         if "if" in query.lower() and "then" in query.lower():
@@ -340,7 +340,7 @@ class MultiHopAgent(SearchAgent):
                 "Formulate answer"
             ]
 
-    def _synthesize_chain(self, steps: List[str], results: List[str]) -> str:
+    def _synthesize_chain(self, steps: list[str], results: list[str]) -> str:
         """Synthesize chain-of-thought reasoning."""
         synthesis = "Chain-of-Thought Analysis:\n\n"
         for i, (step, result) in enumerate(zip(steps, results), 1):
@@ -409,7 +409,7 @@ class ExploratoryAgent(SearchAgent):
             elapsed_ms=elapsed
         )
 
-    def _organize_by_theme(self, themes: List[str], sources: List[Dict]) -> str:
+    def _organize_by_theme(self, themes: list[str], sources: list[dict]) -> str:
         """Organize diverse results by theme."""
         organized = "Exploratory Analysis:\n\n"
         for theme in themes:
@@ -452,7 +452,7 @@ class SearchOrchestrator:
     async def search(
         self,
         query: str,
-        strategy: Optional[SearchStrategy] = None,
+        strategy: SearchStrategy | None = None,
         **kwargs
     ) -> SearchResult:
         """
@@ -500,9 +500,9 @@ class SearchOrchestrator:
 
     async def parallel_search(
         self,
-        queries: List[str],
-        strategies: Optional[List[SearchStrategy]] = None
-    ) -> List[SearchResult]:
+        queries: list[str],
+        strategies: list[SearchStrategy] | None = None
+    ) -> list[SearchResult]:
         """
         Execute multiple searches in parallel.
 
@@ -574,7 +574,7 @@ class SearchOrchestrator:
         # Default to factual
         return SearchStrategy.FACTUAL
 
-    def _decompose_complex_query(self, query: str) -> List[str]:
+    def _decompose_complex_query(self, query: str) -> list[str]:
         """
         Decompose complex query into sub-queries.
 
@@ -601,7 +601,7 @@ class SearchOrchestrator:
     def _synthesize_results(
         self,
         original_query: str,
-        sub_results: List[SearchResult]
+        sub_results: list[SearchResult]
     ) -> SearchResult:
         """Synthesize multiple sub-results into single answer."""
 
@@ -636,7 +636,7 @@ class SearchOrchestrator:
             sub_queries=[r.query for r in sub_results]
         )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get orchestrator statistics."""
         return {
             'total_queries': self.total_queries,

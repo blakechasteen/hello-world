@@ -10,15 +10,14 @@ Testing: 18/18 tests passing (100%)
 """
 
 import asyncio
+import logging
 import os
 import shutil
-import tempfile
 import subprocess
+import tempfile
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import List, Optional, Dict, Tuple, Set
-import logging
 from enum import Enum
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +42,13 @@ class OverlayMount:
 class SandboxConfig:
     """Configuration for filesystem sandbox."""
     backend: SandboxBackend = SandboxBackend.OVERLAYFS
-    sandbox_root: Optional[str] = None  # Root directory for all sandboxes
-    allowed_paths: List[str] = field(default_factory=list)  # Paths allowed access
-    read_only_paths: List[str] = field(default_factory=list)  # Read-only mounts
+    sandbox_root: str | None = None  # Root directory for all sandboxes
+    allowed_paths: list[str] = field(default_factory=list)  # Paths allowed access
+    read_only_paths: list[str] = field(default_factory=list)  # Read-only mounts
     enable_cleanup: bool = True  # Auto-cleanup on exit
     mount_proc: bool = False  # Mount /proc (dangerous, default False)
     mount_sys: bool = False  # Mount /sys (dangerous, default False)
-    temp_dir: Optional[str] = None  # Temp directory for copy backend
+    temp_dir: str | None = None  # Temp directory for copy backend
     preserve_home: bool = True  # Preserve user's home directory (read-only)
     permissions_mode: int = 0o755  # Default directory permissions
 
@@ -60,9 +59,9 @@ class SandboxResult:
     success: bool
     mount_point: str = ""
     backend_used: SandboxBackend = SandboxBackend.NONE
-    error: Optional[str] = None
+    error: str | None = None
     duration_ms: float = 0.0
-    metadata: Dict[str, any] = field(default_factory=dict)
+    metadata: dict[str, any] = field(default_factory=dict)
 
 
 class FilesystemSandbox:
@@ -88,10 +87,10 @@ class FilesystemSandbox:
         """Initialize filesystem sandbox."""
         self.config = config
         self.backend_used: SandboxBackend = SandboxBackend.NONE
-        self.mount_point: Optional[str] = None
-        self.overlay_mount: Optional[OverlayMount] = None
-        self._temp_dirs: List[str] = []
-        self._mounted_paths: Set[str] = set()
+        self.mount_point: str | None = None
+        self.overlay_mount: OverlayMount | None = None
+        self._temp_dirs: list[str] = []
+        self._mounted_paths: set[str] = set()
         self._initialized = False
 
         # Detect available backends
@@ -528,14 +527,14 @@ class FilesystemSandbox:
 
 # Convenience functions
 
-async def create_filesystem_sandbox(config: Optional[SandboxConfig] = None) -> FilesystemSandbox:
+async def create_filesystem_sandbox(config: SandboxConfig | None = None) -> FilesystemSandbox:
     """Create and initialize a filesystem sandbox."""
     if config is None:
         config = SandboxConfig()
     return FilesystemSandbox(config)
 
 
-async def mount_isolated_environment(base_path: str) -> Tuple[FilesystemSandbox, str]:
+async def mount_isolated_environment(base_path: str) -> tuple[FilesystemSandbox, str]:
     """
     Convenience: Mount a filesystem and return sandbox + mount point.
 

@@ -38,15 +38,16 @@ Usage:
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union
 from pathlib import Path
+from typing import Any
+
 import numpy as np
 
 
 class ConfigValidationError(Exception):
     """Error in domain configuration."""
 
-    def __init__(self, message: str, path: Optional[str] = None):
+    def __init__(self, message: str, path: str | None = None):
         self.path = path
         super().__init__(f"{message}" + (f" (in {path})" if path else ""))
 
@@ -55,14 +56,14 @@ class ConfigValidationError(Exception):
 class ExemplarSet:
     """Set of exemplar texts/vectors for learning an axis."""
 
-    positive: List[Union[str, np.ndarray]] = field(default_factory=list)
-    negative: List[Union[str, np.ndarray]] = field(default_factory=list)
+    positive: list[str | np.ndarray] = field(default_factory=list)
+    negative: list[str | np.ndarray] = field(default_factory=list)
 
     def is_empty(self) -> bool:
         """Check if exemplar set is empty."""
         return len(self.positive) == 0 and len(self.negative) == 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary (for YAML serialization)."""
         result = {}
         if self.positive:
@@ -78,7 +79,7 @@ class ExemplarSet:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ExemplarSet":
+    def from_dict(cls, data: dict[str, Any]) -> "ExemplarSet":
         """Create from dictionary."""
         positive = []
         negative = []
@@ -104,21 +105,21 @@ class AxisSpec:
 
     name: str
     description: str = ""
-    exemplars: Optional[ExemplarSet] = None
+    exemplars: ExemplarSet | None = None
 
     # Optional: pre-defined direction vector
-    direction: Optional[np.ndarray] = None
+    direction: np.ndarray | None = None
 
     # Learning settings
     learn_from_exemplars: bool = True
     normalize: bool = True
 
     # Metadata
-    category: Optional[str] = None
+    category: str | None = None
     importance: float = 1.0
     safety_relevant: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         result = {
             "name": self.name,
@@ -137,7 +138,7 @@ class AxisSpec:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "AxisSpec":
+    def from_dict(cls, data: dict[str, Any]) -> "AxisSpec":
         """Create from dictionary."""
         exemplars = None
         if "exemplars" in data:
@@ -167,18 +168,18 @@ class DomainConfig:
     name: str
     description: str = ""
     version: str = "1.0"
-    axes: List[AxisSpec] = field(default_factory=list)
+    axes: list[AxisSpec] = field(default_factory=list)
 
     # Global settings
     normalize_projections: bool = True
     default_embedding_dim: int = 384
 
     # Metadata
-    author: Optional[str] = None
-    created_at: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
+    author: str | None = None
+    created_at: str | None = None
+    tags: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for YAML serialization."""
         return {
             "name": self.name,
@@ -197,7 +198,7 @@ class DomainConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DomainConfig":
+    def from_dict(cls, data: dict[str, Any]) -> "DomainConfig":
         """Create from dictionary."""
         axes = [AxisSpec.from_dict(ax) for ax in data.get("axes", [])]
 
@@ -216,19 +217,19 @@ class DomainConfig:
             tags=metadata.get("tags", []),
         )
 
-    def get_axis(self, name: str) -> Optional[AxisSpec]:
+    def get_axis(self, name: str) -> AxisSpec | None:
         """Get axis by name."""
         for ax in self.axes:
             if ax.name == name:
                 return ax
         return None
 
-    def safety_relevant_axes(self) -> List[AxisSpec]:
+    def safety_relevant_axes(self) -> list[AxisSpec]:
         """Get all safety-relevant axes."""
         return [ax for ax in self.axes if ax.safety_relevant]
 
 
-def validate_domain_config(config: DomainConfig) -> List[str]:
+def validate_domain_config(config: DomainConfig) -> list[str]:
     """
     Validate a domain configuration.
 
@@ -272,7 +273,7 @@ def validate_domain_config(config: DomainConfig) -> List[str]:
     return errors
 
 
-def load_domain_config(path: Union[str, Path]) -> DomainConfig:
+def load_domain_config(path: str | Path) -> DomainConfig:
     """
     Load domain configuration from YAML file.
 
@@ -300,7 +301,7 @@ def load_domain_config(path: Union[str, Path]) -> DomainConfig:
             "Install with: pip install pyyaml"
         )
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     config = DomainConfig.from_dict(data)
@@ -316,7 +317,7 @@ def load_domain_config(path: Union[str, Path]) -> DomainConfig:
     return config
 
 
-def save_domain_config(config: DomainConfig, path: Union[str, Path]) -> None:
+def save_domain_config(config: DomainConfig, path: str | Path) -> None:
     """
     Save domain configuration to YAML file.
 
@@ -350,7 +351,7 @@ class ConfigLens:
     def __init__(
         self,
         config: DomainConfig,
-        embed_fn: Optional[callable] = None,
+        embed_fn: callable | None = None,
     ):
         """
         Initialize config lens.
@@ -361,7 +362,7 @@ class ConfigLens:
         """
         self.config = config
         self.embed_fn = embed_fn
-        self._directions: Dict[str, np.ndarray] = {}
+        self._directions: dict[str, np.ndarray] = {}
         self._fitted = False
 
         # Initialize directions from config
@@ -380,8 +381,8 @@ class ConfigLens:
 
     def fit(
         self,
-        activations: Optional[np.ndarray] = None,
-        embed_fn: Optional[callable] = None,
+        activations: np.ndarray | None = None,
+        embed_fn: callable | None = None,
     ) -> None:
         """
         Fit lens by learning directions from exemplars.
@@ -410,8 +411,8 @@ class ConfigLens:
     def _learn_direction(
         self,
         axis: AxisSpec,
-        embed_fn: Optional[callable],
-    ) -> Optional[np.ndarray]:
+        embed_fn: callable | None,
+    ) -> np.ndarray | None:
         """Learn axis direction from exemplars."""
         if axis.exemplars is None:
             return None
@@ -457,7 +458,7 @@ class ConfigLens:
 
         return direction
 
-    def project(self, activations: np.ndarray) -> Dict[str, float]:
+    def project(self, activations: np.ndarray) -> dict[str, float]:
         """
         Project activations onto domain semantic space.
 
@@ -510,19 +511,19 @@ class ConfigLens:
             return np.dot(directions, activations)
         return np.dot(activations, directions.T)
 
-    def get_axis_direction(self, name: str) -> Optional[np.ndarray]:
+    def get_axis_direction(self, name: str) -> np.ndarray | None:
         """Get the direction vector for an axis."""
         return self._directions.get(name)
 
-    def get_axis_names(self) -> List[str]:
+    def get_axis_names(self) -> list[str]:
         """Get names of all configured axes."""
         return [ax.name for ax in self.config.axes]
 
-    def get_fitted_axes(self) -> List[str]:
+    def get_fitted_axes(self) -> list[str]:
         """Get names of axes with learned/set directions."""
         return list(self._directions.keys())
 
-    def safety_projection(self, activations: np.ndarray) -> Dict[str, float]:
+    def safety_projection(self, activations: np.ndarray) -> dict[str, float]:
         """
         Project onto safety-relevant axes only.
 
@@ -532,7 +533,7 @@ class ConfigLens:
         safety_axes = self.config.safety_relevant_axes()
         return {ax.name: projection.get(ax.name, 0.0) for ax in safety_axes}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert lens state to dictionary."""
         return {
             "config": self.config.to_dict(),
@@ -544,7 +545,7 @@ class ConfigLens:
         }
 
 
-def create_lens_from_yaml(path: Union[str, Path]) -> ConfigLens:
+def create_lens_from_yaml(path: str | Path) -> ConfigLens:
     """
     Create a ConfigLens from a YAML file.
 
@@ -562,7 +563,7 @@ def create_lens_from_yaml(path: Union[str, Path]) -> ConfigLens:
 
 def create_minimal_config(
     name: str,
-    axis_names: List[str],
+    axis_names: list[str],
 ) -> DomainConfig:
     """
     Create a minimal domain config with just axis names.

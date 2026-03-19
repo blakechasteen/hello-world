@@ -54,16 +54,21 @@ Quality Tracking: Integration with QualityTrajectoryTracker for trend analysis
 """
 
 import logging
+import re
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Dict, Optional, Any, Tuple
-from datetime import datetime
-import asyncio
-import re
+from typing import Any
 
-from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad, AttackScratchpadEntry, AttackStrategy, DefenseLayer
-from hololoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker, StrategyTrajectory, RefinementPattern
+from hololoom.redteam.provenance.attack_scratchpad import (
+    AttackScratchpad,
+    AttackScratchpadEntry,
+    AttackStrategy,
+    DefenseLayer,
+)
+from hololoom.redteam.refinement.quality_trajectory import (
+    QualityTrajectoryTracker,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +103,7 @@ class AttackQualityMetrics:
     reliability: float = 0.0              # 0.0-1.0
     elegance: float = 0.0                 # 0.0-1.0
     overall_score: float = 0.0            # Weighted composite
-    detected_patterns: List[str] = field(default_factory=list)
+    detected_patterns: list[str] = field(default_factory=list)
     complexity: float = 0.0               # 0.0=minimal, 1.0=high
     entropy: float = 0.0                  # Information entropy
     coherence: float = 0.0                # Logical coherence
@@ -128,7 +133,7 @@ class AttackQualityMetrics:
         )
         return self.overall_score
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'effectiveness': self.effectiveness,
@@ -168,14 +173,14 @@ class AttackRefinementResult:
     quality_before: AttackQualityMetrics
     quality_after: AttackQualityMetrics
     iterations: int = 0
-    improvements_made: List[str] = field(default_factory=list)
+    improvements_made: list[str] = field(default_factory=list)
     elapsed_time_ms: float = 0.0
     converged: bool = False
     strategy_confidence: float = 0.0
-    recommendations: List[str] = field(default_factory=list)
-    scratchpad_entries: List[AttackScratchpadEntry] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
+    scratchpad_entries: list[AttackScratchpadEntry] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'original_payload': self.original_payload,
@@ -266,10 +271,10 @@ class AttackRefiner:
         self.convergence_threshold = convergence_threshold
 
         # Refinement history
-        self._refinement_history: List[AttackRefinementResult] = []
+        self._refinement_history: list[AttackRefinementResult] = []
 
         # Strategy statistics
-        self._strategy_stats: Dict[AttackRefinementStrategy, Dict[str, Any]] = {
+        self._strategy_stats: dict[AttackRefinementStrategy, dict[str, Any]] = {
             strategy: {
                 'used_count': 0,
                 'avg_improvement': 0.0,
@@ -288,8 +293,8 @@ class AttackRefiner:
 
     async def refine(self,
                      payload: str,
-                     strategy: Optional[AttackRefinementStrategy] = None,
-                     target_defense: Optional[DefenseLayer] = None) -> AttackRefinementResult:
+                     strategy: AttackRefinementStrategy | None = None,
+                     target_defense: DefenseLayer | None = None) -> AttackRefinementResult:
         """
         Refine attack payload using specified or auto-selected strategy.
 
@@ -327,9 +332,9 @@ class AttackRefiner:
         # Iterative refinement
         current_payload = payload
         iteration = 0
-        improvements_made: List[str] = []
+        improvements_made: list[str] = []
         converged = False
-        scratchpad_entries: List[AttackScratchpadEntry] = []
+        scratchpad_entries: list[AttackScratchpadEntry] = []
 
         for iteration in range(self.max_iterations):
             # Apply refinement
@@ -848,7 +853,7 @@ class AttackRefiner:
                                 payload: str,
                                 quality_after: AttackQualityMetrics,
                                 strategy_used: AttackRefinementStrategy,
-                                iterations: int) -> List[str]:
+                                iterations: int) -> list[str]:
         """
         Generate recommendations for next refinement steps.
 
@@ -944,7 +949,7 @@ class AttackRefiner:
         if result.converged:
             stats['converged_count'] += 1
 
-    def get_refinement_history(self) -> List[AttackRefinementResult]:
+    def get_refinement_history(self) -> list[AttackRefinementResult]:
         """
         Get complete refinement history.
 
@@ -953,7 +958,7 @@ class AttackRefiner:
         """
         return self._refinement_history.copy()
 
-    def get_strategy_stats(self) -> Dict[AttackRefinementStrategy, Any]:
+    def get_strategy_stats(self) -> dict[AttackRefinementStrategy, Any]:
         """
         Get aggregate statistics for all strategies.
 
@@ -962,7 +967,7 @@ class AttackRefiner:
         """
         return self._strategy_stats.copy()
 
-    def get_refinement_stats(self) -> Dict[str, Any]:
+    def get_refinement_stats(self) -> dict[str, Any]:
         """
         Get overall refinement statistics.
 

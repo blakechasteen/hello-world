@@ -18,14 +18,14 @@ Date: December 2025
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 try:
     from hololoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:
-        def get_settings(self) -> Dict[str, Any]:
+        def get_settings(self) -> dict[str, Any]:
             raise NotImplementedError
 
 
@@ -81,7 +81,7 @@ class GeometryConfig(ExpansionBundle):
     - 0.1 to 10.0 typical range
     """
 
-    def get_settings(self) -> Dict[str, Any]:
+    def get_settings(self) -> dict[str, Any]:
         """Return dictionary of settings to merge into config."""
         return {
             "use_riemannian": self.use_riemannian,

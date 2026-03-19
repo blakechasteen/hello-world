@@ -12,17 +12,15 @@ Date: 2025-12-09
 import asyncio
 import json
 import logging
-import os
 import subprocess
-import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 import yaml
 
-from .config import DeploymentConfig, DeploymentEnvironment, DeploymentTarget
+from .config import DeploymentConfig
 
 logger = logging.getLogger("carts-deploy.k8s")
 
@@ -51,7 +49,7 @@ class JobStatus:
     completions: int
     parallelism: int
     duration_seconds: float
-    conditions: List[str]
+    conditions: list[str]
 
 
 class EnhancedKubernetesDeployer:
@@ -61,7 +59,7 @@ class EnhancedKubernetesDeployer:
         self.config = config
         self.manifests_dir = Path(__file__).parent.parent.parent.parent / "infra" / "kubernetes" / "sandbox"
 
-    async def setup_cluster(self) -> Dict[str, Any]:
+    async def setup_cluster(self) -> dict[str, Any]:
         """Verify cluster access and setup namespace with RBAC."""
         logger.info("Setting up Kubernetes cluster access...")
 
@@ -105,7 +103,7 @@ class EnhancedKubernetesDeployer:
 
         return results
 
-    async def deploy(self, overlay: str = None) -> Dict[str, Any]:
+    async def deploy(self, overlay: str = None) -> dict[str, Any]:
         """Deploy sandbox using Kustomize overlay."""
         overlay = overlay or self.config.environment.value
         overlay_path = self.manifests_dir / "overlays" / overlay
@@ -131,10 +129,10 @@ class EnhancedKubernetesDeployer:
 
     async def create_job(
         self,
-        command: List[str],
+        command: list[str],
         name: str = None,
-        env: Dict[str, str] = None,
-    ) -> Dict[str, Any]:
+        env: dict[str, str] = None,
+    ) -> dict[str, Any]:
         """Create a Kubernetes Job for command execution."""
         name = name or f"{self.config.name}-job-{int(time.time())}"
 
@@ -162,7 +160,7 @@ class EnhancedKubernetesDeployer:
         self,
         job_name: str,
         timeout_seconds: int = 300,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Wait for job completion."""
         logger.info(f"Waiting for job: {job_name}")
         start_time = time.time()
@@ -186,7 +184,7 @@ class EnhancedKubernetesDeployer:
 
         return {"success": False, "status": "timeout", "elapsed": timeout_seconds}
 
-    async def get_job_status(self, job_name: str) -> Optional[JobStatus]:
+    async def get_job_status(self, job_name: str) -> JobStatus | None:
         """Get detailed job status."""
         try:
             result = subprocess.run(
@@ -346,9 +344,9 @@ class EnhancedKubernetesDeployer:
     def _generate_job(
         self,
         name: str,
-        command: List[str],
-        env: Dict[str, str] = None,
-    ) -> Dict[str, Any]:
+        command: list[str],
+        env: dict[str, str] = None,
+    ) -> dict[str, Any]:
         """Generate Kubernetes Job manifest."""
         limits = self.config.resources.to_k8s_limits()
 

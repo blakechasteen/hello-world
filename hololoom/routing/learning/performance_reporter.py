@@ -10,10 +10,9 @@ Phase: 3 - Adaptive Learning
 
 import json
 import logging
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional
-from pathlib import Path
+from dataclasses import dataclass
 from datetime import datetime, timedelta
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ class DailyReport:
     date: str
     queries_classified: int
     overall_accuracy: float
-    by_complexity: Dict[str, float]
+    by_complexity: dict[str, float]
     avg_latency_ms: float
     patterns_discovered: int
     patterns_deployed: int
@@ -39,14 +38,14 @@ class WeeklyReport:
     week_end: str
     total_queries: int
     overall_accuracy: float
-    by_complexity: Dict[str, float]
+    by_complexity: dict[str, float]
     avg_latency_ms: float
     patterns_discovered: int
     patterns_deployed: int
     regressions_detected: int
     trend_7day: float
-    top_patterns: List[Dict]
-    recommendations: List[str]
+    top_patterns: list[dict]
+    recommendations: list[str]
 
 
 class PerformanceReporter:
@@ -102,7 +101,7 @@ class PerformanceReporter:
 
     def generate_daily_report(
         self,
-        date: Optional[datetime] = None
+        date: datetime | None = None
     ) -> DailyReport:
         """
         Generate daily performance report.
@@ -177,7 +176,7 @@ class PerformanceReporter:
 
     def generate_weekly_report(
         self,
-        week_end: Optional[datetime] = None
+        week_end: datetime | None = None
     ) -> WeeklyReport:
         """
         Generate weekly performance report.
@@ -275,8 +274,8 @@ class PerformanceReporter:
             latest = self.validator.validation_history[-1]
 
             # Overall accuracy
-            metrics.append(f"# HELP moonshot_accuracy Overall classifier accuracy")
-            metrics.append(f"# TYPE moonshot_accuracy gauge")
+            metrics.append("# HELP moonshot_accuracy Overall classifier accuracy")
+            metrics.append("# TYPE moonshot_accuracy gauge")
             metrics.append(f'moonshot_accuracy{{complexity="overall"}} {latest.overall_accuracy}')
 
             # By-complexity accuracy
@@ -284,38 +283,38 @@ class PerformanceReporter:
                 metrics.append(f'moonshot_accuracy{{complexity="{complexity}"}} {accuracy}')
 
             # Query counts
-            metrics.append(f"# HELP moonshot_queries_total Total queries classified")
-            metrics.append(f"# TYPE moonshot_queries_total counter")
+            metrics.append("# HELP moonshot_queries_total Total queries classified")
+            metrics.append("# TYPE moonshot_queries_total counter")
             metrics.append(f"moonshot_queries_total {latest.total_queries}")
 
             # Correct/incorrect
-            metrics.append(f"# HELP moonshot_queries_correct Correct classifications")
-            metrics.append(f"# TYPE moonshot_queries_correct counter")
+            metrics.append("# HELP moonshot_queries_correct Correct classifications")
+            metrics.append("# TYPE moonshot_queries_correct counter")
             metrics.append(f"moonshot_queries_correct {latest.correct}")
 
-            metrics.append(f"# HELP moonshot_queries_incorrect Incorrect classifications")
-            metrics.append(f"# TYPE moonshot_queries_incorrect counter")
+            metrics.append("# HELP moonshot_queries_incorrect Incorrect classifications")
+            metrics.append("# TYPE moonshot_queries_incorrect counter")
             metrics.append(f"moonshot_queries_incorrect {latest.incorrect}")
 
         # Deployment metrics
         if self.updater:
             status = self.updater.get_deployment_status()
 
-            metrics.append(f"# HELP moonshot_patterns_total Total pattern versions")
-            metrics.append(f"# TYPE moonshot_patterns_total gauge")
+            metrics.append("# HELP moonshot_patterns_total Total pattern versions")
+            metrics.append("# TYPE moonshot_patterns_total gauge")
             metrics.append(f"moonshot_patterns_total {status['pattern_versions']}")
 
-            metrics.append(f"# HELP moonshot_traffic_split Current traffic split")
-            metrics.append(f"# TYPE moonshot_traffic_split gauge")
+            metrics.append("# HELP moonshot_traffic_split Current traffic split")
+            metrics.append("# TYPE moonshot_traffic_split gauge")
             metrics.append(f"moonshot_traffic_split {status['traffic_split']}")
 
         # Latency metrics (placeholder - would come from telemetry)
-        metrics.append(f"# HELP moonshot_latency_ms_bucket Classification latency histogram")
-        metrics.append(f"# TYPE moonshot_latency_ms_bucket histogram")
-        metrics.append(f'moonshot_latency_ms_bucket{{le="0.01"}} 5234')
-        metrics.append(f'moonshot_latency_ms_bucket{{le="0.05"}} 8721')
-        metrics.append(f'moonshot_latency_ms_bucket{{le="0.1"}} 12450')
-        metrics.append(f'moonshot_latency_ms_bucket{{le="+Inf"}} 12450')
+        metrics.append("# HELP moonshot_latency_ms_bucket Classification latency histogram")
+        metrics.append("# TYPE moonshot_latency_ms_bucket histogram")
+        metrics.append('moonshot_latency_ms_bucket{le="0.01"} 5234')
+        metrics.append('moonshot_latency_ms_bucket{le="0.05"} 8721')
+        metrics.append('moonshot_latency_ms_bucket{le="0.1"} 12450')
+        metrics.append('moonshot_latency_ms_bucket{le="+Inf"} 12450')
 
         output = '\n'.join(metrics)
 
@@ -363,7 +362,7 @@ class PerformanceReporter:
 
         return message
 
-    def format_email_alert(self, regression_alert) -> Dict[str, str]:
+    def format_email_alert(self, regression_alert) -> dict[str, str]:
         """
         Format regression alert for email.
 
@@ -412,7 +411,7 @@ This is an automated alert from the Moonshot Classifier Adaptive Learning System
         cutoff = datetime.now().timestamp() - (hours * 3600)
         return [v for v in self.validator.validation_history if v.timestamp >= cutoff]
 
-    def _aggregate_by_complexity(self, validation_history) -> Dict[str, float]:
+    def _aggregate_by_complexity(self, validation_history) -> dict[str, float]:
         """Aggregate accuracy by complexity across multiple validations."""
         by_complexity = {}
 
@@ -439,7 +438,7 @@ This is an automated alert from the Moonshot Classifier Adaptive Learning System
 
         return recent_accuracy - older_accuracy
 
-    def _generate_recommendations(self, validation_history) -> List[str]:
+    def _generate_recommendations(self, validation_history) -> list[str]:
         """Generate recommendations based on validation history."""
         recommendations = []
 

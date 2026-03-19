@@ -37,11 +37,11 @@ Pattern Discovery:
 """
 
 import logging
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import List, Dict, Tuple, Optional, Any
-from datetime import datetime
 import statistics
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -80,13 +80,13 @@ class StrategyTrajectory:
         metadata: Additional strategy-specific information
     """
     strategy: str
-    scores: List[float] = field(default_factory=list)
-    timestamps: List[float] = field(default_factory=list)
+    scores: list[float] = field(default_factory=list)
+    timestamps: list[float] = field(default_factory=list)
     iterations: int = 0
     final_quality: float = 0.0
     trend: str = "plateau"
-    first_recorded: Optional[datetime] = None
-    last_updated: Optional[datetime] = None
+    first_recorded: datetime | None = None
+    last_updated: datetime | None = None
     max_quality: float = 0.0
     min_quality: float = 1.0
     avg_quality: float = 0.0
@@ -94,9 +94,9 @@ class StrategyTrajectory:
     improvement_rate: float = 0.0
     plateau_duration: int = 0
     regression_amount: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert trajectory to dictionary for serialization.
 
@@ -156,11 +156,11 @@ class RefinementPattern:
     success_count: int = 0
     failure_count: int = 0
     success_rate: float = 0.0
-    discovered_at: Optional[datetime] = None
-    last_applied: Optional[datetime] = None
+    discovered_at: datetime | None = None
+    last_applied: datetime | None = None
     estimated_impact: float = 0.0
     confidence: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Calculate derived fields after initialization."""
@@ -236,13 +236,13 @@ class QualityTrajectoryTracker:
         self.pattern_support_threshold = pattern_support_threshold
 
         # Strategy trajectories
-        self._trajectories: Dict[str, StrategyTrajectory] = {}
+        self._trajectories: dict[str, StrategyTrajectory] = {}
 
         # Discovered patterns
-        self._patterns: List[RefinementPattern] = []
+        self._patterns: list[RefinementPattern] = []
 
         # Pattern history for mining
-        self._pattern_history: List[Dict[str, Any]] = []
+        self._pattern_history: list[dict[str, Any]] = []
 
         logger.info(
             f"QualityTrajectoryTracker initialized: "
@@ -254,7 +254,7 @@ class QualityTrajectoryTracker:
     def record_quality(self,
                       strategy: str,
                       score: float,
-                      metadata: Optional[Dict[str, Any]] = None) -> None:
+                      metadata: dict[str, Any] | None = None) -> None:
         """
         Record quality score for a strategy.
 
@@ -310,7 +310,7 @@ class QualityTrajectoryTracker:
             f"trend={trajectory.trend}, iteration={trajectory.iterations}"
         )
 
-    def get_trajectory(self, strategy: str) -> Optional[StrategyTrajectory]:
+    def get_trajectory(self, strategy: str) -> StrategyTrajectory | None:
         """
         Get complete trajectory for a strategy.
 
@@ -341,7 +341,7 @@ class QualityTrajectoryTracker:
 
         return trajectory.trend == TrendType.PLATEAU.value
 
-    def detect_regression(self, strategy: str) -> Tuple[bool, float]:
+    def detect_regression(self, strategy: str) -> tuple[bool, float]:
         """
         Detect if strategy is regressing (quality declining).
 
@@ -379,7 +379,7 @@ class QualityTrajectoryTracker:
             return "plateau"
         return trajectory.trend
 
-    def discover_patterns(self) -> List[RefinementPattern]:
+    def discover_patterns(self) -> list[RefinementPattern]:
         """
         Discover successful refinement patterns from history.
 
@@ -429,7 +429,7 @@ class QualityTrajectoryTracker:
         self._patterns = patterns
         return patterns
 
-    def get_all_trajectories(self) -> Dict[str, StrategyTrajectory]:
+    def get_all_trajectories(self) -> dict[str, StrategyTrajectory]:
         """
         Get all tracked trajectories.
 
@@ -438,7 +438,7 @@ class QualityTrajectoryTracker:
         """
         return self._trajectories.copy()
 
-    def export_metrics(self) -> Dict[str, Any]:
+    def export_metrics(self) -> dict[str, Any]:
         """
         Export all metrics for monitoring/visualization.
 
@@ -508,7 +508,7 @@ class QualityTrajectoryTracker:
             trajectory.variance = 0.0
             trajectory.improvement_rate = 0.0
 
-    def _calculate_trend(self, scores: List[float]) -> str:
+    def _calculate_trend(self, scores: list[float]) -> str:
         """
         Calculate trend from quality scores using rolling window.
 
@@ -546,8 +546,8 @@ class QualityTrajectoryTracker:
             return TrendType.PLATEAU.value
 
     def _calculate_moving_average(self,
-                                  scores: List[float],
-                                  window: int = 3) -> List[float]:
+                                  scores: list[float],
+                                  window: int = 3) -> list[float]:
         """
         Calculate moving average of scores.
 
@@ -569,7 +569,7 @@ class QualityTrajectoryTracker:
 
         return moving_avg
 
-    def get_best_strategy(self) -> Optional[str]:
+    def get_best_strategy(self) -> str | None:
         """
         Get the strategy with the highest average quality.
 
@@ -630,7 +630,7 @@ class QualityTrajectoryTracker:
 
         return trajectory.improvement_rate
 
-    def analyze_patterns(self) -> Dict[str, Any]:
+    def analyze_patterns(self) -> dict[str, Any]:
         """
         Comprehensive pattern analysis across all strategies.
 
@@ -757,7 +757,7 @@ class QualityTrajectoryTracker:
 
         return analysis
 
-    def _generate_recommendations(self, analysis: Dict[str, Any]) -> List[str]:
+    def _generate_recommendations(self, analysis: dict[str, Any]) -> list[str]:
         """
         Generate actionable recommendations based on pattern analysis.
 

@@ -8,7 +8,7 @@ potentially blocking actions that violate safety policies.
 """
 
 import logging
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -28,8 +28,8 @@ class ConscienceGatingStage:
 
     def __init__(
         self,
-        evaluator: Optional[Any] = None,
-        logger: Optional[logging.Logger] = None,
+        evaluator: Any | None = None,
+        logger: logging.Logger | None = None,
     ):
         self.evaluator = evaluator
         self.logger = logger or logging.getLogger(__name__)

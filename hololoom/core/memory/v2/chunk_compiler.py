@@ -29,9 +29,9 @@ import json
 import logging
 import uuid
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .knowledge_source import Phase
 
@@ -78,15 +78,15 @@ class CompiledChunk:
     action: the config preset + shell count that worked for this pattern.
     """
     chunk_id: str
-    trigger: Dict[str, Tuple[float, float]]  # feature → (min, max)
+    trigger: dict[str, tuple[float, float]]  # feature → (min, max)
     action: ChunkAction
-    node_id: Optional[str] = None  # Graph node ID (if stored)
+    node_id: str | None = None  # Graph node ID (if stored)
     successes: int = 0
     failures: int = 0
     consecutive_failures: int = 0
     last_tuned_at: int = 0  # successes+failures count when last tuned
 
-    def matches(self, features: Dict[str, float]) -> bool:
+    def matches(self, features: dict[str, float]) -> bool:
         """Check if context features fall within trigger ranges."""
         for feature, (lo, hi) in self.trigger.items():
             val = features.get(feature, 0.0)
@@ -103,7 +103,7 @@ class CompiledChunk:
     def is_retired(self) -> bool:
         return self.consecutive_failures >= 3
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "chunk_id": self.chunk_id,
             "trigger": {k: list(v) for k, v in self.trigger.items()},
@@ -118,7 +118,7 @@ class CompiledChunk:
             "last_tuned_at": self.last_tuned_at,
         }
 
-    def to_snapshot(self) -> Dict[str, Any]:
+    def to_snapshot(self) -> dict[str, Any]:
         """Full serialization for persistence."""
         return {
             "chunk_id": self.chunk_id,
@@ -136,7 +136,7 @@ class CompiledChunk:
         }
 
     @classmethod
-    def from_snapshot(cls, d: Dict[str, Any]) -> "CompiledChunk":
+    def from_snapshot(cls, d: dict[str, Any]) -> "CompiledChunk":
         """Reconstruct CompiledChunk from snapshot dict."""
         action_d = d.get("action", {})
         return cls(
@@ -158,13 +158,13 @@ class CompiledChunk:
 @dataclass
 class ExperienceRecord:
     """A single (features, action, reward) observation."""
-    features: Dict[str, float]
+    features: dict[str, float]
     preset_id: str
     reward: float
     shell_count: int
     query_id: str = ""
 
-    def to_snapshot(self) -> Dict[str, Any]:
+    def to_snapshot(self) -> dict[str, Any]:
         return {
             "features": self.features,
             "preset_id": self.preset_id,
@@ -174,7 +174,7 @@ class ExperienceRecord:
         }
 
     @classmethod
-    def from_snapshot(cls, d: Dict[str, Any]) -> "ExperienceRecord":
+    def from_snapshot(cls, d: dict[str, Any]) -> "ExperienceRecord":
         return cls(
             features=d.get("features", {}),
             preset_id=d.get("preset_id", "balanced"),
@@ -209,10 +209,10 @@ class ChunkCompiler:
         # ChunkCompiler automatically learns and applies chunks
     """
 
-    def __init__(self, config: Optional[ChunkConfig] = None):
+    def __init__(self, config: ChunkConfig | None = None):
         self._config = config or ChunkConfig()
-        self._chunks: List[CompiledChunk] = []
-        self._experience: List[ExperienceRecord] = []
+        self._chunks: list[CompiledChunk] = []
+        self._experience: list[ExperienceRecord] = []
 
     @property
     def name(self) -> str:
@@ -230,7 +230,7 @@ class ChunkCompiler:
             return 0.3  # Ready to attempt compilation
         return 0.1  # Just recording
 
-    def contribute(self, blackboard: Any, graph: Any, context: Dict[str, Any]) -> None:
+    def contribute(self, blackboard: Any, graph: Any, context: dict[str, Any]) -> None:
         """Route to appropriate phase handler."""
         if "shell_type" in context:
             # PRE_SHELL: check for matching chunk
@@ -349,7 +349,7 @@ class ChunkCompiler:
             return
 
         # Group by preset
-        by_preset: Dict[str, List[ExperienceRecord]] = defaultdict(list)
+        by_preset: dict[str, list[ExperienceRecord]] = defaultdict(list)
         for exp in successful:
             by_preset[exp.preset_id].append(exp)
 
@@ -407,8 +407,8 @@ class ChunkCompiler:
     ]
 
     def _compute_trigger_ranges(
-        self, group: List[ExperienceRecord],
-    ) -> Optional[Dict[str, Tuple[float, float]]]:
+        self, group: list[ExperienceRecord],
+    ) -> dict[str, tuple[float, float]] | None:
         """Compute (min, max) ranges for each feature across the cluster.
 
         Only includes features with tight spread (< spread_limit).
@@ -416,7 +416,7 @@ class ChunkCompiler:
         Uses only query-intrinsic features — volatile system state
         (wm_overlap, confidence) is excluded to prevent false misses.
         """
-        ranges: Dict[str, Tuple[float, float]] = {}
+        ranges: dict[str, tuple[float, float]] = {}
 
         for fname in self._TRIGGER_FEATURES:
             values = [e.features.get(fname, 0.0) for e in group]
@@ -480,7 +480,7 @@ class ChunkCompiler:
             return
 
         # Tighten or widen: scale range width around centroid
-        new_trigger: Dict[str, Tuple[float, float]] = {}
+        new_trigger: dict[str, tuple[float, float]] = {}
         for fname, (lo, hi) in chunk.trigger.items():
             centroid = (lo + hi) / 2.0
             half_width = (hi - lo) / 2.0
@@ -497,7 +497,7 @@ class ChunkCompiler:
         )
 
     def _store_chunk_node(
-        self, graph, chunk: CompiledChunk, experiences: List[ExperienceRecord],
+        self, graph, chunk: CompiledChunk, experiences: list[ExperienceRecord],
     ) -> None:
         """Store compiled chunk as a graph node with COMPILED_FROM edges."""
         bus = getattr(graph, '_bus', None)
@@ -535,14 +535,14 @@ class ChunkCompiler:
     # Public API
     # =========================================================================
 
-    def to_snapshot(self) -> Dict[str, Any]:
+    def to_snapshot(self) -> dict[str, Any]:
         """Serialize compiled chunks and experience buffer for persistence."""
         return {
             "chunks": [c.to_snapshot() for c in self._chunks],
             "experience": [e.to_snapshot() for e in self._experience],
         }
 
-    def from_snapshot(self, data: Dict[str, Any]) -> None:
+    def from_snapshot(self, data: dict[str, Any]) -> None:
         """Restore chunks and experience from snapshot dict."""
         self._chunks.clear()
         for chunk_dict in data.get("chunks", []):
@@ -556,12 +556,12 @@ class ChunkCompiler:
         )
 
     @property
-    def chunks(self) -> List[CompiledChunk]:
+    def chunks(self) -> list[CompiledChunk]:
         """Read-only access to compiled chunks."""
         return list(self._chunks)
 
     @property
-    def active_chunks(self) -> List[CompiledChunk]:
+    def active_chunks(self) -> list[CompiledChunk]:
         """Non-retired chunks."""
         return [c for c in self._chunks if not c.is_retired]
 
@@ -580,7 +580,7 @@ class ChunkCompiler:
                 chunk.consecutive_failures = self._config.retirement_threshold
                 break
 
-    def report(self) -> Dict[str, Any]:
+    def report(self) -> dict[str, Any]:
         """Diagnostic info about chunk compiler state."""
         return {
             "total_chunks": len(self._chunks),

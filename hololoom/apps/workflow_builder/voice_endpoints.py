@@ -9,10 +9,10 @@ To integrate:
     add_voice_endpoints(app, voice_integration)
 """
 
-from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.responses import Response, JSONResponse
-from pathlib import Path
 import logging
+
+from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.responses import JSONResponse, Response
 
 logger = logging.getLogger(__name__)
 

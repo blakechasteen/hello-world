@@ -13,11 +13,11 @@ Status: Production Ready
 W9: Memory Retrieval Stub Remediation (SWOT Weakness)
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, TYPE_CHECKING
-from enum import Enum
-from datetime import datetime
 import logging
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.protocols.types import MemoryShard
@@ -62,10 +62,10 @@ class RetrievalResultEnhanced:
         >>> result = RetrievalResultEnhanced.unavailable("Neo4j connection failed")
     """
 
-    shards: List["MemoryShard"]
+    shards: list["MemoryShard"]
     status: RetrievalStatus
     message: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     retrieval_time_ms: float = 0.0
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
@@ -74,9 +74,9 @@ class RetrievalResultEnhanced:
     @classmethod
     def success(
         cls,
-        shards: List["MemoryShard"],
+        shards: list["MemoryShard"],
         retrieval_time_ms: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> "RetrievalResultEnhanced":
         """
         Create successful retrieval result.
@@ -100,10 +100,10 @@ class RetrievalResultEnhanced:
     @classmethod
     def partial(
         cls,
-        shards: List["MemoryShard"],
+        shards: list["MemoryShard"],
         reason: str,
         retrieval_time_ms: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> "RetrievalResultEnhanced":
         """
         Create partial result (some results, but degraded).
@@ -130,11 +130,11 @@ class RetrievalResultEnhanced:
     @classmethod
     def fallback(
         cls,
-        shards: List["MemoryShard"],
+        shards: list["MemoryShard"],
         reason: str,
         fallback_method: str = "unknown",
         retrieval_time_ms: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> "RetrievalResultEnhanced":
         """
         Create fallback result (using alternative retrieval method).
@@ -165,7 +165,7 @@ class RetrievalResultEnhanced:
         cls,
         reason: str,
         backend: str = "unknown",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> "RetrievalResultEnhanced":
         """
         Create unavailable result (backend/service not accessible).
@@ -194,7 +194,7 @@ class RetrievalResultEnhanced:
         cls,
         query: str,
         retrieval_time_ms: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> "RetrievalResultEnhanced":
         """
         Create empty result (query executed but no matches).
@@ -221,7 +221,7 @@ class RetrievalResultEnhanced:
     def error(
         cls,
         exception: Exception,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> "RetrievalResultEnhanced":
         """
         Create error result (unexpected failure during retrieval).
@@ -280,7 +280,7 @@ class RetrievalResultEnhanced:
 
     # --- Utility Methods ---
 
-    def unwrap_or(self, default: List["MemoryShard"]) -> List["MemoryShard"]:
+    def unwrap_or(self, default: list["MemoryShard"]) -> list["MemoryShard"]:
         """
         Return shards if successful, otherwise return default.
 
@@ -294,7 +294,7 @@ class RetrievalResultEnhanced:
         """
         return self.shards if self.has_results else default
 
-    def log_status(self, logger_instance: Optional[logging.Logger] = None):
+    def log_status(self, logger_instance: logging.Logger | None = None):
         """
         Log retrieval status at appropriate level.
 
@@ -316,7 +316,7 @@ class RetrievalResultEnhanced:
         elif self.status == RetrievalStatus.ERROR:
             log.error(f"Retrieval error: {self.message}")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Serialize to dictionary (JSON-safe).
 
@@ -352,18 +352,18 @@ class TraversalResult:
     Addresses W9: GraphRetriever.traverse() returning bare {} silently.
     """
 
-    nodes: Dict[str, float]  # Node ID → score
+    nodes: dict[str, float]  # Node ID → score
     status: RetrievalStatus
     message: str
     hops_executed: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def success(
         cls,
-        nodes: Dict[str, float],
+        nodes: dict[str, float],
         hops_executed: int = 0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> "TraversalResult":
         """Create successful traversal result."""
         return cls(
@@ -378,7 +378,7 @@ class TraversalResult:
     def empty_graph(
         cls,
         start_entity: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> "TraversalResult":
         """Create result when start entity not in graph."""
         meta = metadata or {}
@@ -394,7 +394,7 @@ class TraversalResult:
     def unavailable(
         cls,
         reason: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> "TraversalResult":
         """Create result when graph is unavailable."""
         meta = metadata or {}
@@ -416,7 +416,7 @@ class TraversalResult:
         """True if traversal succeeded."""
         return self.status == RetrievalStatus.SUCCESS
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for backward compatibility."""
         result = {
             "nodes": list(self.nodes.keys()),

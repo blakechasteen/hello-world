@@ -18,13 +18,13 @@ Date: 2025-12-09
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Set, Callable, Awaitable, Union, TYPE_CHECKING
-from datetime import datetime
 import asyncio
 import uuid
-import json
 from collections import defaultdict
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import TYPE_CHECKING, Any
 
 from .context_handoff import (
     ContextHandoff,
@@ -36,20 +36,19 @@ from .context_handoff import (
 # Import shared enums from protocol (no circular import)
 from .protocol import (
     AgentCapability,
-    MessageType,
-    MessagePriority,
     AgentStatus,
-    SelectionStrategy,
-    QueryComplexity,
     EnsembleStrategy,
+    MessagePriority,
+    MessageType,
+    SelectionStrategy,
 )
 
 # Phase 7.2: Task Delegation imports are lazy to avoid circular imports
 # These are imported inside delegate_task_smart() method
 if TYPE_CHECKING:
-    from .capability_analyzer import QueryCapabilityAnalyzer, CapabilityAnalysis
-    from .expert_router import ExpertRouter, RoutingDecision, AgentScore
-    from .ensemble_decision import EnsembleAggregator, EnsembleResult, AgentResponse
+    from .capability_analyzer import CapabilityAnalysis, QueryCapabilityAnalyzer
+    from .ensemble_decision import AgentResponse, EnsembleAggregator, EnsembleResult
+    from .expert_router import ExpertRouter, RoutingDecision
 
 
 # ============================================================================
@@ -66,7 +65,7 @@ class AgentMessage:
     """
     # Message identification
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:12])
-    correlation_id: Optional[str] = None  # Links related messages
+    correlation_id: str | None = None  # Links related messages
 
     # Routing
     from_agent: str = ""
@@ -75,15 +74,15 @@ class AgentMessage:
     # Content
     type: MessageType = MessageType.REQUEST
     content: Any = None
-    context: List[ContextItem] = field(default_factory=list)
+    context: list[ContextItem] = field(default_factory=list)
 
     # Metadata
     priority: MessagePriority = MessagePriority.NORMAL
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
-    ttl_seconds: Optional[int] = None  # Time-to-live
+    ttl_seconds: int | None = None  # Time-to-live
 
     # Additional metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def is_expired(self) -> bool:
         """Check if message has expired based on TTL."""
@@ -98,7 +97,7 @@ class AgentMessage:
         content: Any,
         from_agent: str,
         msg_type: MessageType = MessageType.RESPONSE
-    ) -> "AgentMessage":
+    ) -> AgentMessage:
         """Create a response message to this message."""
         return AgentMessage(
             correlation_id=self.id,
@@ -110,7 +109,7 @@ class AgentMessage:
             context=self.context.copy(),
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize message to dictionary."""
         return {
             "id": self.id,
@@ -134,7 +133,7 @@ class AgentMessage:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "AgentMessage":
+    def from_dict(cls, data: dict[str, Any]) -> AgentMessage:
         """Deserialize message from dictionary."""
         context = [
             ContextItem(
@@ -164,7 +163,7 @@ class AgentInfo:
     """Information about a registered agent."""
     id: str
     name: str
-    capabilities: Set[AgentCapability]
+    capabilities: set[AgentCapability]
     status: AgentStatus = AgentStatus.IDLE
 
     # Performance metrics
@@ -177,7 +176,7 @@ class AgentInfo:
     current_tasks: int = 0
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     registered_at: str = field(default_factory=lambda: datetime.now().isoformat())
     last_active: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -208,7 +207,7 @@ class AgentInfo:
 
         self.last_active = datetime.now().isoformat()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize agent info to dictionary."""
         return {
             "id": self.id,
@@ -259,8 +258,8 @@ class AgentRegistry:
 
     def __init__(self):
         """Initialize empty registry."""
-        self._agents: Dict[str, AgentInfo] = {}
-        self._capability_index: Dict[AgentCapability, Set[str]] = defaultdict(set)
+        self._agents: dict[str, AgentInfo] = {}
+        self._capability_index: dict[AgentCapability, set[str]] = defaultdict(set)
         self._lock = asyncio.Lock()
 
     async def register(self, agent: AgentInfo) -> bool:
@@ -312,7 +311,7 @@ class AgentRegistry:
 
             return True
 
-    def get(self, agent_id: str) -> Optional[AgentInfo]:
+    def get(self, agent_id: str) -> AgentInfo | None:
         """Get agent by ID."""
         return self._agents.get(agent_id)
 
@@ -320,7 +319,7 @@ class AgentRegistry:
         self,
         capability: AgentCapability,
         only_available: bool = True
-    ) -> List[AgentInfo]:
+    ) -> list[AgentInfo]:
         """
         Find agents with specific capability.
 
@@ -343,7 +342,7 @@ class AgentRegistry:
         self,
         capability: AgentCapability,
         strategy: str = "balanced"
-    ) -> Optional[AgentInfo]:
+    ) -> AgentInfo | None:
         """
         Get the best agent for a capability using specified strategy.
 
@@ -389,11 +388,11 @@ class AgentRegistry:
             # Default to first available
             return agents[0]
 
-    def get_all_agents(self) -> List[AgentInfo]:
+    def get_all_agents(self) -> list[AgentInfo]:
         """Get all registered agents."""
         return list(self._agents.values())
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get registry statistics."""
         agents = list(self._agents.values())
 
@@ -423,7 +422,7 @@ class AgentRegistry:
 # ============================================================================
 
 # Type alias for message handlers
-MessageHandler = Callable[[AgentMessage], Awaitable[Optional[AgentMessage]]]
+MessageHandler = Callable[[AgentMessage], Awaitable[AgentMessage | None]]
 
 
 class MessageBus:
@@ -454,7 +453,7 @@ class MessageBus:
         ))
     """
 
-    def __init__(self, registry: Optional[AgentRegistry] = None):
+    def __init__(self, registry: AgentRegistry | None = None):
         """
         Initialize message bus.
 
@@ -462,10 +461,10 @@ class MessageBus:
             registry: Optional agent registry for routing
         """
         self.registry = registry or AgentRegistry()
-        self._handlers: Dict[str, MessageHandler] = {}
-        self._queues: Dict[str, asyncio.PriorityQueue] = {}
-        self._broadcast_handlers: List[MessageHandler] = []
-        self._message_history: List[AgentMessage] = []
+        self._handlers: dict[str, MessageHandler] = {}
+        self._queues: dict[str, asyncio.PriorityQueue] = {}
+        self._broadcast_handlers: list[MessageHandler] = []
+        self._message_history: list[AgentMessage] = []
         self._history_limit: int = 1000
         self._lock = asyncio.Lock()
 
@@ -529,7 +528,7 @@ class MessageBus:
         self,
         message: AgentMessage,
         timeout: float = 30.0
-    ) -> Optional[AgentMessage]:
+    ) -> AgentMessage | None:
         """
         Send a request and wait for response.
 
@@ -554,7 +553,7 @@ class MessageBus:
         if not original_handler:
             return None
 
-        async def capturing_handler(msg: AgentMessage) -> Optional[AgentMessage]:
+        async def capturing_handler(msg: AgentMessage) -> AgentMessage | None:
             response = await original_handler(msg)
             if response and response.correlation_id == message.id:
                 if not response_future.done():
@@ -588,7 +587,7 @@ class MessageBus:
         message: AgentMessage,
         capability: AgentCapability,
         strategy: str = "balanced"
-    ) -> Optional[AgentMessage]:
+    ) -> AgentMessage | None:
         """
         Route message to best agent with capability.
 
@@ -611,7 +610,7 @@ class MessageBus:
         self,
         handler: MessageHandler,
         message: AgentMessage
-    ) -> Optional[AgentMessage]:
+    ) -> AgentMessage | None:
         """Safely call handler with error handling."""
         try:
             return await handler(message)
@@ -634,9 +633,9 @@ class MessageBus:
 
     def get_message_history(
         self,
-        agent_id: Optional[str] = None,
+        agent_id: str | None = None,
         limit: int = 100
-    ) -> List[AgentMessage]:
+    ) -> list[AgentMessage]:
         """
         Get message history.
 
@@ -657,7 +656,7 @@ class MessageBus:
 
         return messages[-limit:][::-1]
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get message bus statistics."""
         messages = self._message_history
 
@@ -685,9 +684,9 @@ class SharedMemoryEntry:
     owner: str  # Agent that created entry
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
-    ttl_seconds: Optional[int] = None
+    ttl_seconds: int | None = None
     access_count: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def is_expired(self) -> bool:
         """Check if entry has expired."""
@@ -725,15 +724,15 @@ class SharedMemory:
         )
     """
 
-    def __init__(self, context_handoff: Optional[ContextHandoff] = None):
+    def __init__(self, context_handoff: ContextHandoff | None = None):
         """
         Initialize shared memory.
 
         Args:
             context_handoff: Optional ContextHandoff for MI-based filtering
         """
-        self._store: Dict[str, SharedMemoryEntry] = {}
-        self._namespaces: Dict[str, Set[str]] = defaultdict(set)
+        self._store: dict[str, SharedMemoryEntry] = {}
+        self._namespaces: dict[str, set[str]] = defaultdict(set)
         self._lock = asyncio.Lock()
         self._context_handoff = context_handoff or ContextHandoff()
 
@@ -743,8 +742,8 @@ class SharedMemory:
         value: Any,
         owner: str,
         namespace: str = "default",
-        ttl_seconds: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        ttl_seconds: int | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> bool:
         """
         Store value in shared memory.
@@ -780,7 +779,7 @@ class SharedMemory:
         self,
         key: str,
         namespace: str = "default"
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """
         Retrieve value from shared memory.
 
@@ -816,7 +815,7 @@ class SharedMemory:
                 return True
             return False
 
-    async def get_namespace(self, namespace: str) -> Dict[str, Any]:
+    async def get_namespace(self, namespace: str) -> dict[str, Any]:
         """Get all entries in a namespace."""
         async with self._lock:
             keys = self._namespaces.get(namespace, set())
@@ -845,8 +844,8 @@ class SharedMemory:
         target_agent: str,
         target_capability: str,
         namespace: str = "default",
-        strategy: Optional[HandoffStrategy] = None,
-        token_budget: Optional[int] = None
+        strategy: HandoffStrategy | None = None,
+        token_budget: int | None = None
     ) -> HandoffContext:
         """
         Get context from shared memory filtered for agent handoff.
@@ -903,7 +902,7 @@ class SharedMemory:
 
             return len(expired_keys)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get shared memory statistics."""
         entries = list(self._store.values())
 
@@ -982,10 +981,10 @@ class MultiAgentCoordinator:
         task: Any,
         capability: AgentCapability,
         from_agent: str = "coordinator",
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         strategy: str = "balanced",
         timeout: float = 30.0
-    ) -> Optional[AgentMessage]:
+    ) -> AgentMessage | None:
         """
         Delegate a task to the best available agent.
 
@@ -1018,16 +1017,16 @@ class MultiAgentCoordinator:
     async def delegate_task_smart(
         self,
         task: str,
-        capability: Optional[AgentCapability] = None,
+        capability: AgentCapability | None = None,
         from_agent: str = "coordinator",
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         strategy: SelectionStrategy = SelectionStrategy.BALANCED,
         timeout: float = 30.0,
         enable_auto_detect: bool = True,
         enable_ensemble: bool = False,
         ensemble_strategy: EnsembleStrategy = EnsembleStrategy.CONFIDENCE_WEIGHTED,
         ensemble_top_k: int = 3,
-    ) -> Union[Optional[AgentMessage], EnsembleResult]:
+    ) -> AgentMessage | None | EnsembleResult:
         """
         Smart task delegation with automatic capability detection and ensemble support.
 
@@ -1127,11 +1126,11 @@ class MultiAgentCoordinator:
         task: str,
         agent_id: str,
         from_agent: str,
-        context: Optional[Dict[str, Any]],
+        context: dict[str, Any] | None,
         timeout: float,
         routing_decision: RoutingDecision,
-        capability_analysis: Optional[CapabilityAnalysis],
-    ) -> Optional[AgentMessage]:
+        capability_analysis: CapabilityAnalysis | None,
+    ) -> AgentMessage | None:
         """Execute task with a single agent."""
         start_time = datetime.now()
 
@@ -1194,10 +1193,10 @@ class MultiAgentCoordinator:
         task: str,
         routing_decision: RoutingDecision,
         from_agent: str,
-        context: Optional[Dict[str, Any]],
+        context: dict[str, Any] | None,
         timeout: float,
         ensemble_strategy: EnsembleStrategy,
-        capability_analysis: Optional[CapabilityAnalysis],
+        capability_analysis: CapabilityAnalysis | None,
     ) -> EnsembleResult:
         """Execute task with multiple agents and aggregate results."""
         start_time = datetime.now()
@@ -1224,7 +1223,7 @@ class MultiAgentCoordinator:
         responses = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Convert to AgentResponse objects
-        agent_responses: List[AgentResponse] = []
+        agent_responses: list[AgentResponse] = []
         for agent_id, response in zip(agent_ids, responses):
             if isinstance(response, Exception):
                 continue
@@ -1275,13 +1274,13 @@ class MultiAgentCoordinator:
 
         return result
 
-    def get_expert_router_statistics(self) -> Dict[str, Any]:
+    def get_expert_router_statistics(self) -> dict[str, Any]:
         """Get statistics from the expert router."""
         if hasattr(self, '_expert_router'):
             return self._expert_router.get_routing_statistics()
         return {}
 
-    def get_capability_keywords(self) -> Dict[str, List[str]]:
+    def get_capability_keywords(self) -> dict[str, list[str]]:
         """Get capability keyword mappings."""
         if hasattr(self, '_capability_analyzer'):
             return {
@@ -1327,8 +1326,8 @@ class MultiAgentCoordinator:
         to_agent: str,
         task: Any,
         context_namespace: str = "shared",
-        strategy: Optional[HandoffStrategy] = None
-    ) -> Optional[AgentMessage]:
+        strategy: HandoffStrategy | None = None
+    ) -> AgentMessage | None:
         """
         Handoff a task to another agent with filtered context.
 
@@ -1379,7 +1378,7 @@ class MultiAgentCoordinator:
 
         return await self.bus.request(message)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get comprehensive coordinator statistics."""
         return {
             "registry": self.registry.get_statistics(),

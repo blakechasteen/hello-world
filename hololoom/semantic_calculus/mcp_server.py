@@ -16,14 +16,14 @@ Configuration:
 """
 
 import asyncio
-import logging
 import json
-from typing import Any, List, Dict, Optional, Sequence
-from datetime import datetime
+import logging
+from collections.abc import Sequence
+from typing import Any
 
 try:
     from mcp.server import Server
-    from mcp.types import Resource, Tool, TextContent
+    from mcp.types import Resource, TextContent, Tool
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
@@ -31,31 +31,31 @@ except ImportError:
 
 # Import semantic calculus components
 try:
+    from ..embedding.spectral import create_embedder
     from . import (
-        SemanticFlowCalculus,
-        SemanticSpectrum,
-        EthicalSemanticPolicy,
         COMPASSIONATE_COMMUNICATION,
+        HAS_NUMBA,
         SCIENTIFIC_DISCOURSE,
         THERAPEUTIC_DIALOGUE,
-        HAS_NUMBA,
+        EthicalSemanticPolicy,
+        SemanticFlowCalculus,
+        SemanticSpectrum,
     )
-    from ..embedding.spectral import create_embedder
 except ImportError:
     # Fallback for standalone execution
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).parent.parent))
+    from embedding.spectral import create_embedder
     from semantic_calculus import (
-        SemanticFlowCalculus,
-        SemanticSpectrum,
-        EthicalSemanticPolicy,
         COMPASSIONATE_COMMUNICATION,
+        HAS_NUMBA,
         SCIENTIFIC_DISCOURSE,
         THERAPEUTIC_DIALOGUE,
-        HAS_NUMBA,
+        EthicalSemanticPolicy,
+        SemanticFlowCalculus,
+        SemanticSpectrum,
     )
-    from embedding.spectral import create_embedder
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -64,7 +64,7 @@ logger = logging.getLogger(__name__)
 # Global semantic calculus instance (initialized in main)
 calculus: SemanticFlowCalculus = None
 spectrum: SemanticSpectrum = None
-ethical_policies: Dict[str, EthicalSemanticPolicy] = {}
+ethical_policies: dict[str, EthicalSemanticPolicy] = {}
 
 # Create MCP server
 if MCP_AVAILABLE:
@@ -167,7 +167,7 @@ def format_semantic_analysis(trajectory, spectrum_analysis=None, ethical_analysi
     return "\n".join(lines)
 
 
-def predict_trajectory(trajectory, n_steps: int = 3) -> Dict:
+def predict_trajectory(trajectory, n_steps: int = 3) -> dict:
     """Predict future semantic trajectory based on current velocity/acceleration."""
     # Use last state for prediction
     last_state = trajectory.states[-1]
@@ -203,7 +203,6 @@ def predict_trajectory(trajectory, n_steps: int = 3) -> Dict:
 
 
 import numpy as np
-
 
 # ============================================================================
 # MCP Tools
@@ -624,7 +623,7 @@ async def initialize_semantic_calculus():
 
     logger.info("Semantic calculus initialized successfully!")
     logger.info(f"  JIT compilation: {'ENABLED' if HAS_NUMBA else 'DISABLED (pip install numba for 10-50x speedup)'}")
-    logger.info(f"  Embedding cache: ENABLED (10K words)")
+    logger.info("  Embedding cache: ENABLED (10K words)")
     logger.info(f"  Semantic dimensions: {len(spectrum.dimensions)}")
 
 

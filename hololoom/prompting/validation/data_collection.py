@@ -11,11 +11,11 @@ Status: Production validation framework
 import asyncio
 import json
 import sqlite3
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class QuerySource(Enum):
@@ -44,26 +44,26 @@ class ProductionQuery:
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Context (optional)
-    user_id: Optional[str] = None
-    session_id: Optional[str] = None
-    context: Dict[str, Any] = field(default_factory=dict)
+    user_id: str | None = None
+    session_id: str | None = None
+    context: dict[str, Any] = field(default_factory=dict)
 
     # System used (for baseline collection)
-    system_variant: Optional[str] = None  # "traditional" or "unified_mrf"
+    system_variant: str | None = None  # "traditional" or "unified_mrf"
 
     # Response
-    response: Optional[str] = None
-    latency_ms: Optional[float] = None
+    response: str | None = None
+    latency_ms: float | None = None
 
     # Quality metrics (auto-computed or human-rated)
-    quality_metrics: Dict[str, float] = field(default_factory=dict)
+    quality_metrics: dict[str, float] = field(default_factory=dict)
 
     # User feedback
-    user_rating: Optional[int] = None  # 1-5 stars
-    user_feedback: Optional[str] = None
-    thumbs_up: Optional[bool] = None  # Simple +1/-1 feedback
+    user_rating: int | None = None  # 1-5 stars
+    user_feedback: str | None = None
+    thumbs_up: bool | None = None  # Simple +1/-1 feedback
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         result = asdict(self)
         result['timestamp'] = self.timestamp.isoformat()
@@ -71,7 +71,7 @@ class ProductionQuery:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ProductionQuery':
+    def from_dict(cls, data: dict[str, Any]) -> 'ProductionQuery':
         """Create from dictionary."""
         data = data.copy()
         data['timestamp'] = datetime.fromisoformat(data['timestamp'])
@@ -168,10 +168,10 @@ class ProductionDataCollector:
         query_id: str,
         text: str,
         source: QuerySource,
-        system_variant: Optional[str] = None,
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None
+        system_variant: str | None = None,
+        user_id: str | None = None,
+        session_id: str | None = None,
+        context: dict[str, Any] | None = None
     ):
         """
         Log a production query.
@@ -235,7 +235,7 @@ class ProductionDataCollector:
     async def log_quality_metrics(
         self,
         query_id: str,
-        metrics: Dict[str, float]
+        metrics: dict[str, float]
     ):
         """
         Log quality metrics for a query.
@@ -262,9 +262,9 @@ class ProductionDataCollector:
     async def log_user_feedback(
         self,
         query_id: str,
-        rating: Optional[int] = None,
-        feedback: Optional[str] = None,
-        thumbs_up: Optional[bool] = None
+        rating: int | None = None,
+        feedback: str | None = None,
+        thumbs_up: bool | None = None
     ):
         """
         Log user feedback for a query.
@@ -289,12 +289,12 @@ class ProductionDataCollector:
 
     async def get_queries(
         self,
-        source: Optional[QuerySource] = None,
-        system_variant: Optional[str] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        limit: Optional[int] = None
-    ) -> List[ProductionQuery]:
+        source: QuerySource | None = None,
+        system_variant: str | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        limit: int | None = None
+    ) -> list[ProductionQuery]:
         """
         Retrieve queries from database.
 
@@ -382,7 +382,7 @@ class ProductionDataCollector:
         conn.close()
         return queries
 
-    async def get_statistics(self) -> Dict[str, Any]:
+    async def get_statistics(self) -> dict[str, Any]:
         """Get database statistics."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()

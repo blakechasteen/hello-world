@@ -21,36 +21,30 @@ Updated: November 22, 2025 (Phase 5 - Emotion Bridge Integration)
 """
 
 # Personality module (always available)
-from .personality import (
-    PersonalityTraits,
-    Personality,
-    PersonalityManager,
-    PersonalityType
-)
-
 # Language module (always available)
 from .language import (
-    LanguageCode,
-    LanguageProfile,
-    LanguageVariant,
     ConversationLanguageState,
+    LanguageCode,
     LanguageDetector,
     LanguageManager,
+    LanguageProfile,
+    LanguageVariant,
     create_language_manager,
-    detect_language
+    detect_language,
 )
+from .personality import Personality, PersonalityManager, PersonalityTraits, PersonalityType
 
 # Emotion bridge module (Phase 5 - optional Node.js dependency)
 try:
     from .emotion_bridge import (
+        EmotionalInput,
         EmotionBridge,
         EmotionBridgeConfig,
         EmotionResult,
-        EmotionalInput,
         FusionStrategy,
         MetaMode,
         PlanningStrategy,
-        enhance_voice_agent_with_emotions
+        enhance_voice_agent_with_emotions,
     )
     EMOTION_BRIDGE_AVAILABLE = True
 except ImportError:
@@ -59,15 +53,15 @@ except ImportError:
 # Voice agent module (optional dependencies)
 try:
     from .voice_agent import (
-        VoiceAgent,
-        TTSProvider,
-        OpenAITTS,
-        TTSManager,
-        VoiceActivityDetector,
-        TurnTakingManager,
         ConversationMemory,
         ConversationTurn,
-        TurnState
+        OpenAITTS,
+        TTSManager,
+        TTSProvider,
+        TurnState,
+        TurnTakingManager,
+        VoiceActivityDetector,
+        VoiceAgent,
     )
     VOICE_AGENT_AVAILABLE = True
 except ImportError:

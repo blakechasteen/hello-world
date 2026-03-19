@@ -10,9 +10,10 @@ Research:
 - Bastani et al. (2018): Interpreting Blackbox Models via Model Extraction
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Callable, Set
 from enum import Enum
+from typing import Any, Optional
 
 
 class SplitCriterion(Enum):
@@ -25,11 +26,11 @@ class SplitCriterion(Enum):
 @dataclass
 class DecisionNode:
     """Node in a decision tree"""
-    feature: Optional[str] = None  # Feature to split on (None for leaf)
-    threshold: Optional[float] = None  # Split threshold
+    feature: str | None = None  # Feature to split on (None for leaf)
+    threshold: float | None = None  # Split threshold
     left: Optional['DecisionNode'] = None  # Left child (feature <= threshold)
     right: Optional['DecisionNode'] = None  # Right child (feature > threshold)
-    prediction: Optional[Any] = None  # Prediction (for leaf nodes)
+    prediction: Any | None = None  # Prediction (for leaf nodes)
     samples: int = 0  # Number of samples at this node
     impurity: float = 1.0  # Node impurity
     depth: int = 0
@@ -48,7 +49,7 @@ class DecisionNode:
 @dataclass
 class Rule:
     """A decision rule extracted from tree"""
-    conditions: List[str]  # List of conditions (e.g., ["age > 30", "income <= 50000"])
+    conditions: list[str]  # List of conditions (e.g., ["age > 30", "income <= 50000"])
     prediction: Any  # Prediction if all conditions met
     confidence: float = 1.0  # Rule confidence
     support: int = 0  # Number of samples supporting this rule
@@ -61,27 +62,27 @@ class Rule:
 @dataclass
 class RuleSet:
     """Collection of decision rules"""
-    rules: List[Rule] = field(default_factory=list)
+    rules: list[Rule] = field(default_factory=list)
 
     def add_rule(self, rule: Rule):
         """Add a rule to the set"""
         self.rules.append(rule)
 
-    def predict(self, features: Dict[str, Any]) -> Optional[Any]:
+    def predict(self, features: dict[str, Any]) -> Any | None:
         """Predict using rules (first matching rule wins)"""
         for rule in self.rules:
             if self._matches_rule(features, rule):
                 return rule.prediction
         return None
 
-    def _matches_rule(self, features: Dict[str, Any], rule: Rule) -> bool:
+    def _matches_rule(self, features: dict[str, Any], rule: Rule) -> bool:
         """Check if features satisfy all rule conditions"""
         for condition in rule.conditions:
             if not self._evaluate_condition(features, condition):
                 return False
         return True
 
-    def _evaluate_condition(self, features: Dict[str, Any], condition: str) -> bool:
+    def _evaluate_condition(self, features: dict[str, Any], condition: str) -> bool:
         """Evaluate a single condition"""
         # Parse condition: "feature_name > threshold" or "feature_name <= threshold"
         for op in [" > ", " <= ", " >= ", " < ", " == ", " != "]:
@@ -130,7 +131,7 @@ class DecisionTreeExtractor:
 
     def __init__(
         self,
-        model: Optional[Callable] = None,
+        model: Callable | None = None,
         max_depth: int = 5,
         min_samples_split: int = 10,
         criterion: SplitCriterion = SplitCriterion.INFORMATION_GAIN
@@ -146,12 +147,12 @@ class DecisionTreeExtractor:
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.criterion = criterion
-        self.tree: Optional[DecisionNode] = None
+        self.tree: DecisionNode | None = None
 
     def extract(
         self,
-        training_data: List[Dict[str, Any]],
-        feature_names: Optional[List[str]] = None
+        training_data: list[dict[str, Any]],
+        feature_names: list[str] | None = None
     ) -> DecisionNode:
         """
         Extract decision tree from model.
@@ -188,9 +189,9 @@ class DecisionTreeExtractor:
 
     def _build_tree(
         self,
-        data: List[Dict[str, Any]],
-        labels: List[Any],
-        feature_names: List[str],
+        data: list[dict[str, Any]],
+        labels: list[Any],
+        feature_names: list[str],
         depth: int
     ) -> DecisionNode:
         """Recursively build decision tree"""
@@ -257,9 +258,9 @@ class DecisionTreeExtractor:
 
     def _find_best_split(
         self,
-        data: List[Dict[str, Any]],
-        labels: List[Any],
-        feature_names: List[str]
+        data: list[dict[str, Any]],
+        labels: list[Any],
+        feature_names: list[str]
     ) -> tuple:
         """Find best feature and threshold to split on"""
         best_feature = None
@@ -306,8 +307,8 @@ class DecisionTreeExtractor:
 
     def _split_data(
         self,
-        data: List[Dict[str, Any]],
-        labels: List[Any],
+        data: list[dict[str, Any]],
+        labels: list[Any],
         feature: str,
         threshold: float
     ) -> tuple:
@@ -328,7 +329,7 @@ class DecisionTreeExtractor:
 
         return left_data, left_labels, right_data, right_labels
 
-    def _compute_impurity(self, labels: List[Any]) -> float:
+    def _compute_impurity(self, labels: list[Any]) -> float:
         """Compute impurity (entropy or Gini)"""
         if not labels:
             return 0.0
@@ -358,7 +359,7 @@ class DecisionTreeExtractor:
                     entropy -= prob * math.log2(prob)
             return entropy
 
-    def _majority_class(self, labels: List[Any]) -> Any:
+    def _majority_class(self, labels: list[Any]) -> Any:
         """Return most common label"""
         if not labels:
             return None
@@ -369,7 +370,7 @@ class DecisionTreeExtractor:
 
         return max(class_counts.items(), key=lambda x: x[1])[0]
 
-    def _query_model(self, features: Dict[str, Any]) -> Any:
+    def _query_model(self, features: dict[str, Any]) -> Any:
         """Query model for prediction"""
         if self.model is None:
             return 0
@@ -398,7 +399,7 @@ class DecisionTreeExtractor:
     def _extract_rules_recursive(
         self,
         node: DecisionNode,
-        conditions: List[str],
+        conditions: list[str],
         ruleset: RuleSet
     ):
         """Recursively extract rules from tree"""
@@ -431,7 +432,7 @@ class DecisionTreeExtractor:
 
 def extract_rules(
     model: Callable,
-    training_data: List[Dict[str, Any]],
+    training_data: list[dict[str, Any]],
     max_depth: int = 5
 ) -> RuleSet:
     """

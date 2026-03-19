@@ -11,15 +11,16 @@ Tests cover:
 - Capacity management
 """
 
-import pytest
 import json
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from .attack_scratchpad import (
+    AttackChain,
     AttackScratchpad,
     AttackScratchpadEntry,
-    AttackChain,
     AttackStrategy,
     DefenseLayer,
 )

@@ -13,16 +13,14 @@ import logging
 import random
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple
 
-from .identity import node_id_distance, node_id_prefix_length
-from .protocols import RoutingProtocol
-from .types import Capability, FederationNode, Query, Response
+from .identity import node_id_distance
 from .transport import (
     BaseTransport,
     MessageType,
     TransportMessage,
 )
+from .types import Capability, FederationNode, Query, Response
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +40,10 @@ class KBucket:
     """
 
     k: int = 20                               # Max nodes per bucket
-    nodes: List[FederationNode] = field(default_factory=list)
+    nodes: list[FederationNode] = field(default_factory=list)
     last_update: float = 0.0
 
-    def add(self, node: FederationNode) -> Optional[FederationNode]:
+    def add(self, node: FederationNode) -> FederationNode | None:
         """
         Add node to bucket.
 
@@ -76,14 +74,14 @@ class KBucket:
                 return True
         return False
 
-    def get(self, node_id: str) -> Optional[FederationNode]:
+    def get(self, node_id: str) -> FederationNode | None:
         """Get node by ID."""
         for node in self.nodes:
             if node.node_id == node_id:
                 return node
         return None
 
-    def closest(self, target: str, n: int) -> List[FederationNode]:
+    def closest(self, target: str, n: int) -> list[FederationNode]:
         """Get n closest nodes to target."""
         sorted_nodes = sorted(
             self.nodes,
@@ -118,7 +116,7 @@ class RoutingTable:
         self._buckets = [KBucket(k=k) for _ in range(160)]
 
         # Capability index for fast lookup
-        self._by_capability: Dict[Capability, Set[str]] = defaultdict(set)
+        self._by_capability: dict[Capability, set[str]] = defaultdict(set)
 
     def _bucket_index(self, node_id: str) -> int:
         """Get bucket index for a node ID."""
@@ -127,7 +125,7 @@ class RoutingTable:
             return 0
         return min(distance.bit_length() - 1, 159)
 
-    def add(self, node: FederationNode) -> Optional[FederationNode]:
+    def add(self, node: FederationNode) -> FederationNode | None:
         """Add node to routing table."""
         if node.node_id == self._local_id:
             return None  # Don't add ourselves
@@ -153,19 +151,19 @@ class RoutingTable:
 
         return success
 
-    def get(self, node_id: str) -> Optional[FederationNode]:
+    def get(self, node_id: str) -> FederationNode | None:
         """Get node by ID."""
         bucket_idx = self._bucket_index(node_id)
         return self._buckets[bucket_idx].get(node_id)
 
-    def closest(self, target: str, n: int = 20) -> List[FederationNode]:
+    def closest(self, target: str, n: int = 20) -> list[FederationNode]:
         """
         Find n closest nodes to target.
 
         This is the core Kademlia lookup operation.
         """
         # Collect candidates from all buckets
-        candidates: List[Tuple[int, FederationNode]] = []
+        candidates: list[tuple[int, FederationNode]] = []
 
         for bucket in self._buckets:
             for node in bucket.nodes:
@@ -185,12 +183,12 @@ class RoutingTable:
 
     def with_capabilities(
         self,
-        capabilities: Set[Capability],
+        capabilities: set[Capability],
         min_trust: float = 0.0,
-    ) -> List[FederationNode]:
+    ) -> list[FederationNode]:
         """Find nodes with all required capabilities."""
         # Start with nodes that have any required capability
-        candidate_ids: Optional[Set[str]] = None
+        candidate_ids: set[str] | None = None
 
         for cap in capabilities:
             cap_ids = self._by_capability.get(cap, set())
@@ -247,7 +245,7 @@ class KademliaRouter:
         k: int = 20,                          # Bucket size
         alpha: int = 3,                       # Parallel lookups
         lookup_timeout_ms: int = 5000,
-        transport: Optional[BaseTransport] = None,
+        transport: BaseTransport | None = None,
     ):
         self._local = local_node
         self._table = RoutingTable(local_node.node_id, k=k)
@@ -256,7 +254,7 @@ class KademliaRouter:
         self._transport = transport
 
         # Cached lookups
-        self._lookup_cache: Dict[str, List[FederationNode]] = {}
+        self._lookup_cache: dict[str, list[FederationNode]] = {}
 
     # ───────────────────────────────────────────────────────────────────────
     #  NODE DISCOVERY
@@ -264,12 +262,12 @@ class KademliaRouter:
 
     async def find_nodes(
         self,
-        capabilities: Set[Capability],
+        capabilities: set[Capability],
         *,
         min_trust: float = 0.7,
-        guild: Optional[str] = None,
+        guild: str | None = None,
         limit: int = 10,
-    ) -> List[FederationNode]:
+    ) -> list[FederationNode]:
         """
         Find nodes with required capabilities.
 
@@ -299,7 +297,7 @@ class KademliaRouter:
 
         return candidates[:limit]
 
-    async def find_node(self, node_id: str) -> Optional[FederationNode]:
+    async def find_node(self, node_id: str) -> FederationNode | None:
         """Find a specific node by ID."""
         # Check local table first
         node = self._table.get(node_id)
@@ -312,7 +310,7 @@ class KademliaRouter:
     async def _iterative_find_node(
         self,
         target: str,
-    ) -> Optional[FederationNode]:
+    ) -> FederationNode | None:
         """
         Iterative Kademlia node lookup.
 
@@ -327,11 +325,11 @@ class KademliaRouter:
             return None
 
         # Track queried and pending nodes
-        queried: Set[str] = set()
-        found: Optional[FederationNode] = None
+        queried: set[str] = set()
+        found: FederationNode | None = None
 
         # Priority queue: (distance, node)
-        to_query: List[Tuple[int, FederationNode]] = [
+        to_query: list[tuple[int, FederationNode]] = [
             (node_id_distance(n.node_id, target), n) for n in closest
         ]
         heapq.heapify(to_query)
@@ -374,7 +372,7 @@ class KademliaRouter:
         self,
         node: FederationNode,
         target: str,
-    ) -> List[FederationNode]:
+    ) -> list[FederationNode]:
         """Query a node for nodes close to target via transport."""
         if not self._transport:
             logger.debug("No transport configured for find_node")
@@ -428,8 +426,8 @@ class KademliaRouter:
     async def route(
         self,
         query: Query,
-        nodes: List[FederationNode],
-    ) -> List[Response]:
+        nodes: list[FederationNode],
+    ) -> list[Response]:
         """
         Route query to nodes and collect responses.
 
@@ -630,11 +628,11 @@ class KademliaRouter:
 
     def select_nodes(
         self,
-        candidates: List[FederationNode],
+        candidates: list[FederationNode],
         n: int,
         *,
         strategy: str = "weighted",
-    ) -> List[FederationNode]:
+    ) -> list[FederationNode]:
         """
         Select n nodes from candidates for load balancing.
 

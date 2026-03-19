@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Tool Execution Module
 =====================
@@ -26,12 +25,12 @@ Date: 2025-11-22
 from __future__ import annotations
 
 import logging
-from typing import Dict, Optional, TYPE_CHECKING
 import os
-
-from hololoom.protocols.types import Query, Context
-from hololoom.fabric.spacetime import Artifact, ArtifactType
 import re
+from typing import TYPE_CHECKING
+
+from hololoom.fabric.spacetime import Artifact, ArtifactType
+from hololoom.protocols.types import Context, Query
 
 if TYPE_CHECKING:
     from hololoom.awareness.llm_integration import OllamaLLM
@@ -69,7 +68,7 @@ class ToolExecutor:
         logger (logging.Logger): Logger instance
     """
 
-    def __init__(self, llm: Optional['OllamaLLM'] = None, enable_skills: bool = True):
+    def __init__(self, llm: OllamaLLM | None = None, enable_skills: bool = True):
         """
         Initialize the tool executor.
 
@@ -122,7 +121,7 @@ class ToolExecutor:
                 self.logger.warning(f"LLM unavailable, using fallback: {e}")
                 self.llm = None
 
-    async def execute(self, tool: str, query: Query, context: Context) -> Dict:
+    async def execute(self, tool: str, query: Query, context: Context) -> dict:
         """
         Execute a tool based on the convergence decision.
 
@@ -163,7 +162,7 @@ class ToolExecutor:
         handler = tool_handlers.get(tool, self._handle_unknown)
         return await handler(query, context)
 
-    async def _handle_answer(self, query: Query, context: Context) -> Dict:
+    async def _handle_answer(self, query: Query, context: Context) -> dict:
         """
         Generate an answer based on context.
 
@@ -287,7 +286,7 @@ Answer:"""
         }
 
 
-    async def _handle_search(self, query: Query, context: Context) -> Dict:
+    async def _handle_search(self, query: Query, context: Context) -> dict:
         """
         Perform a search operation.
 
@@ -307,7 +306,7 @@ Answer:"""
             "count": 3
         }
 
-    async def _handle_notion_write(self, query: Query, context: Context) -> Dict:
+    async def _handle_notion_write(self, query: Query, context: Context) -> dict:
         """
         Write to Notion database.
 
@@ -327,7 +326,7 @@ Answer:"""
             "page_id": "mock_page_123"
         }
 
-    async def _handle_calc(self, query: Query, context: Context) -> Dict:
+    async def _handle_calc(self, query: Query, context: Context) -> dict:
         """
         Perform calculation.
 
@@ -347,7 +346,7 @@ Answer:"""
             "expression": "mock_calculation"
         }
 
-    async def _handle_unknown(self, query: Query, context: Context) -> Dict:
+    async def _handle_unknown(self, query: Query, context: Context) -> dict:
         """
         Handle unknown or unimplemented tool.
 
@@ -365,7 +364,7 @@ Answer:"""
             "status": "error"
         }
 
-    async def _handle_skill(self, skill_name: str, query: Query, context: Context) -> Dict:
+    async def _handle_skill(self, skill_name: str, query: Query, context: Context) -> dict:
         """
         Handle skill execution.
 
@@ -412,13 +411,13 @@ Answer:"""
 
                 use_cache=True
             )
-            
+
             # Extract artifacts if result is text-based
             if isinstance(result, dict) and 'result' in result and isinstance(result['result'], str):
                 artifacts = self._extract_artifacts(result['result'])
                 if artifacts:
                     result['artifacts'] = artifacts
-            
+
             return result
 
         except ValueError as e:
@@ -452,14 +451,14 @@ Answer:"""
         artifacts = []
         if not text:
             return artifacts
-            
+
         # Pattern 1: Code block with filename comment inside
         code_block_pattern = re.compile(r"```(?:\w+)?\n(?:#\s*filename:\s*([^\n]+)\n)(.*?)```", re.DOTALL)
-        
+
         for match in code_block_pattern.finditer(text):
             filename = match.group(1).strip()
             content = match.group(2)
-            
+
             # Simple heuristic to determine type
             ext = os.path.splitext(filename)[1].lower()
             if ext in ['.png', '.jpg', '.jpeg', '.gif']:
@@ -483,13 +482,13 @@ Answer:"""
             filename = match.group(1).strip()
             art_type = match.group(2).strip()
             content = match.group(3).strip()
-            
+
             # Map string type to enum if possible
             try:
                 type_enum = ArtifactType(art_type)
             except ValueError:
                 type_enum = ArtifactType.CODE # Default
-                
+
             artifacts.append(Artifact(
                 name=os.path.basename(filename),
                 type=type_enum,
@@ -497,5 +496,5 @@ Answer:"""
                 destination_path=filename,
                 metadata={'extracted_from': 'xml_tag'}
             ).to_dict())
-            
+
         return artifacts

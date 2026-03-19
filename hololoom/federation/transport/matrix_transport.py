@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Matrix Transport Layer
 =======================
@@ -33,30 +32,23 @@ import hashlib
 import json
 import logging
 import time
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 
-from ..types import (
-    Capability,
-    FederationNode,
-    GuildTrustLevel,
-    FederationError,
-    NodeStatus,
-)
 from ..identity import Identity
-from ..safety import (
-    SignedRequest,
-    SafetyCheckResult,
-    FederationSafetyResult,
-    FederationSafetyGate,
-    parse_signed_request,
-)
 from ..rate_limiter import (
     FederatedRateLimiter,
     RateLimitTier,
-    get_tier_for_trust_level,
+)
+from ..safety import (
+    FederationSafetyGate,
+    SignedRequest,
+)
+from ..types import (
+    FederationNode,
+    GuildTrustLevel,
+    NodeStatus,
 )
 
 # Optional matrix-nio import
@@ -68,7 +60,7 @@ except ImportError:
     nio = None  # type: ignore
 
 if TYPE_CHECKING:
-    from nio import AsyncClient, RoomMessageText, MatrixRoom
+    from nio import AsyncClient, MatrixRoom, RoomMessageText
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +106,7 @@ class MatrixTrustResolver:
     """
 
     # Matrix power level thresholds → GuildTrustLevel
-    POWER_TO_TRUST: Dict[int, GuildTrustLevel] = {
+    POWER_TO_TRUST: dict[int, GuildTrustLevel] = {
         0: GuildTrustLevel.STARTER,       # Default users
         50: GuildTrustLevel.ESTABLISHED,  # Moderators
         75: GuildTrustLevel.VETERAN,      # Admins
@@ -122,7 +114,7 @@ class MatrixTrustResolver:
     }
 
     # GuildTrustLevel → RateLimitTier (for rate limiting)
-    TRUST_TO_TIER: Dict[GuildTrustLevel, RateLimitTier] = {
+    TRUST_TO_TIER: dict[GuildTrustLevel, RateLimitTier] = {
         GuildTrustLevel.STARTER: RateLimitTier.OBSERVER,
         GuildTrustLevel.ESTABLISHED: RateLimitTier.MEMBER,
         GuildTrustLevel.VETERAN: RateLimitTier.CONTRIBUTOR,
@@ -130,7 +122,7 @@ class MatrixTrustResolver:
 
     def __init__(
         self,
-        custom_power_mapping: Optional[Dict[int, GuildTrustLevel]] = None,
+        custom_power_mapping: dict[int, GuildTrustLevel] | None = None,
         steward_power_level: int = 100,
     ):
         """
@@ -167,7 +159,7 @@ class MatrixTrustResolver:
     def resolve_trust_level(
         self,
         matrix_user: str,
-        power_levels: Dict[str, Any],
+        power_levels: dict[str, Any],
     ) -> GuildTrustLevel:
         """
         Get trust level for a Matrix user from room power levels state.
@@ -202,7 +194,7 @@ class MatrixTrustResolver:
         """Check if power level qualifies for STEWARD tier (unlimited)."""
         return power_level >= self._steward_level
 
-    def get_allowed_methods(self, trust_level: GuildTrustLevel) -> List[str]:
+    def get_allowed_methods(self, trust_level: GuildTrustLevel) -> list[str]:
         """
         Get list of allowed JSON-RPC methods for a trust level.
 
@@ -291,7 +283,7 @@ class MatrixRPCEvent:
     room_id: str
     event_id: str
     method: str
-    params: Dict[str, Any]
+    params: dict[str, Any]
     signature: bytes
     nonce: str
     timestamp: float
@@ -314,8 +306,8 @@ def parse_matrix_rpc_event(
     sender: str,
     room_id: str,
     event_id: str,
-    content: Dict[str, Any],
-) -> Optional[MatrixRPCEvent]:
+    content: dict[str, Any],
+) -> MatrixRPCEvent | None:
     """
     Parse a Matrix event into MatrixRPCEvent if it's a HoloLoom RPC.
 
@@ -403,9 +395,9 @@ class MatrixTransportAdapter:
     def __init__(
         self,
         identity: Identity,
-        safety_gate: Optional[FederationSafetyGate] = None,
-        rate_limiter: Optional[FederatedRateLimiter] = None,
-        trust_resolver: Optional[MatrixTrustResolver] = None,
+        safety_gate: FederationSafetyGate | None = None,
+        rate_limiter: FederatedRateLimiter | None = None,
+        trust_resolver: MatrixTrustResolver | None = None,
         enable_signature_check: bool = True,
     ):
         """
@@ -429,9 +421,9 @@ class MatrixTransportAdapter:
         self._trust_resolver = trust_resolver or MatrixTrustResolver()
         self._enable_signature = enable_signature_check
 
-        self._client: Optional['AsyncClient'] = None
-        self._message_handler: Optional[MatrixMessageHandler] = None
-        self._room_power_levels: Dict[str, Dict[str, Any]] = {}
+        self._client: AsyncClient | None = None
+        self._message_handler: MatrixMessageHandler | None = None
+        self._room_power_levels: dict[str, dict[str, Any]] = {}
         self._running = False
 
     @property
@@ -506,8 +498,8 @@ class MatrixTransportAdapter:
 
     async def _on_room_message(
         self,
-        room: 'MatrixRoom',
-        event: 'RoomMessageText',
+        room: MatrixRoom,
+        event: RoomMessageText,
     ) -> None:
         """Handle incoming room message."""
         # Skip our own messages
@@ -530,7 +522,7 @@ class MatrixTransportAdapter:
 
     async def _on_power_levels(
         self,
-        room: 'MatrixRoom',
+        room: MatrixRoom,
         event: Any,
     ) -> None:
         """Update cached power levels for a room."""
@@ -674,7 +666,7 @@ class MatrixTransportAdapter:
     async def _send_message(
         self,
         room_id: str,
-        content: Dict[str, Any],
+        content: dict[str, Any],
     ) -> None:
         """Send a message to a Matrix room."""
         if not self._client:
@@ -693,8 +685,8 @@ class MatrixTransportAdapter:
         self,
         room_id: str,
         method: str,
-        params: Dict[str, Any],
-        request_id: Optional[str] = None,
+        params: dict[str, Any],
+        request_id: str | None = None,
     ) -> None:
         """
         Send an RPC request to a Matrix room.
@@ -745,8 +737,8 @@ class MatrixTransportAdapter:
 
 def create_matrix_transport(
     identity: Identity,
-    safety_gate: Optional[FederationSafetyGate] = None,
-    rate_limiter: Optional[FederatedRateLimiter] = None,
+    safety_gate: FederationSafetyGate | None = None,
+    rate_limiter: FederatedRateLimiter | None = None,
     enable_signature_check: bool = True,
 ) -> MatrixTransportAdapter:
     """
@@ -773,7 +765,7 @@ def create_matrix_transport(
 
 
 def create_matrix_trust_resolver(
-    custom_power_mapping: Optional[Dict[int, GuildTrustLevel]] = None,
+    custom_power_mapping: dict[int, GuildTrustLevel] | None = None,
 ) -> MatrixTrustResolver:
     """
     Create a configured Matrix trust resolver.

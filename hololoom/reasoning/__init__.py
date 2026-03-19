@@ -14,29 +14,45 @@ Public API:
     AnalogicalReasoner: Structure mapping and transfer
 """
 
-from .deductive import (
-    Fact, Rule, Proof, Unifier, KnowledgeBase, DeductiveReasoner,
-    create_fact, create_rule
-)
-
 from .abductive import (
-    Hypothesis, Observation, CausalRule,
-    HypothesisGenerator, HypothesisScorer, AbductiveReasoner,
-    create_causal_rule, create_observation
+    AbductiveReasoner,
+    CausalRule,
+    Hypothesis,
+    HypothesisGenerator,
+    HypothesisScorer,
+    Observation,
+    create_causal_rule,
+    create_observation,
 )
-
 from .analogical import (
-    Entity, Relation, Domain, AnalogicalMapping,
-    StructureMapper, KnowledgeTransferer, Case, CaseLibrary,
+    AnalogicalMapping,
     AnalogicalReasoner,
-    create_entity, create_relation, create_domain
+    Case,
+    CaseLibrary,
+    Domain,
+    Entity,
+    KnowledgeTransferer,
+    Relation,
+    StructureMapper,
+    create_domain,
+    create_entity,
+    create_relation,
 )
-
+from .deductive import (
+    DeductiveReasoner,
+    Fact,
+    KnowledgeBase,
+    Proof,
+    Rule,
+    Unifier,
+    create_fact,
+    create_rule,
+)
 from .integration import (
-    ReasoningEnhancedPlanner,
-    PlanExplanation,
     FailureDiagnosis,
-    create_planning_knowledge_base
+    PlanExplanation,
+    ReasoningEnhancedPlanner,
+    create_planning_knowledge_base,
 )
 
 __all__ = [

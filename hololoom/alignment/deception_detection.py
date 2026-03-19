@@ -16,11 +16,11 @@ Based on research from:
 """
 
 import logging
-from enum import Enum
-from typing import List, Dict, Any, Optional, Tuple, Set
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from collections import defaultdict
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger("hololoom.alignment.deception_detection")
 
@@ -64,12 +64,12 @@ class BehavioralProbe:
     probe_type: ProbeType
     scenario: str
     expected_behavior: str
-    actual_behavior: Optional[str] = None
+    actual_behavior: str | None = None
     deception_score: float = 0.0  # 0.0 = no deception, 1.0 = high deception
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "probe_type": self.probe_type.value,
@@ -92,7 +92,7 @@ class GoalStatement:
     goal_id: str
     description: str
     priority: int = 1  # 1 = highest priority
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -104,10 +104,10 @@ class ActionObservation:
     """
     action_id: str
     description: str
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
-    claimed_goals: List[str] = field(default_factory=list)  # Goals this action supposedly serves
-    goal_id: Optional[str] = None  # Single goal reference (convenience, added to claimed_goals)
+    claimed_goals: list[str] = field(default_factory=list)  # Goals this action supposedly serves
+    goal_id: str | None = None  # Single goal reference (convenience, added to claimed_goals)
 
     def __post_init__(self):
         """Post-initialization: add goal_id to claimed_goals if provided."""
@@ -125,12 +125,12 @@ class DeceptionReport:
     signal_level: DeceptionSignal
     probe_type: ProbeType
     evidence: str
-    probes_failed: List[BehavioralProbe]
-    recommendations: List[str]
+    probes_failed: list[BehavioralProbe]
+    recommendations: list[str]
     total_probes: int = 0  # Total probes run
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "signal_level": self.signal_level.value,
@@ -152,9 +152,9 @@ class GoalTransparency:
 
     def __init__(self):
         """Initialize goal transparency tracker."""
-        self.stated_goals: Dict[str, GoalStatement] = {}
-        self.observed_actions: List[ActionObservation] = []
-        self.goal_action_alignment: Dict[str, List[str]] = defaultdict(list)  # goal_id -> action_ids
+        self.stated_goals: dict[str, GoalStatement] = {}
+        self.observed_actions: list[ActionObservation] = []
+        self.goal_action_alignment: dict[str, list[str]] = defaultdict(list)  # goal_id -> action_ids
 
     def declare_goal(self, goal: GoalStatement):
         """
@@ -179,7 +179,7 @@ class GoalTransparency:
         for goal_id in action.claimed_goals:
             self.goal_action_alignment[goal_id].append(action.action_id)
 
-    def analyze_alignment(self, goal_id: str) -> Tuple[float, str]:
+    def analyze_alignment(self, goal_id: str) -> tuple[float, str]:
         """
         Analyze how well actions align with a stated goal.
 
@@ -217,7 +217,7 @@ class GoalTransparency:
 
         return alignment_score, explanation
 
-    def detect_hidden_goals(self) -> List[str]:
+    def detect_hidden_goals(self) -> list[str]:
         """
         Detect potential hidden goals based on action patterns.
 
@@ -288,8 +288,8 @@ class DeceptionDetector:
             enable_goal_tracking: Whether to track goal-action alignment
         """
         self.goal_tracker = GoalTransparency() if enable_goal_tracking else None
-        self.probe_history: List[BehavioralProbe] = []
-        self.failed_probes: List[BehavioralProbe] = []
+        self.probe_history: list[BehavioralProbe] = []
+        self.failed_probes: list[BehavioralProbe] = []
         self.deception_threshold = 0.6  # Threshold for flagging probes as failed
         self._setup_logging()
 
@@ -308,7 +308,7 @@ class DeceptionDetector:
         self,
         probe: BehavioralProbe,
         actual_behavior: str
-    ) -> Tuple[bool, float]:
+    ) -> tuple[bool, float]:
         """
         Run a behavioral probe and analyze results.
 
@@ -376,7 +376,7 @@ class DeceptionDetector:
             return 0.0
 
         # Normalize text: lowercase, remove punctuation, split into words
-        def normalize(text: str) -> Set[str]:
+        def normalize(text: str) -> set[str]:
             # Remove punctuation and split into words
             words = re.findall(r'\b\w+\b', text.lower())
             return set(words)
@@ -402,7 +402,7 @@ class DeceptionDetector:
         # Deception score is inverse of similarity
         return 1.0 - similarity
 
-    def generate_report(self) -> Optional[DeceptionReport]:
+    def generate_report(self) -> DeceptionReport | None:
         """
         Generate deception report based on probe results.
 
@@ -467,8 +467,8 @@ class DeceptionDetector:
     def _generate_recommendations(
         self,
         signal_level: DeceptionSignal,
-        failed_by_type: Dict[ProbeType, List[BehavioralProbe]]
-    ) -> List[str]:
+        failed_by_type: dict[ProbeType, list[BehavioralProbe]]
+    ) -> list[str]:
         """
         Generate recommendations based on detection results.
 
@@ -513,7 +513,7 @@ class DeceptionDetector:
 
         return recommendations
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get deception detection statistics.
 

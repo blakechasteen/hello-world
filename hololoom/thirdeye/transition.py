@@ -8,10 +8,10 @@ Created: 2025-11-30
 Author: HoloLoom Team
 """
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Optional, Dict, Any, List, Tuple
 import math
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 
 class TransitionType(Enum):
@@ -63,14 +63,14 @@ class Transition:
     config: TransitionConfig = field(default_factory=TransitionConfig)
 
     # Source and target concepts (by ID)
-    from_concept_id: Optional[str] = None
+    from_concept_id: str | None = None
     to_concept_id: str = ""
 
     # Metadata
     semantic_distance: float = 0.0   # 0.0-1.0, how different the concepts are
     triggered_by: str = "message"    # What caused this transition
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON for WebSocket streaming."""
         return {
             "type": self.transition_type.value,
@@ -114,10 +114,10 @@ class TransitionCalculator:
 
     def calculate(
         self,
-        current_embedding: Optional[List[float]],
-        new_embedding: Optional[List[float]],
-        current_type: Optional[str] = None,
-        new_type: Optional[str] = None,
+        current_embedding: list[float] | None,
+        new_embedding: list[float] | None,
+        current_type: str | None = None,
+        new_type: str | None = None,
     ) -> Transition:
         """
         Calculate the optimal transition based on semantic distance.
@@ -170,8 +170,8 @@ class TransitionCalculator:
 
     def _semantic_distance(
         self,
-        embedding_a: Optional[List[float]],
-        embedding_b: Optional[List[float]],
+        embedding_a: list[float] | None,
+        embedding_b: list[float] | None,
     ) -> float:
         """Calculate cosine distance between embeddings (0=identical, 1=orthogonal)."""
         if embedding_a is None or embedding_b is None:
@@ -203,9 +203,9 @@ class TransitionCalculator:
     def _choose_transition_type(
         self,
         distance: float,
-        current_type: Optional[str],
-        new_type: Optional[str],
-    ) -> Tuple[TransitionType, int]:
+        current_type: str | None,
+        new_type: str | None,
+    ) -> tuple[TransitionType, int]:
         """Choose transition type based on distance and types."""
 
         # Special case: same type, close distance = morph
@@ -253,10 +253,10 @@ _calculator = TransitionCalculator()
 
 
 def calculate_transition(
-    current_embedding: Optional[List[float]],
-    new_embedding: Optional[List[float]],
-    current_type: Optional[str] = None,
-    new_type: Optional[str] = None,
+    current_embedding: list[float] | None,
+    new_embedding: list[float] | None,
+    current_type: str | None = None,
+    new_type: str | None = None,
 ) -> Transition:
     """
     Calculate the optimal transition between concepts.
@@ -284,7 +284,7 @@ def create_emphasis_transition(duration_ms: int = 200) -> Transition:
 
 def create_branch_transition(
     parent_id: str,
-    child_ids: List[str],
+    child_ids: list[str],
     duration_ms: int = 500,
 ) -> Transition:
     """Create a branch transition (one concept splits into many)."""
@@ -303,7 +303,7 @@ def create_branch_transition(
 
 
 def create_merge_transition(
-    source_ids: List[str],
+    source_ids: list[str],
     target_id: str,
     duration_ms: int = 500,
 ) -> Transition:

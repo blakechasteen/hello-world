@@ -13,24 +13,22 @@ This module provides:
 Created: 2025-01-21
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
 import logging
 import time
+from typing import Any
 
-# HoloLoom types
-from hololoom.protocols.types import Query, MemoryShard
+from hololoom.chrono.trigger import TemporalWindow
 from hololoom.config import Config, ExecutionMode
 from hololoom.memory.graph import KG
-from hololoom.chrono.trigger import TemporalWindow
+
+# HoloLoom types
+from hololoom.protocols.types import MemoryShard, Query
 
 # Shuttle components
 from .config import ShuttleConfig, ShuttleMode
-from .orchestrator_v2 import Shuttle, WeaveResult, WarpInterface, YarnInterface
-from .entity_extraction import Anchor
-from .trajectories import TRAJECTORY_BY_NAME
-from .mcts import NeighborMap
 from .exceptions import ShuttleError, WarpSearchError, YarnTraversalError
+from .mcts import NeighborMap
+from .orchestrator_v2 import Shuttle, WarpInterface, WeaveResult, YarnInterface
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +56,8 @@ class HoloLoomWarpAdapter(WarpInterface):
         self,
         query: str,
         top_k: int = 10,
-        timeout_ms: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+        timeout_ms: int | None = None
+    ) -> list[dict[str, Any]]:
         """
         Semantic search using Qdrant.
 
@@ -123,12 +121,12 @@ class HoloLoomYarnAdapter(YarnInterface):
 
     def build_neighbor_map(
         self,
-        anchors: List[str],
-        allowed_edge_types: List[str],
+        anchors: list[str],
+        allowed_edge_types: list[str],
         max_depth: int,
         max_nodes: int,
-        timeout_ms: Optional[int] = None
-    ) -> tuple[NeighborMap, List[str]]:
+        timeout_ms: int | None = None
+    ) -> tuple[NeighborMap, list[str]]:
         """
         Build neighbor map for MCTS from anchor nodes.
 
@@ -200,7 +198,7 @@ class HoloLoomYarnAdapter(YarnInterface):
             self.logger.error(f"[YARN] Graph traversal failed: {e}")
             raise YarnTraversalError(f"KG traversal failed: {e}") from e
 
-    def _get_neighbors(self, node_id: str, allowed_edge_types: List[str]) -> List[str]:
+    def _get_neighbors(self, node_id: str, allowed_edge_types: list[str]) -> list[str]:
         """
         Get neighbors of a node filtered by edge type.
 
@@ -232,9 +230,9 @@ class HoloLoomYarnAdapter(YarnInterface):
 
     def get_node_description(
         self,
-        node_ids: List[str],
-        timeout_ms: Optional[int] = None
-    ) -> Dict[str, str]:
+        node_ids: list[str],
+        timeout_ms: int | None = None
+    ) -> dict[str, str]:
         """
         Get text descriptions for nodes.
 
@@ -292,7 +290,7 @@ class ShuttleStage:
         config: Config,
         kg: KG,
         retriever,
-        shuttle_config: Optional[ShuttleConfig] = None
+        shuttle_config: ShuttleConfig | None = None
     ):
         """
         Args:
@@ -364,8 +362,8 @@ class ShuttleStage:
         self,
         temporal_window: TemporalWindow,
         query: Query,
-        trajectory_name: Optional[str] = None
-    ) -> List[MemoryShard]:
+        trajectory_name: str | None = None
+    ) -> list[MemoryShard]:
         """
         Select threads using Shuttle (Warp↔Yarn intersection with MCTS).
 
@@ -415,7 +413,7 @@ class ShuttleStage:
         self,
         weave_result: WeaveResult,
         query: Query
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Convert WeaveResult to List[MemoryShard] format expected by orchestrator.
 
@@ -456,7 +454,7 @@ class ShuttleStage:
 
         return shards
 
-    def _fallback_retrieval(self, query: Query) -> List[MemoryShard]:
+    def _fallback_retrieval(self, query: Query) -> list[MemoryShard]:
         """
         Fallback to simple retrieval if Shuttle fails.
 
@@ -481,7 +479,7 @@ def create_shuttle_stage(
     config: Config,
     kg: KG,
     retriever,
-    shuttle_config: Optional[ShuttleConfig] = None
+    shuttle_config: ShuttleConfig | None = None
 ) -> ShuttleStage:
     """
     Factory function to create ShuttleStage for WeavingOrchestrator.

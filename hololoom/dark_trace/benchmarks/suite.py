@@ -8,16 +8,16 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
+import json
 import time
-import asyncio
-from typing import Any, Callable, Dict, List, Optional, Union
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import json
+from typing import Any
 
 import numpy as np
 
-from .profiler import MemoryProfiler, LatencyProfiler, CombinedProfiler
+from .profiler import CombinedProfiler
 
 
 class BenchmarkCategory(Enum):
@@ -58,7 +58,7 @@ class BenchmarkConfig:
     circuit_max_nodes: int = 100
 
     # Categories to run
-    categories: List[BenchmarkCategory] = field(default_factory=lambda: list(BenchmarkCategory))
+    categories: list[BenchmarkCategory] = field(default_factory=lambda: list(BenchmarkCategory))
 
     # Output
     verbose: bool = True
@@ -82,7 +82,7 @@ class BenchmarkResult:
     memory_delta_mb: float
     memory_peak_mb: float
     throughput: float  # operations per second
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         return (
@@ -93,7 +93,7 @@ class BenchmarkResult:
             f"  Throughput: {self.throughput:.1f} ops/s"
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "category": self.category.value,
@@ -120,11 +120,11 @@ class BenchmarkResult:
 class BenchmarkSuiteResult:
     """Results from running a full benchmark suite."""
     config: BenchmarkConfig
-    results: List[BenchmarkResult]
+    results: list[BenchmarkResult]
     total_time_seconds: float
     timestamp: str
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "config": {
                 "warmup_iterations": self.config.warmup_iterations,
@@ -153,22 +153,22 @@ class BenchmarkSuite:
     iterations and reports detailed performance metrics.
     """
 
-    def __init__(self, config: Optional[BenchmarkConfig] = None):
+    def __init__(self, config: BenchmarkConfig | None = None):
         self.config = config or BenchmarkConfig()
         self.profiler = CombinedProfiler()
-        self.results: List[BenchmarkResult] = []
+        self.results: list[BenchmarkResult] = []
 
     def _run_benchmark(
         self,
         name: str,
         category: BenchmarkCategory,
         operation: Callable[[], Any],
-        setup: Optional[Callable[[], None]] = None,
-        teardown: Optional[Callable[[], None]] = None,
+        setup: Callable[[], None] | None = None,
+        teardown: Callable[[], None] | None = None,
         **metadata
     ) -> BenchmarkResult:
         """Run a single benchmark with profiling."""
-        latencies_ns: List[int] = []
+        latencies_ns: list[int] = []
 
         # Warmup
         for _ in range(self.config.warmup_iterations):
@@ -230,7 +230,7 @@ class BenchmarkSuite:
 
         return result
 
-    def benchmark_activation_extraction(self, adapter, inputs, layers: List[str]) -> List[BenchmarkResult]:
+    def benchmark_activation_extraction(self, adapter, inputs, layers: list[str]) -> list[BenchmarkResult]:
         """Benchmark activation extraction operations."""
         results = []
 
@@ -255,7 +255,7 @@ class BenchmarkSuite:
 
         return results
 
-    def benchmark_fingerprinting(self, adapter, inputs) -> List[BenchmarkResult]:
+    def benchmark_fingerprinting(self, adapter, inputs) -> list[BenchmarkResult]:
         """Benchmark fingerprinting operations."""
         from hololoom.dark_trace.models import ModelFingerprinter
 
@@ -289,7 +289,7 @@ class BenchmarkSuite:
 
         return results
 
-    def benchmark_steering(self, adapter, layer: str) -> List[BenchmarkResult]:
+    def benchmark_steering(self, adapter, layer: str) -> list[BenchmarkResult]:
         """Benchmark steering operations."""
         steering_vector = np.random.randn(self.config.hidden_dim).astype(np.float32)
         results = []
@@ -329,7 +329,7 @@ class BenchmarkSuite:
 
         return results
 
-    def benchmark_sae_forward(self, sae, activations: np.ndarray) -> List[BenchmarkResult]:
+    def benchmark_sae_forward(self, sae, activations: np.ndarray) -> list[BenchmarkResult]:
         """Benchmark SAE forward pass."""
         results = []
 
@@ -445,7 +445,7 @@ class BenchmarkSuite:
 def run_benchmark_suite(
     adapter=None,
     sae=None,
-    config: Optional[BenchmarkConfig] = None
+    config: BenchmarkConfig | None = None
 ) -> BenchmarkSuiteResult:
     """Convenience function to run benchmark suite."""
     suite = BenchmarkSuite(config)

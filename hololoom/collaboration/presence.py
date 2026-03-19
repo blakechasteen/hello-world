@@ -8,12 +8,13 @@ Phase 3: Multi-User Collaboration - Presence infrastructure.
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Tuple
 import asyncio
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +48,10 @@ class CursorPosition:
     x: float
     y: float
     z: float = 0.0  # For 3D/spatial contexts
-    viewport_id: Optional[str] = None  # Which viewport
+    viewport_id: str | None = None  # Which viewport
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "x": self.x,
             "y": self.y,
@@ -64,12 +65,12 @@ class CursorPosition:
 class SelectionState:
     """User's current selection."""
     element_type: str  # "node", "edge", "text", "region", etc.
-    element_ids: List[str] = field(default_factory=list)
-    text_range: Optional[Tuple[int, int]] = None  # For text selections
-    bounds: Optional[Dict[str, float]] = None  # Selection bounding box
+    element_ids: list[str] = field(default_factory=list)
+    text_range: tuple[int, int] | None = None  # For text selections
+    bounds: dict[str, float] | None = None  # Selection bounding box
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "element_type": self.element_type,
             "element_ids": self.element_ids,
@@ -91,7 +92,7 @@ class TypingIndicator:
         elapsed = (datetime.now() - self.last_keystroke).total_seconds()
         return elapsed < timeout_seconds
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "context": self.context,
             "started_at": self.started_at.isoformat(),
@@ -105,16 +106,16 @@ class UserPresence:
     user_id: str
     display_name: str
     status: ActivityStatus = ActivityStatus.ONLINE
-    custom_status: Optional[str] = None
+    custom_status: str | None = None
 
     # Cursor and focus
-    cursor: Optional[CursorPosition] = None
+    cursor: CursorPosition | None = None
     focus: FocusType = FocusType.NONE
-    focus_element_id: Optional[str] = None  # Specific element ID
+    focus_element_id: str | None = None  # Specific element ID
 
     # Activity tracking
-    selection: Optional[SelectionState] = None
-    typing: Optional[TypingIndicator] = None
+    selection: SelectionState | None = None
+    typing: TypingIndicator | None = None
 
     # Timestamps
     last_seen: datetime = field(default_factory=datetime.now)
@@ -123,15 +124,15 @@ class UserPresence:
 
     # Visual appearance
     cursor_color: str = "#4F46E5"  # Indigo default
-    avatar_url: Optional[str] = None
+    avatar_url: str | None = None
 
-    def update_cursor(self, x: float, y: float, z: float = 0.0, viewport_id: Optional[str] = None):
+    def update_cursor(self, x: float, y: float, z: float = 0.0, viewport_id: str | None = None):
         """Update cursor position."""
         self.cursor = CursorPosition(x=x, y=y, z=z, viewport_id=viewport_id)
         self.last_activity = datetime.now()
         self._update_status_from_activity()
 
-    def update_focus(self, focus_type: FocusType, element_id: Optional[str] = None):
+    def update_focus(self, focus_type: FocusType, element_id: str | None = None):
         """Update what the user is focused on."""
         self.focus = focus_type
         self.focus_element_id = element_id
@@ -141,9 +142,9 @@ class UserPresence:
     def update_selection(
         self,
         element_type: str,
-        element_ids: List[str],
-        text_range: Optional[Tuple[int, int]] = None,
-        bounds: Optional[Dict[str, float]] = None
+        element_ids: list[str],
+        text_range: tuple[int, int] | None = None,
+        bounds: dict[str, float] | None = None
     ):
         """Update user's selection."""
         self.selection = SelectionState(
@@ -169,7 +170,7 @@ class UserPresence:
         """Clear typing indicator."""
         self.typing = None
 
-    def set_status(self, status: ActivityStatus, custom_message: Optional[str] = None):
+    def set_status(self, status: ActivityStatus, custom_message: str | None = None):
         """Manually set status."""
         self.status = status
         self.custom_status = custom_message
@@ -194,7 +195,7 @@ class UserPresence:
             return True
         return False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "user_id": self.user_id,
             "display_name": self.display_name,
@@ -211,7 +212,7 @@ class UserPresence:
             "avatar_url": self.avatar_url
         }
 
-    def to_cursor_overlay(self) -> Dict[str, Any]:
+    def to_cursor_overlay(self) -> dict[str, Any]:
         """Get minimal data for cursor overlay rendering."""
         return {
             "user_id": self.user_id,
@@ -239,15 +240,15 @@ class PresenceManager:
         self.idle_threshold = idle_threshold
         self.broadcast_interval = broadcast_interval
 
-        self.presences: Dict[str, UserPresence] = {}
+        self.presences: dict[str, UserPresence] = {}
         self._cursor_colors = self._generate_color_palette()
         self._color_index = 0
 
-        self._event_handlers: Dict[str, List[Callable]] = {}
-        self._idle_check_task: Optional[asyncio.Task] = None
+        self._event_handlers: dict[str, list[Callable]] = {}
+        self._idle_check_task: asyncio.Task | None = None
         self._running = False
 
-    def _generate_color_palette(self) -> List[str]:
+    def _generate_color_palette(self) -> list[str]:
         """Generate distinct colors for user cursors."""
         return [
             "#4F46E5",  # Indigo
@@ -307,7 +308,7 @@ class PresenceManager:
         self,
         user_id: str,
         display_name: str,
-        avatar_url: Optional[str] = None
+        avatar_url: str | None = None
     ) -> UserPresence:
         """Add a user to presence tracking."""
         presence = UserPresence(
@@ -335,7 +336,7 @@ class PresenceManager:
         x: float,
         y: float,
         z: float = 0.0,
-        viewport_id: Optional[str] = None
+        viewport_id: str | None = None
     ) -> bool:
         """Update user's cursor position."""
         presence = self.presences.get(user_id)
@@ -353,7 +354,7 @@ class PresenceManager:
         self,
         user_id: str,
         focus_type: FocusType,
-        element_id: Optional[str] = None
+        element_id: str | None = None
     ) -> bool:
         """Update user's focus target."""
         presence = self.presences.get(user_id)
@@ -375,9 +376,9 @@ class PresenceManager:
         self,
         user_id: str,
         element_type: str,
-        element_ids: List[str],
-        text_range: Optional[Tuple[int, int]] = None,
-        bounds: Optional[Dict[str, float]] = None
+        element_ids: list[str],
+        text_range: tuple[int, int] | None = None,
+        bounds: dict[str, float] | None = None
     ) -> bool:
         """Update user's selection."""
         presence = self.presences.get(user_id)
@@ -415,7 +416,7 @@ class PresenceManager:
         self,
         user_id: str,
         status: ActivityStatus,
-        custom_message: Optional[str] = None
+        custom_message: str | None = None
     ) -> bool:
         """Set user's status."""
         presence = self.presences.get(user_id)
@@ -443,30 +444,30 @@ class PresenceManager:
         presence.heartbeat()
         return True
 
-    def get_presence(self, user_id: str) -> Optional[UserPresence]:
+    def get_presence(self, user_id: str) -> UserPresence | None:
         """Get presence for a specific user."""
         return self.presences.get(user_id)
 
-    def get_all_presences(self) -> List[UserPresence]:
+    def get_all_presences(self) -> list[UserPresence]:
         """Get all active presences."""
         return list(self.presences.values())
 
-    def get_cursor_overlays(self) -> List[Dict[str, Any]]:
+    def get_cursor_overlays(self) -> list[dict[str, Any]]:
         """Get cursor data for overlay rendering."""
         return [p.to_cursor_overlay() for p in self.presences.values()]
 
-    def get_users_at_focus(self, focus_type: FocusType) -> List[UserPresence]:
+    def get_users_at_focus(self, focus_type: FocusType) -> list[UserPresence]:
         """Get users focused on a specific element type."""
         return [p for p in self.presences.values() if p.focus == focus_type]
 
-    def get_users_viewing_element(self, element_id: str) -> List[UserPresence]:
+    def get_users_viewing_element(self, element_id: str) -> list[UserPresence]:
         """Get users focused on a specific element."""
         return [
             p for p in self.presences.values()
             if p.focus_element_id == element_id
         ]
 
-    def get_active_typists(self) -> List[Tuple[str, str]]:
+    def get_active_typists(self) -> list[tuple[str, str]]:
         """Get list of (user_id, context) for active typists."""
         result = []
         for presence in self.presences.values():
@@ -480,7 +481,7 @@ class PresenceManager:
             self._event_handlers[event] = []
         self._event_handlers[event].append(handler)
 
-    def _emit_event(self, event: str, data: Dict[str, Any]):
+    def _emit_event(self, event: str, data: dict[str, Any]):
         """Emit an event to handlers."""
         handlers = self._event_handlers.get(event, [])
         for handler in handlers:
@@ -489,7 +490,7 @@ class PresenceManager:
             except Exception as e:
                 logger.error(f"Presence event handler error: {e}")
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export presence state."""
         return {
             "session_id": self.session_id,

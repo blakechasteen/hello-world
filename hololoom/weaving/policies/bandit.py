@@ -11,10 +11,10 @@ The bandit doesn't select stages — it selects tools via Thompson Sampling
 (Beta(α,β) priors, A/B testing). This is a RunPolicy extension.
 """
 
-import time
 import random
+import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .base import WeavingPolicyBase
 
@@ -32,7 +32,7 @@ class BanditConfig:
     action_dim: int = 0  # Context-only (tool IDs only)
 
     # Neural-specific (if sampler_type="neural")
-    hidden_dims: List[int] = field(default_factory=lambda: [256, 128])
+    hidden_dims: list[int] = field(default_factory=lambda: [256, 128])
     backend: str = "bootstrap"  # "bootstrap" or "mc_dropout"
     n_ensemble: int = 7
 
@@ -82,9 +82,9 @@ class BanditPolicy(WeavingPolicyBase):
 
     def __init__(
         self,
-        bandit_config: Optional[BanditConfig] = None,
+        bandit_config: BanditConfig | None = None,
         enable_bandit: bool = True,
-        tools: Optional[List[str]] = None,
+        tools: list[str] | None = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -108,11 +108,11 @@ class BanditPolicy(WeavingPolicyBase):
         self._bandit_decisions = 0
         self._baseline_decisions = 0
         self._safety_blocks = 0
-        self.decision_log: List[Dict] = []
+        self.decision_log: list[dict] = []
 
         # Per-query state
         self._current_use_bandit = False
-        self._query_start_time: Optional[float] = None
+        self._query_start_time: float | None = None
 
     def _init_bandit(self):
         """Lazy initialization of bandit policy."""
@@ -210,7 +210,7 @@ class BanditPolicy(WeavingPolicyBase):
         stage_name: str,
         ctx: 'WeavingContext',
         duration_ms: float,
-        error: Optional[Exception] = None,
+        error: Exception | None = None,
     ) -> None:
         super().on_stage_complete(stage_name, ctx, duration_ms, error)
 
@@ -220,7 +220,7 @@ class BanditPolicy(WeavingPolicyBase):
 
     def on_level_complete(
         self, level: list[str], ctx: 'WeavingContext',
-    ) -> Optional[frozenset[str]]:
+    ) -> frozenset[str] | None:
         return None
 
     # ----- Bandit-specific methods -----
@@ -278,9 +278,9 @@ class BanditPolicy(WeavingPolicyBase):
         )
         return max(0.0, min(1.0, reward))
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get comprehensive bandit metrics."""
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "total_decisions": self._total_decisions,
             "bandit_decisions": self._bandit_decisions,
             "baseline_decisions": self._baseline_decisions,
@@ -307,7 +307,7 @@ class BanditPolicy(WeavingPolicyBase):
 
     def get_decision_log(
         self, limit: int = 100, bandit_only: bool = False,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Get recent decision log."""
         log = self.decision_log
         if bandit_only:

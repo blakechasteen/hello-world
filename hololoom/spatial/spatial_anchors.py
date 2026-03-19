@@ -6,12 +6,12 @@ AR spatial anchors that persist knowledge graph nodes
 to real-world locations across sessions.
 """
 
+import hashlib
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Any, Tuple
-import json
-import hashlib
+from typing import Any
 
 
 class AnchorState(Enum):
@@ -43,14 +43,14 @@ class WorldPosition:
     qz: float = 0.0
     qw: float = 1.0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "position": {"x": self.x, "y": self.y, "z": self.z},
             "orientation": {"x": self.qx, "y": self.qy, "z": self.qz, "w": self.qw}
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'WorldPosition':
+    def from_dict(cls, data: dict) -> 'WorldPosition':
         pos = data.get("position", {})
         rot = data.get("orientation", {})
         return cls(
@@ -98,9 +98,9 @@ class SpatialAnchor:
     label: str = ""
 
     # Cloud anchor ID (for cross-device persistence)
-    cloud_anchor_id: Optional[str] = None
+    cloud_anchor_id: str | None = None
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "anchor_id": self.anchor_id,
             "node_id": self.node_id,
@@ -119,7 +119,7 @@ class SpatialAnchor:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'SpatialAnchor':
+    def from_dict(cls, data: dict) -> 'SpatialAnchor':
         return cls(
             anchor_id=data["anchor_id"],
             node_id=data["node_id"],
@@ -143,7 +143,7 @@ class AnchorCluster:
     """A cluster of related anchors in a location."""
     cluster_id: str
     location_hint: str
-    anchor_ids: Set[str] = field(default_factory=set)
+    anchor_ids: set[str] = field(default_factory=set)
     centroid: WorldPosition = field(default_factory=WorldPosition)
     radius: float = 2.0  # Meters
 
@@ -164,7 +164,7 @@ class SpatialAnchorManager:
     - Support for cloud anchors (cross-device)
     """
 
-    def __init__(self, storage_path: Optional[str] = None):
+    def __init__(self, storage_path: str | None = None):
         """
         Initialize anchor manager.
 
@@ -172,15 +172,15 @@ class SpatialAnchorManager:
             storage_path: Path to persist anchor data
         """
         self.storage_path = storage_path
-        self.anchors: Dict[str, SpatialAnchor] = {}
-        self.clusters: Dict[str, AnchorCluster] = {}
-        self._node_to_anchor: Dict[str, str] = {}  # node_id -> anchor_id
+        self.anchors: dict[str, SpatialAnchor] = {}
+        self.clusters: dict[str, AnchorCluster] = {}
+        self._node_to_anchor: dict[str, str] = {}  # node_id -> anchor_id
         self._anchor_counter = 0
 
         # Callbacks for AR events
-        self.on_anchor_created: Optional[callable] = None
-        self.on_anchor_lost: Optional[callable] = None
-        self.on_anchor_recovered: Optional[callable] = None
+        self.on_anchor_created: callable | None = None
+        self.on_anchor_lost: callable | None = None
+        self.on_anchor_recovered: callable | None = None
 
         if storage_path:
             self._load()
@@ -190,7 +190,7 @@ class SpatialAnchorManager:
         self._anchor_counter += 1
         return f"anchor_{self._anchor_counter:06d}"
 
-    def _generate_environment_hash(self, visual_features: Optional[bytes] = None) -> str:
+    def _generate_environment_hash(self, visual_features: bytes | None = None) -> str:
         """Generate hash for environment re-localization."""
         if visual_features:
             return hashlib.sha256(visual_features).hexdigest()[:16]
@@ -204,7 +204,7 @@ class SpatialAnchorManager:
         position: WorldPosition,
         location_hint: str = "",
         label: str = "",
-        visual_features: Optional[bytes] = None
+        visual_features: bytes | None = None
     ) -> SpatialAnchor:
         """
         Create a new spatial anchor for a knowledge node.
@@ -354,32 +354,32 @@ class SpatialAnchorManager:
 
     # === Queries ===
 
-    def get_anchor(self, anchor_id: str) -> Optional[SpatialAnchor]:
+    def get_anchor(self, anchor_id: str) -> SpatialAnchor | None:
         """Get anchor by ID."""
         return self.anchors.get(anchor_id)
 
-    def get_anchor_for_node(self, node_id: str) -> Optional[SpatialAnchor]:
+    def get_anchor_for_node(self, node_id: str) -> SpatialAnchor | None:
         """Get anchor associated with a knowledge node."""
         anchor_id = self._node_to_anchor.get(node_id)
         if anchor_id:
             return self.anchors.get(anchor_id)
         return None
 
-    def get_anchors_in_location(self, location_hint: str) -> List[SpatialAnchor]:
+    def get_anchors_in_location(self, location_hint: str) -> list[SpatialAnchor]:
         """Get all anchors in a location."""
         return [
             anchor for anchor in self.anchors.values()
             if anchor.location_hint == location_hint
         ]
 
-    def get_anchors_in_radius(self, center: WorldPosition, radius: float) -> List[SpatialAnchor]:
+    def get_anchors_in_radius(self, center: WorldPosition, radius: float) -> list[SpatialAnchor]:
         """Get all anchors within radius of a position."""
         return [
             anchor for anchor in self.anchors.values()
             if center.distance_to(anchor.position) <= radius
         ]
 
-    def get_nearby_anchors(self, position: WorldPosition, limit: int = 10) -> List[SpatialAnchor]:
+    def get_nearby_anchors(self, position: WorldPosition, limit: int = 10) -> list[SpatialAnchor]:
         """Get nearest anchors to a position."""
         anchors_with_distance = [
             (anchor, position.distance_to(anchor.position))
@@ -388,11 +388,11 @@ class SpatialAnchorManager:
         anchors_with_distance.sort(key=lambda x: x[1])
         return [anchor for anchor, _ in anchors_with_distance[:limit]]
 
-    def get_cluster(self, cluster_id: str) -> Optional[AnchorCluster]:
+    def get_cluster(self, cluster_id: str) -> AnchorCluster | None:
         """Get cluster by ID."""
         return self.clusters.get(cluster_id)
 
-    def get_clusters_for_location(self, location_hint: str) -> List[AnchorCluster]:
+    def get_clusters_for_location(self, location_hint: str) -> list[AnchorCluster]:
         """Get all clusters in a location."""
         return [
             cluster for cluster in self.clusters.values()
@@ -429,7 +429,7 @@ class SpatialAnchorManager:
 
     # === Cloud Anchors ===
 
-    def upload_to_cloud(self, anchor_id: str) -> Optional[str]:
+    def upload_to_cloud(self, anchor_id: str) -> str | None:
         """
         Upload anchor to cloud for cross-device sharing.
         Returns cloud anchor ID.
@@ -449,7 +449,7 @@ class SpatialAnchorManager:
         self._save()
         return cloud_id
 
-    def resolve_cloud_anchor(self, cloud_anchor_id: str) -> Optional[SpatialAnchor]:
+    def resolve_cloud_anchor(self, cloud_anchor_id: str) -> SpatialAnchor | None:
         """
         Resolve a cloud anchor to local anchor.
 
@@ -462,7 +462,7 @@ class SpatialAnchorManager:
 
     # === Statistics ===
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get anchor statistics."""
         states = {}
         qualities = {}
@@ -510,7 +510,7 @@ class SpatialAnchorManager:
             return
 
         try:
-            with open(self.storage_path, 'r') as f:
+            with open(self.storage_path) as f:
                 data = json.load(f)
 
             self._anchor_counter = data.get("counter", 0)

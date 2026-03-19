@@ -20,19 +20,15 @@ Created: 2025-11-30
 Author: HoloLoom Team
 """
 
-from typing import List, Dict, Any, Optional, AsyncIterator
-from datetime import datetime
-from dataclasses import dataclass
 import json
+from collections.abc import AsyncIterator
 
 from hololoom.cve.cognitive_protocol import (
     CognitiveEvent,
     CognitiveFrame,
     CognitiveStream,
     CognitiveVizType,
-    CognitiveRenderer,
 )
-
 
 # ============================================================================
 # TufteRenderer Implementation
@@ -188,7 +184,7 @@ class TufteRenderer:
         """Check if renderer supports a visualization type."""
         return viz_type in self.VIZ_RENDERERS
 
-    def get_supported_types(self) -> List[CognitiveVizType]:
+    def get_supported_types(self) -> list[CognitiveVizType]:
         """Get all supported visualization types."""
         return list(self.VIZ_RENDERERS.keys())
 
@@ -519,7 +515,7 @@ class TufteRenderer:
         </div>
         """
 
-    def _render_dominant_axes(self, dominant: List) -> str:
+    def _render_dominant_axes(self, dominant: list) -> str:
         """Render dominant semantic axes tags."""
         if not dominant:
             return ""
@@ -1149,7 +1145,7 @@ class TufteRenderer:
 
     def _generate_sparkline(
         self,
-        values: List[float],
+        values: list[float],
         width: int = 200,
         height: int = 40,
         color: str = "#6366f1"

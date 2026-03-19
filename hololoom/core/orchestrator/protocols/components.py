@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Component Protocols for Dependency Injection
 =============================================
@@ -44,15 +43,15 @@ Date: 2025-12-09
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable, Optional, List, Dict, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
-    from hololoom.loom.protocol import PatternSpec
     from hololoom.chrono.trigger import TemporalWindow
-    from hololoom.protocols.types import Query, MemoryShard
     from hololoom.convergence.engine import CollapseResult
     from hololoom.fabric.spacetime import Spacetime
+    from hololoom.loom.protocol import PatternSpec
+    from hololoom.orchestrator.context import WeavingContext
+    from hololoom.protocols.types import MemoryShard, Query
 
 
 # ============================================================================
@@ -83,8 +82,8 @@ class PatternSelectorProtocol(Protocol):
     def select_pattern(
         self,
         query_text: str,
-        user_preference: Optional[str] = None
-    ) -> 'PatternSpec':
+        user_preference: str | None = None
+    ) -> PatternSpec:
         """
         Select pattern card based on query characteristics.
 
@@ -137,10 +136,10 @@ class ThreadSelectorProtocol(Protocol):
 
     async def select_threads(
         self,
-        temporal_window: 'TemporalWindow',
-        query: 'Query',
+        temporal_window: TemporalWindow,
+        query: Query,
         limit: int = 10
-    ) -> List['MemoryShard']:
+    ) -> list[MemoryShard]:
         """
         Select memory threads from knowledge graph.
 
@@ -156,9 +155,9 @@ class ThreadSelectorProtocol(Protocol):
 
     async def expand_context(
         self,
-        threads: List['MemoryShard'],
+        threads: list[MemoryShard],
         max_hops: int = 2
-    ) -> List['MemoryShard']:
+    ) -> list[MemoryShard]:
         """
         Expand context by traversing graph connections.
 
@@ -200,9 +199,9 @@ class FeatureExtractorProtocol(Protocol):
 
     async def extract(
         self,
-        query: 'Query',
-        threads: List['MemoryShard']
-    ) -> Dict[str, Any]:
+        query: Query,
+        threads: list[MemoryShard]
+    ) -> dict[str, Any]:
         """
         Extract features from query and context.
 
@@ -265,7 +264,7 @@ class ConvergenceProtocol(Protocol):
         self,
         probs: Any,  # np.ndarray, but avoid import for protocol
         strategy: str = "bayesian_blend"
-    ) -> 'CollapseResult':
+    ) -> CollapseResult:
         """
         Collapse probability distribution to discrete decision.
 
@@ -333,9 +332,9 @@ class ToolExecutorProtocol(Protocol):
     async def execute(
         self,
         tool: str,
-        query: 'Query',
-        context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        query: Query,
+        context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Execute selected tool with safety gating.
 
@@ -352,7 +351,7 @@ class ToolExecutorProtocol(Protocol):
         """
         ...
 
-    def get_available_tools(self) -> List[str]:
+    def get_available_tools(self) -> list[str]:
         """
         Get list of available tools.
 
@@ -361,7 +360,7 @@ class ToolExecutorProtocol(Protocol):
         """
         ...
 
-    async def validate_tool(self, tool: str, context: Dict[str, Any]) -> bool:
+    async def validate_tool(self, tool: str, context: dict[str, Any]) -> bool:
         """
         Validate if tool can be executed in given context.
 
@@ -407,7 +406,7 @@ class SpacetimeAssemblerProtocol(Protocol):
         ...         )
     """
 
-    def assemble(self, ctx: 'WeavingContext') -> 'Spacetime':
+    def assemble(self, ctx: WeavingContext) -> Spacetime:
         """
         Assemble final Spacetime output with provenance.
 
@@ -423,7 +422,7 @@ class SpacetimeAssemblerProtocol(Protocol):
         """
         ...
 
-    def create_trace(self, ctx: 'WeavingContext') -> Any:
+    def create_trace(self, ctx: WeavingContext) -> Any:
         """
         Create WeavingTrace from context.
 
@@ -435,7 +434,7 @@ class SpacetimeAssemblerProtocol(Protocol):
         """
         ...
 
-    def calculate_confidence(self, ctx: 'WeavingContext') -> float:
+    def calculate_confidence(self, ctx: WeavingContext) -> float:
         """
         Calculate final confidence score.
 

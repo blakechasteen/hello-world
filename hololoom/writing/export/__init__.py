@@ -5,8 +5,8 @@ Writing Export Module
 Export writing results to different formats.
 """
 
-from .markdown import MarkdownExporter
 from .html import HTMLExporter
+from .markdown import MarkdownExporter
 
 __all__ = [
     'MarkdownExporter',

@@ -6,12 +6,13 @@ Voice interaction for spatial knowledge graph,
 supporting natural language commands in XR.
 """
 
+import json
+import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Callable, Any, Pattern
-import json
-import re
+from typing import Any
 
 
 class CommandCategory(Enum):
@@ -41,14 +42,14 @@ class VoiceCommand:
     text: str                                # Raw transcript
     intent: str                              # Parsed intent
     category: CommandCategory
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
     confidence: float = 1.0
     timestamp: datetime = field(default_factory=datetime.now)
     state: CommandState = CommandState.PROCESSING
-    result: Optional[Any] = None
-    error: Optional[str] = None
+    result: Any | None = None
+    error: str | None = None
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "command_id": self.command_id,
             "text": self.text,
@@ -71,13 +72,13 @@ class CommandPattern:
     category: CommandCategory
     handler: Callable[[VoiceCommand], Any]
     description: str = ""
-    examples: List[str] = field(default_factory=list)
-    param_extractors: Dict[str, str] = field(default_factory=dict)
+    examples: list[str] = field(default_factory=list)
+    param_extractors: dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self):
         self._compiled = re.compile(self.pattern, re.IGNORECASE)
 
-    def match(self, text: str) -> Optional[Dict[str, str]]:
+    def match(self, text: str) -> dict[str, str] | None:
         """Match text against pattern, returning extracted parameters."""
         m = self._compiled.match(text.strip())
         if m:
@@ -90,10 +91,10 @@ class WakeWordDetector:
 
     DEFAULT_WAKE_WORDS = ["hey hololoom", "ok loom", "loom", "hey mind"]
 
-    def __init__(self, wake_words: List[str] = None):
+    def __init__(self, wake_words: list[str] = None):
         self.wake_words = wake_words or self.DEFAULT_WAKE_WORDS
         self.is_active = False
-        self.last_activation: Optional[datetime] = None
+        self.last_activation: datetime | None = None
         self.activation_timeout = 10.0  # Seconds before going back to sleep
 
     def check(self, text: str) -> bool:
@@ -143,17 +144,17 @@ class VoiceCommandSystem:
     - Customizable command vocabulary
     """
 
-    def __init__(self, wake_words: List[str] = None):
+    def __init__(self, wake_words: list[str] = None):
         self.wake_detector = WakeWordDetector(wake_words)
-        self.patterns: List[CommandPattern] = []
-        self.history: List[VoiceCommand] = []
+        self.patterns: list[CommandPattern] = []
+        self.history: list[VoiceCommand] = []
         self.max_history = 100
         self._command_counter = 0
 
         # Callbacks
-        self.on_command: Optional[Callable[[VoiceCommand], None]] = None
-        self.on_wake: Optional[Callable[[], None]] = None
-        self.on_error: Optional[Callable[[VoiceCommand, str], None]] = None
+        self.on_command: Callable[[VoiceCommand], None] | None = None
+        self.on_wake: Callable[[], None] | None = None
+        self.on_error: Callable[[VoiceCommand, str], None] | None = None
 
         # Register default patterns
         self._register_defaults()
@@ -171,8 +172,8 @@ class VoiceCommandSystem:
         category: CommandCategory,
         handler: Callable[[VoiceCommand], Any],
         description: str = "",
-        examples: List[str] = None,
-        param_extractors: Dict[str, str] = None
+        examples: list[str] = None,
+        param_extractors: dict[str, str] = None
     ):
         """
         Register a voice command pattern.
@@ -358,7 +359,7 @@ class VoiceCommandSystem:
 
     # === Command Processing ===
 
-    def process_speech(self, text: str) -> Optional[VoiceCommand]:
+    def process_speech(self, text: str) -> VoiceCommand | None:
         """
         Process speech input and execute matching command.
 
@@ -497,7 +498,7 @@ class VoiceCommandSystem:
         content = cmd.parameters.get("content", "")
         return f"Remembering: {content}"
 
-    def _handle_help(self, cmd: VoiceCommand) -> List[Dict]:
+    def _handle_help(self, cmd: VoiceCommand) -> list[dict]:
         return self.get_available_commands()
 
     def _handle_cancel(self, cmd: VoiceCommand) -> str:
@@ -508,7 +509,7 @@ class VoiceCommandSystem:
 
     # === Queries ===
 
-    def get_available_commands(self) -> List[Dict]:
+    def get_available_commands(self) -> list[dict]:
         """Get list of available commands."""
         commands = []
         for pattern in self.patterns:
@@ -522,21 +523,21 @@ class VoiceCommandSystem:
 
     def get_command_history(
         self,
-        category: Optional[CommandCategory] = None,
+        category: CommandCategory | None = None,
         limit: int = 20
-    ) -> List[VoiceCommand]:
+    ) -> list[VoiceCommand]:
         """Get recent command history."""
         history = self.history
         if category:
             history = [c for c in history if c.category == category]
         return history[-limit:]
 
-    def get_successful_commands(self, limit: int = 10) -> List[VoiceCommand]:
+    def get_successful_commands(self, limit: int = 10) -> list[VoiceCommand]:
         """Get recent successful commands."""
         successful = [c for c in self.history if c.state == CommandState.EXECUTED]
         return successful[-limit:]
 
-    def get_failed_commands(self, limit: int = 10) -> List[VoiceCommand]:
+    def get_failed_commands(self, limit: int = 10) -> list[VoiceCommand]:
         """Get recent failed commands."""
         failed = [c for c in self.history if c.state == CommandState.FAILED]
         return failed[-limit:]

@@ -15,28 +15,25 @@ Patterns:
 """
 
 import asyncio
+import logging
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
-import logging
+from typing import Any
 
-from hololoom.context.classifier import QueryClassifier, BackendSelection, Backend
 from hololoom.context.bandit import ThompsonBandit
 from hololoom.context.calibration import ConfidenceCalibrator
+from hololoom.context.classifier import Backend, BackendSelection, QueryClassifier
 from hololoom.context.learning_tracker import LearningTracker
 from hololoom.context.strategy_updater import StrategyUpdater
 from hololoom.infrastructure.mcp import (
     MCPRequest,
-    MCPResponse,
     MCPServer,
     RequestType,
     ResponseStatus,
     ToolName,
-    generate_request_id
+    generate_request_id,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -71,14 +68,14 @@ class RoutingResult:
         metadata: Additional metadata
     """
     pattern: RoutingPattern
-    backends_used: List[str]
-    rows: List[Dict[str, Any]]
+    backends_used: list[str]
+    rows: list[dict[str, Any]]
     row_count: int
     total_latency_ms: float
     confidence: float
     success: bool
-    errors: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ============================================================================
@@ -390,7 +387,7 @@ class QueryRouter:
     # Backend Execution (MCP Integration)
     # ========================================================================
 
-    async def _execute_sql(self, query: str) -> Dict[str, Any]:
+    async def _execute_sql(self, query: str) -> dict[str, Any]:
         """
         Execute query on SQL backend via MCP
 
@@ -438,7 +435,7 @@ class QueryRouter:
                 "errors": [error_msg]
             }
 
-    async def _execute_neo4j(self, query: str) -> Dict[str, Any]:
+    async def _execute_neo4j(self, query: str) -> dict[str, Any]:
         """
         Execute query on Neo4j backend
 
@@ -466,7 +463,7 @@ class QueryRouter:
             "errors": []
         }
 
-    async def _execute_qdrant(self, query: str) -> Dict[str, Any]:
+    async def _execute_qdrant(self, query: str) -> dict[str, Any]:
         """
         Execute query on Qdrant backend
 
@@ -555,7 +552,7 @@ class QueryRouter:
         # Default: return all policies
         return "SELECT * FROM policy_rules LIMIT 10"
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get router statistics"""
         return {
             "query_count": self.query_count,
@@ -572,7 +569,7 @@ class QueryRouter:
 async def create_query_router(
     mcp_server: MCPServer,
     session_id: str,
-    backends: Optional[List[str]] = None,
+    backends: list[str] | None = None,
     enable_learning: bool = True,
     enable_calibration: bool = True,
     enable_strategy_updates: bool = True

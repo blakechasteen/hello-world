@@ -1,7 +1,8 @@
-from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Callable, Optional
 import multiprocessing
-import time
+from abc import ABC, abstractmethod
+from collections.abc import Callable
+from typing import Any
+
 import torch
 
 # --- Abstract Interface ---
@@ -11,32 +12,32 @@ class DistributedBackend(ABC):
     Abstract Base Class for HoloLoom's Distributed Execution.
     Supports Local (Processes), Ray (Clusters), and Tuple (MPI/Torch).
     """
-    
+
     @abstractmethod
     def initialize(self, num_workers: int, worker_cls: Callable, *args, **kwargs):
         """Spawns the workers."""
         pass
-        
+
     @abstractmethod
     def scatter_broadcast(self, data: Any):
         """Sends data (e.g. weights) to all workers."""
         pass
-        
+
     @abstractmethod
-    def gather_results(self) -> List[Any]:
+    def gather_results(self) -> list[Any]:
         """Collects results from all workers."""
         pass
-        
+
     @abstractmethod
     def map_async(self, func_name: str, *args, **kwargs):
         """Triggers a method on all workers asynchronously."""
         pass
 
     @abstractmethod
-    def check_worker_health(self) -> Dict[int, str]:
+    def check_worker_health(self) -> dict[int, str]:
         """Returns status of all workers: 'healthy', 'dead', 'unresponsive'."""
         pass
-        
+
     @abstractmethod
     def shutdown(self):
         """Cleanup."""
@@ -54,7 +55,7 @@ class WorkerNode(multiprocessing.Process):
         self.init_args = init_args
         self.init_kwargs = init_kwargs
         self.worker_instance = None
-        
+
     def run(self):
         # Instantiate the worker agent
         print(f"[Worker {self.idx}] Initializing...")
@@ -64,18 +65,18 @@ class WorkerNode(multiprocessing.Process):
             print(f"[Worker {self.idx}] Initialization FAILED: {e}")
             self.result_queue.put((self.idx, e))
             return
-        
+
         while True:
             try:
                 task = self.task_queue.get(timeout=1.0) # Check regulary for shutdown/ping
             except Exception:
                 continue # queue empty
-                
+
             if task is None: # Sentinel
                 break
-                
+
             cmd, args, kwargs = task
-            
+
             try:
                 if cmd == "set_weights":
                     self.worker_instance.set_weights(*args)
@@ -109,10 +110,10 @@ class LocalBackend(DistributedBackend):
         self.worker_cls = worker_cls
         self.init_args = args
         self.init_kwargs = kwargs
-        
+
         for i in range(num_workers):
             self._spawn_worker(i)
-            
+
     def _spawn_worker(self, i: int):
         tq = multiprocessing.Queue()
         w = WorkerNode(i, self.worker_cls, tq, self.result_queue, self.init_args, self.init_kwargs)
@@ -123,24 +124,24 @@ class LocalBackend(DistributedBackend):
         else:
             self.workers.append(w)
             self.task_queues.append(tq)
-            
-    def scatter_broadcast(self, weights: Dict[str, torch.Tensor]):
+
+    def scatter_broadcast(self, weights: dict[str, torch.Tensor]):
         # Naive broadcast via queues (slow for large models, good for prototyping)
         for tq in self.task_queues:
             tq.put(("set_weights", (weights,), {}))
-            
+
         # Wait for ACKs
         acks = 0
         while acks < self.num_workers:
             res = self.result_queue.get()
             # If we get an exception, handle it?
             acks += 1
-            
+
     def map_async(self, func_name: str, *args, **kwargs):
         for tq in self.task_queues:
             tq.put((func_name, args, kwargs))
-            
-    def gather_results(self) -> List[Any]:
+
+    def gather_results(self) -> list[Any]:
         results = []
         for _ in range(self.num_workers):
             idx, res = self.result_queue.get()
@@ -148,8 +149,8 @@ class LocalBackend(DistributedBackend):
                 raise res
             results.append(res)
         return results
-        
-    def check_worker_health(self) -> Dict[int, str]:
+
+    def check_worker_health(self) -> dict[int, str]:
         status = {}
         for i, w in enumerate(self.workers):
             if w.is_alive():
@@ -178,28 +179,28 @@ class RayBackend(DistributedBackend):
             raise ImportError("Ray not installed. Run `pip install ray`.")
         self.max_retries = max_retries
         self.actors = []
-        
-    def initialize(self, num_workers: int, worker_cls: Callable, resources: Dict = None, *args, **kwargs):
+
+    def initialize(self, num_workers: int, worker_cls: Callable, resources: dict = None, *args, **kwargs):
         if not self.ray.is_initialized():
             self.ray.init(ignore_reinit_error=True)
-            
+
         # Resource specification per worker (e.g. {"num_gpus": 1})
         self.ActorClass = self.ray.remote(**(resources or {}))(worker_cls)
-        
+
         self.actors = [self.ActorClass.remote(worker_id=i, *args, **kwargs) for i in range(num_workers)]
-        
+
     def scatter_broadcast(self, weights):
         weights_ref = self.ray.put(weights)
         futures = [a.set_weights.remote(weights_ref) for a in self.actors]
         self.ray.get(futures) # Wait for completion
-        
+
     def map_async(self, func_name: str, *args, **kwargs):
         self.pending_futures = []
         for a in self.actors:
             method = getattr(a, func_name)
             self.pending_futures.append(method.remote(*args, **kwargs))
-            
-    def gather_results(self) -> List[Any]:
+
+    def gather_results(self) -> list[Any]:
         # Robust gather with timeout?
         # For strict evolution, we need all results.
         # If one fails, we might just drop that result or retry?
@@ -212,14 +213,14 @@ class RayBackend(DistributedBackend):
             # For Phase 2, we just raise.
             raise e
 
-    def check_worker_health(self) -> Dict[int, str]:
+    def check_worker_health(self) -> dict[int, str]:
         # Ray handles health automatically, but we can check reachability
         status = {}
         # We can ping them
-        futures = [a.ping.remote() for a in self.actors if hasattr(a, 'ping')] 
+        futures = [a.ping.remote() for a in self.actors if hasattr(a, 'ping')]
         # But our loom_node doesn't have ping. We can assume healthy if no RayActorError.
         # Implementation left simple for now.
-        return {i: "healthy" for i in range(len(self.actors))}
+        return dict.fromkeys(range(len(self.actors)), "healthy")
 
     def shutdown(self):
         for a in self.actors:

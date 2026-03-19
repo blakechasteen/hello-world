@@ -34,23 +34,17 @@ Usage:
 Created: 2025-12-28
 """
 
-from dataclasses import dataclass, field
-from typing import (
-    Dict,
-    List,
-    Any,
-    Optional,
-    Set,
-    Callable,
-    Awaitable,
-    Union,
-)
-from datetime import datetime
-from enum import Enum
-import json
 import asyncio
+import json
 import logging
 import time
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import (
+    Any,
+)
 
 # Try to import websockets, gracefully degrade if not available
 try:
@@ -127,9 +121,9 @@ class StreamMessage:
     """Standardized streaming message format."""
     type: MessageType
     timestamp: float
-    data: Dict[str, Any]
+    data: dict[str, Any]
     sequence: int = 0
-    client_id: Optional[str] = None
+    client_id: str | None = None
 
     def to_json(self) -> str:
         """Convert to JSON string."""
@@ -159,7 +153,7 @@ class ClientSubscription:
     """Client subscription configuration."""
     client_id: str
     subscription_type: SubscriptionType
-    filters: Dict[str, Any] = field(default_factory=dict)
+    filters: dict[str, Any] = field(default_factory=dict)
     created_at: float = field(default_factory=time.time)
     last_message_at: float = 0.0
     message_count: int = 0
@@ -169,12 +163,12 @@ class ClientSubscription:
 class ActivationSnapshot:
     """Snapshot of feature activations for streaming."""
     layer: int
-    feature_indices: List[int]
-    activation_values: List[float]
+    feature_indices: list[int]
+    activation_values: list[float]
     timestamp: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "layer": self.layer,
@@ -217,11 +211,11 @@ class ActivationStreamHandler:
     def format_activations(
         self,
         layer: int,
-        feature_indices: List[int],
-        activation_values: List[float],
+        feature_indices: list[int],
+        activation_values: list[float],
         subscription: ClientSubscription,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Optional[StreamMessage]:
+        metadata: dict[str, Any] | None = None,
+    ) -> StreamMessage | None:
         """
         Format activations for a client based on their subscription.
 
@@ -293,7 +287,7 @@ class ActivationStreamHandler:
     def create_layer_snapshot(
         self,
         layer: int,
-        all_activations: List[float],
+        all_activations: list[float],
         top_k: int = 50,
     ) -> StreamMessage:
         """
@@ -337,7 +331,7 @@ class ActivationStreamHandler:
 
     def create_statistics_message(
         self,
-        statistics: Dict[str, Any],
+        statistics: dict[str, Any],
     ) -> StreamMessage:
         """
         Create a statistics update message.
@@ -362,7 +356,7 @@ class ActivationStreamHandler:
         alert_type: str,
         message: str,
         severity: str = "warning",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> StreamMessage:
         """
         Create an alert message.
@@ -432,7 +426,7 @@ class DarkTraceStreamingServer:
         await server.stop()
     """
 
-    def __init__(self, config: Optional[StreamingConfig] = None):
+    def __init__(self, config: StreamingConfig | None = None):
         """
         Initialize server.
 
@@ -449,25 +443,25 @@ class DarkTraceStreamingServer:
         self.handler = ActivationStreamHandler(self.config)
 
         # Client management
-        self._clients: Dict[str, WebSocketServerProtocol] = {}
-        self._subscriptions: Dict[str, ClientSubscription] = {}
+        self._clients: dict[str, WebSocketServerProtocol] = {}
+        self._subscriptions: dict[str, ClientSubscription] = {}
         self._client_counter = 0
 
         # Message buffer for replay
-        self._message_buffer: List[StreamMessage] = []
+        self._message_buffer: list[StreamMessage] = []
 
         # Server state
-        self._server: Optional[Any] = None
+        self._server: Any | None = None
         self._running = False
-        self._heartbeat_task: Optional[asyncio.Task] = None
+        self._heartbeat_task: asyncio.Task | None = None
 
         # Rate limiting
-        self._message_times: List[float] = []
+        self._message_times: list[float] = []
 
         # Callbacks
-        self._on_client_connect: Optional[Callable[[str], Awaitable[None]]] = None
-        self._on_client_disconnect: Optional[Callable[[str], Awaitable[None]]] = None
-        self._on_message: Optional[Callable[[str, StreamMessage], Awaitable[None]]] = None
+        self._on_client_connect: Callable[[str], Awaitable[None]] | None = None
+        self._on_client_disconnect: Callable[[str], Awaitable[None]] | None = None
+        self._on_message: Callable[[str, StreamMessage], Awaitable[None]] | None = None
 
     @property
     def client_count(self) -> int:
@@ -649,7 +643,7 @@ class DarkTraceStreamingServer:
     async def _handle_subscribe(
         self,
         client_id: str,
-        data: Dict[str, Any],
+        data: dict[str, Any],
     ) -> None:
         """
         Handle subscription request.
@@ -754,9 +748,9 @@ class DarkTraceStreamingServer:
     async def broadcast_activations(
         self,
         layer: int,
-        feature_indices: List[int],
-        activation_values: List[float],
-        metadata: Optional[Dict[str, Any]] = None,
+        feature_indices: list[int],
+        activation_values: list[float],
+        metadata: dict[str, Any] | None = None,
     ) -> int:
         """
         Broadcast activations to all subscribed clients.
@@ -812,8 +806,8 @@ class DarkTraceStreamingServer:
     async def broadcast_layer_snapshot(
         self,
         layer: int,
-        all_activations: List[float],
-        top_k: Optional[int] = None,
+        all_activations: list[float],
+        top_k: int | None = None,
     ) -> int:
         """
         Broadcast a complete layer snapshot.
@@ -839,7 +833,7 @@ class DarkTraceStreamingServer:
 
     async def broadcast_statistics(
         self,
-        statistics: Dict[str, Any],
+        statistics: dict[str, Any],
     ) -> int:
         """
         Broadcast statistics update.
@@ -859,7 +853,7 @@ class DarkTraceStreamingServer:
         alert_type: str,
         message: str,
         severity: str = "warning",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> int:
         """
         Broadcast an alert to all clients.
@@ -912,14 +906,14 @@ class DarkTraceStreamingServer:
             self._subscriptions.pop(client_id, None)
             return False
 
-    def get_client_ids(self) -> List[str]:
+    def get_client_ids(self) -> list[str]:
         """Get list of connected client IDs."""
         return list(self._clients.keys())
 
     def get_client_subscription(
         self,
         client_id: str,
-    ) -> Optional[ClientSubscription]:
+    ) -> ClientSubscription | None:
         """Get subscription for a client."""
         return self._subscriptions.get(client_id)
 
@@ -951,7 +945,7 @@ class DarkTraceStreamingServer:
 
 
 def create_streaming_server(
-    config: Optional[StreamingConfig] = None,
+    config: StreamingConfig | None = None,
 ) -> DarkTraceStreamingServer:
     """
     Factory function for streaming server.

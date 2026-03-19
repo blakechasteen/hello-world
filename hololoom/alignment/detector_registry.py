@@ -10,11 +10,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Tuple
 
-from .feature_detector import FeatureDetector, DetectionResult
 from .agreement_tracker import AgreementTracker
-from .graduation_policy import GraduationPolicy, GraduationCriteria, GraduationVerdict
+from .feature_detector import DetectionResult, FeatureDetector
+from .graduation_policy import GraduationCriteria, GraduationPolicy, GraduationVerdict
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +22,10 @@ logger = logging.getLogger(__name__)
 class CheckpointBinding:
     """A detector slot: primary + optional shadow."""
     primary: FeatureDetector
-    shadow: Optional[FeatureDetector] = None
-    tracker: Optional[AgreementTracker] = None
-    graduation: Optional[GraduationPolicy] = None
-    _previous_primary: Optional[FeatureDetector] = field(default=None, repr=False)
+    shadow: FeatureDetector | None = None
+    tracker: AgreementTracker | None = None
+    graduation: GraduationPolicy | None = None
+    _previous_primary: FeatureDetector | None = field(default=None, repr=False)
 
 
 class DetectorRegistry:
@@ -36,16 +35,16 @@ class DetectorRegistry:
     checks, promotion of shadow to primary, and rollback.
     """
 
-    def __init__(self, persist_dir: Optional[str] = None):
-        self._bindings: Dict[str, CheckpointBinding] = {}
+    def __init__(self, persist_dir: str | None = None):
+        self._bindings: dict[str, CheckpointBinding] = {}
         self._persist_dir = persist_dir
 
     def register(
         self,
         checkpoint: str,
         primary: FeatureDetector,
-        shadow: Optional[FeatureDetector] = None,
-        graduation_criteria: Optional[GraduationCriteria] = None,
+        shadow: FeatureDetector | None = None,
+        graduation_criteria: GraduationCriteria | None = None,
     ) -> None:
         """Register a detector binding for a checkpoint."""
         tracker = None
@@ -75,8 +74,8 @@ class DetectorRegistry:
         self,
         checkpoint: str,
         text: str,
-        context: Optional[dict] = None,
-    ) -> Tuple[DetectionResult, Optional[DetectionResult]]:
+        context: dict | None = None,
+    ) -> tuple[DetectionResult, DetectionResult | None]:
         """Run primary (and shadow if present) detector for a checkpoint.
 
         Returns (primary_result, shadow_result_or_None).
@@ -99,7 +98,7 @@ class DetectorRegistry:
 
         return primary_result, shadow_result
 
-    def check_graduation(self, checkpoint: str) -> Optional[GraduationVerdict]:
+    def check_graduation(self, checkpoint: str) -> GraduationVerdict | None:
         """Check if a shadow detector is ready for promotion."""
         binding = self._bindings.get(checkpoint)
         if binding is None or binding.graduation is None or binding.tracker is None:
@@ -145,6 +144,6 @@ class DetectorRegistry:
         """List all registered checkpoint names."""
         return list(self._bindings.keys())
 
-    def get_binding(self, checkpoint: str) -> Optional[CheckpointBinding]:
+    def get_binding(self, checkpoint: str) -> CheckpointBinding | None:
         """Get the binding for a checkpoint, or None."""
         return self._bindings.get(checkpoint)

@@ -34,16 +34,13 @@ Usage:
     ])
 """
 
-from pathlib import Path
-from typing import List, Dict, Any, Optional, AsyncIterator
 import mimetypes
+from collections.abc import AsyncIterator
+from pathlib import Path
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
-from hololoom.spinningWheel.protocol import (
-    BaseSpinner,
-    SpinResult,
-    SpinnerCapabilities
-)
+from hololoom.spinningWheel.protocol import BaseSpinner, SpinnerCapabilities, SpinResult
 
 # Import all specific spinners
 try:
@@ -169,7 +166,7 @@ class FileUploadSpinner(BaseSpinner):
         self.enable_audio_transcription = enable_audio_transcription
 
         # Initialize specific spinners (lazy loading)
-        self._spinners: Dict[str, BaseSpinner] = {}
+        self._spinners: dict[str, BaseSpinner] = {}
 
     def get_capabilities(self) -> SpinnerCapabilities:
         """Return spinner capabilities"""
@@ -194,7 +191,7 @@ class FileUploadSpinner(BaseSpinner):
             MULTIMODAL_AVAILABLE
         ])
 
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Spin file(s) into MemoryShards
 
@@ -294,7 +291,7 @@ class FileUploadSpinner(BaseSpinner):
         # Default to text
         return 'text'
 
-    def _get_spinner(self, file_type: str) -> Optional[BaseSpinner]:
+    def _get_spinner(self, file_type: str) -> BaseSpinner | None:
         """
         Get or create spinner for file type
 
@@ -354,11 +351,11 @@ class FileUploadSpinner(BaseSpinner):
 
         return spinner
 
-    def get_supported_extensions(self) -> List[str]:
+    def get_supported_extensions(self) -> list[str]:
         """Get list of supported file extensions"""
         return list(self.FILE_TYPE_MAP.keys())
 
-    def get_file_type_info(self, file_path: Path) -> Dict[str, Any]:
+    def get_file_type_info(self, file_path: Path) -> dict[str, Any]:
         """
         Get information about file type and which spinner will handle it
 
@@ -408,7 +405,7 @@ async def spin_uploaded_file(
 
 
 async def spin_uploaded_files(
-    file_paths: List[str],
+    file_paths: list[str],
     importance_threshold: float = 0.3
 ) -> SpinResult:
     """

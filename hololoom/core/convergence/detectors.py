@@ -9,14 +9,10 @@ Author: HoloLoom Team
 """
 
 import logging
-import numpy as np
-from typing import List, Tuple, Optional
-from dataclasses import dataclass
 
-from hololoom.protocols.recursive_reasoning import (
-    RefinementStep,
-    ConvergenceDetectorProtocol
-)
+import numpy as np
+
+from hololoom.protocols.recursive_reasoning import RefinementStep
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +28,7 @@ class ConvergenceDetector:
     All detectors implement: detect(history) → (converged, reason)
     """
 
-    def detect(self, history: List[RefinementStep]) -> Tuple[bool, str]:
+    def detect(self, history: list[RefinementStep]) -> tuple[bool, str]:
         """
         Detect convergence from refinement history.
 
@@ -44,11 +40,11 @@ class ConvergenceDetector:
         """
         raise NotImplementedError("Subclasses must implement detect()")
 
-    def _get_confidences(self, history: List[RefinementStep]) -> List[float]:
+    def _get_confidences(self, history: list[RefinementStep]) -> list[float]:
         """Extract confidence scores from history."""
         return [step.confidence for step in history]
 
-    def _get_improvements(self, history: List[RefinementStep]) -> List[float]:
+    def _get_improvements(self, history: list[RefinementStep]) -> list[float]:
         """Extract improvement deltas from history."""
         return [step.improvement for step in history]
 
@@ -74,7 +70,7 @@ class ConfidenceThresholdDetector(ConvergenceDetector):
         self.threshold = threshold
         logger.info(f"ConfidenceThresholdDetector initialized (threshold={threshold})")
 
-    def detect(self, history: List[RefinementStep]) -> Tuple[bool, str]:
+    def detect(self, history: list[RefinementStep]) -> tuple[bool, str]:
         """Detect if latest confidence >= threshold."""
         if not history:
             return False, "No history"
@@ -108,7 +104,7 @@ class ImprovementDeltaDetector(ConvergenceDetector):
         self.min_delta = min_delta
         logger.info(f"ImprovementDeltaDetector initialized (min_delta={min_delta})")
 
-    def detect(self, history: List[RefinementStep]) -> Tuple[bool, str]:
+    def detect(self, history: list[RefinementStep]) -> tuple[bool, str]:
         """Detect if latest improvement < min_delta."""
         if len(history) < 2:
             return False, "Insufficient history (need 2+ steps)"
@@ -144,7 +140,7 @@ class QualityPlateauDetector(ConvergenceDetector):
         self.min_delta = min_delta
         logger.info(f"QualityPlateauDetector initialized (window={plateau_window}, min_delta={min_delta})")
 
-    def detect(self, history: List[RefinementStep]) -> Tuple[bool, str]:
+    def detect(self, history: list[RefinementStep]) -> tuple[bool, str]:
         """Detect if quality has plateaued for N consecutive steps."""
         if len(history) < self.plateau_window:
             return False, f"Insufficient history (need {self.plateau_window}+ steps)"
@@ -182,7 +178,7 @@ class MaxIterationsDetector(ConvergenceDetector):
         self.max_iterations = max_iterations
         logger.info(f"MaxIterationsDetector initialized (max_iterations={max_iterations})")
 
-    def detect(self, history: List[RefinementStep]) -> Tuple[bool, str]:
+    def detect(self, history: list[RefinementStep]) -> tuple[bool, str]:
         """Detect if max iterations reached."""
         if len(history) >= self.max_iterations:
             return True, f"Max iterations {self.max_iterations} reached"
@@ -213,7 +209,7 @@ class HighVarianceDetector(ConvergenceDetector):
         self.window = window
         logger.info(f"HighVarianceDetector initialized (threshold={variance_threshold}, window={window})")
 
-    def detect(self, history: List[RefinementStep]) -> Tuple[bool, str]:
+    def detect(self, history: list[RefinementStep]) -> tuple[bool, str]:
         """Detect if confidence variance is too high."""
         if len(history) < self.window:
             return False, f"Insufficient history (need {self.window}+ steps)"
@@ -241,9 +237,9 @@ class MultiCriteriaDetector(ConvergenceDetector):
 
     def __init__(
         self,
-        detectors: List[ConvergenceDetector],
+        detectors: list[ConvergenceDetector],
         logic: str = "OR",  # "OR", "AND", "MAJORITY"
-        weights: Optional[List[float]] = None
+        weights: list[float] | None = None
     ):
         """
         Initialize multi-criteria detector.
@@ -262,7 +258,7 @@ class MultiCriteriaDetector(ConvergenceDetector):
 
         logger.info(f"MultiCriteriaDetector initialized ({len(detectors)} detectors, logic={self.logic})")
 
-    def detect(self, history: List[RefinementStep]) -> Tuple[bool, str]:
+    def detect(self, history: list[RefinementStep]) -> tuple[bool, str]:
         """Detect using combined criteria."""
         results = []
         reasons = []
@@ -298,6 +294,128 @@ class MultiCriteriaDetector(ConvergenceDetector):
 
 
 # ============================================================================
+# Semantic Convergence Detector (Information-Theoretic)
+# ============================================================================
+
+class SemanticConvergenceDetector(ConvergenceDetector):
+    """
+    Converge when consecutive responses are semantically similar.
+
+    Uses Jensen-Shannon divergence on softmax-normalized response embeddings
+    to detect when refinement passes stop producing meaningfully different output.
+    This is an information-theoretic convergence signal — when MI between
+    consecutive passes drops below threshold, the system has converged.
+
+    Requires responses to carry embeddings (via the `embedding` field on
+    RefinementStep, or computed on-the-fly from response text).
+    """
+
+    def __init__(
+        self,
+        threshold: float = 0.05,
+        min_steps: int = 2,
+        embedding_fn=None,
+    ):
+        """
+        Initialize detector.
+
+        Args:
+            threshold: JSD threshold below which responses are "converged" (default: 0.05)
+            min_steps: Minimum steps before checking (default: 2)
+            embedding_fn: Optional callable(text) -> np.ndarray for computing embeddings.
+                         If None, falls back to simple bag-of-words distribution.
+        """
+        self.threshold = threshold
+        self.min_steps = min_steps
+        self.embedding_fn = embedding_fn
+        logger.info(
+            f"SemanticConvergenceDetector initialized "
+            f"(threshold={threshold}, min_steps={min_steps})"
+        )
+
+    def _text_to_distribution(self, text: str) -> np.ndarray:
+        """
+        Convert text to a probability distribution for divergence computation.
+
+        If an embedding_fn is provided, uses it and applies softmax.
+        Otherwise, falls back to character n-gram frequency distribution.
+        """
+        if self.embedding_fn is not None:
+            emb = self.embedding_fn(text)
+            emb = np.asarray(emb, dtype=np.float64).flatten()
+            # Softmax normalization to get a probability distribution
+            exp_x = np.exp(emb - np.max(emb))
+            return exp_x / exp_x.sum()
+
+        # Fallback: character trigram frequency distribution
+        # Simple but effective for detecting semantic convergence
+        trigrams = {}
+        text_lower = text.lower()
+        for i in range(len(text_lower) - 2):
+            tri = text_lower[i:i+3]
+            trigrams[tri] = trigrams.get(tri, 0) + 1
+        if not trigrams:
+            return np.array([1.0])
+        total = sum(trigrams.values())
+        # Sort by key for consistent ordering
+        keys = sorted(trigrams.keys())
+        return np.array([trigrams[k] / total for k in keys])
+
+    def _align_distributions(
+        self, p: np.ndarray, q: np.ndarray
+    ) -> tuple:
+        """
+        Align two distributions to the same dimensionality.
+
+        For embedding-based distributions (same dim), returns as-is.
+        For trigram distributions (different keys), pads shorter with zeros.
+        """
+        if len(p) == len(q):
+            return p, q
+        # Pad shorter distribution with small epsilon
+        max_len = max(len(p), len(q))
+        eps = 1e-10
+        p_aligned = np.full(max_len, eps)
+        q_aligned = np.full(max_len, eps)
+        p_aligned[:len(p)] = p
+        q_aligned[:len(q)] = q
+        # Renormalize
+        p_aligned /= p_aligned.sum()
+        q_aligned /= q_aligned.sum()
+        return p_aligned, q_aligned
+
+    def detect(self, history: list[RefinementStep]) -> tuple[bool, str]:
+        """Detect semantic convergence via Jensen-Shannon divergence."""
+        if len(history) < self.min_steps:
+            return False, f"Insufficient history (need {self.min_steps}+ steps)"
+
+        # Compare last two responses
+        prev_response = history[-2].response
+        curr_response = history[-1].response
+
+        if not prev_response or not curr_response:
+            return False, "Empty response(s), cannot compute divergence"
+
+        p = self._text_to_distribution(prev_response)
+        q = self._text_to_distribution(curr_response)
+        p, q = self._align_distributions(p, q)
+
+        # Jensen-Shannon divergence: symmetric, bounded [0, 1] for base-2
+        m = 0.5 * (p + q)
+        # Inline JSD to avoid import dependency on warp.math
+        jsd = 0.5 * np.sum(np.where(p > 0, p * np.log2(p / m), 0.0)) + \
+              0.5 * np.sum(np.where(q > 0, q * np.log2(q / m), 0.0))
+
+        if jsd < self.threshold:
+            return True, (
+                f"Semantic convergence: JSD={jsd:.4f} < threshold={self.threshold} "
+                f"(responses are information-theoretically similar)"
+            )
+
+        return False, f"JSD={jsd:.4f} >= threshold={self.threshold} (still diverging)"
+
+
+# ============================================================================
 # Factory Functions
 # ============================================================================
 
@@ -319,11 +437,23 @@ def create_plateau_detector(
     return QualityPlateauDetector(plateau_window=plateau_window, min_delta=min_delta)
 
 
+def create_semantic_detector(
+    threshold: float = 0.05,
+    min_steps: int = 2,
+    embedding_fn=None,
+) -> SemanticConvergenceDetector:
+    """Create semantic convergence detector (information-theoretic)."""
+    return SemanticConvergenceDetector(
+        threshold=threshold, min_steps=min_steps, embedding_fn=embedding_fn
+    )
+
+
 def create_multi_criteria_detector(
     confidence_threshold: float = 0.85,
     min_improvement: float = 0.05,
     plateau_window: int = 3,
     max_iterations: int = 5,
+    semantic_threshold: float | None = None,
     logic: str = "OR"
 ) -> MultiCriteriaDetector:
     """
@@ -334,6 +464,7 @@ def create_multi_criteria_detector(
         min_improvement: Minimum improvement delta
         plateau_window: Plateau detection window
         max_iterations: Maximum iterations
+        semantic_threshold: If set, adds SemanticConvergenceDetector (JSD threshold)
         logic: Combination logic ("OR", "AND", "MAJORITY")
 
     Returns:
@@ -345,6 +476,9 @@ def create_multi_criteria_detector(
         QualityPlateauDetector(plateau_window=plateau_window),
         MaxIterationsDetector(max_iterations=max_iterations),
     ]
+
+    if semantic_threshold is not None:
+        detectors.append(SemanticConvergenceDetector(threshold=semantic_threshold))
 
     return MultiCriteriaDetector(detectors=detectors, logic=logic)
 

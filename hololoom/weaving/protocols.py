@@ -6,15 +6,13 @@ Protocol definitions for the weaving architecture.
 These protocols define the contracts for stages, strategies, and results.
 """
 
-from typing import Protocol, Dict, List, Any, Optional
 from dataclasses import dataclass
-from datetime import datetime
+from typing import Any, Protocol
 
-from hololoom.protocols.types import Query, MemoryShard, Features
-from hololoom.protocols import ComplexityLevel, ProvenanceTrace
 from hololoom.fabric.spacetime import Spacetime
-from hololoom.chrono.trigger import TemporalWindow
 from hololoom.loom.command import PatternSpec
+from hololoom.protocols import ComplexityLevel
+from hololoom.protocols.types import Query
 
 
 @dataclass
@@ -22,10 +20,10 @@ class StageResult:
     """Result from a weaving stage execution."""
     stage_name: str
     duration_ms: float
-    data: Dict[str, Any]
+    data: dict[str, Any]
     success: bool = True
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = None
+    error: str | None = None
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -38,7 +36,7 @@ class WeavingStageProtocol(Protocol):
     async def execute(
         self,
         query: Query,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         pattern_spec: PatternSpec,
     ) -> StageResult:
         """
@@ -58,11 +56,11 @@ class WeavingStageProtocol(Protocol):
         """Get the name of this stage."""
         ...
 
-    def get_required_context_keys(self) -> List[str]:
+    def get_required_context_keys(self) -> list[str]:
         """Get the context keys this stage requires."""
         ...
 
-    def get_output_context_keys(self) -> List[str]:
+    def get_output_context_keys(self) -> list[str]:
         """Get the context keys this stage produces."""
         ...
 
@@ -74,15 +72,15 @@ class ComplexityStrategyProtocol(Protocol):
         """Get the complexity level this strategy handles."""
         ...
 
-    def get_stages(self) -> List[str]:
+    def get_stages(self) -> list[str]:
         """Get the ordered list of stage names to execute."""
         ...
 
     async def execute(
         self,
         query: Query,
-        stages: Dict[str, WeavingStageProtocol],
-        initial_context: Dict[str, Any],
+        stages: dict[str, WeavingStageProtocol],
+        initial_context: dict[str, Any],
     ) -> Spacetime:
         """
         Execute the strategy's stages in order.
@@ -100,7 +98,7 @@ class ComplexityStrategyProtocol(Protocol):
     def should_skip_stage(
         self,
         stage_name: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
     ) -> bool:
         """
         Check if a stage should be skipped based on context.

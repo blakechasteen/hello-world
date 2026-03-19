@@ -11,12 +11,11 @@ Phase: 3 - Adaptive Learning
 import asyncio
 import json
 import logging
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple
-from collections import deque
-from pathlib import Path
-from datetime import datetime, timedelta
 import statistics
+from collections import deque
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,7 @@ class ValidationQuery:
     """Single validation query with ground truth label."""
     text: str
     expected_complexity: str  # Ground truth
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -34,14 +33,14 @@ class ValidationResult:
     """Result of a validation run."""
     timestamp: float
     overall_accuracy: float
-    by_complexity: Dict[str, float]
+    by_complexity: dict[str, float]
     total_queries: int
     correct: int
     incorrect: int
     regression_detected: bool
-    baseline_accuracy: Optional[float] = None
-    trend_7day: Optional[float] = None
-    trend_30day: Optional[float] = None
+    baseline_accuracy: float | None = None
+    trend_7day: float | None = None
+    trend_30day: float | None = None
 
 
 @dataclass
@@ -51,7 +50,7 @@ class RegressionAlert:
     current_accuracy: float
     baseline_accuracy: float
     drop_percentage: float
-    affected_complexity: List[str]
+    affected_complexity: list[str]
     severity: str  # "warning", "critical"
     message: str
 
@@ -87,10 +86,10 @@ class ContinuousValidator:
     def __init__(
         self,
         classifier,
-        validation_set_path: Optional[str] = None,
+        validation_set_path: str | None = None,
         regression_threshold: float = 0.02,  # 2% drop triggers regression
         history_size: int = 1000,  # Keep last 1000 validation results
-        baseline_accuracy: Optional[float] = None
+        baseline_accuracy: float | None = None
     ):
         """
         Initialize continuous validator.
@@ -124,14 +123,14 @@ class ContinuousValidator:
                    f"regression_threshold={regression_threshold:.1%}, "
                    f"baseline={self.baseline_accuracy:.1%})")
 
-    def _load_validation_set(self) -> List[ValidationQuery]:
+    def _load_validation_set(self) -> list[ValidationQuery]:
         """Load validation set from disk."""
         if not self.validation_set_path or not self.validation_set_path.exists():
             logger.warning("No validation set found, using empty set")
             return []
 
         try:
-            with open(self.validation_set_path, 'r') as f:
+            with open(self.validation_set_path) as f:
                 data = json.load(f)
 
             queries = []
@@ -213,7 +212,7 @@ class ContinuousValidator:
 
         return result
 
-    def _validate_queries(self, queries: List[ValidationQuery]) -> ValidationResult:
+    def _validate_queries(self, queries: list[ValidationQuery]) -> ValidationResult:
         """
         Validate a list of queries.
 
@@ -352,7 +351,7 @@ class ContinuousValidator:
         self.alerts.append(alert)
         logger.error(f"[ALERT] {message}")
 
-    def _calculate_trend(self, days: int) -> Optional[float]:
+    def _calculate_trend(self, days: int) -> float | None:
         """
         Calculate accuracy trend over N days.
 
@@ -376,7 +375,7 @@ class ContinuousValidator:
         avg_accuracy = statistics.mean(r.overall_accuracy for r in recent_results)
         return avg_accuracy
 
-    def get_alerts(self, since: Optional[datetime] = None) -> List[RegressionAlert]:
+    def get_alerts(self, since: datetime | None = None) -> list[RegressionAlert]:
         """
         Get alerts since a specific time.
 
@@ -397,7 +396,7 @@ class ContinuousValidator:
         self.alerts.clear()
         logger.info("Alerts cleared")
 
-    def get_validation_history(self, days: int = 7) -> List[ValidationResult]:
+    def get_validation_history(self, days: int = 7) -> list[ValidationResult]:
         """
         Get validation history for the last N days.
 
@@ -471,7 +470,7 @@ class ContinuousValidator:
 
 
 def create_validation_set(
-    queries: List[Tuple[str, str]],
+    queries: list[tuple[str, str]],
     output_path: str
 ):
     """

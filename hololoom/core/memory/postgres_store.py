@@ -9,7 +9,7 @@ import json
 import logging
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,7 @@ class PostgresStore:
         if not PSYCOPG_AVAILABLE:
             raise ImportError("psycopg is required. Install with: pip install 'psycopg[binary]'")
         self.dsn = dsn
-        self._conn: Optional[psycopg.AsyncConnection] = None
+        self._conn: psycopg.AsyncConnection | None = None
 
     async def initialize(self) -> dict:
         """Connect and create tables if they don't exist.
@@ -163,7 +163,7 @@ class PostgresStore:
 
     async def add_alias(
         self, alias: str, entity_id: str,
-        loom_id: Optional[str] = None, confidence: float = 1.0
+        loom_id: str | None = None, confidence: float = 1.0
     ) -> None:
         """Add an entity alias. Upserts on (alias, entity_id)."""
         self._check_conn()
@@ -177,7 +177,7 @@ class PostgresStore:
             (alias, entity_id, loom_id, confidence),
         )
 
-    async def add_aliases_batch(self, aliases: List[tuple]) -> int:
+    async def add_aliases_batch(self, aliases: list[tuple]) -> int:
         """Batch insert aliases. Each tuple: (alias, entity_id, loom_id, confidence)."""
         self._check_conn()
         count = 0
@@ -195,7 +195,7 @@ class PostgresStore:
                 count += 1
         return count
 
-    async def resolve_alias(self, alias: str, loom_id: Optional[str] = None) -> List[Dict]:
+    async def resolve_alias(self, alias: str, loom_id: str | None = None) -> list[dict]:
         """Resolve an alias to entity IDs. Case-insensitive with confidence ranking.
 
         Returns list of dicts: [{"entity_id": ..., "alias": ..., "confidence": ..., "loom_id": ...}]
@@ -225,12 +225,12 @@ class PostgresStore:
     async def log_audit(
         self,
         action: str,
-        loop_id: Optional[str] = None,
-        loom_id: Optional[str] = None,
-        resolution_path: Optional[str] = None,
+        loop_id: str | None = None,
+        loom_id: str | None = None,
+        resolution_path: str | None = None,
         tokens_used: int = 0,
         pressure_tier: int = 0,
-        details: Optional[Dict] = None,
+        details: dict | None = None,
     ) -> int:
         """Append an audit log entry. Returns the row ID."""
         self._check_conn()
@@ -248,8 +248,8 @@ class PostgresStore:
             return row[0]
 
     async def query_audit(
-        self, action: Optional[str] = None, limit: int = 50
-    ) -> List[Dict]:
+        self, action: str | None = None, limit: int = 50
+    ) -> list[dict]:
         """Query the audit log."""
         self._check_conn()
         query = "SELECT * FROM memory_audit"
@@ -270,7 +270,7 @@ class PostgresStore:
     # Config Store (spec §10.3)
     # =========================================================================
 
-    async def get_config(self, key: str) -> Optional[Dict]:
+    async def get_config(self, key: str) -> dict | None:
         """Get a config value by key."""
         self._check_conn()
         async with self._conn.cursor(row_factory=dict_row) as cur:
@@ -278,7 +278,7 @@ class PostgresStore:
             return await cur.fetchone()
 
     async def set_config(
-        self, key: str, value: Dict, loom_id: Optional[str] = None
+        self, key: str, value: dict, loom_id: str | None = None
     ) -> None:
         """Set a config value. Upserts on key."""
         self._check_conn()
@@ -301,9 +301,9 @@ class PostgresStore:
         neo4j_node_id: str,
         content: str,
         confidence: float = 1.0,
-        domain: Optional[str] = None,
-        valid_from: Optional[datetime] = None,
-        valid_to: Optional[datetime] = None,
+        domain: str | None = None,
+        valid_from: datetime | None = None,
+        valid_to: datetime | None = None,
     ) -> str:
         """Store a fact. Returns the UUID."""
         self._check_conn()
@@ -319,10 +319,10 @@ class PostgresStore:
 
     async def query_facts(
         self,
-        domain: Optional[str] = None,
-        content_like: Optional[str] = None,
+        domain: str | None = None,
+        content_like: str | None = None,
         limit: int = 20,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Query facts with optional filters."""
         self._check_conn()
         query = "SELECT * FROM facts WHERE 1=1"
@@ -351,7 +351,7 @@ class PostgresStore:
         neo4j_node_id: str,
         name: str,
         state: str = "active",
-        loom_id: Optional[str] = None,
+        loom_id: str | None = None,
     ) -> str:
         """Store a plan. Returns the UUID."""
         self._check_conn()
@@ -378,7 +378,7 @@ class PostgresStore:
             (state, progress, plan_id),
         )
 
-    async def get_active_plans(self, loom_id: Optional[str] = None) -> List[Dict]:
+    async def get_active_plans(self, loom_id: str | None = None) -> list[dict]:
         """Get all active plans."""
         self._check_conn()
         query = "SELECT * FROM plans WHERE state = 'active'"
@@ -398,7 +398,7 @@ class PostgresStore:
     # Health
     # =========================================================================
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Check Postgres connectivity and table status."""
         if self._conn is None or self._conn.closed:
             return {"status": "disconnected", "tables": {}}

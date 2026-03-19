@@ -26,11 +26,12 @@ TIER 3: AUTHORITATIVE SOURCES (Ground Truth)
     Required for: Medical advice, legal guidance, safety-critical info
 """
 
+import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Dict, Any, Callable
-import asyncio
+from typing import Any
 
 
 class VerificationTier(Enum):
@@ -53,7 +54,7 @@ class ClaimType(Enum):
     SAFETY_CRITICAL = "safety"    # Tier 1+2+3 required
 
     @property
-    def required_tiers(self) -> List[VerificationTier]:
+    def required_tiers(self) -> list[VerificationTier]:
         """Get required verification tiers for this claim type."""
         if self in (ClaimType.OPINION, ClaimType.CREATIVE, ClaimType.EXPLANATION):
             return [VerificationTier.TIER_1_INTERNAL]
@@ -73,8 +74,8 @@ class VerificationResult:
     tier: VerificationTier
     passed: bool
     confidence: float
-    sources_checked: List[str]
-    details: Optional[str] = None
+    sources_checked: list[str]
+    details: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -90,12 +91,12 @@ class VerificationStatus:
     - Which sub-claims couldn't be verified
     """
     tier_1_passed: bool                    # Internal consistency
-    tier_2_passed: Optional[bool] = None   # External verification (if performed)
-    tier_3_passed: Optional[bool] = None   # Authoritative source (if required)
-    verification_sources: List[str] = field(default_factory=list)
+    tier_2_passed: bool | None = None   # External verification (if performed)
+    tier_3_passed: bool | None = None   # Authoritative source (if required)
+    verification_sources: list[str] = field(default_factory=list)
     verification_timestamp: datetime = field(default_factory=datetime.now)
-    unverified_claims: List[str] = field(default_factory=list)
-    tier_results: List[VerificationResult] = field(default_factory=list)
+    unverified_claims: list[str] = field(default_factory=list)
+    tier_results: list[VerificationResult] = field(default_factory=list)
 
     @property
     def all_required_passed(self) -> bool:
@@ -109,7 +110,7 @@ class VerificationStatus:
         return True
 
     @property
-    def highest_tier_passed(self) -> Optional[VerificationTier]:
+    def highest_tier_passed(self) -> VerificationTier | None:
         """Get the highest tier that passed verification."""
         if self.tier_3_passed:
             return VerificationTier.TIER_3_AUTHORITATIVE
@@ -119,7 +120,7 @@ class VerificationStatus:
             return VerificationTier.TIER_1_INTERNAL
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "tier_1_passed": self.tier_1_passed,
@@ -158,7 +159,7 @@ class VerificationEngine:
         self,
         knowledge_graph=None,
         vector_store=None,
-        authoritative_sources: Optional[Dict[str, Callable]] = None,
+        authoritative_sources: dict[str, Callable] | None = None,
     ):
         """
         Initialize verification engine.
@@ -175,7 +176,7 @@ class VerificationEngine:
     async def verify_tier_1(
         self,
         response: str,
-        samples: Optional[List[str]] = None,
+        samples: list[str] | None = None,
     ) -> VerificationResult:
         """
         Tier 1: Internal Consistency (Self-Verification)
@@ -216,7 +217,7 @@ class VerificationEngine:
 
     async def verify_tier_2(
         self,
-        claims: List[str],
+        claims: list[str],
     ) -> VerificationResult:
         """
         Tier 2: External Verification (Reference Checking)
@@ -267,8 +268,8 @@ class VerificationEngine:
 
     async def verify_tier_3(
         self,
-        claims: List[str],
-        required_sources: Optional[List[str]] = None,
+        claims: list[str],
+        required_sources: list[str] | None = None,
     ) -> VerificationResult:
         """
         Tier 3: Authoritative Sources (Ground Truth)
@@ -327,10 +328,10 @@ class VerificationEngine:
     async def verify(
         self,
         response: str,
-        claims: List[str],
+        claims: list[str],
         claim_type: ClaimType,
         confidence: float,
-        samples: Optional[List[str]] = None,
+        samples: list[str] | None = None,
     ) -> VerificationStatus:
         """
         Perform full verification based on claim type and confidence.
@@ -381,7 +382,7 @@ class VerificationEngine:
 
 async def verify_response(
     response: str,
-    claims: Optional[List[str]] = None,
+    claims: list[str] | None = None,
     claim_type: ClaimType = ClaimType.FACTUAL,
     confidence: float = 0.8,
     knowledge_graph=None,

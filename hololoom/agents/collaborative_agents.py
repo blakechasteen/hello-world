@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Collaborative Agents Integration
 =================================
@@ -16,31 +15,24 @@ Enables persistent agents to:
 """
 
 import asyncio
-from typing import Optional, Dict, Any, List
 import logging
+from typing import Any
 
-from hololoom.agents.persistent_agent import (
-    PersistentBackgroundAgent,
-    AgentState
-)
 from hololoom.agents.multi_agent_communication import (
-    MessageBus,
-    ConversationManager,
-    BudgetManager,
-    SafetyGuardrails,
     Budget,
+    BudgetManager,
+    ConversationManager,
     Message,
+    MessageBus,
     MessageType,
-    Conversation
+    SafetyGuardrails,
 )
+from hololoom.agents.persistent_agent import PersistentBackgroundAgent
 from hololoom.agents.policy_governance import (
-    PolicyEngine,
-    RoleBasedAccessControl,
-    TopicGovernance,
     CommunicationRequest,
     PolicyDecision,
+    PolicyEngine,
     Priority,
-    AgentRole
 )
 
 logger = logging.getLogger(__name__)
@@ -60,7 +52,7 @@ class CollaborativeAgent(PersistentBackgroundAgent):
         message_bus: MessageBus,
         conversation_manager: ConversationManager,
         loop_interval: float = 60.0,
-        policy_engine: Optional[PolicyEngine] = None,
+        policy_engine: PolicyEngine | None = None,
         **kwargs
     ):
         """
@@ -90,7 +82,7 @@ class CollaborativeAgent(PersistentBackgroundAgent):
         self.message_bus.subscribe(agent_id, self._handle_message)
 
         # Pending conversations
-        self.active_conversations: Dict[str, List[Message]] = {}
+        self.active_conversations: dict[str, list[Message]] = {}
 
     async def _handle_message(self, message: Message) -> None:
         """
@@ -196,7 +188,7 @@ class CollaborativeAgent(PersistentBackgroundAgent):
 
         logger.info(f"💡 {self.agent_id} received answer from {message.from_agent}")
 
-    def _can_help_with(self, request: str) -> Optional[str]:
+    def _can_help_with(self, request: str) -> str | None:
         """
         Check if agent can help with request based on agent type.
 
@@ -229,7 +221,7 @@ class CollaborativeAgent(PersistentBackgroundAgent):
         question: str,
         topic: str,
         timeout: float = 30.0
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Ask question to another agent.
 
@@ -274,11 +266,11 @@ class CollaborativeAgent(PersistentBackgroundAgent):
 
     async def request_help(
         self,
-        from_agents: List[str],
+        from_agents: list[str],
         request: str,
         topic: str,
         timeout: float = 60.0
-    ) -> List[tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """
         Request help from multiple agents.
 
@@ -327,7 +319,7 @@ class CollaborativeAgent(PersistentBackgroundAgent):
 
     async def share_insight(
         self,
-        with_agents: List[str],
+        with_agents: list[str],
         insight: str,
         topic: str
     ) -> None:
@@ -419,10 +411,10 @@ class CollaborativeAgent(PersistentBackgroundAgent):
         to_agent: str,
         message_type: MessageType,
         content: str,
-        parent_message_id: Optional[str] = None,
+        parent_message_id: str | None = None,
         topic: str = "",
         priority: Priority = Priority.MEDIUM
-    ) -> Optional[Message]:
+    ) -> Message | None:
         """
         Send message in conversation.
 
@@ -465,7 +457,7 @@ class CollaborativeAgent(PersistentBackgroundAgent):
         conversation_id: str,
         question_message_id: str,
         timeout: float
-    ) -> Optional[str]:
+    ) -> str | None:
         """Wait for answer to question."""
         start_time = asyncio.get_event_loop().time()
 
@@ -492,8 +484,8 @@ class CollaborativeAgentManager:
     def __init__(
         self,
         loop_interval: float = 60.0,
-        budget: Optional[Budget] = None,
-        policy_engine: Optional[PolicyEngine] = None
+        budget: Budget | None = None,
+        policy_engine: PolicyEngine | None = None
     ):
         """
         Initialize collaborative agent manager.
@@ -518,7 +510,7 @@ class CollaborativeAgentManager:
             safety_guardrails=self.safety_guardrails
         )
 
-        self.agents: Dict[str, CollaborativeAgent] = {}
+        self.agents: dict[str, CollaborativeAgent] = {}
 
     async def start(self) -> None:
         """Start message bus."""
@@ -576,11 +568,11 @@ class CollaborativeAgentManager:
 
         return agent
 
-    def get_agent(self, agent_id: str) -> Optional[CollaborativeAgent]:
+    def get_agent(self, agent_id: str) -> CollaborativeAgent | None:
         """Get agent by ID."""
         return self.agents.get(agent_id)
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get system statistics."""
         return {
             "agents": len(self.agents),

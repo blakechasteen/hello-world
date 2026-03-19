@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Meta-Learning Department - Few-shot learning, transfer learning, and meta-adaptation.
 
@@ -30,16 +29,15 @@ Performance:
 - Knowledge consolidation: <300ms for multi-department consolidation
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Set, Tuple
-from enum import Enum
-import asyncio
 import uuid
-import numpy as np
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any
+
+import numpy as np
 
 from hololoom.apps.departments.base import BaseDepartment, DepartmentRequest, DepartmentResponse
-
 
 # ============================================================================
 # Data Structures
@@ -76,7 +74,7 @@ class Example:
     id: str
     input_features: np.ndarray
     label: Any
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -84,9 +82,9 @@ class TaskContext:
     """Context for a learning task."""
     task_id: str
     task_type: TaskType
-    support_examples: List[Example]  # Training examples (few-shot support set)
-    query_examples: List[Example]  # Test examples (query set)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    support_examples: list[Example]  # Training examples (few-shot support set)
+    query_examples: list[Example]  # Test examples (query set)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -108,18 +106,18 @@ class TransferredKnowledge:
     transfer_strategy: TransferStrategy
     transfer_quality: float  # 0.0-1.0
     similarity_score: float  # Task similarity
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ConsolidatedKnowledge:
     """Knowledge consolidated across multiple departments."""
     consolidation_id: str
-    source_departments: List[str]
-    consolidated_representation: Dict[str, Any]
+    source_departments: list[str]
+    consolidated_representation: dict[str, Any]
     confidence: float
     consensus_score: float  # Agreement across departments
-    conflict_resolutions: List[str]
+    conflict_resolutions: list[str]
     timestamp: float = field(default_factory=lambda: datetime.now().timestamp())
 
 
@@ -130,7 +128,7 @@ class LearningStrategy:
     adaptation_type: AdaptationStrategy
     learning_rate: float
     num_adaptation_steps: int
-    meta_parameters: Dict[str, Any]
+    meta_parameters: dict[str, Any]
     expected_performance: float
 
 
@@ -173,12 +171,12 @@ class FewShotLearner:
         self.distance_metric = distance_metric
         self.min_support_examples = min_support_examples
         self.max_support_examples = max_support_examples
-        self._prototypes: Dict[str, Prototype] = {}
+        self._prototypes: dict[str, Prototype] = {}
 
     def learn_from_examples(
         self,
         task_context: TaskContext
-    ) -> Dict[str, Prototype]:
+    ) -> dict[str, Prototype]:
         """
         Learn prototypes from support examples.
 
@@ -189,7 +187,7 @@ class FewShotLearner:
             Dict mapping labels to prototypes
         """
         # Group examples by label
-        examples_by_label: Dict[Any, List[Example]] = {}
+        examples_by_label: dict[Any, list[Example]] = {}
         for example in task_context.support_examples:
             if example.label not in examples_by_label:
                 examples_by_label[example.label] = []
@@ -228,7 +226,7 @@ class FewShotLearner:
 
         return prototypes
 
-    def predict(self, query_features: np.ndarray, prototypes: Dict[str, Prototype]) -> Tuple[Any, float]:
+    def predict(self, query_features: np.ndarray, prototypes: dict[str, Prototype]) -> tuple[Any, float]:
         """
         Predict label for query by nearest prototype.
 
@@ -263,7 +261,7 @@ class FewShotLearner:
 
         return predicted_label, confidence
 
-    def evaluate(self, task_context: TaskContext) -> Dict[str, float]:
+    def evaluate(self, task_context: TaskContext) -> dict[str, float]:
         """
         Evaluate few-shot learning performance.
 
@@ -359,8 +357,8 @@ class TransferLearner:
             similarity_threshold: Minimum similarity for transfer
         """
         self.similarity_threshold = similarity_threshold
-        self._source_tasks: Dict[str, TaskContext] = {}
-        self._task_embeddings: Dict[str, np.ndarray] = {}
+        self._source_tasks: dict[str, TaskContext] = {}
+        self._task_embeddings: dict[str, np.ndarray] = {}
 
     def register_source_task(self, task_id: str, task_context: TaskContext):
         """Register a source task for transfer learning."""
@@ -375,7 +373,7 @@ class TransferLearner:
         self,
         target_task: TaskContext,
         top_k: int = 3
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Find source tasks similar to target task.
 
@@ -576,15 +574,15 @@ class MetaAdaptationEngine:
 
     def __init__(self):
         """Initialize meta-adaptation engine."""
-        self._strategy_history: Dict[str, List[Tuple[TaskContext, LearningStrategy, float]]] = {}
-        self._strategy_performance: Dict[AdaptationStrategy, List[float]] = {
+        self._strategy_history: dict[str, list[tuple[TaskContext, LearningStrategy, float]]] = {}
+        self._strategy_performance: dict[AdaptationStrategy, list[float]] = {
             strategy: [] for strategy in AdaptationStrategy
         }
 
     def select_strategy(
         self,
         task_context: TaskContext,
-        constraints: Optional[Dict[str, Any]] = None
+        constraints: dict[str, Any] | None = None
     ) -> LearningStrategy:
         """
         Select optimal learning strategy for task.
@@ -674,7 +672,7 @@ class MetaAdaptationEngine:
             self._strategy_performance[strategy_type] = \
                 self._strategy_performance[strategy_type][-100:]
 
-    def get_strategy_statistics(self) -> Dict[str, Dict[str, float]]:
+    def get_strategy_statistics(self) -> dict[str, dict[str, float]]:
         """Get performance statistics for each strategy."""
         stats = {}
         for strategy_type, performances in self._strategy_performance.items():
@@ -728,12 +726,12 @@ class KnowledgeConsolidator:
             min_consensus: Minimum consensus score for consolidation
         """
         self.min_consensus = min_consensus
-        self._consolidation_cache: Dict[str, ConsolidatedKnowledge] = {}
+        self._consolidation_cache: dict[str, ConsolidatedKnowledge] = {}
 
     async def consolidate(
         self,
         query: str,
-        department_responses: Dict[str, DepartmentResponse]
+        department_responses: dict[str, DepartmentResponse]
     ) -> ConsolidatedKnowledge:
         """
         Consolidate knowledge from multiple departments.
@@ -797,7 +795,7 @@ class KnowledgeConsolidator:
 
         return consolidation
 
-    def _compute_consensus(self, department_data: Dict[str, Any]) -> float:
+    def _compute_consensus(self, department_data: dict[str, Any]) -> float:
         """
         Compute consensus score across departments.
 
@@ -808,7 +806,7 @@ class KnowledgeConsolidator:
             return 1.0  # Single department = perfect consensus
 
         # Simplified: Check for common entities/concepts
-        all_entities: List[Set[str]] = []
+        all_entities: list[set[str]] = []
 
         for dept_name, data in department_data.items():
             entities = set()
@@ -849,7 +847,7 @@ class KnowledgeConsolidator:
         consensus = np.mean(similarities) if similarities else 0.5
         return float(consensus)
 
-    def _identify_conflicts(self, department_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _identify_conflicts(self, department_data: dict[str, Any]) -> list[dict[str, Any]]:
         """Identify conflicting information across departments."""
         conflicts = []
 
@@ -874,9 +872,9 @@ class KnowledgeConsolidator:
 
     def _resolve_conflicts(
         self,
-        conflicts: List[Dict[str, Any]],
-        department_responses: Dict[str, DepartmentResponse]
-    ) -> List[str]:
+        conflicts: list[dict[str, Any]],
+        department_responses: dict[str, DepartmentResponse]
+    ) -> list[str]:
         """Resolve conflicts via voting and confidence-weighting."""
         resolutions = []
 
@@ -899,9 +897,9 @@ class KnowledgeConsolidator:
 
     def _create_consolidated_representation(
         self,
-        department_data: Dict[str, Any],
-        resolutions: List[str]
-    ) -> Dict[str, Any]:
+        department_data: dict[str, Any],
+        resolutions: list[str]
+    ) -> dict[str, Any]:
         """Create unified consolidated representation."""
         consolidated = {
             "departments": list(department_data.keys()),
@@ -966,10 +964,10 @@ class MetaLearningDepartment(BaseDepartment):
     def __init__(
         self,
         registry = None,
-        few_shot_learner: Optional[FewShotLearner] = None,
-        transfer_learner: Optional[TransferLearner] = None,
-        meta_adaptation_engine: Optional[MetaAdaptationEngine] = None,
-        knowledge_consolidator: Optional[KnowledgeConsolidator] = None
+        few_shot_learner: FewShotLearner | None = None,
+        transfer_learner: TransferLearner | None = None,
+        meta_adaptation_engine: MetaAdaptationEngine | None = None,
+        knowledge_consolidator: KnowledgeConsolidator | None = None
     ):
         """
         Initialize Meta-Learning Department.
@@ -1045,7 +1043,7 @@ class MetaLearningDepartment(BaseDepartment):
                 error_message=str(e)
             )
 
-    async def verify(self, request: DepartmentRequest, result: Any) -> Tuple[bool, float, str]:
+    async def verify(self, request: DepartmentRequest, result: Any) -> tuple[bool, float, str]:
         """
         Verify meta-learning result quality.
 
@@ -1129,7 +1127,7 @@ class MetaLearningDepartment(BaseDepartment):
     # Task Execution Methods
     # ========================================================================
 
-    async def _execute_few_shot_learning(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_few_shot_learning(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute few-shot learning task."""
         task_context = params.get("task_context")
         if not isinstance(task_context, TaskContext):
@@ -1154,7 +1152,7 @@ class MetaLearningDepartment(BaseDepartment):
             "confidence": metrics.get("avg_confidence", 0.7)
         }
 
-    async def _execute_transfer_learning(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_transfer_learning(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute transfer learning task."""
         source_task_id = params.get("source_task_id")
         target_task = params.get("target_task")
@@ -1184,7 +1182,7 @@ class MetaLearningDepartment(BaseDepartment):
             "confidence": transferred.transfer_quality
         }
 
-    async def _execute_meta_adaptation(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_meta_adaptation(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute meta-adaptation task."""
         task_context = params.get("task_context")
         constraints = params.get("constraints", {})
@@ -1209,7 +1207,7 @@ class MetaLearningDepartment(BaseDepartment):
             "confidence": strategy.expected_performance
         }
 
-    async def _execute_knowledge_consolidation(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_knowledge_consolidation(self, params: dict[str, Any]) -> dict[str, Any]:
         """Execute knowledge consolidation task."""
         query = params.get("query", "")
         department_responses = params.get("department_responses", {})
@@ -1235,7 +1233,7 @@ class MetaLearningDepartment(BaseDepartment):
     # Health Monitoring
     # ========================================================================
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Check department health."""
         success_rate = (
             self._successful_tasks / self._total_tasks

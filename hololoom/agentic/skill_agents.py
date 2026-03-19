@@ -39,18 +39,18 @@ Usage:
     print(result.confidence)
 """
 
-import yaml
 import logging
-from pathlib import Path
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
-from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 from hololoom.config import Config
-from hololoom.protocols.types import Query, MemoryShard
-from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
+from hololoom.prompting.unified_mrf import MetapromptConfig, ModelProvider, UnifiedMRF
 from hololoom.protocols.recursive_reasoning import ReasoningStrategy
-from hololoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+from hololoom.protocols.types import MemoryShard, Query
+from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -66,10 +66,10 @@ class SkillMetadata:
     version: str
     description: str
     category: str
-    tags: List[str]
+    tags: list[str]
     author: str
     created: str
-    updated: Optional[str] = None  # NEW: Track enhancement dates
+    updated: str | None = None  # NEW: Track enhancement dates
 
 
 @dataclass
@@ -80,23 +80,23 @@ class SkillMetaprompt:
     NEW in v1.1.0 (Phase 1.3): Enhanced prompting using UnifiedMRF.
     """
     role: str
-    objective: Dict[str, Any]  # {primary: str, secondary: List[str]}
-    process: List[Any]  # Can be strings or dicts
+    objective: dict[str, Any]  # {primary: str, secondary: List[str]}
+    process: list[Any]  # Can be strings or dicts
     format: str
-    constraints: List[str]
+    constraints: list[str]
     uncertainty: str
-    validation: List[str]
+    validation: list[str]
 
 
 @dataclass
 class SkillModelConfig:
     """Model-specific configuration for skills."""
     preferred_provider: str = "claude"
-    fallback_providers: List[str] = field(default_factory=lambda: ["gpt", "ollama"])
-    claude_hints: Dict[str, Any] = field(default_factory=dict)
-    gemini_hints: Dict[str, Any] = field(default_factory=dict)
-    gpt_hints: Dict[str, Any] = field(default_factory=dict)
-    ollama_hints: Dict[str, Any] = field(default_factory=dict)
+    fallback_providers: list[str] = field(default_factory=lambda: ["gpt", "ollama"])
+    claude_hints: dict[str, Any] = field(default_factory=dict)
+    gemini_hints: dict[str, Any] = field(default_factory=dict)
+    gpt_hints: dict[str, Any] = field(default_factory=dict)
+    ollama_hints: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -105,7 +105,7 @@ class SkillReasoningConfig:
     default_strategy: str
     max_iterations: int
     quality_threshold: float
-    refinement_passes: List[Dict[str, str]] = field(default_factory=list)
+    refinement_passes: list[dict[str, str]] = field(default_factory=list)
 
 
 @dataclass
@@ -132,14 +132,14 @@ class SkillTemplate:
     reasoning: SkillReasoningConfig
     system_prompt: str
     user_prompt_template: str
-    parameters: List[SkillParameter]
-    output: Dict[str, Any]
-    quality_checks: List[Dict[str, str]] = field(default_factory=list)
-    examples: List[Dict[str, Any]] = field(default_factory=list)
+    parameters: list[SkillParameter]
+    output: dict[str, Any]
+    quality_checks: list[dict[str, str]] = field(default_factory=list)
+    examples: list[dict[str, Any]] = field(default_factory=list)
 
     # NEW: Metaprompt framework (Phase 1.3)
-    metaprompt: Optional[SkillMetaprompt] = None
-    model_config: Optional[SkillModelConfig] = None
+    metaprompt: SkillMetaprompt | None = None
+    model_config: SkillModelConfig | None = None
 
 
 @dataclass
@@ -151,9 +151,9 @@ class SkillExecutionResult:
     iterations: int
     strategy_used: str
     execution_time_ms: float
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
     success: bool
-    error: Optional[str] = None
+    error: str | None = None
 
 
 # ============================================================================
@@ -168,7 +168,7 @@ class SkillRegistry:
     access to skill definitions.
     """
 
-    def __init__(self, skills_dir: Optional[Path] = None):
+    def __init__(self, skills_dir: Path | None = None):
         """
         Initialize skill registry.
 
@@ -181,7 +181,7 @@ class SkillRegistry:
             skills_dir = Path(__file__).parent / "skills"
 
         self.skills_dir = Path(skills_dir)
-        self.skills: Dict[str, SkillTemplate] = {}
+        self.skills: dict[str, SkillTemplate] = {}
         self.logger = logging.getLogger("skill_registry")
 
     async def load_all_skills(self):
@@ -209,7 +209,7 @@ class SkillRegistry:
 
         **UPDATED (Phase 1.3):** Parses metaprompt and model_config sections.
         """
-        with open(yaml_path, 'r') as f:
+        with open(yaml_path) as f:
             data = yaml.safe_load(f)
 
         # Parse metadata
@@ -292,15 +292,15 @@ class SkillRegistry:
 
         return skill
 
-    def get_skill(self, skill_name: str) -> Optional[SkillTemplate]:
+    def get_skill(self, skill_name: str) -> SkillTemplate | None:
         """Get a skill template by name."""
         return self.skills.get(skill_name)
 
-    def list_skills(self) -> List[str]:
+    def list_skills(self) -> list[str]:
         """List all available skill names."""
         return list(self.skills.keys())
 
-    def list_skills_by_category(self) -> Dict[str, List[str]]:
+    def list_skills_by_category(self) -> dict[str, list[str]]:
         """List skills grouped by category."""
         by_category = {}
         for skill in self.skills.values():
@@ -334,9 +334,9 @@ class SkillExecutor:
         self,
         registry: SkillRegistry,
         config: Config,
-        shards: Optional[List[MemoryShard]] = None,
+        shards: list[MemoryShard] | None = None,
         enable_analytics: bool = True,
-        model_provider: Optional[str] = None
+        model_provider: str | None = None
     ):
         """
         Initialize skill executor.
@@ -361,9 +361,9 @@ class SkillExecutor:
     async def execute(
         self,
         skill_name: str,
-        parameters: Dict[str, Any],
-        override_strategy: Optional[str] = None,
-        override_iterations: Optional[int] = None
+        parameters: dict[str, Any],
+        override_strategy: str | None = None,
+        override_iterations: int | None = None
     ) -> SkillExecutionResult:
         """
         Execute a skill with given parameters.
@@ -478,13 +478,13 @@ class SkillExecutor:
                 error=str(e)
             )
 
-    def _validate_parameters(self, skill: SkillTemplate, parameters: Dict[str, Any]):
+    def _validate_parameters(self, skill: SkillTemplate, parameters: dict[str, Any]):
         """Validate that required parameters are provided."""
         for param in skill.parameters:
             if param.required and param.name not in parameters:
                 raise ValueError(f"Missing required parameter: {param.name}")
 
-    def _fill_defaults(self, skill: SkillTemplate, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    def _fill_defaults(self, skill: SkillTemplate, parameters: dict[str, Any]) -> dict[str, Any]:
         """Fill in default values for missing parameters."""
         full_params = dict(parameters)
 
@@ -494,7 +494,7 @@ class SkillExecutor:
 
         return full_params
 
-    def _build_prompt(self, skill: SkillTemplate, parameters: Dict[str, Any]) -> str:
+    def _build_prompt(self, skill: SkillTemplate, parameters: dict[str, Any]) -> str:
         """
         Build complete prompt from template and parameters.
 
@@ -572,7 +572,7 @@ class SkillExecutor:
 # ============================================================================
 
 # Global registry instance
-_global_registry: Optional[SkillRegistry] = None
+_global_registry: SkillRegistry | None = None
 
 
 async def get_registry() -> SkillRegistry:
@@ -588,13 +588,13 @@ async def get_registry() -> SkillRegistry:
 
 async def execute_skill(
     skill_name: str,
-    parameters: Dict[str, Any],
-    config: Optional[Config] = None,
-    shards: Optional[List[MemoryShard]] = None,
-    override_strategy: Optional[str] = None,
-    override_iterations: Optional[int] = None,
+    parameters: dict[str, Any],
+    config: Config | None = None,
+    shards: list[MemoryShard] | None = None,
+    override_strategy: str | None = None,
+    override_iterations: int | None = None,
     enable_analytics: bool = True,
-    model_provider: Optional[str] = None  # NEW (Phase 1.3)
+    model_provider: str | None = None  # NEW (Phase 1.3)
 ) -> SkillExecutionResult:
     """
     Convenient function to execute a skill.
@@ -647,7 +647,7 @@ async def execute_skill(
     )
 
 
-async def list_available_skills() -> Dict[str, List[str]]:
+async def list_available_skills() -> dict[str, list[str]]:
     """
     List all available skills grouped by category.
 

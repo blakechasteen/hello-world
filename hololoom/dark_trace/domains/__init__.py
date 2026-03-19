@@ -81,39 +81,39 @@ Usage:
 """
 
 # Learned axis discovery
-from hololoom.dark_trace.domains.learned_lens import (
-    LearnedLens,
-    PCAAxisDiscovery,
-    ContrastiveAxisDiscovery,
-    ClusteringAxisDiscovery,
-    AutoLabeler,
-    DiscoveredAxis,
-    AxisDiscoveryConfig,
-    ContrastivePair,
-    LabelingResult,
+# Composition
+from hololoom.dark_trace.domains.composer import (
+    ComposedLens,
+    CompositionResult,
+    CompositionStrategy,
+    DomainRouter,
+    LensComposer,
+    RoutingRule,
 )
 
 # Config-based lenses
 from hololoom.dark_trace.domains.config_lens import (
-    ConfigLens,
-    DomainConfig,
     AxisSpec,
-    ExemplarSet,
+    ConfigLens,
     ConfigValidationError,
+    DomainConfig,
+    ExemplarSet,
+    create_lens_from_yaml,
     load_domain_config,
     validate_domain_config,
-    create_lens_from_yaml,
+)
+from hololoom.dark_trace.domains.learned_lens import (
+    AutoLabeler,
+    AxisDiscoveryConfig,
+    ClusteringAxisDiscovery,
+    ContrastiveAxisDiscovery,
+    ContrastivePair,
+    DiscoveredAxis,
+    LabelingResult,
+    LearnedLens,
+    PCAAxisDiscovery,
 )
 
-# Composition
-from hololoom.dark_trace.domains.composer import (
-    LensComposer,
-    ComposedLens,
-    CompositionStrategy,
-    DomainRouter,
-    RoutingRule,
-    CompositionResult,
-)
 
 # Template domains (lazy-loaded to avoid import overhead)
 def load_template(name: str) -> "ConfigLens":
@@ -162,7 +162,9 @@ class MedicalDomain:
             except ValueError:
                 # Create minimal fallback
                 from hololoom.dark_trace.domains.config_lens import (
-                    DomainConfig, AxisSpec, ConfigLens
+                    AxisSpec,
+                    ConfigLens,
+                    DomainConfig,
                 )
                 config = DomainConfig(
                     name="medical",
@@ -207,7 +209,9 @@ class LegalDomain:
                 self._lens = load_template("legal")
             except ValueError:
                 from hololoom.dark_trace.domains.config_lens import (
-                    DomainConfig, AxisSpec, ConfigLens
+                    AxisSpec,
+                    ConfigLens,
+                    DomainConfig,
                 )
                 config = DomainConfig(
                     name="legal",
@@ -239,7 +243,9 @@ class CodeDomain:
                 self._lens = load_template("code")
             except ValueError:
                 from hololoom.dark_trace.domains.config_lens import (
-                    DomainConfig, AxisSpec, ConfigLens
+                    AxisSpec,
+                    ConfigLens,
+                    DomainConfig,
                 )
                 config = DomainConfig(
                     name="code",
@@ -271,7 +277,9 @@ class SafetyDomain:
                 self._lens = load_template("safety")
             except ValueError:
                 from hololoom.dark_trace.domains.config_lens import (
-                    DomainConfig, AxisSpec, ConfigLens
+                    AxisSpec,
+                    ConfigLens,
+                    DomainConfig,
                 )
                 config = DomainConfig(
                     name="safety",

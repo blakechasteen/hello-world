@@ -8,10 +8,8 @@ Part 2: Foundation Infrastructure (Days 1-5)
 
 import asyncio
 import logging
-from typing import List, Tuple
 
 from hololoom.infrastructure.sql.backend import SQLBackend, SQLConfig, create_sql_backend
-
 
 logger = logging.getLogger(__name__)
 

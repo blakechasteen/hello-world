@@ -29,17 +29,15 @@ But the MAGIC is partial reuse:
 This is Chomsky's compositionality + computer science caching = 🚀
 """
 
-import logging
-from typing import Dict, Optional, List, Tuple, Any
-from dataclasses import dataclass, field
-import pickle
 import hashlib
-import json
+import logging
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
-from hololoom.motif.xbar_chunker import XBarNode, UniversalGrammarChunker
-from hololoom.warp.merge import MergeOperator, MergedObject, MergeType
+from hololoom.motif.xbar_chunker import UniversalGrammarChunker, XBarNode
+from hololoom.warp.merge import MergedObject, MergeOperator, MergeType
 
 logger = logging.getLogger(__name__)
 
@@ -140,11 +138,11 @@ class CompositionalCache:
         ug_chunker: UniversalGrammarChunker,
         merge_operator: MergeOperator,
         embedder,
-        semantic_cache: Optional[Any] = None,
+        semantic_cache: Any | None = None,
         parse_cache_size: int = 10000,
         merge_cache_size: int = 50000,
         enable_persistence: bool = False,
-        persist_path: Optional[str] = None
+        persist_path: str | None = None
     ):
         """
         Initialize compositional cache.
@@ -169,10 +167,10 @@ class CompositionalCache:
         self.merge_cache_size = merge_cache_size
 
         # TIER 1: Parse structure cache
-        self.parse_cache: Dict[str, XBarNode] = {}
+        self.parse_cache: dict[str, XBarNode] = {}
 
         # TIER 2: Merge/composition cache
-        self.merge_cache: Dict[str, MergedObject] = {}
+        self.merge_cache: dict[str, MergedObject] = {}
 
         # Statistics
         self.stats = CacheStats()
@@ -195,7 +193,7 @@ class CompositionalCache:
         self,
         text: str,
         return_trace: bool = False
-    ) -> Tuple[np.ndarray, Optional[Dict]]:
+    ) -> tuple[np.ndarray, dict | None]:
         """
         Get compositional embedding with multi-tier caching.
 
@@ -238,7 +236,7 @@ class CompositionalCache:
     # TIER 1: Parse Cache
     # ========================================================================
 
-    def _get_or_parse(self, text: str, trace: Optional[Dict]) -> Optional[XBarNode]:
+    def _get_or_parse(self, text: str, trace: dict | None) -> XBarNode | None:
         """
         Get X-bar parse from cache or compute.
 
@@ -292,7 +290,7 @@ class CompositionalCache:
     def _get_or_compose(
         self,
         xbar_node: XBarNode,
-        trace: Optional[Dict]
+        trace: dict | None
     ) -> np.ndarray:
         """
         Get compositional embedding from cache or compute via Merge.
@@ -346,7 +344,7 @@ class CompositionalCache:
     def _compose_xbar_node(
         self,
         node: XBarNode,
-        trace: Optional[Dict]
+        trace: dict | None
     ) -> MergedObject:
         """
         Recursively compose X-bar node via Merge.
@@ -445,7 +443,7 @@ class CompositionalCache:
         self,
         embedding: np.ndarray,
         text: str,
-        trace: Optional[Dict]
+        trace: dict | None
     ) -> np.ndarray:
         """
         Get 244D semantic projection from cache or compute.
@@ -476,7 +474,7 @@ class CompositionalCache:
             # Convert to vector
             return np.array([scores[dim] for dim in sorted(scores.keys())])
 
-        except Exception as e:
+        except Exception:
             # Cache miss or error: return embedding as-is
             self.stats.semantic_misses += 1
             if trace:
@@ -546,7 +544,7 @@ class CompositionalCache:
         self.stats = CacheStats()
         logger.info("All caches cleared")
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get detailed cache statistics."""
         return {
             "parse_cache": {

@@ -14,9 +14,9 @@ Created: 2025-12-01
 Author: HoloLoom Team
 """
 
+from .image_generator import GeneratedImage, GenerationConfig, ImageGenerator
 from .prompt_builder import SceneToPrompt, build_prompt_from_scene
-from .sd_backend import StableDiffusionBackend, ComfyUIBackend, A1111Backend
-from .image_generator import ImageGenerator, GenerationConfig, GeneratedImage
+from .sd_backend import A1111Backend, ComfyUIBackend, StableDiffusionBackend
 
 __all__ = [
     'SceneToPrompt',

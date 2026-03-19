@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Mem0 Memory Store - User-Specific Intelligent Extraction
 ========================================================
@@ -5,7 +6,6 @@ Wraps mem0ai for LLM-based memory extraction and filtering.
 """
 
 import logging
-from typing import Dict, List, Optional
 from datetime import datetime
 
 from ..protocol import Memory, MemoryQuery, RetrievalResult, Strategy
@@ -31,12 +31,12 @@ class Mem0MemoryStore:
     
     Requires: pip install mem0ai
     """
-    
+
     def __init__(
         self,
         user_id: str = "default",
-        api_key: Optional[str] = None,
-        config: Optional[Dict] = None
+        api_key: str | None = None,
+        config: dict | None = None
     ):
         if not _HAVE_MEM0:
             raise RuntimeError(
@@ -83,7 +83,7 @@ class Mem0MemoryStore:
             self.client = Mem0Client.from_config(default_config)
 
         self.logger.info(f"Mem0 store initialized for user: {user_id} (using Ollama)")
-    
+
     async def store(self, memory: Memory) -> str:
         """
         Store memory via mem0's intelligent extraction.
@@ -94,7 +94,7 @@ class Mem0MemoryStore:
         3. Build relationships between memories
         """
         user_id = memory.metadata.get('user_id', self.user_id)
-        
+
         # Format as conversation for mem0
         messages = [
             {
@@ -102,10 +102,10 @@ class Mem0MemoryStore:
                 "content": memory.text
             }
         ]
-        
+
         # Add memory
         result = self.client.add(messages, user_id=user_id, metadata=memory.metadata)
-        
+
         # Extract mem0's assigned ID
         if isinstance(result, dict) and 'results' in result:
             results_list = result['results']
@@ -115,11 +115,11 @@ class Mem0MemoryStore:
                 mem0_id = memory.id or 'unknown'
         else:
             mem0_id = memory.id or 'unknown'
-        
+
         self.logger.info(f"Stored memory {mem0_id} for user {user_id}")
         return f"mem0_{mem0_id}"
 
-    async def store_many(self, memories: List[Memory]) -> List[str]:
+    async def store_many(self, memories: list[Memory]) -> list[str]:
         """Store multiple memories (batch operation)."""
         memory_ids = []
         for memory in memories:
@@ -127,30 +127,30 @@ class Mem0MemoryStore:
             memory_ids.append(memory_id)
         return memory_ids
 
-    async def get_by_id(self, memory_id: str) -> Optional[Memory]:
+    async def get_by_id(self, memory_id: str) -> Memory | None:
         """Get a specific memory by ID."""
         # Extract mem0 ID from our prefixed format
         if memory_id.startswith('mem0_'):
             mem0_id = memory_id[5:]
         else:
             mem0_id = memory_id
-        
+
         try:
             # Get memory from mem0
             result = self.client.get(memory_id=mem0_id, user_id=self.user_id)
-            
+
             if result and isinstance(result, dict):
                 # Extract memory data
                 memory_text = result.get('memory', result.get('text', ''))
                 timestamp = datetime.now()  # mem0 doesn't store original timestamp
-                
+
                 # Try to parse timestamp if available
                 if 'created_at' in result:
                     try:
                         timestamp = datetime.fromisoformat(result['created_at'].replace('Z', '+00:00'))
                     except ValueError:
                         pass
-                
+
                 return Memory(
                     id=memory_id,
                     text=memory_text,
@@ -160,9 +160,9 @@ class Mem0MemoryStore:
                 )
         except Exception as e:
             self.logger.warning(f"Failed to get memory {memory_id}: {e}")
-        
+
         return None
-    
+
     async def retrieve(
         self,
         query: MemoryQuery,
@@ -177,18 +177,18 @@ class Mem0MemoryStore:
         - Temporal relevance
         """
         user_id = query.user_id or self.user_id
-        
+
         # Search mem0
         results = self.client.search(
             query=query.text,
             user_id=user_id,
             limit=query.limit
         )
-        
+
         # Convert to Memory objects
         memories = []
         scores = []
-        
+
         for item in results.get('results', []):
             mem = Memory(
                 id=f"mem0_{item.get('id', 'unknown')}",
@@ -204,7 +204,7 @@ class Mem0MemoryStore:
             )
             memories.append(mem)
             scores.append(item.get('score', 0.0))
-        
+
         return RetrievalResult(
             memories=memories,
             scores=scores,
@@ -215,7 +215,7 @@ class Mem0MemoryStore:
                 'total_results': len(results.get('results', []))
             }
         )
-    
+
     async def delete(self, memory_id: str) -> bool:
         """Delete a memory from mem0."""
         # Extract mem0 ID
@@ -223,7 +223,7 @@ class Mem0MemoryStore:
             mem0_id = memory_id[5:]
         else:
             mem0_id = memory_id
-        
+
         try:
             self.client.delete(mem0_id)
             self.logger.info(f"Deleted memory {mem0_id}")
@@ -231,14 +231,14 @@ class Mem0MemoryStore:
         except Exception as e:
             self.logger.error(f"Failed to delete {mem0_id}: {e}")
             return False
-    
-    async def health_check(self) -> Dict:
+
+    async def health_check(self) -> dict:
         """Check mem0 connection."""
         try:
             # Try to get all memories (limited)
             result = self.client.get_all(user_id=self.user_id)
             memory_count = len(result.get('results', []))
-            
+
             return {
                 'status': 'healthy',
                 'backend': 'mem0',
@@ -252,12 +252,12 @@ class Mem0MemoryStore:
                 'backend': 'mem0',
                 'error': str(e)
             }
-    
-    def _parse_timestamp(self, timestamp_str: Optional[str]) -> datetime:
+
+    def _parse_timestamp(self, timestamp_str: str | None) -> datetime:
         """Parse mem0 timestamp string."""
         if not timestamp_str:
             return datetime.now()
-        
+
         try:
             # mem0 uses ISO format
             return datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))

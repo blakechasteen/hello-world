@@ -14,12 +14,13 @@ Example:
 """
 
 import logging
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Any
-from enum import Enum
 
 # Import from Layer 1 (causal reasoning)
 import sys
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
+
 sys.path.insert(0, '..')
 from hololoom.causal import CausalDAG
 
@@ -46,9 +47,9 @@ class Action:
         Action(VERIFY, {"variable": "recovery", "value": 1})
     """
     action_type: ActionType
-    parameters: Dict[str, Any]
-    preconditions: Dict[str, Any] = field(default_factory=dict)
-    effects: Dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any]
+    preconditions: dict[str, Any] = field(default_factory=dict)
+    effects: dict[str, Any] = field(default_factory=dict)
     cost: float = 1.0
     description: str = ""
 
@@ -68,10 +69,10 @@ class Plan:
         expected_cost: Estimated cost
         causal_chain: Causal reasoning used
     """
-    actions: List[Action]
+    actions: list[Action]
     goal: 'Goal'
     expected_cost: float = 0.0
-    causal_chain: List[str] = field(default_factory=list)
+    causal_chain: list[str] = field(default_factory=list)
     explanation: str = ""
 
     def __len__(self):
@@ -90,12 +91,12 @@ class Goal:
         Goal({"recovery": 1}, priority=1.0)
         Goal({"age": 30, "recovery": 1}, priority=0.8)
     """
-    desired_state: Dict[str, Any]
+    desired_state: dict[str, Any]
     priority: float = 1.0
-    deadline: Optional[int] = None  # Time steps
+    deadline: int | None = None  # Time steps
     description: str = ""
 
-    def is_satisfied(self, current_state: Dict[str, Any]) -> bool:
+    def is_satisfied(self, current_state: dict[str, Any]) -> bool:
         """Check if goal is satisfied in current state."""
         for var, value in self.desired_state.items():
             if current_state.get(var) != value:
@@ -144,9 +145,9 @@ class HierarchicalPlanner:
     def plan(
         self,
         goal: Goal,
-        current_state: Dict[str, Any],
+        current_state: dict[str, Any],
         allow_temporal: bool = True
-    ) -> Optional[Plan]:
+    ) -> Plan | None:
         """
         Generate plan to achieve goal.
 
@@ -209,8 +210,8 @@ class HierarchicalPlanner:
     def _find_causal_chain(
         self,
         goal: Goal,
-        current_state: Dict[str, Any]
-    ) -> Optional[List[str]]:
+        current_state: dict[str, Any]
+    ) -> list[str] | None:
         """
         Find causal chain from current state to goal.
 
@@ -248,10 +249,10 @@ class HierarchicalPlanner:
 
     def _find_shortest_causal_path(
         self,
-        sources: List[str],
+        sources: list[str],
         target: str,
-        visited: Set[str]
-    ) -> Optional[List[str]]:
+        visited: set[str]
+    ) -> list[str] | None:
         """
         Find shortest directed path from any source to target.
 
@@ -284,10 +285,10 @@ class HierarchicalPlanner:
 
     def _decompose_to_actions(
         self,
-        causal_chain: List[str],
+        causal_chain: list[str],
         goal: Goal,
-        current_state: Dict[str, Any]
-    ) -> List[Action]:
+        current_state: dict[str, Any]
+    ) -> list[Action]:
         """
         Decompose causal chain into executable actions.
 
@@ -348,8 +349,8 @@ class HierarchicalPlanner:
 
     def _generate_explanation(
         self,
-        causal_chain: List[str],
-        actions: List[Action]
+        causal_chain: list[str],
+        actions: list[Action]
     ) -> str:
         """Generate human-readable explanation of plan."""
         lines = []
@@ -366,9 +367,9 @@ class HierarchicalPlanner:
     def replan(
         self,
         original_plan: Plan,
-        current_state: Dict[str, Any],
-        failure: Optional[str] = None
-    ) -> Optional[Plan]:
+        current_state: dict[str, Any],
+        failure: str | None = None
+    ) -> Plan | None:
         """
         Replan after execution failure.
 

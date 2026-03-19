@@ -9,7 +9,7 @@ creating a continuous tensor manifold for downstream compute operations.
 
 import logging
 from datetime import datetime
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from hololoom.orchestrator.context import WeavingContext
@@ -30,7 +30,7 @@ class WarpTensioningStage:
     def __init__(
         self,
         warp_space: Any,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         self.warp_space = warp_space
         self.logger = logger or logging.getLogger(__name__)

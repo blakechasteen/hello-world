@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Multi-Agent RAG - Consensus-Based Multi-Agent Query Processing
 
@@ -68,21 +69,20 @@ Date: November 13, 2025
 import asyncio
 import logging
 import time
-import hashlib
-from typing import List, Optional, Dict, Any, Tuple, Union
-from dataclasses import dataclass, field
 from collections import Counter
+from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 from hololoom.config import Config
-from hololoom.rag.simple_rag import SimpleRAG, RAGResult
+from hololoom.rag.simple_rag import RAGResult, SimpleRAG
 
 # Optional dependencies for advanced features
 try:
     from hololoom.rag.embedding_plugins import (
         EmbeddingProvider,
-        MatryoshkaEmbedding,
         HuggingFaceEmbedding,
+        MatryoshkaEmbedding,
     )
     EMBEDDING_PLUGINS_AVAILABLE = True
 except ImportError:
@@ -107,7 +107,7 @@ logger = logging.getLogger(__name__)
 
 # LLM integration for LLM judge consensus
 try:
-    from hololoom.awareness.llm_integration import OllamaLLM, AnthropicLLM, LLMProvider
+    from hololoom.awareness.llm_integration import AnthropicLLM, LLMProvider, OllamaLLM
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
@@ -135,12 +135,12 @@ class AgentResponse:
     strategy: str  # "direct_k5_matryoshka", "verify_k10_hf", etc.
     response: str
     confidence: float
-    sources: List[str]
+    sources: list[str]
     latency_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    error: Optional[str] = None  # Error message if agent failed
+    metadata: dict[str, Any] = field(default_factory=dict)
+    error: str | None = None  # Error message if agent failed
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize for JSON."""
         return {
             'agent_id': self.agent_id,
@@ -166,13 +166,13 @@ class MultiAgentRAGResult(RAGResult):
     - disagreements: Optional explanation of disagreements
     - consensus_metadata: Timing, agent success rate, etc.
     """
-    agent_responses: List[AgentResponse] = field(default_factory=list)
+    agent_responses: list[AgentResponse] = field(default_factory=list)
     consensus_method: str = "confidence_weighted"
     agreement_score: float = 0.0
-    disagreements: Optional[List[str]] = None
-    consensus_metadata: Dict[str, Any] = field(default_factory=dict)
+    disagreements: list[str] | None = None
+    consensus_metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize for JSON."""
         return {
             'response': self.response,
@@ -219,15 +219,15 @@ class MultiAgentRAG:
 
     def __init__(
         self,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         n_agents: int = 5,
         consensus_method: str = "confidence_weighted",
         agent_timeout: float = 30.0,
         min_agreement_threshold: float = 0.6,
         llm_provider: str = "ollama",
-        llm_model: Optional[str] = None,
+        llm_model: str | None = None,
         enable_caching: bool = True,
-        diversity_strategies: Optional[List[str]] = None,
+        diversity_strategies: list[str] | None = None,
     ):
         """
         Initialize multi-agent RAG orchestrator.
@@ -268,8 +268,8 @@ class MultiAgentRAG:
         self.diversity_strategies = diversity_strategies
 
         # Will be initialized in __aenter__
-        self.agents: List[SimpleRAG] = []
-        self._agent_strategies: List[Dict[str, Any]] = []
+        self.agents: list[SimpleRAG] = []
+        self._agent_strategies: list[dict[str, Any]] = []
 
         # Stats
         self._stats = {
@@ -350,8 +350,8 @@ class MultiAgentRAG:
     async def query_multiagent(
         self,
         question: str,
-        n_agents: Optional[int] = None,
-        consensus_method: Optional[str] = None,
+        n_agents: int | None = None,
+        consensus_method: str | None = None,
         explain_disagreement: bool = False,
     ) -> MultiAgentRAGResult:
         """
@@ -508,10 +508,10 @@ class MultiAgentRAG:
 
     async def _run_agents_parallel(
         self,
-        agents: List[SimpleRAG],
+        agents: list[SimpleRAG],
         question: str,
         timeout: float,
-    ) -> List[AgentResponse]:
+    ) -> list[AgentResponse]:
         """
         Run multiple agents in parallel with timeout.
 
@@ -548,7 +548,7 @@ class MultiAgentRAG:
         agent_id: str,
         agent: SimpleRAG,
         question: str,
-        strategy: Dict[str, Any],
+        strategy: dict[str, Any],
         timeout: float,
     ) -> AgentResponse:
         """
@@ -623,7 +623,7 @@ class MultiAgentRAG:
     # Agent Diversity
     # ========================================================================
 
-    def _generate_agent_strategies(self, n_agents: int) -> List[Dict[str, Any]]:
+    def _generate_agent_strategies(self, n_agents: int) -> list[dict[str, Any]]:
         """
         Generate diverse strategies for N agents.
 
@@ -696,7 +696,7 @@ class MultiAgentRAG:
 
         return strategies
 
-    def _get_alternative_embedding(self) -> Optional[Any]:
+    def _get_alternative_embedding(self) -> Any | None:
         """
         Get alternative embedding provider for diversity.
 
@@ -722,9 +722,9 @@ class MultiAgentRAG:
 
     async def _compute_consensus(
         self,
-        agent_responses: List[AgentResponse],
+        agent_responses: list[AgentResponse],
         method: ConsensusMethod,
-    ) -> Tuple[str, float]:
+    ) -> tuple[str, float]:
         """
         Compute consensus from agent responses.
 
@@ -752,8 +752,8 @@ class MultiAgentRAG:
 
     def _consensus_majority_vote(
         self,
-        agent_responses: List[AgentResponse],
-    ) -> Tuple[str, float]:
+        agent_responses: list[AgentResponse],
+    ) -> tuple[str, float]:
         """
         Majority vote: Most common answer wins.
 
@@ -776,8 +776,8 @@ class MultiAgentRAG:
 
     def _consensus_confidence_weighted(
         self,
-        agent_responses: List[AgentResponse],
-    ) -> Tuple[str, float]:
+        agent_responses: list[AgentResponse],
+    ) -> tuple[str, float]:
         """
         Confidence-weighted: Select response with highest weighted confidence.
 
@@ -804,8 +804,8 @@ class MultiAgentRAG:
 
     async def _consensus_llm_judge(
         self,
-        agent_responses: List[AgentResponse],
-    ) -> Tuple[str, float]:
+        agent_responses: list[AgentResponse],
+    ) -> tuple[str, float]:
         """
         LLM judge: Use LLM to select best response or synthesize.
 
@@ -891,8 +891,8 @@ Please evaluate these responses and provide the best answer."""
     def _parse_llm_judge_response(
         self,
         llm_response: str,
-        agent_responses: List[AgentResponse],
-    ) -> Tuple[str, float]:
+        agent_responses: list[AgentResponse],
+    ) -> tuple[str, float]:
         """
         Parse LLM judge response to extract final answer and confidence.
 
@@ -949,8 +949,8 @@ Please evaluate these responses and provide the best answer."""
 
     def _consensus_ensemble(
         self,
-        agent_responses: List[AgentResponse],
-    ) -> Tuple[str, float]:
+        agent_responses: list[AgentResponse],
+    ) -> tuple[str, float]:
         """
         Ensemble: Combine all responses into synthesized answer.
 
@@ -984,7 +984,7 @@ Please evaluate these responses and provide the best answer."""
 
     def _compute_agreement_score(
         self,
-        agent_responses: List[AgentResponse],
+        agent_responses: list[AgentResponse],
     ) -> float:
         """
         Compute agreement score between agents (0.0-1.0).
@@ -1042,9 +1042,9 @@ Please evaluate these responses and provide the best answer."""
 
     def _detect_disagreements(
         self,
-        agent_responses: List[AgentResponse],
+        agent_responses: list[AgentResponse],
         agreement_score: float,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Detect and explain disagreements between agents.
 
@@ -1090,7 +1090,7 @@ Please evaluate these responses and provide the best answer."""
     # Metrics
     # ========================================================================
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """
         Get multi-agent system metrics.
 

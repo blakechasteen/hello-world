@@ -42,88 +42,10 @@ Updated: 2026-02-26 (Department Protocol extracted from departments/)
 # Import Core Types
 # ============================================================================
 
-from .types import (
-    ComplexityLevel,
-    BanditStrategy,
-    ProvenanceTrace,
-    MythRLResult,
-)
-
-# ============================================================================
-# Import Core Feature Protocols
-# ============================================================================
-
-from .core_features import (
-    Embedder,
-    MotifDetector,
-    PolicyEngine,
-    RoutingStrategy,
-    ExecutionEngine,
-    ToolRegistry,
-)
-
-# ============================================================================
-# Import Memory Types and Protocols
-# ============================================================================
-
-from .memory_types import (
-    Memory,
-    MemoryQuery,
-    MemoryRetrievalResult,
-    Strategy,
-    QueryMode,
-    shards_to_memories,
-)
-
-from .memory_protocols import (
-    MemoryStore,
-    MemoryNavigator,
-    PatternDetector,
-)
-
-# ============================================================================
-# Import Shuttle Protocols (from shuttle.py)
-# ============================================================================
-
-from .shuttle import (
-    PatternSelectionProtocol,
-    FeatureExtractionProtocol,
-    WarpSpaceProtocol,
-    DecisionEngineProtocol,
-    ToolExecutor,
-)
-
-# ============================================================================
-# Import Retrieval Protocols (from retrieval.py)
-# ============================================================================
-
-from .retrieval import (
-    RetrievalStrategy,
-    RetrievalResult,
-    SpringActivationMetadata,
-)
-
-# ============================================================================
-# Import Jenny UI Protocols (from jenny.py)
-# ============================================================================
-
-from .jenny import (
-    CompilationStrategy,
-    RenderTarget,
-    JennyCompilerProtocol,
-    JennyRendererProtocol,
-    JennyLifecycleProtocol,
-    SpecLedgerProtocol,
-)
-
 # ============================================================================
 # Import Conscience Protocols (December 2025 - Phase 2A)
 # ============================================================================
-
 from .conscience import (
-    # Enums
-    StepType,
-    RiskLevel,
     # Core types
     ConscienceDecision,
     # Protocols
@@ -131,6 +53,9 @@ from .conscience import (
     ExtendedConscienceProtocol,
     # Implementations
     NullConscience,
+    RiskLevel,
+    # Enums
+    StepType,
     # Factory functions
     create_allowed_decision,
     create_blocked_decision,
@@ -138,39 +63,116 @@ from .conscience import (
 )
 
 # ============================================================================
+# Import Core Feature Protocols
+# ============================================================================
+from .core_features import (
+    Embedder,
+    ExecutionEngine,
+    MotifDetector,
+    PolicyEngine,
+    RoutingStrategy,
+    ToolRegistry,
+)
+
+# ============================================================================
+# Import Feedback Protocol (March 2026 — multi-temporal feedback)
+# ============================================================================
+from .feedback import (
+    FeedbackConsumer,
+    FeedbackSignal,
+    FeedbackSource,
+    Timescale,
+    TIMESCALE_WEIGHT,
+)
+
+# ============================================================================
 # Import Department Protocol (February 2026 — extracted from departments/)
 # ============================================================================
-
 from .department import (
     # Confidence
     ConfidenceLevel,
     ConfidenceMetadata,
-    # Privacy
-    PrivacyLevel,
-    PrivacyEnvelope,
+    # Protocols
+    Department,
+    # Configuration
+    DepartmentConfig,
+    # Type Aliases
+    DepartmentFactory,
+    DepartmentManifest,
+    DepartmentProtocol,
     # Requests and Responses
     DepartmentRequest,
     DepartmentResponse,
+    DSStarCheck,
+    PrivacyEnvelope,
+    # Privacy
+    PrivacyLevel,
+    VerificationCheck,
+    VerificationFunction,
+    VerificationResult,
     # Verification
     VerificationStatus,
-    VerificationCheck,
-    DSStarCheck,
-    VerificationResult,
-    # Protocols
-    Department,
-    DepartmentProtocol,
+    # Learning Functions
+    compute_learning_rate,
     # Helpers
     create_simple_request,
     create_simple_response,
-    # Type Aliases
-    DepartmentFactory,
-    VerificationFunction,
-    # Configuration
-    DepartmentConfig,
-    DepartmentManifest,
-    # Learning Functions
-    compute_learning_rate,
     should_update_now,
+)
+
+# ============================================================================
+# Import Jenny UI Protocols (from jenny.py)
+# ============================================================================
+from .jenny import (
+    CompilationStrategy,
+    JennyCompilerProtocol,
+    JennyLifecycleProtocol,
+    JennyRendererProtocol,
+    RenderTarget,
+    SpecLedgerProtocol,
+)
+from .memory_protocols import (
+    MemoryNavigator,
+    MemoryStore,
+    PatternDetector,
+)
+
+# ============================================================================
+# Import Memory Types and Protocols
+# ============================================================================
+from .memory_types import (
+    Memory,
+    MemoryQuery,
+    MemoryRetrievalResult,
+    QueryMode,
+    Strategy,
+    shards_to_memories,
+)
+
+# ============================================================================
+# Import Retrieval Protocols (from retrieval.py)
+# ============================================================================
+from .retrieval import (
+    RetrievalResult,
+    RetrievalStrategy,
+    SpringActivationMetadata,
+)
+
+# ============================================================================
+# Import Shuttle Protocols (from shuttle.py)
+# ============================================================================
+from .shuttle import (
+    DecisionEngineProtocol,
+    FeatureExtractionProtocol,
+    PatternSelectionProtocol,
+    ToolExecutor,
+    WarpSpaceProtocol,
+)
+from .types import (
+    BanditStrategy,
+    ComplexityLevel,
+    MythRLResult,
+    ProvenanceTrace,
 )
 
 # ============================================================================
@@ -179,8 +181,16 @@ from .department import (
 
 try:
     from hololoom.protocols.types import (
-        Query, Features, Context, Response, MemoryShard,
-        PolicyAction, ActionPlan, ToolCall, ToolResult, Vector
+        ActionPlan,
+        Context,
+        Features,
+        MemoryShard,
+        PolicyAction,
+        Query,
+        Response,
+        ToolCall,
+        ToolResult,
+        Vector,
     )
     _HAS_DOC_TYPES = True
 except ImportError:
@@ -284,6 +294,13 @@ __all__ = [
     'DepartmentManifest',
     'compute_learning_rate',
     'should_update_now',
+
+    # ===== Feedback Protocol (March 2026) =====
+    'FeedbackSignal',
+    'FeedbackSource',
+    'FeedbackConsumer',
+    'Timescale',
+    'TIMESCALE_WEIGHT',
 
     # ===== Compatibility Aliases =====
     'ToolExecutionProtocol',

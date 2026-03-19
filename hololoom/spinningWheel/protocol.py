@@ -18,15 +18,15 @@ Author: Claude Code
 Date: November 2025
 """
 
-from typing import Protocol, List, Optional, Dict, Any, AsyncIterator, Union
-from pathlib import Path
+import time
+from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from enum import Enum
-from abc import ABC, abstractmethod
-import time
+from pathlib import Path
+from typing import Any, Protocol
 
 from hololoom.protocols.types import MemoryShard
-
 
 # ============================================================================
 # Spinner Status and Metadata
@@ -64,10 +64,10 @@ class SpinnerCapabilities:
     cross_modal_fusion: bool = False   # Can fuse multiple modalities
 
     # Metadata
-    max_input_size: Optional[int] = None  # Max bytes per input (None = unlimited)
-    supported_formats: List[str] = field(default_factory=list)  # File extensions
+    max_input_size: int | None = None  # Max bytes per input (None = unlimited)
+    supported_formats: list[str] = field(default_factory=list)  # File extensions
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'basic_processing': self.basic_processing,
@@ -92,11 +92,11 @@ class SpinResult:
 
     Contains shards plus metadata about the operation.
     """
-    shards: List[MemoryShard]
+    shards: list[MemoryShard]
 
     # Operation metadata
     success: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     # Performance metrics
     processing_time_ms: float = 0.0
@@ -112,7 +112,7 @@ class SpinResult:
     avg_confidence: float = 1.0
 
     # Warnings
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Calculate statistics from shards."""
@@ -135,7 +135,7 @@ class SpinResult:
             ]
             self.avg_confidence = sum(confidences) / len(confidences) if confidences else 1.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'success': self.success,
@@ -180,11 +180,11 @@ class ImportanceSignals:
     noise_penalty: float = 0.0          # Greetings, spam, duplicates (weight: 1.0)
 
     # Custom signals (spinner-specific)
-    custom_signals: Dict[str, float] = field(default_factory=dict)
+    custom_signals: dict[str, float] = field(default_factory=dict)
 
     def compute_total(
         self,
-        weights: Optional[Dict[str, float]] = None
+        weights: dict[str, float] | None = None
     ) -> float:
         """
         Compute total importance score.
@@ -253,7 +253,7 @@ class ImportanceSignals:
 
         return " + ".join(factors)
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Convert to dictionary."""
         return {
             'length_score': self.length_score,
@@ -298,25 +298,25 @@ class SpinnerCheckpoint:
     source_id: str  # Unique identifier for the data source
 
     # Progress tracking
-    last_processed_id: Optional[str] = None  # Last item processed
-    last_processed_timestamp: Optional[float] = None  # Unix timestamp
+    last_processed_id: str | None = None  # Last item processed
+    last_processed_timestamp: float | None = None  # Unix timestamp
     items_processed: int = 0
-    items_total: Optional[int] = None
+    items_total: int | None = None
 
     # State
-    state: Dict[str, Any] = field(default_factory=dict)  # Spinner-specific state
+    state: dict[str, Any] = field(default_factory=dict)  # Spinner-specific state
 
     # Metadata
     created_at: float = field(default_factory=time.time)
     updated_at: float = field(default_factory=time.time)
 
-    def progress_percentage(self) -> Optional[float]:
+    def progress_percentage(self) -> float | None:
         """Calculate progress percentage (None if total unknown)."""
         if self.items_total and self.items_total > 0:
             return (self.items_processed / self.items_total) * 100
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             'spinner_name': self.spinner_name,
@@ -331,7 +331,7 @@ class SpinnerCheckpoint:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'SpinnerCheckpoint':
+    def from_dict(cls, data: dict[str, Any]) -> 'SpinnerCheckpoint':
         """Deserialize from dictionary."""
         return cls(
             spinner_name=data['spinner_name'],
@@ -459,7 +459,7 @@ class SpinnerProtocol(Protocol):
     async def spin_incremental(
         self,
         source: Any,
-        checkpoint: Optional[SpinnerCheckpoint] = None,
+        checkpoint: SpinnerCheckpoint | None = None,
         **kwargs
     ) -> SpinResult:
         """
@@ -528,7 +528,7 @@ class BaseSpinner(ABC):
         self,
         name: str,
         importance_threshold: float = 0.3,
-        checkpoint_dir: Optional[Path] = None
+        checkpoint_dir: Path | None = None
     ):
         """
         Initialize base spinner.
@@ -643,7 +643,7 @@ class BaseSpinner(ABC):
     # ========================================================================
 
     @abstractmethod
-    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
+    async def _spin_impl(self, source: Any, **kwargs) -> list[MemoryShard]:
         """
         Core spinning implementation.
 
@@ -670,7 +670,7 @@ class BaseSpinner(ABC):
     async def spin_incremental(
         self,
         source: Any,
-        checkpoint: Optional[SpinnerCheckpoint] = None,
+        checkpoint: SpinnerCheckpoint | None = None,
         **kwargs
     ) -> SpinResult:
         """Default: Not implemented."""
@@ -688,7 +688,7 @@ class BaseSpinner(ABC):
     # Utility Methods
     # ========================================================================
 
-    def load_checkpoint(self, source_id: str) -> Optional[SpinnerCheckpoint]:
+    def load_checkpoint(self, source_id: str) -> SpinnerCheckpoint | None:
         """Load checkpoint for a source."""
         if not self.checkpoint_dir:
             return None
@@ -700,7 +700,7 @@ class BaseSpinner(ABC):
 
         try:
             import json
-            with open(checkpoint_path, 'r') as f:
+            with open(checkpoint_path) as f:
                 data = json.load(f)
             return SpinnerCheckpoint.from_dict(data)
         except Exception as e:
@@ -727,9 +727,9 @@ class BaseSpinner(ABC):
         id_suffix: str,
         text: str,
         episode: str,
-        entities: List[str],
-        motifs: List[str],
-        metadata: Dict[str, Any]
+        entities: list[str],
+        motifs: list[str],
+        metadata: dict[str, Any]
     ) -> MemoryShard:
         """
         Helper to create MemoryShard with standard metadata.
@@ -762,7 +762,7 @@ class BaseSpinner(ABC):
 # Utility Functions
 # ============================================================================
 
-def create_spinner_registry() -> Dict[str, type]:
+def create_spinner_registry() -> dict[str, type]:
     """
     Get registry of all available spinners.
 
@@ -800,7 +800,7 @@ def create_spinner_registry() -> Dict[str, type]:
     return registry
 
 
-def get_available_spinners() -> List[str]:
+def get_available_spinners() -> list[str]:
     """
     Get list of available spinner names.
 

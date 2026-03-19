@@ -25,26 +25,24 @@ Usage:
 import asyncio
 import logging
 import time
-from typing import List, Optional, Tuple, Dict, Any
 from datetime import datetime
+from typing import Any
 from urllib.parse import urlparse
 
 import numpy as np
 
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
-from hololoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
 from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
 
+from .cache import SearchCache
+from .citation import CitationFormatter, CitationStyle
 from .protocol import (
+    RawSearchResult,
     SearchConfig,
     SearchProvider,
     WebSearchResult,
-    RawSearchResult,
-    SearchResultType
 )
-from .cache import SearchCache
-from .citation import CitationFormatter, CitationStyle
-
 
 logger = logging.getLogger(__name__)
 
@@ -83,9 +81,9 @@ class MatryoshkaWebSearch:
 
     def __init__(
         self,
-        config: Optional[SearchConfig] = None,
-        provider: Optional[SearchProvider] = None,
-        emb: Optional[MatryoshkaEmbeddings] = None,
+        config: SearchConfig | None = None,
+        provider: SearchProvider | None = None,
+        emb: MatryoshkaEmbeddings | None = None,
         enable_cache: bool = True
     ):
         self.config = config or SearchConfig()
@@ -123,9 +121,9 @@ class MatryoshkaWebSearch:
     async def search(
         self,
         query: str,
-        max_results: Optional[int] = None,
+        max_results: int | None = None,
         enable_cache: bool = True
-    ) -> List[WebSearchResult]:
+    ) -> list[WebSearchResult]:
         """
         Execute three-stage Matryoshka search.
 
@@ -175,8 +173,8 @@ class MatryoshkaWebSearch:
     async def search_to_shards(
         self,
         query: str,
-        max_results: Optional[int] = None
-    ) -> Tuple[List[WebSearchResult], List[MemoryShard]]:
+        max_results: int | None = None
+    ) -> tuple[list[WebSearchResult], list[MemoryShard]]:
         """
         Search and convert results to MemoryShards for immediate HoloLoom use.
 
@@ -217,8 +215,8 @@ class MatryoshkaWebSearch:
         self,
         query: str,
         response: str,
-        max_results: Optional[int] = None
-    ) -> Tuple[str, List[WebSearchResult]]:
+        max_results: int | None = None
+    ) -> tuple[str, list[WebSearchResult]]:
         """
         Search and add inline citations to response.
 
@@ -253,7 +251,7 @@ class MatryoshkaWebSearch:
         self,
         query: str,
         max_results: int
-    ) -> List[WebSearchResult]:
+    ) -> list[WebSearchResult]:
         """Execute complete three-stage search pipeline."""
 
         # ====================================================================
@@ -409,7 +407,7 @@ class MatryoshkaWebSearch:
 
     async def _scrape_full_content(
         self,
-        raw_results: List[RawSearchResult],
+        raw_results: list[RawSearchResult],
         query: str
     ) -> None:
         """
@@ -427,7 +425,7 @@ class MatryoshkaWebSearch:
 
     async def _scrape_parallel(
         self,
-        raw_results: List[RawSearchResult],
+        raw_results: list[RawSearchResult],
         query: str
     ) -> None:
         """Scrape multiple URLs in parallel."""
@@ -449,7 +447,7 @@ class MatryoshkaWebSearch:
 
     async def _scrape_sequential(
         self,
-        raw_results: List[RawSearchResult],
+        raw_results: list[RawSearchResult],
         query: str
     ) -> None:
         """Scrape URLs sequentially."""
@@ -482,7 +480,7 @@ class MatryoshkaWebSearch:
     # Statistics
     # ========================================================================
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get search statistics."""
         avg_time = self._total_time_ms / self._search_count if self._search_count > 0 else 0
 

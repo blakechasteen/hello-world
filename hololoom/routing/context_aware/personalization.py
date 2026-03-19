@@ -13,9 +13,10 @@ Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
 from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Any
+
 import numpy as np
 
 
@@ -23,12 +24,12 @@ import numpy as np
 class UserProfile:
     """User profile with learned preferences"""
     user_id: str
-    preferred_departments: Dict[str, float] = field(default_factory=dict)  # dept → weight
-    query_patterns: List[str] = field(default_factory=list)  # Common query types
+    preferred_departments: dict[str, float] = field(default_factory=dict)  # dept → weight
+    query_patterns: list[str] = field(default_factory=list)  # Common query types
     avg_confidence: float = 0.0
     total_queries: int = 0
     successful_queries: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class PersonalizationEngine:
@@ -54,10 +55,10 @@ class PersonalizationEngine:
         self.enable_collaborative_filtering = enable_collaborative_filtering
 
         # User profiles
-        self._profiles: Dict[str, UserProfile] = {}
+        self._profiles: dict[str, UserProfile] = {}
 
         # Collaborative filtering matrix (user × department)
-        self._user_dept_matrix: Dict[str, Dict[str, float]] = defaultdict(
+        self._user_dept_matrix: dict[str, dict[str, float]] = defaultdict(
             lambda: defaultdict(float)
         )
 
@@ -121,7 +122,7 @@ class PersonalizationEngine:
 
     def get_recommendation(
         self, user_id: str, top_k: int = 3
-    ) -> List[tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Get top-k department recommendations for user.
 
@@ -147,7 +148,7 @@ class PersonalizationEngine:
 
     def _collaborative_recommendation(
         self, user_id: str, top_k: int
-    ) -> List[tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Collaborative filtering recommendations.
 
@@ -177,7 +178,7 @@ class PersonalizationEngine:
         similarities.sort(key=lambda x: x[1], reverse=True)
 
         # Aggregate department scores from similar users
-        dept_scores: Dict[str, float] = defaultdict(float)
+        dept_scores: dict[str, float] = defaultdict(float)
         total_weight = 0.0
 
         for other_user_id, similarity in similarities[:10]:  # Top 10 similar users
@@ -196,7 +197,7 @@ class PersonalizationEngine:
         return sorted_depts[:top_k]
 
     def _cosine_similarity(
-        self, vec1: Dict[str, float], vec2: Dict[str, float]
+        self, vec1: dict[str, float], vec2: dict[str, float]
     ) -> float:
         """
         Compute cosine similarity between two department preference vectors.
@@ -228,7 +229,7 @@ class PersonalizationEngine:
 
         return float(dot_product / (norm1 * norm2))
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get personalization metrics"""
         total_users = len(self._profiles)
         active_users = sum(1 for p in self._profiles.values() if p.total_queries > 0)

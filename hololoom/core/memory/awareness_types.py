@@ -9,11 +9,10 @@ Design principles:
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Set
 from datetime import datetime
 from enum import Enum
-import numpy as np
 
+import numpy as np
 
 # =============================================================================
 # Semantic Perception (Output of semantic calculus)
@@ -32,13 +31,13 @@ class SemanticPerception:
     # Raw embedding for CONTENT-BASED similarity (topical retrieval)
     # The position is projected onto style dimensions, but retrieval
     # needs topical similarity which is in the raw embedding
-    raw_embedding: Optional[np.ndarray] = None  # 384D or base embedding dim
+    raw_embedding: np.ndarray | None = None  # 384D or base embedding dim
 
     # How meaning is changing
-    velocity: Optional[np.ndarray] = None  # 244D, if trajectory exists
+    velocity: np.ndarray | None = None  # 244D, if trajectory exists
 
     # Interpretable semantics
-    dominant_dimensions: List[str] = field(default_factory=list)  # ['Heroism', 'Tension', ...]
+    dominant_dimensions: list[str] = field(default_factory=list)  # ['Heroism', 'Tension', ...]
 
     # Aggregate metrics
     momentum: float = 0.0      # 0-1, scale alignment
@@ -49,7 +48,7 @@ class SemanticPerception:
     shift_detected: bool = False
 
     @classmethod
-    def from_snapshot(cls, snapshot, prev_position: Optional[np.ndarray] = None) -> 'SemanticPerception':
+    def from_snapshot(cls, snapshot, prev_position: np.ndarray | None = None) -> 'SemanticPerception':
         """
         Create from MatryoshkaSnapshot (semantic calculus output).
 
@@ -88,7 +87,7 @@ class SemanticPerception:
             shift_detected=shift_detected
         )
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize for storage."""
         return {
             'position': self.position.tolist(),
@@ -264,7 +263,7 @@ class AwarenessMetrics:
 
         return np.concatenate([self.current_position, metrics])
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Simple dict for logging/debugging."""
         return {
             'shift_magnitude': float(self.shift_magnitude),
@@ -300,9 +299,9 @@ class EdgeMetadata:
     edge_type: EdgeType
     strength: float = 1.0  # For SEMANTIC_RESONANCE edges
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             'type': self.edge_type.value,
             'strength': float(self.strength),

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Multimodal RAG - Visual Q&A and Photo Retrieval Extension
 
@@ -44,14 +45,14 @@ Author: Agent D (Claude Code)
 Date: January 2025
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Union, Dict, Any, Tuple
-from pathlib import Path
 import logging
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Union
 
-from hololoom.rag.simple_rag import SimpleRAG, RAGResult
 from hololoom.config import Config
 from hololoom.protocols.types import Query
+from hololoom.rag.simple_rag import RAGResult, SimpleRAG
 
 # Optional dependencies (graceful degradation)
 try:
@@ -69,7 +70,7 @@ except ImportError:
     PhotoToken = None
 
 try:
-    from hololoom.memory.visual_compression import compress_to_visual, CompressionMetrics
+    from hololoom.memory.visual_compression import CompressionMetrics, compress_to_visual
     VISUAL_COMPRESSION_AVAILABLE = True
 except ImportError:
     VISUAL_COMPRESSION_AVAILABLE = False
@@ -88,10 +89,10 @@ class MultimodalRAGResult(RAGResult):
     - compression_ratio: Token savings (e.g., 12.5×)
     - compression_metrics: Detailed compression stats
     """
-    image_sources: List[Any] = field(default_factory=list)  # List[PhotoToken]
-    compressed_context: Optional[bytes] = None
-    compression_ratio: Optional[float] = None
-    compression_metrics: Optional[Dict[str, Any]] = None
+    image_sources: list[Any] = field(default_factory=list)  # List[PhotoToken]
+    compressed_context: bytes | None = None
+    compression_ratio: float | None = None
+    compression_metrics: dict[str, Any] | None = None
 
 
 class MultimodalRAG(SimpleRAG):
@@ -131,9 +132,9 @@ class MultimodalRAG(SimpleRAG):
 
     def __init__(
         self,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         llm_provider: str = "ollama",
-        llm_model: Optional[str] = None,
+        llm_model: str | None = None,
         enable_visual_compression: bool = True,
         compression_threshold: int = 10,
         enable_caching: bool = True,
@@ -194,10 +195,10 @@ class MultimodalRAG(SimpleRAG):
     async def ingest_photo(
         self,
         image: Union[str, Path, bytes, 'Image.Image'],
-        tags: Optional[List[str]] = None,
-        description: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        link_to_text: Optional[str] = None
+        tags: list[str] | None = None,
+        description: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        link_to_text: str | None = None
     ) -> str:
         """
         Store a photo in memory with CLIP embedding.
@@ -335,7 +336,7 @@ class MultimodalRAG(SimpleRAG):
             return result
 
         # 1. Extract text from image using OCR
-        logger.debug(f"Extracting text from image...")
+        logger.debug("Extracting text from image...")
         ocr_text = await self.visual_qa_engine.extract_text_from_image(image)
         logger.debug(f"✓ OCR extracted {len(ocr_text)} characters")
 
@@ -417,7 +418,6 @@ class MultimodalRAG(SimpleRAG):
             logger.debug(f"Compressing {len(text_sources)} sources to visual representation...")
             try:
                 # Build knowledge graph from sources
-                from hololoom.memory.graph import KG
                 kg = self._build_graph_from_sources(text_sources)
 
                 # Compress to visual
@@ -489,7 +489,7 @@ class MultimodalRAG(SimpleRAG):
         self,
         query: str,
         max_photos: int = 5
-    ) -> List[Any]:  # List[PhotoToken]
+    ) -> list[Any]:  # List[PhotoToken]
         """
         Retrieve photos similar to query using CLIP.
 
@@ -533,7 +533,7 @@ class MultimodalRAG(SimpleRAG):
         self,
         query_image: Union[str, Path, bytes, 'Image.Image'],
         max_photos: int = 5
-    ) -> List[Any]:  # List[PhotoToken]
+    ) -> list[Any]:  # List[PhotoToken]
         """
         Find visually similar photos using CLIP image similarity.
 
@@ -563,7 +563,7 @@ class MultimodalRAG(SimpleRAG):
             )
 
         # Use HoloLoom's find_similar_photos
-        logger.debug(f"Finding visually similar photos...")
+        logger.debug("Finding visually similar photos...")
         photos = await self.loom.find_similar_photos(query_image, k=max_photos)
         return photos
 
@@ -571,7 +571,7 @@ class MultimodalRAG(SimpleRAG):
     # Utilities
     # ========================================================================
 
-    def _build_graph_from_sources(self, sources: List[str]) -> 'KG':
+    def _build_graph_from_sources(self, sources: list[str]) -> 'KG':
         """
         Build knowledge graph from text sources for compression.
 
@@ -616,7 +616,7 @@ class MultimodalRAG(SimpleRAG):
 
         return kg
 
-    def get_multimodal_metrics(self) -> Dict[str, Any]:
+    def get_multimodal_metrics(self) -> dict[str, Any]:
         """
         Get extended metrics including multimodal statistics.
 

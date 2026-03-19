@@ -14,8 +14,6 @@ Exit codes:
 """
 
 import sys
-import os
-from typing import Tuple, List
 from datetime import datetime
 
 # Colors for output
@@ -38,7 +36,7 @@ def print_result(test_num: int, name: str, passed: bool, message: str = ""):
     print(f"{status} Test {test_num}: {name}{msg}")
 
 
-def print_summary(results: List[Tuple[str, bool, str]]):
+def print_summary(results: list[tuple[str, bool, str]]):
     """Print summary of all tests."""
     passed = sum(1 for _, p, _ in results if p)
     total = len(results)
@@ -58,7 +56,7 @@ class PortalBridgeVerifier:
     """Main verification orchestrator."""
 
     def __init__(self):
-        self.results: List[Tuple[str, bool, str]] = []
+        self.results: list[tuple[str, bool, str]] = []
         self.loom_available = False
         self.server_available = False
 
@@ -68,15 +66,23 @@ class PortalBridgeVerifier:
             # Try primary import path first
             try:
                 from hololoom.portal.shared.types import (
-                    NodeCapabilities, NodeStatus, NodeRecord,
-                    JobRequest, JobResult, LoomStatus
+                    JobRequest,
+                    JobResult,
+                    LoomStatus,
+                    NodeCapabilities,
+                    NodeRecord,
+                    NodeStatus,
                 )
                 return True
             except ImportError:
                 # Try relative path
                 from shared.types import (
-                    NodeCapabilities, NodeStatus, NodeRecord,
-                    JobRequest, JobResult, LoomStatus
+                    JobRequest,
+                    JobResult,
+                    LoomStatus,
+                    NodeCapabilities,
+                    NodeRecord,
+                    NodeStatus,
                 )
                 return True
         except ImportError:

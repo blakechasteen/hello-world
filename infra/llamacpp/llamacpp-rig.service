@@ -1,0 +1,59 @@
+# /etc/systemd/system/llamacpp-rig.service
+# llama-server on the mining rig (3x RTX 3080, 36GB VRAM)
+#
+# Runs a single llama-server with tensor-split across all 3 GPUs.
+# This enables large models (30b+ Q4) to span the full 36GB.
+#
+# Install:
+#   sudo cp llamacpp-rig.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now llamacpp-rig
+#
+# Logs:
+#   journalctl -u llamacpp-rig -f
+
+[Unit]
+Description=llama-server (llama.cpp) — mining rig
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=blake
+WorkingDirectory=/home/blake
+
+# --- Adjust these paths ---
+# Binary: build llama.cpp, then point to the server binary
+ExecStart=/home/blake/llama.cpp/build/bin/llama-server \
+    --host 0.0.0.0 \
+    --port 8080 \
+    --model /home/blake/models/qwen3.5-30b-q4_k_m.gguf \
+    --ctx-size 32768 \
+    --n-gpu-layers 99 \
+    --split-mode layer \
+    --tensor-split 12,12,12 \
+    --flash-attn \
+    --parallel 4 \
+    --cont-batching \
+    --metrics
+
+# Environment
+Environment=CUDA_VISIBLE_DEVICES=0,1,2
+
+# Process management (AP-11: no nohup, use systemd)
+Restart=always
+RestartSec=5
+TimeoutStartSec=120
+TimeoutStopSec=30
+
+# Resource limits
+LimitNOFILE=65536
+LimitMEMLOCK=infinity
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=llamacpp-rig
+
+[Install]
+WantedBy=multi-user.target

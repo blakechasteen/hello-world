@@ -14,13 +14,13 @@ Useful for training, demos, debugging, and collaboration.
 Created: November 2025
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any, Callable, BinaryIO
-from enum import Enum
-from datetime import datetime
-import json
 import gzip
-import io
+import json
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class RecordingState(Enum):
@@ -74,11 +74,11 @@ class RecordedEvent:
     event_id: str
     event_type: EventType
     timestamp: float  # Seconds from session start
-    data: Dict[str, Any]
-    user_id: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any]
+    user_id: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.event_id,
             "type": self.event_type.value,
@@ -89,7 +89,7 @@ class RecordedEvent:
         }
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> "RecordedEvent":
+    def from_dict(data: dict[str, Any]) -> "RecordedEvent":
         return RecordedEvent(
             event_id=data["id"],
             event_type=EventType(data["type"]),
@@ -106,10 +106,10 @@ class RecordingBookmark:
     bookmark_id: str
     name: str
     timestamp: float
-    description: Optional[str] = None
-    thumbnail_data: Optional[str] = None  # Base64 encoded
+    description: str | None = None
+    thumbnail_data: str | None = None  # Base64 encoded
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.bookmark_id,
             "name": self.name,
@@ -124,17 +124,17 @@ class SessionMetadata:
     """Metadata about a recorded session."""
     session_id: str
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
     duration: float = 0.0
     event_count: int = 0
-    user_ids: List[str] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
-    thumbnail_data: Optional[str] = None
-    graph_snapshot: Optional[Dict[str, Any]] = None
+    user_ids: list[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
+    thumbnail_data: str | None = None
+    graph_snapshot: dict[str, Any] | None = None
     version: str = "1.0"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "sessionId": self.session_id,
             "title": self.title,
@@ -154,8 +154,8 @@ class SessionMetadata:
 class Recording:
     """A complete session recording."""
     metadata: SessionMetadata
-    events: List[RecordedEvent] = field(default_factory=list)
-    bookmarks: List[RecordingBookmark] = field(default_factory=list)
+    events: list[RecordedEvent] = field(default_factory=list)
+    bookmarks: list[RecordingBookmark] = field(default_factory=list)
 
     def add_event(self, event: RecordedEvent):
         """Add an event to the recording."""
@@ -168,15 +168,15 @@ class Recording:
         """Add a bookmark."""
         self.bookmarks.append(bookmark)
 
-    def get_events_in_range(self, start: float, end: float) -> List[RecordedEvent]:
+    def get_events_in_range(self, start: float, end: float) -> list[RecordedEvent]:
         """Get events within a time range."""
         return [e for e in self.events if start <= e.timestamp <= end]
 
-    def get_events_by_type(self, event_type: EventType) -> List[RecordedEvent]:
+    def get_events_by_type(self, event_type: EventType) -> list[RecordedEvent]:
         """Get all events of a specific type."""
         return [e for e in self.events if e.event_type == event_type]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "metadata": self.metadata.to_dict(),
             "events": [e.to_dict() for e in self.events],
@@ -184,7 +184,7 @@ class Recording:
         }
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> "Recording":
+    def from_dict(data: dict[str, Any]) -> "Recording":
         metadata = SessionMetadata(
             session_id=data["metadata"]["sessionId"],
             title=data["metadata"]["title"],
@@ -228,8 +228,8 @@ class SessionRecorder:
         self,
         session_id: str,
         title: str = "Untitled Recording",
-        description: Optional[str] = None,
-        user_id: Optional[str] = None,
+        description: str | None = None,
+        user_id: str | None = None,
         auto_bookmark_interval: float = 0.0  # 0 = disabled
     ):
         self.session_id = session_id
@@ -246,8 +246,8 @@ class SessionRecorder:
         )
 
         self.state = RecordingState.IDLE
-        self.start_time: Optional[float] = None
-        self.pause_time: Optional[float] = None
+        self.start_time: float | None = None
+        self.pause_time: float | None = None
         self.total_pause_duration: float = 0.0
 
         self._event_counter = 0
@@ -256,11 +256,11 @@ class SessionRecorder:
 
         # Event filters
         self.enabled_event_types: set = set(EventType)
-        self.sample_rates: Dict[EventType, float] = {}  # Events per second
-        self._last_sample_times: Dict[EventType, float] = {}
+        self.sample_rates: dict[EventType, float] = {}  # Events per second
+        self._last_sample_times: dict[EventType, float] = {}
 
         # Callbacks
-        self.on_event_recorded: List[Callable[[RecordedEvent], None]] = []
+        self.on_event_recorded: list[Callable[[RecordedEvent], None]] = []
 
     def start(self):
         """Start recording."""
@@ -341,10 +341,10 @@ class SessionRecorder:
     def record_event(
         self,
         event_type: EventType,
-        data: Dict[str, Any],
-        user_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> Optional[RecordedEvent]:
+        data: dict[str, Any],
+        user_id: str | None = None,
+        metadata: dict[str, Any] | None = None
+    ) -> RecordedEvent | None:
         """Record an event."""
         if self.state != RecordingState.RECORDING:
             return None
@@ -376,19 +376,19 @@ class SessionRecorder:
 
         return event
 
-    def record_head_pose(self, position: tuple, rotation: tuple, user_id: Optional[str] = None):
+    def record_head_pose(self, position: tuple, rotation: tuple, user_id: str | None = None):
         """Record head pose."""
         self.record_event(EventType.HEAD_POSE, {
             "position": {"x": position[0], "y": position[1], "z": position[2]},
             "rotation": {"x": rotation[0], "y": rotation[1], "z": rotation[2], "w": rotation[3] if len(rotation) > 3 else 1.0}
         }, user_id)
 
-    def record_hand_pose(self, hand: str, joints: List[Dict], user_id: Optional[str] = None):
+    def record_hand_pose(self, hand: str, joints: list[dict], user_id: str | None = None):
         """Record hand pose (25 joints)."""
         event_type = EventType.LEFT_HAND_POSE if hand == "left" else EventType.RIGHT_HAND_POSE
         self.record_event(event_type, {"joints": joints}, user_id)
 
-    def record_gaze(self, origin: tuple, direction: tuple, hit_node_id: Optional[str] = None):
+    def record_gaze(self, origin: tuple, direction: tuple, hit_node_id: str | None = None):
         """Record gaze ray."""
         self.record_event(EventType.GAZE_RAY, {
             "origin": {"x": origin[0], "y": origin[1], "z": origin[2]},
@@ -412,7 +412,7 @@ class SessionRecorder:
             "confidence": confidence
         })
 
-    def record_ui_interaction(self, element_id: str, interaction_type: str, data: Dict = None):
+    def record_ui_interaction(self, element_id: str, interaction_type: str, data: dict = None):
         """Record UI interaction."""
         self.record_event(EventType.UI_INTERACTION, {
             "elementId": element_id,
@@ -442,7 +442,7 @@ class SessionRecorder:
             "confidence": confidence
         })
 
-    def add_bookmark(self, name: str, description: Optional[str] = None, thumbnail: Optional[str] = None):
+    def add_bookmark(self, name: str, description: str | None = None, thumbnail: str | None = None):
         """Add a bookmark at current time."""
         self._bookmark_counter += 1
         bookmark = RecordingBookmark(
@@ -455,14 +455,14 @@ class SessionRecorder:
         self.recording.add_bookmark(bookmark)
         return bookmark
 
-    def add_marker(self, label: str, data: Optional[Dict] = None):
+    def add_marker(self, label: str, data: dict | None = None):
         """Add a custom marker event."""
         self.record_event(EventType.MARKER, {
             "label": label,
             "data": data or {}
         })
 
-    def set_graph_snapshot(self, graph_data: Dict[str, Any]):
+    def set_graph_snapshot(self, graph_data: dict[str, Any]):
         """Store initial graph state."""
         self.recording.metadata.graph_snapshot = graph_data
 
@@ -483,17 +483,17 @@ class SessionPlayer:
         self.loop: bool = False
 
         self._event_index: int = 0
-        self._last_update_time: Optional[float] = None
+        self._last_update_time: float | None = None
 
         # Event callbacks by type
-        self.event_handlers: Dict[EventType, List[Callable[[RecordedEvent], None]]] = {
+        self.event_handlers: dict[EventType, list[Callable[[RecordedEvent], None]]] = {
             event_type: [] for event_type in EventType
         }
 
         # General callbacks
-        self.on_event: List[Callable[[RecordedEvent], None]] = []
-        self.on_playback_complete: List[Callable[[], None]] = []
-        self.on_bookmark_reached: List[Callable[[RecordingBookmark], None]] = []
+        self.on_event: list[Callable[[RecordedEvent], None]] = []
+        self.on_playback_complete: list[Callable[[], None]] = []
+        self.on_bookmark_reached: list[Callable[[RecordingBookmark], None]] = []
 
     def play(self):
         """Start playback."""
@@ -544,7 +544,7 @@ class SessionPlayer:
         """Set playback speed (1.0 = normal)."""
         self.playback_speed = max(0.1, min(10.0, speed))
 
-    def update(self) -> List[RecordedEvent]:
+    def update(self) -> list[RecordedEvent]:
         """Update playback, return events that occurred since last update."""
         if self.state != RecordingState.PLAYING:
             return []
@@ -607,14 +607,14 @@ class SessionPlayer:
             self.event_handlers[event_type] = []
         self.event_handlers[event_type].append(handler)
 
-    def get_events_at_time(self, time: float, tolerance: float = 0.1) -> List[RecordedEvent]:
+    def get_events_at_time(self, time: float, tolerance: float = 0.1) -> list[RecordedEvent]:
         """Get events near a specific time."""
         return [
             e for e in self.recording.events
             if abs(e.timestamp - time) <= tolerance
         ]
 
-    def get_state_at_time(self, time: float) -> Dict[str, Any]:
+    def get_state_at_time(self, time: float) -> dict[str, Any]:
         """Reconstruct state at a specific time."""
         state = {
             "head_pose": None,
@@ -652,7 +652,7 @@ class SessionPlayer:
             return 0.0
         return self.current_time / self.recording.metadata.duration
 
-    def to_state(self) -> Dict[str, Any]:
+    def to_state(self) -> dict[str, Any]:
         """Export player state for UI."""
         return {
             "state": self.state.value,
@@ -695,7 +695,7 @@ class RecordingStorage:
                 data = json.load(f)
         except gzip.BadGzipFile:
             # Fall back to uncompressed
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, encoding='utf-8') as f:
                 data = json.load(f)
 
         return Recording.from_dict(data)
@@ -721,7 +721,7 @@ class RecordingStorage:
         return Recording.from_dict(json.loads(json_str))
 
     @staticmethod
-    def get_recording_info(path: str) -> Optional[SessionMetadata]:
+    def get_recording_info(path: str) -> SessionMetadata | None:
         """Get metadata without loading full recording."""
         try:
             try:
@@ -733,7 +733,7 @@ class RecordingStorage:
                         if '"events"' in partial:
                             break
             except gzip.BadGzipFile:
-                with open(path, 'r', encoding='utf-8') as f:
+                with open(path, encoding='utf-8') as f:
                     partial = ""
                     for line in f:
                         partial += line

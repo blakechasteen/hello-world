@@ -22,66 +22,73 @@ Example:
 """
 
 # Core trajectory calculus (from flow_calculus.py)
-from ..flow_calculus import (
-    SemanticState,
-    SemanticTrajectory,
-    SemanticFlowCalculus as SemanticFlow,  # Cleaner name
-    SemanticFlowVisualizer,
-    analyze_text_flow,
-)
-
 # Semantic dimension projection (from dimensions.py)
 from ..dimensions import (
+    STANDARD_DIMENSIONS,
     SemanticDimension,
     SemanticSpectrum,
-    STANDARD_DIMENSIONS,
-    visualize_semantic_spectrum,
     print_spectrum_summary,
-)
-
-# Hamiltonian dynamics (from integrator.py)
-from ..integrator import (
-    GeometricIntegrator as HamiltonianDynamics,  # More descriptive name
-    MultiScaleGeometricFlow as MultiScaleFlow,
-    visualize_geometric_flow,
-    compute_semantic_force_field,
+    visualize_semantic_spectrum,
 )
 
 # Ethical optimization (from ethics.py)
 from ..ethics import (
-    EthicalObjective,
-    EthicalSemanticPolicy as EthicalPolicy,  # Shorter name
     COMPASSIONATE_COMMUNICATION,
     SCIENTIFIC_DISCOURSE,
     THERAPEUTIC_DIALOGUE,
+    EthicalObjective,
     visualize_ethical_landscape,
+)
+from ..ethics import (
+    EthicalSemanticPolicy as EthicalPolicy,  # Shorter name
+)
+from ..flow_calculus import (
+    SemanticFlowCalculus as SemanticFlow,  # Cleaner name
+)
+from ..flow_calculus import (
+    SemanticFlowVisualizer,
+    SemanticState,
+    SemanticTrajectory,
+    analyze_text_flow,
 )
 
 # Hyperbolic geometry (from hyperbolic.py)
 from ..hyperbolic import (
-    HyperbolicPoint,
-    PoincareGeometry,
-    HyperbolicSemanticSpace,
     ComplexSemanticFlow,
+    HyperbolicPoint,
+    HyperbolicSemanticSpace,
+    PoincareGeometry,
     SemanticSymmetryGroup,
     visualize_hyperbolic_hierarchy,
 )
 
 # Integral geometry / tomography (from integral_geometry.py)
 from ..integral_geometry import (
-    RadonTransform,
-    InverseRadonTransform,
     CroftonFormula,
+    InverseRadonTransform,
+    RadonTransform,
     SemanticTomography,
     visualize_tomographic_reconstruction,
+)
+
+# Hamiltonian dynamics (from integrator.py)
+from ..integrator import (
+    GeometricIntegrator as HamiltonianDynamics,  # More descriptive name
+)
+from ..integrator import (
+    MultiScaleGeometricFlow as MultiScaleFlow,
+)
+from ..integrator import (
+    compute_semantic_force_field,
+    visualize_geometric_flow,
 )
 
 # System identification (from system_id.py)
 from ..system_id import (
     LearnedSemanticSystem,
     SemanticSystemIdentification,
-    visualize_system_identification,
     demonstrate_system_identification,
+    visualize_system_identification,
 )
 
 __all__ = [

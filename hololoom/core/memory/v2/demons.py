@@ -20,8 +20,8 @@ No external dependencies. No LLM calls.
 
 import logging
 import re
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from dataclasses import dataclass
+from typing import Any
 
 from .knowledge_source import Phase
 
@@ -80,13 +80,13 @@ _STOP_WORDS = frozenset({
 })
 
 
-def _content_words(text: str) -> Set[str]:
+def _content_words(text: str) -> set[str]:
     """Extract meaningful content words from text."""
     tokens = re.findall(r"\b\w+\b", text.lower())
     return {w for w in tokens if w not in _STOP_WORDS and len(w) > 2}
 
 
-def check_grounding(response: str, context: str, threshold: float) -> Optional[DemonAlert]:
+def check_grounding(response: str, context: str, threshold: float) -> DemonAlert | None:
     """Check if response claims are grounded in retrieved context.
 
     Computes what fraction of response content words appear in the context.
@@ -111,7 +111,7 @@ def check_grounding(response: str, context: str, threshold: float) -> Optional[D
     return None
 
 
-def check_brevity(response: str, context: str, min_ratio: float) -> Optional[DemonAlert]:
+def check_brevity(response: str, context: str, min_ratio: float) -> DemonAlert | None:
     """Check if response is too short relative to context richness.
 
     A rich context (many words) paired with a brief response suggests
@@ -135,7 +135,7 @@ def check_brevity(response: str, context: str, min_ratio: float) -> Optional[Dem
     return None
 
 
-def check_repetition(response: str, query: str, threshold: float) -> Optional[DemonAlert]:
+def check_repetition(response: str, query: str, threshold: float) -> DemonAlert | None:
     """Check if response just restates the query without adding info.
 
     High Jaccard overlap between query and response suggests
@@ -165,7 +165,7 @@ def check_repetition(response: str, query: str, threshold: float) -> Optional[De
     return None
 
 
-def check_hedging(response: str, max_hedges: int) -> Optional[DemonAlert]:
+def check_hedging(response: str, max_hedges: int) -> DemonAlert | None:
     """Check if response over-hedges instead of giving direct answers.
 
     Counts hedge phrases. Some hedging is normal; excessive hedging
@@ -209,9 +209,9 @@ class DemonSystem:
         # Demons automatically monitor every response
     """
 
-    def __init__(self, config: Optional[DemonConfig] = None):
+    def __init__(self, config: DemonConfig | None = None):
         self._config = config or DemonConfig()
-        self._alert_history: List[DemonAlert] = []
+        self._alert_history: list[DemonAlert] = []
 
     @property
     def name(self) -> str:
@@ -225,7 +225,7 @@ class DemonSystem:
         """Always active — monitoring is lightweight."""
         return 0.9
 
-    def contribute(self, blackboard: Any, graph: Any, context: Dict[str, Any]) -> None:
+    def contribute(self, blackboard: Any, graph: Any, context: dict[str, Any]) -> None:
         """Run all enabled demons on the generated response."""
         if blackboard is None:
             return
@@ -250,7 +250,7 @@ class DemonSystem:
         query = blackboard.query
 
         # Run demons
-        alerts: List[DemonAlert] = []
+        alerts: list[DemonAlert] = []
 
         if self._config.enable_grounding and context_block:
             alert = check_grounding(response, context_block, self._config.grounding_threshold)
@@ -301,13 +301,13 @@ class DemonSystem:
         return len(self._alert_history)
 
     @property
-    def alerts_by_type(self) -> Dict[str, int]:
-        counts: Dict[str, int] = {}
+    def alerts_by_type(self) -> dict[str, int]:
+        counts: dict[str, int] = {}
         for a in self._alert_history:
             counts[a.demon_name] = counts.get(a.demon_name, 0) + 1
         return counts
 
-    def report(self) -> Dict[str, Any]:
+    def report(self) -> dict[str, Any]:
         """Diagnostic info about demon activity."""
         return {
             "total_alerts": len(self._alert_history),

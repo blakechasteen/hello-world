@@ -34,37 +34,34 @@ Usage:
 """
 
 # Use relative imports (moved to HoloLoom/memory/awareness/ in Dec 2025)
+# Additional awareness modules
+from .beta_wave_packer import BetaWaveContextPacker
 from .compositional_awareness import (
     CompositionalAwarenessLayer,
-    UnifiedAwarenessContext,
-    StructuralAwareness,
     CompositionalPatterns,
     ConfidenceSignals,
-    InternalStreamGuidance,
     ExternalStreamGuidance,
-    format_awareness_for_prompt
+    InternalStreamGuidance,
+    StructuralAwareness,
+    UnifiedAwarenessContext,
+    format_awareness_for_prompt,
 )
-
+from .context_packer import SmartContextPacker
 from .dual_stream import (
     DualStreamGenerator,
     DualStreamResponse,
+    build_external_prompt,
     build_internal_prompt,
-    build_external_prompt
 )
-
 from .meta_awareness import (
+    AdversarialProbe,
+    KnowledgeGapHypothesis,
     MetaAwarenessLayer,
+    MetaConfidence,
     SelfReflectionResult,
     UncertaintyDecomposition,
-    MetaConfidence,
-    KnowledgeGapHypothesis,
-    AdversarialProbe,
-    UncertaintyType
+    UncertaintyType,
 )
-
-# Additional awareness modules
-from .beta_wave_packer import BetaWaveContextPacker
-from .context_packer import SmartContextPacker
 
 # Alias for backward compatibility
 ContextPacker = SmartContextPacker
@@ -76,13 +73,13 @@ BetaWavePacker = BetaWaveContextPacker
 # LLM Integration
 try:
     from .llm_integration import (
-        LLMProtocol,
-        LLMResponse,
-        LLMProvider,
-        OllamaLLM,
         AnthropicLLM,
+        LLMProtocol,
+        LLMProvider,
+        LLMResponse,
+        OllamaLLM,
         OpenAILLM,
-        create_llm
+        create_llm,
     )
     LLM_AVAILABLE = True
 except ImportError:

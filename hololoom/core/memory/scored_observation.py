@@ -26,9 +26,10 @@ Usage:
 """
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 from .bus import MemoryItem
 
@@ -70,10 +71,10 @@ def band_from_score(composite: float) -> str:
 
 
 def score_terms(
-    terms: List[ScoringTerm],
-    context: Dict[str, Any],
-    mode_weights: Optional[Dict[str, float]] = None,
-) -> Tuple[float, Dict[str, float]]:
+    terms: list[ScoringTerm],
+    context: dict[str, Any],
+    mode_weights: dict[str, float] | None = None,
+) -> tuple[float, dict[str, float]]:
     """Compute additive score from terms.
 
     Args:
@@ -108,11 +109,11 @@ def scored_observation(
     content: str,
     domain: str,
     category: str,
-    terms: List[ScoringTerm],
-    context: Dict[str, Any],
-    entity_ids: Optional[List[str]] = None,
+    terms: list[ScoringTerm],
+    context: dict[str, Any],
+    entity_ids: list[str] | None = None,
     mode: str = "default",
-    mode_weights: Optional[Dict[str, float]] = None,
+    mode_weights: dict[str, float] | None = None,
 ) -> MemoryItem:
     """Produce a MemoryItem from an additive scoring pipeline.
 
@@ -147,7 +148,7 @@ async def advance_observation(
     bus: Any,  # LiteMemoryBus (duck-typed to avoid circular import)
     observation_id: str,
     new_status: str,
-    notes: Optional[str] = None,
+    notes: str | None = None,
 ) -> str:
     """Advance an observation's lifecycle status.
 

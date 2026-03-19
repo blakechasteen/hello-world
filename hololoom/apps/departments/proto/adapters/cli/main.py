@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Proto CLI adapter - Command-line interface for Proto code agent.
 
 Commands:
@@ -20,7 +21,6 @@ Status: Production ready
 
 import asyncio
 import sys
-from typing import Optional
 from pathlib import Path
 
 # Try typer first (prettier), fall back to click
@@ -52,7 +52,7 @@ class ProtoCLI:
     async def init_engine(self):
         """Initialize Proto engine lazily."""
         if self.engine is None:
-            from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+            from hololoom.apps.departments.proto.core import ProtoConfig, ProtoEngine
 
             config = ProtoConfig.default()
             self.engine = ProtoEngine(config)
@@ -60,7 +60,7 @@ class ProtoCLI:
         return self.engine
 
     async def process_query(
-        self, query: str, context_file: Optional[str] = None
+        self, query: str, context_file: str | None = None
     ) -> str:
         """Process a query through Proto engine.
 
@@ -132,7 +132,7 @@ if USE_TYPER:
         question: str = typer.Argument(
             ..., help="Question to ask Proto"
         ),
-        file: Optional[str] = typer.Option(
+        file: str | None = typer.Option(
             None, "--file", "-f", help="Context file path"
         ),
     ):
@@ -229,7 +229,7 @@ else:
     @click.option(
         "--file", "-f", default=None, help="Context file path"
     )
-    def ask(question: str, file: Optional[str]):
+    def ask(question: str, file: str | None):
         """Ask Proto a question about code or concepts."""
         try:
             cli = _cli_instance

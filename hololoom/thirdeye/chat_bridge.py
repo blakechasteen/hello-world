@@ -13,22 +13,22 @@ import json
 import logging
 import re
 import uuid
+from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
-from typing import AsyncIterator, Callable, Dict, Any, List, Optional
-from enum import Enum, auto
+from enum import Enum
+from typing import Any
 
 from hololoom.thirdeye.concept import (
     Concept,
     ConceptType,
     SemanticPosition,
-    create_entity_concept,
     create_comparison_concept,
+    create_entity_concept,
     create_process_concept,
 )
 from hololoom.thirdeye.transition import (
     Transition,
     calculate_transition,
-    create_emphasis_transition,
 )
 
 logger = logging.getLogger(__name__)
@@ -47,17 +47,17 @@ class ChatMessage:
     id: str
     role: MessageRole
     content: str
-    thread_id: Optional[str] = None
+    thread_id: str | None = None
     timestamp: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ConceptExtraction:
     """Result of extracting concepts from a message."""
-    concepts: List[Concept]
-    transition: Optional[Transition] = None
-    primary_concept: Optional[Concept] = None
+    concepts: list[Concept]
+    transition: Transition | None = None
+    primary_concept: Concept | None = None
 
 
 class ConceptExtractor:
@@ -86,7 +86,7 @@ class ConceptExtractor:
         r'([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)',  # Capitalized phrases
     ]
 
-    def __init__(self, embedder: Optional[Callable[[str], List[float]]] = None):
+    def __init__(self, embedder: Callable[[str], list[float]] | None = None):
         """
         Initialize the concept extractor.
 
@@ -94,7 +94,7 @@ class ConceptExtractor:
             embedder: Optional function to compute embeddings for concepts
         """
         self._embedder = embedder
-        self._concept_cache: Dict[str, Concept] = {}
+        self._concept_cache: dict[str, Concept] = {}
 
     def extract(self, message: ChatMessage) -> ConceptExtraction:
         """
@@ -107,7 +107,7 @@ class ConceptExtractor:
             ConceptExtraction with identified concepts
         """
         content = message.content
-        concepts: List[Concept] = []
+        concepts: list[Concept] = []
 
         # Check for comparison patterns
         if self._matches_patterns(content, self.COMPARISON_PATTERNS):
@@ -159,16 +159,16 @@ class ConceptExtractor:
         )
 
     # Tracking for transitions
-    _last_concept_id: Optional[str] = None
-    _last_concept_type: Optional[str] = None
-    _last_concept_embedding: Optional[List[float]] = None
+    _last_concept_id: str | None = None
+    _last_concept_type: str | None = None
+    _last_concept_embedding: list[float] | None = None
 
-    def _matches_patterns(self, text: str, patterns: List[str]) -> bool:
+    def _matches_patterns(self, text: str, patterns: list[str]) -> bool:
         """Check if text matches any of the patterns."""
         text_lower = text.lower()
         return any(re.search(p, text_lower) for p in patterns)
 
-    def _extract_comparison(self, content: str, message_id: str) -> Optional[Concept]:
+    def _extract_comparison(self, content: str, message_id: str) -> Concept | None:
         """Extract a comparison concept."""
         # Look for "A vs B" or "A compared to B" patterns
         vs_match = re.search(r'(\w+)\s+(?:vs\.?|versus|compared?\s+to)\s+(\w+)', content, re.I)
@@ -182,7 +182,7 @@ class ConceptExtractor:
             )
         return None
 
-    def _extract_process(self, content: str, message_id: str) -> Optional[Concept]:
+    def _extract_process(self, content: str, message_id: str) -> Concept | None:
         """Extract a process/algorithm concept."""
         # Look for step indicators
         steps = re.findall(r'(?:step\s+\d+|first|then|next|finally)[:\s]+([^.]+)', content, re.I)
@@ -195,9 +195,9 @@ class ConceptExtractor:
             )
         return None
 
-    def _extract_entities(self, content: str, message_id: str) -> List[Concept]:
+    def _extract_entities(self, content: str, message_id: str) -> list[Concept]:
         """Extract named entity concepts."""
-        entities: List[Concept] = []
+        entities: list[Concept] = []
 
         # Look for capitalized terms (likely proper nouns/technical terms)
         matches = re.findall(r'\b([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\b', content)
@@ -227,7 +227,7 @@ class ConceptExtractor:
 
         return entities[:5]  # Limit to 5 entities per message
 
-    def _extract_topic(self, content: str, message_id: str) -> Optional[Concept]:
+    def _extract_topic(self, content: str, message_id: str) -> Concept | None:
         """Extract a general topic concept when no specific concepts found."""
         # Use first significant phrase as topic
         words = content.split()
@@ -265,7 +265,7 @@ class ChatBridge:
     def __init__(
         self,
         chat_ws_url: str = "ws://localhost:8002",
-        embedder: Optional[Callable[[str], List[float]]] = None,
+        embedder: Callable[[str], list[float]] | None = None,
     ):
         """
         Initialize the chat bridge.
@@ -354,7 +354,7 @@ class ChatBridge:
             if extraction.concepts:
                 yield extraction
 
-    def _parse_message(self, data: Dict[str, Any]) -> Optional[ChatMessage]:
+    def _parse_message(self, data: dict[str, Any]) -> ChatMessage | None:
         """Parse raw WebSocket data into a ChatMessage."""
         try:
             msg_type = data.get("type", "")
@@ -390,7 +390,7 @@ class ChatBridge:
 
 async def create_chat_bridge(
     chat_ws_url: str = "ws://localhost:8002",
-    embedder: Optional[Callable[[str], List[float]]] = None,
+    embedder: Callable[[str], list[float]] | None = None,
 ) -> ChatBridge:
     """
     Create a chat bridge instance.

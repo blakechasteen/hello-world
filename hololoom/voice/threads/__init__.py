@@ -21,9 +21,9 @@ Quick Start:
 See demos/demo_voice_first.py for complete examples.
 """
 
+from .core.unified_agent import UnifiedVoiceAgent
 from .core.voice_modes import VoiceMode, VoiceModeTransition
 from .core.voice_router import VoiceRouter
-from .core.unified_agent import UnifiedVoiceAgent
 from .grammar.voice_grammar import VoiceGrammar
 
 __all__ = [

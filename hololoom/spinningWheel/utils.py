@@ -16,14 +16,15 @@ Date: November 2025
 import asyncio
 import hashlib
 import json
-from typing import List, Dict, Any, Optional, AsyncIterator, Callable, Set
-from pathlib import Path
-from dataclasses import dataclass
 import time
+from collections.abc import AsyncIterator, Callable
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 from hololoom.protocols.types import MemoryShard
-from .protocol import SpinnerCheckpoint
 
+from .protocol import SpinnerCheckpoint
 
 # ============================================================================
 # Checkpoint Management
@@ -50,7 +51,7 @@ class CheckpointManager:
         self,
         spinner_name: str,
         source_id: str
-    ) -> Optional[SpinnerCheckpoint]:
+    ) -> SpinnerCheckpoint | None:
         """
         Load checkpoint for a spinner + source.
 
@@ -67,7 +68,7 @@ class CheckpointManager:
             return None
 
         try:
-            with open(checkpoint_path, 'r') as f:
+            with open(checkpoint_path) as f:
                 data = json.load(f)
             return SpinnerCheckpoint.from_dict(data)
         except Exception as e:
@@ -101,8 +102,8 @@ class CheckpointManager:
 
     def list_checkpoints(
         self,
-        spinner_name: Optional[str] = None
-    ) -> List[SpinnerCheckpoint]:
+        spinner_name: str | None = None
+    ) -> list[SpinnerCheckpoint]:
         """
         List all checkpoints.
 
@@ -118,7 +119,7 @@ class CheckpointManager:
         checkpoints = []
         for path in checkpoint_files:
             try:
-                with open(path, 'r') as f:
+                with open(path) as f:
                     data = json.load(f)
                 checkpoints.append(SpinnerCheckpoint.from_dict(data))
             except Exception:
@@ -149,7 +150,7 @@ class StreamBuffer:
         self,
         batch_size: int = 10,
         flush_interval: float = 5.0,
-        flush_callback: Optional[Callable] = None
+        flush_callback: Callable | None = None
     ):
         """
         Initialize stream buffer.
@@ -163,7 +164,7 @@ class StreamBuffer:
         self.flush_interval = flush_interval
         self.flush_callback = flush_callback
 
-        self.buffer: List[MemoryShard] = []
+        self.buffer: list[MemoryShard] = []
         self.last_flush_time = time.time()
 
     async def add(self, shard: MemoryShard):
@@ -210,7 +211,7 @@ class StreamBuffer:
 async def stream_with_buffer(
     stream: AsyncIterator[MemoryShard],
     batch_size: int = 10,
-    callback: Optional[Callable] = None
+    callback: Callable | None = None
 ) -> AsyncIterator[MemoryShard]:
     """
     Wrap streaming shard generation with batched callback.
@@ -265,10 +266,10 @@ class BatchProcessor:
 
     async def process(
         self,
-        items: List[Any],
+        items: list[Any],
         processor: Callable,
-        progress_callback: Optional[Callable] = None
-    ) -> List[Any]:
+        progress_callback: Callable | None = None
+    ) -> list[Any]:
         """
         Process items in parallel.
 
@@ -343,7 +344,7 @@ class ShardDeduplicator:
             hash_method: Hash algorithm (md5, sha1, sha256)
         """
         self.hash_method = hash_method
-        self.seen_hashes: Set[str] = set()
+        self.seen_hashes: set[str] = set()
 
     def hash_shard(self, shard: MemoryShard) -> str:
         """
@@ -387,9 +388,9 @@ class ShardDeduplicator:
 
     def filter_duplicates(
         self,
-        shards: List[MemoryShard],
+        shards: list[MemoryShard],
         mark_seen: bool = True
-    ) -> List[MemoryShard]:
+    ) -> list[MemoryShard]:
         """
         Filter duplicates from shard list.
 
@@ -439,14 +440,14 @@ class ErrorHandler:
         """
         self.log_errors = log_errors
         self.raise_on_critical = raise_on_critical
-        self.error_log: List[Dict[str, Any]] = []
+        self.error_log: list[dict[str, Any]] = []
 
     def handle(
         self,
         error: Exception,
         context: str,
         critical: bool = False
-    ) -> Optional[MemoryShard]:
+    ) -> MemoryShard | None:
         """
         Handle error.
 
@@ -501,7 +502,7 @@ class ErrorHandler:
     def get_errors(
         self,
         critical_only: bool = False
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get error log.
 
@@ -551,7 +552,7 @@ class ProgressTracker:
         """Get elapsed time in seconds."""
         return time.time() - self.start_time
 
-    def estimated_remaining(self) -> Optional[float]:
+    def estimated_remaining(self) -> float | None:
         """
         Estimate remaining time in seconds.
 
@@ -610,11 +611,11 @@ class ProgressTracker:
 # ============================================================================
 
 async def process_with_progress(
-    items: List[Any],
+    items: list[Any],
     processor: Callable,
     description: str = "Processing",
     max_concurrent: int = 5
-) -> List[Any]:
+) -> list[Any]:
     """
     Process items with progress tracking.
 

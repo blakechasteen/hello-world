@@ -28,7 +28,7 @@ Quick Start:
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 # TYPE_CHECKING prevents circular imports at runtime
 if TYPE_CHECKING:
@@ -38,14 +38,12 @@ if TYPE_CHECKING:
 
 # Import from plugin interface
 from hololoom.dark_trace.plugins.interface import (
-    DarkTracePlugin,
+    MonitorPlugin,  # We inherit from MonitorPlugin for this example
     PluginMetadata,
     PluginType,
-    MonitorPlugin,  # We inherit from MonitorPlugin for this example
 )
 from hololoom.dark_trace.plugins.safety_gate import (
     PluginCapability,
-    TrustLevel,
 )
 
 # Set up logging for your plugin
@@ -68,11 +66,11 @@ class HelloAnalysisResult:
     trace_id: str
     greeting: str
     features_found: int
-    top_feature: Optional[str] = None
+    top_feature: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary for JSON export."""
         return {
             "trace_id": self.trace_id,
@@ -120,8 +118,8 @@ class HelloWorldPlugin(MonitorPlugin):
         self._greeting_prefix = greeting_prefix
 
         # Engine and safety gate are set during initialize()
-        self._engine: Optional["DarkTraceEngine"] = None
-        self._safety_gate: Optional["PluginSafetyGate"] = None
+        self._engine: DarkTraceEngine | None = None
+        self._safety_gate: PluginSafetyGate | None = None
 
         # Track state
         self._initialized = False
@@ -129,7 +127,7 @@ class HelloWorldPlugin(MonitorPlugin):
         # Plugin-specific state
         self._analysis_count = 0
         self._total_features_seen = 0
-        self._results: List[HelloAnalysisResult] = []
+        self._results: list[HelloAnalysisResult] = []
 
     # -------------------------------------------------------------------------
     # Required: Plugin Metadata
@@ -315,7 +313,7 @@ class HelloWorldPlugin(MonitorPlugin):
     # -------------------------------------------------------------------------
     # Add your own methods for plugin-specific functionality
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get plugin statistics.
 
@@ -332,7 +330,7 @@ class HelloWorldPlugin(MonitorPlugin):
             "greeting_prefix": self._greeting_prefix,
         }
 
-    def get_recent_results(self, limit: int = 10) -> List[HelloAnalysisResult]:
+    def get_recent_results(self, limit: int = 10) -> list[HelloAnalysisResult]:
         """
         Get recent analysis results.
 
@@ -495,13 +493,13 @@ if __name__ == "__main__":
         # Create plugin
         plugin = HelloWorldPlugin(greeting_prefix="Greetings")
 
-        print(f"\n1. Plugin Metadata:")
+        print("\n1. Plugin Metadata:")
         print(f"   Name: {plugin.metadata.name}")
         print(f"   Version: {plugin.metadata.version}")
         print(f"   Type: {plugin.metadata.plugin_type.value}")
         print(f"   Capabilities: {[c.value for c in plugin.metadata.requested_capabilities]}")
 
-        print(f"\n2. Behavior Description:")
+        print("\n2. Behavior Description:")
         print(f"   {plugin.describe_behavior()}")
 
         # Simulate initialization
@@ -525,12 +523,12 @@ if __name__ == "__main__":
 
         await plugin.on_analysis_complete(mock_trace)
 
-        print(f"\n5. Statistics:")
+        print("\n5. Statistics:")
         stats = plugin.get_statistics()
         for key, value in stats.items():
             print(f"   {key}: {value}")
 
-        print(f"\n6. Recent Results:")
+        print("\n6. Recent Results:")
         for result in plugin.get_recent_results():
             print(f"   {result.greeting}")
 

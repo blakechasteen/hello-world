@@ -15,12 +15,14 @@ Eliminates Parameters:
 - context_window_size (context size for decision making)
 """
 
-from typing import Dict, Any, List, Optional
-from collections import deque, defaultdict
+from collections import defaultdict, deque
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+
 import numpy as np
-from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
+
+from hololoom.tuning.base import SafeParameter, ThompsonBandit, TuningAgent
 
 # Retrieval k values (5 arms)
 RETRIEVAL_K_VALUES = [3, 5, 10, 20, 50]  # 5 discrete values
@@ -108,25 +110,25 @@ class MemoryTuner(TuningAgent):
         super().__init__('memory_tuner')
 
         # Metrics history (last 1000 measurements per complexity level)
-        self.metrics_history: Dict[QueryComplexity, deque] = {
+        self.metrics_history: dict[QueryComplexity, deque] = {
             complexity: deque(maxlen=1000)
             for complexity in QueryComplexity
         }
 
         # Thompson Sampling bandits (one per complexity level)
-        self.bandits: Dict[QueryComplexity, ThompsonBandit] = {
+        self.bandits: dict[QueryComplexity, ThompsonBandit] = {
             complexity: ThompsonBandit(n_arms=len(RETRIEVAL_K_VALUES))
             for complexity in QueryComplexity
         }
 
         # Current retrieval_k indices (selected arm per complexity)
-        self.current_k_indices: Dict[QueryComplexity, int] = {
+        self.current_k_indices: dict[QueryComplexity, int] = {
             complexity: RETRIEVAL_K_VALUES.index(BASELINE_RETRIEVAL_K[complexity])
             for complexity in QueryComplexity
         }
 
         # Safe parameters
-        self.safe_params: Dict[str, SafeParameter] = {
+        self.safe_params: dict[str, SafeParameter] = {
             'simple_k': SafeParameter(
                 name='simple_retrieval_k',
                 current_value=float(BASELINE_RETRIEVAL_K[QueryComplexity.SIMPLE]),
@@ -187,7 +189,7 @@ class MemoryTuner(TuningAgent):
         arm_idx = self.current_k_indices[complexity]
         return RETRIEVAL_K_VALUES[arm_idx]
 
-    async def measure_performance(self) -> Dict[str, Any]:
+    async def measure_performance(self) -> dict[str, Any]:
         """
         Measure retrieval performance metrics.
 
@@ -240,7 +242,7 @@ class MemoryTuner(TuningAgent):
 
         return metrics
 
-    async def tune_parameters(self) -> Dict[str, Any]:
+    async def tune_parameters(self) -> dict[str, Any]:
         """
         Tune retrieval_k based on Thompson Sampling.
 
@@ -301,7 +303,7 @@ class MemoryTuner(TuningAgent):
         self.metrics_history[complexity].append(metrics)
         self.complexity_distribution[complexity] += 1
 
-    def update_bandits(self, baseline_metrics: Dict[str, Any], new_metrics: Dict[str, Any]):
+    def update_bandits(self, baseline_metrics: dict[str, Any], new_metrics: dict[str, Any]):
         """
         Update Thompson Sampling bandits based on quality change.
 
@@ -325,7 +327,7 @@ class MemoryTuner(TuningAgent):
 
             self.bandits[complexity].update(arm_idx, success, confidence)
 
-    async def run_tuning_cycle(self) -> Dict[str, Any]:
+    async def run_tuning_cycle(self) -> dict[str, Any]:
         """
         Run complete tuning cycle for retrieval parameters.
 
@@ -356,7 +358,7 @@ class MemoryTuner(TuningAgent):
             'bandit_stats': self.get_bandit_stats(),
         }
 
-    def _calculate_impact(self, baseline: Dict[str, Any], new: Dict[str, Any]) -> float:
+    def _calculate_impact(self, baseline: dict[str, Any], new: dict[str, Any]) -> float:
         """
         Calculate impact of tuning changes.
 
@@ -380,7 +382,7 @@ class MemoryTuner(TuningAgent):
         # Overall impact (average quality improvement)
         return float(np.mean(quality_deltas)) if quality_deltas else 0.0
 
-    def get_bandit_stats(self) -> Dict[str, Any]:
+    def get_bandit_stats(self) -> dict[str, Any]:
         """
         Get Thompson Sampling bandit statistics.
 
@@ -413,7 +415,7 @@ class MemoryTuner(TuningAgent):
         """
         pass  # State persistence handled by coordinator
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """Serialize agent state for persistence."""
         return {
             'total_tuning_cycles': self.total_tuning_cycles,
@@ -451,7 +453,7 @@ class MemoryTuner(TuningAgent):
             },
         }
 
-    def load_state(self, state: Dict[str, Any]):
+    def load_state(self, state: dict[str, Any]):
         """Restore agent from serialized state."""
         self.total_tuning_cycles = state.get('total_tuning_cycles', 0)
         self.successful_tunings = state.get('successful_tunings', 0)

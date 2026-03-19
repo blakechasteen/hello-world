@@ -39,9 +39,9 @@ Usage:
     restored = MyServiceConfig.from_dict(data)
 """
 
-from dataclasses import dataclass, fields, asdict
-from typing import Dict, Any, TypeVar, Type
 from abc import ABC, abstractmethod
+from dataclasses import asdict, dataclass, fields
+from typing import Any, TypeVar
 
 # Self type for Python 3.10 compatibility
 T = TypeVar('T', bound='BaseConfig')
@@ -78,7 +78,7 @@ class BaseConfig(ABC):
                 return cls(timeout=60.0, retries=5)
     """
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Serialize configuration to dictionary.
 
@@ -94,7 +94,7 @@ class BaseConfig(ABC):
         return asdict(self)
 
     @classmethod
-    def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], data: dict[str, Any]) -> T:
         """
         Create configuration from dictionary.
 
@@ -122,7 +122,7 @@ class BaseConfig(ABC):
 
     @classmethod
     @abstractmethod
-    def fast(cls: Type[T]) -> T:
+    def fast(cls: type[T]) -> T:
         """
         Create configuration optimized for speed/low-latency.
 
@@ -139,7 +139,7 @@ class BaseConfig(ABC):
 
     @classmethod
     @abstractmethod
-    def reliable(cls: Type[T]) -> T:
+    def reliable(cls: type[T]) -> T:
         """
         Create configuration optimized for reliability/robustness.
 
@@ -168,12 +168,12 @@ class BaseConfigWithDefaults(BaseConfig):
     """
 
     @classmethod
-    def fast(cls: Type[T]) -> T:
+    def fast(cls: type[T]) -> T:
         """Default fast config (returns default instance)."""
         return cls()
 
     @classmethod
-    def reliable(cls: Type[T]) -> T:
+    def reliable(cls: type[T]) -> T:
         """Default reliable config (returns default instance)."""
         return cls()
 

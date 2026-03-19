@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 LLM Integration Layer for Awareness-Guided Generation
 ======================================================
@@ -21,10 +22,10 @@ Usage:
     )
 """
 
-from typing import Protocol, Optional, Dict, Any, AsyncIterator
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from enum import Enum
-import json
+from typing import Any, Protocol
 
 
 class LLMProvider(Enum):
@@ -42,8 +43,8 @@ class LLMResponse:
     content: str
     provider: LLMProvider
     model: str
-    usage: Optional[Dict[str, int]] = None  # Token counts
-    metadata: Optional[Dict[str, Any]] = None
+    usage: dict[str, int] | None = None  # Token counts
+    metadata: dict[str, Any] | None = None
 
 
 class LLMProtocol(Protocol):
@@ -56,7 +57,7 @@ class LLMProtocol(Protocol):
     async def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -67,7 +68,7 @@ class LLMProtocol(Protocol):
     async def stream_generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -96,7 +97,7 @@ class OllamaLLM:
         - phi3:3.8b (very fast, decent quality)
     """
 
-    def __init__(self, model: str = "llama3.2:3b", base_url: Optional[str] = None):
+    def __init__(self, model: str = "llama3.2:3b", base_url: str | None = None):
         """
         Initialize Ollama LLM.
 
@@ -132,10 +133,10 @@ class OllamaLLM:
     async def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
-        format: Optional[str] = None,
+        format: str | None = None,
         **kwargs
     ) -> LLMResponse:
         """
@@ -206,7 +207,7 @@ class OllamaLLM:
     async def stream_generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -272,7 +273,7 @@ class AnthropicLLM:
         - claude-3-haiku-20240307 (fastest)
     """
 
-    def __init__(self, model: str = "claude-3-5-sonnet-20241022", api_key: Optional[str] = None):
+    def __init__(self, model: str = "claude-3-5-sonnet-20241022", api_key: str | None = None):
         """
         Initialize Anthropic LLM.
 
@@ -287,8 +288,9 @@ class AnthropicLLM:
         self._available = False
 
         try:
-            import anthropic
             import os
+
+            import anthropic
             key = api_key or os.environ.get("ANTHROPIC_API_KEY")
             if key:
                 self.client = anthropic.Anthropic(api_key=key)
@@ -304,7 +306,7 @@ class AnthropicLLM:
     async def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -368,7 +370,7 @@ class AnthropicLLM:
     async def stream_generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -420,7 +422,7 @@ class OpenAILLM:
         - gpt-3.5-turbo (fastest, lower cost)
     """
 
-    def __init__(self, model: str = "gpt-4", api_key: Optional[str] = None):
+    def __init__(self, model: str = "gpt-4", api_key: str | None = None):
         """
         Initialize OpenAI LLM.
 
@@ -435,8 +437,9 @@ class OpenAILLM:
         self._available = False
 
         try:
-            from openai import OpenAI
             import os
+
+            from openai import OpenAI
             key = api_key or os.environ.get("OPENAI_API_KEY")
             if key:
                 self.client = OpenAI(api_key=key)
@@ -452,7 +455,7 @@ class OpenAILLM:
     async def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -524,7 +527,7 @@ class OpenAILLM:
     async def stream_generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -588,7 +591,7 @@ class GeminiLLM:
         - gemini-1.5-pro (highest quality)
     """
 
-    def __init__(self, model: str = "gemini-2.0-flash", api_key: Optional[str] = None):
+    def __init__(self, model: str = "gemini-2.0-flash", api_key: str | None = None):
         """
         Initialize Gemini LLM.
 
@@ -603,8 +606,9 @@ class GeminiLLM:
         self._available = False
 
         try:
-            from google import genai
             import os
+
+            from google import genai
             key = api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
             if key:
                 self.client = genai.Client(api_key=key)
@@ -620,7 +624,7 @@ class GeminiLLM:
     async def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -685,7 +689,7 @@ class GeminiLLM:
     async def stream_generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -741,7 +745,7 @@ class GrokLLM:
         - grok-4 (highest quality)
     """
 
-    def __init__(self, model: str = "grok-4-1-fast", api_key: Optional[str] = None):
+    def __init__(self, model: str = "grok-4-1-fast", api_key: str | None = None):
         """
         Initialize Grok LLM.
 
@@ -756,8 +760,9 @@ class GrokLLM:
         self._available = False
 
         try:
-            from xai_sdk import Client
             import os
+
+            from xai_sdk import Client
             key = api_key or os.environ.get("XAI_API_KEY")
             if key:
                 self.client = Client(api_key=key)
@@ -773,7 +778,7 @@ class GrokLLM:
     async def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -824,7 +829,7 @@ class GrokLLM:
     async def stream_generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
         **kwargs
@@ -864,7 +869,7 @@ class GrokLLM:
 
 def create_llm(
     provider: str = "ollama",
-    model: Optional[str] = None,
+    model: str | None = None,
     **kwargs
 ) -> LLMProtocol:
     """

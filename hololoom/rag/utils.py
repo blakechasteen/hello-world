@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Shared utilities for RAG features.
 
@@ -9,10 +10,11 @@ Provides common patterns to reduce code duplication:
 - Async execution patterns
 """
 
-import logging
 import asyncio
-from typing import List, Dict, Any, Optional, Coroutine
+import logging
+from collections.abc import Coroutine
 from dataclasses import dataclass
+from typing import Any
 
 try:
     import numpy as np
@@ -28,7 +30,7 @@ logger = logging.getLogger(__name__)
 # Result Serialization
 # ============================================================================
 
-def result_to_dict_base(result) -> Dict[str, Any]:
+def result_to_dict_base(result) -> dict[str, Any]:
     """
     Base serialization for all RAGResult subclasses.
 
@@ -162,7 +164,7 @@ def clamp_top_k(top_k: int, max_value: int, min_value: int = 1) -> int:
 
 
 def validate_not_empty(
-    items: List[Any],
+    items: list[Any],
     name: str,
     min_length: int = 1
 ) -> bool:
@@ -244,7 +246,7 @@ class QueryStats:
             self.failed_queries += 1
         self.total_latency_ms += latency_ms
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize statistics."""
         return {
             'total_queries': self.total_queries,
@@ -260,10 +262,10 @@ class QueryStats:
 # ============================================================================
 
 async def run_parallel_with_timeout(
-    tasks: List[Coroutine],
+    tasks: list[Coroutine],
     timeout: float,
     return_exceptions: bool = False
-) -> List[Any]:
+) -> list[Any]:
     """
     Run tasks in parallel with timeout.
 
@@ -297,7 +299,7 @@ async def run_parallel_with_timeout(
 async def run_with_fallback(
     primary: Coroutine,
     fallback: Coroutine,
-    timeout: Optional[float] = None
+    timeout: float | None = None
 ) -> Any:
     """
     Run primary task with fallback if it fails.
@@ -331,7 +333,7 @@ async def run_with_fallback(
 # String Utilities
 # ============================================================================
 
-def build_path_string(entities: List[str], relationships: List[str]) -> str:
+def build_path_string(entities: list[str], relationships: list[str]) -> str:
     """
     Build graph path string efficiently.
 
@@ -363,7 +365,7 @@ def build_path_string(entities: List[str], relationships: List[str]) -> str:
     return "".join(parts)
 
 
-def deduplicate_preserving_order(items: List[Any]) -> List[Any]:
+def deduplicate_preserving_order(items: list[Any]) -> list[Any]:
     """
     Deduplicate list while preserving order.
 

@@ -14,25 +14,22 @@ Author: HoloLoom Team
 Date: November 2025
 """
 
-import asyncio
 import logging
 import time
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any
 
-from hololoom.config import Config
-from hololoom.rag.simple_rag import SimpleRAG, RAGResult
+from hololoom.apps.departments.base import BaseDepartment
 from hololoom.apps.departments.protocol import (
-    Department,
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
-    PrivacyEnvelope,
-    VerificationResult,
     DSStarCheck,
-    DepartmentConfig,
+    VerificationResult,
 )
-from hololoom.apps.departments.base import BaseDepartment
+from hololoom.config import Config
+from hololoom.rag.simple_rag import RAGResult, SimpleRAG
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +58,7 @@ class RAGDepartment(BaseDepartment):
 
     def __init__(
         self,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         llm_provider: str = "ollama",
         enable_reranking: bool = False,
         department_id: str = "rag",
@@ -91,11 +88,11 @@ class RAGDepartment(BaseDepartment):
         self.enable_reranking = enable_reranking
 
         # SimpleRAG instance (initialized in async context)
-        self.rag: Optional[SimpleRAG] = None
+        self.rag: SimpleRAG | None = None
 
         # Learning statistics
-        self._query_patterns: Dict[str, int] = {}  # Track query types
-        self._confidence_history: List[float] = []  # Track confidence over time
+        self._query_patterns: dict[str, int] = {}  # Track query types
+        self._confidence_history: list[float] = []  # Track confidence over time
         self._refinement_stats = {
             "total_refinements": 0,
             "successful_refinements": 0,
@@ -180,7 +177,7 @@ class RAGDepartment(BaseDepartment):
 
         # Validate query length (approximate token count)
         if len(query_text.split()) > 1000:
-            raise ValueError(f"Query exceeds max_query_length (1000 tokens)")
+            raise ValueError("Query exceeds max_query_length (1000 tokens)")
 
         logger.info(f"Executing RAG query: {query_text[:50]}... (mode={mode})")
 
@@ -293,7 +290,7 @@ class RAGDepartment(BaseDepartment):
         """
         logger.info(f"Verifying response (request_id={response.request_id})...")
 
-        checks: List[DSStarCheck] = []
+        checks: list[DSStarCheck] = []
         answer = response.response.get("answer", "")
         sources = response.response.get("sources", [])
 
@@ -462,7 +459,7 @@ class RAGDepartment(BaseDepartment):
             self.enable_reranking = original_reranking
             return response
 
-    async def update_strategy(self, feedback: Dict[str, Any]) -> None:
+    async def update_strategy(self, feedback: dict[str, Any]) -> None:
         """
         Learn from feedback and adapt retrieval strategies.
 
@@ -516,7 +513,7 @@ class RAGDepartment(BaseDepartment):
 
         logger.info("✓ Strategy updated")
 
-    async def get_capabilities(self) -> Dict[str, Any]:
+    async def get_capabilities(self) -> dict[str, Any]:
         """
         Report RAG Department capabilities and constraints.
 
@@ -551,7 +548,7 @@ class RAGDepartment(BaseDepartment):
             },
         }
 
-    async def get_metrics(self) -> Dict[str, Any]:
+    async def get_metrics(self) -> dict[str, Any]:
         """
         Get RAG Department metrics for monitoring.
 
@@ -644,7 +641,7 @@ class RAGDepartment(BaseDepartment):
         else:
             return "other"
 
-    def _check_domain_relevance(self, sources: List[str]) -> float:
+    def _check_domain_relevance(self, sources: list[str]) -> float:
         """Check if sources are relevant to the query domain."""
         if not sources:
             return 0.0
@@ -653,7 +650,7 @@ class RAGDepartment(BaseDepartment):
         # In production, could use domain classifier or embedding distance
         return 0.8  # Default assumption
 
-    def _check_sensibility(self, answer: str, sources: List[str]) -> float:
+    def _check_sensibility(self, answer: str, sources: list[str]) -> float:
         """Check if answer makes logical sense."""
         if not answer or not sources:
             return 0.0
@@ -671,13 +668,13 @@ class RAGDepartment(BaseDepartment):
 
         return score
 
-    def _check_temporal_freshness(self, sources: List[str]) -> float:
+    def _check_temporal_freshness(self, sources: list[str]) -> float:
         """Check age of information (in days)."""
         # Simplified: Assume sources are recent unless metadata indicates otherwise
         # In production, would extract timestamps from source metadata
         return 30.0  # Assume 30 days old (arbitrary)
 
-    def _check_argument_support(self, answer: str, sources: List[str]) -> float:
+    def _check_argument_support(self, answer: str, sources: list[str]) -> float:
         """Check if answer is supported by sources."""
         if not answer or not sources:
             return 0.0
@@ -689,7 +686,7 @@ class RAGDepartment(BaseDepartment):
 
         return support_score
 
-    def _check_reference_traceability(self, sources: List[str]) -> float:
+    def _check_reference_traceability(self, sources: list[str]) -> float:
         """Check if sources are traceable and credible."""
         if not sources:
             return 0.0
@@ -698,7 +695,7 @@ class RAGDepartment(BaseDepartment):
         # In production, would verify source URLs, dates, authors
         return 0.9  # Default assumption
 
-    async def _store_feedback(self, feedback: Dict[str, Any]) -> None:
+    async def _store_feedback(self, feedback: dict[str, Any]) -> None:
         """Store feedback for future analysis."""
         # In production, would persist to database
         # For now, just log
@@ -713,7 +710,7 @@ class RAGDepartment(BaseDepartment):
         min_confidence: float = 0.85,
         enable_decomposition: bool = True,
         enable_learning: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Recursively refine response until convergence.
 
@@ -752,7 +749,7 @@ class RAGDepartment(BaseDepartment):
             >>> print(f"Iterations: {result['iterations']}")
         """
         from hololoom.convergence.recursive_reasoner_enhanced import create_recursive_reasoner
-        from hololoom.protocols.recursive_reasoning import RecursiveConfig, ReasoningStrategy
+        from hololoom.protocols.recursive_reasoning import ReasoningStrategy, RecursiveConfig
 
         logger.info(f"Starting recursive reasoning: {query[:50]}... (max_depth={max_depth})")
 

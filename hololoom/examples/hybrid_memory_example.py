@@ -19,15 +19,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from hololoom.protocols.types import Query, MemoryShard, Features
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     from hololoom.memory.cache import create_memory_manager
     from hololoom.memory.graph import KG
-    from hololoom.memory.mem0_adapter import (
-        HybridMemoryManager,
-        Mem0Config,
-        create_hybrid_memory
-    )
-    from hololoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.memory.mem0_adapter import HybridMemoryManager, Mem0Config, create_hybrid_memory
+    from hololoom.protocols.types import Features, MemoryShard, Query
 except ImportError as e:
     print(f"Error importing HoloLoom modules: {e}")
     print("\nMake sure you're running from the repository root:")
@@ -49,12 +45,12 @@ async def main():
     print("="*80)
     print("HoloLoom + Mem0 Hybrid Memory Demo")
     print("="*80 + "\n")
-    
+
     # ========================================================================
     # Step 1: Create Sample Domain Knowledge (Beekeeping)
     # ========================================================================
     print("Step 1: Creating sample memory shards (beekeeping domain)...")
-    
+
     shards = [
         MemoryShard(
             id="shard_001",
@@ -92,37 +88,37 @@ async def main():
             motifs=["FARM_STRUCTURE"]
         )
     ]
-    
+
     print(f"  Created {len(shards)} memory shards")
     print()
-    
+
     # ========================================================================
     # Step 2: Initialize HoloLoom Components
     # ========================================================================
     print("Step 2: Initializing HoloLoom components...")
-    
+
     # Create embeddings
     emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
     print(f"  ✓ Embeddings: {emb.sizes}")
-    
+
     # Create HoloLoom memory manager
     hololoom_memory = create_memory_manager(
         shards=shards,
         emb=emb,
         root="data/demo_hybrid"
     )
-    print(f"  ✓ HoloLoom memory manager initialized")
-    
+    print("  ✓ HoloLoom memory manager initialized")
+
     # Create knowledge graph
     kg = KG()
-    print(f"  ✓ Knowledge graph initialized")
+    print("  ✓ Knowledge graph initialized")
     print()
-    
+
     # ========================================================================
     # Step 3: Configure and Initialize Hybrid Memory
     # ========================================================================
     print("Step 3: Configuring hybrid memory system...")
-    
+
     # Configure mem0 integration
     mem0_config = Mem0Config(
         enabled=True,  # Enable mem0
@@ -132,12 +128,12 @@ async def main():
         mem0_weight=0.3,  # 30% mem0, 70% HoloLoom
         hololoom_weight=0.7
     )
-    
+
     print(f"  Mem0 enabled: {mem0_config.enabled}")
     print(f"  Extraction enabled: {mem0_config.extraction_enabled}")
     print(f"  Graph sync: {mem0_config.graph_sync_enabled}")
     print(f"  Fusion weights: mem0={mem0_config.mem0_weight}, hololoom={mem0_config.hololoom_weight}")
-    
+
     try:
         # Create hybrid manager
         hybrid = create_hybrid_memory(
@@ -145,13 +141,13 @@ async def main():
             mem0_config=mem0_config,
             kg=kg
         )
-        print(f"  ✓ Hybrid memory manager created")
+        print("  ✓ Hybrid memory manager created")
         print()
-        
+
     except RuntimeError as e:
         print(f"  ⚠ Could not enable mem0: {e}")
-        print(f"  Falling back to HoloLoom-only mode")
-        
+        print("  Falling back to HoloLoom-only mode")
+
         # Fallback: disable mem0
         mem0_config.enabled = False
         hybrid = create_hybrid_memory(
@@ -160,14 +156,14 @@ async def main():
             kg=kg
         )
         print()
-    
+
     # ========================================================================
     # Step 4: Store Memories (with intelligent extraction)
     # ========================================================================
     print("Step 4: Storing user interaction...")
-    
+
     query = Query(text="How should I prepare my hives for winter?")
-    
+
     results = {
         'response': (
             "For winter preparation, ensure each hive has 60-80 lbs of honey stores. "
@@ -178,137 +174,137 @@ async def main():
         'tool': 'answer',
         'confidence': 0.92
     }
-    
+
     features = Features(
         psi=[0.1] * 384,  # Dummy embedding
         motifs=["SEASONAL", "PREPARATION"],
         metrics={},
         metadata={'query_length': len(query.text)}
     )
-    
+
     print(f"  Query: '{query.text}'")
-    print(f"  Storing in both HoloLoom and mem0...")
-    
+    print("  Storing in both HoloLoom and mem0...")
+
     await hybrid.store(
         query=query,
         results=results,
         features=features,
         user_id="blake"
     )
-    
-    print(f"  ✓ Memory stored successfully")
+
+    print("  ✓ Memory stored successfully")
     print()
-    
+
     # ========================================================================
     # Step 5: Retrieve Memories (fused approach)
     # ========================================================================
     print("Step 5: Retrieving relevant memories...")
-    
+
     test_query = Query(text="What organic treatments does Blake use?")
     print(f"  Test query: '{test_query.text}'")
     print()
-    
+
     # Retrieve using hybrid system
     context = await hybrid.retrieve(
         query=test_query,
         user_id="blake",
         k=3
     )
-    
+
     # Display results
-    print(f"  Results:")
+    print("  Results:")
     print(f"    Total shards: {len(context.shards) if hasattr(context, 'shards') else 0}")
     print(f"    Relevance score: {context.relevance if hasattr(context, 'relevance') else 'N/A':.3f}")
-    
+
     if hasattr(context, 'metadata'):
-        print(f"    Fusion metadata:")
+        print("    Fusion metadata:")
         for key, value in context.metadata.items():
             print(f"      {key}: {value}")
-    
+
     print()
-    print(f"  Top memories:")
+    print("  Top memories:")
     if hasattr(context, 'shards'):
         for i, shard in enumerate(context.shards[:3], 1):
             print(f"    {i}. [{shard.episode}] {shard.text[:80]}...")
-    
+
     print()
-    
+
     # ========================================================================
     # Step 6: Show Knowledge Graph Integration
     # ========================================================================
     print("Step 6: Knowledge graph integration...")
-    
-    print(f"  Graph stats:")
+
+    print("  Graph stats:")
     stats = kg.stats()
     for key, value in stats.items():
         print(f"    {key}: {value}")
-    
+
     print()
-    
+
     # Get entity context
     if 'Blake' in kg.G:
-        print(f"  Entity context for 'Blake':")
+        print("  Entity context for 'Blake':")
         neighbors = kg.get_neighbors('Blake', direction='both', max_hops=1)
         print(f"    Direct connections: {list(neighbors)[:5]}")
-    
+
     print()
-    
+
     # ========================================================================
     # Step 7: User Profile
     # ========================================================================
     print("Step 7: User profile from mem0...")
-    
+
     profile = await hybrid.get_user_profile(user_id="blake")
-    
+
     if profile.get('available'):
         print(f"  User: {profile['user_id']}")
         print(f"  Total memories: {profile['memory_count']}")
-        print(f"  Recent memories:")
+        print("  Recent memories:")
         for mem in profile['memories'][:3]:
             print(f"    - {mem.get('memory', '')[:60]}...")
     else:
-        print(f"  User profile not available (mem0 may be disabled)")
-    
+        print("  User profile not available (mem0 may be disabled)")
+
     print()
-    
+
     # ========================================================================
     # Step 8: Comparison (HoloLoom-only vs Hybrid)
     # ========================================================================
     print("Step 8: Comparing retrieval approaches...")
-    
+
     # HoloLoom-only retrieval
-    print(f"  Testing HoloLoom-only retrieval...")
+    print("  Testing HoloLoom-only retrieval...")
     hololoom_only_context = await hololoom_memory.retrieve(
         query=test_query,
         kg_sub=None
     )
-    
+
     hololoom_count = len(hololoom_only_context.shards) if hasattr(hololoom_only_context, 'shards') else 0
     hybrid_count = len(context.shards) if hasattr(context, 'shards') else 0
-    
+
     print(f"    HoloLoom-only: {hololoom_count} shards")
     print(f"    Hybrid (mem0+HoloLoom): {hybrid_count} shards")
-    
+
     if mem0_config.enabled:
-        print(f"    ✓ Hybrid system provides user-personalized results")
+        print("    ✓ Hybrid system provides user-personalized results")
     else:
-        print(f"    ⚠ Mem0 disabled, using HoloLoom-only")
-    
+        print("    ⚠ Mem0 disabled, using HoloLoom-only")
+
     print()
-    
+
     # ========================================================================
     # Cleanup
     # ========================================================================
     print("Step 9: Cleanup...")
     await hybrid.shutdown()
-    print(f"  ✓ Hybrid memory shutdown complete")
-    
+    print("  ✓ Hybrid memory shutdown complete")
+
     print()
     print("="*80)
     print("Demo Complete!")
     print("="*80)
     print()
-    
+
     print("Summary:")
     print("  ✓ Created domain-specific memory shards")
     print("  ✓ Initialized hybrid memory system")
@@ -316,7 +312,7 @@ async def main():
     print("  ✓ Retrieved with fused approach")
     print("  ✓ Demonstrated knowledge graph integration")
     print()
-    
+
     if mem0_config.enabled:
         print("Next steps:")
         print("  1. Customize mem0 extraction for your domain")

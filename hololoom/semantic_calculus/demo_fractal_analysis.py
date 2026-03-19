@@ -23,15 +23,10 @@ This demo shows how multi-scale semantic calculus can:
 """
 
 import asyncio
-import numpy as np
-from typing import Dict, List, Tuple
 import time
 
-from streaming_multi_scale import (
-    StreamingSemanticCalculus,
-    TemporalScale,
-    MultiScaleSnapshot
-)
+import numpy as np
+from streaming_multi_scale import MultiScaleSnapshot, StreamingSemanticCalculus, TemporalScale
 
 
 class FractalSignature:
@@ -39,20 +34,20 @@ class FractalSignature:
 
     def __init__(self, name: str):
         self.name = name
-        self.snapshots: List[MultiScaleSnapshot] = []
+        self.snapshots: list[MultiScaleSnapshot] = []
 
         # Aggregate metrics
         self.avg_momentum = 0.0
         self.avg_complexity = 0.0
         self.momentum_variance = 0.0
-        self.scale_resonance_pattern: Dict[Tuple[TemporalScale, TemporalScale], float] = {}
+        self.scale_resonance_pattern: dict[tuple[TemporalScale, TemporalScale], float] = {}
 
         # Interpretable features
         self.writing_style = ""
         self.pacing_quality = ""
         self.structural_coherence = ""
 
-    def compute_from_snapshots(self, snapshots: List[MultiScaleSnapshot]):
+    def compute_from_snapshots(self, snapshots: list[MultiScaleSnapshot]):
         """Compute signature from snapshot history."""
         self.snapshots = snapshots
 
@@ -68,7 +63,7 @@ class FractalSignature:
         self.momentum_variance = np.var(momentums)
 
         # Aggregate scale resonances
-        resonance_sums: Dict[Tuple[TemporalScale, TemporalScale], List[float]] = {}
+        resonance_sums: dict[tuple[TemporalScale, TemporalScale], list[float]] = {}
         for snapshot in snapshots:
             for resonance in snapshot.resonances:
                 pair = resonance.scale_pair

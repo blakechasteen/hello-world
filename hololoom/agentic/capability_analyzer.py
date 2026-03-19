@@ -15,9 +15,9 @@ Author: Claude Code
 Date: 2025-12-09
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Set, Optional, Any
 import re
+from dataclasses import dataclass, field
+from typing import Any
 
 from .protocol import AgentCapability, QueryComplexity
 
@@ -37,12 +37,12 @@ class CapabilityAnalysis:
         detected_keywords: Keywords that triggered capability detection
     """
     primary_capability: AgentCapability
-    secondary_capabilities: List[AgentCapability] = field(default_factory=list)
+    secondary_capabilities: list[AgentCapability] = field(default_factory=list)
     confidence: float = 0.5
     reasoning: str = ""
     requires_ensemble: bool = False
     complexity: QueryComplexity = QueryComplexity.SIMPLE
-    detected_keywords: Set[str] = field(default_factory=set)
+    detected_keywords: set[str] = field(default_factory=set)
 
 
 class QueryCapabilityAnalyzer:
@@ -60,7 +60,7 @@ class QueryCapabilityAnalyzer:
 
     # Default keyword mappings for each capability
     # Format: capability -> list of keywords/patterns
-    DEFAULT_KEYWORD_MAPPINGS: Dict[AgentCapability, List[str]] = {
+    DEFAULT_KEYWORD_MAPPINGS: dict[AgentCapability, list[str]] = {
         # Research & Analysis
         AgentCapability.RESEARCH: [
             "research", "explore", "investigate", "find out", "look up",
@@ -187,7 +187,7 @@ class QueryCapabilityAnalyzer:
         ]
 
         # Build reverse index: keyword -> capability for fast lookup
-        self._keyword_to_capability: Dict[str, AgentCapability] = {}
+        self._keyword_to_capability: dict[str, AgentCapability] = {}
         for capability, keywords in self._keyword_mappings.items():
             for keyword in keywords:
                 self._keyword_to_capability[keyword.lower()] = capability
@@ -214,8 +214,8 @@ class QueryCapabilityAnalyzer:
             )
 
         # Detect capabilities from keywords
-        detected_capabilities: Dict[AgentCapability, float] = {}
-        detected_keywords: Set[str] = set()
+        detected_capabilities: dict[AgentCapability, float] = {}
+        detected_keywords: set[str] = set()
 
         for keyword, capability in self._keyword_to_capability.items():
             if keyword in query_lower:
@@ -318,7 +318,7 @@ class QueryCapabilityAnalyzer:
     def _detect_ensemble_trigger(
         self,
         query_lower: str,
-        capabilities: Dict[AgentCapability, float]
+        capabilities: dict[AgentCapability, float]
     ) -> bool:
         """Detect if query suggests multi-agent ensemble."""
         # Check for explicit multi-capability triggers
@@ -333,8 +333,8 @@ class QueryCapabilityAnalyzer:
     def _build_reasoning(
         self,
         primary: AgentCapability,
-        secondary: List[AgentCapability],
-        keywords: Set[str],
+        secondary: list[AgentCapability],
+        keywords: set[str],
         complexity: QueryComplexity
     ) -> str:
         """Build human-readable reasoning for the analysis."""
@@ -351,13 +351,13 @@ class QueryCapabilityAnalyzer:
 
         return " | ".join(parts)
 
-    def get_capability_keywords(self) -> Dict[AgentCapability, List[str]]:
+    def get_capability_keywords(self) -> dict[AgentCapability, list[str]]:
         """Get current keyword mappings for all capabilities."""
         return dict(self._keyword_mappings)
 
     def add_custom_mapping(
         self,
-        keywords: List[str],
+        keywords: list[str],
         capability: AgentCapability
     ) -> None:
         """
@@ -375,7 +375,7 @@ class QueryCapabilityAnalyzer:
             self._keyword_mappings[capability].append(keyword_lower)
             self._keyword_to_capability[keyword_lower] = capability
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get analyzer statistics."""
         return {
             "total_capabilities": len(AgentCapability),

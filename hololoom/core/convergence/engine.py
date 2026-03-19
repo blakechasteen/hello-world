@@ -25,10 +25,11 @@ Components:
 
 import logging
 import os
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
-from enum import Enum
 from dataclasses import dataclass
+from enum import Enum
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ class ThompsonBandit:
 
         logger.debug(f"Updated bandit: tool={tool_idx}, reward={reward:.3f}")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get bandit statistics.
 
@@ -154,9 +155,9 @@ class CollapseResult:
     tool: str  # Selected tool
     tool_idx: int  # Tool index
     confidence: float  # Decision confidence
-    neural_probs: List[float]  # Neural network probabilities
+    neural_probs: list[float]  # Neural network probabilities
     strategy_used: str  # Which collapse strategy was used
-    bandit_stats: Optional[Dict] = None  # Optional bandit statistics
+    bandit_stats: dict | None = None  # Optional bandit statistics
 
 
 class ConvergenceEngine:
@@ -183,7 +184,7 @@ class ConvergenceEngine:
 
     def __init__(
         self,
-        tools: List[str],
+        tools: list[str],
         default_strategy: CollapseStrategy = CollapseStrategy.EPSILON_GREEDY,
         epsilon: float = 0.1,
         entropy_temperature: float = 0.1
@@ -211,11 +212,11 @@ class ConvergenceEngine:
         self.bandit = ThompsonBandit(self.n_tools)
 
         # Track collapses
-        self.collapse_history: List[CollapseResult] = []
+        self.collapse_history: list[CollapseResult] = []
 
         logger.info(f"ConvergenceEngine initialized: {self.n_tools} tools, strategy={default_strategy.value}, entropy_temp={entropy_temperature}")
 
-    def inject_entropy(self, probs: np.ndarray, temperature: Optional[float] = None) -> np.ndarray:
+    def inject_entropy(self, probs: np.ndarray, temperature: float | None = None) -> np.ndarray:
         """
         Inject entropy (controlled noise) into probabilities.
 
@@ -288,8 +289,8 @@ class ConvergenceEngine:
     def collapse(
         self,
         neural_probs: np.ndarray,
-        strategy: Optional[CollapseStrategy] = None,
-        epsilon: Optional[float] = None,
+        strategy: CollapseStrategy | None = None,
+        epsilon: float | None = None,
         inject_entropy: bool = True
     ) -> CollapseResult:
         """
@@ -387,7 +388,7 @@ class ConvergenceEngine:
         self,
         tool_idx: int,
         success: bool,
-        reward: Optional[float] = None
+        reward: float | None = None
     ) -> None:
         """
         Update bandit based on outcome.
@@ -404,7 +405,7 @@ class ConvergenceEngine:
 
         logger.info(f"Updated from outcome: tool_idx={tool_idx}, success={success}, reward={reward:.3f}")
 
-    def get_trace(self) -> Dict[str, Any]:
+    def get_trace(self) -> dict[str, Any]:
         """
         Get convergence trace.
 
@@ -433,7 +434,7 @@ class ConvergenceEngine:
 # ============================================================================
 
 def create_convergence_engine(
-    tools: List[str],
+    tools: list[str],
     strategy: CollapseStrategy = CollapseStrategy.EPSILON_GREEDY,
     epsilon: float = 0.1
 ) -> ConvergenceEngine:
@@ -486,7 +487,7 @@ if __name__ == "__main__":
         print("-" * 40)
 
         # Run 10 collapses
-        tool_counts = {tool: 0 for tool in tools}
+        tool_counts = dict.fromkeys(tools, 0)
 
         for i in range(10):
             result = engine.collapse(neural_probs, strategy=strategy)

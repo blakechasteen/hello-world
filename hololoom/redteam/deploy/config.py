@@ -11,8 +11,7 @@ Date: 2025-12-09
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Dict, Any
-from pathlib import Path
+from typing import Any
 
 
 class DeploymentTarget(Enum):
@@ -44,7 +43,7 @@ class ResourceLimits:
     timeout_seconds: int = 300   # Max execution time
     max_processes: int = 10      # Max spawned processes
 
-    def to_docker_limits(self) -> Dict[str, Any]:
+    def to_docker_limits(self) -> dict[str, Any]:
         """Convert to Docker resource limits."""
         return {
             "cpu_quota": int(self.cpu_cores * 100000),
@@ -53,7 +52,7 @@ class ResourceLimits:
             "pids_limit": self.max_processes,
         }
 
-    def to_k8s_limits(self) -> Dict[str, str]:
+    def to_k8s_limits(self) -> dict[str, str]:
         """Convert to Kubernetes resource limits."""
         return {
             "cpu": f"{int(self.cpu_cores * 1000)}m",
@@ -68,11 +67,11 @@ class NetworkConfig:
 
     enabled: bool = False                      # Enable network access
     egress_allowed: bool = False               # Allow outbound connections
-    allowed_hosts: List[str] = field(default_factory=list)
-    allowed_ports: List[int] = field(default_factory=list)
+    allowed_hosts: list[str] = field(default_factory=list)
+    allowed_ports: list[int] = field(default_factory=list)
     dns_enabled: bool = True                   # Allow DNS resolution
 
-    def to_network_policy(self) -> Dict[str, Any]:
+    def to_network_policy(self) -> dict[str, Any]:
         """Convert to Kubernetes NetworkPolicy spec."""
         if not self.enabled:
             return {"podSelector": {}, "policyTypes": ["Egress", "Ingress"]}
@@ -123,8 +122,8 @@ class DeploymentConfig:
     replicas: int = 1
 
     # Secrets and environment
-    env_vars: Dict[str, str] = field(default_factory=dict)
-    secrets: List[str] = field(default_factory=list)  # Secret names to mount
+    env_vars: dict[str, str] = field(default_factory=dict)
+    secrets: list[str] = field(default_factory=list)  # Secret names to mount
 
     # Monitoring
     enable_metrics: bool = True
@@ -132,7 +131,7 @@ class DeploymentConfig:
 
     # Cost tracking
     enable_cost_tracking: bool = True
-    cost_labels: Dict[str, str] = field(default_factory=dict)
+    cost_labels: dict[str, str] = field(default_factory=dict)
 
     # Paths
     working_dir: str = "/workspace"
@@ -176,7 +175,7 @@ class DeploymentConfig:
             image_pull_policy="Always",
         )
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """Validate configuration. Returns list of warnings."""
         warnings = []
 

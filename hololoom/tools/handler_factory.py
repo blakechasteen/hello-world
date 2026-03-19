@@ -24,11 +24,12 @@ Usage:
     )
 """
 
-from typing import Dict, Callable, Awaitable, Any, Optional
-from dataclasses import dataclass
 import logging
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from typing import Any
 
-from hololoom.protocols.types import Query, Context
+from hololoom.protocols.types import Context, Query
 
 
 @dataclass
@@ -39,7 +40,7 @@ class ToolHandler:
     Encapsulates handler function and metadata.
     """
     name: str
-    handler: Callable[[Query, Context, Any], Awaitable[Dict]]
+    handler: Callable[[Query, Context, Any], Awaitable[dict]]
     description: str
     requires_llm: bool = False
 
@@ -66,8 +67,8 @@ class ToolHandlerFactory:
 
     def __init__(
         self,
-        logger: Optional[logging.Logger] = None,
-        llm: Optional[Any] = None
+        logger: logging.Logger | None = None,
+        llm: Any | None = None
     ):
         """
         Initialize tool handler factory.
@@ -78,7 +79,7 @@ class ToolHandlerFactory:
         """
         self.logger = logger or logging.getLogger(__name__)
         self.llm = llm
-        self._handlers: Dict[str, ToolHandler] = {}
+        self._handlers: dict[str, ToolHandler] = {}
 
         # Register default handlers
         self._register_defaults()
@@ -86,7 +87,7 @@ class ToolHandlerFactory:
     def register(
         self,
         name: str,
-        handler: Callable[[Query, Context, Any], Awaitable[Dict]],
+        handler: Callable[[Query, Context, Any], Awaitable[dict]],
         description: str,
         requires_llm: bool = False
     ):
@@ -119,7 +120,7 @@ class ToolHandlerFactory:
         query: Query,
         context: Context,
         **kwargs
-    ) -> Dict:
+    ) -> dict:
         """
         Execute a tool handler by name.
 
@@ -169,7 +170,7 @@ class ToolHandlerFactory:
                 "status": "error"
             }
 
-    def list_handlers(self) -> Dict[str, str]:
+    def list_handlers(self) -> dict[str, str]:
         """
         List all registered handlers.
 
@@ -201,7 +202,7 @@ class ToolHandlerFactory:
         self.register("calc", self._handle_calc, "Perform calculation")
         self.register("unknown", self._handle_unknown, "Fallback for unknown tools")
 
-    async def _handle_answer(self, query: Query, context: Context, deps: Dict) -> Dict:
+    async def _handle_answer(self, query: Query, context: Context, deps: dict) -> dict:
         """
         Generate an answer based on context.
 
@@ -291,7 +292,7 @@ Answer:"""
             "packing_stats": packing_stats
         }
 
-    async def _handle_search(self, query: Query, context: Context, deps: Dict) -> Dict:
+    async def _handle_search(self, query: Query, context: Context, deps: dict) -> dict:
         """Perform a search."""
         return {
             "tool": "search",
@@ -300,7 +301,7 @@ Answer:"""
             "count": 3
         }
 
-    async def _handle_notion_write(self, query: Query, context: Context, deps: Dict) -> Dict:
+    async def _handle_notion_write(self, query: Query, context: Context, deps: dict) -> dict:
         """Write to Notion database."""
         return {
             "tool": "notion_write",
@@ -309,7 +310,7 @@ Answer:"""
             "page_id": "mock_page_123"
         }
 
-    async def _handle_calc(self, query: Query, context: Context, deps: Dict) -> Dict:
+    async def _handle_calc(self, query: Query, context: Context, deps: dict) -> dict:
         """Perform calculation."""
         return {
             "tool": "calc",
@@ -318,7 +319,7 @@ Answer:"""
             "expression": "mock_calculation"
         }
 
-    async def _handle_unknown(self, query: Query, context: Context, deps: Dict) -> Dict:
+    async def _handle_unknown(self, query: Query, context: Context, deps: dict) -> dict:
         """Handle unknown tool."""
         return {
             "tool": "unknown",
@@ -330,8 +331,8 @@ Answer:"""
 
 # Convenience factory function
 def create_tool_handler_factory(
-    logger: Optional[logging.Logger] = None,
-    llm: Optional[Any] = None
+    logger: logging.Logger | None = None,
+    llm: Any | None = None
 ) -> ToolHandlerFactory:
     """
     Create a ToolHandlerFactory with default handlers.

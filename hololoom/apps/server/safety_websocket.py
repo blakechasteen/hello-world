@@ -14,20 +14,20 @@ Features:
 """
 
 import asyncio
-import json
 import logging
 import time
-from dataclasses import dataclass, field
-from typing import Dict, Set, List, Any, Optional, Callable
-from datetime import datetime
 from collections import defaultdict
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 # Import alerting system (optional - graceful degradation if not available)
 try:
     from hololoom.alignment.alerting import (
-        alert_deception_detected,
         alert_convergence_violation,
-        alert_high_risk_action
+        alert_deception_detected,
+        alert_high_risk_action,
     )
     ALERTING_AVAILABLE = True
 except ImportError:
@@ -41,7 +41,7 @@ class SafetyClient:
     """Represents a connected WebSocket client."""
     client_id: str
     websocket: Any  # WebSocket connection
-    subscriptions: Set[str] = field(default_factory=set)
+    subscriptions: set[str] = field(default_factory=set)
     connected_at: datetime = field(default_factory=datetime.now)
     last_heartbeat: datetime = field(default_factory=datetime.now)
 
@@ -76,15 +76,15 @@ class SafetyWebSocketManager:
         Args:
             heartbeat_interval: Seconds between heartbeat checks
         """
-        self.clients: Dict[str, SafetyClient] = {}
-        self.websocket_to_id: Dict[Any, str] = {}
+        self.clients: dict[str, SafetyClient] = {}
+        self.websocket_to_id: dict[Any, str] = {}
         self.heartbeat_interval = heartbeat_interval
-        self._heartbeat_task: Optional[asyncio.Task] = None
+        self._heartbeat_task: asyncio.Task | None = None
         self._client_counter = 0
         self._lock = asyncio.Lock()
 
         # Event handlers
-        self._event_handlers: Dict[str, List[Callable]] = defaultdict(list)
+        self._event_handlers: dict[str, list[Callable]] = defaultdict(list)
 
     async def start(self):
         """Start background tasks."""
@@ -160,7 +160,7 @@ class SafetyWebSocketManager:
             del self.websocket_to_id[websocket]
             logger.info(f"Safety client disconnected: {client_id}")
 
-    async def handle_message(self, websocket: Any, data: Dict[str, Any]):
+    async def handle_message(self, websocket: Any, data: dict[str, Any]):
         """
         Handle incoming WebSocket message.
 
@@ -218,7 +218,7 @@ class SafetyWebSocketManager:
         risk_level: str,
         outcome: str,
         action: str = "",
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ):
         """
         Broadcast safety decision event.
@@ -256,7 +256,7 @@ class SafetyWebSocketManager:
         flag_type: str,
         description: str,
         confidence: float = 0.0,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ):
         """
         Broadcast deception detection flag.
@@ -301,7 +301,7 @@ class SafetyWebSocketManager:
         violation_type: str,
         description: str,
         severity: str = "WARNING",
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ):
         """
         Broadcast convergence violation event.
@@ -345,7 +345,7 @@ class SafetyWebSocketManager:
         self,
         step_type: str,
         description: str,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ):
         """
         Broadcast autonomy action event.
@@ -413,7 +413,7 @@ class SafetyWebSocketManager:
         }
         await self._broadcast("safety:alert", event)
 
-    async def broadcast_metrics_update(self, metrics: Dict[str, Any]):
+    async def broadcast_metrics_update(self, metrics: dict[str, Any]):
         """
         Broadcast alignment metrics update.
 
@@ -427,7 +427,7 @@ class SafetyWebSocketManager:
         }
         await self._broadcast("safety:metrics", event)
 
-    async def _broadcast(self, channel: str, event: Dict[str, Any]):
+    async def _broadcast(self, channel: str, event: dict[str, Any]):
         """
         Broadcast event to subscribed clients.
 
@@ -439,7 +439,7 @@ class SafetyWebSocketManager:
             if self._matches_subscription(channel, client.subscriptions):
                 await self._send_to_client(client, event)
 
-    def _matches_subscription(self, channel: str, subscriptions: Set[str]) -> bool:
+    def _matches_subscription(self, channel: str, subscriptions: set[str]) -> bool:
         """
         Check if channel matches any subscription pattern.
 
@@ -461,7 +461,7 @@ class SafetyWebSocketManager:
                 return True
         return False
 
-    async def _send_to_client(self, client: SafetyClient, data: Dict[str, Any]):
+    async def _send_to_client(self, client: SafetyClient, data: dict[str, Any]):
         """
         Send message to specific client.
 
@@ -505,7 +505,7 @@ class SafetyWebSocketManager:
             except Exception as e:
                 logger.error(f"Heartbeat loop error: {e}")
 
-    async def _get_current_metrics(self) -> Dict[str, Any]:
+    async def _get_current_metrics(self) -> dict[str, Any]:
         """
         Get current alignment metrics.
 
@@ -529,7 +529,7 @@ class SafetyWebSocketManager:
 
 
 # Global instance for easy access
-_safety_ws_manager: Optional[SafetyWebSocketManager] = None
+_safety_ws_manager: SafetyWebSocketManager | None = None
 
 
 def get_safety_ws_manager() -> SafetyWebSocketManager:

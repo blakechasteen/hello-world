@@ -9,10 +9,8 @@ Created: 2025-12-17
 """
 
 import asyncio
-import json
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
-from datetime import datetime
+from typing import Any
 
 try:
     import httpx
@@ -38,9 +36,9 @@ class HypervisorClient:
     - Agentic API (8000): Queries, audit trail, monitoring
     """
 
-    def __init__(self, config: Optional[APIConfig] = None):
+    def __init__(self, config: APIConfig | None = None):
         self.config = config or APIConfig()
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
 
     async def __aenter__(self):
         if HTTPX_AVAILABLE:
@@ -55,7 +53,7 @@ class HypervisorClient:
     # Health Checks
     # =========================================================================
 
-    async def check_agentic_health(self) -> Dict[str, Any]:
+    async def check_agentic_health(self) -> dict[str, Any]:
         """Check Agentic API health."""
         try:
             if not self._client:
@@ -65,7 +63,7 @@ class HypervisorClient:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    async def check_agent_manager_health(self) -> Dict[str, Any]:
+    async def check_agent_manager_health(self) -> dict[str, Any]:
         """Check Agent Manager API health."""
         try:
             if not self._client:
@@ -85,7 +83,7 @@ class HypervisorClient:
     # Agent Management (Agent Manager API - port 8002)
     # =========================================================================
 
-    async def list_threads(self, status: Optional[str] = None, limit: int = 50) -> Dict[str, Any]:
+    async def list_threads(self, status: str | None = None, limit: int = 50) -> dict[str, Any]:
         """List all agent threads."""
         try:
             if not self._client:
@@ -101,7 +99,7 @@ class HypervisorClient:
         except Exception as e:
             return {"error": str(e)}
 
-    async def get_thread(self, thread_id: str) -> Dict[str, Any]:
+    async def get_thread(self, thread_id: str) -> dict[str, Any]:
         """Get thread details."""
         try:
             if not self._client:
@@ -120,7 +118,7 @@ class HypervisorClient:
         agent_type: str = "weaving",
         reasoning_mode: str = "direct",
         priority: int = 0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a new agent thread."""
         try:
             if not self._client:
@@ -139,7 +137,7 @@ class HypervisorClient:
         except Exception as e:
             return {"error": str(e)}
 
-    async def cancel_thread(self, thread_id: str) -> Dict[str, Any]:
+    async def cancel_thread(self, thread_id: str) -> dict[str, Any]:
         """Cancel a running thread."""
         try:
             if not self._client:
@@ -151,7 +149,7 @@ class HypervisorClient:
         except Exception as e:
             return {"error": str(e)}
 
-    async def start_thread(self, thread_id: str) -> Dict[str, Any]:
+    async def start_thread(self, thread_id: str) -> dict[str, Any]:
         """Start a queued thread."""
         try:
             if not self._client:
@@ -163,7 +161,7 @@ class HypervisorClient:
         except Exception as e:
             return {"error": str(e)}
 
-    async def pause_thread(self, thread_id: str) -> Dict[str, Any]:
+    async def pause_thread(self, thread_id: str) -> dict[str, Any]:
         """Pause a running thread."""
         try:
             if not self._client:
@@ -175,7 +173,7 @@ class HypervisorClient:
         except Exception as e:
             return {"error": str(e)}
 
-    async def resume_thread(self, thread_id: str) -> Dict[str, Any]:
+    async def resume_thread(self, thread_id: str) -> dict[str, Any]:
         """Resume a paused thread."""
         try:
             if not self._client:
@@ -192,7 +190,7 @@ class HypervisorClient:
         thread_id: str,
         poll_interval: float = 0.5,
         timeout: float = 300.0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Wait for a thread to complete by polling."""
         import time
         start_time = time.time()
@@ -210,7 +208,7 @@ class HypervisorClient:
 
         return {"error": "Timeout waiting for thread completion", "thread_id": thread_id}
 
-    async def get_thread_steps(self, thread_id: str) -> List[Dict[str, Any]]:
+    async def get_thread_steps(self, thread_id: str) -> list[dict[str, Any]]:
         """Get steps for a thread."""
         try:
             if not self._client:
@@ -219,7 +217,7 @@ class HypervisorClient:
                 f"{self.config.agent_manager_url}/api/threads/{thread_id}/steps"
             )
             return resp.json()
-        except Exception as e:
+        except Exception:
             return []
 
     # =========================================================================
@@ -231,8 +229,8 @@ class HypervisorClient:
         text: str,
         mode: str = "verify",
         max_steps: int = 5,
-        context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Execute a query through agentic reasoning."""
         try:
             if not self._client:
@@ -256,7 +254,7 @@ class HypervisorClient:
     # Stats & Monitoring
     # =========================================================================
 
-    async def get_stats(self) -> Dict[str, Any]:
+    async def get_stats(self) -> dict[str, Any]:
         """Get server statistics."""
         try:
             if not self._client:
@@ -266,7 +264,7 @@ class HypervisorClient:
         except Exception as e:
             return {"error": str(e)}
 
-    async def get_agent_manager_stats(self) -> Dict[str, Any]:
+    async def get_agent_manager_stats(self) -> dict[str, Any]:
         """Get agent manager statistics."""
         try:
             if not self._client:
@@ -286,7 +284,7 @@ class HypervisorClient:
     # Audit Trail
     # =========================================================================
 
-    async def get_audit_trail(self, limit: int = 100) -> Dict[str, Any]:
+    async def get_audit_trail(self, limit: int = 100) -> dict[str, Any]:
         """Get audit trail entries."""
         try:
             if not self._client:
@@ -303,7 +301,7 @@ class HypervisorClient:
     # Cluster (Federation)
     # =========================================================================
 
-    async def get_cluster_status(self) -> Dict[str, Any]:
+    async def get_cluster_status(self) -> dict[str, Any]:
         """Get cluster status (requires federation)."""
         # Check agent manager health as proxy for cluster
         health = await self.check_agent_manager_health()
@@ -322,7 +320,7 @@ class HypervisorClient:
                 "message": health.get("message", "Agent Manager not running")
             }
 
-    async def get_cluster_nodes(self) -> List[Dict[str, Any]]:
+    async def get_cluster_nodes(self) -> list[dict[str, Any]]:
         """Get cluster nodes."""
         health = await self.check_agent_manager_health()
 
@@ -339,6 +337,6 @@ class HypervisorClient:
 
 
 # Convenience function
-def create_client(config: Optional[APIConfig] = None) -> HypervisorClient:
+def create_client(config: APIConfig | None = None) -> HypervisorClient:
     """Create a HypervisorClient instance."""
     return HypervisorClient(config)

@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from ..types import FederationNode, Query, Response
 
@@ -62,13 +63,13 @@ class TransportMessage:
 
     type: MessageType
     sender_id: str                              # Node ID of sender
-    target_id: Optional[str] = None             # Target node ID (if specific)
+    target_id: str | None = None             # Target node ID (if specific)
     request_id: str = ""                        # Correlation ID for request/response
-    payload: Dict[str, Any] = field(default_factory=dict)
+    payload: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
     signature: bytes = b""                      # Ed25519 signature
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "type": self.type.name,
@@ -81,7 +82,7 @@ class TransportMessage:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "TransportMessage":
+    def from_dict(cls, data: dict[str, Any]) -> TransportMessage:
         """Create from dictionary (JSON deserialization)."""
         return cls(
             type=MessageType[data["type"]],
@@ -99,8 +100,8 @@ class TransportResponse:
     """Response from a transport operation."""
 
     success: bool
-    message: Optional[TransportMessage] = None
-    error: Optional[str] = None
+    message: TransportMessage | None = None
+    error: str | None = None
     latency_ms: float = 0.0
 
 
@@ -149,10 +150,10 @@ class TransportProtocol(Protocol):
 
     async def broadcast(
         self,
-        nodes: List[FederationNode],
+        nodes: list[FederationNode],
         message: TransportMessage,
         timeout_ms: int = 5000,
-    ) -> List[TransportResponse]:
+    ) -> list[TransportResponse]:
         """
         Send message to multiple nodes in parallel.
 
@@ -208,7 +209,7 @@ class BaseTransport(ABC):
     def __init__(self, node_id: str):
         self._node_id = node_id
         self._running = False
-        self._handler: Optional[MessageHandler] = None
+        self._handler: MessageHandler | None = None
 
         # Metrics
         self._messages_sent = 0
@@ -226,7 +227,7 @@ class BaseTransport(ABC):
         """This node's ID."""
         return self._node_id
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get transport metrics."""
         return {
             "messages_sent": self._messages_sent,
@@ -248,10 +249,10 @@ class BaseTransport(ABC):
 
     async def broadcast(
         self,
-        nodes: List[FederationNode],
+        nodes: list[FederationNode],
         message: TransportMessage,
         timeout_ms: int = 5000,
-    ) -> List[TransportResponse]:
+    ) -> list[TransportResponse]:
         """
         Default broadcast implementation - send to each node in parallel.
 
@@ -286,7 +287,7 @@ class BaseTransport(ABC):
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def create_http_transport(node_id: str) -> "HTTPTransport":
+def create_http_transport(node_id: str) -> HTTPTransport:
     """
     Create an HTTP/JSON transport.
 

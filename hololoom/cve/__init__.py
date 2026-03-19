@@ -30,35 +30,48 @@ Quick Start:
     # Open http://localhost:8001 in your browser
 """
 
+# Extractors
+from hololoom.cve.cognitive_extractors import (
+    # Individual extractors
+    AwarenessGraphExtractor,
+    MemoryExtractor,
+    PolicyExtractor,
+    ReflectionExtractor,
+    TokenStreamExtractor,
+    # Unified extractor
+    UnifiedCognitiveExtractor,
+    WeavingCycleExtractor,
+    create_cognitive_frame,
+    # Convenience functions
+    extract_from_awareness,
+    extract_from_bandit,
+    extract_from_spacetime,
+)
 from hololoom.cve.cognitive_protocol import (
-    # Viz Types
-    CognitiveVizType,
-
+    # Primitives
+    ActivationField,
+    AttentionFlow,
     # Core Data Structures
     CognitiveEvent,
     CognitiveFrame,
-    CognitiveStream,
-
-    # Primitives
-    ActivationField,
-    ProbabilityManifold,
-    SemanticPosition,
-    SemanticTrajectory,
-    KnowledgeGraph3D,
-    TokenStream,
-    DecisionCollapse,
-    AttentionFlow,
-    ReasoningChain,
-    MemoryRetrieval,
-    ConfidenceFlow,
-    ToolSelection,
-    ContextExpansion,
-    WeavingCycle,
-    ReflectionLoop,
-
     # Protocol
     CognitiveRenderer,
-
+    CognitiveStream,
+    # Viz Types
+    CognitiveVizType,
+    ConfidenceFlow,
+    ContextExpansion,
+    DecisionCollapse,
+    KnowledgeGraph3D,
+    MemoryRetrieval,
+    ProbabilityManifold,
+    ReasoningChain,
+    ReflectionLoop,
+    SemanticPosition,
+    SemanticTrajectory,
+    TokenStream,
+    ToolSelection,
+    WeavingCycle,
     # Utilities
     create_event,
     create_frame,
@@ -71,25 +84,6 @@ from hololoom.cve.tufte_renderer import (
     render_cognitive_frame,
 )
 
-# Extractors
-from hololoom.cve.cognitive_extractors import (
-    # Individual extractors
-    AwarenessGraphExtractor,
-    PolicyExtractor,
-    WeavingCycleExtractor,
-    MemoryExtractor,
-    ReflectionExtractor,
-    TokenStreamExtractor,
-
-    # Unified extractor
-    UnifiedCognitiveExtractor,
-
-    # Convenience functions
-    extract_from_awareness,
-    extract_from_bandit,
-    extract_from_spacetime,
-    create_cognitive_frame,
-)
 
 # Server (lazy import to avoid FastAPI dependency if not needed)
 def create_cve_app():

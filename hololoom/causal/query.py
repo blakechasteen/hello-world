@@ -8,8 +8,8 @@ Defines queries for Pearl's three-level causal hierarchy:
 """
 
 from dataclasses import dataclass
-from typing import Dict, Set, Optional, Any
 from enum import Enum
+from typing import Any
 
 
 class QueryType(Enum):
@@ -67,12 +67,12 @@ class CausalQuery:
     """
     query_type: QueryType
     outcome: str                          # Variable of interest
-    treatment: Optional[str] = None       # Intervention variable
-    treatment_value: Optional[Any] = None # Value to set/intervene
-    control_value: Optional[Any] = None   # Control value (for ATE)
-    evidence: Dict[str, Any] = None       # Observed/conditioning variables
-    confounders: Optional[Set[str]] = None  # Known confounders to adjust for
-    mediators: Optional[Set[str]] = None    # Known mediators
+    treatment: str | None = None       # Intervention variable
+    treatment_value: Any | None = None # Value to set/intervene
+    control_value: Any | None = None   # Control value (for ATE)
+    evidence: dict[str, Any] = None       # Observed/conditioning variables
+    confounders: set[str] | None = None  # Known confounders to adjust for
+    mediators: set[str] | None = None    # Known mediators
     description: str = ""                 # Human-readable description
 
     def __post_init__(self):
@@ -203,8 +203,8 @@ class CausalAnswer:
     method: str
     assumptions: list[str] = None
     explanation: str = ""
-    sensitivity: Optional[float] = None
-    metadata: Dict[str, Any] = None
+    sensitivity: float | None = None
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         """Initialize lists/dicts if None."""

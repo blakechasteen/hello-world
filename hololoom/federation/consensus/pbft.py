@@ -18,21 +18,19 @@ Reference:
 
 from __future__ import annotations
 
-import asyncio
 import hashlib
 import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Dict, FrozenSet, List, Optional, Set
+from typing import Any
 
 from .protocol import (
     ConsensusProtocol,
     ConsensusResult,
     FinalityType,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -105,15 +103,15 @@ class PBFTProposal:
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     # Message collections
-    pre_prepare: Optional[PrePrepareMessage] = None
-    prepares: Dict[str, PrepareMessage] = field(default_factory=dict)
-    commits: Dict[str, CommitMessage] = field(default_factory=dict)
+    pre_prepare: PrePrepareMessage | None = None
+    prepares: dict[str, PrepareMessage] = field(default_factory=dict)
+    commits: dict[str, CommitMessage] = field(default_factory=dict)
 
     # State
     prepared: bool = False
     committed: bool = False
     executed: bool = False
-    result: Optional[ConsensusResult] = None
+    result: ConsensusResult | None = None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -184,7 +182,7 @@ class PBFTConsensus(ConsensusProtocol):
 
         # State
         self._sequence_number = 0
-        self._proposals: Dict[str, PBFTProposal] = {}
+        self._proposals: dict[str, PBFTProposal] = {}
 
         logger.debug(
             f"PBFT initialized: n={total_nodes}, f={self._f}, quorum={self._quorum}"
@@ -456,7 +454,7 @@ class PBFTConsensus(ConsensusProtocol):
 
         return result
 
-    async def get_state(self) -> Dict[str, Any]:
+    async def get_state(self) -> dict[str, Any]:
         """Get current protocol state."""
         base = await super().get_state()
         base.update({

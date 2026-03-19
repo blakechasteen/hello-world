@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Department Registry - Central registry for department discovery and management.
 
@@ -17,14 +16,20 @@ composable, discoverable, and marketplace-ready."
 """
 
 from __future__ import annotations
-from typing import Dict, List, Optional, Set, Any
-from dataclasses import dataclass
-import logging
+
 import asyncio
+import logging
+from dataclasses import dataclass
 
-from hololoom.protocols.department import Department, DepartmentManifest, DepartmentRequest, DepartmentResponse, DepartmentConfig
+from hololoom.protocols.department import (
+    Department,
+    DepartmentConfig,
+    DepartmentManifest,
+    DepartmentRequest,
+    DepartmentResponse,
+)
+
 from .base import BaseDepartment
-
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +47,7 @@ class DepartmentInstance:
     health_status: str = "healthy"  # "healthy" | "degraded" | "unhealthy"
     request_count: int = 0  # Total requests served
     active_requests: int = 0  # Currently executing requests
-    last_health_check: Optional[float] = None  # Timestamp of last health check
+    last_health_check: float | None = None  # Timestamp of last health check
 
 
 class DepartmentRegistry:
@@ -89,21 +94,21 @@ class DepartmentRegistry:
     def __init__(self):
         """Initialize empty registry."""
         # Core registry: name → [instances]
-        self._departments: Dict[str, List[DepartmentInstance]] = {}
+        self._departments: dict[str, list[DepartmentInstance]] = {}
 
         # Indexes for fast lookup
-        self._by_domain: Dict[str, Set[str]] = {}  # domain → {department_names}
-        self._by_task: Dict[str, Set[str]] = {}    # task_type → {department_names}
+        self._by_domain: dict[str, set[str]] = {}  # domain → {department_names}
+        self._by_task: dict[str, set[str]] = {}    # task_type → {department_names}
 
         # Version tracking: name → {version → instance}
-        self._versions: Dict[str, Dict[str, DepartmentInstance]] = {}
+        self._versions: dict[str, dict[str, DepartmentInstance]] = {}
 
         # Dependency graph: name → {required_names}
-        self._dependencies: Dict[str, Set[str]] = {}
+        self._dependencies: dict[str, set[str]] = {}
 
         # Health monitoring
         self._health_check_interval = 60.0  # seconds
-        self._health_check_task: Optional[asyncio.Task] = None
+        self._health_check_task: asyncio.Task | None = None
 
         # Lifecycle
         self._closed = False
@@ -117,7 +122,7 @@ class DepartmentRegistry:
     async def register(
         self,
         department: Department,
-        manifest: Optional[DepartmentManifest] = None
+        manifest: DepartmentManifest | None = None
     ) -> None:
         """
         Register a department in the registry.
@@ -192,7 +197,7 @@ class DepartmentRegistry:
         if len(self._departments) == 1 and self._health_check_task is None:
             self._health_check_task = asyncio.create_task(self._health_monitor_loop())
 
-    async def unregister(self, name: str, version: Optional[str] = None) -> None:
+    async def unregister(self, name: str, version: str | None = None) -> None:
         """
         Unregister a department from the registry.
 
@@ -248,8 +253,8 @@ class DepartmentRegistry:
     def get_department(
         self,
         name: str,
-        version: Optional[str] = None
-    ) -> Optional[Department]:
+        version: str | None = None
+    ) -> Department | None:
         """
         Get a department by name and optional version.
 
@@ -276,7 +281,7 @@ class DepartmentRegistry:
 
         return self._versions[name][version].department
 
-    def find_by_domain(self, domain: str) -> List[Department]:
+    def find_by_domain(self, domain: str) -> list[Department]:
         """
         Find all departments in a specific domain.
 
@@ -296,7 +301,7 @@ class DepartmentRegistry:
             if self.get_department(name) is not None
         ]
 
-    def find_by_task(self, task_type: str) -> List[Department]:
+    def find_by_task(self, task_type: str) -> list[Department]:
         """
         Find all departments that support a specific task type.
 
@@ -316,7 +321,7 @@ class DepartmentRegistry:
             if self.get_department(name) is not None
         ]
 
-    def list_departments(self) -> List[DepartmentManifest]:
+    def list_departments(self) -> list[DepartmentManifest]:
         """
         List all registered departments with their manifests.
 
@@ -333,7 +338,7 @@ class DepartmentRegistry:
     # Dependency Resolution
     # ========================================================================
 
-    def resolve_dependencies(self, name: str) -> List[str]:
+    def resolve_dependencies(self, name: str) -> list[str]:
         """
         Resolve all dependencies for a department (recursive).
 
@@ -349,7 +354,7 @@ class DepartmentRegistry:
         visited = set()
         result = []
 
-        def visit(dept_name: str, path: Set[str]):
+        def visit(dept_name: str, path: set[str]):
             if dept_name in path:
                 # Circular dependency
                 cycle = " -> ".join(list(path) + [dept_name])
@@ -398,7 +403,7 @@ class DepartmentRegistry:
     async def route_request(
         self,
         request: DepartmentRequest,
-        department_name: Optional[str] = None
+        department_name: str | None = None
     ) -> DepartmentResponse:
         """
         Route a request to the appropriate department.
@@ -434,7 +439,7 @@ class DepartmentRegistry:
             )
 
         if instance is None:
-            raise ValueError(f"No healthy instance available")
+            raise ValueError("No healthy instance available")
 
         # Execute request
         instance.active_requests += 1
@@ -448,7 +453,7 @@ class DepartmentRegistry:
     async def _select_instance(
         self,
         name: str
-    ) -> Optional[DepartmentInstance]:
+    ) -> DepartmentInstance | None:
         """
         Select a specific department instance.
 
@@ -479,8 +484,8 @@ class DepartmentRegistry:
 
     async def _select_best_instance(
         self,
-        candidate_names: List[str]
-    ) -> Optional[DepartmentInstance]:
+        candidate_names: list[str]
+    ) -> DepartmentInstance | None:
         """
         Select the best department instance from multiple candidates.
 

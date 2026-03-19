@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 HoloLoom Workflow Executor
 ===========================
@@ -22,12 +22,11 @@ import asyncio
 import json
 import logging
 import uuid
-from typing import Dict, List, Any, Optional
 from datetime import datetime
-from pathlib import Path
+from typing import Any, Optional
 
 try:
-    from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile
+    from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.staticfiles import StaticFiles
     from pydantic import BaseModel
@@ -36,10 +35,11 @@ except ImportError:
     raise
 
 try:
-    from hololoom.unified_api import HoloLoom
-    from hololoom.config import Config
-    from hololoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel
     from hololoom.recursive.full_learning_loop import FullLearningEngine
+
+    from hololoom.alignment.safety_guardrails import RiskLevel, SafetyGuardrails
+    from hololoom.config import Config
+    from hololoom.unified_api import HoloLoom
 except ImportError as e:
     print(f"HoloLoom imports failed: {e}")
     print("Make sure PYTHONPATH is set to repository root")
@@ -48,7 +48,10 @@ except ImportError as e:
 # Import new production components (persistence, auth, CRDT, agents)
 try:
     from hololoom.apps.workflow_builder.workflow_persistence import (
-        WorkflowPersistence, WorkflowRecord, VersionRecord, ExecutionRecord
+        ExecutionRecord,
+        VersionRecord,
+        WorkflowPersistence,
+        WorkflowRecord,
     )
     PERSISTENCE_AVAILABLE = True
 except ImportError as e:
@@ -57,8 +60,11 @@ except ImportError as e:
 
 try:
     from hololoom.apps.workflow_builder.workflow_auth import (
-        get_auth_context, require_permission, AuthContext,
-        is_multi_user_enabled, get_current_mode
+        AuthContext,
+        get_auth_context,
+        get_current_mode,
+        is_multi_user_enabled,
+        require_permission,
     )
     AUTH_AVAILABLE = True
 except ImportError as e:
@@ -67,7 +73,10 @@ except ImportError as e:
 
 try:
     from hololoom.apps.workflow_builder.workflow_crdt import (
-        WorkflowCRDTState, CRDTStateManager, OperationType, Operation
+        CRDTStateManager,
+        Operation,
+        OperationType,
+        WorkflowCRDTState,
     )
     CRDT_V2_AVAILABLE = True
 except ImportError as e:
@@ -75,9 +84,8 @@ except ImportError as e:
     CRDT_V2_AVAILABLE = False
 
 try:
-    from hololoom.apps.workflow_builder.workflow_agents import (
-        WorkflowAgentExecutor, AgentResult, execute_agent as execute_real_agent
-    )
+    from hololoom.apps.workflow_builder.workflow_agents import AgentResult, WorkflowAgentExecutor
+    from hololoom.apps.workflow_builder.workflow_agents import execute_agent as execute_real_agent
     REAL_AGENTS_AVAILABLE = True
 except ImportError as e:
     print(f"Real agents module not available: {e}")
@@ -130,7 +138,7 @@ class WorkflowNode(BaseModel):
     agentType: str
     x: float
     y: float
-    config: Dict[str, Any]
+    config: dict[str, Any]
 
 class WorkflowConnection(BaseModel):
     id: str
@@ -143,17 +151,17 @@ class WorkflowConnection(BaseModel):
 class Workflow(BaseModel):
     version: str
     name: str
-    nodes: List[WorkflowNode]
-    connections: List[WorkflowConnection]
+    nodes: list[WorkflowNode]
+    connections: list[WorkflowConnection]
 
 class ExecutionRequest(BaseModel):
     workflow: Workflow
-    input_data: Optional[Dict[str, Any]] = None
+    input_data: dict[str, Any] | None = None
 
 class SaveVersionRequest(BaseModel):
     workflow: Workflow
     message: str
-    description: Optional[str] = None
+    description: str | None = None
     branch: str = 'main'
     timestamp: str
 
@@ -164,22 +172,22 @@ class CreateBranchRequest(BaseModel):
 
 class URLIngestRequest(BaseModel):
     url: str
-    options: Dict[str, Any] = {}
+    options: dict[str, Any] = {}
 
 class FileIngestResponse(BaseModel):
     job_id: str
     shards_created: int
     filename: str
-    content_type: Optional[str] = None
+    content_type: str | None = None
     file_size: int = 0
-    warning: Optional[str] = None
+    warning: str | None = None
 
 class URLIngestResponse(BaseModel):
     job_id: str
     shards_created: int
     url: str
-    options_applied: Dict[str, Any] = {}
-    warning: Optional[str] = None
+    options_applied: dict[str, Any] = {}
+    warning: str | None = None
 
 class EntityRelationship(BaseModel):
     target: str
@@ -188,16 +196,16 @@ class EntityRelationship(BaseModel):
 
 class EntityResponse(BaseModel):
     entity_id: str
-    content: Optional[str] = None
-    metadata: Dict[str, Any] = {}
-    relationships: List[EntityRelationship] = []
+    content: str | None = None
+    metadata: dict[str, Any] = {}
+    relationships: list[EntityRelationship] = []
     relationship_count: int = 0
 
 # Collaboration Models
 class CollaborationSession(BaseModel):
     session_id: str
     workflow_id: str
-    participants: List[Dict[str, Any]] = []
+    participants: list[dict[str, Any]] = []
     created_at: float
 
 class CursorUpdate(BaseModel):
@@ -211,7 +219,7 @@ class PresenceUpdate(BaseModel):
     user_id: str
     user_name: str
     status: str  # "active", "idle", "editing"
-    selected_node: Optional[str] = None
+    selected_node: str | None = None
 
 class NodeLockRequest(BaseModel):
     user_id: str
@@ -221,7 +229,7 @@ class NodeLockRequest(BaseModel):
 class JoinSessionRequest(BaseModel):
     user_id: str
     user_name: str
-    color: Optional[str] = None
+    color: str | None = None
 
 # Optimization Models
 class OptimizationSuggestion(BaseModel):
@@ -231,7 +239,7 @@ class OptimizationSuggestion(BaseModel):
     description: str
     expected_improvement: float  # percentage
     confidence: float
-    affected_nodes: List[str]
+    affected_nodes: list[str]
 
 class PerformanceProfile(BaseModel):
     node_id: str
@@ -356,7 +364,7 @@ def get_real_performance_stats(node_type: str) -> dict:
     }
 
 
-def record_workflow_pattern(workflow_name: str, node_sequence: List[str], success: bool, total_latency_ms: float):
+def record_workflow_pattern(workflow_name: str, node_sequence: list[str], success: bool, total_latency_ms: float):
     """Record a workflow execution pattern for pattern mining."""
     global workflow_pattern_history
 
@@ -375,20 +383,20 @@ def record_workflow_pattern(workflow_name: str, node_sequence: List[str], succes
         workflow_pattern_history = workflow_pattern_history[-500:]
 
 # Global state
-active_workflows: Dict[str, "WorkflowExecutor"] = {}
-ws_connections: List[WebSocket] = []
-version_store: Dict[int, Dict[str, Any]] = {}
+active_workflows: dict[str, "WorkflowExecutor"] = {}
+ws_connections: list[WebSocket] = []
+version_store: dict[int, dict[str, Any]] = {}
 version_counter = 0
-branch_store: Dict[str, Dict[str, Any]] = {
+branch_store: dict[str, dict[str, Any]] = {
     'main': {'versions': [], 'head': None}
 }
 
 # Execution logs storage (Wave 5.6)
-execution_logs: List[Dict[str, Any]] = []
+execution_logs: list[dict[str, Any]] = []
 MAX_EXECUTION_LOGS = 1000
 
 # WebSocket execution state (Wave 5.6)
-active_ws_executions: Dict[str, Dict[str, Any]] = {}  # execution_id -> {executor, status, progress, cancelled}
+active_ws_executions: dict[str, dict[str, Any]] = {}  # execution_id -> {executor, status, progress, cancelled}
 
 # Production persistence and CRDT v2 (December 2025)
 _workflow_persistence: Optional['WorkflowPersistence'] = None
@@ -420,7 +428,7 @@ def get_crdt_manager() -> Optional['CRDTStateManager']:
     return _crdt_state_manager
 
 
-async def broadcast_log(level: str, message: str, node_id: Optional[str] = None, execution_id: Optional[str] = None):
+async def broadcast_log(level: str, message: str, node_id: str | None = None, execution_id: str | None = None):
     """
     Broadcast a log message to all WebSocket clients.
 
@@ -463,8 +471,8 @@ async def broadcast_workflow_status(
     execution_id: str,
     status: str,
     progress: float = 0.0,
-    error: Optional[str] = None,
-    result: Optional[Dict[str, Any]] = None
+    error: str | None = None,
+    result: dict[str, Any] | None = None
 ):
     """
     Broadcast workflow execution status to all WebSocket clients.
@@ -505,9 +513,9 @@ async def broadcast_node_event(
     execution_id: str,
     node_id: str,
     event: str,  # 'start', 'complete', 'error'
-    output: Optional[Any] = None,
-    error: Optional[str] = None,
-    elapsed_ms: Optional[float] = None
+    output: Any | None = None,
+    error: str | None = None,
+    elapsed_ms: float | None = None
 ):
     """
     Broadcast node execution event to all WebSocket clients.
@@ -550,7 +558,7 @@ async def execute_workflow_with_streaming(
     executor: "WorkflowExecutor",
     execution_id: str,
     websocket: WebSocket
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Execute a workflow with real-time streaming updates via WebSocket.
 
@@ -649,8 +657,8 @@ async def execute_workflow_with_streaming(
 
 
 # Collaboration state
-collaboration_sessions: Dict[str, Dict[str, Any]] = {}  # session_id -> {workflow_id, participants, cursor_positions, last_activity}
-presence_subscriptions: Dict[WebSocket, str] = {}  # websocket -> session_id
+collaboration_sessions: dict[str, dict[str, Any]] = {}  # session_id -> {workflow_id, participants, cursor_positions, last_activity}
+presence_subscriptions: dict[WebSocket, str] = {}  # websocket -> session_id
 
 
 class WorkflowCRDT:
@@ -664,8 +672,8 @@ class WorkflowCRDT:
     def __init__(self, workflow_id: str):
         self.workflow_id = workflow_id
         self.state = {"nodes": {}, "connections": {}}
-        self.vector_clock: Dict[str, float] = {}  # user_id -> timestamp
-        self.node_locks: Dict[str, Dict[str, Any]] = {}  # node_id -> {user_id, locked_at}
+        self.vector_clock: dict[str, float] = {}  # user_id -> timestamp
+        self.node_locks: dict[str, dict[str, Any]] = {}  # node_id -> {user_id, locked_at}
 
     def apply_operation(self, user_id: str, operation: dict) -> dict:
         """
@@ -774,7 +782,7 @@ class WorkflowCRDT:
                 return True
         return False
 
-    def get_lock_status(self, node_id: str) -> Optional[Dict[str, Any]]:
+    def get_lock_status(self, node_id: str) -> dict[str, Any] | None:
         """Get current lock status for a node."""
         return self.node_locks.get(node_id)
 
@@ -784,30 +792,30 @@ class WorkflowExecutor:
     Executes a workflow graph with topological ordering and dependency resolution.
     """
 
-    def __init__(self, workflow: Workflow, input_data: Optional[Dict] = None):
+    def __init__(self, workflow: Workflow, input_data: dict | None = None):
         self.workflow = workflow
         self.input_data = input_data or {}
-        self.results: Dict[str, Any] = {}
+        self.results: dict[str, Any] = {}
         self.executed_nodes: set = set()
-        self.hololoom: Optional[HoloLoom] = None
+        self.hololoom: HoloLoom | None = None
         self.safety_guardrails = SafetyGuardrails(enable_human_in_loop=False)
 
         # Initialize real agent executor if available
-        self._agent_executor: Optional['WorkflowAgentExecutor'] = None
+        self._agent_executor: WorkflowAgentExecutor | None = None
         if REAL_AGENTS_AVAILABLE:
             self._agent_executor = WorkflowAgentExecutor()
 
     @property
-    def node_map(self) -> Dict[str, WorkflowNode]:
+    def node_map(self) -> dict[str, WorkflowNode]:
         """Map node IDs to nodes for O(1) lookup."""
         return {node.id: node for node in self.workflow.nodes}
 
     @property
-    def connection_map(self) -> Dict[str, WorkflowConnection]:
+    def connection_map(self) -> dict[str, WorkflowConnection]:
         """Map connection IDs to connections."""
         return {conn.id: conn for conn in self.workflow.connections}
 
-    def topological_sort(self) -> List[str]:
+    def topological_sort(self) -> list[str]:
         """
         Kahn's algorithm for topological sort.
 
@@ -856,7 +864,7 @@ class WorkflowExecutor:
         if self.hololoom:
             await self.hololoom.close()
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """
         Execute the workflow in topological order.
 
@@ -989,7 +997,7 @@ class WorkflowExecutor:
 
         return False
 
-    def find_start_nodes(self) -> List[str]:
+    def find_start_nodes(self) -> list[str]:
         """Find nodes with no incoming connections."""
         all_nodes = {n.id for n in self.workflow.nodes}
         nodes_with_inputs = {c.to for c in self.workflow.connections}
@@ -1002,11 +1010,11 @@ class WorkflowExecutor:
                 return node
         raise ValueError(f"Node not found: {node_id}")
 
-    def get_node_dependencies(self, node_id: str) -> List[str]:
+    def get_node_dependencies(self, node_id: str) -> list[str]:
         """Get IDs of nodes that must execute before this node."""
         return [c.from_node for c in self.workflow.connections if c.to == node_id]
 
-    def get_dependent_nodes(self, node_id: str) -> List[str]:
+    def get_dependent_nodes(self, node_id: str) -> list[str]:
         """Get IDs of nodes that depend on this node."""
         return [c.to for c in self.workflow.connections if c.from_node == node_id]
 
@@ -1060,7 +1068,7 @@ class WorkflowExecutor:
 
         logger.info(f"Node {node.id} completed in {latency_ms:.2f}ms (success={success})")
 
-    async def execute_agent(self, node: WorkflowNode, inputs: Dict) -> Any:
+    async def execute_agent(self, node: WorkflowNode, inputs: dict) -> Any:
         """
         Execute specific agent type.
 
@@ -1535,7 +1543,10 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Handle based on CRDT version
                     if crdt_version == 'v2' and CRDT_V2_AVAILABLE:
                         # CRDT v2: Create proper operation with vector clock
-                        from hololoom.apps.workflow_builder.workflow_crdt import OperationType, Operation
+                        from hololoom.apps.workflow_builder.workflow_crdt import (
+                            Operation,
+                            OperationType,
+                        )
 
                         op_type_str = operation_data.get('type', 'update_node')
                         op_type_map = {
@@ -1704,7 +1715,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     else:
                         # Broadcast completion
                         await broadcast_workflow_status(execution_id, 'complete', progress=100.0, result=result)
-                        await broadcast_log('INFO', f'Workflow completed successfully', execution_id=execution_id)
+                        await broadcast_log('INFO', 'Workflow completed successfully', execution_id=execution_id)
 
                 except Exception as e:
                     logger.error(f"WebSocket workflow execution failed: {e}")
@@ -1803,7 +1814,7 @@ async def websocket_endpoint(websocket: WebSocket):
         ws_connections.remove(websocket)
 
 
-async def broadcast_to_session(session_id: str, message: dict, exclude_ws: Optional[WebSocket] = None):
+async def broadcast_to_session(session_id: str, message: dict, exclude_ws: WebSocket | None = None):
     """
     Broadcast a message to all participants in a collaboration session.
 
@@ -1971,7 +1982,7 @@ async def create_branch(request: CreateBranchRequest):
 
 
 @app.get("/api/workflow/versions")
-async def get_versions(branch: Optional[str] = None):
+async def get_versions(branch: str | None = None):
     """Get version history, optionally filtered by branch."""
     versions = []
 
@@ -2712,7 +2723,7 @@ async def get_next_node_suggestions(current: str = "", k: int = 5):
 
     Returns suggestions with confidence scores and pattern sources.
     """
-    from pattern_miner import suggest_next_nodes, get_pattern_miner
+    from pattern_miner import get_pattern_miner, suggest_next_nodes
 
     # Parse current nodes
     current_nodes = [n.strip() for n in current.split(',') if n.strip()]
@@ -2744,7 +2755,7 @@ async def get_workflow_patterns(min_frequency: int = 2, pattern_type: str = "all
 
     Returns list of common node sequences with success rates.
     """
-    from pattern_miner import get_common_patterns, get_pattern_miner
+    from pattern_miner import get_common_patterns
 
     patterns = get_common_patterns(min_frequency=min_frequency)
 

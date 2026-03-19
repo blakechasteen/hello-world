@@ -16,17 +16,17 @@ Date: October 30, 2025
 """
 
 import asyncio
-import numpy as np
-from datetime import datetime, timedelta
-from typing import List, AsyncIterator
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+
+import numpy as np
 
 # Note: In real use, these would be actual imports
 # from hololoom.memory.multi_wave_engine import MultiWaveMemoryEngine, BrainWaveMode
 # from hololoom.protocols.types import MemoryShard
-from hololoom.memory.multi_wave_engine import MultiWaveMemoryEngine, BrainWaveMode
+from hololoom.memory.multi_wave_engine import BrainWaveMode, MultiWaveMemoryEngine
 from hololoom.memory.spring_dynamics_engine import SpringEngineConfig
-
 
 # ============================================================================
 # Mock MemoryShard (simulates SpinningWheel output)
@@ -52,7 +52,7 @@ class MockSpinner:
     In real use, this would be AudioSpinner, YouTubeSpinner, etc.
     """
 
-    def __init__(self, data_source: List[str], source_name: str = "mock"):
+    def __init__(self, data_source: list[str], source_name: str = "mock"):
         self.data = data_source
         self.source_name = source_name
 
@@ -252,7 +252,7 @@ async def demo_streaming_memory():
     # Run consolidation
     consolidated = engine.theta_consolidator.theta_consolidation_update()
 
-    print(f"✓ Theta consolidation completed")
+    print("✓ Theta consolidation completed")
     print(f"  New connections created: {consolidated}")
     print("  (Frequently co-activated nodes are now permanently connected!)")
     print()
@@ -277,7 +277,7 @@ async def demo_streaming_memory():
     # Run delta pruning
     pruned, strengthened = engine.delta_pruner.delta_pruning_update()
 
-    print(f"✓ Delta pruning completed")
+    print("✓ Delta pruning completed")
     print(f"  Weak connections pruned: {pruned}")
     print(f"  Strong patterns strengthened: {strengthened}")
     print()
@@ -292,7 +292,7 @@ async def demo_streaming_memory():
     # Run dream cycle
     bridges_created = await engine.rem_dreamer.dream_cycle(duration_seconds=5.0)
 
-    print(f"✓ Dream cycle completed")
+    print("✓ Dream cycle completed")
     print(f"  Creative bridges created: {bridges_created}")
     print("  (Random activations connected distant semantic clusters!)")
     print()

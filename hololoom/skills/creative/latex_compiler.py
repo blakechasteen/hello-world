@@ -5,9 +5,16 @@ import os
 import re
 import time
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
-                                   SkillCategory, SkillStatus)
+from typing import Any
+
+from hololoom.skills.base import (
+    BaseSkill,
+    SkillCategory,
+    SkillInput,
+    SkillMetadata,
+    SkillOutput,
+    SkillStatus,
+)
 
 
 class LaTeXCompilerSkill(BaseSkill):
@@ -76,7 +83,7 @@ class LaTeXCompilerSkill(BaseSkill):
                 errors=[str(e)]
             )
 
-    async def _dispatch(self, operation: str, parameters: Dict[str, Any]):
+    async def _dispatch(self, operation: str, parameters: dict[str, Any]):
         if operation == "compile_pdf":
             return await self._compile_pdf(parameters)
         elif operation == "compile_dvi":
@@ -90,7 +97,7 @@ class LaTeXCompilerSkill(BaseSkill):
         elif operation == "install_package":
             return await self._install_package(parameters)
 
-    async def _run_latex(self, command: List[str], cwd: Optional[str] = None) -> tuple[str, str, int]:
+    async def _run_latex(self, command: list[str], cwd: str | None = None) -> tuple[str, str, int]:
         """Run LaTeX command and return stdout, stderr, returncode."""
         proc = await asyncio.create_subprocess_exec(
             *command,
@@ -105,7 +112,7 @@ class LaTeXCompilerSkill(BaseSkill):
             proc.returncode
         )
 
-    def _parse_latex_log(self, log_content: str) -> Dict[str, Any]:
+    def _parse_latex_log(self, log_content: str) -> dict[str, Any]:
         """Parse LaTeX .log file for errors, warnings, and page count."""
         errors = []
         warnings = []
@@ -167,7 +174,7 @@ class LaTeXCompilerSkill(BaseSkill):
             if pass_num == passes - 1:
                 log_file = source_path.with_suffix('.log')
                 if log_file.exists():
-                    with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+                    with open(log_file, encoding='utf-8', errors='ignore') as f:
                         log_data = self._parse_latex_log(f.read())
 
         # Get output PDF size
@@ -210,7 +217,7 @@ class LaTeXCompilerSkill(BaseSkill):
         log_file = source_path.with_suffix('.log')
         log_data = None
         if log_file.exists():
-            with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(log_file, encoding='utf-8', errors='ignore') as f:
                 log_data = self._parse_latex_log(f.read())
 
         return {
@@ -254,7 +261,7 @@ class LaTeXCompilerSkill(BaseSkill):
         log_file = source_path.with_suffix('.log')
         log_data = None
         if log_file.exists():
-            with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(log_file, encoding='utf-8', errors='ignore') as f:
                 log_content = f.read()
                 log_data = self._parse_latex_log(log_content)
 
@@ -354,7 +361,7 @@ class LaTeXCompilerSkill(BaseSkill):
         if not os.path.exists(log_file):
             raise FileNotFoundError(f"Log file not found: {log_file}")
 
-        with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(log_file, encoding='utf-8', errors='ignore') as f:
             log_content = f.read()
 
         errors = []
@@ -423,4 +430,5 @@ class LaTeXCompilerSkill(BaseSkill):
 
 
 from hololoom.skills.base import register_skill
+
 register_skill(LaTeXCompilerSkill())

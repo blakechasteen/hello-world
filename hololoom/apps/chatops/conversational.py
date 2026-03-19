@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Conversational AutoLoom
 =======================
@@ -23,18 +22,19 @@ Usage:
     # ^ This one too! And it has context from previous exchange
 """
 
-import asyncio
 import re
-from typing import List, Dict, Any, Optional, Callable
-from datetime import datetime
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 try:
-    from holoLoom.documentation.types import Query, MemoryShard
-    from holoLoom.config import Config
-    from holoLoom.orchestrator import HoloLoomOrchestrator
-    from holoLoom.spinningWheel import TextSpinner, TextSpinnerConfig
     from holoLoom.autospin import AutoSpinOrchestrator
+    from holoLoom.orchestrator import HoloLoomOrchestrator
+
+    from holoLoom.config import Config
+    from holoLoom.documentation.types import MemoryShard, Query
+    from holoLoom.spinningWheel import TextSpinner, TextSpinnerConfig
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run from repository root with PYTHONPATH set")
@@ -49,7 +49,7 @@ class ConversationTurn:
     user_input: str
     system_output: str
     importance_score: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_text(self) -> str:
         """Convert to text representation for spinning."""
@@ -75,7 +75,7 @@ class ImportanceScorer:
     """
 
     @staticmethod
-    def score_turn(user_input: str, system_output: str, metadata: Dict = None) -> float:
+    def score_turn(user_input: str, system_output: str, metadata: dict = None) -> float:
         """
         Score importance of a conversation turn (0.0 to 1.0).
 
@@ -194,7 +194,7 @@ class ConversationalAutoLoom:
         orchestrator: AutoSpinOrchestrator,
         importance_threshold: float = 0.4,
         max_history_size: int = 100,
-        custom_scorer: Optional[Callable] = None
+        custom_scorer: Callable | None = None
     ):
         """
         Initialize conversational system.
@@ -210,7 +210,7 @@ class ConversationalAutoLoom:
         self.max_history_size = max_history_size
         self.scorer = custom_scorer or ImportanceScorer.score_turn
 
-        self.conversation_history: List[ConversationTurn] = []
+        self.conversation_history: list[ConversationTurn] = []
         self.turn_counter = 0
 
         # Stats
@@ -225,7 +225,7 @@ class ConversationalAutoLoom:
     async def from_text(
         cls,
         text: str,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         importance_threshold: float = 0.4,
         **kwargs
     ) -> "ConversationalAutoLoom":
@@ -257,7 +257,7 @@ class ConversationalAutoLoom:
     async def from_file(
         cls,
         file_path: str,
-        config: Optional[Config] = None,
+        config: Config | None = None,
         importance_threshold: float = 0.4
     ) -> "ConversationalAutoLoom":
         """Create from file."""
@@ -275,7 +275,7 @@ class ConversationalAutoLoom:
         self,
         user_input: str,
         auto_remember: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Chat with the system (automatically captures to memory).
 
@@ -358,7 +358,7 @@ class ConversationalAutoLoom:
         source = f"conversation_turn_{turn.turn_id}"
         await self.orchestrator.add_text(turn_text, source=source)
 
-    def get_history(self, limit: Optional[int] = None, min_importance: float = 0.0) -> List[ConversationTurn]:
+    def get_history(self, limit: int | None = None, min_importance: float = 0.0) -> list[ConversationTurn]:
         """
         Get conversation history.
 
@@ -376,7 +376,7 @@ class ConversationalAutoLoom:
 
         return filtered
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get conversation statistics."""
         return {
             **self.stats,
@@ -428,7 +428,7 @@ class ConversationalAutoLoom:
 async def conversational_loom(
     initial_knowledge: str = "",
     importance_threshold: float = 0.4,
-    config: Optional[Config] = None
+    config: Config | None = None
 ) -> ConversationalAutoLoom:
     """
     Quick function to create a conversational loom.

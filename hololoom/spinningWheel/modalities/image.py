@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Image Spinner with OCR
 ======================
@@ -11,12 +11,12 @@ Supports:
 - Photo metadata extraction
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-import logging
-from pathlib import Path
 import base64
+import logging
+from dataclasses import dataclass
 from io import BytesIO
+from pathlib import Path
+from typing import Any
 
 from .base import BaseSpinner, SpinnerConfig
 
@@ -30,10 +30,10 @@ except ImportError:
     class MemoryShard:
         id: str
         text: str
-        episode: Optional[str] = None
-        entities: List[str] = field(default_factory=list)
-        motifs: List[str] = field(default_factory=list)
-        metadata: Dict[str, Any] = field(default_factory=dict)
+        episode: str | None = None
+        entities: list[str] = field(default_factory=list)
+        motifs: list[str] = field(default_factory=list)
+        metadata: dict[str, Any] = field(default_factory=dict)
 
 # Optional OCR dependencies
 try:
@@ -64,7 +64,7 @@ class ImageSpinnerConfig(SpinnerConfig):
     vision_model: str = "llava:7b"  # Ollama vision model for advanced extraction
     extract_metadata: bool = True  # Extract EXIF metadata
     save_images: bool = False  # Save processed images locally
-    image_storage_path: Optional[str] = None
+    image_storage_path: str | None = None
 
 
 class ImageSpinner(BaseSpinner):
@@ -88,7 +88,7 @@ class ImageSpinner(BaseSpinner):
         elif config.ocr_engine == "ollama-vision" and not OLLAMA_VISION_AVAILABLE:
             logger.warning("ollama not available. Install: pip install ollama")
 
-    async def spin(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
+    async def spin(self, raw_data: dict[str, Any]) -> list[MemoryShard]:
         """
         Convert image → MemoryShards with OCR text.
 
@@ -148,7 +148,7 @@ class ImageSpinner(BaseSpinner):
 
         return shards
 
-    async def _load_image(self, raw_data: Dict[str, Any]):
+    async def _load_image(self, raw_data: dict[str, Any]):
         """Load image from various sources."""
         if not OCR_AVAILABLE and self.config.ocr_engine == "tesseract":
             return None
@@ -180,7 +180,7 @@ class ImageSpinner(BaseSpinner):
 
         return None
 
-    async def _extract_text(self, image, raw_data: Dict[str, Any]) -> str:
+    async def _extract_text(self, image, raw_data: dict[str, Any]) -> str:
         """Extract text from image using configured OCR engine."""
         if self.config.ocr_engine == "tesseract":
             return self._ocr_tesseract(image)
@@ -202,7 +202,7 @@ class ImageSpinner(BaseSpinner):
             logger.error(f"Tesseract OCR failed: {e}")
             return ""
 
-    async def _ocr_ollama_vision(self, image, raw_data: Dict[str, Any]) -> str:
+    async def _ocr_ollama_vision(self, image, raw_data: dict[str, Any]) -> str:
         """Extract text using Ollama vision model (multimodal LLM)."""
         if not OLLAMA_VISION_AVAILABLE:
             return ""
@@ -235,7 +235,7 @@ class ImageSpinner(BaseSpinner):
             logger.error(f"Ollama vision OCR failed: {e}")
             return ""
 
-    def _extract_image_metadata(self, image) -> Dict[str, Any]:
+    def _extract_image_metadata(self, image) -> dict[str, Any]:
         """Extract EXIF and other metadata from image."""
         metadata = {
             'width': image.width,
@@ -293,7 +293,7 @@ class GroceryReceiptSpinner(ImageSpinner):
             config = ReceiptSpinnerConfig()
         super().__init__(config)
 
-    async def spin(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
+    async def spin(self, raw_data: dict[str, Any]) -> list[MemoryShard]:
         """
         Convert receipt image → structured MemoryShards.
 
@@ -326,10 +326,9 @@ class GroceryReceiptSpinner(ImageSpinner):
 
         return shards
 
-    def _parse_receipt(self, ocr_text: str, raw_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _parse_receipt(self, ocr_text: str, raw_data: dict[str, Any]) -> dict[str, Any]:
         """Parse receipt structure from OCR text."""
         import re
-        from datetime import datetime
 
         receipt_data = {
             'merchant': None,
@@ -389,7 +388,7 @@ class GroceryReceiptSpinner(ImageSpinner):
 
         return receipt_data
 
-    def _format_receipt_summary(self, receipt_data: Dict[str, Any], ocr_text: str) -> str:
+    def _format_receipt_summary(self, receipt_data: dict[str, Any], ocr_text: str) -> str:
         """Format structured receipt data as readable summary."""
         lines = []
 
@@ -415,14 +414,14 @@ class GroceryReceiptSpinner(ImageSpinner):
 
 
 # Convenience factory functions
-async def process_image(image_path: str, **kwargs) -> List[MemoryShard]:
+async def process_image(image_path: str, **kwargs) -> list[MemoryShard]:
     """Quick helper to process an image file."""
     config = ImageSpinnerConfig(**kwargs)
     spinner = ImageSpinner(config)
     return await spinner.spin({'image_path': image_path})
 
 
-async def process_receipt(image_path: str, **kwargs) -> List[MemoryShard]:
+async def process_receipt(image_path: str, **kwargs) -> list[MemoryShard]:
     """Quick helper to process a receipt image."""
     config = ReceiptSpinnerConfig(**kwargs)
     spinner = GroceryReceiptSpinner(config)

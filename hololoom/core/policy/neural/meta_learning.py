@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Meta-Learning for Fast Adaptation
 
@@ -25,12 +26,13 @@ Public API:
     adapt: Few-shot adaptation to new task
 """
 
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Tuple, Callable
-import logging
-import numpy as np
-from enum import Enum
 import copy
+import logging
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +84,7 @@ class Task:
     support_y: np.ndarray
     query_x: np.ndarray
     query_y: np.ndarray
-    task_id: Optional[int] = None
+    task_id: int | None = None
 
     def __repr__(self) -> str:
         return (f"Task({self.name}, "
@@ -119,7 +121,7 @@ if PYTORCH_AVAILABLE:
     class SimpleNetwork(nn.Module):
         """Simple feedforward network for meta-learning."""
 
-        def __init__(self, input_dim: int, hidden_dims: List[int], output_dim: int):
+        def __init__(self, input_dim: int, hidden_dims: list[int], output_dim: int):
             super().__init__()
 
             layers = []
@@ -177,7 +179,7 @@ if PYTORCH_AVAILABLE:
         def adapt(self,
                  support_x: torch.Tensor,
                  support_y: torch.Tensor,
-                 steps: Optional[int] = None) -> nn.Module:
+                 steps: int | None = None) -> nn.Module:
             """
             Adapt model to new task using support set.
 
@@ -214,7 +216,7 @@ if PYTORCH_AVAILABLE:
 
             return adapted_model
 
-        def meta_train_step(self, tasks: List[Task]) -> Dict[str, float]:
+        def meta_train_step(self, tasks: list[Task]) -> dict[str, float]:
             """
             Single meta-training step on batch of tasks.
 
@@ -261,7 +263,7 @@ if PYTORCH_AVAILABLE:
                 'std_task_loss': np.std(task_losses)
             }
 
-        def evaluate(self, tasks: List[Task], adaptation_steps: int = 5) -> Dict[str, float]:
+        def evaluate(self, tasks: list[Task], adaptation_steps: int = 5) -> dict[str, float]:
             """
             Evaluate meta-learned model on new tasks.
 
@@ -320,9 +322,9 @@ class MetaLearner:
 
     def __init__(self,
                  input_dim: int,
-                 hidden_dims: List[int],
+                 hidden_dims: list[int],
                  output_dim: int,
-                 config: Optional[MetaLearningConfig] = None):
+                 config: MetaLearningConfig | None = None):
         """
         Initialize meta-learner.
 
@@ -349,10 +351,10 @@ class MetaLearner:
         logger.info(f"MetaLearner using backend: {self.backend}")
 
     def meta_train(self,
-                   meta_train_tasks: List[Task],
-                   meta_val_tasks: List[Task],
+                   meta_train_tasks: list[Task],
+                   meta_val_tasks: list[Task],
                    num_epochs: int = 100,
-                   log_interval: int = 10) -> Dict[str, List[float]]:
+                   log_interval: int = 10) -> dict[str, list[float]]:
         """
         Meta-train on distribution of tasks.
 
@@ -441,7 +443,7 @@ class MetaLearner:
 
     def evaluate_few_shot(self,
                          task: Task,
-                         adaptation_steps: int = 5) -> Dict[str, float]:
+                         adaptation_steps: int = 5) -> dict[str, float]:
         """
         Evaluate few-shot learning on task.
 

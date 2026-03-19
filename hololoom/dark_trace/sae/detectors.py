@@ -14,14 +14,11 @@ Usage:
 """
 
 import logging
-import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set
 
-import numpy as np
 import torch
 
-from hololoom.alignment.feature_detector import DetectionResult, FeatureDetector
+from hololoom.alignment.feature_detector import DetectionResult
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +29,10 @@ class FeatureMap:
 
     Built by the autolabeler after training. Serializable to/from JSON.
     """
-    deception_features: Dict[int, str] = field(default_factory=dict)     # idx -> label
-    power_seeking_features: Dict[int, str] = field(default_factory=dict)
-    self_modification_features: Dict[int, str] = field(default_factory=dict)
-    adversarial_features: Dict[int, str] = field(default_factory=dict)
+    deception_features: dict[int, str] = field(default_factory=dict)     # idx -> label
+    power_seeking_features: dict[int, str] = field(default_factory=dict)
+    self_modification_features: dict[int, str] = field(default_factory=dict)
+    adversarial_features: dict[int, str] = field(default_factory=dict)
 
     def save(self, path: str) -> None:
         import json
@@ -77,11 +74,11 @@ class FeatureMap:
 class SAEDetectorBase:
     """Base class for SAE-backed detectors."""
 
-    def __init__(self, sae, embedder, relevant_features: Dict[int, str]):
+    def __init__(self, sae, embedder, relevant_features: dict[int, str]):
         self.sae = sae  # ResearchSAE
         self.embedder = embedder  # MatryoshkaEmbeddings
         self.relevant_features = relevant_features  # {idx: label}
-        self._last_active: List[str] = []
+        self._last_active: list[str] = []
 
     def _encode_text(self, text: str) -> torch.Tensor:
         """Text -> Matryoshka 384d embedding -> torch tensor."""
@@ -104,7 +101,7 @@ class SAEDetectorBase:
         self._last_active = relevant_labels
         return active, relevant_activations, relevant_labels
 
-    def get_active_features(self) -> List[str]:
+    def get_active_features(self) -> list[str]:
         return list(self._last_active)
 
 
@@ -114,7 +111,7 @@ class SAEDeceptionDetector(SAEDetectorBase):
     def __init__(self, sae, embedder, feature_map: FeatureMap):
         super().__init__(sae, embedder, feature_map.deception_features)
 
-    def detect(self, text: str, context: Optional[dict] = None) -> DetectionResult:
+    def detect(self, text: str, context: dict | None = None) -> DetectionResult:
         all_active, relevant, labels = self._get_relevant_activations(text)
 
         if not relevant:
@@ -145,7 +142,7 @@ class SAEPowerSeekingDetector(SAEDetectorBase):
     def __init__(self, sae, embedder, feature_map: FeatureMap):
         super().__init__(sae, embedder, feature_map.power_seeking_features)
 
-    def detect(self, text: str, context: Optional[dict] = None) -> DetectionResult:
+    def detect(self, text: str, context: dict | None = None) -> DetectionResult:
         all_active, relevant, labels = self._get_relevant_activations(text)
 
         if not relevant:
@@ -173,7 +170,7 @@ class SAESelfModificationDetector(SAEDetectorBase):
     def __init__(self, sae, embedder, feature_map: FeatureMap):
         super().__init__(sae, embedder, feature_map.self_modification_features)
 
-    def detect(self, text: str, context: Optional[dict] = None) -> DetectionResult:
+    def detect(self, text: str, context: dict | None = None) -> DetectionResult:
         all_active, relevant, labels = self._get_relevant_activations(text)
         score = 1.0 if relevant else 0.0  # binary: any self-mod feature fires
 
@@ -190,7 +187,7 @@ class SAEAdversarialDetector(SAEDetectorBase):
     def __init__(self, sae, embedder, feature_map: FeatureMap):
         super().__init__(sae, embedder, feature_map.adversarial_features)
 
-    def detect(self, text: str, context: Optional[dict] = None) -> DetectionResult:
+    def detect(self, text: str, context: dict | None = None) -> DetectionResult:
         all_active, relevant, labels = self._get_relevant_activations(text)
 
         if not relevant:

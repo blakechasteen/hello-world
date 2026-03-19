@@ -17,15 +17,13 @@ Invariants:
 
 import logging
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .bus_config import (
     AuditAction,
     MemoryBusConfig,
-    MemoryType,
-    PressureTier,
     ResolutionPath,
 )
 from .neo4j_schema import (
@@ -34,9 +32,7 @@ from .neo4j_schema import (
     NODE_FACT,
     NODE_PLAN,
     REL_ABOUT,
-    REL_CAUSED,
     REL_DERIVED_FROM,
-    REL_FOLLOWED_BY,
     ensure_schema,
 )
 
@@ -50,7 +46,7 @@ except ImportError:
     NEO4J_AVAILABLE = False
 
 try:
-    from .postgres_store import PostgresStore, PSYCOPG_AVAILABLE
+    from .postgres_store import PSYCOPG_AVAILABLE, PostgresStore
 except ImportError:
     PSYCOPG_AVAILABLE = False
 
@@ -63,16 +59,16 @@ except ImportError:
 class MemoryQuery:
     """A query against long-term memory (spec §4.2)."""
     intent: str
-    entity_ids: Optional[List[str]] = None
-    entity_type: Optional[str] = None
-    memory_type: Optional[str] = None
-    time_after: Optional[str] = None
-    time_before: Optional[str] = None
-    relationship: Optional[str] = None
-    semantic_text: Optional[str] = None
+    entity_ids: list[str] | None = None
+    entity_type: str | None = None
+    memory_type: str | None = None
+    time_after: str | None = None
+    time_before: str | None = None
+    relationship: str | None = None
+    semantic_text: str | None = None
     max_results: int = 5
     min_importance: float = 0.1
-    properties_match: Optional[Dict[str, Any]] = None
+    properties_match: dict[str, Any] | None = None
 
 
 @dataclass
@@ -80,17 +76,17 @@ class MemoryItem:
     """A memory item for storage (spec §2.2)."""
     content: str
     memory_type: str                         # episodic, entity, factual, etc.
-    entity_ids: Optional[List[str]] = None
-    properties: Optional[Dict[str, Any]] = None
+    entity_ids: list[str] | None = None
+    properties: dict[str, Any] | None = None
     importance: float = 0.5
     scope: str = "local"
-    loom_id: Optional[str] = None
+    loom_id: str | None = None
 
 
 @dataclass
 class MemoryResult:
     """What comes back from memory (spec §4.2)."""
-    items: List[Dict[str, Any]]
+    items: list[dict[str, Any]]
     query: MemoryQuery
     resolution_path: str
     token_estimate: int
@@ -112,15 +108,15 @@ class MemoryBus:
     - Provenance tracking
     """
 
-    def __init__(self, config: Optional[MemoryBusConfig] = None):
+    def __init__(self, config: MemoryBusConfig | None = None):
         self.config = config or MemoryBusConfig()
         self._neo4j_driver = None
-        self._postgres: Optional[PostgresStore] = None
+        self._postgres: PostgresStore | None = None
         self._initialized = False
 
         # Runtime stats
         self._query_count = 0
-        self._resolution_counts: Dict[str, int] = {
+        self._resolution_counts: dict[str, int] = {
             ResolutionPath.EXACT.value: 0,
             ResolutionPath.STRUCTURED.value: 0,
             ResolutionPath.GRAPH.value: 0,
@@ -132,7 +128,7 @@ class MemoryBus:
     # Lifecycle
     # =========================================================================
 
-    async def initialize(self) -> Dict[str, Any]:
+    async def initialize(self) -> dict[str, Any]:
         """Connect to backends and set up schemas.
 
         Returns:
@@ -262,7 +258,7 @@ class MemoryBus:
         await self._audit_query(loop_id, q, result)
         return result
 
-    def _query_exact(self, entity_ids: List[str]) -> List[Dict]:
+    def _query_exact(self, entity_ids: list[str]) -> list[dict]:
         """Level 1: Exact match by entity ID."""
         items = []
         with self._neo4j_driver.session(database=self.config.neo4j_database) as session:
@@ -276,10 +272,10 @@ class MemoryBus:
                     items.append(dict(node))
         return items
 
-    def _query_structured(self, q: MemoryQuery) -> List[Dict]:
+    def _query_structured(self, q: MemoryQuery) -> list[dict]:
         """Level 2: Structured Cypher query with filters."""
         clauses = []
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
 
         # Determine which node label to query
         if q.memory_type == "episodic":
@@ -319,7 +315,7 @@ class MemoryBus:
                 items.append(dict(record["n"]))
         return items
 
-    def _query_graph(self, q: MemoryQuery) -> List[Dict]:
+    def _query_graph(self, q: MemoryQuery) -> list[dict]:
         """Level 3: Graph traversal — find entities related to the intent."""
         # Use entity name search via fulltext index if available,
         # otherwise fall back to CONTAINS match.
@@ -378,7 +374,7 @@ class MemoryBus:
         return items
 
     def _build_result(
-        self, items: List[Dict], q: MemoryQuery, path: ResolutionPath
+        self, items: list[dict], q: MemoryQuery, path: ResolutionPath
     ) -> MemoryResult:
         """Build a MemoryResult with token estimate."""
         # Invariant 3: Every memory injection has a token budget
@@ -413,7 +409,7 @@ class MemoryBus:
         )
 
     @staticmethod
-    def _estimate_tokens(item: Dict) -> int:
+    def _estimate_tokens(item: dict) -> int:
         """Estimate token count for a memory item (~4 chars per token)."""
         text = str(item)
         return max(1, len(text) // 4)
@@ -425,9 +421,9 @@ class MemoryBus:
     async def resolve_entity(
         self,
         name_or_alias: str,
-        loom_scope: Optional[str] = None,
+        loom_scope: str | None = None,
         max_candidates: int = 3,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Resolve a name or alias to entity IDs.
 
         Returns candidates ranked by confidence. Checks Postgres alias table
@@ -577,7 +573,7 @@ class MemoryBus:
     # Explain (spec §10.4)
     # =========================================================================
 
-    async def explain(self, node_id: str) -> Dict[str, Any]:
+    async def explain(self, node_id: str) -> dict[str, Any]:
         """Return provenance chain for a memory item or relationship.
 
         Shows what episodes/facts it derived from, which reasoning loop
@@ -585,7 +581,7 @@ class MemoryBus:
         """
         self._require_neo4j()
 
-        explanation: Dict[str, Any] = {
+        explanation: dict[str, Any] = {
             "node_id": node_id,
             "derived_from": [],
             "connected_entities": [],
@@ -648,12 +644,12 @@ class MemoryBus:
 
     async def entities(
         self,
-        query: Optional[str] = None,
-        entity_type: Optional[str] = None,
-        connected_to: Optional[str] = None,
+        query: str | None = None,
+        entity_type: str | None = None,
+        connected_to: str | None = None,
         max_hops: int = 2,
         limit: int = 20,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Browse the entity graph."""
         self._require_neo4j()
 
@@ -703,7 +699,7 @@ class MemoryBus:
     # Status & Pressure (spec §3)
     # =========================================================================
 
-    def status(self) -> Dict[str, Any]:
+    def status(self) -> dict[str, Any]:
         """Current memory system stats."""
         total_queries = self._query_count or 1
         semantic_pct = self._resolution_counts.get(ResolutionPath.SEMANTIC.value, 0) / total_queries
@@ -719,7 +715,7 @@ class MemoryBus:
             "semantic_target_met": semantic_pct <= self.config.max_semantic_fallback_pct,
         }
 
-    def pressure(self) -> Dict[str, Any]:
+    def pressure(self) -> dict[str, Any]:
         """Current pressure signals and active tier."""
         # In MVP, pressure is based on token usage relative to budget
         utilization = self._total_tokens_used / max(1, self.config.token_budget_absolute)

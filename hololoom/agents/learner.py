@@ -10,18 +10,18 @@ Learns from successful working memory states:
 Key Insight: "Save what works" - especially the computational warp space state.
 """
 
-from typing import Dict, List, Optional
-from pathlib import Path
 import json
 import time
 import uuid
+from pathlib import Path
+
 import numpy as np
 
 from hololoom.agents.types import (
-    WorkingMemorySnapshot,
+    AgentProfile,
     LearnedPattern,
+    WorkingMemorySnapshot,
     WorkingMemoryState,
-    AgentProfile
 )
 from hololoom.protocols.types import Query
 from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
@@ -48,11 +48,11 @@ class WorkingMemoryLearner:
         self.persist_dir.mkdir(parents=True, exist_ok=True)
 
         # History (rolling window)
-        self.snapshots: List[WorkingMemorySnapshot] = []
+        self.snapshots: list[WorkingMemorySnapshot] = []
         self.max_snapshots = 1000
 
         # Learned patterns
-        self.patterns: Dict[str, LearnedPattern] = {}
+        self.patterns: dict[str, LearnedPattern] = {}
 
         # Load previous session
         self._load_state()
@@ -61,7 +61,7 @@ class WorkingMemoryLearner:
         self,
         query: Query,
         state: WorkingMemoryState,
-        outcome: Dict
+        outcome: dict
     ):
         """
         Record working memory state + outcome for learning.
@@ -172,7 +172,7 @@ class WorkingMemoryLearner:
         self,
         snapshot: WorkingMemorySnapshot,
         similarity_threshold: float = 0.85
-    ) -> Optional[LearnedPattern]:
+    ) -> LearnedPattern | None:
         """Find pattern similar to current snapshot (semantic similarity)"""
 
         for pattern in self.patterns.values():
@@ -193,7 +193,7 @@ class WorkingMemoryLearner:
 
         return None
 
-    def _identify_critical_threads(self, pattern: LearnedPattern) -> List[str]:
+    def _identify_critical_threads(self, pattern: LearnedPattern) -> list[str]:
         """Find threads that appear in >80% of successful uses of this pattern"""
 
         # Get all snapshots that matched this pattern
@@ -244,7 +244,7 @@ class WorkingMemoryLearner:
         self,
         current_state: WorkingMemoryState,
         query: Query
-    ) -> Dict:
+    ) -> dict:
         """
         Suggest improvements based on learned patterns.
 
@@ -322,7 +322,7 @@ class WorkingMemoryLearner:
             'suggestions': suggestions
         }
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Get learning statistics"""
         if not self.snapshots:
             return {

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Code Spinner
 =============
@@ -42,11 +41,11 @@ Usage:
     })
 """
 
-import re
 import hashlib
-from typing import List, Dict, Any, Optional, Set
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from .base import BaseSpinner, SpinnerConfig
 
@@ -61,10 +60,10 @@ except ImportError:
     class MemoryShard:
         id: str
         text: str
-        episode: Optional[str] = None
-        entities: List[str] = field(default_factory=list)
-        motifs: List[str] = field(default_factory=list)
-        metadata: Dict[str, Any] = field(default_factory=dict)
+        episode: str | None = None
+        entities: list[str] = field(default_factory=list)
+        motifs: list[str] = field(default_factory=list)
+        metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -81,11 +80,11 @@ class CodeSpinnerConfig(SpinnerConfig):
         language_filter: Only process specific languages (None = all)
         max_chunk_lines: Maximum lines per chunk
     """
-    chunk_by: Optional[str] = None  # None = single shard per file
+    chunk_by: str | None = None  # None = single shard per file
     extract_imports: bool = True
     extract_entities: bool = True
     include_line_numbers: bool = True
-    language_filter: Optional[Set[str]] = None
+    language_filter: set[str] | None = None
     max_chunk_lines: int = 200
 
 
@@ -122,7 +121,7 @@ class CodeSpinner(BaseSpinner):
         super().__init__(config)
         self.config: CodeSpinnerConfig = config
 
-    async def spin(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
+    async def spin(self, raw_data: dict[str, Any]) -> list[MemoryShard]:
         """
         Convert code data → MemoryShards.
 
@@ -158,7 +157,7 @@ class CodeSpinner(BaseSpinner):
         else:
             raise ValueError(f"Unknown code data type: {data_type}")
 
-    async def _spin_file(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
+    async def _spin_file(self, raw_data: dict[str, Any]) -> list[MemoryShard]:
         """Process a single code file into shards."""
         path = raw_data.get('path')
         content = raw_data.get('content')
@@ -192,7 +191,7 @@ class CodeSpinner(BaseSpinner):
 
         return shards
 
-    async def _spin_diff(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
+    async def _spin_diff(self, raw_data: dict[str, Any]) -> list[MemoryShard]:
         """Process a git diff into shards."""
         diff = raw_data.get('diff')
         if not diff:
@@ -248,7 +247,7 @@ class CodeSpinner(BaseSpinner):
 
         return shards
 
-    async def _spin_repo(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
+    async def _spin_repo(self, raw_data: dict[str, Any]) -> list[MemoryShard]:
         """Process repository structure into shards."""
         root_path = raw_data.get('root_path')
         files = raw_data.get('files')
@@ -282,8 +281,8 @@ class CodeSpinner(BaseSpinner):
         path: str,
         language: str,
         episode: str,
-        raw_data: Dict[str, Any]
-    ) -> List[MemoryShard]:
+        raw_data: dict[str, Any]
+    ) -> list[MemoryShard]:
         """Create a single shard for an entire file."""
         # Extract entities
         entities = []
@@ -332,8 +331,8 @@ class CodeSpinner(BaseSpinner):
         path: str,
         language: str,
         episode: str,
-        raw_data: Dict[str, Any]
-    ) -> List[MemoryShard]:
+        raw_data: dict[str, Any]
+    ) -> list[MemoryShard]:
         """Split code into chunks based on configuration."""
         chunks = []
 
@@ -385,7 +384,7 @@ class CodeSpinner(BaseSpinner):
                 return language
         return 'unknown'
 
-    def _extract_code_entities(self, content: str, language: str) -> List[str]:
+    def _extract_code_entities(self, content: str, language: str) -> list[str]:
         """Extract code entities (classes, functions, variables)."""
         entities = []
 
@@ -422,7 +421,7 @@ class CodeSpinner(BaseSpinner):
 
         return list(set(entities))[:30]  # Dedupe and limit
 
-    def _extract_imports(self, content: str, language: str) -> List[str]:
+    def _extract_imports(self, content: str, language: str) -> list[str]:
         """Extract import/dependency statements."""
         imports = []
 
@@ -445,7 +444,7 @@ class CodeSpinner(BaseSpinner):
 
         return list(set(imports))
 
-    def _chunk_by_function(self, content: str, language: str) -> List[tuple]:
+    def _chunk_by_function(self, content: str, language: str) -> list[tuple]:
         """Chunk code by functions/methods."""
         chunks = []
 
@@ -467,7 +466,7 @@ class CodeSpinner(BaseSpinner):
 
         return chunks
 
-    def _chunk_by_class(self, content: str, language: str) -> List[tuple]:
+    def _chunk_by_class(self, content: str, language: str) -> list[tuple]:
         """Chunk code by classes."""
         chunks = []
 
@@ -488,7 +487,7 @@ class CodeSpinner(BaseSpinner):
 
         return chunks
 
-    def _chunk_by_lines(self, content: str, max_lines: int) -> List[tuple]:
+    def _chunk_by_lines(self, content: str, max_lines: int) -> list[tuple]:
         """Simple line-based chunking."""
         lines = content.split('\n')
         chunks = []
@@ -503,7 +502,7 @@ class CodeSpinner(BaseSpinner):
 
         return chunks
 
-    def _parse_diff(self, diff: str) -> Dict[str, Any]:
+    def _parse_diff(self, diff: str) -> dict[str, Any]:
         """Parse git diff output."""
         files = []
         current_file = None
@@ -561,7 +560,7 @@ class CodeSpinner(BaseSpinner):
 
         return {'files': files, 'stats': stats}
 
-    def _create_diff_summary(self, diff_data: Dict[str, Any], raw_data: Dict[str, Any]) -> str:
+    def _create_diff_summary(self, diff_data: dict[str, Any], raw_data: dict[str, Any]) -> str:
         """Create human-readable diff summary."""
         message = raw_data.get('message', 'No commit message')
         author = raw_data.get('author', 'Unknown')
@@ -582,7 +581,7 @@ class CodeSpinner(BaseSpinner):
 
         return summary
 
-    def _extract_diff_entities(self, diff_data: Dict[str, Any]) -> List[str]:
+    def _extract_diff_entities(self, diff_data: dict[str, Any]) -> list[str]:
         """Extract entities from diff (file names, function names)."""
         entities = []
         for file_change in diff_data['files']:
@@ -592,7 +591,7 @@ class CodeSpinner(BaseSpinner):
                 entities.append(Path(path).name)
         return list(set(entities))[:20]
 
-    def _create_structure_text(self, files: List[str], root_path: str) -> str:
+    def _create_structure_text(self, files: list[str], root_path: str) -> str:
         """Create tree-like structure representation."""
         structure = f"# Repository: {Path(root_path).name}\n\n"
         structure += "File tree:\n"
@@ -608,7 +607,7 @@ class CodeSpinner(BaseSpinner):
 
         return structure
 
-    def _count_languages(self, files: List[str]) -> Dict[str, int]:
+    def _count_languages(self, files: list[str]) -> dict[str, int]:
         """Count files by language."""
         lang_counts = {}
         for file_path in files:
@@ -616,7 +615,7 @@ class CodeSpinner(BaseSpinner):
             lang_counts[lang] = lang_counts.get(lang, 0) + 1
         return lang_counts
 
-    async def _enrich_shards(self, shards: List[MemoryShard]) -> List[MemoryShard]:
+    async def _enrich_shards(self, shards: list[MemoryShard]) -> list[MemoryShard]:
         """
         Enrich shards using optional enrichment services.
         Delegates to parent class enrichment infrastructure.
@@ -645,10 +644,10 @@ class CodeSpinner(BaseSpinner):
 async def spin_code_file(
     path: str,
     content: str,
-    language: Optional[str] = None,
-    chunk_by: Optional[str] = None,
+    language: str | None = None,
+    chunk_by: str | None = None,
     enable_enrichment: bool = False
-) -> List[MemoryShard]:
+) -> list[MemoryShard]:
     """
     Quick function to convert a code file into MemoryShards.
 
@@ -681,10 +680,10 @@ async def spin_code_file(
 
 async def spin_git_diff(
     diff: str,
-    commit_sha: Optional[str] = None,
-    author: Optional[str] = None,
-    message: Optional[str] = None
-) -> List[MemoryShard]:
+    commit_sha: str | None = None,
+    author: str | None = None,
+    message: str | None = None
+) -> list[MemoryShard]:
     """
     Quick function to convert a git diff into MemoryShards.
 
@@ -712,8 +711,8 @@ async def spin_git_diff(
 
 async def spin_repository(
     root_path: str,
-    files: List[str]
-) -> List[MemoryShard]:
+    files: list[str]
+) -> list[MemoryShard]:
     """
     Quick function to convert repository structure into MemoryShards.
 

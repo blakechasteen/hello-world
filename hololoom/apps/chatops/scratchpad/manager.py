@@ -14,32 +14,29 @@ Created: December 2025
 """
 
 import asyncio
+import builtins
 import logging
 import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple, Union
+from typing import Any
 
+from .serialization import ContentSerializer
+from .storage import ScratchPadStorage
 from .types import (
-    ScratchArtifact,
     ArtifactReference,
     ArtifactScope,
     ArtifactType,
-    ArtifactStatus,
-    ScratchPadConfig,
-    StoreResult,
-    RetrieveResult,
-    ListResult,
     DeleteResult,
+    ListResult,
+    RetrieveResult,
+    ScratchArtifact,
+    ScratchPadConfig,
     SessionArtifactContext,
-    AuditEvent,
-    AuditEventType,
+    StoreResult,
 )
-from .storage import ScratchPadStorage
-from .serialization import serialize_content, ContentSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +48,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RateLimitState:
     """Rate limit state for a user."""
-    requests: List[float] = field(default_factory=list)
+    requests: list[float] = field(default_factory=list)
     last_cleanup: float = field(default_factory=time.time)
 
 
@@ -65,9 +62,9 @@ class RateLimiter:
     def __init__(self, max_requests: int, window_seconds: int):
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self._state: Dict[str, RateLimitState] = defaultdict(RateLimitState)
+        self._state: dict[str, RateLimitState] = defaultdict(RateLimitState)
 
-    def check(self, user_id: str) -> Tuple[bool, int]:
+    def check(self, user_id: str) -> tuple[bool, int]:
         """
         Check if request is allowed.
 
@@ -117,7 +114,7 @@ class NameValidator:
         self.max_length = max_length
         self.pattern = re.compile(pattern)
 
-    def validate(self, name: str) -> Tuple[bool, Optional[str]]:
+    def validate(self, name: str) -> tuple[bool, str | None]:
         """
         Validate an artifact name.
 
@@ -153,7 +150,7 @@ class ScratchPadManager:
     and Spacetime integration.
     """
 
-    def __init__(self, config: Optional[ScratchPadConfig] = None):
+    def __init__(self, config: ScratchPadConfig | None = None):
         """
         Initialize the scratch pad manager.
 
@@ -186,10 +183,10 @@ class ScratchPadManager:
         self.serializer = ContentSerializer()
 
         # Session contexts
-        self._session_contexts: Dict[str, SessionArtifactContext] = {}
+        self._session_contexts: dict[str, SessionArtifactContext] = {}
 
         # Background cleanup task
-        self._cleanup_task: Optional[asyncio.Task] = None
+        self._cleanup_task: asyncio.Task | None = None
 
     async def start(self) -> None:
         """Start background tasks."""
@@ -226,14 +223,14 @@ class ScratchPadManager:
     async def store(
         self,
         name: str,
-        content: Union[str, bytes],
+        content: str | bytes,
         user_id: str,
         room_id: str,
-        artifact_type: Optional[ArtifactType] = None,
+        artifact_type: ArtifactType | None = None,
         scope: ArtifactScope = ArtifactScope.USER,
-        source_spacetime_id: Optional[str] = None,
-        source_session_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        source_spacetime_id: str | None = None,
+        source_session_id: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> StoreResult:
         """
         Store an artifact.
@@ -362,7 +359,7 @@ class ScratchPadManager:
         self,
         user_id: str,
         room_id: str,
-        scope_filter: Optional[ArtifactScope] = None,
+        scope_filter: ArtifactScope | None = None,
         is_admin: bool = False,
         limit: int = 100
     ) -> ListResult:
@@ -450,7 +447,7 @@ class ScratchPadManager:
         identifier: str,
         user_id: str,
         room_id: str
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """
         Share an artifact with the room.
 
@@ -481,8 +478,8 @@ class ScratchPadManager:
         spacetime: Any,
         user_id: str,
         room_id: str,
-        session_id: Optional[str] = None
-    ) -> List[StoreResult]:
+        session_id: str | None = None
+    ) -> builtins.list[StoreResult]:
         """
         Store artifacts from a Spacetime result.
 
@@ -633,7 +630,7 @@ class ScratchPadManager:
         user_id: str,
         room_id: str,
         output_path: Path
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """
         Export artifact to a file.
 
@@ -658,7 +655,7 @@ class ScratchPadManager:
                 f.write(result.content)
 
             return True, None
-        except (OSError, IOError) as e:
+        except OSError as e:
             return False, str(e)
 
     async def get_export_data(
@@ -666,7 +663,7 @@ class ScratchPadManager:
         identifier: str,
         user_id: str,
         room_id: str
-    ) -> Tuple[Optional[bytes], Optional[str], Optional[str]]:
+    ) -> tuple[bytes | None, str | None, str | None]:
         """
         Get artifact data ready for Matrix export.
 
@@ -788,7 +785,7 @@ class ScratchPadManager:
         }
         return mapping.get(artifact_type, 'bin')
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get manager statistics."""
         return self.storage.get_stats()
 
@@ -798,7 +795,7 @@ class ScratchPadManager:
 # ============================================================================
 
 def create_scratchpad_manager(
-    config: Optional[ScratchPadConfig] = None
+    config: ScratchPadConfig | None = None
 ) -> ScratchPadManager:
     """
     Create a ScratchPadManager instance.
@@ -813,7 +810,7 @@ def create_scratchpad_manager(
 
 
 async def create_and_start_manager(
-    config: Optional[ScratchPadConfig] = None
+    config: ScratchPadConfig | None = None
 ) -> ScratchPadManager:
     """
     Create and start a ScratchPadManager.

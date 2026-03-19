@@ -1,9 +1,10 @@
 import asyncio
+import json
 import logging
 import sys
-import json
-from typing import Dict, Any, Optional
-from mcp.server.fastmcp import FastMCP, Context
+
+from mcp.server.fastmcp import FastMCP
+
 
 # Redirect stdout to stderr to avoid breaking MCP protocol
 # (Since EggrollIntegration uses print statements)
@@ -34,26 +35,26 @@ class EggrollService:
             "best_adapter_version": 0
         }
 
-    async def run_loop(self, epochs: int, pattern: Optional[str] = None):
+    async def run_loop(self, epochs: int, pattern: str | None = None):
         self.is_running = True
         self.status["state"] = "DREAMING"
-        
+
         try:
             # We need to modify the integration loop to be controllable or just run it
             # For this MVP, we'll run the existing loop but update status
             # We'll monkey-patch the integration's print or hook into it if possible
             # But for now, let's just run it.
-            
+
             # To support "pattern" override, we might need to inject it
             # The current integration selects it via MCTS.
-            # We can force it by mocking the shuttle if needed, 
+            # We can force it by mocking the shuttle if needed,
             # but let's trust the MCTS for now unless specified.
-            
+
             await self.integration.run_evolution_loop(num_epochs=epochs)
-            
+
             self.status["state"] = "COMPLETED"
             self.status["best_adapter_version"] = self.integration.mirror_core.version
-            
+
         except Exception as e:
             self.status["state"] = "ERROR"
             self.status["error"] = str(e)
@@ -75,14 +76,14 @@ async def start_dreaming(epochs: int = 3, workers: int = 5, pattern: str = "auto
     """
     if service.is_running:
         return "EGGROLL is already dreaming."
-    
+
     service.integration.num_workers = workers
-    
+
     # Start background task
     # Note: In FastMCP, we can just fire and forget if we want async,
     # but we need to keep a reference.
     service.task = asyncio.create_task(service.run_loop(epochs, pattern if pattern != "auto" else None))
-    
+
     return f"Started EGGROLL Dream Cycle (Epochs={epochs}, Workers={workers})"
 
 @mcp.tool()
@@ -90,7 +91,7 @@ async def stop_dreaming() -> str:
     """Stop the current dream cycle."""
     if not service.is_running or not service.task:
         return "EGGROLL is not dreaming."
-    
+
     service.task.cancel()
     service.is_running = False
     service.status["state"] = "STOPPED"
@@ -104,7 +105,7 @@ def get_status() -> str:
         # This is a bit hacky since integration doesn't expose live state easily
         # In a real impl, integration would update a shared state object
         pass
-        
+
     return json.dumps(service.status, indent=2)
 
 @mcp.resource("eggroll://lineage")

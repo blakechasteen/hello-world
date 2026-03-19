@@ -36,7 +36,7 @@ No external dependencies.
 
 import logging
 from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ class KnowledgeSource(Protocol):
         """
         ...
 
-    def contribute(self, blackboard: Any, graph: Any, context: Dict[str, Any]) -> None:
+    def contribute(self, blackboard: Any, graph: Any, context: dict[str, Any]) -> None:
         """Read blackboard/graph state, do work, write results back.
 
         Sources mutate:
@@ -169,11 +169,11 @@ class SourceRegistry:
             activation_threshold: minimum activation to invoke a source.
                 Sources below this threshold are skipped entirely.
         """
-        self._sources: List[KnowledgeSource] = []
+        self._sources: list[KnowledgeSource] = []
         self._threshold = activation_threshold
 
     @property
-    def sources(self) -> List[KnowledgeSource]:
+    def sources(self) -> list[KnowledgeSource]:
         """Read-only access to registered sources."""
         return list(self._sources)
 
@@ -200,7 +200,7 @@ class SourceRegistry:
         phase: Phase,
         blackboard: Any,
         graph: Any,
-        context: Dict[str, Any],
+        context: dict[str, Any],
     ) -> None:
         """Invoke all active sources for a given phase.
 
@@ -248,7 +248,7 @@ class SourceRegistry:
                     source.name, phase.value, e,
                 )
 
-    def report(self) -> Dict[str, Any]:
+    def report(self) -> dict[str, Any]:
         """Diagnostic info about registered sources."""
         return {
             "source_count": len(self._sources),

@@ -26,17 +26,17 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Any
 
 from .types import (
-    ScratchArtifact,
     ArtifactReference,
     ArtifactScope,
-    ArtifactType,
     ArtifactStatus,
-    ScratchPadConfig,
+    ArtifactType,
     AuditEvent,
     AuditEventType,
+    ScratchArtifact,
+    ScratchPadConfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -73,7 +73,7 @@ class ContentStorage:
         self.storage_dir = Path(storage_dir)
         self.hash_prefix_length = hash_prefix_length
 
-        self._entries: Dict[str, CASEntry] = {}
+        self._entries: dict[str, CASEntry] = {}
         self._lock = threading.RLock()
 
         # Ensure directory exists
@@ -113,7 +113,7 @@ class ContentStorage:
         except OSError as e:
             logger.warning(f"Error scanning CAS storage: {e}")
 
-    def store(self, content: bytes) -> Tuple[str, bool]:
+    def store(self, content: bytes) -> tuple[str, bool]:
         """
         Store content.
 
@@ -148,7 +148,7 @@ class ContentStorage:
 
             return content_hash, False
 
-    def get(self, content_hash: str) -> Optional[bytes]:
+    def get(self, content_hash: str) -> bytes | None:
         """Get content by hash."""
         with self._lock:
             if content_hash not in self._entries:
@@ -160,7 +160,7 @@ class ContentStorage:
         try:
             with open(entry.path, "rb") as f:
                 return f.read()
-        except (OSError, IOError) as e:
+        except OSError as e:
             logger.error(f"Error reading content {content_hash}: {e}")
             return None
 
@@ -216,7 +216,7 @@ class ContentStorage:
 
         return deleted
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get storage statistics."""
         with self._lock:
             total_size = sum(e.size_bytes for e in self._entries.values())
@@ -347,7 +347,7 @@ class MetadataStorage:
             logger.error(f"Error storing artifact metadata: {e}")
             return False
 
-    def get(self, artifact_id: str) -> Optional[ScratchArtifact]:
+    def get(self, artifact_id: str) -> ScratchArtifact | None:
         """Get artifact by ID."""
         conn = self._get_connection()
         row = conn.execute(
@@ -365,7 +365,7 @@ class MetadataStorage:
         name: str,
         user_id: str,
         room_id: str
-    ) -> Optional[ScratchArtifact]:
+    ) -> ScratchArtifact | None:
         """Get artifact by name within user/room scope."""
         conn = self._get_connection()
         row = conn.execute("""
@@ -384,10 +384,10 @@ class MetadataStorage:
         user_id: str,
         room_id: str,
         is_admin: bool = False,
-        scope_filter: Optional[ArtifactScope] = None,
+        scope_filter: ArtifactScope | None = None,
         limit: int = 100,
         offset: int = 0
-    ) -> List[ArtifactReference]:
+    ) -> list[ArtifactReference]:
         """List artifacts accessible to user."""
         conn = self._get_connection()
 
@@ -441,7 +441,7 @@ class MetadataStorage:
         session_id: str,
         user_id: str,
         room_id: str
-    ) -> List[ArtifactReference]:
+    ) -> list[ArtifactReference]:
         """List artifacts from a specific session."""
         conn = self._get_connection()
         query = """
@@ -499,7 +499,7 @@ class MetadataStorage:
             logger.error(f"Error updating status: {e}")
             return False
 
-    def delete(self, artifact_id: str) -> Optional[str]:
+    def delete(self, artifact_id: str) -> str | None:
         """
         Delete artifact metadata.
 
@@ -545,7 +545,7 @@ class MetadataStorage:
         """, (user_id, room_id)).fetchone()
         return row['total'] if row else 0
 
-    def find_expired(self, before: datetime) -> List[str]:
+    def find_expired(self, before: datetime) -> list[str]:
         """Find artifact IDs that have expired."""
         conn = self._get_connection()
         rows = conn.execute("""
@@ -620,17 +620,17 @@ class AuditLogStorage:
             try:
                 with open(self.log_path, "a") as f:
                     f.write(json.dumps(event.to_dict()) + "\n")
-            except (OSError, IOError) as e:
+            except OSError as e:
                 logger.error(f"Failed to write audit log: {e}")
 
     def query(
         self,
-        event_type: Optional[AuditEventType] = None,
-        user_id: Optional[str] = None,
-        artifact_id: Optional[str] = None,
-        since: Optional[datetime] = None,
+        event_type: AuditEventType | None = None,
+        user_id: str | None = None,
+        artifact_id: str | None = None,
+        since: datetime | None = None,
         limit: int = 100
-    ) -> List[AuditEvent]:
+    ) -> list[AuditEvent]:
         """Query audit events."""
         events = []
 
@@ -639,7 +639,7 @@ class AuditLogStorage:
 
         with self._lock:
             try:
-                with open(self.log_path, "r") as f:
+                with open(self.log_path) as f:
                     for line in f:
                         try:
                             data = json.loads(line.strip())
@@ -671,7 +671,7 @@ class AuditLogStorage:
                                 break
                         except (json.JSONDecodeError, KeyError):
                             continue
-            except (OSError, IOError) as e:
+            except OSError as e:
                 logger.error(f"Error reading audit log: {e}")
 
         return events
@@ -708,10 +708,10 @@ class ScratchPadStorage:
         user_id: str,
         room_id: str,
         scope: ArtifactScope = ArtifactScope.USER,
-        source_spacetime_id: Optional[str] = None,
-        source_session_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> Tuple[Optional[ScratchArtifact], Optional[str]]:
+        source_spacetime_id: str | None = None,
+        source_session_id: str | None = None,
+        metadata: dict[str, Any] | None = None
+    ) -> tuple[ScratchArtifact | None, str | None]:
         """
         Store a new artifact.
 
@@ -787,7 +787,7 @@ class ScratchPadStorage:
         user_id: str,
         room_id: str,
         is_admin: bool = False
-    ) -> Tuple[Optional[ScratchArtifact], Optional[bytes], Optional[str]]:
+    ) -> tuple[ScratchArtifact | None, bytes | None, str | None]:
         """
         Get artifact with content.
 
@@ -841,7 +841,7 @@ class ScratchPadStorage:
         name: str,
         user_id: str,
         room_id: str
-    ) -> Tuple[Optional[ScratchArtifact], Optional[bytes], Optional[str]]:
+    ) -> tuple[ScratchArtifact | None, bytes | None, str | None]:
         """Get artifact by name."""
         artifact = self.metadata.get_by_name(name, user_id, room_id)
         if artifact is None:
@@ -854,9 +854,9 @@ class ScratchPadStorage:
         user_id: str,
         room_id: str,
         is_admin: bool = False,
-        scope_filter: Optional[ArtifactScope] = None,
+        scope_filter: ArtifactScope | None = None,
         limit: int = 100
-    ) -> List[ArtifactReference]:
+    ) -> list[ArtifactReference]:
         """List accessible artifacts."""
         return self.metadata.list_accessible(
             user_id, room_id, is_admin, scope_filter, limit
@@ -867,7 +867,7 @@ class ScratchPadStorage:
         session_id: str,
         user_id: str,
         room_id: str
-    ) -> List[ArtifactReference]:
+    ) -> list[ArtifactReference]:
         """List artifacts from a session."""
         return self.metadata.list_by_session(session_id, user_id, room_id)
 
@@ -877,7 +877,7 @@ class ScratchPadStorage:
         user_id: str,
         room_id: str,
         is_admin: bool = False
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """Delete an artifact."""
         # Get artifact
         artifact = self.metadata.get(artifact_id)
@@ -920,7 +920,7 @@ class ScratchPadStorage:
         artifact_id: str,
         user_id: str,
         room_id: str
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """Share artifact with room (USER → ROOM scope)."""
         # Get artifact
         artifact = self.metadata.get(artifact_id)
@@ -971,7 +971,7 @@ class ScratchPadStorage:
 
         return deleted
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get storage statistics."""
         return {
             "content": self.content.get_stats(),

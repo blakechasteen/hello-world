@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 
@@ -49,7 +49,7 @@ class SpinningWheelMLAdapter:
         data_split = await adapter.ingest_and_split("data.csv", "target")
     """
 
-    def __init__(self, config: Optional[DataConfig] = None):
+    def __init__(self, config: DataConfig | None = None):
         """
         Initialize adapter.
 
@@ -68,11 +68,11 @@ class SpinningWheelMLAdapter:
 
     async def ingest_tabular(
         self,
-        source: Union[str, Path],
+        source: str | Path,
         target_column: str,
-        feature_columns: Optional[List[str]] = None,
+        feature_columns: list[str] | None = None,
         **read_kwargs: Any,
-    ) -> Tuple[np.ndarray, np.ndarray, FeatureNames]:
+    ) -> tuple[np.ndarray, np.ndarray, FeatureNames]:
         """
         Ingest tabular data from file.
 
@@ -126,7 +126,7 @@ class SpinningWheelMLAdapter:
 
         return X, y, feature_names
 
-    def _read_file(self, path: Path, **kwargs) -> "pd.DataFrame":
+    def _read_file(self, path: Path, **kwargs) -> pd.DataFrame:
         """Read file based on extension."""
         suffix = path.suffix.lower()
 
@@ -145,9 +145,9 @@ class SpinningWheelMLAdapter:
 
     def _handle_missing_values(
         self,
-        X_df: "pd.DataFrame",
+        X_df: pd.DataFrame,
         y: np.ndarray,
-    ) -> Tuple["pd.DataFrame", np.ndarray]:
+    ) -> tuple[pd.DataFrame, np.ndarray]:
         """Handle missing values according to config."""
         strategy = self.config.missing_value_strategy
 
@@ -186,8 +186,8 @@ class SpinningWheelMLAdapter:
 
     def _encode_categoricals(
         self,
-        X_df: "pd.DataFrame",
-    ) -> Tuple["pd.DataFrame", FeatureNames]:
+        X_df: pd.DataFrame,
+    ) -> tuple[pd.DataFrame, FeatureNames]:
         """Encode categorical columns."""
         categorical_cols = X_df.select_dtypes(
             include=["object", "category"]
@@ -256,9 +256,9 @@ class SpinningWheelMLAdapter:
 
     async def ingest_and_split(
         self,
-        source: Union[str, Path],
+        source: str | Path,
         target_column: str,
-        feature_columns: Optional[List[str]] = None,
+        feature_columns: list[str] | None = None,
         **read_kwargs: Any,
     ) -> DataSplit:
         """
@@ -313,10 +313,10 @@ class SpinningWheelMLAdapter:
 
     async def ingest_from_memory_shards(
         self,
-        shards: List[Any],
+        shards: list[Any],
         target_column: str,
-        feature_columns: Optional[List[str]] = None,
-    ) -> Tuple[np.ndarray, np.ndarray, FeatureNames]:
+        feature_columns: list[str] | None = None,
+    ) -> tuple[np.ndarray, np.ndarray, FeatureNames]:
         """
         Ingest tabular data from hololoom MemoryShards.
 

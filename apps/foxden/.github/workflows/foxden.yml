@@ -1,0 +1,105 @@
+name: Foxden Focus Group
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: "Target to test (URL, command, etc.)"
+        required: true
+        type: string
+      interface:
+        description: "Interface type: cli, web, api"
+        required: false
+        default: "cli"
+        type: string
+      backend:
+        description: "LLM backend: ollama, anthropic"
+        required: false
+        default: "anthropic"
+        type: string
+      model:
+        description: "Model override"
+        required: false
+        type: string
+      personas:
+        description: "Space-separated persona names (empty = all)"
+        required: false
+        type: string
+      copies:
+        description: "Copies of each persona"
+        required: false
+        default: "1"
+        type: string
+      fail_threshold:
+        description: "Fail if more than N issues found"
+        required: false
+        default: "0"
+        type: string
+      baseline:
+        description: "Path to baseline report for comparison"
+        required: false
+        type: string
+      synthesize:
+        description: "Run synthesis agent"
+        required: false
+        default: "false"
+        type: string
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+
+jobs:
+  focus-group:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install foxden
+        run: |
+          pip install ./apps/foxden
+          # Install playwright if web interface.
+          if [ "${{ inputs.interface }}" = "web" ]; then
+            pip install playwright
+            playwright install chromium
+          fi
+
+      - name: Run focus group
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          ARGS="run '${{ inputs.target }}' -i ${{ inputs.interface }} -b ${{ inputs.backend }}"
+          ARGS="$ARGS -c ${{ inputs.copies }}"
+          ARGS="$ARGS -o foxden-report.json"
+          ARGS="$ARGS --fail-on-issues ${{ inputs.fail_threshold }}"
+
+          if [ -n "${{ inputs.model }}" ]; then
+            ARGS="$ARGS -m ${{ inputs.model }}"
+          fi
+
+          if [ -n "${{ inputs.personas }}" ]; then
+            ARGS="$ARGS -p ${{ inputs.personas }}"
+          fi
+
+          if [ "${{ inputs.synthesize }}" = "true" ]; then
+            ARGS="$ARGS --synthesize --synthesis-output foxden-synthesis.json"
+          fi
+
+          if [ -n "${{ inputs.baseline }}" ]; then
+            ARGS="$ARGS --compare ${{ inputs.baseline }}"
+          fi
+
+          eval "foxden $ARGS"
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: foxden-report
+          path: |
+            foxden-report.json
+            foxden-synthesis.json
+          if-no-files-found: ignore

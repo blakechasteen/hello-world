@@ -7,10 +7,12 @@ Run this AFTER server restart to verify persistence.
 
 import asyncio
 import sys
+
 sys.path.insert(0, 'c:/Users/blake/Documents/mythRL')
 
-from hololoom.config import Config, MemoryBackend
 from hololoom.memory.backend_factory import create_memory_backend
+
+from hololoom.config import Config, MemoryBackend
 
 
 async def test_retrieval():
@@ -56,7 +58,7 @@ async def test_retrieval():
         # Display results
         if results:
             print(f"\n{'='*60}")
-            print(f"  PERSISTENCE VERIFIED!")
+            print("  PERSISTENCE VERIFIED!")
             print(f"{'='*60}\n")
 
             for i, mem in enumerate(results, 1):
@@ -78,7 +80,7 @@ async def test_retrieval():
 
         else:
             print(f"\n{'='*60}")
-            print(f"  NO RESULTS FOUND")
+            print("  NO RESULTS FOUND")
             print(f"{'='*60}\n")
             print("[WARNING] Could not find test message in memory")
             print("[INFO] This could mean:")

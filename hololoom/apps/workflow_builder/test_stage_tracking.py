@@ -11,8 +11,7 @@ Usage:
 
 import asyncio
 import sys
-import time
-from typing import Dict, Any
+
 import aiohttp
 
 
@@ -84,7 +83,7 @@ class StageTrackingTester:
                                     stages_seen.add(current_stage)
                                     print(f"  Stage {current_stage} detected")
 
-                    except Exception as e:
+                    except Exception:
                         pass  # Ignore polling errors
 
                     await asyncio.sleep(poll_interval)
@@ -97,7 +96,7 @@ class StageTrackingTester:
                 response = await query_task
                 result = await response.json()
 
-                print(f"\nQuery completed:")
+                print("\nQuery completed:")
                 print(f"  Response: {result['response'][:100]}...")
                 print(f"  Confidence: {result['confidence']:.2f}")
                 print(f"  Latency: {result['latency_ms']:.1f}ms")
@@ -141,7 +140,7 @@ class StageTrackingTester:
                     stage_durations = data.get("stage_durations", {})
                     recent_traces = data.get("recent_traces", [])
 
-                    print(f"Stage durations captured:")
+                    print("Stage durations captured:")
                     if stage_durations:
                         for stage_name, duration in stage_durations.items():
                             print(f"  {stage_name}: {duration:.1f}ms")
@@ -155,7 +154,7 @@ class StageTrackingTester:
                     print(f"\nRecent traces: {len(recent_traces)} stored")
                     if recent_traces:
                         latest = recent_traces[-1]
-                        print(f"  Latest trace:")
+                        print("  Latest trace:")
                         print(f"    Query ID: {latest['query_id']}")
                         print(f"    Total duration: {latest['total_duration_ms']:.1f}ms")
                         print(f"    Stages: {len(latest.get('stages', {}))}")
@@ -180,7 +179,7 @@ class StageTrackingTester:
                     avg_latency = metrics.get("avg_latency_ms", 0)
                     qps = metrics.get("queries_per_second", 0)
 
-                    print(f"Orchestrator metrics:")
+                    print("Orchestrator metrics:")
                     print(f"  Avg latency: {avg_latency:.1f}ms")
                     print(f"  Queries/sec: {qps:.2f}")
                     print(f"  Bottleneck: {bottleneck or 'None detected'}")

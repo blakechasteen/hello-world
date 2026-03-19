@@ -10,8 +10,6 @@ Created: 2025-01-20
 """
 
 from dataclasses import dataclass
-from typing import Dict, Optional
-from enum import Enum
 
 
 class ModelPricing:
@@ -23,7 +21,7 @@ class ModelPricing:
     """
 
     # Pricing format: {"input": price_per_1M, "output": price_per_1M}
-    PRICING: Dict[str, Dict[str, float]] = {
+    PRICING: dict[str, dict[str, float]] = {
         # Anthropic Claude
         "claude-3-5-sonnet-20241022": {"input": 3.0, "output": 15.0},
         "claude-3-5-sonnet": {"input": 3.0, "output": 15.0},
@@ -56,7 +54,7 @@ class ModelPricing:
     DEFAULT_PRICING = {"input": 10.0, "output": 30.0}
 
     @classmethod
-    def get_pricing(cls, model: str) -> Dict[str, float]:
+    def get_pricing(cls, model: str) -> dict[str, float]:
         """
         Get pricing for a model.
 
@@ -187,7 +185,7 @@ class CostTracker:
 
         return estimate
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """
         Get cost statistics.
 

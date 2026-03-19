@@ -7,6 +7,7 @@ analyzing attack chains, and evaluating defense effectiveness.
 """
 
 import json
+
 from attack_scratchpad import (
     AttackScratchpad,
     AttackStrategy,
@@ -34,7 +35,7 @@ def demo_basic_attack_tracking():
         confidence=0.95
     )
 
-    print(f"\nAttack tracked:")
+    print("\nAttack tracked:")
     print(f"  Intent: {entry.intent}")
     print(f"  Strategy: {entry.strategy.value}")
     print(f"  Payload: {entry.payload}")
@@ -179,24 +180,24 @@ def demo_statistics_and_analysis():
     # Generate summary
     summary = scratchpad.summarize()
 
-    print(f"\nAttack Statistics:")
+    print("\nAttack Statistics:")
     print(f"  Total Attacks: {summary['total_attacks']}")
     print(f"  Successful Bypasses: {summary['successful']}")
     print(f"  Success Rate: {summary['success_rate']:.1%}")
     print(f"  Average Score: {summary['avg_score']:.2f}")
     print(f"  Average Confidence: {summary['avg_confidence']:.2f}")
 
-    print(f"\nAttacks by Strategy:")
+    print("\nAttacks by Strategy:")
     for strategy, count in summary['strategy_breakdown'].items():
         bypass_rate = summary['bypass_rate_by_strategy'].get(strategy, 0.0)
         print(f"  {strategy:.<35} {count:>2} attacks ({bypass_rate:.0%} bypass)")
 
-    print(f"\nAttacks by Defense Layer:")
+    print("\nAttacks by Defense Layer:")
     for layer, count in summary['layer_breakdown'].items():
         bypass_rate = summary['bypass_rate_by_layer'].get(layer, 0.0)
         print(f"  {layer:.<35} {count:>2} attacks ({bypass_rate:.0%} bypass)")
 
-    print(f"\nEffectiveness Analysis:")
+    print("\nEffectiveness Analysis:")
     print(f"  Most Effective Strategy: {summary['most_effective_strategy']}")
     print(f"  Most Vulnerable Layer: {summary['most_vulnerable_layer']}")
 
@@ -284,17 +285,17 @@ def demo_export_and_audit():
     with open(export_file) as f:
         data = json.load(f)
 
-    print(f"\nExported data structure:")
+    print("\nExported data structure:")
     print(f"  Timestamp: {data['timestamp']}")
     print(f"  Total entries: {data['metadata']['total_entries']}")
     print(f"  Total chains: {data['metadata']['total_chains']}")
 
-    print(f"\nSummary from export:")
+    print("\nSummary from export:")
     summary = data['summary']
     print(f"  Success rate: {summary['success_rate']:.1%}")
     print(f"  Avg score: {summary['avg_score']:.2f}")
 
-    print(f"\nEntries in export:")
+    print("\nEntries in export:")
     for i, entry in enumerate(data['entries']):
         bypassed_str = "[PASS]" if entry['bypassed'] else "[FAIL]"
         print(f"  {i+1}. {bypassed_str} {entry['intent']} (score: {entry['score']:.2f})")

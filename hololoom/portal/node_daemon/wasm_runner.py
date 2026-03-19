@@ -12,13 +12,13 @@ For MVP, we use a simple JSON-based protocol:
 5. Deserialize output from JSON bytes
 """
 
-import base64
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
-from ..shared.types import JobResult, JobStatus
+from typing import Any
+
 from ..shared.logging import get_logger
+from ..shared.types import JobResult, JobStatus
 
 logger = get_logger(__name__, component="node")
 
@@ -41,7 +41,7 @@ class WasmRunner:
     - Pre-cached modules
     """
 
-    def __init__(self, module_dir: Optional[str] = None):
+    def __init__(self, module_dir: str | None = None):
         """
         Initialize WASM runner.
 
@@ -49,7 +49,7 @@ class WasmRunner:
             module_dir: Directory containing WASM modules
         """
         self.module_dir = Path(module_dir) if module_dir else None
-        self._module_cache: Dict[str, Any] = {}  # wasmtime.Module
+        self._module_cache: dict[str, Any] = {}  # wasmtime.Module
 
         if WASMTIME_AVAILABLE:
             self._engine = wasmtime.Engine()
@@ -68,7 +68,7 @@ class WasmRunner:
         module_id: str,
         entry_function: str,
         input_json: Any,
-        wasm_path: Optional[Path] = None,
+        wasm_path: Path | None = None,
         timeout_seconds: int = 60
     ) -> JobResult:
         """
@@ -130,7 +130,7 @@ class WasmRunner:
     def _get_or_load_module(
         self,
         module_id: str,
-        wasm_path: Optional[Path]
+        wasm_path: Path | None
     ) -> Any:  # wasmtime.Module
         """Load module from cache or registered file paths only.
 
@@ -221,7 +221,7 @@ class WasmRunner:
         self,
         store: Any,
         instance: Any,
-        exports: Dict[str, Any],
+        exports: dict[str, Any],
         entry_function: str,
         input_bytes: bytes
     ) -> Any:
@@ -327,7 +327,6 @@ class WasmRunner:
         - quadratic: Minimizes f(x) = x^2 (or sum of x_i^2)
         - custom: Returns mock result
         """
-        import math
 
         problem_type = input_json.get("problem_type", "quadratic")
         params = input_json.get("initial_params", [1.0])

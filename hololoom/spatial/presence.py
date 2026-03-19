@@ -6,12 +6,12 @@ Shared spatial sessions for collaborative
 knowledge exploration in XR.
 """
 
+import hashlib
+import json
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Callable, Any
-import json
-import hashlib
 
 
 class PresenceState(Enum):
@@ -57,23 +57,23 @@ class AvatarPose:
     head_qw: float = 1.0
 
     # Hand positions (optional)
-    left_hand_x: Optional[float] = None
-    left_hand_y: Optional[float] = None
-    left_hand_z: Optional[float] = None
+    left_hand_x: float | None = None
+    left_hand_y: float | None = None
+    left_hand_z: float | None = None
 
-    right_hand_x: Optional[float] = None
-    right_hand_y: Optional[float] = None
-    right_hand_z: Optional[float] = None
+    right_hand_x: float | None = None
+    right_hand_y: float | None = None
+    right_hand_z: float | None = None
 
     # Controller ray direction (for pointing)
-    ray_origin_x: Optional[float] = None
-    ray_origin_y: Optional[float] = None
-    ray_origin_z: Optional[float] = None
-    ray_direction_x: Optional[float] = None
-    ray_direction_y: Optional[float] = None
-    ray_direction_z: Optional[float] = None
+    ray_origin_x: float | None = None
+    ray_origin_y: float | None = None
+    ray_origin_z: float | None = None
+    ray_direction_x: float | None = None
+    ray_direction_y: float | None = None
+    ray_direction_z: float | None = None
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "head": {
                 "position": {"x": self.head_x, "y": self.head_y, "z": self.head_z},
@@ -105,9 +105,9 @@ class UserPresence:
     avatar_pose: AvatarPose = field(default_factory=AvatarPose)
 
     # Current focus
-    focused_node_id: Optional[str] = None
-    selected_node_ids: Set[str] = field(default_factory=set)
-    current_interaction: Optional[InteractionType] = None
+    focused_node_id: str | None = None
+    selected_node_ids: set[str] = field(default_factory=set)
+    current_interaction: InteractionType | None = None
 
     # Activity tracking
     joined_at: datetime = field(default_factory=datetime.now)
@@ -115,11 +115,11 @@ class UserPresence:
     last_position_update: datetime = field(default_factory=datetime.now)
 
     # Session-specific
-    session_id: Optional[str] = None
+    session_id: str | None = None
     is_muted: bool = False
     can_edit: bool = True
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "user_id": self.user_id,
             "display_name": self.display_name,
@@ -150,9 +150,9 @@ class PresenceEvent:
     event_type: str
     user_id: str
     timestamp: datetime = field(default_factory=datetime.now)
-    data: Dict = field(default_factory=dict)
+    data: dict = field(default_factory=dict)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "event_id": self.event_id,
             "event_type": self.event_type,
@@ -171,7 +171,7 @@ class SharedSession:
     created_at: datetime = field(default_factory=datetime.now)
 
     # Participants
-    participants: Dict[str, UserPresence] = field(default_factory=dict)
+    participants: dict[str, UserPresence] = field(default_factory=dict)
     max_participants: int = 10
 
     # Session state
@@ -180,15 +180,15 @@ class SharedSession:
     require_approval: bool = False  # Host must approve joins
 
     # Shared state
-    shared_view_target: Optional[str] = None  # Sync everyone's view
+    shared_view_target: str | None = None  # Sync everyone's view
     presentation_mode: bool = False
-    presenter_id: Optional[str] = None
+    presenter_id: str | None = None
 
     # Access control
-    password_hash: Optional[str] = None
-    allowed_domains: List[str] = field(default_factory=list)
+    password_hash: str | None = None
+    allowed_domains: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "session_id": self.session_id,
             "name": self.name,
@@ -223,17 +223,17 @@ class SpatialPresence:
     ]
 
     def __init__(self):
-        self.sessions: Dict[str, SharedSession] = {}
-        self.user_to_session: Dict[str, str] = {}  # user_id -> session_id
+        self.sessions: dict[str, SharedSession] = {}
+        self.user_to_session: dict[str, str] = {}  # user_id -> session_id
         self._session_counter = 0
         self._event_counter = 0
 
         # Event callbacks
-        self.on_user_joined: Optional[Callable[[str, UserPresence], None]] = None
-        self.on_user_left: Optional[Callable[[str, str], None]] = None
-        self.on_pose_update: Optional[Callable[[str, str, AvatarPose], None]] = None
-        self.on_focus_change: Optional[Callable[[str, str, Optional[str]], None]] = None
-        self.on_event: Optional[Callable[[PresenceEvent], None]] = None
+        self.on_user_joined: Callable[[str, UserPresence], None] | None = None
+        self.on_user_left: Callable[[str, str], None] | None = None
+        self.on_pose_update: Callable[[str, str, AvatarPose], None] | None = None
+        self.on_focus_change: Callable[[str, str, str | None], None] | None = None
+        self.on_event: Callable[[PresenceEvent], None] | None = None
 
     def _generate_session_id(self) -> str:
         self._session_counter += 1
@@ -313,7 +313,7 @@ class SpatialPresence:
         user_id: str,
         display_name: str,
         password: str = None
-    ) -> Optional[UserPresence]:
+    ) -> UserPresence | None:
         """
         Join an existing session.
 
@@ -434,7 +434,7 @@ class SpatialPresence:
         if self.on_pose_update:
             self.on_pose_update(session_id, user_id, pose)
 
-    def update_focus(self, user_id: str, node_id: Optional[str]):
+    def update_focus(self, user_id: str, node_id: str | None):
         """Update what node a user is focusing on."""
         session_id = self.user_to_session.get(user_id)
         if not session_id:
@@ -458,7 +458,7 @@ class SpatialPresence:
                 "new_node_id": node_id
             })
 
-    def update_selection(self, user_id: str, node_ids: Set[str]):
+    def update_selection(self, user_id: str, node_ids: set[str]):
         """Update a user's selection."""
         session_id = self.user_to_session.get(user_id)
         if not session_id:
@@ -476,7 +476,7 @@ class SpatialPresence:
             "node_ids": list(node_ids)
         })
 
-    def update_interaction(self, user_id: str, interaction: Optional[InteractionType]):
+    def update_interaction(self, user_id: str, interaction: InteractionType | None):
         """Update what type of interaction user is performing."""
         session_id = self.user_to_session.get(user_id)
         if not session_id:
@@ -563,36 +563,36 @@ class SpatialPresence:
 
     # === Queries ===
 
-    def get_session(self, session_id: str) -> Optional[SharedSession]:
+    def get_session(self, session_id: str) -> SharedSession | None:
         """Get session by ID."""
         return self.sessions.get(session_id)
 
-    def get_user_session(self, user_id: str) -> Optional[SharedSession]:
+    def get_user_session(self, user_id: str) -> SharedSession | None:
         """Get the session a user is in."""
         session_id = self.user_to_session.get(user_id)
         if session_id:
             return self.sessions.get(session_id)
         return None
 
-    def get_presence(self, user_id: str) -> Optional[UserPresence]:
+    def get_presence(self, user_id: str) -> UserPresence | None:
         """Get a user's presence."""
         session = self.get_user_session(user_id)
         if session:
             return session.participants.get(user_id)
         return None
 
-    def get_session_participants(self, session_id: str) -> List[UserPresence]:
+    def get_session_participants(self, session_id: str) -> list[UserPresence]:
         """Get all participants in a session."""
         session = self.sessions.get(session_id)
         if not session:
             return []
         return list(session.participants.values())
 
-    def get_active_sessions(self) -> List[SharedSession]:
+    def get_active_sessions(self) -> list[SharedSession]:
         """Get all active sessions."""
         return [s for s in self.sessions.values() if s.is_active]
 
-    def get_users_focused_on(self, session_id: str, node_id: str) -> List[UserPresence]:
+    def get_users_focused_on(self, session_id: str, node_id: str) -> list[UserPresence]:
         """Get all users focused on a specific node."""
         session = self.sessions.get(session_id)
         if not session:
@@ -605,7 +605,7 @@ class SpatialPresence:
 
     # === Events ===
 
-    def _emit_event(self, event_type: str, user_id: str, session_id: str, data: Dict):
+    def _emit_event(self, event_type: str, user_id: str, session_id: str, data: dict):
         """Emit a presence event."""
         event = PresenceEvent(
             event_id=self._generate_event_id(),
@@ -631,7 +631,7 @@ class SpatialPresence:
         }
         return json.dumps(data, indent=2)
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get presence system statistics."""
         active_sessions = [s for s in self.sessions.values() if s.is_active]
         total_users = sum(len(s.participants) for s in active_sessions)
@@ -643,8 +643,8 @@ class SpatialPresence:
             "users_by_state": self._count_users_by_state()
         }
 
-    def _count_users_by_state(self) -> Dict[str, int]:
-        counts: Dict[str, int] = {}
+    def _count_users_by_state(self) -> dict[str, int]:
+        counts: dict[str, int] = {}
         for session in self.sessions.values():
             if not session.is_active:
                 continue

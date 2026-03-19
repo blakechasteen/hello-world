@@ -17,14 +17,14 @@ Date: December 2025
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 try:
     from hololoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:
-        def get_settings(self) -> Dict[str, Any]:
+        def get_settings(self) -> dict[str, Any]:
             raise NotImplementedError
 
 
@@ -57,7 +57,7 @@ class BayesianConfig(ExpansionBundle):
     bayesian_prior_std: float = 1.0
     """Prior weight standard deviation (regularization strength)."""
 
-    def get_settings(self) -> Dict[str, Any]:
+    def get_settings(self) -> dict[str, Any]:
         """Return dictionary of settings to merge into config."""
         return {
             "use_bayesian": self.use_bayesian,

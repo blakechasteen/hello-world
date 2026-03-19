@@ -1,11 +1,11 @@
 """Skill Metrics - Performance tracking and monitoring"""
 
-import time
 import statistics
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass, field
+import time
 from collections import defaultdict, deque
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 from hololoom.skills.base import SkillStatus
 
@@ -21,21 +21,21 @@ class SkillMetrics:
 
     # Timing metrics (in milliseconds)
     total_time_ms: float = 0.0
-    min_time_ms: Optional[float] = None
-    max_time_ms: Optional[float] = None
-    execution_times: List[float] = field(default_factory=list)
+    min_time_ms: float | None = None
+    max_time_ms: float | None = None
+    execution_times: list[float] = field(default_factory=list)
 
     # Operation breakdown
-    operation_counts: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
-    operation_times: Dict[str, List[float]] = field(default_factory=lambda: defaultdict(list))
+    operation_counts: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    operation_times: dict[str, list[float]] = field(default_factory=lambda: defaultdict(list))
 
     # Cache metrics
     cache_hits: int = 0
     cache_misses: int = 0
 
     # Timestamps
-    first_execution: Optional[float] = None
-    last_execution: Optional[float] = None
+    first_execution: float | None = None
+    last_execution: float | None = None
 
     @property
     def avg_time_ms(self) -> float:
@@ -66,7 +66,7 @@ class SkillMetrics:
             return 0.0
         return self.cache_hits / total_cache_requests
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "skill_name": self.skill_name,
@@ -164,10 +164,10 @@ class SkillMetricsTracker:
         self.enable_time_series = enable_time_series
 
         # Per-skill metrics
-        self._skill_metrics: Dict[str, SkillMetrics] = {}
+        self._skill_metrics: dict[str, SkillMetrics] = {}
 
         # Time series metrics (if enabled)
-        self._time_series: Dict[str, TimeSeriesMetrics] = {}
+        self._time_series: dict[str, TimeSeriesMetrics] = {}
 
         # Global metrics
         self._global_start_time = time.time()
@@ -242,7 +242,7 @@ class SkillMetricsTracker:
                 status == SkillStatus.SUCCESS
             )
 
-    def get_skill_metrics(self, skill_name: str) -> Optional[SkillMetrics]:
+    def get_skill_metrics(self, skill_name: str) -> SkillMetrics | None:
         """
         Get metrics for a specific skill.
 
@@ -254,7 +254,7 @@ class SkillMetricsTracker:
         """
         return self._skill_metrics.get(skill_name)
 
-    def get_all_metrics(self) -> Dict[str, SkillMetrics]:
+    def get_all_metrics(self) -> dict[str, SkillMetrics]:
         """
         Get metrics for all skills.
 
@@ -263,7 +263,7 @@ class SkillMetricsTracker:
         """
         return self._skill_metrics.copy()
 
-    def get_top_skills(self, n: int = 10, by: str = "executions") -> List[SkillMetrics]:
+    def get_top_skills(self, n: int = 10, by: str = "executions") -> list[SkillMetrics]:
         """
         Get top N skills.
 
@@ -287,7 +287,7 @@ class SkillMetricsTracker:
 
         return skills[:n]
 
-    def get_slow_skills(self, threshold_ms: float = 1000.0) -> List[SkillMetrics]:
+    def get_slow_skills(self, threshold_ms: float = 1000.0) -> list[SkillMetrics]:
         """
         Get skills with high average execution time.
 
@@ -305,7 +305,7 @@ class SkillMetricsTracker:
         slow_skills.sort(key=lambda m: m.avg_time_ms, reverse=True)
         return slow_skills
 
-    def get_failing_skills(self, min_failure_rate: float = 0.1) -> List[SkillMetrics]:
+    def get_failing_skills(self, min_failure_rate: float = 0.1) -> list[SkillMetrics]:
         """
         Get skills with high failure rate.
 
@@ -323,7 +323,7 @@ class SkillMetricsTracker:
         failing_skills.sort(key=lambda m: m.success_rate)
         return failing_skills
 
-    def get_degrading_skills(self) -> List[str]:
+    def get_degrading_skills(self) -> list[str]:
         """
         Get skills with degrading performance.
 
@@ -340,7 +340,7 @@ class SkillMetricsTracker:
 
         return degrading
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """
         Get overall metrics summary.
 
@@ -382,7 +382,7 @@ class SkillMetricsTracker:
             "uptime_seconds": time.time() - self._global_start_time
         }
 
-    def export_json(self) -> Dict[str, Any]:
+    def export_json(self) -> dict[str, Any]:
         """
         Export all metrics as JSON-serializable dict.
 

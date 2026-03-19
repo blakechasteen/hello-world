@@ -9,7 +9,7 @@ Implementation: 2025-12-02
 Status: Production ready
 """
 
-from .main import cli, ProtoCLI, start_repl
+from .main import ProtoCLI, cli, start_repl
 
 __all__ = [
     "cli",

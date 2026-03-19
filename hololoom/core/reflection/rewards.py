@@ -17,8 +17,9 @@ Reward Components:
 """
 
 import logging
-from typing import Dict, Any, Optional
 from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 
 from hololoom.fabric.spacetime import Spacetime
@@ -74,7 +75,7 @@ class RewardExtractor:
     The final reward is a weighted sum, clipped to [-1, 1].
     """
 
-    def __init__(self, config: Optional[RewardConfig] = None):
+    def __init__(self, config: RewardConfig | None = None):
         """
         Initialize reward extractor.
 
@@ -87,7 +88,7 @@ class RewardExtractor:
     def compute_reward(
         self,
         spacetime: Spacetime,
-        user_feedback: Optional[Dict[str, Any]] = None
+        user_feedback: dict[str, Any] | None = None
     ) -> float:
         """
         Compute scalar reward from spacetime artifact.
@@ -132,7 +133,7 @@ class RewardExtractor:
 
         return float(reward)
 
-    def _compute_components(self, spacetime: Spacetime) -> Dict[str, float]:
+    def _compute_components(self, spacetime: Spacetime) -> dict[str, float]:
         """
         Compute individual reward components.
 
@@ -198,8 +199,8 @@ class RewardExtractor:
     def extract_experience(
         self,
         spacetime: Spacetime,
-        user_feedback: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        user_feedback: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Extract complete experience tuple for PPO training.
 
@@ -317,6 +318,7 @@ def estimate_potential(spacetime: Spacetime) -> float:
 
 if __name__ == "__main__":
     from datetime import datetime
+
     from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 
     print("="*80)

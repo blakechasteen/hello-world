@@ -20,15 +20,14 @@ Based on research from:
 - Google DeepMind Adversarial Robustness
 """
 
+import base64
 import logging
 import re
-import base64
-from enum import Enum
-from typing import List, Dict, Any, Optional, Tuple, Set, Callable
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 from collections import deque
-import hashlib
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger("hololoom.alignment.modern_attack_defenses")
 
@@ -99,9 +98,9 @@ class AttackSignature:
     attack_type: AttackType
     name: str
     description: str
-    patterns: List[str] = field(default_factory=list)  # Regex patterns
-    keywords: List[str] = field(default_factory=list)  # Keyword matches
-    heuristics: List[str] = field(default_factory=list)  # Named heuristics
+    patterns: list[str] = field(default_factory=list)  # Regex patterns
+    keywords: list[str] = field(default_factory=list)  # Keyword matches
+    heuristics: list[str] = field(default_factory=list)  # Named heuristics
     severity: ThreatLevel = ThreatLevel.MEDIUM
     confidence_threshold: float = 0.6
 
@@ -112,14 +111,14 @@ class DetectionResult:
     Result of attack detection.
     """
     detected: bool
-    attack_type: Optional[AttackType]
+    attack_type: AttackType | None
     threat_level: ThreatLevel
     confidence: float
-    evidence: List[str]
+    evidence: list[str]
     recommended_action: DefenseAction
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "detected": self.detected,
@@ -141,7 +140,7 @@ class ConversationTurn:
     content: str
     timestamp: datetime
     threat_score: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class CrescendoDefense:
@@ -198,7 +197,7 @@ class CrescendoDefense:
         self,
         role: str,
         content: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ConversationTurn:
         """Add a turn to conversation history."""
         threat_score = self._calculate_threat_score(content)
@@ -502,7 +501,7 @@ class PromptInjectionDefense:
     def detect_injection(
         self,
         user_input: str,
-        external_data: Optional[List[str]] = None,
+        external_data: list[str] | None = None,
     ) -> DetectionResult:
         """
         Detect prompt injection attempts.
@@ -676,7 +675,7 @@ class EncodingAttackDefense:
             recommended_action=DefenseAction.ALLOW,
         )
 
-    def _check_base64(self, content: str) -> Optional[str]:
+    def _check_base64(self, content: str) -> str | None:
         """Check for and decode Base64 content."""
         # Find potential Base64 strings
         words = content.split()
@@ -783,7 +782,7 @@ class ToolAbuseDefense:
 
     def __init__(
         self,
-        allowed_tools: Optional[Set[str]] = None,
+        allowed_tools: set[str] | None = None,
         max_tool_calls_per_turn: int = 5,
     ):
         """
@@ -800,7 +799,7 @@ class ToolAbuseDefense:
     def check_tool_call(
         self,
         tool_name: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
     ) -> DetectionResult:
         """
         Check if a tool call is potentially malicious.
@@ -985,11 +984,11 @@ class UnifiedAttackDefense:
     def scan_input(
         self,
         content: str,
-        external_data: Optional[List[str]] = None,
+        external_data: list[str] | None = None,
         is_tool_call: bool = False,
-        tool_name: Optional[str] = None,
-        tool_params: Optional[Dict[str, Any]] = None,
-    ) -> List[DetectionResult]:
+        tool_name: str | None = None,
+        tool_params: dict[str, Any] | None = None,
+    ) -> list[DetectionResult]:
         """
         Scan input through all enabled defenses.
 
@@ -1059,7 +1058,7 @@ class UnifiedAttackDefense:
 
     def get_aggregated_result(
         self,
-        results: List[DetectionResult],
+        results: list[DetectionResult],
     ) -> DetectionResult:
         """
         Aggregate multiple detection results into a single result.
@@ -1114,7 +1113,7 @@ class UnifiedAttackDefense:
             },
         )
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get defense statistics."""
         return self._stats.copy()
 
@@ -1152,7 +1151,7 @@ def create_attack_defense(
     )
 
 
-def quick_scan(content: str) -> Dict[str, Any]:
+def quick_scan(content: str) -> dict[str, Any]:
     """
     Quick scan of content for common attacks.
 

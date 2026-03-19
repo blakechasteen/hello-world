@@ -8,15 +8,9 @@ Philosophy: Transform knowledge into story.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any
 
-from ..core.protocol import (
-    ModeWriterProtocol,
-    WritingContext,
-    WritingMode,
-    StyleGuide,
-    MemoryShard
-)
+from ..core.protocol import MemoryShard, StyleGuide, WritingContext, WritingMode
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +61,7 @@ class NarrativeWriter:
 
         return narrative
 
-    def _analyze_memories(self, memories: List[MemoryShard]) -> Dict[str, Any]:
+    def _analyze_memories(self, memories: list[MemoryShard]) -> dict[str, Any]:
         """
         Analyze memories to extract structural elements.
 
@@ -102,7 +96,7 @@ class NarrativeWriter:
             'memory_count': len(memories)
         }
 
-    def _order_memories(self, memories: List[MemoryShard]) -> List[MemoryShard]:
+    def _order_memories(self, memories: list[MemoryShard]) -> list[MemoryShard]:
         """
         Order memories for narrative flow.
 
@@ -129,8 +123,8 @@ class NarrativeWriter:
     def _generate_narrative_structure(
         self,
         query: str,
-        memories: List[MemoryShard],
-        entities: List[str],
+        memories: list[MemoryShard],
+        entities: list[str],
         style: StyleGuide
     ) -> str:
         """
@@ -165,7 +159,7 @@ class NarrativeWriter:
     def _generate_setup(
         self,
         query: str,
-        entities: List[str],
+        entities: list[str],
         style: StyleGuide
     ) -> str:
         """Generate setup/introduction."""
@@ -191,8 +185,8 @@ class NarrativeWriter:
 
     def _generate_development(
         self,
-        memories: List[MemoryShard],
-        entities: List[str],
+        memories: list[MemoryShard],
+        entities: list[str],
         style: StyleGuide
     ) -> str:
         """Generate development/body with causal connections."""
@@ -236,7 +230,7 @@ class NarrativeWriter:
     def _generate_conclusion(
         self,
         query: str,
-        memories: List[MemoryShard],
+        memories: list[MemoryShard],
         style: StyleGuide
     ) -> str:
         """Generate conclusion/synthesis."""

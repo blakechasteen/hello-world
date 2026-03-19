@@ -1,0 +1,224 @@
+/* ========================================
+   ENHANCED VOICE INTEGRATION STYLES
+   With button press animation & pulsing red light
+   ======================================== */
+
+/* Voice Button (Floating Action Button) */
+.voice-button {
+    position: fixed;
+    bottom: 90px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    border: none;
+    color: #fff;
+    font-size: 1.5em;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+.voice-button::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: inherit;
+    z-index: -1;
+    transition: all 0.3s;
+}
+
+/* Hover effect */
+.voice-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+.voice-button:hover::before {
+    transform: scale(1.2);
+    opacity: 0.3;
+}
+
+/* Active/Press effect - smooth scale down */
+.voice-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* Recording state - pulsing red with ripples */
+.voice-button.recording {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    animation: recordingPulse 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Pulsing animation for recording */
+@keyframes recordingPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow:
+            0 0 0 0 rgba(255, 0, 0, 0.7),
+            0 4px 12px rgba(255, 0, 0, 0.4);
+    }
+    50% {
+        transform: scale(1.08);
+        box-shadow:
+            0 0 0 15px rgba(255, 0, 0, 0),
+            0 8px 24px rgba(255, 0, 0, 0.8);
+    }
+}
+
+/* Recording ripple effect */
+.voice-button.recording::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 0, 0, 0.8);
+    animation: ripple 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+}
+
+/* Recording Indicator with enhanced red light */
+.recording-indicator {
+    position: fixed;
+    bottom: 160px;
+    right: 30px;
+    background: rgba(255, 0, 0, 0.95);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 24px;
+    font-size: 0.9em;
+    font-weight: 600;
+    box-shadow:
+        0 4px 12px rgba(255, 0, 0, 0.4),
+        0 0 20px rgba(255, 0, 0, 0.3);
+    display: none;
+    align-items: center;
+    gap: 8px;
+    z-index: 999;
+    animation: indicatorGlow 2s ease-in-out infinite;
+}
+
+.recording-indicator.show {
+    display: flex;
+    animation: slideIn 0.3s ease-out, indicatorGlow 2s ease-in-out infinite 0.3s;
+}
+
+@keyframes indicatorGlow {
+    0%, 100% {
+        box-shadow:
+            0 4px 12px rgba(255, 0, 0, 0.4),
+            0 0 20px rgba(255, 0, 0, 0.3);
+    }
+    50% {
+        box-shadow:
+            0 4px 12px rgba(255, 0, 0, 0.6),
+            0 0 30px rgba(255, 0, 0, 0.5);
+    }
+}
+
+/* Pulsing red recording dot */
+.recording-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+        0 0 5px rgba(255, 255, 255, 0.8),
+        0 0 10px rgba(255, 255, 255, 0.4);
+    animation: redLightPulse 1s ease-in-out infinite;
+    position: relative;
+}
+
+/* Red light pulsing animation */
+@keyframes redLightPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow:
+            0 0 5px rgba(255, 255, 255, 0.8),
+            0 0 10px rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.6;
+        box-shadow:
+            0 0 10px rgba(255, 255, 255, 1),
+            0 0 20px rgba(255, 255, 255, 0.6);
+    }
+}
+
+/* Slide in animation */
+@keyframes slideIn {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Speak Response Button */
+.speak-button {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 4px 10px;
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    color: #667eea;
+    font-size: 0.75em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.speak-button:hover {
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+}
+
+.speak-button:active {
+    transform: translateY(0);
+}
+
+.speak-button.playing {
+    background: rgba(102, 126, 234, 0.3);
+    color: #fff;
+    animation: speakPulse 1s ease-in-out infinite;
+}
+
+@keyframes speakPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Audio Player (hidden) */
+#audioPlayer {
+    display: none;
+}

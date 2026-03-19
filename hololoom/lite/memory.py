@@ -17,11 +17,9 @@ Usage:
 Date: December 2025
 """
 
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
 import warnings
-
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from hololoom.config import Config
@@ -33,7 +31,7 @@ class MemoryItem:
     id: str
     text: str
     timestamp: float = 0.0
-    context: Dict[str, Any] = None
+    context: dict[str, Any] = None
     relevance: float = 0.0  # Set during search
 
     def __post_init__(self):
@@ -89,8 +87,9 @@ class Memory:
             return
 
         import networkx as nx
-        from hololoom.memory.awareness_graph import AwarenessGraph
+
         from hololoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.memory.awareness_graph import AwarenessGraph
         from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
         self._embedder = MatryoshkaEmbeddings(sizes=self.config.scales)
@@ -138,7 +137,7 @@ class Memory:
     async def store(
         self,
         content: str,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MemoryItem:
         """
         Store content in memory.
@@ -171,7 +170,7 @@ class Memory:
         self,
         query: str,
         limit: int = 5
-    ) -> List[MemoryItem]:
+    ) -> list[MemoryItem]:
         """
         Search for relevant memories.
 
@@ -210,7 +209,7 @@ class Memory:
 
     async def feedback(
         self,
-        items: List[MemoryItem],
+        items: list[MemoryItem],
         helpful: bool = True,
         relevance: float = 0.8
     ) -> None:
@@ -253,7 +252,7 @@ class Memory:
         memory_id: str,
         hops: int = 1,
         direction: str = "both"
-    ) -> List[MemoryItem]:
+    ) -> list[MemoryItem]:
         """
         Get memories connected to a given memory.
 

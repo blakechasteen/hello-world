@@ -15,22 +15,20 @@ Architecture:
 Status: Production ready (2025-12-01)
 """
 
-import asyncio
 import logging
-from typing import Dict, Any, Optional, List
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-import uuid
+from typing import Any
 
 from hololoom.apps.departments.proto.core.config import ProtoConfig
 from hololoom.apps.departments.proto.domain import (
-    IntentType,
     CodeContext,
-    ProtoIntent,
+    IntentType,
     ProtoAction,
+    ProtoIntent,
     ProtoResponse,
 )
-
 
 logger = logging.getLogger("proto.engine")
 
@@ -51,8 +49,8 @@ class ExecutionContext:
     intent_id: str
     action_id: str
     start_time: datetime = field(default_factory=datetime.now)
-    ability_results: Dict[str, Any] = field(default_factory=dict)
-    errors: List[str] = field(default_factory=list)
+    ability_results: dict[str, Any] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
 
     def add_error(self, error: str) -> None:
         """Add error to context."""
@@ -90,8 +88,8 @@ class ProtoEngine:
     def __init__(
         self,
         config: ProtoConfig,
-        ability_registry: Optional[Any] = None,
-        agentic_orchestrator: Optional[Any] = None,
+        ability_registry: Any | None = None,
+        agentic_orchestrator: Any | None = None,
     ):
         """Initialize ProtoEngine.
 
@@ -107,7 +105,7 @@ class ProtoEngine:
 
         # Session state
         self._current_session_id = str(uuid.uuid4())
-        self._execution_history: List[ExecutionContext] = []
+        self._execution_history: list[ExecutionContext] = []
 
         # Configure logging
         if config.enable_logging:
@@ -168,7 +166,7 @@ class ProtoEngine:
     async def process(
         self,
         query: str,
-        context: Optional[CodeContext] = None,
+        context: CodeContext | None = None,
     ) -> ProtoResponse:
         """Process user query and return response.
 
@@ -237,7 +235,7 @@ class ProtoEngine:
     async def _parse_intent(
         self,
         query: str,
-        context: Optional[CodeContext],
+        context: CodeContext | None,
     ) -> ProtoIntent:
         """Parse user query into structured intent.
 
@@ -331,7 +329,7 @@ class ProtoEngine:
         self,
         action: ProtoAction,
         exec_ctx: ExecutionContext,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute action via fallback chain.
 
         Tries execution in order:
@@ -373,7 +371,7 @@ class ProtoEngine:
         self.logger.debug("Using default handler")
         return await self._execute_default(action)
 
-    def _get_ability(self, ability_name: str) -> Optional[Any]:
+    def _get_ability(self, ability_name: str) -> Any | None:
         """Get ability from registry by name."""
         if not self.ability_registry:
             return None
@@ -395,16 +393,16 @@ class ProtoEngine:
 
         return True
 
-    async def _execute_ability(self, ability: Any, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_ability(self, ability: Any, parameters: dict[str, Any]) -> dict[str, Any]:
         """Execute ability with parameters."""
         if hasattr(ability, "execute"):
             return await ability.execute(parameters)
         elif callable(ability):
             return await ability(parameters)
         else:
-            raise ValueError(f"Ability is not callable")
+            raise ValueError("Ability is not callable")
 
-    async def _execute_agentic(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_agentic(self, parameters: dict[str, Any]) -> dict[str, Any]:
         """Execute using agentic reasoning."""
         if not self.agentic:
             raise RuntimeError("Agentic orchestrator not available")
@@ -427,7 +425,7 @@ class ProtoEngine:
             "source": "agentic",
         }
 
-    async def _execute_default(self, action: ProtoAction) -> Dict[str, Any]:
+    async def _execute_default(self, action: ProtoAction) -> dict[str, Any]:
         """Execute default handler (no ability, no reasoning)."""
         return {
             "response": f"Processed: {action.action_type}",
@@ -479,8 +477,8 @@ class ProtoEngine:
         self,
         intent: ProtoIntent,
         action: ProtoAction,
-        result: Dict[str, Any],
-    ) -> List[str]:
+        result: dict[str, Any],
+    ) -> list[str]:
         """Generate follow-up suggestions based on response.
 
         Args:
@@ -510,11 +508,11 @@ class ProtoEngine:
         """Get current session ID."""
         return self._current_session_id
 
-    def get_execution_history(self) -> List[ExecutionContext]:
+    def get_execution_history(self) -> list[ExecutionContext]:
         """Get execution history for this session."""
         return self._execution_history.copy()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get session statistics."""
         total_requests = len(self._execution_history)
         total_duration = sum(ctx.get_duration_ms() for ctx in self._execution_history)

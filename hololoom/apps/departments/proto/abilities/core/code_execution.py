@@ -45,28 +45,25 @@ Status: Production ready (2025-12-03)
 """
 
 import asyncio
-import subprocess
-import sys
-import time
 import logging
-import tempfile
 import os
-from typing import Dict, Any, Optional
+import sys
+import tempfile
+import time
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 from ..protocol import (
-    BaseAbility,
-    AbilityManifest,
-    AbilityManifest,
     AbilityContext,
+    AbilityManifest,
     AbilityResult,
     AbilityTier,
     AbilityTrustLevel,
-    VerificationResult,
+    BaseAbility,
     PreflightResult,
+    VerificationResult,
 )
-
 
 # Configuration constants
 DEFAULT_TIMEOUT = 30.0
@@ -91,8 +88,8 @@ class CodeExecutionConfig:
     max_output_length: int = MAX_OUTPUT_LENGTH
     enable_sandbox: bool = True
     sandbox_type: str = "subprocess"  # subprocess, docker, none
-    working_directory: Optional[str] = None
-    environment_variables: Dict[str, str] = None
+    working_directory: str | None = None
+    environment_variables: dict[str, str] = None
 
     def __post_init__(self):
         """Post-initialization validation."""
@@ -115,7 +112,7 @@ class CodeExecutionAbility(BaseAbility):
         last_execution: Timestamp of last execution
     """
 
-    def __init__(self, config: Optional[CodeExecutionConfig] = None):
+    def __init__(self, config: CodeExecutionConfig | None = None):
         """Initialize code execution ability.
 
         Args:
@@ -155,7 +152,7 @@ class CodeExecutionAbility(BaseAbility):
 
         # Statistics
         self.execution_count = 0
-        self.last_execution: Optional[datetime] = None
+        self.last_execution: datetime | None = None
         self.total_duration_ms = 0.0
 
     async def preflight(self, context: AbilityContext) -> PreflightResult:
@@ -216,7 +213,7 @@ class CodeExecutionAbility(BaseAbility):
 
     async def execute(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         context: AbilityContext
     ) -> AbilityResult:
         """Execute Python code snippet in isolated subprocess.
@@ -446,7 +443,7 @@ class CodeExecutionAbility(BaseAbility):
         code: str,
         language: str,
         timeout: float,
-        working_dir: Optional[str],
+        working_dir: str | None,
         execution_id: str
     ) -> AbilityResult:
         """Execute code in isolated subprocess.
@@ -522,7 +519,7 @@ class CodeExecutionAbility(BaseAbility):
 
                 if len(error_text) > self.config.max_output_length:
                     error_text = error_text[:self.config.max_output_length]
-                    error_text += f"\n... (error output truncated)"
+                    error_text += "\n... (error output truncated)"
                     truncated = True
 
                 # Determine success
@@ -561,7 +558,7 @@ class CodeExecutionAbility(BaseAbility):
         code: str,
         language: str,
         timeout: float,
-        working_dir: Optional[str],
+        working_dir: str | None,
         execution_id: str
     ) -> AbilityResult:
         """Execute code directly in current process (no sandbox).
@@ -582,7 +579,7 @@ class CodeExecutionAbility(BaseAbility):
         try:
             # Capture stdout/stderr
             import io
-            from contextlib import redirect_stdout, redirect_stderr
+            from contextlib import redirect_stderr, redirect_stdout
 
             output_buffer = io.StringIO()
             error_buffer = io.StringIO()
@@ -613,7 +610,7 @@ class CodeExecutionAbility(BaseAbility):
                 truncated = False
                 if len(output_text) > self.config.max_output_length:
                     output_text = output_text[:self.config.max_output_length]
-                    output_text += f"\n... (output truncated)"
+                    output_text += "\n... (output truncated)"
                     truncated = True
 
                 return AbilityResult(
@@ -668,7 +665,7 @@ class CodeExecutionAbility(BaseAbility):
 
 # Convenience function for creating ability
 def create_code_execution_ability(
-    config: Optional[CodeExecutionConfig] = None
+    config: CodeExecutionConfig | None = None
 ) -> CodeExecutionAbility:
     """Create and return a code execution ability instance.
 

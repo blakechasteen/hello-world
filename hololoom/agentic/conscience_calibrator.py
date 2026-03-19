@@ -25,20 +25,17 @@ Date: 2025-12-05
 Phase: 2D - Thompson Sampling Integration
 """
 
-import logging
-import time
 import json
-from typing import Dict, Any, Optional, List, Tuple
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from hololoom.bandits.beta_arm import BetaArm
-
 from hololoom.protocols.conscience import (
     ConscienceDecision,
     StepType,
-    RiskLevel,
 )
 
 logger = logging.getLogger("hololoom.agentic.conscience_calibrator")
@@ -63,7 +60,7 @@ class CalibrationPrior:
     """
     _arm: BetaArm = field(default_factory=BetaArm)
     updates: int = 0    # Total updates
-    last_update: Optional[datetime] = None
+    last_update: datetime | None = None
 
     @property
     def alpha(self) -> float:
@@ -116,7 +113,7 @@ class CalibrationPrior:
         self.updates += 1
         self.last_update = datetime.now()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "alpha": self.alpha,
@@ -129,7 +126,7 @@ class CalibrationPrior:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'CalibrationPrior':
+    def from_dict(cls, data: dict[str, Any]) -> 'CalibrationPrior':
         """Create from dictionary."""
         prior = cls(
             _arm=BetaArm(
@@ -155,9 +152,9 @@ class CalibrationEvent:
     confidence_after: float
     prior_mean_before: float
     prior_mean_after: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "timestamp": self.timestamp.isoformat(),
@@ -183,7 +180,7 @@ class DriftAlert:
     drift_magnitude: float
     direction: str  # "stricter" or "more_permissive"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "timestamp": self.timestamp.isoformat(),
@@ -241,17 +238,17 @@ class ConscienceCalibrator:
         self._decay_rate = decay_rate
 
         # Initialize priors for each step type
-        self._priors: Dict[StepType, CalibrationPrior] = {
+        self._priors: dict[StepType, CalibrationPrior] = {
             step_type: CalibrationPrior()
             for step_type in StepType
         }
 
         # Track calibration history
-        self._history: List[CalibrationEvent] = []
+        self._history: list[CalibrationEvent] = []
         self._max_history = 1000  # Keep last 1000 events
 
         # Track drift alerts
-        self._drift_alerts: List[DriftAlert] = []
+        self._drift_alerts: list[DriftAlert] = []
 
         # Statistics
         self._total_updates = 0
@@ -273,7 +270,7 @@ class ConscienceCalibrator:
         decision: ConscienceDecision,
         success: bool,
         weight: float = 1.0,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> CalibrationEvent:
         """
         Update calibration based on a decision outcome.
@@ -436,7 +433,7 @@ class ConscienceCalibrator:
     # Statistics
     # =========================================================================
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get comprehensive calibration statistics."""
         accuracy = (
             self._correct_predictions / max(self._total_updates, 1)
@@ -464,20 +461,20 @@ class ConscienceCalibrator:
             "min_updates_for_calibration": self._min_updates,
         }
 
-    def get_priors(self) -> Dict[str, Dict[str, Any]]:
+    def get_priors(self) -> dict[str, dict[str, Any]]:
         """Get all priors as dictionaries."""
         return {
             step_type.name: prior.to_dict()
             for step_type, prior in self._priors.items()
         }
 
-    def get_drift_alerts(self, since: Optional[datetime] = None) -> List[DriftAlert]:
+    def get_drift_alerts(self, since: datetime | None = None) -> list[DriftAlert]:
         """Get drift alerts, optionally filtered by time."""
         if since is None:
             return self._drift_alerts.copy()
         return [a for a in self._drift_alerts if a.timestamp >= since]
 
-    def get_recent_history(self, limit: int = 100) -> List[CalibrationEvent]:
+    def get_recent_history(self, limit: int = 100) -> list[CalibrationEvent]:
         """Get recent calibration history."""
         return self._history[-limit:]
 
@@ -522,7 +519,7 @@ class ConscienceCalibrator:
             logger.warning(f"Calibration file not found: {path}")
             return
 
-        with open(path, 'r') as f:
+        with open(path) as f:
             state = json.load(f)
 
         # Restore priors
@@ -606,7 +603,7 @@ def create_conscience_calibrator(
     drift_threshold: float = 0.1,
     min_updates: int = 10,
     decay_rate: float = 0.0,
-    load_path: Optional[Path] = None,
+    load_path: Path | None = None,
 ) -> ConscienceCalibrator:
     """
     Create a ConscienceCalibrator with optional state loading.

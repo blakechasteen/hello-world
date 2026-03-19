@@ -26,16 +26,14 @@ Cooperation (essential): Share discoveries, blocked patterns
 """
 
 import asyncio
-import time
 import math
-from abc import ABC, abstractmethod
+import time
+from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
-from collections import defaultdict
+from typing import Any
 
 from hololoom.bandits.beta_arm import BetaArm
-
 
 # =============================================================================
 # Learning Timescales
@@ -62,9 +60,9 @@ class LearningEvent:
 
     timescale: LearningTimescale
     event_type: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
     timestamp: float = field(default_factory=time.time)
-    agent_id: Optional[str] = None
+    agent_id: str | None = None
     priority: float = 1.0  # Higher = more important
 
 
@@ -77,7 +75,7 @@ class PatternUpdate:
     success: bool
     confidence: float
     timestamp: float = field(default_factory=time.time)
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
 
 
 # =============================================================================
@@ -103,7 +101,7 @@ class PayloadHeat:
     last_access: float = field(default_factory=time.time)
     created_at: float = field(default_factory=time.time)
     blocked_count: int = 0  # Times this payload was blocked
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def success_rate(self) -> float:
@@ -119,7 +117,7 @@ class PayloadHeat:
             return 0.0
         return self.total_confidence / self.access_count
 
-    def recency_decay(self, decay_rate: float = 0.05, hours_since: Optional[float] = None) -> float:
+    def recency_decay(self, decay_rate: float = 0.05, hours_since: float | None = None) -> float:
         """Calculate recency decay.
 
         Exponential decay: decay_rate^hours_since_last_access
@@ -170,9 +168,9 @@ class PerAttackLearner:
             decay_rate: Hourly decay rate (0.05 = 5% per hour)
             prune_interval: How often to prune cold payloads (seconds)
         """
-        self._payloads: Dict[str, PayloadHeat] = {}
-        self._hash_to_id: Dict[str, str] = {}  # Deduplication
-        self._blocked_patterns: Set[str] = set()
+        self._payloads: dict[str, PayloadHeat] = {}
+        self._hash_to_id: dict[str, str] = {}  # Deduplication
+        self._blocked_patterns: set[str] = set()
         self._max_payloads = max_payloads
         self._decay_rate = decay_rate
         self._prune_interval = prune_interval
@@ -186,7 +184,7 @@ class PerAttackLearner:
         success: bool,
         confidence: float,
         blocked: bool = False,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> PayloadHeat:
         """Record an attack result immediately.
 
@@ -240,7 +238,7 @@ class PerAttackLearner:
 
             return heat
 
-    async def get_hot_payloads(self, limit: int = 100) -> List[PayloadHeat]:
+    async def get_hot_payloads(self, limit: int = 100) -> list[PayloadHeat]:
         """Get hottest payloads for priority use.
 
         Args:
@@ -254,7 +252,7 @@ class PerAttackLearner:
             payloads.sort(key=lambda p: p.heat_score(self._decay_rate), reverse=True)
             return payloads[:limit]
 
-    async def get_cold_payloads(self, limit: int = 100) -> List[PayloadHeat]:
+    async def get_cold_payloads(self, limit: int = 100) -> list[PayloadHeat]:
         """Get coldest payloads for potential pruning.
 
         Args:
@@ -304,7 +302,7 @@ class PerAttackLearner:
 
         return len(to_prune)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get learning statistics."""
         payloads = list(self._payloads.values())
         hot = [p for p in payloads if p.heat_score(self._decay_rate) >= self.HOT_THRESHOLD]
@@ -344,7 +342,7 @@ class ThompsonSamplingPrior:
     _arm: BetaArm = field(default_factory=BetaArm)
     total_attempts: int = 0
     last_updated: float = field(default_factory=time.time)
-    context_stats: Dict[str, Tuple[float, float]] = field(default_factory=dict)
+    context_stats: dict[str, tuple[float, float]] = field(default_factory=dict)
 
     @property
     def alpha(self) -> float:
@@ -409,7 +407,7 @@ class PerTaskLearner:
             prior_beta: Initial beta for new strategies
             context_weight: Weight for context-aware learning
         """
-        self._priors: Dict[str, ThompsonSamplingPrior] = {}
+        self._priors: dict[str, ThompsonSamplingPrior] = {}
         self._prior_alpha = prior_alpha
         self._prior_beta = prior_beta
         self._context_weight = context_weight
@@ -417,8 +415,8 @@ class PerTaskLearner:
 
     async def select_strategy(
         self,
-        available_strategies: List[str],
-        context: Optional[Dict[str, Any]] = None,
+        available_strategies: list[str],
+        context: dict[str, Any] | None = None,
     ) -> str:
         """Select strategy using Thompson Sampling.
 
@@ -445,7 +443,7 @@ class PerTaskLearner:
         strategy_id: str,
         success: bool,
         confidence: float,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> ThompsonSamplingPrior:
         """Update strategy prior based on outcome.
 
@@ -477,7 +475,7 @@ class PerTaskLearner:
 
             return prior
 
-    async def get_strategy_stats(self, strategy_id: str) -> Dict[str, Any]:
+    async def get_strategy_stats(self, strategy_id: str) -> dict[str, Any]:
         """Get statistics for a strategy.
 
         Args:
@@ -511,13 +509,13 @@ class PerTaskLearner:
             )
         return self._priors[strategy_id]
 
-    def _context_hash(self, context: Dict[str, Any]) -> str:
+    def _context_hash(self, context: dict[str, Any]) -> str:
         """Create hash for context."""
         # Simple hash based on sorted keys
         items = sorted((k, str(v)) for k, v in context.items())
         return ":".join(f"{k}={v}" for k, v in items)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get learning statistics."""
         priors = list(self._priors.values())
 
@@ -550,13 +548,13 @@ class CrossStrategyInsight:
 
     insight_id: str
     insight_type: str  # e.g., "correlation", "sequence", "conflict"
-    strategies_involved: List[str]
+    strategies_involved: list[str]
     description: str
     confidence: float
     evidence_count: int = 0
     created_at: float = field(default_factory=time.time)
     last_seen: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class PerCycleLearner:
@@ -588,9 +586,9 @@ class PerCycleLearner:
         self._min_evidence = min_evidence
         self._correlation_threshold = correlation_threshold
 
-        self._insights: Dict[str, CrossStrategyInsight] = {}
-        self._event_buffer: List[Dict[str, Any]] = []
-        self._strategy_sequences: List[Tuple[str, ...]] = []
+        self._insights: dict[str, CrossStrategyInsight] = {}
+        self._event_buffer: list[dict[str, Any]] = []
+        self._strategy_sequences: list[tuple[str, ...]] = []
         self._last_cycle = time.time()
         self._lock = asyncio.Lock()
 
@@ -600,7 +598,7 @@ class PerCycleLearner:
         event_type: str,
         success: bool,
         confidence: float,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Record a strategy event for cross-strategy analysis.
 
@@ -621,7 +619,7 @@ class PerCycleLearner:
                 "metadata": metadata or {},
             })
 
-    async def analyze_cycle(self) -> List[CrossStrategyInsight]:
+    async def analyze_cycle(self) -> list[CrossStrategyInsight]:
         """Analyze current cycle for cross-strategy patterns.
 
         Called periodically (every cycle_duration seconds).
@@ -670,9 +668,9 @@ class PerCycleLearner:
 
     async def get_insights(
         self,
-        insight_type: Optional[str] = None,
+        insight_type: str | None = None,
         min_confidence: float = 0.0,
-    ) -> List[CrossStrategyInsight]:
+    ) -> list[CrossStrategyInsight]:
         """Get learned insights.
 
         Args:
@@ -692,12 +690,12 @@ class PerCycleLearner:
 
             return sorted(insights, key=lambda i: i.confidence, reverse=True)
 
-    async def _analyze_correlations(self) -> List[Dict[str, Any]]:
+    async def _analyze_correlations(self) -> list[dict[str, Any]]:
         """Analyze correlations between strategies."""
         correlations = []
 
         # Group events by strategy
-        by_strategy: Dict[str, List[Dict]] = defaultdict(list)
+        by_strategy: dict[str, list[dict]] = defaultdict(list)
         for event in self._event_buffer:
             by_strategy[event["strategy_id"]].append(event)
 
@@ -727,7 +725,7 @@ class PerCycleLearner:
 
         return correlations
 
-    async def _analyze_sequences(self) -> List[Dict[str, Any]]:
+    async def _analyze_sequences(self) -> list[dict[str, Any]]:
         """Analyze strategy sequences."""
         sequences = []
 
@@ -738,8 +736,8 @@ class PerCycleLearner:
             return sequences
 
         # Track successful sequences
-        success_sequences: Dict[Tuple[str, str], int] = defaultdict(int)
-        total_sequences: Dict[Tuple[str, str], int] = defaultdict(int)
+        success_sequences: dict[tuple[str, str], int] = defaultdict(int)
+        total_sequences: dict[tuple[str, str], int] = defaultdict(int)
 
         for i in range(len(sorted_events) - 1):
             prev = sorted_events[i]
@@ -770,7 +768,7 @@ class PerCycleLearner:
     def _update_or_create_insight(
         self,
         insight_type: str,
-        strategies: List[str],
+        strategies: list[str],
         description: str,
         confidence: float,
     ) -> CrossStrategyInsight:
@@ -795,7 +793,7 @@ class PerCycleLearner:
 
         return insight
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get learning statistics."""
         insights = list(self._insights.values())
 
@@ -824,11 +822,11 @@ class SystemPrior:
 
     prior_id: str
     prior_type: str  # e.g., "target_type", "defense_pattern", "time_of_day"
-    parameters: Dict[str, float]
+    parameters: dict[str, float]
     evidence_count: int = 0
     created_at: float = field(default_factory=time.time)
     last_updated: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -841,7 +839,7 @@ class LearnedPattern:
     frequency: int = 0
     success_rate: float = 0.0
     confidence: float = 0.0
-    contexts: List[Dict[str, Any]] = field(default_factory=list)
+    contexts: list[dict[str, Any]] = field(default_factory=list)
     created_at: float = field(default_factory=time.time)
     last_seen: float = field(default_factory=time.time)
 
@@ -875,14 +873,14 @@ class BackgroundLearner:
         self._min_pattern_frequency = min_pattern_frequency
         self._pattern_confidence_threshold = pattern_confidence_threshold
 
-        self._priors: Dict[str, SystemPrior] = {}
-        self._patterns: Dict[str, LearnedPattern] = {}
-        self._history_buffer: List[Dict[str, Any]] = []
+        self._priors: dict[str, SystemPrior] = {}
+        self._patterns: dict[str, LearnedPattern] = {}
+        self._history_buffer: list[dict[str, Any]] = []
         self._last_update = time.time()
         self._lock = asyncio.Lock()
 
         # Background task handle
-        self._background_task: Optional[asyncio.Task] = None
+        self._background_task: asyncio.Task | None = None
         self._running = False
 
     async def start_background_learning(self) -> None:
@@ -907,7 +905,7 @@ class BackgroundLearner:
     async def record_history(
         self,
         event_type: str,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         success: bool,
         confidence: float,
     ) -> None:
@@ -928,7 +926,7 @@ class BackgroundLearner:
                 "timestamp": time.time(),
             })
 
-    async def get_prior(self, prior_type: str, context: Dict[str, Any]) -> Optional[SystemPrior]:
+    async def get_prior(self, prior_type: str, context: dict[str, Any]) -> SystemPrior | None:
         """Get system prior for a context.
 
         Args:
@@ -946,9 +944,9 @@ class BackgroundLearner:
 
     async def get_patterns(
         self,
-        pattern_type: Optional[str] = None,
+        pattern_type: str | None = None,
         min_confidence: float = 0.0,
-    ) -> List[LearnedPattern]:
+    ) -> list[LearnedPattern]:
         """Get learned patterns.
 
         Args:
@@ -976,7 +974,7 @@ class BackgroundLearner:
                 await self._perform_update()
             except asyncio.CancelledError:
                 break
-            except Exception as e:
+            except Exception:
                 # Log error but continue
                 pass
 
@@ -1006,7 +1004,7 @@ class BackgroundLearner:
             return
 
         # Aggregate by event type
-        by_type: Dict[str, List[Dict]] = defaultdict(list)
+        by_type: dict[str, list[dict]] = defaultdict(list)
         for event in self._history_buffer:
             by_type[event["event_type"]].append(event)
 
@@ -1049,7 +1047,7 @@ class BackgroundLearner:
             return
 
         # Simple pattern: success patterns by data signature
-        success_signatures: Dict[str, List[Dict]] = defaultdict(list)
+        success_signatures: dict[str, list[dict]] = defaultdict(list)
 
         for event in self._history_buffer:
             if event["success"]:
@@ -1083,7 +1081,7 @@ class BackgroundLearner:
                     confidence=avg_confidence,
                 )
 
-    def _create_signature(self, data: Dict[str, Any]) -> str:
+    def _create_signature(self, data: dict[str, Any]) -> str:
         """Create simple signature from data."""
         # Extract key fields for signature
         key_fields = ["type", "category", "target_type", "strategy"]
@@ -1093,7 +1091,7 @@ class BackgroundLearner:
                 parts.append(f"{field}:{data[field]}")
         return "|".join(sorted(parts)) if parts else "default"
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get learning statistics."""
         return {
             "total_priors": len(self._priors),
@@ -1138,10 +1136,10 @@ class HierarchicalLearningCoordinator:
 
     def __init__(
         self,
-        per_attack_config: Optional[Dict[str, Any]] = None,
-        per_task_config: Optional[Dict[str, Any]] = None,
-        per_cycle_config: Optional[Dict[str, Any]] = None,
-        background_config: Optional[Dict[str, Any]] = None,
+        per_attack_config: dict[str, Any] | None = None,
+        per_task_config: dict[str, Any] | None = None,
+        per_cycle_config: dict[str, Any] | None = None,
+        background_config: dict[str, Any] | None = None,
     ):
         """Initialize learning coordinator.
 
@@ -1157,7 +1155,7 @@ class HierarchicalLearningCoordinator:
         self._background = BackgroundLearner(**(background_config or {}))
 
         self._running = False
-        self._cycle_task: Optional[asyncio.Task] = None
+        self._cycle_task: asyncio.Task | None = None
 
     async def start(self) -> None:
         """Start all learning systems."""
@@ -1196,9 +1194,9 @@ class HierarchicalLearningCoordinator:
         success: bool,
         confidence: float,
         blocked: bool = False,
-        context: Optional[Dict[str, Any]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Learn from a single attack.
 
         Routes to all appropriate timescales.
@@ -1272,8 +1270,8 @@ class HierarchicalLearningCoordinator:
 
     async def select_strategy(
         self,
-        available_strategies: List[str],
-        context: Optional[Dict[str, Any]] = None,
+        available_strategies: list[str],
+        context: dict[str, Any] | None = None,
     ) -> str:
         """Select strategy using learned priors.
 
@@ -1291,7 +1289,7 @@ class HierarchicalLearningCoordinator:
             context=context,
         )
 
-    async def get_hot_payloads(self, limit: int = 100) -> List[PayloadHeat]:
+    async def get_hot_payloads(self, limit: int = 100) -> list[PayloadHeat]:
         """Get hot payloads for priority use."""
         return await self._per_attack.get_hot_payloads(limit)
 
@@ -1299,11 +1297,11 @@ class HierarchicalLearningCoordinator:
         """Check if payload is blocked."""
         return self._per_attack.is_blocked(payload_hash)
 
-    async def get_insights(self, min_confidence: float = 0.6) -> List[CrossStrategyInsight]:
+    async def get_insights(self, min_confidence: float = 0.6) -> list[CrossStrategyInsight]:
         """Get cross-strategy insights."""
         return await self._per_cycle.get_insights(min_confidence=min_confidence)
 
-    async def get_patterns(self, min_confidence: float = 0.7) -> List[LearnedPattern]:
+    async def get_patterns(self, min_confidence: float = 0.7) -> list[LearnedPattern]:
         """Get learned patterns."""
         return await self._background.get_patterns(min_confidence=min_confidence)
 
@@ -1337,7 +1335,7 @@ class HierarchicalLearningCoordinator:
             confidence=insight.confidence,
         )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get comprehensive learning statistics."""
         return {
             "per_attack": self._per_attack.get_stats(),
@@ -1353,7 +1351,7 @@ class HierarchicalLearningCoordinator:
 
 
 def create_learning_coordinator(
-    config: Optional[Dict[str, Any]] = None,
+    config: dict[str, Any] | None = None,
 ) -> HierarchicalLearningCoordinator:
     """Create a learning coordinator with optional configuration.
 

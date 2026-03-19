@@ -10,19 +10,18 @@ Analyzes detected objects to understand:
 Created: 2025-11-22
 """
 
-from typing import List, Dict, Any, Optional, Tuple
 import logging
+from typing import Any
+
 import numpy as np
-from datetime import datetime
 
 from hololoom.vision.protocol import (
+    BoundingBox,
     DetectedObject,
+    SceneAnalyzerProtocol,
     SceneUnderstanding,
     SpatialRelationship,
-    SceneAnalyzerProtocol,
-    BoundingBox,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +88,7 @@ class SceneAnalyzer(SceneAnalyzerProtocol):
     async def analyze_scene(
         self,
         frame: np.ndarray,
-        objects: Optional[List[DetectedObject]] = None
+        objects: list[DetectedObject] | None = None
     ) -> SceneUnderstanding:
         """
         Analyze scene for spatial understanding.
@@ -139,8 +138,8 @@ class SceneAnalyzer(SceneAnalyzerProtocol):
 
     def _extract_relationships(
         self,
-        objects: List[DetectedObject]
-    ) -> List[SpatialRelationship]:
+        objects: list[DetectedObject]
+    ) -> list[SpatialRelationship]:
         """
         Extract spatial relationships between objects.
 
@@ -173,7 +172,7 @@ class SceneAnalyzer(SceneAnalyzerProtocol):
         self,
         obj1: DetectedObject,
         obj2: DetectedObject
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Determine spatial relationship between two objects.
 
@@ -216,7 +215,7 @@ class SceneAnalyzer(SceneAnalyzerProtocol):
             outer.y_max >= inner.y_max
         )
 
-    def _classify_scene_type(self, objects: List[DetectedObject]) -> str:
+    def _classify_scene_type(self, objects: list[DetectedObject]) -> str:
         """
         Classify scene type based on detected objects.
 
@@ -237,7 +236,7 @@ class SceneAnalyzer(SceneAnalyzerProtocol):
         # Return scene type with most matches
         return max(scores, key=scores.get)
 
-    def _analyze_colors(self, frame: np.ndarray) -> List[str]:
+    def _analyze_colors(self, frame: np.ndarray) -> list[str]:
         """
         Analyze dominant colors in frame.
 
@@ -295,7 +294,7 @@ class SceneAnalyzer(SceneAnalyzerProtocol):
 
         return "normal"
 
-    def _build_spatial_layout(self, objects: List[DetectedObject]) -> Dict[str, Any]:
+    def _build_spatial_layout(self, objects: list[DetectedObject]) -> dict[str, Any]:
         """
         Build spatial layout representation.
 
@@ -352,7 +351,7 @@ class SceneAnalyzer(SceneAnalyzerProtocol):
         """Clean up resources"""
         self.initialized = False
 
-    def get_capabilities(self) -> Dict[str, bool]:
+    def get_capabilities(self) -> dict[str, bool]:
         """Get analyzer capabilities"""
         return {
             "spatial_relationships": self.enable_relationships,
@@ -385,10 +384,10 @@ def create_scene_analyzer(**kwargs) -> SceneAnalyzer:
 # ============================================================================
 
 def find_objects_by_relationship(
-    relationships: List[SpatialRelationship],
+    relationships: list[SpatialRelationship],
     subject_id: str,
     relation: str
-) -> List[str]:
+) -> list[str]:
     """
     Find objects related to subject by specific relation.
 

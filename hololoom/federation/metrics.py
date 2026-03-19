@@ -31,9 +31,9 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import Any, Dict, Generator, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +48,8 @@ try:
         Histogram,
         counter,
         gauge,
-        histogram,
         get_registry,
+        histogram,
     )
     _PROMETHEUS_AVAILABLE = True
 except ImportError:
@@ -64,24 +64,24 @@ except ImportError:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Federated Query Metrics
-_federation_queries_total: Optional[Counter] = None
-_federation_query_latency: Optional[Histogram] = None
-_federation_query_errors: Optional[Counter] = None
+_federation_queries_total: Counter | None = None
+_federation_query_latency: Histogram | None = None
+_federation_query_errors: Counter | None = None
 
 # Alignment Verification Metrics
-_alignment_checks_total: Optional[Counter] = None
-_alignment_latency: Optional[Histogram] = None
-_alignment_failures: Optional[Counter] = None
+_alignment_checks_total: Counter | None = None
+_alignment_latency: Histogram | None = None
+_alignment_failures: Counter | None = None
 
 # Gossip Protocol Metrics
-_gossip_messages_total: Optional[Counter] = None
-_gossip_latency: Optional[Histogram] = None
-_gossip_membership_changes: Optional[Counter] = None
+_gossip_messages_total: Counter | None = None
+_gossip_latency: Histogram | None = None
+_gossip_membership_changes: Counter | None = None
 
 # Cluster Health Metrics
-_cluster_nodes_total: Optional[Gauge] = None
-_cluster_healthy_nodes: Optional[Gauge] = None
-_cluster_pending_queries: Optional[Gauge] = None
+_cluster_nodes_total: Gauge | None = None
+_cluster_healthy_nodes: Gauge | None = None
+_cluster_pending_queries: Gauge | None = None
 
 
 def _init_metrics() -> None:
@@ -278,7 +278,7 @@ def record_alignment_failure(layer: str, reason: str) -> None:
 def record_gossip_message(
     message_type: str,
     status: str,
-    latency_seconds: Optional[float] = None,
+    latency_seconds: float | None = None,
 ) -> None:
     """
     Record a gossip protocol message.
@@ -451,7 +451,7 @@ class FederationCollector:
 
 
 # Global collector instance
-_federation_collector: Optional[FederationCollector] = None
+_federation_collector: FederationCollector | None = None
 
 
 def get_federation_collector() -> FederationCollector:

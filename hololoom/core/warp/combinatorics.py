@@ -23,11 +23,11 @@ Perfect for:
 """
 
 import logging
-import numpy as np
-from typing import List, Dict, Set, Tuple, Any, Optional
-from dataclasses import dataclass, field
 from collections import defaultdict
-import itertools
+from dataclasses import dataclass, field
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +47,10 @@ class ChainComplex:
     Homology: Hₖ = ker(∂ₖ) / im(∂ₖ₊₁)
     """
     dimension: int
-    chains: Dict[int, List[Any]] = field(default_factory=dict)  # k → list of k-chains
-    boundaries: Dict[int, np.ndarray] = field(default_factory=dict)  # k → boundary matrix
+    chains: dict[int, list[Any]] = field(default_factory=dict)  # k → list of k-chains
+    boundaries: dict[int, np.ndarray] = field(default_factory=dict)  # k → boundary matrix
 
-    def add_chain(self, k: int, simplex: Tuple) -> None:
+    def add_chain(self, k: int, simplex: tuple) -> None:
         """Add a k-simplex to the complex."""
         if k not in self.chains:
             self.chains[k] = []
@@ -96,7 +96,7 @@ class ChainComplex:
             self.boundaries[k] = boundary
             logger.info(f"  ∂_{k}: {boundary.shape}")
 
-    def compute_homology(self, k: int, field: str = "Z2") -> Dict[str, Any]:
+    def compute_homology(self, k: int, field: str = "Z2") -> dict[str, Any]:
         """
         Compute k-th homology group: Hₖ = ker(∂ₖ) / im(∂ₖ₊₁)
 
@@ -227,10 +227,10 @@ class DiscreteMorseFunction:
         self.complex = complex
 
         # Critical simplices (local maxima/minima)
-        self.critical: Dict[int, Set] = defaultdict(set)
+        self.critical: dict[int, set] = defaultdict(set)
 
         # Gradient pairs (simplex → coface)
-        self.gradient_pairs: List[Tuple[Tuple, Tuple]] = []
+        self.gradient_pairs: list[tuple[tuple, tuple]] = []
 
         logger.info("Discrete Morse function initialized")
 
@@ -289,7 +289,7 @@ class DiscreteMorseFunction:
 
         logger.info(f"  Gradient pairs: {len(self.gradient_pairs)}")
 
-    def _is_face_of(self, face: Tuple, simplex: Tuple) -> bool:
+    def _is_face_of(self, face: tuple, simplex: tuple) -> bool:
         """Check if face is a face of simplex."""
         return set(face).issubset(set(simplex)) and len(face) == len(simplex) - 1
 
@@ -343,8 +343,8 @@ class Sheaf:
     - H¹: Obstructions to consistency
     """
     base_space: Any  # Graph or simplicial complex
-    stalks: Dict[Any, np.ndarray] = field(default_factory=dict)  # vertex → data
-    restriction_maps: Dict[Tuple, np.ndarray] = field(default_factory=dict)  # (u,v) → matrix
+    stalks: dict[Any, np.ndarray] = field(default_factory=dict)  # vertex → data
+    restriction_maps: dict[tuple, np.ndarray] = field(default_factory=dict)  # (u,v) → matrix
 
     def add_stalk(self, vertex: Any, data: np.ndarray):
         """Assign data to a vertex."""

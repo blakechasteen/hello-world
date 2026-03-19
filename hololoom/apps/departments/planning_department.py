@@ -12,24 +12,22 @@ Author: HoloLoom Team
 Date: November 2025
 """
 
-import asyncio
 import logging
 import time
-from typing import Any, Dict, List, Optional, Set, Tuple
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+from typing import Any
 
+from hololoom.apps.departments.base import BaseDepartment
 from hololoom.apps.departments.protocol import (
-    Department,
+    ConfidenceMetadata,
+    DepartmentConfig,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
-    VerificationResult,
     DSStarCheck,
-    DepartmentConfig,
+    VerificationResult,
 )
-from hololoom.apps.departments.base import BaseDepartment
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +57,8 @@ class Task:
     description: str
     priority: TaskPriority = TaskPriority.MEDIUM
     estimated_duration_ms: float = 1000.0
-    dependencies: List[str] = field(default_factory=list)  # IDs of required tasks
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    dependencies: list[str] = field(default_factory=list)  # IDs of required tasks
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -76,12 +74,12 @@ class Dependency:
 class Plan:
     """A complete execution plan."""
     goal: str
-    tasks: List[Task]
-    dependencies: List[Dependency]
-    execution_order: List[str]  # Task IDs in recommended execution order
-    parallel_stages: List[List[str]] = field(default_factory=list)  # Tasks that can run in parallel
+    tasks: list[Task]
+    dependencies: list[Dependency]
+    execution_order: list[str]  # Task IDs in recommended execution order
+    parallel_stages: list[list[str]] = field(default_factory=list)  # Tasks that can run in parallel
     estimated_total_duration_ms: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class PlanningDepartment(BaseDepartment):
@@ -126,8 +124,8 @@ class PlanningDepartment(BaseDepartment):
         self.department_id = department_id
 
         # Learning statistics
-        self._plan_history: List[Plan] = []
-        self._decomposition_patterns: Dict[str, int] = {}  # Track common patterns
+        self._plan_history: list[Plan] = []
+        self._decomposition_patterns: dict[str, int] = {}  # Track common patterns
         self._optimization_stats = {
             "total_optimizations": 0,
             "avg_parallelization": 0.0,
@@ -298,7 +296,7 @@ class PlanningDepartment(BaseDepartment):
         """
         logger.info(f"Verifying plan (task_id={response.task_id})...")
 
-        checks: List[DSStarCheck] = []
+        checks: list[DSStarCheck] = []
         plan_data = response.result.get("plan", {})
 
         if not plan_data:
@@ -437,7 +435,7 @@ class PlanningDepartment(BaseDepartment):
 
         return response
 
-    async def update_strategy(self, feedback: Dict[str, Any]) -> None:
+    async def update_strategy(self, feedback: dict[str, Any]) -> None:
         """
         Learn from plan execution outcomes.
 
@@ -474,7 +472,7 @@ class PlanningDepartment(BaseDepartment):
 
         logger.info("✓ Strategy updated")
 
-    async def get_capabilities(self) -> Dict[str, Any]:
+    async def get_capabilities(self) -> dict[str, Any]:
         """
         Report Planning Department capabilities.
 
@@ -504,7 +502,7 @@ class PlanningDepartment(BaseDepartment):
             },
         }
 
-    async def get_metrics(self) -> Dict[str, Any]:
+    async def get_metrics(self) -> dict[str, Any]:
         """
         Get Planning Department metrics.
 
@@ -542,7 +540,7 @@ class PlanningDepartment(BaseDepartment):
 
     # ===== Private Helper Methods =====
 
-    async def _decompose_goal(self, goal: str, max_tasks: int = 20) -> List[Task]:
+    async def _decompose_goal(self, goal: str, max_tasks: int = 20) -> list[Task]:
         """Decompose goal into sub-tasks."""
         # Simplified decomposition (in production, would use LLM or rule-based decomposition)
         tasks = []
@@ -565,7 +563,7 @@ class PlanningDepartment(BaseDepartment):
 
         return tasks[:max_tasks]
 
-    async def _detect_dependencies(self, tasks: List[Task]) -> List[Dependency]:
+    async def _detect_dependencies(self, tasks: list[Task]) -> list[Dependency]:
         """Detect dependencies between tasks."""
         dependencies = []
 
@@ -582,11 +580,11 @@ class PlanningDepartment(BaseDepartment):
 
         return dependencies
 
-    async def _topological_sort(self, tasks: List[Task], dependencies: List[Dependency]) -> List[str]:
+    async def _topological_sort(self, tasks: list[Task], dependencies: list[Dependency]) -> list[str]:
         """Topologically sort tasks based on dependencies."""
         # Build adjacency list
-        graph: Dict[str, List[str]] = {task.task_id: [] for task in tasks}
-        in_degree: Dict[str, int] = {task.task_id: 0 for task in tasks}
+        graph: dict[str, list[str]] = {task.task_id: [] for task in tasks}
+        in_degree: dict[str, int] = {task.task_id: 0 for task in tasks}
 
         for dep in dependencies:
             graph[dep.to_task].append(dep.from_task)
@@ -608,18 +606,18 @@ class PlanningDepartment(BaseDepartment):
         return result
 
     async def _optimize_parallelization(
-        self, tasks: List[Task], dependencies: List[Dependency], execution_order: List[str]
-    ) -> List[List[str]]:
+        self, tasks: list[Task], dependencies: list[Dependency], execution_order: list[str]
+    ) -> list[list[str]]:
         """Optimize task execution for maximum parallelization."""
         # Build dependency graph
-        dependents: Dict[str, Set[str]] = {task.task_id: set() for task in tasks}
+        dependents: dict[str, set[str]] = {task.task_id: set() for task in tasks}
         for dep in dependencies:
             dependents[dep.from_task].add(dep.to_task)
 
         # Assign tasks to stages (level-by-level)
-        stages: List[List[str]] = []
+        stages: list[list[str]] = []
         remaining = set(task.task_id for task in tasks)
-        completed: Set[str] = set()
+        completed: set[str] = set()
 
         while remaining:
             # Find tasks with all dependencies completed
@@ -638,7 +636,7 @@ class PlanningDepartment(BaseDepartment):
 
         return stages
 
-    async def _estimate_duration(self, tasks: List[Task], parallel_stages: List[List[str]]) -> float:
+    async def _estimate_duration(self, tasks: list[Task], parallel_stages: list[list[str]]) -> float:
         """Estimate total execution duration considering parallelization."""
         task_map = {task.task_id: task for task in tasks}
         total_duration = 0.0
@@ -668,7 +666,7 @@ class PlanningDepartment(BaseDepartment):
 
         return max(0.0, min(1.0, score))
 
-    def _check_completeness(self, tasks: List[Dict]) -> float:
+    def _check_completeness(self, tasks: list[dict]) -> float:
         """Check if plan includes all necessary tasks."""
         if len(tasks) < self._validation_thresholds["min_tasks"]:
             return 0.0
@@ -677,14 +675,14 @@ class PlanningDepartment(BaseDepartment):
 
         return 0.9  # Assume complete for valid size
 
-    def _check_feasibility(self, tasks: List[Dict], dependencies: List[Dict]) -> float:
+    def _check_feasibility(self, tasks: list[dict], dependencies: list[dict]) -> float:
         """Check if plan can be executed."""
         if len(dependencies) > self._validation_thresholds["max_dependencies"]:
             return 0.3  # Too many dependencies, may be infeasible
 
         return 0.9  # Assume feasible
 
-    def _check_optimality(self, plan_data: Dict) -> float:
+    def _check_optimality(self, plan_data: dict) -> float:
         """Check if execution order is optimal."""
         parallel_stages = plan_data.get("parallel_stages", [])
         tasks = plan_data.get("tasks", [])
@@ -699,18 +697,18 @@ class PlanningDepartment(BaseDepartment):
         parallelization_ratio = avg_parallel / len(tasks)
         return min(1.0, parallelization_ratio * 2)  # Higher parallelization = better
 
-    def _check_dependencies(self, dependencies: List[Dict]) -> float:
+    def _check_dependencies(self, dependencies: list[dict]) -> float:
         """Check if dependencies are valid."""
         # All dependencies should have valid from/to tasks
         # (In production, would verify task IDs exist)
         return 0.9  # Assume valid
 
-    def _check_consistency(self, tasks: List[Dict], dependencies: List[Dict]) -> float:
+    def _check_consistency(self, tasks: list[dict], dependencies: list[dict]) -> float:
         """Check for circular dependencies and conflicts."""
         # (In production, would detect cycles in dependency graph)
         return 0.95  # Assume no cycles
 
-    def _serialize_plan(self, plan: Plan) -> Dict[str, Any]:
+    def _serialize_plan(self, plan: Plan) -> dict[str, Any]:
         """Serialize Plan to dictionary."""
         return {
             "goal": plan.goal,
