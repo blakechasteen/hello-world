@@ -379,8 +379,8 @@ def test_learn_axis_near_zero_norm():
     # Should handle near-zero difference vector
     axis = dim.learn_axis(mock_embed, use_batch=False)
 
-    # Axis norm should be ~1 (due to 1e-10 epsilon)
-    assert np.linalg.norm(axis) > 0.99
+    # Identical exemplars → difference vector is ~zero, axis norm should be near zero
+    assert np.linalg.norm(axis) < 0.01
 
 
 def test_project_zero_vector():

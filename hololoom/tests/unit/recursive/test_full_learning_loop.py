@@ -15,9 +15,36 @@ from hololoom.recursive.full_learning_loop import (
     FullLearningEngine,
     weave_with_full_learning
 )
+from datetime import datetime
 from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 from hololoom.protocols.types import Query, MemoryShard
 from hololoom.config import Config
+
+
+def _make_trace(**kwargs) -> WeavingTrace:
+    """Helper to create a WeavingTrace with required fields defaulted."""
+    now = datetime.now()
+    defaults = dict(start_time=now, end_time=now, duration_ms=0.0)
+    defaults.update(kwargs)
+    return WeavingTrace(**defaults)
+
+
+def _make_spacetime(query_text: str, response: str, confidence: float,
+                    tool_used: str = "answer", **trace_kwargs) -> Spacetime:
+    """Helper to create a Spacetime with required fields defaulted.
+
+    Mirrors tool_used -> trace.tool_selected so the trace is self-consistent.
+    """
+    if "tool_selected" not in trace_kwargs:
+        trace_kwargs["tool_selected"] = tool_used
+    trace = _make_trace(**trace_kwargs)
+    return Spacetime(
+        query_text=query_text,
+        response=response,
+        tool_used=tool_used,
+        confidence=confidence,
+        trace=trace,
+    )
 
 
 class TestThompsonPriors:
@@ -297,16 +324,13 @@ class TestBackgroundLearner:
     @pytest.mark.asyncio
     async def test_record_spacetime(self, learner):
         """Test recording spacetime for learning"""
-        trace = WeavingTrace(
-            query_text="Test",
-            tool_confidence=0.85
-        )
-
-        spacetime = Spacetime(
+        spacetime = _make_spacetime(
             query_text="Test",
             response="Response",
             confidence=0.85,
-            trace=trace
+            threads_activated=[],
+            motifs_detected=[],
+            tool_confidence=0.85,
         )
 
         initial_count = len(learner.recent_spacetimes)
@@ -320,18 +344,15 @@ class TestBackgroundLearner:
         """Test background learning cycle runs"""
         # Add some spacetimes
         for i in range(5):
-            trace = WeavingTrace(
-                query_text=f"Query {i}",
-                tool_selected="answer",
-                policy_adapter="bare",
-                tool_confidence=0.85
-            )
-
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text=f"Query {i}",
                 response="Response",
                 confidence=0.85,
-                trace=trace
+                tool_used="answer",
+                threads_activated=[],
+                motifs_detected=[],
+                policy_adapter="bare",
+                tool_confidence=0.85,
             )
 
             learner.record_spacetime(spacetime)
@@ -363,7 +384,7 @@ class TestFullLearningEngine:
         return [
             MemoryShard(
                 id="shard1",
-                content="Test content",
+                text="Test content",
                 metadata={"tags": ["test"]}
             )
         ]
@@ -402,7 +423,8 @@ class TestFullLearningEngine:
             enable_background_learning=False
         ) as engine:
             # Mock components to avoid full initialization
-            engine.hot_pattern_engine = Mock()
+            # Use AsyncMock so __aexit__ on the engine context manager works
+            engine.hot_pattern_engine = AsyncMock()
             engine.hot_pattern_engine.hot_tracker = Mock()
             engine.hot_pattern_engine.hot_tracker.get_hot_patterns = Mock(return_value=[])
             engine.hot_pattern_engine.learning_engine = Mock()
@@ -592,7 +614,7 @@ class TestLearningIntegration:
         """Test complete learning cycle"""
         config = Config.fast()
         shards = [
-            MemoryShard(id="s1", content="Test", metadata={})
+            MemoryShard(id="s1", text="Test", metadata={})
         ]
 
         async with FullLearningEngine(
@@ -601,22 +623,20 @@ class TestLearningIntegration:
             enable_background_learning=False  # Disable for testing
         ) as engine:
             # Mock hot pattern engine to avoid full initialization
-            engine.hot_pattern_engine = Mock()
+            # Use AsyncMock so engine.__aexit__ can await hot_pattern_engine.__aexit__
+            engine.hot_pattern_engine = AsyncMock()
             engine.hot_pattern_engine.weave = AsyncMock()
 
             # Mock spacetime result
-            trace = WeavingTrace(
-                query_text="Test",
-                tool_selected="answer",
-                policy_adapter="bare",
-                tool_confidence=0.85
-            )
-
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Test",
                 response="Response",
                 confidence=0.85,
-                trace=trace
+                tool_used="answer",
+                threads_activated=[],
+                motifs_detected=[],
+                policy_adapter="bare",
+                tool_confidence=0.85,
             )
 
             engine.hot_pattern_engine.weave.return_value = spacetime

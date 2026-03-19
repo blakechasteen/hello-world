@@ -119,7 +119,9 @@ class TestPanelTypePrior:
 
     def test_sample_in_range(self):
         """Sample is always in [0, 1]."""
-        prior = PanelTypePrior(alpha=5.0, beta=2.0)
+        prior = PanelTypePrior()
+        prior.alpha = 5.0
+        prior.beta = 2.0
         for _ in range(100):
             sample = prior.sample()
             assert 0.0 <= sample <= 1.0

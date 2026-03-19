@@ -6,6 +6,7 @@ Tests usage tracking, heat score calculation, decay mechanism, and adaptive retr
 
 import pytest
 import time
+from datetime import datetime
 from unittest.mock import Mock, AsyncMock, MagicMock
 from hololoom.recursive.hot_patterns import (
     UsageRecord,
@@ -17,6 +18,32 @@ from hololoom.recursive.hot_patterns import (
 )
 from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 from hololoom.protocols.types import Query, MemoryShard
+
+
+def _make_trace(**kwargs) -> WeavingTrace:
+    """Helper to create a WeavingTrace with required fields defaulted."""
+    now = datetime.now()
+    defaults = dict(start_time=now, end_time=now, duration_ms=0.0)
+    defaults.update(kwargs)
+    return WeavingTrace(**defaults)
+
+
+def _make_spacetime(query_text: str, response: str, confidence: float,
+                    tool_used: str = "answer", **trace_kwargs) -> Spacetime:
+    """Helper to create a Spacetime with required fields defaulted.
+
+    Mirrors tool_used -> trace.tool_selected so the trace is self-consistent.
+    """
+    if "tool_selected" not in trace_kwargs:
+        trace_kwargs["tool_selected"] = tool_used
+    trace = _make_trace(**trace_kwargs)
+    return Spacetime(
+        query_text=query_text,
+        response=response,
+        tool_used=tool_used,
+        confidence=confidence,
+        trace=trace,
+    )
 
 
 class TestUsageRecord:
@@ -140,17 +167,13 @@ class TestHotPatternTracker:
         tracker = HotPatternTracker()
 
         # Create mock spacetime
-        trace = WeavingTrace(
-            query_text="Test query",
-            threads_activated=["thread1", "thread2"],
-            motifs_detected=[],
-            tool_confidence=0.85
-        )
-        spacetime = Spacetime(
+        spacetime = _make_spacetime(
             query_text="Test query",
             response="Test response",
             confidence=0.85,
-            trace=trace
+            threads_activated=["thread1", "thread2"],
+            motifs_detected=[],
+            tool_confidence=0.85,
         )
 
         tracker.record_usage(spacetime)
@@ -165,17 +188,13 @@ class TestHotPatternTracker:
         """Test recording motif usage"""
         tracker = HotPatternTracker()
 
-        trace = WeavingTrace(
-            query_text="Test query",
-            threads_activated=[],
-            motifs_detected=["AI", "ML", "neural"],
-            tool_confidence=0.90
-        )
-        spacetime = Spacetime(
+        spacetime = _make_spacetime(
             query_text="Test query",
             response="Test response",
             confidence=0.90,
-            trace=trace
+            threads_activated=[],
+            motifs_detected=["AI", "ML", "neural"],
+            tool_confidence=0.90,
         )
 
         tracker.record_usage(spacetime)
@@ -191,17 +210,13 @@ class TestHotPatternTracker:
         tracker = HotPatternTracker()
 
         for i in range(3):
-            trace = WeavingTrace(
-                query_text=f"Query {i}",
-                threads_activated=["thread1", "thread2"],
-                motifs_detected=["AI"],
-                tool_confidence=0.80 + i * 0.05
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text=f"Query {i}",
                 response="Response",
                 confidence=0.80 + i * 0.05,
-                trace=trace
+                threads_activated=["thread1", "thread2"],
+                motifs_detected=["AI"],
+                tool_confidence=0.80 + i * 0.05,
             )
             tracker.record_usage(spacetime)
 
@@ -216,33 +231,25 @@ class TestHotPatternTracker:
 
         # Add multiple accesses to thread1
         for i in range(10):
-            trace = WeavingTrace(
-                query_text="Query",
-                threads_activated=["thread1"],
-                motifs_detected=[],
-                tool_confidence=0.85
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Query",
                 response="Response",
                 confidence=0.85,
-                trace=trace
+                threads_activated=["thread1"],
+                motifs_detected=[],
+                tool_confidence=0.85,
             )
             tracker.record_usage(spacetime)
 
         # Add fewer accesses to thread2
         for i in range(2):
-            trace = WeavingTrace(
-                query_text="Query",
-                threads_activated=["thread2"],
-                motifs_detected=[],
-                tool_confidence=0.80
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Query",
                 response="Response",
                 confidence=0.80,
-                trace=trace
+                threads_activated=["thread2"],
+                motifs_detected=[],
+                tool_confidence=0.80,
             )
             tracker.record_usage(spacetime)
 
@@ -259,17 +266,13 @@ class TestHotPatternTracker:
 
         # Add threads
         for i in range(5):
-            trace = WeavingTrace(
-                query_text="Query",
-                threads_activated=["thread1"],
-                motifs_detected=["AI"],
-                tool_confidence=0.85
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Query",
                 response="Response",
                 confidence=0.85,
-                trace=trace
+                threads_activated=["thread1"],
+                motifs_detected=["AI"],
+                tool_confidence=0.85,
             )
             tracker.record_usage(spacetime)
 
@@ -284,17 +287,13 @@ class TestHotPatternTracker:
         tracker = HotPatternTracker()
 
         # Add old pattern (simulate by setting last_accessed in the past)
-        trace = WeavingTrace(
-            query_text="Query",
-            threads_activated=["old_thread"],
-            motifs_detected=[],
-            tool_confidence=0.80
-        )
-        spacetime = Spacetime(
+        spacetime = _make_spacetime(
             query_text="Query",
             response="Response",
             confidence=0.80,
-            trace=trace
+            threads_activated=["old_thread"],
+            motifs_detected=[],
+            tool_confidence=0.80,
         )
         tracker.record_usage(spacetime)
 
@@ -314,17 +313,13 @@ class TestHotPatternTracker:
         )
 
         # Add usage
-        trace = WeavingTrace(
-            query_text="Query",
-            threads_activated=["thread1"],
-            motifs_detected=[],
-            tool_confidence=0.85
-        )
-        spacetime = Spacetime(
+        spacetime = _make_spacetime(
             query_text="Query",
             response="Response",
             confidence=0.85,
-            trace=trace
+            threads_activated=["thread1"],
+            motifs_detected=[],
+            tool_confidence=0.85,
         )
 
         # Record initial access
@@ -348,32 +343,24 @@ class TestHotPatternTracker:
 
         # Add high heat pattern
         for i in range(10):
-            trace = WeavingTrace(
-                query_text="Query",
-                threads_activated=["hot_thread"],
-                motifs_detected=[],
-                tool_confidence=0.90
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Query",
                 response="Response",
                 confidence=0.90,
-                trace=trace
+                threads_activated=["hot_thread"],
+                motifs_detected=[],
+                tool_confidence=0.90,
             )
             tracker.record_usage(spacetime)
 
         # Add low heat pattern
-        trace = WeavingTrace(
-            query_text="Query",
-            threads_activated=["cold_thread"],
-            motifs_detected=[],
-            tool_confidence=0.50
-        )
-        spacetime = Spacetime(
+        spacetime = _make_spacetime(
             query_text="Query",
             response="Response",
             confidence=0.50,
-            trace=trace
+            threads_activated=["cold_thread"],
+            motifs_detected=[],
+            tool_confidence=0.50,
         )
         tracker.record_usage(spacetime)
 
@@ -392,17 +379,13 @@ class TestHotPatternTracker:
 
         # Add some usage
         for i in range(5):
-            trace = WeavingTrace(
-                query_text="Query",
-                threads_activated=["thread1"],
-                motifs_detected=["AI"],
-                tool_confidence=0.85
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Query",
                 response="Response",
                 confidence=0.85,
-                trace=trace
+                threads_activated=["thread1"],
+                motifs_detected=["AI"],
+                tool_confidence=0.85,
             )
             tracker.record_usage(spacetime)
 
@@ -437,17 +420,13 @@ class TestAdaptiveRetriever:
 
         # Add hot thread
         for i in range(10):
-            trace = WeavingTrace(
-                query_text="Query",
-                threads_activated=["hot_thread"],
-                motifs_detected=["AI"],
-                tool_confidence=0.90
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Query",
                 response="Response",
                 confidence=0.90,
-                trace=trace
+                threads_activated=["hot_thread"],
+                motifs_detected=["AI"],
+                tool_confidence=0.90,
             )
             tracker.record_usage(spacetime)
 
@@ -464,17 +443,13 @@ class TestAdaptiveRetriever:
 
         # Create hot pattern (high heat)
         for i in range(20):
-            trace = WeavingTrace(
-                query_text="Query",
-                threads_activated=["super_hot"],
-                motifs_detected=[],
-                tool_confidence=0.95
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Query",
                 response="Response",
                 confidence=0.95,
-                trace=trace
+                threads_activated=["super_hot"],
+                motifs_detected=[],
+                tool_confidence=0.95,
             )
             tracker.record_usage(spacetime)
 
@@ -490,17 +465,13 @@ class TestAdaptiveRetriever:
         retriever = AdaptiveRetriever(cold_penalty=0.3, heat_threshold=2.0)
 
         # Create cold pattern (low heat)
-        trace = WeavingTrace(
-            query_text="Query",
-            threads_activated=["cold_thread"],
-            motifs_detected=[],
-            tool_confidence=0.60
-        )
-        spacetime = Spacetime(
+        spacetime = _make_spacetime(
             query_text="Query",
             response="Response",
             confidence=0.60,
-            trace=trace
+            threads_activated=["cold_thread"],
+            motifs_detected=[],
+            tool_confidence=0.60,
         )
         tracker.record_usage(spacetime)
 
@@ -523,17 +494,13 @@ class TestAdaptiveRetriever:
 
         # Add hot motif
         for i in range(15):
-            trace = WeavingTrace(
-                query_text="Query",
-                threads_activated=[],
-                motifs_detected=["HotMotif"],
-                tool_confidence=0.88
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Query",
                 response="Response",
                 confidence=0.88,
-                trace=trace
+                threads_activated=[],
+                motifs_detected=["HotMotif"],
+                tool_confidence=0.88,
             )
             tracker.record_usage(spacetime)
 
@@ -549,17 +516,13 @@ class TestAdaptiveRetriever:
 
         # Create hot pattern
         for i in range(10):
-            trace = WeavingTrace(
-                query_text="Query",
-                threads_activated=["thread1"],
-                motifs_detected=["AI"],
-                tool_confidence=0.90
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text="Query",
                 response="Response",
                 confidence=0.90,
-                trace=trace
+                threads_activated=["thread1"],
+                motifs_detected=["AI"],
+                tool_confidence=0.90,
             )
             tracker.record_usage(spacetime)
 
@@ -568,12 +531,12 @@ class TestAdaptiveRetriever:
         # Create shards
         shard1 = MemoryShard(
             id="thread1",
-            content="AI content",
+            text="AI content",
             metadata={"tags": ["AI"]}
         )
         shard2 = MemoryShard(
             id="thread2",
-            content="Other content",
+            text="Other content",
             metadata={"tags": ["other"]}
         )
 
@@ -640,17 +603,13 @@ class TestHotPatternIntegration:
 
         # Simulate multiple queries
         for i in range(5):
-            trace = WeavingTrace(
-                query_text=f"Query {i}",
-                threads_activated=["thread1"],
-                motifs_detected=["AI"],
-                tool_confidence=0.85
-            )
-            spacetime = Spacetime(
+            spacetime = _make_spacetime(
                 query_text=f"Query {i}",
                 response="Response",
                 confidence=0.85,
-                trace=trace
+                threads_activated=["thread1"],
+                motifs_detected=["AI"],
+                tool_confidence=0.85,
             )
             tracker.record_usage(spacetime)
 

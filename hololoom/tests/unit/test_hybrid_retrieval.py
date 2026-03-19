@@ -225,6 +225,7 @@ async def test_graph_multi_hop_traversal(knowledge_graph):
 @pytest.mark.asyncio
 async def test_graph_no_entities(sample_memories, knowledge_graph):
     """Test graph retrieval when query has no entities."""
+    from hololoom.core.memory.retrieval_result import RetrievalResultEnhanced
     retriever = GraphRetriever(kg=knowledge_graph)
 
     results = await retriever.retrieve(
@@ -233,8 +234,11 @@ async def test_graph_no_entities(sample_memories, knowledge_graph):
         limit=5
     )
 
-    # Should return empty list (no entities found)
-    assert results == []
+    # Should return empty list or RetrievalResultEnhanced with no results
+    if isinstance(results, RetrievalResultEnhanced):
+        assert results.count == 0
+    else:
+        assert results == []
 
 
 def test_graph_entity_extraction(knowledge_graph):
@@ -254,6 +258,7 @@ def test_graph_entity_extraction(knowledge_graph):
 @pytest.mark.asyncio
 async def test_semantic_fallback_retrieval(sample_memories):
     """Test semantic retriever with fallback (no sentence-transformers)."""
+    from hololoom.core.memory.retrieval_result import RetrievalResultEnhanced
     # Force fallback by creating retriever without model
     retriever = SemanticRetriever(enable_fallback=True)
     retriever.available = False  # Simulate unavailable
@@ -264,14 +269,19 @@ async def test_semantic_fallback_retrieval(sample_memories):
         limit=3
     )
 
-    # Should use keyword fallback
-    assert len(results) > 0
-    assert len(results) <= 3
+    # Should use keyword fallback, may return RetrievalResultEnhanced or bare list
+    if isinstance(results, RetrievalResultEnhanced):
+        assert results.count > 0
+        assert results.count <= 3
+    else:
+        assert len(results) > 0
+        assert len(results) <= 3
 
 
 @pytest.mark.asyncio
 async def test_semantic_no_fallback():
     """Test semantic retriever fails gracefully without fallback."""
+    from hololoom.core.memory.retrieval_result import RetrievalResultEnhanced
     retriever = SemanticRetriever(enable_fallback=False)
     retriever.available = False  # Simulate unavailable
 
@@ -281,8 +291,11 @@ async def test_semantic_no_fallback():
         limit=5
     )
 
-    # Should return empty list
-    assert results == []
+    # Should return empty list or an informative RetrievalResultEnhanced
+    if isinstance(results, RetrievalResultEnhanced):
+        assert results.count == 0
+    else:
+        assert results == []
 
 
 # ============================================================================

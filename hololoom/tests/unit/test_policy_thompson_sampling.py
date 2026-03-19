@@ -103,23 +103,24 @@ def test_choose_samples_from_beta():
 
 def test_choose_exploration_vs_exploitation():
     """Test choose() balances exploration and exploitation."""
+    np.random.seed(42)  # Fix seed for deterministic test
     bandit = TSBandit(n_arms=4)
 
-    # Make arm 0 clearly best
-    bandit.success[0] = 50.0
-    bandit.fail[0] = 1.0
+    # Make arm 0 best but not so extreme that other arms never get sampled
+    bandit.success[0] = 10.0
+    bandit.fail[0] = 2.0
 
-    # Arms 1-3 are weak
+    # Arms 1-3 are weaker
     bandit.success[1:] = 1.0
-    bandit.fail[1:] = 10.0
+    bandit.fail[1:] = 3.0
 
-    # Run 1000 trials
-    choices = [bandit.choose() for _ in range(1000)]
+    # Run 2000 trials for statistical stability
+    choices = [bandit.choose() for _ in range(2000)]
 
-    # Arm 0 should dominate (>90%)
-    assert choices.count(0) > 900
+    # Arm 0 should dominate (>90% with these parameters and fixed seed)
+    assert choices.count(0) > 1800
 
-    # But other arms should occasionally be tried (exploration)
+    # But other arms should occasionally be tried (exploration via sampling variance)
     assert any(c != 0 for c in choices)
 
 

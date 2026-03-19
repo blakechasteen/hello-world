@@ -352,10 +352,11 @@ async def test_codebase_spinner_spin_single_file(sample_python_file):
     """Test spinning a single file"""
     spinner = CodebaseSpinner(importance_threshold=0.0)
 
-    shards = await spinner.spin(sample_python_file)
+    result = await spinner.spin(sample_python_file)
 
-    assert len(shards) == 1
-    assert shards[0].metadata['language'] == 'python'
+    assert result.success is True
+    assert result.shard_count == 1
+    assert result.shards[0].metadata['language'] == 'python'
 
 
 @pytest.mark.asyncio

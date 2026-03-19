@@ -402,9 +402,11 @@ class TestActionItemTracker:
 
     @pytest.fixture
     def temp_path(self):
-        """Create temporary file path"""
+        """Create temporary file path (file must not exist so load() is skipped)"""
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             path = f.name
+        # Delete the empty file so ActionItemTracker.__init__ skips load()
+        Path(path).unlink(missing_ok=True)
         yield path
         # Cleanup
         Path(path).unlink(missing_ok=True)
@@ -476,9 +478,12 @@ class TestActionItemTracker:
         tracker.add_action("Low priority", 0.3)
         tracker.add_action("Medium priority", 0.6)
 
-        pending = tracker.get_pending_actions(min_priority=0.5, limit=10)
+        # Effective priority = 0.7 * raw_priority + 0.3 * urgency (0 for new items)
+        # raw 0.9 → eff ~0.63, raw 0.6 → eff ~0.42, raw 0.3 → eff ~0.21
+        # Use min_priority=0.35 to include high+medium but exclude low
+        pending = tracker.get_pending_actions(min_priority=0.35, limit=10)
 
-        # Should exclude low priority (0.3)
+        # Should exclude low priority (0.3, effective ~0.21)
         assert len(pending) >= 2
         # Should be sorted by effective priority (descending)
         if len(pending) >= 2:
@@ -609,6 +614,8 @@ def test_create_action_tracker_convenience():
     """Test convenience factory function"""
     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
         path = f.name
+    # Delete the empty file so ActionItemTracker.__init__ skips load()
+    Path(path).unlink(missing_ok=True)
 
     try:
         tracker = create_action_tracker(persist_path=path)

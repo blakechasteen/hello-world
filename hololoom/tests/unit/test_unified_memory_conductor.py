@@ -146,7 +146,7 @@ class TestConductorInitialization:
 
     def test_conductor_graceful_fallback_on_import_error(self, mock_backend):
         """Test graceful fallback if memory_symphony import fails."""
-        with patch('hololoom.memory.symphony.MemoryConductor', side_effect=ImportError):
+        with patch('hololoom.memory_symphony.MemoryConductor', side_effect=ImportError):
             memory = UnifiedMemory(backend=mock_backend, enable_conductor=True)
             # Should fall back gracefully
             assert memory._conductor is None or memory._conductor_available is False
@@ -299,17 +299,20 @@ class TestResultConversion:
 class TestRecallWithConductor:
     """Test recall() method with conductor integration."""
 
-    def test_recall_with_conductor_enabled(self, unified_memory_with_conductor, mock_conductor, mock_coordination_result):
+    @pytest.mark.asyncio
+    async def test_recall_with_conductor_enabled(self, unified_memory_with_conductor, mock_conductor, mock_coordination_result):
         """Test that recall() uses conductor when available."""
         # Inject mock conductor
         unified_memory_with_conductor._conductor = mock_conductor
         unified_memory_with_conductor._conductor_available = True
+        unified_memory_with_conductor._awareness_available = False
+        unified_memory_with_conductor._awareness = None
 
         # Setup mock to return coordination result
         mock_conductor.recall.return_value = mock_coordination_result
 
         # Call recall
-        memories = unified_memory_with_conductor.recall(
+        memories = await unified_memory_with_conductor.recall(
             query="What is Thompson Sampling?",
             strategy=RecallStrategy.BALANCED,
             limit=5
@@ -322,11 +325,15 @@ class TestRecallWithConductor:
         assert len(memories) == 3
         assert memories[0].id == "mem_001"
 
-    def test_recall_falls_back_without_conductor(self, unified_memory_without_conductor):
+    @pytest.mark.asyncio
+    async def test_recall_falls_back_without_conductor(self, unified_memory_without_conductor):
         """Test that recall() falls back to original implementation without conductor."""
+        unified_memory_without_conductor._awareness_available = False
+        unified_memory_without_conductor._awareness = None
+
         # Should not raise - will call fallback methods
         # (which will return [] in mock environment)
-        memories = unified_memory_without_conductor.recall(
+        memories = await unified_memory_without_conductor.recall(
             query="test query",
             strategy=RecallStrategy.BALANCED,
             limit=5
@@ -335,16 +342,19 @@ class TestRecallWithConductor:
         # Original implementation would return empty list with mock backend
         assert isinstance(memories, list)
 
-    def test_recall_falls_back_on_conductor_exception(self, unified_memory_with_conductor, mock_conductor):
+    @pytest.mark.asyncio
+    async def test_recall_falls_back_on_conductor_exception(self, unified_memory_with_conductor, mock_conductor):
         """Test graceful fallback if conductor raises exception."""
         # Inject mock conductor that raises exception
         unified_memory_with_conductor._conductor = mock_conductor
         unified_memory_with_conductor._conductor_available = True
+        unified_memory_with_conductor._awareness_available = False
+        unified_memory_with_conductor._awareness = None
 
         mock_conductor.recall.side_effect = Exception("Conductor error")
 
         # Should not raise - will fall back to original implementation
-        memories = unified_memory_with_conductor.recall(
+        memories = await unified_memory_with_conductor.recall(
             query="test query",
             strategy=RecallStrategy.BALANCED,
             limit=5
@@ -353,6 +363,7 @@ class TestRecallWithConductor:
         # Fallback returns empty list with mock backend
         assert isinstance(memories, list)
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize("strategy", [
         RecallStrategy.RECENT,
         RecallStrategy.SIMILAR,
@@ -360,15 +371,17 @@ class TestRecallWithConductor:
         RecallStrategy.RESONANT,
         RecallStrategy.BALANCED
     ])
-    def test_recall_with_all_strategies(self, unified_memory_with_conductor, mock_conductor, mock_coordination_result, strategy):
+    async def test_recall_with_all_strategies(self, unified_memory_with_conductor, mock_conductor, mock_coordination_result, strategy):
         """Test recall() with all RecallStrategy options."""
         # Inject mock conductor
         unified_memory_with_conductor._conductor = mock_conductor
         unified_memory_with_conductor._conductor_available = True
+        unified_memory_with_conductor._awareness_available = False
+        unified_memory_with_conductor._awareness = None
         mock_conductor.recall.return_value = mock_coordination_result
 
         # Call recall with each strategy
-        memories = unified_memory_with_conductor.recall(
+        memories = await unified_memory_with_conductor.recall(
             query="test query",
             strategy=strategy,
             limit=5
@@ -386,7 +399,8 @@ class TestRecallWithConductor:
 class TestConductorIntegrationEndToEnd:
     """End-to-end integration test."""
 
-    def test_full_integration_flow(self, mock_backend):
+    @pytest.mark.asyncio
+    async def test_full_integration_flow(self, mock_backend):
         """Test complete flow: init → recall → convert."""
         from hololoom.memory.symphony.protocol import (
             MemoryCoordinationResult,
@@ -420,17 +434,19 @@ class TestConductorIntegrationEndToEnd:
         # Create unified memory
         memory = UnifiedMemory(backend=mock_backend, enable_conductor=True)
 
-        # Inject mock conductor
+        # Inject mock conductor and disable awareness path
         mock_conductor = Mock()
         mock_conductor.recall = AsyncMock(return_value=coordination_result)
         memory._conductor = mock_conductor
         memory._conductor_available = True
+        memory._awareness_available = False
+        memory._awareness = None
 
         # Store a memory
-        mem_id = memory.store("Thompson Sampling is a Bayesian approach")
+        mem_id = await memory.store("Thompson Sampling is a Bayesian approach")
 
         # Recall memories
-        memories = memory.recall("Thompson Sampling", strategy=RecallStrategy.BALANCED, limit=5)
+        memories = await memory.recall("Thompson Sampling", strategy=RecallStrategy.BALANCED, limit=5)
 
         # Verify flow
         assert mem_id.startswith("mem_")

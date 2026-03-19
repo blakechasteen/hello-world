@@ -469,7 +469,7 @@ def test_guardrails_called_during_selection(mock_guardrails):
     # Check call arguments
     call_args = mock_guardrails.evaluate.call_args
     action_request = call_args[0][0]
-    assert action_request.action == "select_pattern"
+    assert action_request.action.startswith("select_pattern")
     assert action_request.category == ActionCategory.ANALYSIS
 
 

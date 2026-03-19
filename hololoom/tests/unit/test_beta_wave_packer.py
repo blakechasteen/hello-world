@@ -454,7 +454,7 @@ class TestCompressionStrategies:
 
     def test_compression_reduces_size(self):
         """Compression should reduce token count"""
-        from hololoom.awareness.beta_wave_packer import BetaWaveContextPacker
+        from hololoom.memory.awareness.beta_wave_packer import BetaWaveContextPacker
 
         packer = BetaWaveContextPacker(None, None)  # Don't need engine for this test
 
@@ -467,7 +467,7 @@ class TestCompressionStrategies:
 
     def test_compression_ratio_respected(self):
         """Different ratios should produce different sizes"""
-        from hololoom.awareness.beta_wave_packer import BetaWaveContextPacker
+        from hololoom.memory.awareness.beta_wave_packer import BetaWaveContextPacker
 
         packer = BetaWaveContextPacker(None, None)
 

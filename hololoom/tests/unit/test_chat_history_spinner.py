@@ -26,9 +26,12 @@ def temp_db():
 
     yield db_path
 
-    # Cleanup
-    if os.path.exists(db_path):
-        os.unlink(db_path)
+    # Cleanup — ignore PermissionError on Windows where SQLite may still hold a lock
+    try:
+        if os.path.exists(db_path):
+            os.unlink(db_path)
+    except PermissionError:
+        pass
 
 
 @pytest.fixture

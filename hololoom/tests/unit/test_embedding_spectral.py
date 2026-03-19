@@ -290,7 +290,7 @@ class TestCaching:
 
         # Check cache
         assert hasattr(embedder, '_embedding_cache')
-        assert embedder._embedding_cache._cache_size > 0
+        assert len(embedder._embedding_cache.cache) > 0
 
     def test_cache_hit_performance(self):
         """Cached embeddings should be reused."""

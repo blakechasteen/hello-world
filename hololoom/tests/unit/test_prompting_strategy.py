@@ -173,7 +173,24 @@ def test_strategy_composition():
 def test_template_strategy_creation():
     """Test TemplateStrategy can be created"""
     template = "Query: {query}, Selection: {selection}"
-    strategy = TemplateStrategy(template, {'param': 'value'})
+
+    class ConcreteTemplate(TemplateStrategy):
+        @property
+        def name(self) -> str:
+            return "concrete_template"
+
+        @property
+        def category(self) -> StrategyCategory:
+            return StrategyCategory.SCAFFOLDING
+
+        @property
+        def description(self) -> str:
+            return "Concrete test template"
+
+        def can_apply(self, context: StrategyContext) -> float:
+            return 0.5
+
+    strategy = ConcreteTemplate(template, {'param': 'value'})
 
     assert strategy.template == template
     assert strategy.config['param'] == 'value'

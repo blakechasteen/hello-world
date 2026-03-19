@@ -308,7 +308,7 @@ class TestInterventionEngine:
         answer = engine.query(query)
 
         # Should be identifiable (no confounders)
-        assert answer.confidence > 0
+        assert answer.method == "backdoor adjustment"
 
     def test_explanation(self):
         """Test human-readable explanations."""

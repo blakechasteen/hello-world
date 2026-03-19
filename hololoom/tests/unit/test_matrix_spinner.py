@@ -88,6 +88,19 @@ with patch.dict('sys.modules', sys_modules_patch):
     )
     from hololoom.spinningWheel.protocol import SpinnerCheckpoint
 
+# Patch module-level globals in matrix_spinner so parse_event works correctly.
+# The spinningWheel __init__.py imports matrix_spinner eagerly before the test
+# patches sys.modules, so MATRIX_AVAILABLE is False and RoomMessage/etc are
+# not bound.  We fix that here using sys.modules to avoid re-triggering the
+# full spinningWheel import chain.
+import sys as _sys
+_mx_mod = _sys.modules.get('hololoom.spinningWheel.matrix_spinner')
+if _mx_mod is not None:
+    _mx_mod.MATRIX_AVAILABLE = True
+    _mx_mod.RoomMessage = MockRoomMessage
+    _mx_mod.RoomMessageText = MockRoomMessageText
+    _mx_mod.RoomMessageMedia = MockRoomMessageMedia
+
 
 # Fixtures
 

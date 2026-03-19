@@ -202,7 +202,7 @@ def test_collapse_bayesian_blend(engine, neural_probs):
     )
 
     # Blend should consider both neural probs and bandit priors
-    assert result.strategy_used == "bayesian_blend_(0.7neural+0.3bandit)"
+    assert result.strategy_used == "bayesian_blend_(0.70neural+0.30bandit)"
     assert 0 <= result.tool_idx < 4
 
 

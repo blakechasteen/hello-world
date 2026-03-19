@@ -48,10 +48,11 @@ def test_activate_region_distance_decay():
     """Test activation decays with distance."""
     field = ActivationField()
 
-    # Add nodes at different distances
+    # Add nodes at different distances using sparse vectors (single non-zero component)
+    # to keep Euclidean norms small and predictable in 244D space
     center = np.zeros(244)
-    near = np.ones(244) * 0.1  # Close
-    far = np.ones(244) * 0.4   # Farther
+    near = np.zeros(244); near[0] = 0.1   # norm = 0.1 (close)
+    far = np.zeros(244); far[0] = 0.4     # norm = 0.4 (farther)
 
     field.update_spatial_index("center", center)
     field.update_spatial_index("near", near)
@@ -77,8 +78,8 @@ def test_activate_region_respects_radius():
     field = ActivationField()
 
     center = np.zeros(244)
-    near = np.ones(244) * 0.1
-    far = np.ones(244) * 2.0  # Far outside radius
+    near = np.zeros(244); near[0] = 0.1   # norm = 0.1 (inside radius)
+    far = np.zeros(244); far[0] = 2.0     # norm = 2.0 (outside radius)
 
     field.update_spatial_index("center", center)
     field.update_spatial_index("near", near)

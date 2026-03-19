@@ -14,10 +14,44 @@ from hololoom.recursive.advanced_refinement import (
     AdvancedRefiner,
     refine_with_strategy
 )
+from hololoom.prompting.unified_mrf import RefinementStrategyType
 from hololoom.protocols.types import Query
 from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 from hololoom.recursive.scratchpad import Scratchpad
 from datetime import datetime
+
+
+def make_trace(
+    tool_confidence: float = 0.80,
+    threads_activated: list = None,
+    motifs_detected: list = None,
+) -> WeavingTrace:
+    """Create a minimal valid WeavingTrace for tests."""
+    now = datetime.now()
+    return WeavingTrace(
+        start_time=now,
+        end_time=now,
+        duration_ms=0.0,
+        threads_activated=threads_activated or [],
+        motifs_detected=motifs_detected or [],
+        tool_confidence=tool_confidence,
+    )
+
+
+def make_spacetime(
+    query_text: str = "Test query",
+    response: str = "Response",
+    confidence: float = 0.80,
+    trace: WeavingTrace = None,
+) -> Spacetime:
+    """Create a minimal valid Spacetime for tests."""
+    return Spacetime(
+        query_text=query_text,
+        response=response,
+        tool_used="test_tool",
+        confidence=confidence,
+        trace=trace or make_trace(tool_confidence=confidence),
+    )
 
 
 class TestRefinementStrategy:
@@ -96,17 +130,7 @@ class TestRefinementResult:
 
     def test_result_creation(self):
         """Test creating refinement result"""
-        # Create mock spacetime
-        trace = WeavingTrace(
-            query_text="Test query",
-            tool_confidence=0.92
-        )
-        spacetime = Spacetime(
-            query_text="Test query",
-            response="Refined response",
-            confidence=0.92,
-            trace=trace
-        )
+        spacetime = make_spacetime(query_text="Test query", response="Refined response", confidence=0.92)
 
         # Create trajectory
         metrics1 = QualityMetrics(0.70, 3, 2, 5, 200)
@@ -129,13 +153,7 @@ class TestRefinementResult:
 
     def test_summary_generation(self):
         """Test summary string generation"""
-        trace = WeavingTrace(query_text="Test", tool_confidence=0.90)
-        spacetime = Spacetime(
-            query_text="Test",
-            response="Response",
-            confidence=0.90,
-            trace=trace
-        )
+        spacetime = make_spacetime(query_text="Test", response="Response", confidence=0.90)
 
         metrics1 = QualityMetrics(0.60, 2, 1, 3, 150)
         metrics2 = QualityMetrics(0.90, 5, 3, 8, 300)
@@ -153,8 +171,11 @@ class TestRefinementResult:
 
         assert "verify" in summary
         assert "1" in summary  # iterations
-        assert "0.60" in summary or "0.6" in summary  # initial quality
-        assert "0.90" in summary or "0.9" in summary  # final quality
+        # Check actual computed score() values: metrics1 -> 0.51, metrics2 -> 0.85
+        initial_score = metrics1.score()
+        final_score = metrics2.score()
+        assert f"{initial_score:.2f}" in summary
+        assert f"{final_score:.2f}" in summary
 
 
 class TestRefinementPattern:
@@ -253,17 +274,16 @@ class TestAdvancedRefiner:
 
     def test_extract_metrics(self, refiner):
         """Test extracting metrics from spacetime"""
-        trace = WeavingTrace(
-            query_text="Test query",
+        trace = make_trace(
+            tool_confidence=0.85,
             threads_activated=["t1", "t2", "t3"],
             motifs_detected=["AI", "ML"],
-            tool_confidence=0.85
         )
-        spacetime = Spacetime(
+        spacetime = make_spacetime(
             query_text="Test query",
             response="A" * 250,  # 250 char response
             confidence=0.85,
-            trace=trace
+            trace=trace,
         )
 
         metrics = refiner._extract_metrics(spacetime)
@@ -277,63 +297,36 @@ class TestAdvancedRefiner:
     def test_select_strategy_low_confidence(self, refiner):
         """Test strategy selection for low confidence"""
         query = Query(text="Short query")
-        trace = WeavingTrace(
-            query_text="Short query",
-            threads_activated=["t1"],
-            tool_confidence=0.55
-        )
-        spacetime = Spacetime(
-            query_text="Short query",
-            response="Response",
-            confidence=0.55,
-            trace=trace
-        )
+        trace = make_trace(tool_confidence=0.55, threads_activated=["t1"])
+        spacetime = make_spacetime(query_text="Short query", response="Response", confidence=0.55, trace=trace)
 
         strategy = refiner._select_strategy(query, spacetime)
 
         # Low confidence + few threads -> REFINE
-        assert strategy == RefinementStrategy.REFINE
+        assert strategy == RefinementStrategyType.REFINE
 
     def test_select_strategy_medium_confidence(self, refiner):
         """Test strategy selection for medium confidence"""
         query = Query(text="Medium query")
-        trace = WeavingTrace(
-            query_text="Medium query",
-            threads_activated=["t1", "t2", "t3", "t4"],
-            tool_confidence=0.70
-        )
-        spacetime = Spacetime(
-            query_text="Medium query",
-            response="Response",
-            confidence=0.70,
-            trace=trace
-        )
+        trace = make_trace(tool_confidence=0.70, threads_activated=["t1", "t2", "t3", "t4"])
+        spacetime = make_spacetime(query_text="Medium query", response="Response", confidence=0.70, trace=trace)
 
         strategy = refiner._select_strategy(query, spacetime)
 
         # Medium confidence + many threads -> CRITIQUE
-        assert strategy == RefinementStrategy.CRITIQUE
+        assert strategy == RefinementStrategyType.CRITIQUE
 
     def test_select_strategy_long_query(self, refiner):
         """Test strategy selection for long query"""
         long_text = "A" * 150  # 150 char query
         query = Query(text=long_text)
-        trace = WeavingTrace(
-            query_text=long_text,
-            threads_activated=["t1"],
-            tool_confidence=0.80
-        )
-        spacetime = Spacetime(
-            query_text=long_text,
-            response="Response",
-            confidence=0.80,
-            trace=trace
-        )
+        trace = make_trace(tool_confidence=0.80, threads_activated=["t1"])
+        spacetime = make_spacetime(query_text=long_text, response="Response", confidence=0.80, trace=trace)
 
         strategy = refiner._select_strategy(query, spacetime)
 
         # Long query -> HOFSTADTER
-        assert strategy == RefinementStrategy.HOFSTADTER
+        assert strategy == RefinementStrategyType.HOFSTADTER
 
     @pytest.mark.asyncio
     async def test_refine_strategy_execution(self, refiner, mock_orchestrator):
@@ -341,31 +334,19 @@ class TestAdvancedRefiner:
         query = Query(text="Test query")
 
         # Mock initial spacetime
-        trace = WeavingTrace(
-            query_text="Test query",
-            threads_activated=["t1"],
-            motifs_detected=["m1"],
-            tool_confidence=0.65
-        )
-        spacetime = Spacetime(
+        spacetime = make_spacetime(
             query_text="Test query",
             response="Initial response",
             confidence=0.65,
-            trace=trace
+            trace=make_trace(tool_confidence=0.65, threads_activated=["t1"], motifs_detected=["m1"]),
         )
 
         # Mock refined spacetime (higher confidence)
-        refined_trace = WeavingTrace(
-            query_text="Test query expanded",
-            threads_activated=["t1", "t2", "t3"],
-            motifs_detected=["m1", "m2"],
-            tool_confidence=0.85
-        )
-        refined_spacetime = Spacetime(
+        refined_spacetime = make_spacetime(
             query_text="Test query expanded",
             response="Refined response",
             confidence=0.85,
-            trace=refined_trace
+            trace=make_trace(tool_confidence=0.85, threads_activated=["t1", "t2", "t3"], motifs_detected=["m1", "m2"]),
         )
 
         mock_orchestrator.weave.return_value = refined_spacetime
@@ -380,27 +361,8 @@ class TestAdvancedRefiner:
     async def test_critique_strategy_execution(self, refiner, mock_orchestrator):
         """Test CRITIQUE strategy execution"""
         query = Query(text="Test query")
-        trace = WeavingTrace(
-            query_text="Test query",
-            tool_confidence=0.70
-        )
-        spacetime = Spacetime(
-            query_text="Test query",
-            response="Response",
-            confidence=0.70,
-            trace=trace
-        )
-
-        refined_trace = WeavingTrace(
-            query_text="Test query with critique",
-            tool_confidence=0.90
-        )
-        refined_spacetime = Spacetime(
-            query_text="Test query with critique",
-            response="Better response",
-            confidence=0.90,
-            trace=refined_trace
-        )
+        spacetime = make_spacetime(query_text="Test query", response="Response", confidence=0.70)
+        refined_spacetime = make_spacetime(query_text="Test query with critique", response="Better response", confidence=0.90)
 
         mock_orchestrator.weave.return_value = refined_spacetime
 
@@ -413,27 +375,8 @@ class TestAdvancedRefiner:
     async def test_verify_strategy_multipass(self, refiner, mock_orchestrator):
         """Test VERIFY strategy uses different passes"""
         query = Query(text="Test query")
-        trace = WeavingTrace(
-            query_text="Test query",
-            tool_confidence=0.75
-        )
-        spacetime = Spacetime(
-            query_text="Test query",
-            response="Response",
-            confidence=0.75,
-            trace=trace
-        )
-
-        refined_trace = WeavingTrace(
-            query_text="Verified query",
-            tool_confidence=0.90
-        )
-        refined_spacetime = Spacetime(
-            query_text="Verified query",
-            response="Verified response",
-            confidence=0.90,
-            trace=refined_trace
-        )
+        spacetime = make_spacetime(query_text="Test query", response="Response", confidence=0.75)
+        refined_spacetime = make_spacetime(query_text="Verified query", response="Verified response", confidence=0.90)
 
         mock_orchestrator.weave.return_value = refined_spacetime
 
@@ -446,27 +389,8 @@ class TestAdvancedRefiner:
     async def test_elegance_strategy_multipass(self, refiner, mock_orchestrator):
         """Test ELEGANCE strategy uses different passes"""
         query = Query(text="Test query")
-        trace = WeavingTrace(
-            query_text="Test query",
-            tool_confidence=0.75
-        )
-        spacetime = Spacetime(
-            query_text="Test query",
-            response="Response",
-            confidence=0.75,
-            trace=trace
-        )
-
-        refined_trace = WeavingTrace(
-            query_text="Elegant query",
-            tool_confidence=0.92
-        )
-        refined_spacetime = Spacetime(
-            query_text="Elegant query",
-            response="Elegant response",
-            confidence=0.92,
-            trace=refined_trace
-        )
+        spacetime = make_spacetime(query_text="Test query", response="Response", confidence=0.75)
+        refined_spacetime = make_spacetime(query_text="Elegant query", response="Elegant response", confidence=0.92)
 
         mock_orchestrator.weave.return_value = refined_spacetime
 
@@ -479,27 +403,8 @@ class TestAdvancedRefiner:
     async def test_hofstadter_strategy_selfref(self, refiner, mock_orchestrator):
         """Test HOFSTADTER strategy uses self-reference"""
         query = Query(text="Deep query about recursion")
-        trace = WeavingTrace(
-            query_text="Deep query",
-            tool_confidence=0.70
-        )
-        spacetime = Spacetime(
-            query_text="Deep query",
-            response="Initial understanding",
-            confidence=0.70,
-            trace=trace
-        )
-
-        refined_trace = WeavingTrace(
-            query_text="Meta-level query",
-            tool_confidence=0.88
-        )
-        refined_spacetime = Spacetime(
-            query_text="Meta-level query",
-            response="Deeper understanding",
-            confidence=0.88,
-            trace=refined_trace
-        )
+        spacetime = make_spacetime(query_text="Deep query", response="Initial understanding", confidence=0.70)
+        refined_spacetime = make_spacetime(query_text="Meta-level query", response="Deeper understanding", confidence=0.88)
 
         mock_orchestrator.weave.return_value = refined_spacetime
 
@@ -516,31 +421,19 @@ class TestAdvancedRefiner:
         query = Query(text="Test query")
 
         # Create initial low-confidence spacetime
-        initial_trace = WeavingTrace(
-            query_text="Test query",
-            threads_activated=["t1"],
-            motifs_detected=["m1"],
-            tool_confidence=0.65
-        )
-        initial_spacetime = Spacetime(
+        initial_spacetime = make_spacetime(
             query_text="Test query",
             response="Initial",
             confidence=0.65,
-            trace=initial_trace
+            trace=make_trace(tool_confidence=0.65, threads_activated=["t1"], motifs_detected=["m1"]),
         )
 
         # Create improved spacetime
-        improved_trace = WeavingTrace(
-            query_text="Test query",
-            threads_activated=["t1", "t2"],
-            motifs_detected=["m1", "m2"],
-            tool_confidence=0.92
-        )
-        improved_spacetime = Spacetime(
+        improved_spacetime = make_spacetime(
             query_text="Test query",
             response="Improved",
             confidence=0.92,
-            trace=improved_trace
+            trace=make_trace(tool_confidence=0.92, threads_activated=["t1", "t2"], motifs_detected=["m1", "m2"]),
         )
 
         mock_orchestrator.weave.return_value = improved_spacetime
@@ -554,7 +447,7 @@ class TestAdvancedRefiner:
         )
 
         assert isinstance(result, RefinementResult)
-        assert result.strategy_used == RefinementStrategy.REFINE
+        assert result.strategy_used == RefinementStrategyType.REFINE
         assert result.improved is True
         assert len(result.trajectory) >= 1
 
@@ -563,29 +456,18 @@ class TestAdvancedRefiner:
         """Test refinement stops when threshold reached"""
         query = Query(text="Test query")
 
-        initial_trace = WeavingTrace(
-            query_text="Test query",
-            tool_confidence=0.70
-        )
-        initial_spacetime = Spacetime(
-            query_text="Test query",
-            response="Initial",
-            confidence=0.70,
-            trace=initial_trace
-        )
+        initial_spacetime = make_spacetime(query_text="Test query", response="Initial", confidence=0.70)
 
         # First iteration: quality=0.91 (above threshold 0.9)
-        high_quality_trace = WeavingTrace(
-            query_text="Test query",
-            threads_activated=["t1", "t2", "t3", "t4", "t5"],
-            motifs_detected=["m1", "m2", "m3", "m4", "m5"],
-            tool_confidence=0.91
-        )
-        high_quality_spacetime = Spacetime(
+        high_quality_spacetime = make_spacetime(
             query_text="Test query",
             response="A" * 500,  # Long response
             confidence=0.91,
-            trace=high_quality_trace
+            trace=make_trace(
+                tool_confidence=0.91,
+                threads_activated=["t1", "t2", "t3", "t4", "t5"],
+                motifs_detected=["m1", "m2", "m3", "m4", "m5"],
+            ),
         )
 
         mock_orchestrator.weave.return_value = high_quality_spacetime
@@ -610,13 +492,7 @@ class TestAdvancedRefiner:
         metrics1 = QualityMetrics(0.65, 2, 1, 3, 150)
         metrics2 = QualityMetrics(0.92, 5, 3, 8, 300)
 
-        trace = WeavingTrace(query_text="Test", tool_confidence=0.92)
-        spacetime = Spacetime(
-            query_text="Test",
-            response="Response",
-            confidence=0.92,
-            trace=trace
-        )
+        spacetime = make_spacetime(query_text="Test", response="Response", confidence=0.92)
 
         result = RefinementResult(
             final_spacetime=spacetime,
@@ -637,8 +513,8 @@ class TestAdvancedRefiner:
     def test_get_strategy_statistics(self, refiner):
         """Test getting strategy statistics"""
         # Manually add some strategy results
-        refiner.strategy_success_rates[RefinementStrategy.REFINE] = [0.20, 0.15, 0.25]
-        refiner.strategy_success_rates[RefinementStrategy.CRITIQUE] = [0.30]
+        refiner.strategy_success_rates[RefinementStrategyType.REFINE] = [0.20, 0.15, 0.25]
+        refiner.strategy_success_rates[RefinementStrategyType.CRITIQUE] = [0.30]
 
         stats = refiner.get_strategy_statistics()
 
@@ -690,26 +566,18 @@ async def test_refine_with_strategy_convenience():
     mock_orch.weave = AsyncMock()
 
     # Mock initial spacetime
-    trace = WeavingTrace(query_text="Test", tool_confidence=0.70)
-    initial = Spacetime(
-        query_text="Test",
-        response="Initial",
-        confidence=0.70,
-        trace=trace
-    )
+    initial = make_spacetime(query_text="Test", response="Initial", confidence=0.70)
 
     # Mock refined spacetime
-    refined_trace = WeavingTrace(
-        query_text="Test",
-        threads_activated=["t1", "t2", "t3", "t4", "t5"],
-        motifs_detected=["m1", "m2", "m3", "m4", "m5"],
-        tool_confidence=0.92
-    )
-    refined = Spacetime(
+    refined = make_spacetime(
         query_text="Test",
         response="A" * 500,
         confidence=0.92,
-        trace=refined_trace
+        trace=make_trace(
+            tool_confidence=0.92,
+            threads_activated=["t1", "t2", "t3", "t4", "t5"],
+            motifs_detected=["m1", "m2", "m3", "m4", "m5"],
+        ),
     )
 
     mock_orch.weave.return_value = refined
@@ -723,4 +591,4 @@ async def test_refine_with_strategy_convenience():
     )
 
     assert isinstance(result, RefinementResult)
-    assert result.strategy_used == RefinementStrategy.VERIFY
+    assert result.strategy_used == RefinementStrategyType.VERIFY

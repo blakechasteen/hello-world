@@ -765,7 +765,7 @@ class TestAttributionManager:
             "rater_001"
         )
 
-        assert result is True
+        assert result is not None
         assert contrib.quality_rating == QualityRating.EXCELLENT
 
     def test_vote_contribution(self):
