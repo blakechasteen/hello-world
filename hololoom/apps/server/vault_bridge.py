@@ -67,8 +67,11 @@ def _collect_notes() -> list[Path]:
     return notes
 
 
-def search(query: str, top_k: int = 5) -> list[dict]:
+def search(query: str, top_k: int = 5, department: str | None = None) -> list[dict]:
     """Keyword search over vault notes. Returns matches with snippets.
+
+    When department is None: searches entire vault (original behavior).
+    When department is set: searches only that department's PARA.
 
     Simple but effective: splits query into terms, scores by term frequency
     in title + content. No external dependencies.
@@ -81,11 +84,19 @@ def search(query: str, top_k: int = 5) -> list[dict]:
     if not terms:
         return []
 
+    # Department scoping
+    dept_prefix = f"departments/{department}/para" if department else None
+
     scored = []
     for note in _collect_notes():
         try:
-            content = note.read_text(encoding="utf-8", errors="replace").lower()
             rel = str(note.relative_to(VAULT_ROOT)).replace("\\", "/")
+
+            # If department-scoped, only search that department's PARA
+            if dept_prefix and not rel.startswith(dept_prefix):
+                continue
+
+            content = note.read_text(encoding="utf-8", errors="replace").lower()
             title = note.stem.replace("-", " ")
 
             # Score: title matches worth 3x, content matches worth 1x
@@ -255,6 +266,27 @@ def propose_note(
 
     logger.info("Proposed vault note: %s (score=%.2f, agent=%s)", rel, score, agent)
     return {"status": "proposed", "path": rel, "title": title, "quality_score": score}
+
+
+def search_across_departments(query: str, top_k: int = 5) -> dict[str, list[dict]]:
+    """Search across all departments' PARA sections.
+
+    Used by EA for cross-department synthesis. Returns results
+    grouped by department.
+    """
+    dept_root = VAULT_ROOT / "departments"
+    if not dept_root.is_dir():
+        return {}
+
+    results = {}
+    for dept_dir in sorted(dept_root.iterdir()):
+        if not dept_dir.is_dir() or not (dept_dir / "_index.md").exists():
+            continue
+        dept_results = search(query, top_k=top_k, department=dept_dir.name)
+        if dept_results:
+            results[dept_dir.name] = dept_results
+
+    return results
 
 
 def promote_within_department(dept: str, source_rel: str, dest_subdir: str = "observations") -> dict:

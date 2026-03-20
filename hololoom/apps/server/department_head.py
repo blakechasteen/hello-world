@@ -59,9 +59,127 @@ RETURN_THRESHOLD = 40
 
 
 def get_rubric(dept: str) -> list[RubricTerm]:
-    """Get the rubric for a department. Currently only Farm."""
-    # Future: load from _index.md or a registry
-    return FARM_RUBRIC
+    """Get the rubric for a department. Loads from _index.md if available."""
+    loaded = _load_rubric_from_index(dept)
+    if loaded:
+        return loaded
+    return FARM_RUBRIC  # fallback
+
+
+# Rubric cache: dept → rubric terms
+_rubric_cache: dict[str, list[RubricTerm]] = {}
+
+
+def _load_rubric_from_index(dept: str) -> list[RubricTerm] | None:
+    """Parse rubric from departments/{dept}/_index.md.
+
+    Looks for a '## Promotion Rubric' section with numbered items like:
+    1. **Makes a claim** (not just a topic label) — weight 25
+    """
+    if dept in _rubric_cache:
+        return _rubric_cache[dept]
+
+    index_path = VAULT_ROOT / "departments" / dept / "_index.md"
+    if not index_path.exists():
+        return None
+
+    try:
+        content = index_path.read_text(encoding="utf-8", errors="replace")
+
+        # Find rubric section
+        rubric_section = ""
+        in_rubric = False
+        for line in content.splitlines():
+            if line.strip().startswith("## Promotion Rubric"):
+                in_rubric = True
+                continue
+            elif line.strip().startswith("## ") and in_rubric:
+                break
+            elif in_rubric:
+                rubric_section += line + "\n"
+
+        if not rubric_section:
+            return None
+
+        # Parse numbered rubric items
+        # Pattern: N. **Name** (description) — weight NN
+        terms = []
+        mechanical_names = {"links", "substance", "link", "body_length"}
+
+        for line in rubric_section.splitlines():
+            line = line.strip()
+            if not line or not line[0].isdigit():
+                continue
+
+            # Extract weight
+            weight = 10  # default
+            if "weight" in line.lower():
+                import re
+                weight_match = re.search(r'weight\s+(\d+)', line, re.IGNORECASE)
+                if weight_match:
+                    weight = int(weight_match.group(1))
+
+            # Extract name from **bold** text
+            bold_match = re.search(r'\*\*(.+?)\*\*', line)
+            if not bold_match:
+                continue
+
+            raw_name = bold_match.group(1).strip()
+            # Convert to snake_case key
+            name = raw_name.lower().replace(" ", "_").replace(">=", "gte")
+            # Simplify common patterns
+            if "claim" in name:
+                name = "claim"
+            elif "link" in name:
+                name = "links"
+            elif "substanti" in name:
+                name = "substance"
+            elif "connect" in name:
+                name = "connects"
+            elif "action" in name:
+                name = "actionable"
+            elif "novel" in name or "duplicate" in name:
+                name = "novel"
+            elif "seasonal" in name or "timing" in name:
+                name = "seasonal_relevance"
+
+            # Extract description (everything between ** and — or end)
+            desc_match = re.search(r'\*\*.*?\*\*\s*(?:\(([^)]+)\)|(.+?)(?:\s*—|\s*$))', line)
+            description = ""
+            if desc_match:
+                description = (desc_match.group(1) or desc_match.group(2) or "").strip()
+            if not description:
+                description = raw_name
+
+            is_mechanical = name in mechanical_names
+
+            terms.append(RubricTerm(
+                name=name,
+                weight=weight,
+                description=description,
+                mechanical=is_mechanical,
+            ))
+
+        if terms:
+            _rubric_cache[dept] = terms
+            logger.info("Loaded rubric for %s: %d terms from _index.md", dept, len(terms))
+            return terms
+
+    except Exception as e:
+        logger.warning("Failed to load rubric for %s: %s", dept, e)
+
+    return None
+
+
+def list_departments() -> list[str]:
+    """List all departments that have _index.md files."""
+    dept_root = VAULT_ROOT / "departments"
+    if not dept_root.is_dir():
+        return []
+    return [
+        d.name for d in sorted(dept_root.iterdir())
+        if d.is_dir() and (d / "_index.md").exists()
+    ]
 
 
 # ============================================================================
