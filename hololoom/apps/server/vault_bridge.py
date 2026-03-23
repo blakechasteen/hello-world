@@ -620,6 +620,16 @@ class FederationTracker:
             return 0.0
         return row["total_promoted"] / row["total_proposed"]
 
+    def record_rejection(self, agent: str) -> None:
+        """Record a rejected proposal (quality, rate-limited, etc.)."""
+        self._conn.execute(
+            "INSERT INTO federation_stats (agent, total_proposed, total_rejected) "
+            "VALUES (?, 0, 1) "
+            "ON CONFLICT(agent) DO UPDATE SET total_rejected = total_rejected + 1",
+            (agent,),
+        )
+        self._conn.commit()
+
     def should_propose(self, agent: str) -> bool:
         """Whether this agent should propose right now (frequency gating)."""
         row = self._conn.execute(

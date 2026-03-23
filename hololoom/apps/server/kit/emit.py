@@ -1,7 +1,10 @@
 """
-Fire-and-forget observability — bus + memory bus emission.
+Post-response observers — memory bus, signal bus, vault federation.
 
-Never blocks. Never throws. Gracefully degrades if bus/memory_bus unavailable.
+Each observer is independent. Each degrades gracefully. None block the caller.
+
+The pattern: Agent.__call__() finishes a response → emit() runs all observers.
+Adding a new observer means adding one function here and one line in emit().
 """
 from __future__ import annotations
 
@@ -22,20 +25,23 @@ def emit(
     extra_payload: dict[str, Any] | None = None,
 ) -> None:
     """
-    Write observation to memory bus + emit signal to UnifiedBus.
+    Run all post-response observers. Each is fire-and-forget.
 
-    Both operations are fire-and-forget. Neither blocks the caller.
-    Neither throws — all exceptions are swallowed with a debug log.
+    Observers never block the caller. Failures are logged, never raised.
+    Add new observers as functions below and wire them here.
     """
-    _write_to_memory_bus(agent_name, query, response, room_id)
-    _emit_to_bus(agent_name, query, response, room_id, tokens, duration_ms, extra_payload)
-    _propose_to_vault(agent_name, query, response)
+    _to_memory_bus(agent_name, query, response, room_id)
+    _to_signal_bus(agent_name, query, response, room_id, tokens, duration_ms, extra_payload)
+    _to_vault(agent_name, query, response)
 
 
-def _write_to_memory_bus(
+# --------------------------------------------------------------------------- #
+# Observer 1: Memory bus (cross-agent searchable store)
+# --------------------------------------------------------------------------- #
+
+def _to_memory_bus(
     agent_name: str, query: str, response: str, room_id: str,
 ) -> None:
-    """Write observation to memory bus (cross-agent searchable). Never throws."""
     try:
         from hololoom.apps.server.memory_bus import get_store
         store = get_store()
@@ -46,10 +52,14 @@ def _write_to_memory_bus(
             room_id=room_id,
         )
     except Exception:
-        pass  # Memory bus unavailable — agent works fine without it
+        pass
 
 
-def _emit_to_bus(
+# --------------------------------------------------------------------------- #
+# Observer 2: Signal bus (observability / monitoring)
+# --------------------------------------------------------------------------- #
+
+def _to_signal_bus(
     agent_name: str,
     query: str,
     response: str,
@@ -58,7 +68,6 @@ def _emit_to_bus(
     duration_ms: float,
     extra_payload: dict[str, Any] | None = None,
 ) -> None:
-    """Fire-and-forget signal emission for observability. Never throws."""
     try:
         from hololoom.apps.server.bus_setup import get_bus
 
@@ -89,36 +98,71 @@ def _emit_to_bus(
         )
         asyncio.ensure_future(bus.emit(signal))
     except Exception:
-        pass  # Bus failure never crashes an agent
+        pass
 
 
 # --------------------------------------------------------------------------- #
-# Vault federation — propose substantive responses to PARA inbox
+# Observer 3: Vault federation (knowledge capture → PARA inbox)
 # --------------------------------------------------------------------------- #
+#
+# propose_note() already handles quality scoring, rate limiting, content
+# validation, and deduplication. This observer just decides whether to
+# bother calling it — a lightweight gate so we don't invoke the full
+# federation machinery on every "hello" / "thanks".
+#
 
-# Minimum response length to consider proposing (short replies aren't notes)
-_VAULT_MIN_LENGTH = 200
+# Responses shorter than this aren't notes — they're replies.
+_MIN_RESPONSE_LENGTH = 200
 
-# Skip proposals for generic/trivial queries
-_TRIVIAL_PREFIXES = ("hi", "hello", "hey", "thanks", "ok", "sure", "yes", "no")
+# Queries that never produce note-worthy responses.
+_TRIVIAL = frozenset({
+    "hi", "hello", "hey", "thanks", "thank you",
+    "ok", "sure", "yes", "no", "bye", "goodbye",
+})
 
 
-def _propose_to_vault(agent_name: str, query: str, response: str) -> None:
-    """Fire-and-forget vault proposal. Never throws, never blocks."""
+def _is_worth_proposing(query: str, response: str) -> bool:
+    """Lightweight pre-gate. The real quality filter is in propose_note()."""
+    if len(response) < _MIN_RESPONSE_LENGTH:
+        return False
+    normalized = query.strip().lower().rstrip("!.,? ")
+    return normalized not in _TRIVIAL
+
+
+def _to_vault(agent_name: str, query: str, response: str) -> None:
+    """Propose substantive responses to the PARA vault. Tracks outcomes."""
     try:
-        if len(response) < _VAULT_MIN_LENGTH:
-            return
-        if query.strip().lower().rstrip("!., ") in _TRIVIAL_PREFIXES:
+        if not _is_worth_proposing(query, response):
             return
 
-        from hololoom.apps.server import vault_bridge
+        from hololoom.apps.server.vault_bridge import propose_note, get_tracker
 
         title = f"{agent_name.title()}: {query[:60].strip()}"
-        vault_bridge.propose_note(
+        result = propose_note(
             title=title,
             content=response,
             agent=agent_name,
         )
-        logger.debug("Vault proposal from %s: %s", agent_name, title)
+
+        status = result.get("status")
+        code = result.get("code")
+        score = result.get("quality_score", 0)
+
+        if status == "proposed":
+            logger.debug(
+                "vault/%s proposed (%.2f): %s", agent_name, score, title,
+            )
+        else:
+            # Track the rejection so federation stats reflect reality.
+            # FederationTracker.federation_stats.total_rejected exists
+            # but was never incremented — until now.
+            logger.debug(
+                "vault/%s rejected (%s, %.2f): %s",
+                agent_name, code, score, title,
+            )
+            try:
+                get_tracker().record_rejection(agent_name)
+            except Exception:
+                pass  # Tracking is best-effort
     except Exception:
         pass  # Vault unavailable — agent works fine without it
