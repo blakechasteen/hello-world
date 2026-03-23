@@ -185,6 +185,9 @@ class WeavingContext:
     # Timing
     start_time: datetime | None = None
 
+    # Breathing (INHALE/EXHALE/REST phase annotation)
+    breathing_phase: str | None = None  # "inhale" | "exhale" | "rest" | None
+
     # Query routing (for fast path detection)
     query_classification: Any | None = None
     fast_path_used: bool = False

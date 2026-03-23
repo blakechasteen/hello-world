@@ -113,18 +113,32 @@ class RitualLayer:
     """
     name = "ritual"
 
+    # Cosmic event → breathing rhythm modifiers
+    _COSMIC_MODIFIERS: dict[str, dict[str, float]] = {
+        "full_moon": {"breathing_rate": 1.2},
+        "new_moon": {"breathing_rate": 0.8},
+        "summer_solstice": {"pressure_threshold": 0.9},
+        "winter_solstice": {"pressure_threshold": 0.9},
+        "vernal_equinox": {"pressure_threshold": 0.9},
+        "autumnal_equinox": {"pressure_threshold": 0.9},
+    }
+
     def __init__(
         self,
         registry: RitualRegistry | None = None,
         journal: RitualJournal | None = None,
         bindings: list[HookBinding] | None = None,
         register_defaults: bool = True,
+        enable_cosmic: bool = True,
     ):
         self._journal = journal
         self._registry = registry or RitualRegistry(journal=journal)
         self._custom_bindings = bindings or []
         self._register_defaults = register_defaults
+        self._enable_cosmic = enable_cosmic
         self._trigger: Any = None  # RitualTrigger, set on start
+        self._runtime: Any = None
+        self._cosmic_events_fired: list[str] = []
         self._state = LayerState.INIT
 
     async def start(self, runtime: Any) -> None:
@@ -161,10 +175,19 @@ class RitualLayer:
                 if self._journal is not None and self._registry._journal is None:
                     self._registry._journal = self._journal
 
+            # Subscribe to cosmic cron signals
+            self._runtime = runtime
+            if self._enable_cosmic and runtime.bus is not None:
+                try:
+                    from ..bus.signal import SignalKind
+                    runtime.bus.on(SignalKind.CRON, self._handle_cosmic)
+                except Exception as e:
+                    logger.debug("Cosmic subscription failed: %s", e)
+
             self._state = LayerState.RUNNING
             logger.info(
-                "RitualLayer started: %d rituals registered",
-                len(self._registry._rituals),
+                "RitualLayer started: %d rituals registered, cosmic=%s",
+                len(self._registry._rituals), self._enable_cosmic,
             )
 
         except Exception as e:
@@ -187,6 +210,56 @@ class RitualLayer:
 
         self._state = LayerState.STOPPED
 
+    async def _handle_cosmic(self, signal: Any) -> None:
+        """Handle CRON 'cosmic_check' — run RitualScheduler, apply tension."""
+        if getattr(signal, "target", "") != "cosmic_check":
+            return
+
+        try:
+            from hololoom.domain_harness.strands.ritual_scheduler import (
+                RitualScheduler,
+            )
+
+            scheduler = RitualScheduler()
+            fired = scheduler.check_and_execute()
+
+            for ritual in fired:
+                rtype = getattr(ritual, "ritual_type", None)
+                if rtype is not None:
+                    name = rtype.value if hasattr(rtype, "value") else str(rtype)
+                    self._cosmic_events_fired.append(name)
+                    self._apply_tension_modifier(name)
+
+        except ImportError:
+            pass  # domain_harness unavailable — degrade silently
+        except Exception as e:
+            logger.warning("Cosmic check failed: %s", e)
+
+    def _apply_tension_modifier(self, ritual_name: str) -> None:
+        """Apply cosmic tension modifier to ChronoTrigger breathing rhythm."""
+        mods = self._COSMIC_MODIFIERS.get(ritual_name, {})
+        if not mods or self._runtime is None:
+            return
+
+        # Find ChronoTrigger — might be on a BreathingPipeline or direct attribute
+        chrono = getattr(self._runtime, "_chrono", None)
+        if chrono is None:
+            return
+
+        breathing = getattr(chrono, "breathing", None)
+        if breathing is None:
+            return
+
+        for key, multiplier in mods.items():
+            current = getattr(breathing, key, None)
+            if current is not None:
+                new_val = current * multiplier
+                setattr(breathing, key, new_val)
+                logger.info(
+                    "Cosmic modifier: %s.%s *= %.2f (%.3f -> %.3f)",
+                    ritual_name, key, multiplier, current, new_val,
+                )
+
     def status(self) -> dict[str, Any]:
         return {
             "state": self._state.value,
@@ -198,6 +271,7 @@ class RitualLayer:
             },
             "trigger_active": self._trigger is not None,
             "journal_available": self._journal is not None,
+            "cosmic_events": list(self._cosmic_events_fired),
         }
 
     def state_snapshot(self) -> dict[str, Any]:

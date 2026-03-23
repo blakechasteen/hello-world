@@ -16,9 +16,15 @@ Usage:
 
 from .layer import Layer, LayerState
 from .runtime import HoloLoomRuntime
+from .temporal_layer import TemporalLayer
+from .memory_layer import MemoryLayer
+from .identity_layer import IdentityLayer
 
 __all__ = [
     "Layer",
     "LayerState",
     "HoloLoomRuntime",
+    "TemporalLayer",
+    "MemoryLayer",
+    "IdentityLayer",
 ]

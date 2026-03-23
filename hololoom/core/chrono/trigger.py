@@ -146,7 +146,14 @@ class ChronoTrigger:
         chrono.stop()
     """
 
-    def __init__(self, config, enable_heartbeat: bool = False, enable_breathing: bool = True):
+    def __init__(
+        self,
+        config,
+        enable_heartbeat: bool = False,
+        enable_breathing: bool = True,
+        memory_bus: Any = None,
+        consolidator: Any = None,
+    ):
         """
         Initialize Chrono Trigger.
 
@@ -154,6 +161,8 @@ class ChronoTrigger:
             config: HoloLoom Config with timeout settings
             enable_heartbeat: Whether to start background maintenance
             enable_breathing: Whether to enable breathing rhythm
+            memory_bus: Optional LiteMemoryBus for decay operations
+            consolidator: Optional SleepConsolidator for REST phase
         """
         self.config = config
         self.limits = ExecutionLimits(
@@ -178,6 +187,10 @@ class ChronoTrigger:
         # Decay parameters
         self.decay_rate = 0.01  # Weight decay per hour
         self.last_decay_time = datetime.now()
+
+        # Memory integration (wired from runtime or passed directly)
+        self._memory_bus = memory_bus
+        self._consolidator = consolidator
 
         # Evolution tracking
         self.execution_history = []
@@ -337,16 +350,26 @@ class ChronoTrigger:
 
     async def _apply_decay(self):
         """
-        Apply time-based decay to thread weights.
+        Apply time-based decay to memory bus items.
 
-        In a full implementation, this would iterate through
-        the Yarn Graph and decay edge weights over time.
+        Delegates to LiteMemoryBus.decay() which reduces importance
+        based on age and access count. Items below min_importance
+        are forgotten entirely.
         """
-        logger.debug(f"Applying decay (rate={self.decay_rate}/hour)")
+        forgotten = 0
+        if self._memory_bus is not None:
+            try:
+                forgotten = await self._memory_bus.decay(
+                    max_age_seconds=86400,
+                    min_importance=0.1,
+                )
+            except Exception as e:
+                logger.warning("Memory bus decay failed: %s", e)
 
-        # Placeholder: actual implementation would need yarn_graph reference
-        # For now, just log the decay event
-        pass
+        logger.debug(
+            "Decay applied (rate=%s/hour, forgotten=%d)",
+            self.decay_rate, forgotten,
+        )
 
     async def breathe(self) -> dict[str, Any]:
         """
@@ -499,12 +522,30 @@ class ChronoTrigger:
 
         logger.debug("REST: Consolidating...")
 
-        # Brief consolidation pause
-        await asyncio.sleep(self.breathing.rest_duration)
+        # Run consolidation if available
+        consolidation_stats = None
+        if self._consolidator is not None:
+            try:
+                consolidation_stats = await self._consolidator.run_cycle()
+            except Exception as e:
+                logger.warning("REST consolidation failed: %s", e)
 
-        # Apply decay if needed (mini decay, not full hourly)
-        mini_decay_rate = self.decay_rate / 3600.0  # Convert to per-second
-        # Actual decay would be applied to yarn_graph here
+        # Brief pause for rhythm (account for consolidation time)
+        elapsed = time.time() - phase_start
+        remaining = max(0, self.breathing.rest_duration - elapsed)
+        if remaining > 0:
+            await asyncio.sleep(remaining)
+
+        # Apply mini-decay (lighter than the hourly heartbeat decay)
+        mini_decay_rate = self.decay_rate / 3600.0
+        if self._memory_bus is not None:
+            try:
+                await self._memory_bus.decay(
+                    max_age_seconds=172800,  # 48h — gentler than hourly
+                    min_importance=0.05,
+                )
+            except Exception as e:
+                logger.debug("REST mini-decay skipped: %s", e)
 
         duration = time.time() - phase_start
 
@@ -517,7 +558,7 @@ class ChronoTrigger:
             "phase": "rest",
             "duration": duration,
             "decay_applied": mini_decay_rate,
-            "consolidation": "completed"
+            "consolidation": consolidation_stats or {"skipped": True},
         }
 
         logger.debug(f"REST complete ({duration:.2f}s)")
