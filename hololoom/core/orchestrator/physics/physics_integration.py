@@ -145,3 +145,46 @@ async def weave_with_physics(
         )
 
     return spacetime, physics_result if track_provenance else None
+
+
+# ============================================================================
+# Coupled Physics Integration (Session 4 — feedback ring)
+# ============================================================================
+
+async def weave_with_coupled_physics(
+    orchestrator: WeavingOrchestrator,
+    query: Query,
+) -> tuple[Spacetime, dict | None]:
+    """Physics-enhanced weaving using the coupled ring (6 phases in feedback loop).
+
+    This is Door 2 to the same PhysicsCoupler core. Door 1 is in
+    apps/server/physics_integration.py (promotion pipeline).
+    Neither wraps the other.
+    """
+    try:
+        from hololoom.physics.coupling import get_coupler
+    except ImportError:
+        logger.debug("Coupled physics unavailable, standard weaving")
+        spacetime = await orchestrator.weave(query)
+        return spacetime, None
+
+    coupler = get_coupler()
+
+    # Seed coupler with query context
+    context = {"node_ids": []}
+    if orchestrator.yarn_graph and hasattr(orchestrator.yarn_graph, 'G'):
+        context["node_ids"] = [str(n) for n in list(orchestrator.yarn_graph.G.nodes())[:50]]
+
+    # Step the coupled ring
+    state = coupler.step(context)
+
+    # Standard weaving
+    spacetime = await orchestrator.weave(query)
+
+    # Inject physics state into spacetime metadata
+    spacetime.metadata["coupled_physics"] = state.to_dict()
+    spacetime.metadata["coupled_physics"]["meta_thermo"] = coupler.meta_thermo.stats()
+    spacetime.metadata["coupled_physics"]["energy_trend"] = round(coupler.energy_trend(), 4)
+    spacetime.metadata["coupled_physics"]["order_trend"] = round(coupler.order_trend(), 4)
+
+    return spacetime, state.to_dict()

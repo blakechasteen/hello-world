@@ -514,7 +514,7 @@ router = APIRouter(prefix="/physics", tags=["physics"])
 @router.get("/status")
 async def physics_status():
     """Report which physics engines are available."""
-    return {
+    status = {
         "gradient_flow": HAS_GRADIENT_FLOW,
         "fluid_dynamics": HAS_FLUID,
         "thermodynamics": HAS_THERMO,
@@ -522,3 +522,39 @@ async def physics_status():
         "statistical_mechanics": HAS_STATMECH,
         "unified_engine": HAS_UNIFIED,
     }
+
+    # Coupled physics ring (Session 4)
+    try:
+        from hololoom.physics.coupling import get_coupler
+        coupler = get_coupler()
+        status["coupled"] = True
+        status["coupled_status"] = coupler.status()
+    except ImportError:
+        status["coupled"] = False
+
+    return status
+
+
+@router.get("/coupled/step")
+async def coupled_step():
+    """Run one coupled physics step and return state."""
+    try:
+        from hololoom.physics.coupling import get_coupler
+        coupler = get_coupler()
+        state = coupler.step()
+        return {"state": state.to_dict(), "status": coupler.status()}
+    except ImportError:
+        return {"error": "Physics coupling not available"}
+
+
+@router.get("/coupled/step/{n}")
+async def coupled_step_n(n: int):
+    """Run n coupled physics steps."""
+    n = min(n, 1000)
+    try:
+        from hololoom.physics.coupling import get_coupler
+        coupler = get_coupler()
+        coupler.step_n(n)
+        return {"steps": n, "status": coupler.status()}
+    except ImportError:
+        return {"error": "Physics coupling not available"}
