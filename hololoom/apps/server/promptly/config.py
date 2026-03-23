@@ -63,5 +63,21 @@ MEMORY_DB_PATH = os.environ.get(
     str(_REPO_ROOT / "data" / "promptly_memory.db"),
 )
 
+# ============================================================================
+# Weave bridge (AwarenessGraph + spring dynamics)
+# ============================================================================
+
+WEAVE_ENABLED = os.environ.get("PROMPTLY_WEAVE_ENABLED", "true").lower() == "true"
+WEAVE_THRESHOLD = float(os.environ.get("PROMPTLY_WEAVE_THRESHOLD", "0.40"))
+
 # Conversation graph GC timeout (seconds)
 GRAPH_IDLE_TIMEOUT = 30 * 60  # 30 minutes
+
+# ============================================================================
+# Agent vault (CouchDB — Obsidian Live Sync compatible)
+# ============================================================================
+
+COUCHDB_URL = os.environ.get("PROMPTLY_COUCHDB_URL", "").strip() or None
+COUCHDB_DB = os.environ.get("PROMPTLY_COUCHDB_DB", "promptly-vault")
+COUCHDB_USER = os.environ.get("PROMPTLY_COUCHDB_USER", "").strip() or None
+COUCHDB_PASS = os.environ.get("PROMPTLY_COUCHDB_PASS", "").strip() or None

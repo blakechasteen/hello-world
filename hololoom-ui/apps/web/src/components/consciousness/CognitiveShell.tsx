@@ -5,6 +5,7 @@ import { useWeaving, useWeavingDispatch } from '@/contexts/WeavingContext';
 import { MemoryGraph } from '@/components/memory/MemoryGraph';
 import { ChatInterface } from '@/components/ChatInterface';
 import { CompactMetrics } from './CompactMetrics';
+import { useWeavingStream } from '@/hooks/useWeavingStream';
 
 function PaneHeader({
   label,
@@ -36,7 +37,10 @@ function PaneHeader({
 export function CognitiveShell() {
   const state = useWeaving();
   const dispatch = useWeavingDispatch();
-  const { panes, selectedNodeId, highlightedNodeIds, pendingReference } = state;
+  const { panes, selectedNodeId, highlightedNodeIds, pendingReference, activeJobId } = state;
+
+  // Bridge WebSocket progress events into WeavingContext
+  useWeavingStream(dispatch, activeJobId);
 
   // Keyboard shortcuts: Cmd/Ctrl + 1/2/3 to toggle panes
   const handleKeyDown = useCallback(

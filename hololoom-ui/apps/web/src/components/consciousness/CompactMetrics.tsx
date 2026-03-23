@@ -2,6 +2,8 @@
 
 import { Card } from '@hololoom/design-system';
 import { useWeaving } from '@/contexts/WeavingContext';
+import { useStats } from '@hololoom/api-client';
+import { useRef } from 'react';
 
 const STAGE_NAMES: Record<number, string> = {
   1: 'Loom Command',
@@ -112,12 +114,46 @@ function StageIndicator({ stage, stageName }: { stage: number; stageName: string
 export function CompactMetrics() {
   const { confidence, toolUsed, latencyMs, currentStage, currentStageName } =
     useWeaving();
+  const { data: stats, source: statsSource } = useStats(5000);
 
-  // Mock sparkline data — will be replaced by useStats() in Phase 2
-  const mockLatency = [145, 138, 132, 128, latencyMs ?? 125];
-  const mockThroughput = [720, 780, 810, 835, 847];
-  const mockCacheHit = [72, 74, 75, 76, 78];
-  const mockConfidence = [0.82, 0.85, 0.88, 0.87, confidence ?? 0.89];
+  // Rolling sparkline accumulator — keeps last 5 data points
+  const historyRef = useRef<{
+    latency: number[];
+    throughput: number[];
+    cacheHit: number[];
+    confidence: number[];
+  }>({
+    latency: [145, 138, 132, 128, 125],
+    throughput: [720, 780, 810, 835, 847],
+    cacheHit: [72, 74, 75, 76, 78],
+    confidence: [0.82, 0.85, 0.88, 0.87, 0.89],
+  });
+
+  // Accumulate live stats into sparkline history
+  if (stats && statsSource === 'live') {
+    const h = historyRef.current;
+    const push = (arr: number[], val: number) => {
+      if (arr[arr.length - 1] !== val) {
+        arr.push(val);
+        if (arr.length > 5) arr.shift();
+      }
+    };
+    push(h.latency, stats.avgLatencyMs);
+    push(h.throughput, stats.queriesLastHour);
+    push(h.cacheHit, Math.round(stats.cacheHitRate * 100));
+    push(h.confidence, stats.avgConfidence);
+  }
+
+  const sparkLatency = historyRef.current.latency;
+  const sparkThroughput = historyRef.current.throughput;
+  const sparkCacheHit = historyRef.current.cacheHit;
+  const sparkConfidence = historyRef.current.confidence;
+
+  // Display values: prefer live stats, fall back to weaving context, then sparkline tail
+  const displayLatency = latencyMs ?? stats?.avgLatencyMs ?? sparkLatency[sparkLatency.length - 1];
+  const displayConfidence = confidence ?? stats?.avgConfidence ?? sparkConfidence[sparkConfidence.length - 1];
+  const displayCacheHit = stats ? Math.round(stats.cacheHitRate * 100) : sparkCacheHit[sparkCacheHit.length - 1];
+  const displayThroughput = stats?.queriesLastHour ?? sparkThroughput[sparkThroughput.length - 1];
 
   return (
     <div className="flex flex-col h-full">
@@ -140,37 +176,42 @@ export function CompactMetrics() {
       <div className="px-3 flex-1 overflow-y-auto">
         <MetricRow
           label="Latency"
-          value={latencyMs != null ? `${latencyMs.toFixed(0)}ms` : '—'}
-          sparkline={mockLatency}
+          value={displayLatency != null ? `${displayLatency.toFixed(0)}ms` : '—'}
+          sparkline={sparkLatency}
           color="#10B981"
         />
         <MetricRow
           label="Throughput"
-          value="847 q/min"
-          sparkline={mockThroughput}
+          value={`${displayThroughput} q/hr`}
+          sparkline={sparkThroughput}
           color="#3B82F6"
         />
         <MetricRow
           label="Cache Hit"
-          value="78%"
-          sparkline={mockCacheHit}
+          value={`${displayCacheHit}%`}
+          sparkline={sparkCacheHit}
           color="#F59E0B"
         />
         <MetricRow
           label="Confidence"
-          value={confidence != null ? `${(confidence * 100).toFixed(0)}%` : '—'}
-          sparkline={mockConfidence}
+          value={displayConfidence != null ? `${(displayConfidence * 100).toFixed(0)}%` : '—'}
+          sparkline={sparkConfidence}
           color="#8B5CF6"
         />
       </div>
 
-      {/* Tool Badge */}
+      {/* Tool Badge + Data Source */}
       <div className="px-3 py-2 border-t border-border-primary">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-fg-tertiary">Tool:</span>
-          <span className="text-xs font-medium text-fg-secondary">
-            {toolUsed ?? 'none'}
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-fg-tertiary">Tool:</span>
+            <span className="text-xs font-medium text-fg-secondary">
+              {toolUsed ?? 'none'}
+            </span>
+          </div>
+          {statsSource !== 'live' && (
+            <span className="text-xs text-cosmic-aurora">{statsSource}</span>
+          )}
         </div>
       </div>
     </div>

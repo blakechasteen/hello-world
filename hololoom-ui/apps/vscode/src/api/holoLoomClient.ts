@@ -1,28 +1,49 @@
 /**
  * HoloLoom API Client for VS Code Extension
  *
- * Wraps the HoloLoom API for use in the extension context.
+ * Thin adapter over @hololoom/api-client's HoloLoomClient.
+ * Re-exports the shared types so extension commands don't need to import
+ * from two packages. The shared client handles retry, rate-limiting, and
+ * WebSocket — this wrapper adds VS Code-specific conveniences.
  */
 
-export type ReasoningMode = 'direct' | 'verify' | 'research' | 'plan_execute';
+import {
+  HoloLoomClient as SharedClient,
+  createHoloLoomClient,
+  HoloLoomConnectionError,
+} from '@hololoom/api-client';
+import type {
+  QueryRequest,
+  QueryResponse,
+  SystemStats,
+  HealthStatus,
+  RecallRequest,
+  RecallResponse,
+  ExperienceRequest,
+  ExperienceResponse,
+  PromptlyChatRequest,
+  PromptlyChatResponse,
+  ReasoningMode,
+} from '@hololoom/api-client';
 
-export interface HealthResponse {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  version?: string;
-  uptime_seconds?: number;
-}
+// Re-export types so extension commands import from one place
+export type {
+  QueryRequest,
+  QueryResponse,
+  SystemStats,
+  HealthStatus,
+  RecallRequest,
+  RecallResponse,
+  ExperienceRequest,
+  ExperienceResponse,
+  PromptlyChatRequest,
+  PromptlyChatResponse,
+  ReasoningMode,
+};
 
-export interface QueryRequest {
-  text: string;
-  mode?: ReasoningMode;
-  context?: {
-    file?: string;
-    language?: string;
-    selection?: string;
-    lineNumber?: number;
-  };
-  max_steps?: number;
-}
+// Legacy type aliases for existing extension code
+export type HealthResponse = HealthStatus;
+export type StatsResponse = SystemStats;
 
 export interface Source {
   id: string;
@@ -31,21 +52,9 @@ export interface Source {
   metadata?: Record<string, unknown>;
 }
 
-export interface QueryResponse {
-  response: string;
-  confidence: number;
-  reasoning_mode: ReasoningMode;
-  sources: Source[];
-  steps_taken?: Array<{
-    type: string;
-    query: string;
-    result: string;
-  }>;
-  verification?: {
-    verified: boolean;
-    issues?: string[];
-  };
-  metadata?: Record<string, unknown>;
+export interface Verification {
+  verified: boolean;
+  issues?: string[];
 }
 
 export interface MemoryItem {
@@ -56,153 +65,94 @@ export interface MemoryItem {
   metadata?: Record<string, unknown>;
 }
 
-export interface MemoryStoreRequest {
-  content: string;
-  type?: string;
-  metadata?: Record<string, unknown>;
-}
-
-export interface MemorySearchRequest {
-  query: string;
-  limit?: number;
-  filters?: Record<string, unknown>;
-}
-
-export interface StatsResponse {
-  memory: {
-    totalNodes: number;
-    totalEdges: number;
-    activeNodes: number;
-  };
-  cacheHitRate: number;
-  avgLatencyMs: number;
-  queriesProcessed: number;
-}
+export type MemoryStoreRequest = ExperienceRequest;
+export type MemorySearchRequest = RecallRequest;
 
 export class HoloLoomClient {
-  private baseUrl: string;
-  private timeout: number;
-  private abortController: AbortController | null = null;
+  private client: SharedClient;
 
   constructor(baseUrl: string, timeout: number = 30000) {
-    this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
-    this.timeout = timeout;
+    this.client = createHoloLoomClient({
+      baseUrl: baseUrl.replace(/\/$/, ''),
+      timeout,
+      enableWebSocket: false, // VS Code extension host — no WebSocket needed
+    });
   }
 
-  private async fetch<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    this.abortController = new AbortController();
-    const timeoutId = setTimeout(() => {
-      this.abortController?.abort();
-    }, this.timeout);
-
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        ...options,
-        signal: this.abortController.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-
-      return response.json();
-    } finally {
-      clearTimeout(timeoutId);
-      this.abortController = null;
-    }
-  }
-
-  /**
-   * Cancel any in-flight requests
-   */
-  cancelRequest(): void {
-    this.abortController?.abort();
-  }
-
-  /**
-   * Update the base URL
-   */
+  /** Update the base URL (recreates the underlying client) */
   setBaseUrl(url: string): void {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.client = createHoloLoomClient({
+      baseUrl: url.replace(/\/$/, ''),
+      enableWebSocket: false,
+    });
   }
 
-  /**
-   * Check server health
-   */
-  async checkHealth(): Promise<HealthResponse> {
-    return this.fetch<HealthResponse>('/health');
+  /** Check server health */
+  async checkHealth(): Promise<HealthStatus> {
+    return this.client.health();
   }
 
-  /**
-   * Send a query to HoloLoom
-   */
+  /** Send a query */
   async query(request: QueryRequest): Promise<QueryResponse> {
-    return this.fetch<QueryResponse>('/query', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
+    return this.client.query(request);
   }
 
-  /**
-   * Get system statistics
-   */
-  async getStats(): Promise<StatsResponse> {
-    return this.fetch<StatsResponse>('/stats');
+  /** Chat via Promptly endpoint */
+  async chat(request: PromptlyChatRequest): Promise<PromptlyChatResponse> {
+    return this.client.promptlyChat(request);
   }
 
-  /**
-   * Store content in memory
-   */
-  async storeMemory(request: MemoryStoreRequest): Promise<MemoryItem> {
-    return this.fetch<MemoryItem>('/memory/store', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
+  /** Get system stats — returns the shared SystemStats type */
+  async getStats(): Promise<SystemStats & { queriesProcessed?: number }> {
+    const stats = await this.client.stats();
+    return { ...stats, queriesProcessed: stats.totalQueries };
   }
 
-  /**
-   * Search memories
-   */
-  async searchMemory(request: MemorySearchRequest): Promise<MemoryItem[]> {
-    return this.fetch<MemoryItem[]>('/memory/search', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
+  /** Store content in memory — accepts legacy {type} field as {contentType} */
+  async storeMemory(request: MemoryStoreRequest & { type?: string }): Promise<ExperienceResponse> {
+    const { type, ...rest } = request;
+    return this.client.experience({ ...rest, contentType: type as ExperienceRequest['contentType'] });
   }
 
-  /**
-   * Get recent memories
-   */
+  /** Search memories — returns MemoryItem[] for backward compatibility */
+  async searchMemory(request: RecallRequest): Promise<MemoryItem[]> {
+    const response = await this.client.recall(request);
+    return response.memories.map((m) => ({
+      id: m.id,
+      content: m.text,
+      type: m.state,
+      timestamp: m.timestamp ?? new Date().toISOString(),
+      metadata: { relevance: m.relevance },
+    }));
+  }
+
+  /** Get recent memories */
   async getRecentMemories(limit: number = 20): Promise<MemoryItem[]> {
-    return this.fetch<MemoryItem[]>(`/memory/recent?limit=${limit}`);
+    return this.searchMemory({ query: '', limit });
   }
 
-  /**
-   * Delete a memory by ID
-   */
-  async deleteMemory(id: string): Promise<void> {
-    await this.fetch<void>(`/memory/${id}`, {
-      method: 'DELETE',
-    });
+  /** Delete a memory by ID — no-op until backend supports DELETE */
+  async deleteMemory(_id: string): Promise<void> {
+    // Not yet supported by the shared client
   }
 
-  /**
-   * Test connection to server
-   */
+  /** Test connection to server */
   async testConnection(): Promise<boolean> {
     try {
-      const health = await this.checkHealth();
-      return health.status === 'healthy' || health.status === 'degraded';
+      const health = await this.client.health();
+      return health.status !== 'unhealthy';
     } catch {
       return false;
     }
+  }
+
+  /** Cancel not needed — shared client uses AbortController internally */
+  cancelRequest(): void {
+    // No-op: the shared client manages its own abort controllers per-request
+  }
+
+  /** Clean up resources */
+  destroy(): void {
+    this.client.destroy();
   }
 }

@@ -1,11 +1,20 @@
 """
 HoloLoomLite integration — lazy init, graceful degradation.
 
-Also contains vault bridge helpers used by the chat endpoint.
+Also contains the unified ``recall_smart()`` that gates between the
+AwarenessGraph (spring dynamics) and HoloLoomLite based on query
+complexity. Callers import from here — the bridge decides which
+backend to use.
 """
 from __future__ import annotations
 
 import logging
+
+from .weave_bridge import (  # noqa: F401 — re-export
+    _get_weave_bridge,
+    is_weave_available,
+    recall_weaved,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -119,3 +128,44 @@ async def _store_experience(loom, query: str, response: str, room_id: str,
         )
     except Exception:
         pass
+
+
+# ============================================================================
+# Unified smart recall — complexity-gated
+# ============================================================================
+
+async def recall_smart(
+    query: str, complexity: float,
+) -> tuple[str, list[dict], str]:
+    """Recall memories using the best available backend.
+
+    Complexity gating:
+        >= WEAVE_THRESHOLD → AwarenessGraph (spring dynamics)
+        >= 0.15            → HoloLoomLite (flat recall)
+        < 0.15             → skip (trivial chat)
+
+    Returns:
+        (formatted_context, hits, backend_used)
+        backend_used is one of: "awareness_graph", "hololoom_lite", "none"
+    """
+    from .config import WEAVE_ENABLED, WEAVE_THRESHOLD
+
+    # Try AwarenessGraph for complex queries
+    if WEAVE_ENABLED and complexity >= WEAVE_THRESHOLD:
+        try:
+            mem_text, mem_hits = await recall_weaved(query, limit=5)
+            if mem_text:
+                return mem_text, mem_hits, "awareness_graph"
+            # Graph is empty — fall through to HoloLoomLite
+        except Exception as e:
+            logger.warning("Weave recall failed, falling back: %s", e)
+
+    # Fall back to HoloLoomLite
+    if is_hololoom_available() is not False:
+        loom = await _get_hololoom()
+        if loom:
+            mem_text, mem_hits = await _recall_memories_structured(loom, query)
+            if mem_text:
+                return mem_text, mem_hits, "hololoom_lite"
+
+    return "", [], "none"

@@ -222,6 +222,36 @@ export const animation = {
 } as const;
 
 // =============================================================================
+// GLASS MORPHISM
+// =============================================================================
+
+export const glass = {
+  /** Glass background with configurable opacity */
+  bg: {
+    low: 'rgba(30, 41, 59, 0.4)',
+    medium: 'rgba(30, 41, 59, 0.7)',
+    high: 'rgba(30, 41, 59, 0.9)',
+  },
+  /** Backdrop blur levels */
+  blur: {
+    low: 'blur(5px)',
+    medium: 'blur(10px)',
+    high: 'blur(20px)',
+  },
+  /** Glass border colors */
+  border: {
+    subtle: 'rgba(255, 255, 255, 0.05)',
+    default: 'rgba(255, 255, 255, 0.08)',
+    bright: 'rgba(255, 255, 255, 0.1)',
+  },
+  /** Glass shadow presets */
+  shadow: {
+    default: '0 8px 32px rgba(0, 0, 0, 0.12)',
+    elevated: '0 8px 32px rgba(6, 182, 212, 0.15)',
+  },
+} as const;
+
+// =============================================================================
 // CSS CUSTOM PROPERTIES EXPORT
 // =============================================================================
 
@@ -261,4 +291,15 @@ export const effectsCSSVariables = {
   '--transition-colors': transition.colors,
   '--transition-opacity': transition.opacity,
   '--transition-transform': transition.transform,
+
+  '--glass-bg-low': glass.bg.low,
+  '--glass-bg': glass.bg.medium,
+  '--glass-bg-high': glass.bg.high,
+  '--glass-blur-low': glass.blur.low,
+  '--glass-blur': glass.blur.medium,
+  '--glass-blur-high': glass.blur.high,
+  '--glass-border': glass.border.default,
+  '--glass-border-bright': glass.border.bright,
+  '--glass-shadow': glass.shadow.default,
+  '--glass-shadow-elevated': glass.shadow.elevated,
 } as const;

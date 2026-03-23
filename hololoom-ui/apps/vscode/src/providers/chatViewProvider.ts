@@ -115,10 +115,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const editorContext = getEditorContext();
         if (editorContext) {
           context = {
-            file: editorContext.file,
-            language: editorContext.language,
+            fileName: editorContext.file,
+            languageId: editorContext.language,
             selection: editorContext.selection,
-            lineNumber: editorContext.lineNumber,
+            cursorPosition: editorContext.lineNumber != null
+              ? { line: editorContext.lineNumber, column: 0 }
+              : undefined,
           };
         }
       }
@@ -136,9 +138,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         role: 'assistant',
         content: response.response,
         timestamp: Date.now(),
-        mode: response.reasoning_mode,
+        mode: response.mode,
         confidence: response.confidence,
-        sources: response.sources,
+        sources: response.sources?.map((s) => ({ id: s.id, content: s.text, relevance: s.relevance })),
       };
       this.addMessage(assistantMessage);
     } catch (error) {

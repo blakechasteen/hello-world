@@ -24,6 +24,8 @@ export interface WeavingState {
   toolUsed: string | null;
   latencyMs: number | null;
   activatedMemoryIds: string[];
+  activeRefinementId: string | null;
+  degradedEndpoints: Map<string, string>;
   panes: { memory: boolean; chat: boolean; metrics: boolean };
 }
 
@@ -41,12 +43,15 @@ const initialState: WeavingState = {
   toolUsed: null,
   latencyMs: null,
   activatedMemoryIds: [],
+  activeRefinementId: null,
+  degradedEndpoints: new Map(),
   panes: { memory: true, chat: true, metrics: true },
 };
 
 // --- Actions ---
 
 export type WeavingAction =
+  // Core weaving lifecycle
   | { type: 'QUERY_START'; jobId: string; query: string }
   | { type: 'STAGE_UPDATE'; stage: number; stageName: string; progress: number }
   | { type: 'STAGE_COMPLETE'; stage: number; durationMs: number }
@@ -57,11 +62,17 @@ export type WeavingAction =
       latencyMs: number;
       memoryIds: string[];
     }
+  // Cross-pane signals
   | { type: 'SELECT_NODE'; nodeId: string | null }
   | { type: 'HIGHLIGHT_NODES'; nodeIds: string[] }
   | { type: 'REFERENCE_NODE'; nodeId: string; content: string }
   | { type: 'CLEAR_REFERENCE' }
   | { type: 'TOGGLE_PANE'; pane: 'memory' | 'chat' | 'metrics' }
+  // Refinement signals (chat → awareness)
+  | { type: 'REFINEMENT_START'; refinementId: string }
+  | { type: 'REFINEMENT_COMPLETE'; refinedResponse: string; confidence: number }
+  // Data source degradation signals
+  | { type: 'DATA_SOURCE_CHANGED'; endpoint: string; tier: string }
   | { type: 'RESET' };
 
 // --- Reducer ---
@@ -126,6 +137,26 @@ function weavingReducer(state: WeavingState, action: WeavingAction): WeavingStat
         ...state,
         panes: { ...state.panes, [action.pane]: !state.panes[action.pane] },
       };
+
+    case 'REFINEMENT_START':
+      return { ...state, activeRefinementId: action.refinementId };
+
+    case 'REFINEMENT_COMPLETE':
+      return {
+        ...state,
+        activeRefinementId: null,
+        confidence: action.confidence,
+      };
+
+    case 'DATA_SOURCE_CHANGED': {
+      const endpoints = new Map(state.degradedEndpoints);
+      if (action.tier === 'live') {
+        endpoints.delete(action.endpoint);
+      } else {
+        endpoints.set(action.endpoint, action.tier);
+      }
+      return { ...state, degradedEndpoints: endpoints };
+    }
 
     case 'RESET':
       return { ...initialState, panes: state.panes };

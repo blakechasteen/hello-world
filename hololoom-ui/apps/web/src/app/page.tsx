@@ -15,7 +15,7 @@ import {
   Avatar,
   Badge,
 } from '@hololoom/design-system';
-import { useHoloLoom, useConversation, useStats } from '@hololoom/api-client';
+import { useHoloLoom, useStats } from '@hololoom/api-client';
 import { Navigation } from '@/components/Navigation';
 import { ChatInterface } from '@/components/ChatInterface';
 import { QuickActions } from '@/components/QuickActions';

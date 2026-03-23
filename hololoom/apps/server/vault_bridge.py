@@ -10,6 +10,7 @@ Federation v2: quality scoring, promotion tracking, adaptive frequency.
 Department support: multi-tier promotion (dept inbox → dept PARA → vault inbox).
 """
 
+import asyncio
 import logging
 import os
 import re
@@ -263,6 +264,9 @@ def propose_note(
             tracker.record_proposal(agent, title, rel, score, department=department)
         except Exception:
             pass  # Don't fail the write because tracking broke
+
+    # Fire-and-forget: sync to agent's CouchDB vault (if configured)
+    _sync_to_agent_vault(rel, note, agent)
 
     logger.info("Proposed vault note: %s (score=%.2f, agent=%s)", rel, score, agent)
     return {"status": "proposed", "path": rel, "title": title, "quality_score": score}
@@ -645,6 +649,39 @@ class FederationTracker:
             "promotion_rate": self.get_promotion_rate(agent),
             "frequency": row["current_frequency"],
         }
+
+
+# ============================================================================
+# Agent Vault Sync (CouchDB — fire-and-forget)
+# ============================================================================
+
+def _sync_to_agent_vault(rel_path: str, content: str, agent: str = "promptly") -> None:
+    """Fire-and-forget push to agent's CouchDB vault.
+
+    Never blocks, never throws — graceful degradation.
+    The note lands in both Blake's filesystem vault AND the agent's CouchDB vault.
+    """
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(_async_sync_to_agent_vault(rel_path, content))
+        else:
+            # No event loop running — skip (will sync next time)
+            logger.debug("No event loop — skipping CouchDB sync for %s", rel_path)
+    except RuntimeError:
+        logger.debug("No event loop — skipping CouchDB sync for %s", rel_path)
+
+
+async def _async_sync_to_agent_vault(rel_path: str, content: str) -> None:
+    """Async worker for agent vault sync."""
+    try:
+        from .vault.couchdb_vault import get_agent_vault
+        vault = await get_agent_vault()
+        if vault:
+            await vault.write_note(rel_path, content)
+            logger.debug("Synced to agent vault: %s", rel_path)
+    except Exception as e:
+        logger.warning("Agent vault sync failed for %s: %s", rel_path, e)
 
 
 # Federation tracker singleton

@@ -459,6 +459,183 @@ export interface HoloLoomClientConfig {
 }
 
 // =============================================================================
+// DATA SOURCE PROTOCOL
+// =============================================================================
+
+/** Data freshness tiers — mirrors backend's HYBRID → INMEMORY degradation cascade */
+export type DataSourceTier = 'live' | 'stale' | 'mock' | 'empty';
+
+/** Result from the DataSource protocol — every data-consuming hook returns this shape */
+export interface DataSourceResult<T> {
+  /** The data (null only when source is 'empty') */
+  data: T | null;
+  /** How fresh the data is */
+  source: DataSourceTier;
+  /** Whether a fetch is in flight */
+  isLoading: boolean;
+  /** The most recent error (null if last fetch succeeded) */
+  error: Error | null;
+  /** Trigger a manual re-fetch */
+  refetch: () => Promise<T | null>;
+}
+
+/** Options for the useDataSource primitive */
+export interface DataSourceOptions<T> {
+  /** sessionStorage key for stale-tier cache */
+  cacheKey?: string;
+  /** Fallback generator for mock tier */
+  mock?: () => T;
+  /** Auto-refresh interval in ms (0 = no auto-refresh) */
+  refreshInterval?: number;
+}
+
+// =============================================================================
+// PROMPTLY CHAT TYPES
+// =============================================================================
+
+/** Promptly chat request */
+export interface PromptlyChatRequest {
+  /** Message text */
+  text: string;
+  /** Room ID for conversation continuity */
+  room_id: string;
+  /** Reasoning mode override */
+  mode?: ReasoningMode;
+}
+
+/** Model routing info from Promptly response */
+export interface RoutingInfo {
+  /** Detected query intent */
+  intent?: string;
+  /** Confidence in intent detection */
+  confidence?: number;
+  /** Selected model */
+  model?: string;
+  /** Whether a fallback was used */
+  fallback?: boolean;
+}
+
+/** Refinement info from Promptly response */
+export interface RefinementInfo {
+  /** Whether refinement was triggered */
+  triggered: boolean;
+  /** Complexity score that triggered refinement */
+  complexity_score?: number;
+  /** Maximum refinement passes */
+  max_passes?: number;
+}
+
+/** Memory context from Promptly response */
+export interface MemoryContext {
+  /** Number of recall hits */
+  hits?: number;
+  /** Recall latency in ms */
+  latency_ms?: number;
+  /** Memory backend type */
+  backend?: string;
+}
+
+/** Promptly chat response */
+export interface PromptlyChatResponse {
+  /** Response text */
+  response: string;
+  /** Refinement ID for polling (null if no refinement triggered) */
+  refinement_id?: string;
+  /** Jenny visualization ID */
+  jenny_id?: string;
+  /** Model routing info */
+  routing?: RoutingInfo;
+  /** Refinement info */
+  refinement_info?: RefinementInfo;
+  /** Memory context */
+  memory_context?: MemoryContext;
+}
+
+// =============================================================================
+// JENNY TYPES
+// =============================================================================
+
+/** Jenny panel types — matches JennySpec.PanelTypeJenny in Python */
+export type PanelType =
+  | 'text'
+  | 'confidence'
+  | 'timeline'
+  | 'memory_map'
+  | 'graph'
+  | 'code'
+  | 'table'
+  | 'metric'
+  | 'reasoning'
+  | 'sources'
+  | 'actions'
+  | 'why'
+  | 'comparison'
+  | 'promotion'
+  | 'department'
+  | 'cross_dept'
+  | 'feedback_state';
+
+/** Jenny panel lifecycle stages */
+export type LifecycleStage = 'nascent' | 'stable' | 'dissolving' | 'archived' | 'system';
+
+/** Jenny data binding modes */
+export type BindingMode = 'static' | 'reactive' | 'streaming';
+
+/** Jenny panel action */
+export interface JennyAction {
+  /** Action identifier */
+  action_id: string;
+  /** Human-readable label */
+  label: string;
+  /** Handler type */
+  type: 'pin' | 'dismiss' | 'why' | 'expand' | 'copy' | 'custom';
+  /** Whether to confirm before executing */
+  requires_confirmation?: boolean;
+}
+
+/** Jenny spec DTO — mirrors JennySpec.to_dict() output */
+export interface JennySpecDTO {
+  /** Unique spec identifier */
+  spec_id: string;
+  /** Panel type */
+  panel_type: PanelType;
+  /** Panel title */
+  title: string;
+  /** Optional subtitle */
+  subtitle?: string;
+  /** Panel content (type depends on panel_type) */
+  content: Record<string, unknown>;
+  /** Lifecycle stage */
+  lifecycle: LifecycleStage;
+  /** Data binding mode */
+  binding_mode: BindingMode;
+  /** Available actions */
+  actions: JennyAction[];
+  /** Refresh interval in ms (for reactive binding) */
+  refresh_interval_ms?: number;
+  /** Priority (higher = render first) */
+  priority?: number;
+  /** Panel size hint */
+  size?: 'compact' | 'normal' | 'expanded' | 'full';
+}
+
+/** Jenny streaming update */
+export interface StreamUpdateDTO {
+  /** Update identifier */
+  update_id: string;
+  /** Target spec */
+  spec_id: string;
+  /** Data source that triggered update */
+  data_source: string;
+  /** Update type */
+  update_type: 'data' | 'lifecycle' | 'action_result';
+  /** Update payload */
+  data: Record<string, unknown>;
+  /** Sequence number for ordering */
+  sequence: number;
+}
+
+// =============================================================================
 // ERROR TYPES
 // =============================================================================
 

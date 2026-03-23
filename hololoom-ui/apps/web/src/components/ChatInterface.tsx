@@ -12,7 +12,7 @@ import {
   WeavingIndicator,
   SafetyBadge,
 } from '@hololoom/design-system';
-import { useConversation } from '@hololoom/api-client';
+import { usePromptlyChat } from '@hololoom/api-client';
 import type { ReasoningMode } from '@hololoom/api-client';
 
 interface ChatInterfaceProps {
@@ -28,7 +28,7 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
     isLoading,
     error,
     clearConversation,
-  } = useConversation();
+  } = usePromptlyChat();
   const [currentProgress, setCurrentProgress] = useState<{ step: number; message?: string; details?: string } | null>(null);
 
   const [input, setInput] = useState('');
@@ -51,7 +51,7 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    sendMessage(input.trim(), { mode: selectedMode });
+    sendMessage(input.trim(), selectedMode);
     setInput('');
   };
 
@@ -126,21 +126,19 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
                       size="sm"
                     />
                   )}
-                  {message.metadata.reasoningMode && (
-                    <ReasoningBadge
-                      mode={message.metadata.reasoningMode as ReasoningMode}
-                      size="sm"
-                    />
-                  )}
-                  {message.metadata.safetyLevel && (
-                    <SafetyBadge
-                      level={message.metadata.safetyLevel as 'safe' | 'caution' | 'warning' | 'danger'}
-                      size="sm"
-                    />
-                  )}
-                  {message.metadata.sourcesCount !== undefined && (
+                  {message.metadata.model && (
                     <Badge variant="secondary" size="sm">
-                      {message.metadata.sourcesCount} sources
+                      {message.metadata.model}
+                    </Badge>
+                  )}
+                  {message.metadata.refined && (
+                    <Badge variant="secondary" size="sm">
+                      refined
+                    </Badge>
+                  )}
+                  {message.metadata.memory_context?.hits !== undefined && (
+                    <Badge variant="secondary" size="sm">
+                      {message.metadata.memory_context.hits} memories
                     </Badge>
                   )}
                 </div>

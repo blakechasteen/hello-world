@@ -27,8 +27,10 @@ from .config import (
 )
 from .hololoom_bridge import (
     _get_hololoom,
+    _get_weave_bridge,
     _recall_memories_structured,
     is_hololoom_available,
+    recall_smart,
 )
 from .jenny import (
     _gc_conversation_graphs,
@@ -113,24 +115,25 @@ async def chat(request: ChatRequest):
     except Exception as e:
         logger.debug("Vault context unavailable: %s", e)
 
-    # Recall memories from HoloLoomLite (pass 1 — lightweight, optional)
+    # Estimate complexity early — gates both memory recall and refinement
+    complexity = _estimate_complexity(request.text)
+
+    # Smart memory recall — complexity-gated (spring dynamics > HoloLoomLite > none)
     memory_ctx = None
-    if is_hololoom_available() is not False:
+    if complexity >= 0.15:
         try:
-            loom = await _get_hololoom()
-            if loom:
-                recall_start = time.time()
-                mem_text, mem_hits = await _recall_memories_structured(loom, request.text)
-                recall_ms = (time.time() - recall_start) * 1000
-                if mem_text:
-                    system_prompt += mem_text
-                    logger.debug("Memory context injected (%d hits, %.0fms)",
-                                 len(mem_hits), recall_ms)
-                memory_ctx = MemoryContext(
-                    hits=[MemoryHit(**h) for h in mem_hits],
-                    recall_ms=round(recall_ms, 1),
-                    backend="hololoom_lite" if mem_hits else "none",
-                )
+            recall_start = time.time()
+            mem_text, mem_hits, backend = await recall_smart(request.text, complexity)
+            recall_ms = (time.time() - recall_start) * 1000
+            if mem_text:
+                system_prompt += mem_text
+                logger.debug("Memory context injected (%d hits, %.0fms, %s)",
+                             len(mem_hits), recall_ms, backend)
+            memory_ctx = MemoryContext(
+                hits=[MemoryHit(**h) for h in mem_hits],
+                recall_ms=round(recall_ms, 1),
+                backend=backend,
+            )
         except Exception as e:
             logger.debug("Memory recall unavailable: %s", e)
             memory_ctx = MemoryContext(backend="degraded")
@@ -159,6 +162,14 @@ async def chat(request: ChatRequest):
     if content:
         conv_memory.add_turn(request.room_id, request.text, content)
 
+    # Store experience in awareness graph (fire-and-forget, enriches future recall)
+    if content and complexity >= 0.40:
+        bridge = await _get_weave_bridge()
+        if bridge:
+            asyncio.create_task(
+                bridge.store(request.text, content, request.room_id)
+            )
+
     # Write observation to memory bus + emit signal (cross-agent searchable)
     if content:
         from ..kit.emit import emit as kit_emit
@@ -185,14 +196,13 @@ async def chat(request: ChatRequest):
 
     # Decide whether to fire refinement passes
     refinement_id = None
-    complexity = _estimate_complexity(request.text) if REFINEMENT_ENABLED and content else None
     refinement_info = RefinementInfo(
         triggered=False,
-        complexity_score=round(complexity, 3) if complexity is not None else None,
+        complexity_score=round(complexity, 3),
         threshold=0.25,
         max_passes=MAX_PASSES,
     )
-    if REFINEMENT_ENABLED and content and complexity is not None:
+    if REFINEMENT_ENABLED and content:
         if complexity >= 0.25:
             # Generate deterministic refinement ID
             raw = f"{request.room_id}:{request.text}:{start}"

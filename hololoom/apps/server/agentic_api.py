@@ -190,6 +190,14 @@ try:
 except ImportError as e:
     logger.warning(f"Failed to mount Elle chat router: {e}")
 
+# Practical Chat (direct, no-nonsense assistant with vault access)
+try:
+    from hololoom.apps.server.practical_chat import router as practical_chat_router
+    app.include_router(practical_chat_router)
+    logger.info("Practical chat router mounted at /practical/chat")
+except ImportError as e:
+    logger.warning(f"Failed to mount Practical chat router: {e}")
+
 # Coz Query API (Company Operating System — structured business data access)
 try:
     from hololoom.apps.server.coz_api import router as coz_router
@@ -272,6 +280,14 @@ except ImportError as e:
     jenny_shutdown = None
     logger.warning(f"Failed to mount Jenny router: {e}")
 
+# Nervous System Health (unified vital signs across cortex/peripheral/autonomic)
+try:
+    from hololoom.apps.server.nervous_health import router as nervous_health_router
+    app.include_router(nervous_health_router)
+    logger.info("Nervous health router mounted at /nervous/health")
+except ImportError as e:
+    logger.warning(f"Failed to mount Nervous Health router: {e}")
+
 # Spatial WebSocket (Stage 3 — conversation visualization in AR/XR)
 import os as _os
 
@@ -302,6 +318,17 @@ if _inspector_path.exists():
         return _HTMLResponse(content=html)
 
     logger.info("Spatial inspector mounted at /spatial/{room_id}/inspector")
+
+
+# Department Dashboard (Visualization Phase 3 — Tufte-inspired static dashboard)
+_dashboard_path = _Path(__file__).parent / "static" / "department_dashboard.html"
+if _dashboard_path.exists():
+    @app.get("/dashboard")
+    async def department_dashboard():
+        """Serve the department dashboard — polls /viz/* endpoints."""
+        return _HTMLResponse(content=_dashboard_path.read_text())
+
+    logger.info("Department dashboard mounted at /dashboard")
 
 
 # Helper function for secure client IP extraction

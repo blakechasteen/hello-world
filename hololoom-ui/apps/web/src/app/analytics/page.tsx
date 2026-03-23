@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Navigation } from '../../components/Navigation';
 import { Button, Badge, Card } from '@hololoom/design-system';
+import { useStats } from '@hololoom/api-client';
 import {
   PerformanceOverview,
   LatencyChart,
@@ -42,9 +43,42 @@ export interface LearningStats {
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const { data: stats, source: statsSource } = useStats(autoRefresh ? 10000 : 0);
 
-  // Mock data - in production would come from API
-  const performanceMetrics: PerformanceMetrics = {
+  // Rolling time-series accumulator — appends live stats snapshots
+  const timeSeriesRef = useRef<{
+    latency: MetricPoint[];
+    throughput: MetricPoint[];
+    confidence: MetricPoint[];
+  }>({
+    latency: generateMockTimeSeries(timeRange, 120, 180),
+    throughput: generateMockTimeSeries(timeRange, 700, 1000),
+    confidence: generateMockTimeSeries(timeRange, 0.7, 0.95),
+  });
+
+  // Append live data point when stats arrive
+  if (stats && statsSource === 'live') {
+    const now = Date.now();
+    const ts = timeSeriesRef.current;
+    const lastLatency = ts.latency[ts.latency.length - 1];
+    if (!lastLatency || now - lastLatency.timestamp > 5000) {
+      ts.latency.push({ timestamp: now, value: stats.avgLatencyMs });
+      ts.throughput.push({ timestamp: now, value: stats.queriesLastHour });
+      ts.confidence.push({ timestamp: now, value: stats.avgConfidence });
+      // Keep max 200 points
+      if (ts.latency.length > 200) { ts.latency.shift(); ts.throughput.shift(); ts.confidence.shift(); }
+    }
+  }
+
+  // Live metrics or fallback
+  const performanceMetrics: PerformanceMetrics = stats ? {
+    avgLatency: stats.avgLatencyMs,
+    p95Latency: stats.avgLatencyMs * 1.8,  // estimate until backend exposes percentiles
+    p99Latency: stats.avgLatencyMs * 3.0,
+    throughput: stats.queriesLastHour,
+    cacheHitRate: stats.cacheHitRate,
+    errorRate: 0.012,
+  } : {
     avgLatency: 125.4,
     p95Latency: 245.8,
     p99Latency: 412.3,
@@ -53,7 +87,14 @@ export default function AnalyticsPage() {
     errorRate: 0.012,
   };
 
-  const learningStats: LearningStats = {
+  const learningStats: LearningStats = stats?.learning ? {
+    thompsonAlpha: 142.5,
+    thompsonBeta: 23.8,
+    patternsLearned: stats.learning.patternsLearned,
+    hotPatterns: 156,
+    coldPatterns: 89,
+    adaptiveAccuracy: stats.learning.successRate,
+  } : {
     thompsonAlpha: 142.5,
     thompsonBeta: 23.8,
     patternsLearned: 1847,
@@ -62,9 +103,9 @@ export default function AnalyticsPage() {
     adaptiveAccuracy: 0.943,
   };
 
-  const latencyHistory: MetricPoint[] = generateMockTimeSeries(timeRange, 120, 180);
-  const throughputHistory: MetricPoint[] = generateMockTimeSeries(timeRange, 700, 1000);
-  const confidenceHistory: MetricPoint[] = generateMockTimeSeries(timeRange, 0.7, 0.95);
+  const latencyHistory = timeSeriesRef.current.latency;
+  const throughputHistory = timeSeriesRef.current.throughput;
+  const confidenceHistory = timeSeriesRef.current.confidence;
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -158,10 +199,10 @@ export default function AnalyticsPage() {
           {/* Cache Effectiveness */}
           <CacheEffectiveness
             hitRate={performanceMetrics.cacheHitRate}
-            totalQueries={12847}
-            cacheHits={10021}
+            totalQueries={stats?.totalQueries ?? 12847}
+            cacheHits={Math.round((stats?.totalQueries ?? 12847) * performanceMetrics.cacheHitRate)}
             avgCachedLatency={12.4}
-            avgUncachedLatency={145.2}
+            avgUncachedLatency={performanceMetrics.avgLatency}
           />
 
           {/* Learning Metrics */}

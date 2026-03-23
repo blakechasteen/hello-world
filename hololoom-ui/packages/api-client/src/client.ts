@@ -23,6 +23,10 @@ import type {
   RateLimitError,
   ProgressEvent,
   WSMessage,
+  PromptlyChatRequest,
+  PromptlyChatResponse,
+  JennySpecDTO,
+  StreamUpdateDTO,
 } from './types';
 
 // =============================================================================
@@ -67,7 +71,7 @@ export class HoloLoomConnectionError extends Error {
 // =============================================================================
 
 const DEFAULT_CONFIG: Partial<HoloLoomClientConfig> = {
-  timeout: 30000,
+  timeout: 120000, // 2min — LLM inference can take 10-30s on first load
   enableWebSocket: true,
   retry: {
     maxAttempts: 3,
@@ -86,6 +90,7 @@ export class HoloLoomClient {
   private wsListeners: Map<string, Set<(event: ProgressEvent) => void>> = new Map();
   private wsReconnectAttempts = 0;
   private wsReconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+  private wsPingInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(config: HoloLoomClientConfig) {
     this.config = {
@@ -197,14 +202,46 @@ export class HoloLoomClient {
   // HEALTH & STATS
   // ===========================================================================
 
-  /** Check API health status */
+  /** Check API health status — adapts backend shape to HealthStatus */
   async health(): Promise<HealthStatus> {
-    return this.fetch<HealthStatus>('/health');
+    const raw = await this.fetch<Record<string, unknown>>('/health');
+    // Backend returns {status: "ok", service, version, timestamp}
+    // Client expects {status: "healthy"|"degraded"|"unhealthy", timestamp, components[]}
+    const status = raw.status === 'ok' ? 'healthy'
+      : raw.status === 'degraded' ? 'degraded'
+      : typeof raw.status === 'string' ? (raw.status as HealthStatus['status'])
+      : 'unhealthy';
+    return {
+      status,
+      timestamp: String(raw.timestamp ?? new Date().toISOString()),
+      components: [],
+    };
   }
 
-  /** Get system statistics */
+  /** Get system statistics — adapts flat backend dict to SystemStats */
   async stats(): Promise<SystemStats> {
-    return this.fetch<SystemStats>('/stats');
+    const raw = await this.fetch<Record<string, unknown>>('/stats');
+    // Backend returns flat: {total_queries, avg_latency_ms, p95_latency_ms, success_rate, ...}
+    // Client expects nested: {totalQueries, avgLatencyMs, cacheHitRate, memory: {...}, learning: {...}}
+    return {
+      totalQueries: Number(raw.total_queries ?? 0),
+      queriesLastHour: Number(raw.total_queries ?? 0), // best approximation
+      avgLatencyMs: Number(raw.avg_latency_ms ?? 0),
+      cacheHitRate: Number(raw.cache_hit_rate ?? 0),
+      avgConfidence: Number(raw.avg_confidence ?? Number(raw.success_rate ?? 100) / 100),
+      memory: {
+        totalNodes: Number(raw.memory_shards ?? 0),
+        activeNodes: Number(raw.memory_shards ?? 0),
+        totalEdges: 0,
+        avgActivation: 0,
+        coherence: 0,
+      },
+      learning: {
+        patternsLearned: 0,
+        successRate: Number(raw.success_rate ?? 100) / 100,
+        lastUpdateTime: new Date().toISOString(),
+      },
+    };
   }
 
   // ===========================================================================
@@ -306,7 +343,7 @@ export class HoloLoomClient {
     });
   }
 
-  /** Get memory graph structure */
+  /** Get memory graph structure — tries /api/graph/data, adapts response */
   async getMemoryGraph(options?: {
     limit?: number;
     includeInactive?: boolean;
@@ -315,7 +352,13 @@ export class HoloLoomClient {
     if (options?.limit) params.set('limit', String(options.limit));
     if (options?.includeInactive) params.set('include_inactive', 'true');
 
-    return this.fetch<MemoryGraph>(`/memory/graph?${params}`);
+    try {
+      return await this.fetch<MemoryGraph>(`/api/graph/data?${params}`);
+    } catch {
+      // Endpoint may not be available (memory_manager not initialized)
+      // Return empty graph — MemoryGraph component will fall back to mock
+      throw new HoloLoomConnectionError('Memory graph not available');
+    }
   }
 
   /** Navigate memory in a direction */
@@ -400,6 +443,96 @@ export class HoloLoomClient {
   }
 
   // ===========================================================================
+  // PROMPTLY CHAT
+  // ===========================================================================
+
+  /** Send a chat message via /promptly/chat — adapts backend response */
+  async promptlyChat(request: PromptlyChatRequest): Promise<PromptlyChatResponse> {
+    const raw = await this.fetch<Record<string, unknown>>('/promptly/chat', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+    const rawRouting = raw.routing as Record<string, unknown> | undefined;
+    const rawRefinement = raw.refinement_info as Record<string, unknown> | undefined;
+    const rawMemory = raw.memory_context as Record<string, unknown> | undefined;
+
+    return {
+      response: String(raw.response ?? ''),
+      refinement_id: raw.refinement_id as string | undefined,
+      jenny_id: raw.jenny_id as string | undefined,
+      routing: rawRouting ? {
+        intent: String(rawRouting.intent ?? ''),
+        confidence: Number(rawRouting.intent_confidence ?? rawRouting.confidence ?? 0),
+        model: String(rawRouting.model_id ?? rawRouting.model ?? ''),
+        fallback: Boolean(rawRouting.fallback),
+      } : undefined,
+      refinement_info: rawRefinement ? {
+        triggered: Boolean(rawRefinement.triggered),
+        complexity_score: Number(rawRefinement.complexity_score ?? 0),
+        max_passes: Number(rawRefinement.max_passes ?? 0),
+      } : undefined,
+      memory_context: rawMemory ? {
+        // Backend sends hits as array, client expects count
+        hits: Array.isArray(rawMemory.hits) ? rawMemory.hits.length : Number(rawMemory.hits ?? 0),
+        latency_ms: Number(rawMemory.recall_ms ?? rawMemory.latency_ms ?? 0),
+        backend: String(rawMemory.backend ?? ''),
+      } : undefined,
+    };
+  }
+
+  /** Poll for a refinement result */
+  async promptlyRefinement(refinementId: string): Promise<PromptlyChatResponse> {
+    return this.fetch<PromptlyChatResponse>(`/promptly/chat/refinement/${refinementId}`);
+  }
+
+  // ===========================================================================
+  // JENNY VISUALIZATION
+  // ===========================================================================
+
+  /** Ask Jenny to generate visualization panels */
+  async jennyAsk(
+    query: string,
+    options?: { context?: Record<string, unknown> }
+  ): Promise<{ panels: JennySpecDTO[] }> {
+    return this.fetch<{ panels: JennySpecDTO[] }>('/jenny/ask', {
+      method: 'POST',
+      body: JSON.stringify({ query, ...options }),
+    });
+  }
+
+  /** List active Jenny panels */
+  async jennyPanels(lifecycle?: string): Promise<{ panels: JennySpecDTO[] }> {
+    const params = new URLSearchParams();
+    if (lifecycle) params.set('lifecycle', lifecycle);
+    return this.fetch<{ panels: JennySpecDTO[] }>(`/jenny/panels?${params}`);
+  }
+
+  /** Get a specific Jenny panel */
+  async jennyPanel(panelId: string): Promise<JennySpecDTO> {
+    return this.fetch<JennySpecDTO>(`/jenny/panels/${panelId}`);
+  }
+
+  /** Execute an action on a Jenny panel */
+  async jennyAct(
+    panelId: string,
+    action: string,
+    context?: Record<string, unknown>
+  ): Promise<{ success: boolean; result?: unknown }> {
+    return this.fetch<{ success: boolean; result?: unknown }>(
+      `/jenny/panels/${panelId}/act`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ action, context }),
+      }
+    );
+  }
+
+  /** Get Jenny runtime statistics */
+  async jennyStats(): Promise<Record<string, unknown>> {
+    return this.fetch<Record<string, unknown>>('/jenny/stats');
+  }
+
+  // ===========================================================================
   // WEBSOCKET
   // ===========================================================================
 
@@ -419,6 +552,14 @@ export class HoloLoomClient {
 
         this.ws.onopen = () => {
           this.wsReconnectAttempts = 0;
+
+          // Keepalive ping every 30s to prevent idle disconnects
+          this.wsPingInterval = setInterval(() => {
+            if (this.ws?.readyState === WebSocket.OPEN) {
+              this.ws.send(JSON.stringify({ type: 'ping' }));
+            }
+          }, 30000);
+
           resolve();
         };
 
@@ -446,6 +587,11 @@ export class HoloLoomClient {
 
   /** Disconnect WebSocket */
   disconnectWebSocket(): void {
+    if (this.wsPingInterval) {
+      clearInterval(this.wsPingInterval);
+      this.wsPingInterval = null;
+    }
+
     if (this.wsReconnectTimeout) {
       clearTimeout(this.wsReconnectTimeout);
       this.wsReconnectTimeout = null;

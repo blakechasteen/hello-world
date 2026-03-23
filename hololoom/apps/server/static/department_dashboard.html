@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom — Department Dashboard</title>
+    <style>
+/* ===== Tufte-Inspired Dashboard ===== */
+/* Data-ink ratio: every pixel communicates. No decoration. */
+
+:root {
+    --bg: #0f0f17;
+    --surface: #16162a;
+    --border: #252545;
+    --text: #e0e0e8;
+    --muted: #808098;
+    --accent: #00d9ff;
+    --success: #00ff88;
+    --warning: #ffcc00;
+    --error: #ff4444;
+    --radius: 6px;
+    --grid: 8px;
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    padding: calc(var(--grid) * 2);
+}
+
+/* Layout: 12-column grid, 8px base */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: calc(var(--grid) * 2);
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+/* Header */
+.dash-header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: var(--grid);
+    border-bottom: 1px solid var(--border);
+}
+
+.dash-header h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.dash-header .meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+/* Department selector */
+.dept-selector {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: var(--grid);
+    flex-wrap: wrap;
+}
+
+.dept-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: calc(var(--grid) * 0.75) calc(var(--grid) * 2);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    transition: all 0.15s;
+}
+
+.dept-btn:hover { border-color: var(--accent); }
+.dept-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+/* Card */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: calc(var(--grid) * 2);
+}
+
+.card h2 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--grid);
+}
+
+/* Span variants */
+.span-4 { grid-column: span 4; }
+.span-6 { grid-column: span 6; }
+.span-8 { grid-column: span 8; }
+.span-12 { grid-column: span 12; }
+
+/* Metric */
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+/* Bar chart (horizontal) */
+.bar-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 40px;
+    align-items: center;
+    gap: 8px;
+    margin: 3px 0;
+}
+
+.bar-label { font-size: 0.8rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-fill {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--accent);
+    min-width: 2px;
+    transition: width 0.3s;
+}
+.bar-count { font-size: 0.8rem; text-align: right; }
+
+/* Table */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.data-table th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 4px 8px 4px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+    padding: 4px 8px 4px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Gauge */
+.gauge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gauge-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.gauge-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.gauge-value {
+    font-size: 0.85rem;
+    min-width: 50px;
+    text-align: right;
+}
+
+/* Community dot visualization */
+.community-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.community-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+}
+
+/* Sparkline (CSS-only) */
+.sparkline {
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    height: 24px;
+}
+
+.spark-bar {
+    flex: 1;
+    background: var(--accent);
+    border-radius: 1px 1px 0 0;
+    min-height: 1px;
+    opacity: 0.7;
+}
+
+/* Status indicators */
+.status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.status--good { background: var(--success); }
+.status--warn { background: var(--warning); }
+.status--bad { background: var(--error); }
+
+/* Loading */
+.loading { color: var(--muted); font-size: 0.85rem; }
+
+/* Temporal layers */
+.temporal-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 2px 0;
+    font-size: 0.8rem;
+}
+
+.temporal-name { width: 80px; color: var(--muted); }
+.temporal-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.temporal-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+}
+.temporal-weight { width: 30px; text-align: right; font-size: 0.75rem; color: var(--muted); }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .span-4, .span-6, .span-8 { grid-column: span 12; }
+}
+    </style>
+</head>
+<body>
+
+<div class="dashboard" id="app">
+    <!-- Header -->
+    <div class="dash-header">
+        <h1>HoloLoom Dashboard</h1>
+        <span class="meta" id="last-update">Loading...</span>
+    </div>
+
+    <!-- Department Selector -->
+    <div class="dept-selector" id="dept-selector">
+        <span class="loading">Loading departments...</span>
+    </div>
+
+    <!-- Section 1: Knowledge State (per department) -->
+    <div class="card span-4" id="card-trajectory">
+        <h2>Promotion Flow</h2>
+        <div class="loading" id="trajectory-content">Select a department</div>
+    </div>
+
+    <div class="card span-4" id="card-topology">
+        <h2>Belief Communities</h2>
+        <div class="loading" id="topology-content">Select a department</div>
+    </div>
+
+    <div class="card span-4" id="card-tension">
+        <h2>Tension</h2>
+        <div class="loading" id="tension-content">Select a department</div>
+    </div>
+
+    <!-- Section 2: Distribution -->
+    <div class="card span-6" id="card-distribution">
+        <h2>Rubric Weights</h2>
+        <div class="loading" id="distribution-content">Select a department</div>
+    </div>
+
+    <div class="card span-6" id="card-bandit">
+        <h2>Bandit Learning</h2>
+        <div class="loading" id="bandit-content">Select a department</div>
+    </div>
+
+    <!-- Section 3: Cross-Department -->
+    <div class="card span-8" id="card-crossdept">
+        <h2>Cross-Department Intelligence</h2>
+        <div class="loading" id="crossdept-content">Loading...</div>
+    </div>
+
+    <div class="card span-4" id="card-crossdept-tension">
+        <h2>Department Tension</h2>
+        <div class="loading" id="crossdept-tension-content">Loading...</div>
+    </div>
+
+    <!-- Section 4: Learning State -->
+    <div class="card span-4" id="card-feedback-loom">
+        <h2>Loom Arms</h2>
+        <div class="loading" id="feedback-loom-content">Loading...</div>
+    </div>
+
+    <div class="card span-4" id="card-temporal">
+        <h2>Temporal Layers</h2>
+        <div class="loading" id="temporal-content">Loading...</div>
+    </div>
+
+    <div class="card span-4" id="card-math">
+        <h2>Math Activity</h2>
+        <div class="loading" id="math-content">Loading...</div>
+    </div>
+</div>
+
+<script>
+// ===== HoloLoom Dashboard — Polls /viz/* endpoints =====
+// Tufte: no unnecessary UI. Data speaks.
+
+const API = window.location.origin;
+let activeDept = null;
+let pollInterval = null;
+
+// ---- Fetch helpers ----
+async function fetchJSON(path) {
+    try {
+        const resp = await fetch(`${API}${path}`);
+        if (!resp.ok) throw new Error(resp.statusText);
+        return await resp.json();
+    } catch (e) {
+        console.warn(`[Dashboard] ${path}:`, e.message);
+        return null;
+    }
+}
+
+// ---- Rendering helpers ----
+function barRow(label, count, max, color) {
+    const pct = max > 0 ? Math.round(count / max * 100) : 0;
+    const bg = color || 'var(--accent)';
+    return `<div class="bar-row">
+        <span class="bar-label">${esc(label)}</span>
+        <div class="bar-fill" style="width:${pct}%;background:${bg}"></div>
+        <span class="bar-count">${count}</span>
+    </div>`;
+}
+
+function gauge(label, value, max, color) {
+    max = max || 1;
+    const pct = Math.min(Math.round(value / max * 100), 100);
+    return `<div class="gauge">
+        <span class="bar-label">${esc(label)}</span>
+        <div class="gauge-track"><div class="gauge-fill" style="width:${pct}%;background:${color || 'var(--accent)'}"></div></div>
+        <span class="gauge-value">${typeof value === 'number' ? value.toFixed(3) : value}</span>
+    </div>`;
+}
+
+function statusDot(value, thresholds) {
+    thresholds = thresholds || [0.3, 0.6];
+    if (value < thresholds[0]) return '<span class="status status--good"></span>';
+    if (value < thresholds[1]) return '<span class="status status--warn"></span>';
+    return '<span class="status status--bad"></span>';
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ---- Department selector ----
+async function loadDepartments() {
+    const data = await fetchJSON('/viz/overview');
+    if (!data) { document.getElementById('dept-selector').innerHTML = '<span class="loading">API unavailable</span>'; return; }
+
+    const depts = data.departments || [];
+    const selector = document.getElementById('dept-selector');
+    selector.innerHTML = depts.map(d =>
+        `<button class="dept-btn" data-dept="${esc(d)}">${esc(d)}</button>`
+    ).join('');
+
+    selector.querySelectorAll('.dept-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectDepartment(btn.dataset.dept));
+    });
+
+    // Auto-select first
+    if (depts.length > 0) selectDepartment(depts[0]);
+
+    // Load cross-department and global data
+    loadCrossDept();
+    loadFeedback();
+    loadMath();
+}
+
+// ---- Select department ----
+async function selectDepartment(dept) {
+    activeDept = dept;
+
+    // Update selector UI
+    document.querySelectorAll('.dept-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`[data-dept="${dept}"]`);
+    if (btn) btn.classList.add('active');
+
+    await loadDeptData(dept);
+
+    // Re-poll
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(() => loadDeptData(activeDept), 30000);
+}
+
+// ---- Load department data ----
+async function loadDeptData(dept) {
+    const data = await fetchJSON(`/viz/department/${dept}`);
+    if (!data) return;
+
+    document.getElementById('last-update', new Date().toLocaleTimeString());
+
+    renderTrajectory(data.trajectory);
+    renderTopology(data.topology);
+    renderTension(data.tension, data.meta);
+    renderDistribution(data.distribution);
+    renderBandit(data.distribution);
+}
+
+// ---- Render: Trajectory (promotion flow) ----
+function renderTrajectory(traj) {
+    const el = document.getElementById('trajectory-content');
+    if (!traj) { el.innerHTML = '<span class="loading">No trajectory data</span>'; return; }
+
+    const stages = traj.stages || [];
+    const flow = traj.flow || {};
+    const maxCount = Math.max(...stages.map(s => s.count), 1);
+
+    let html = stages.map(s => barRow(s.name, s.count, maxCount)).join('');
+    html += `<div style="margin-top:8px">
+        <span class="metric-value" style="font-size:1.4rem">${flow.total_processed || 0}</span>
+        <span class="metric-label">total processed</span>
+    </div>`;
+
+    el.innerHTML = html;
+}
+
+// ---- Render: Topology (communities) ----
+function renderTopology(topo) {
+    const el = document.getElementById('topology-content');
+    if (!topo) { el.innerHTML = '<span class="loading">No community data</span>'; return; }
+
+    const colors = ['#00d9ff', '#00ff88', '#ffcc00', '#ff4444', '#9966ff', '#ff6699', '#66ccff', '#ff9933'];
+
+    let html = `<div style="margin-bottom:8px">
+        <span class="metric-value" style="font-size:1.4rem">${topo.n_communities}</span>
+        <span class="metric-label">communities</span>
+    </div>`;
+
+    // Connectivity gauge
+    html += gauge('algebraic connectivity', topo.algebraic_connectivity || 0, 1, 'var(--success)');
+
+    // Community dots
+    const communities = topo.communities || {};
+    html += '<div class="community-dots" style="margin-top:8px">';
+    Object.entries(communities).forEach(([id, comm], i) => {
+        const color = colors[i % colors.length];
+        const n = (comm.paths || []).length;
+        for (let j = 0; j < Math.min(n, 8); j++) {
+            html += `<div class="community-dot" style="background:${color}" title="Community ${id}: ${n} notes"></div>`;
+        }
+    });
+    html += '</div>';
+
+    // Inter/intra stats
+    html += `<div style="margin-top:8px;font-size:0.8rem;color:var(--muted)">
+        ${topo.inter_links || 0} cross-community / ${topo.intra_links || 0} intra-community
+    </div>`;
+
+    el.innerHTML = html;
+}
+
+// ---- Render: Tension (drift + phase) ----
+function renderTension(tension, meta) {
+    const el = document.getElementById('tension-content');
+    if (!tension) { el.innerHTML = '<span class="loading">No tension data</span>'; return; }
+
+    let html = '';
+
+    // Phase
+    const phase = tension.phase || 'unknown';
+    html += `<div style="margin-bottom:8px">
+        <span class="metric-label">Phase</span>
+        <span class="metric-value" style="font-size:1.2rem">${esc(phase)}</span>
+    </div>`;
+
+    // KL Drift
+    if (tension.drift != null) {
+        const drift = typeof tension.drift === 'number' ? tension.drift : 0;
+        const color = drift < 0.3 ? 'var(--success)' : drift < 0.6 ? 'var(--warning)' : 'var(--error)';
+        html += gauge('KL drift', drift, 1, color);
+    }
+
+    // Meta info
+    if (meta) {
+        html += `<div style="margin-top:12px;font-size:0.8rem;color:var(--muted)">
+            ${statusDot(0.2)} ${meta.n_rubric_terms || 0} rubric terms
+        </div>`;
+    }
+
+    el.innerHTML = html;
+}
+
+// ---- Render: Distribution (rubric weights) ----
+function renderDistribution(dist) {
+    const el = document.getElementById('distribution-content');
+    if (!dist) { el.innerHTML = '<span class="loading">No distribution data</span>'; return; }
+
+    const weights = dist.rubric_weights || {};
+    const total = dist.total_weight || Object.values(weights).reduce((a, b) => a + b, 0) || 1;
+
+    let html = Object.entries(weights).map(([term, weight]) =>
+        barRow(term, weight, total, 'var(--warning)')
+    ).join('');
+
+    html += `<div style="margin-top:8px;font-size:0.8rem;color:var(--muted)">Total weight: ${total}</div>`;
+    el.innerHTML = html;
+}
+
+// ---- Render: Bandit means ----
+function renderBandit(dist) {
+    const el = document.getElementById('bandit-content');
+    if (!dist) { el.innerHTML = '<span class="loading">No bandit data</span>'; return; }
+
+    const means = dist.bandit_means || {};
+    let html = Object.entries(means).map(([term, mean]) => {
+        const color = mean >= 0.6 ? 'var(--success)' : mean >= 0.4 ? 'var(--warning)' : 'var(--error)';
+        return gauge(term, mean, 1, color);
+    }).join('');
+
+    if (!html) html = '<span class="loading">No bandit arms yet</span>';
+    el.innerHTML = html;
+}
+
+// ---- Cross-department ----
+async function loadCrossDept() {
+    const data = await fetchJSON('/viz/cross-departments');
+    if (!data || data.error) {
+        document.getElementById('crossdept-content').innerHTML = '<span class="loading">No cross-dept data</span>';
+        return;
+    }
+
+    const topo = data.topology || {};
+    const tension = data.tension || {};
+    const comparisons = topo.comparisons || [];
+    const departments = topo.departments || [];
+
+    // Comparison table
+    let html = `<div style="margin-bottom:8px;font-size:0.85rem">${departments.length} departments</div>`;
+    if (comparisons.length > 0) {
+        html += '<table class="data-table"><thead><tr><th>A</th><th>B</th><th>Distance</th><th>Rel.</th></tr></thead><tbody>';
+        comparisons.slice(0, 10).forEach(c => {
+            const color = c.distance < 0.3 ? 'var(--success)' : c.distance < 0.6 ? 'var(--warning)' : 'var(--error)';
+            html += `<tr>
+                <td>${esc(c.dept_a || '')}</td>
+                <td>${esc(c.dept_b || '')}</td>
+                <td style="color:${color}">${(c.distance || 0).toFixed(3)}</td>
+                <td>${esc(c.relationship || '')}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+    }
+
+    document.getElementById('crossdept-content').innerHTML = html;
+
+    // Tension
+    let tensionHtml = '';
+    tensionHtml += `<div style="margin-bottom:12px">
+        <span class="metric-label">Most Connected</span><br>
+        <span class="metric-value" style="font-size:1.2rem">${esc(tension.most_connected || 'none')}</span>
+    </div>`;
+    tensionHtml += `<div>
+        <span class="metric-label">Most Isolated</span><br>
+        <span class="metric-value" style="font-size:1.2rem;color:var(--warning)">${esc(tension.most_isolated || 'none')}</span>
+    </div>`;
+
+    document.getElementById('crossdept-tension-content').innerHTML = tensionHtml;
+}
+
+// ---- Feedback/Learning ----
+async function loadFeedback() {
+    const data = await fetchJSON('/viz/feedback');
+    if (!data) return;
+
+    // Loom arms
+    const traj = data.trajectory || {};
+    document.getElementById('feedback-loom-content').innerHTML = `
+        <span class="metric-value">${traj.n_loom_arms || 0}</span>
+        <span class="metric-label">active loom arms</span>
+    `;
+
+    // Temporal layers
+    const temporal = data.temporal_layers || {};
+    let html = Object.entries(temporal).map(([name, weight]) => {
+        const pct = Math.round(weight * 100);
+        return `<div class="temporal-row">
+            <span class="temporal-name">${esc(name)}</span>
+            <div class="temporal-bar"><div class="temporal-fill" style="width:${pct}%"></div></div>
+            <span class="temporal-weight">${weight}</span>
+        </div>`;
+    }).join('');
+
+    if (!html) html = '<span class="loading">No temporal data</span>';
+    document.getElementById('temporal-content').innerHTML = html;
+}
+
+// ---- Math Activity ----
+async function loadMath() {
+    const data = await fetchJSON('/viz/math-activity');
+    if (!data) return;
+
+    const dist = data.distribution || {};
+    const budget = data.budget || {};
+    const traj = data.trajectory || {};
+
+    let html = '';
+
+    // Total operations
+    html += `<div style="margin-bottom:8px">
+        <span class="metric-value" style="font-size:1.4rem">${dist.total_operations || 0}</span>
+        <span class="metric-label">operations</span>
+    </div>`;
+
+    // By domain sparkline
+    const byDomain = dist.by_domain || {};
+    const maxDomain = Math.max(...Object.values(byDomain), 1);
+    html += '<div class="sparkline" style="margin-bottom:8px">';
+    Object.entries(byDomain).forEach(([domain, count]) => {
+        const h = Math.max(Math.round(count / maxDomain * 24), 1);
+        html += `<div class="spark-bar" style="height:${h}px" title="${esc(domain)}: ${count}"></div>`;
+    });
+    html += '</div>';
+
+    // Domain labels
+    html += '<div style="font-size:0.7rem;color:var(--muted);display:flex;gap:4px;flex-wrap:wrap">';
+    Object.entries(byDomain).forEach(([domain, count]) => {
+        html += `<span>${esc(domain)}:${count}</span>`;
+    });
+    html += '</div>';
+
+    // V5 availability
+    if (traj.v5_total) {
+        html += `<div style="margin-top:8px;font-size:0.8rem;color:var(--muted)">
+            v5: ${traj.v5_available || 0}/${traj.v5_total} available
+        </div>`;
+    }
+
+    document.getElementById('math-content').innerHTML = html;
+}
+
+// ---- Feedback emission (Attention = fifth primitive) ----
+// Dashboard interactions emit feedback signals back to the system
+function emitDashFeedback(subject, dimension, value) {
+    fetch(`${API}/viz/feedback/signal`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            subject, dimension, value,
+            timescale: 'SECONDS', weight: 0.15,
+            timestamp: new Date().toISOString()
+        })
+    }).catch(() => {}); // Non-blocking
+}
+
+// Track department selection as feedback
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.dept-btn');
+    if (btn) emitDashFeedback(btn.dataset.dept, 'dept_selection', 0.5);
+});
+
+// ---- Init ----
+loadDepartments();
+
+// Update timestamp
+setInterval(() => {
+    document.getElementById('last-update').textContent = `Updated ${new Date().toLocaleTimeString()}`;
+}, 30000);
+</script>
+
+</body>
+</html>

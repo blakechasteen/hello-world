@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Card, CardHeader, CardBody, Button, Badge } from '@hololoom/design-system';
+import { useMemoryGraph as useMemoryGraphData } from '@hololoom/api-client';
+import type { MemoryNode as ApiMemoryNode, MemoryEdge as ApiMemoryEdge } from '@hololoom/api-client';
 
 interface MemoryGraphProps {
   searchQuery: string;
@@ -50,64 +52,94 @@ export function MemoryGraph({
 }: MemoryGraphProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [nodes, setNodes] = useState<GraphNode[]>([]);
-  const [edges, setEdges] = useState<GraphEdge[]>([]);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Generate mock graph data
-  useEffect(() => {
-    const mockNodes: GraphNode[] = [
-      { id: 'thompson', label: 'Thompson Sampling', type: 'concept', x: 300, y: 200, activation: 0.9, connections: 5 },
-      { id: 'bayesian', label: 'Bayesian', type: 'concept', x: 450, y: 150, activation: 0.8, connections: 4 },
-      { id: 'bandit', label: 'Multi-Armed Bandit', type: 'concept', x: 450, y: 250, activation: 0.7, connections: 3 },
-      { id: 'exploration', label: 'Exploration', type: 'entity', x: 200, y: 100, activation: 0.6, connections: 3 },
-      { id: 'exploitation', label: 'Exploitation', type: 'entity', x: 200, y: 300, activation: 0.6, connections: 3 },
-      { id: 'rl', label: 'Reinforcement Learning', type: 'concept', x: 550, y: 200, activation: 0.75, connections: 6 },
-      { id: 'policy', label: 'Policy', type: 'entity', x: 650, y: 150, activation: 0.65, connections: 4 },
-      { id: 'reward', label: 'Reward', type: 'entity', x: 650, y: 250, activation: 0.55, connections: 3 },
-      { id: 'ucb', label: 'UCB Algorithm', type: 'concept', x: 350, y: 350, activation: 0.5, connections: 2 },
-      { id: 'neural', label: 'Neural Network', type: 'concept', x: 550, y: 350, activation: 0.7, connections: 5 },
-    ];
+  // Fetch graph from backend via DataSource protocol (degrades: live → stale → mock → empty)
+  const { data: graphData, source: dataSource } = useMemoryGraphData();
 
-    const mockEdges: GraphEdge[] = [
-      { source: 'thompson', target: 'bayesian', type: 'USES', weight: 0.9 },
-      { source: 'thompson', target: 'bandit', type: 'IS_A', weight: 0.8 },
-      { source: 'thompson', target: 'exploration', type: 'USES', weight: 0.7 },
-      { source: 'thompson', target: 'exploitation', type: 'USES', weight: 0.7 },
-      { source: 'bandit', target: 'rl', type: 'PART_OF', weight: 0.6 },
-      { source: 'rl', target: 'policy', type: 'USES', weight: 0.8 },
-      { source: 'rl', target: 'reward', type: 'USES', weight: 0.8 },
-      { source: 'ucb', target: 'bandit', type: 'IS_A', weight: 0.7 },
-      { source: 'neural', target: 'policy', type: 'USES', weight: 0.6 },
-      { source: 'neural', target: 'rl', type: 'PART_OF', weight: 0.5 },
-    ];
+  // Mock fallback data for when backend is unavailable
+  const MOCK_NODES: GraphNode[] = [
+    { id: 'thompson', label: 'Thompson Sampling', type: 'concept', x: 300, y: 200, activation: 0.9, connections: 5 },
+    { id: 'bayesian', label: 'Bayesian', type: 'concept', x: 450, y: 150, activation: 0.8, connections: 4 },
+    { id: 'bandit', label: 'Multi-Armed Bandit', type: 'concept', x: 450, y: 250, activation: 0.7, connections: 3 },
+    { id: 'exploration', label: 'Exploration', type: 'entity', x: 200, y: 100, activation: 0.6, connections: 3 },
+    { id: 'exploitation', label: 'Exploitation', type: 'entity', x: 200, y: 300, activation: 0.6, connections: 3 },
+    { id: 'rl', label: 'Reinforcement Learning', type: 'concept', x: 550, y: 200, activation: 0.75, connections: 6 },
+    { id: 'policy', label: 'Policy', type: 'entity', x: 650, y: 150, activation: 0.65, connections: 4 },
+    { id: 'reward', label: 'Reward', type: 'entity', x: 650, y: 250, activation: 0.55, connections: 3 },
+    { id: 'ucb', label: 'UCB Algorithm', type: 'concept', x: 350, y: 350, activation: 0.5, connections: 2 },
+    { id: 'neural', label: 'Neural Network', type: 'concept', x: 550, y: 350, activation: 0.7, connections: 5 },
+  ];
+  const MOCK_EDGES: GraphEdge[] = [
+    { source: 'thompson', target: 'bayesian', type: 'USES', weight: 0.9 },
+    { source: 'thompson', target: 'bandit', type: 'IS_A', weight: 0.8 },
+    { source: 'thompson', target: 'exploration', type: 'USES', weight: 0.7 },
+    { source: 'thompson', target: 'exploitation', type: 'USES', weight: 0.7 },
+    { source: 'bandit', target: 'rl', type: 'PART_OF', weight: 0.6 },
+    { source: 'rl', target: 'policy', type: 'USES', weight: 0.8 },
+    { source: 'rl', target: 'reward', type: 'USES', weight: 0.8 },
+    { source: 'ucb', target: 'bandit', type: 'IS_A', weight: 0.7 },
+    { source: 'neural', target: 'policy', type: 'USES', weight: 0.6 },
+    { source: 'neural', target: 'rl', type: 'PART_OF', weight: 0.5 },
+  ];
 
-    // Filter by search query if provided
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const filteredNodes = mockNodes.filter(
-        (n) => n.label.toLowerCase().includes(query) || n.type.includes(query)
-      );
-      const nodeIds = new Set(filteredNodes.map((n) => n.id));
-
-      // Also include connected nodes
-      mockEdges.forEach((e) => {
-        if (nodeIds.has(e.source) || nodeIds.has(e.target)) {
-          nodeIds.add(e.source);
-          nodeIds.add(e.target);
-        }
-      });
-
-      setNodes(mockNodes.filter((n) => nodeIds.has(n.id)));
-      setEdges(mockEdges.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target)));
-    } else {
-      setNodes(mockNodes);
-      setEdges(mockEdges);
+  // Adapt API data → canvas rendering types, or fallback to mock
+  const { nodes, edges } = useMemo(() => {
+    if (!graphData || dataSource === 'empty') {
+      return { nodes: MOCK_NODES, edges: MOCK_EDGES };
     }
-  }, [searchQuery]);
+
+    // Map API MemoryNode → GraphNode with circular layout
+    const apiNodes: GraphNode[] = graphData.nodes.map((n: ApiMemoryNode, i: number) => {
+      const angle = (i / graphData.nodes.length) * Math.PI * 2;
+      const radius = 200;
+      return {
+        id: n.id,
+        label: n.content.slice(0, 30),
+        type: (n.type === 'entity' || n.type === 'concept' || n.type === 'memory' || n.type === 'relationship')
+          ? n.type as GraphNode['type']
+          : 'memory',
+        x: 400 + Math.cos(angle) * radius,
+        y: 250 + Math.sin(angle) * radius,
+        activation: n.activation,
+        connections: n.connections?.length ?? 0,
+      };
+    });
+
+    const apiEdges: GraphEdge[] = graphData.edges.map((e: ApiMemoryEdge) => ({
+      source: e.source,
+      target: e.target,
+      type: e.type as GraphEdge['type'],
+      weight: e.weight,
+    }));
+
+    return { nodes: apiNodes, edges: apiEdges };
+  }, [graphData, dataSource]);
+
+  // Filter by search query
+  const filteredNodes = useMemo(() => {
+    if (!searchQuery) return nodes;
+    const query = searchQuery.toLowerCase();
+    const matched = nodes.filter(
+      (n) => n.label.toLowerCase().includes(query) || n.type.includes(query)
+    );
+    const nodeIds = new Set(matched.map((n) => n.id));
+    edges.forEach((e) => {
+      if (nodeIds.has(e.source) || nodeIds.has(e.target)) {
+        nodeIds.add(e.source);
+        nodeIds.add(e.target);
+      }
+    });
+    return nodes.filter((n) => nodeIds.has(n.id));
+  }, [nodes, edges, searchQuery]);
+
+  const filteredEdges = useMemo(() => {
+    const nodeIds = new Set(filteredNodes.map((n) => n.id));
+    return edges.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target));
+  }, [edges, filteredNodes]);
 
   // Draw the graph
   useEffect(() => {
@@ -132,9 +164,9 @@ export function MemoryGraph({
       ctx.translate(-rect.width / 2, -rect.height / 2);
 
       // Draw edges
-      edges.forEach((edge) => {
-        const source = nodes.find((n) => n.id === edge.source);
-        const target = nodes.find((n) => n.id === edge.target);
+      filteredEdges.forEach((edge) => {
+        const source = filteredNodes.find((n) => n.id === edge.source);
+        const target = filteredNodes.find((n) => n.id === edge.target);
         if (!source || !target) return;
 
         ctx.beginPath();
@@ -148,7 +180,7 @@ export function MemoryGraph({
       });
 
       // Draw nodes
-      nodes.forEach((node) => {
+      filteredNodes.forEach((node) => {
         const isSelected = node.id === selectedNodeId;
         const isHovered = node.id === hoveredNode;
         const nodeRadius = 8 + node.connections * 2;
@@ -212,7 +244,7 @@ export function MemoryGraph({
     };
 
     draw();
-  }, [nodes, edges, transform, selectedNodeId, hoveredNode, highlightedNodeIds]);
+  }, [filteredNodes, filteredEdges, transform, selectedNodeId, hoveredNode, highlightedNodeIds]);
 
   // Handle mouse events
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -230,7 +262,7 @@ export function MemoryGraph({
 
     // Check for hover
     let foundHover = false;
-    for (const node of nodes) {
+    for (const node of filteredNodes) {
       const nodeRadius = 8 + node.connections * 2;
       const dist = Math.sqrt(Math.pow(x - node.x, 2) + Math.pow(y - node.y, 2));
       if (dist < nodeRadius + 5) {
@@ -249,7 +281,7 @@ export function MemoryGraph({
         y: e.clientY - dragStart.y,
       }));
     }
-  }, [isDragging, dragStart, transform, nodes]);
+  }, [isDragging, dragStart, transform, filteredNodes]);
 
   const handleMouseUp = () => {
     setIsDragging(false);
@@ -280,7 +312,10 @@ export function MemoryGraph({
         <div>
           <h3 className="text-lg font-semibold text-fg-primary">Knowledge Graph</h3>
           <p className="text-sm text-fg-tertiary">
-            {nodes.length} nodes, {edges.length} connections
+            {filteredNodes.length} nodes, {filteredEdges.length} connections
+            {dataSource !== 'live' && dataSource !== 'empty' && (
+              <span className="ml-2 text-xs text-cosmic-aurora">({dataSource})</span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -343,7 +378,7 @@ export function MemoryGraph({
         {hoveredNode && (
           <div className="absolute top-4 right-4 bg-bg-primary/90 backdrop-blur-sm border border-border-primary rounded-lg p-3">
             <p className="text-sm font-medium text-fg-primary">
-              {nodes.find((n) => n.id === hoveredNode)?.label}
+              {filteredNodes.find((n) => n.id === hoveredNode)?.label}
             </p>
             <p className="text-xs text-fg-tertiary mt-1">
               Click to view details

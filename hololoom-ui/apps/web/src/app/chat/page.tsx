@@ -10,6 +10,8 @@ import {
   ReasoningModeSelector,
   ConfidenceIndicator,
 } from '../../components/chat';
+import { usePromptlyChat } from '@hololoom/api-client';
+import type { ReasoningMode as ApiReasoningMode } from '@hololoom/api-client';
 
 export type ReasoningMode = 'direct' | 'verify' | 'research' | 'plan_execute';
 
@@ -32,23 +34,44 @@ export interface Message {
   verified?: boolean;
   steps?: string[];
   isStreaming?: boolean;
+  model?: string;
+  refined?: boolean;
 }
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
+  const {
+    messages: promptlyMessages,
+    sendMessage: promptlySend,
+    isLoading,
+    error,
+    clearConversation,
+  } = usePromptlyChat();
+
+  const [inputValue, setInputValue] = useState('');
+  const [reasoningMode, setReasoningMode] = useState<ReasoningMode>('direct');
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [showSourcePanel, setShowSourcePanel] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Adapt promptly messages to this page's Message type
+  const messages: Message[] = [
     {
       id: 'welcome',
       role: 'system',
       content: 'Welcome to HoloLoom. I\'m ready to help you explore and reason over your knowledge base. What would you like to know?',
       timestamp: Date.now(),
     },
-  ]);
-  const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [reasoningMode, setReasoningMode] = useState<ReasoningMode>('direct');
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [showSourcePanel, setShowSourcePanel] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+    ...promptlyMessages.map((m) => ({
+      id: m.id,
+      role: m.role as Message['role'],
+      content: m.content,
+      timestamp: m.timestamp.getTime(),
+      confidence: m.metadata?.confidence,
+      model: m.metadata?.model,
+      refined: m.metadata?.refined,
+      reasoningMode: reasoningMode,
+    })),
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -56,120 +79,17 @@ export default function ChatPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [promptlyMessages]);
 
   const handleSend = async () => {
     if (!inputValue.trim() || isLoading) return;
-
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: inputValue,
-      timestamp: Date.now(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    const text = inputValue.trim();
     setInputValue('');
-    setIsLoading(true);
-
-    // Simulate streaming response
-    const assistantMessageId = `assistant-${Date.now()}`;
-    const streamingMessage: Message = {
-      id: assistantMessageId,
-      role: 'assistant',
-      content: '',
-      timestamp: Date.now(),
-      reasoningMode,
-      isStreaming: true,
-    };
-
-    setMessages((prev) => [...prev, streamingMessage]);
-
-    // Simulate response based on reasoning mode
-    await simulateResponse(assistantMessageId, inputValue, reasoningMode);
-    setIsLoading(false);
-  };
-
-  const simulateResponse = async (
-    messageId: string,
-    query: string,
-    mode: ReasoningMode
-  ) => {
-    const mockResponses: Record<ReasoningMode, { content: string; confidence: number; sources: Source[]; steps?: string[]; verified?: boolean }> = {
-      direct: {
-        content: `Based on my knowledge, here's what I found about "${query}":\n\nThompson Sampling is a Bayesian approach to the multi-armed bandit problem that balances exploration and exploitation by sampling from posterior distributions of expected rewards.\n\nIt maintains Beta(α, β) priors for each option and updates them based on observed outcomes.`,
-        confidence: 0.89,
-        sources: generateMockSources(3),
-      },
-      verify: {
-        content: `I've verified this response through multiple sources:\n\n**Claim Analysis:**\n1. ✓ Thompson Sampling uses Bayesian priors - Verified in 3 sources\n2. ✓ Balances exploration/exploitation - Confirmed by algorithm definition\n3. ✓ Updates based on outcomes - Core mechanism validated\n\n**Answer:**\nThompson Sampling is a well-established algorithm for online decision making under uncertainty.`,
-        confidence: 0.95,
-        sources: generateMockSources(5),
-        verified: true,
-      },
-      research: {
-        content: `**Research Summary: "${query}"**\n\n**Key Findings:**\n1. Thompson Sampling was first described by William Thompson in 1933\n2. It's optimal in the sense of minimizing Bayesian regret\n3. Modern applications include A/B testing, recommendation systems, and RL\n\n**Related Topics:**\n- Multi-armed bandits\n- Bayesian optimization\n- Exploration strategies\n\n**Open Questions:**\n- Computational scaling for large action spaces\n- Non-stationary reward distributions`,
-        confidence: 0.87,
-        sources: generateMockSources(8),
-        steps: [
-          'Analyzed query for key concepts',
-          'Retrieved 8 relevant memory nodes',
-          'Explored 3 knowledge graph paths',
-          'Synthesized findings from multiple sources',
-        ],
-      },
-      plan_execute: {
-        content: `**Execution Plan for: "${query}"**\n\n**Step 1: Define Scope** ✓\nIdentified key concepts: Thompson Sampling, Bayesian methods, bandits\n\n**Step 2: Gather Information** ✓\nRetrieved 6 relevant memories and 4 graph nodes\n\n**Step 3: Analyze Relationships** ✓\nMapped connections between concepts\n\n**Step 4: Generate Response** ✓\nSynthesized comprehensive answer\n\n**Result:**\nThompson Sampling is a probability-matching strategy that has become a gold standard for online learning problems.`,
-        confidence: 0.92,
-        sources: generateMockSources(6),
-        steps: [
-          'Define Scope',
-          'Gather Information',
-          'Analyze Relationships',
-          'Generate Response',
-        ],
-      },
-    };
-
-    const response = mockResponses[mode];
-    const words = response.content.split(' ');
-
-    // Simulate streaming
-    for (let i = 0; i <= words.length; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 30));
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? {
-                ...msg,
-                content: words.slice(0, i).join(' '),
-                isStreaming: i < words.length,
-              }
-            : msg
-        )
-      );
-    }
-
-    // Final update with metadata
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId
-          ? {
-              ...msg,
-              content: response.content,
-              confidence: response.confidence,
-              sources: response.sources,
-              steps: response.steps,
-              verified: response.verified,
-              isStreaming: false,
-            }
-          : msg
-      )
-    );
+    await promptlySend(text, reasoningMode as ApiReasoningMode);
   };
 
   const handleMessageClick = (message: Message) => {
-    if (message.role === 'assistant' && message.sources) {
+    if (message.role === 'assistant') {
       setSelectedMessage(message);
       setShowSourcePanel(true);
     }
@@ -260,27 +180,3 @@ function formatModeName(mode: ReasoningMode): string {
   return names[mode];
 }
 
-function generateMockSources(count: number): Source[] {
-  const types: Source['type'][] = ['memory', 'knowledge_graph', 'cache'];
-  const contents = [
-    'Thompson Sampling is a heuristic for choosing actions that addresses the exploration-exploitation dilemma.',
-    'The algorithm maintains a probability distribution over the expected reward of each action.',
-    'Beta distributions are commonly used as priors for Bernoulli bandits.',
-    'Thompson Sampling achieves logarithmic regret bounds in many settings.',
-    'The approach naturally balances exploration and exploitation through random sampling.',
-    'Modern implementations use various optimizations for computational efficiency.',
-    'Applications include clinical trials, A/B testing, and recommendation systems.',
-    'The algorithm was first proposed by William R. Thompson in 1933.',
-  ];
-
-  return Array.from({ length: count }, (_, i) => ({
-    id: `source-${i}`,
-    content: contents[i % contents.length],
-    relevance: 0.95 - i * 0.08,
-    type: types[i % types.length],
-    metadata: {
-      timestamp: Date.now() - i * 86400000,
-      accessCount: Math.floor(Math.random() * 50) + 1,
-    },
-  }));
-}

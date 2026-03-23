@@ -51,6 +51,8 @@ export {
   useStats,
   useProgressSubscription,
   useConversation,
+  useDataSource,
+  usePromptlyChat,
   type HoloLoomProviderProps,
 } from './hooks';
 
@@ -99,6 +101,26 @@ export type {
   WSMessageType,
   WSMessage,
   ProgressEvent,
+
+  // DataSource protocol
+  DataSourceTier,
+  DataSourceResult,
+  DataSourceOptions,
+
+  // Promptly chat types
+  PromptlyChatRequest,
+  PromptlyChatResponse,
+  RoutingInfo,
+  RefinementInfo,
+  MemoryContext,
+
+  // Jenny types
+  PanelType,
+  LifecycleStage,
+  BindingMode,
+  JennyAction,
+  JennySpecDTO,
+  StreamUpdateDTO,
 
   // Config types
   HoloLoomClientConfig,

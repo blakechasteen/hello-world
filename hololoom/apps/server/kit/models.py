@@ -46,7 +46,7 @@ class MemoryContext(BaseModel):
     """Structured memory recall metadata."""
     hits: list[MemoryHit] = Field(default_factory=list)
     recall_ms: float | None = None
-    backend: str = "none"  # "hololoom_lite" | "none" | "degraded"
+    backend: str = "none"  # "awareness_graph" | "hololoom_lite" | "none" | "degraded"
 
 
 class ChatResponse(BaseModel):
