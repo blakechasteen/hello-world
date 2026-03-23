@@ -43,3 +43,8 @@ class HookEvent(Enum):
     # Temporal
     TEMPORAL_DAILY = auto()
     TEMPORAL_WEEKLY = auto()
+
+    # Closure & Stability
+    RITUAL_STUCK_DETECTED = auto()
+    CLOSURE_GATED = auto()
+    CLOSURE_SATISFIED = auto()

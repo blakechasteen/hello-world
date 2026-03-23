@@ -1,0 +1,13 @@
+- id: farm_weather_check
+  domain: farming
+  text: "Check weather forecast before any outdoor planning recommendation."
+  keywords: [plant, harvest, spray, irrigate, schedule]
+  recall: [weather, forecast]
+  weight: 0.9
+
+- id: farm_soil_context
+  domain: farming
+  text: "Soil conditions and amendments should inform planting decisions."
+  keywords: [plant, seed, fertilize, amend]
+  recall: [soil, ph, nutrients]
+  weight: 0.7

@@ -1,0 +1,14 @@
+- id: bee_spring_inspection
+  domain: beekeeping
+  text: "During spring inspections, check for queen presence, brood pattern, and stores."
+  keywords: [inspect, spring, hive, check, colony]
+  recall: [spring_dynamics, hive_inspection]
+  weight: 1.0
+
+- id: bee_seasonal_context
+  domain: beekeeping
+  text: "Beekeeping advice must account for current season and local climate."
+  keywords: [advice, recommend, should, plan]
+  recall: [season, weather]
+  weight: 0.7
+  confidence_below: 0.6

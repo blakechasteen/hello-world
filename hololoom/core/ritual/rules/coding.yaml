@@ -1,0 +1,30 @@
+- id: coding_test_after_change
+  domain: coding
+  text: "Run tests after any code modification. Never skip."
+  keywords: [code, refactor, fix, implement, feature, modify]
+  recall: [test, pytest]
+  exclude: [chat, question, explain]
+  weight: 1.0
+
+- id: coding_no_mock_db
+  domain: coding
+  text: "Integration tests hit real databases, not mocks."
+  keywords: [test, integration, database]
+  exclude: [unit]
+  weight: 0.8
+  confidence_below: 0.7
+
+- id: coding_protocol_first
+  domain: coding
+  text: "Define the protocol before the implementation. Can I swap this without touching the caller?"
+  keywords: [new, create, add, interface, protocol]
+  recall: [protocol, interface]
+  weight: 0.9
+
+- id: coding_no_force_push
+  domain: coding
+  text: "Never force push. Prefer rebase or new commits."
+  keywords: [git, push, deploy]
+  exclude: []
+  always_on: true
+  weight: 10.0

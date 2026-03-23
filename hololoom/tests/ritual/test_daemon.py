@@ -119,14 +119,26 @@ class TestHoloLoomDaemon:
         await daemon.stop()
 
     @pytest.mark.asyncio
-    async def test_handle_query_stub(self):
+    async def test_handle_query(self):
         daemon = HoloLoomDaemon()
         await daemon.start()
 
         req = DaemonRequest(type="query", payload={"text": "hello"})
         resp = await daemon.handle_request(req)
         assert resp.type == "result"
-        assert "not yet wired" in resp.payload.get("message", "")
+        # Response has either a real response or a "no backend" message
+        assert "response" in resp.payload or "error" in resp.payload
+
+        await daemon.stop()
+
+    @pytest.mark.asyncio
+    async def test_handle_query_missing_text(self):
+        daemon = HoloLoomDaemon()
+        await daemon.start()
+
+        req = DaemonRequest(type="query", payload={})
+        resp = await daemon.handle_request(req)
+        assert resp.type == "error"
 
         await daemon.stop()
 

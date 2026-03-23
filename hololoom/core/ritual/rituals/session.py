@@ -49,6 +49,7 @@ DAWN_PRIME = Ritual(
     failure_policy=FailurePolicy.LOG_AND_CONTINUE,
     budget=RitualBudget(max_tokens=500, max_seconds=15.0, priority_class="standard"),
     body=_dawn_prime_body,
+    closure_required_by="dusk_consolidate",
 )
 
 DAWN_PRIME_BINDING_CONFIG = {

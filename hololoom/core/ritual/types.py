@@ -9,7 +9,7 @@ RitualOutcome — the learning signal, written to Yarn and Warp
 """
 
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any
@@ -79,6 +79,10 @@ class RitualContext:
     time_budget: float
     escalation_path: list[str]
     session_id: str
+    # v2 fields — ThreadPrimer, PatternCard, BindingObligation
+    priming_context: dict[str, Any] = field(default_factory=dict)
+    active_rules: list[Any] = field(default_factory=list)  # list[ActiveRule]
+    closure_gate: Any = None  # ClosureGate
 
 
 @dataclass
@@ -99,6 +103,7 @@ class Ritual:
     body: Callable[["RitualContext"], Awaitable["RitualResult"]]
     skip_condition: Callable[["RitualContext"], bool] | None = None
     compensation_ritual_id: str | None = None
+    closure_required_by: str | None = None  # ritual_id that must run after this
 
 
 @dataclass

@@ -1,0 +1,18 @@
+- id: universal_graceful_degradation
+  domain: universal
+  text: "Every dependency is optional. Every backend has a fallback. Never crash because something is missing."
+  always_on: true
+  weight: 2.0
+
+- id: universal_metaphor_consistency
+  domain: universal
+  text: "Use the project's metaphor consistently. The metaphor IS the architecture."
+  always_on: true
+  weight: 1.5
+
+- id: universal_low_confidence_caution
+  domain: universal
+  text: "When confidence is low, prefer simpler approaches and verify assumptions explicitly."
+  keywords: []
+  confidence_below: 0.5
+  weight: 1.0

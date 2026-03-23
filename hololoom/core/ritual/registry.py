@@ -59,11 +59,19 @@ class RitualRegistry:
         self,
         journal: Any = None,
         deferred_queue: Callable[[HookBinding, RitualContext], None] | None = None,
+        snapshot_builder: Any = None,   # SnapshotBuilder (ThreadPrimer)
+        stuck_detector: Any = None,     # StuckDetector (SnagWatcher)
+        closure_gate: Any = None,       # ClosureGate (BindingObligation)
+        rule_engine: Any = None,        # RuleEngine (PatternCard)
     ) -> None:
         self._bindings: dict[HookEvent, list[HookBinding]] = defaultdict(list)
         self._rituals: dict[str, Ritual] = {}
-        self._journal = journal  # RitualJournal | None
+        self._journal = journal
         self._deferred_queue = deferred_queue
+        self._snapshot_builder = snapshot_builder
+        self._stuck_detector = stuck_detector
+        self._closure_gate = closure_gate
+        self._rule_engine = rule_engine
 
     def register(self, binding: HookBinding) -> None:
         """Register a hook binding. Sorts by priority within each event bucket."""
@@ -139,10 +147,30 @@ class RitualRegistry:
         deferred = [b for b in bindings if b.priority == Priority.DEFERRED]
 
         for binding in blocking:
+            # BindingObligation: gate BLOCKING dispatches while closures pending
+            if self._closure_gate is not None and self._closure_gate.is_gated(binding.ritual.id):
+                self._journal_record(binding.ritual, ctx, "CLOSURE_GATED")
+                continue
+
             result = await self._dispatch_one(binding, ctx)
             if result is not None:
                 results[binding.ritual.id] = result
                 ctx.ritual_outputs.update(result.produced)
+
+                # Open closure requirement if ritual declares one
+                if binding.ritual.closure_required_by and self._closure_gate is not None:
+                    from .closure import OpenBinding
+                    self._closure_gate.open(OpenBinding(
+                        opener_ritual_id=binding.ritual.id,
+                        closer_ritual_id=binding.ritual.closure_required_by,
+                        opened_at=datetime.now(timezone.utc).isoformat(),
+                        session_id=ctx.session_id,
+                    ))
+
+                # Close closure requirement if this ritual is a closer
+                if self._closure_gate is not None:
+                    if self._closure_gate.close(binding.ritual.id):
+                        self._journal_record(binding.ritual, ctx, "CLOSURE_SATISFIED")
 
         if parallel:
             parallel_results = await asyncio.gather(
@@ -162,6 +190,15 @@ class RitualRegistry:
 
         for binding in deferred:
             self._schedule_deferred(binding, ctx)
+
+        # SnagWatcher: post-dispatch stuck detection (session-level)
+        if self._stuck_detector is not None and self._journal is not None:
+            try:
+                detection = self._stuck_detector.check(self._journal, ctx)
+                if detection is not None:
+                    self._journal_record_detection(detection, ctx)
+            except Exception as e:
+                logger.debug("Stuck detection failed (non-blocking): %s", e)
 
         return results
 
@@ -221,6 +258,37 @@ class RitualRegistry:
             )
 
         self._journal_record(ritual, ctx, "ADMISSION_PASS")
+
+        # PatternCard: JIT rule activation
+        if self._rule_engine is not None:
+            try:
+                ruleset = self._rule_engine.activate(ctx)
+                ctx.active_rules = ruleset.rules
+            except Exception as e:
+                logger.debug("Rule activation failed (non-blocking): %s", e)
+
+        # ThreadPrimer: pre-inlined context snapshot
+        if self._snapshot_builder is not None:
+            try:
+                snapshot = self._snapshot_builder.build(
+                    ctx,
+                    active_rules=ctx.active_rules,
+                    budget_tokens=200,
+                )
+                ctx.priming_context = {
+                    "recent_outcomes": snapshot.recent_outcomes,
+                    "session_history": snapshot.session_history,
+                    "skill_hint": snapshot.skill_hint,
+                    "domain_priors": snapshot.domain_priors,
+                }
+                self._journal_record(ritual, ctx, "SNAPSHOT_BUILT", {
+                    "token_cost": snapshot.token_cost,
+                    "rules_active": len(ctx.active_rules),
+                    "sources": len(snapshot.session_history),
+                })
+            except Exception as e:
+                self._journal_record(ritual, ctx, "SNAPSHOT_FAILED", {"error": str(e)})
+                logger.debug("Snapshot build failed (non-blocking): %s", e)
 
         # Execute with timeout
         self._journal_record(ritual, ctx, "BODY_START")
@@ -407,6 +475,31 @@ class RitualRegistry:
             )
         except Exception as e:
             logger.debug("Journal record failed (non-blocking): %s", e)
+
+    def _journal_record_detection(
+        self,
+        detection: Any,  # StuckDetection
+        ctx: RitualContext,
+    ) -> None:
+        """Record a stuck detection event."""
+        if self._journal is None:
+            return
+        try:
+            self._journal.record(
+                ritual_id="__snag_watcher__",
+                ritual_version="1.0.0",
+                session_id=ctx.session_id,
+                correlation_id=None,
+                event_type="STUCK_DETECTED",
+                payload={
+                    "signal": detection.signal.value,
+                    "severity": detection.severity,
+                    "recommendation": detection.recommendation,
+                    "details": detection.details,
+                },
+            )
+        except Exception as e:
+            logger.debug("Stuck detection journal failed: %s", e)
 
 
 def _failed_outcome(
