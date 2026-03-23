@@ -29,6 +29,7 @@ def emit(
     """
     _write_to_memory_bus(agent_name, query, response, room_id)
     _emit_to_bus(agent_name, query, response, room_id, tokens, duration_ms, extra_payload)
+    _propose_to_vault(agent_name, query, response)
 
 
 def _write_to_memory_bus(
@@ -89,3 +90,35 @@ def _emit_to_bus(
         asyncio.ensure_future(bus.emit(signal))
     except Exception:
         pass  # Bus failure never crashes an agent
+
+
+# --------------------------------------------------------------------------- #
+# Vault federation — propose substantive responses to PARA inbox
+# --------------------------------------------------------------------------- #
+
+# Minimum response length to consider proposing (short replies aren't notes)
+_VAULT_MIN_LENGTH = 200
+
+# Skip proposals for generic/trivial queries
+_TRIVIAL_PREFIXES = ("hi", "hello", "hey", "thanks", "ok", "sure", "yes", "no")
+
+
+def _propose_to_vault(agent_name: str, query: str, response: str) -> None:
+    """Fire-and-forget vault proposal. Never throws, never blocks."""
+    try:
+        if len(response) < _VAULT_MIN_LENGTH:
+            return
+        if query.strip().lower().rstrip("!., ") in _TRIVIAL_PREFIXES:
+            return
+
+        from hololoom.apps.server import vault_bridge
+
+        title = f"{agent_name.title()}: {query[:60].strip()}"
+        vault_bridge.propose_note(
+            title=title,
+            content=response,
+            agent=agent_name,
+        )
+        logger.debug("Vault proposal from %s: %s", agent_name, title)
+    except Exception:
+        pass  # Vault unavailable — agent works fine without it
