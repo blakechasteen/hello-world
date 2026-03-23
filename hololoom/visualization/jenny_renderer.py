@@ -537,9 +537,231 @@ class HTMLRenderer(JennyRendererBase):
     <div class="jenny-metric__label">{html.escape(label)}</div>
 </div>'''
 
+        elif spec.panel_type == PanelTypeJenny.PROMOTION:
+            return self._render_promotion(content)
+
+        elif spec.panel_type == PanelTypeJenny.DEPARTMENT:
+            return self._render_department(content)
+
+        elif spec.panel_type == PanelTypeJenny.CROSS_DEPT:
+            return self._render_cross_dept(content)
+
+        elif spec.panel_type == PanelTypeJenny.FEEDBACK_STATE:
+            return self._render_feedback_state(content)
+
         else:
             # Fallback: JSON dump
             return f'<pre class="jenny-raw">{html.escape(json.dumps(content, indent=2, default=str))}</pre>'
+
+    # ====================================================================
+    # Visualization Primitive Renderers (Five Primitives Grammar)
+    # ====================================================================
+
+    def _render_promotion(self, content: dict) -> str:
+        """Render promotion flow — Trajectory + Distribution."""
+        trajectory = content.get("trajectory", {})
+        distribution = content.get("distribution", {})
+        stages = trajectory.get("stages", [])
+        flow = trajectory.get("flow", {})
+        rubric_weights = distribution.get("rubric_weights", {})
+
+        # Trajectory: Sankey-style flow stages
+        stage_bars = []
+        max_count = max((s.get("count", 0) for s in stages), default=1) or 1
+        for stage in stages:
+            count = stage.get("count", 0)
+            pct = int(count / max_count * 100) if max_count > 0 else 0
+            name = html.escape(stage.get("name", ""))
+            stage_bars.append(
+                f'<div class="jenny-prom__stage">'
+                f'<span class="jenny-prom__label">{name}</span>'
+                f'<div class="jenny-prom__bar" style="width:{pct}%"></div>'
+                f'<span class="jenny-prom__count">{count}</span>'
+                f'</div>'
+            )
+
+        # Distribution: rubric weight bars
+        weight_bars = []
+        total_weight = sum(rubric_weights.values()) or 1
+        for term, weight in rubric_weights.items():
+            pct = int(weight / total_weight * 100)
+            weight_bars.append(
+                f'<div class="jenny-prom__weight">'
+                f'<span class="jenny-prom__term">{html.escape(term)}</span>'
+                f'<div class="jenny-prom__wbar" style="width:{pct}%"></div>'
+                f'<span class="jenny-prom__wpct">{weight}</span>'
+                f'</div>'
+            )
+
+        total = flow.get("total_processed", 0)
+
+        return f'''<div class="jenny-promotion" data-feedback-subject="{html.escape(content.get('department', ''))}" data-feedback-dimension="promotion_interest">
+    <div class="jenny-prom__trajectory">
+        <h4>Promotion Pipeline</h4>
+        {''.join(stage_bars)}
+        <div class="jenny-prom__total">{total} total processed</div>
+    </div>
+    <div class="jenny-prom__distribution">
+        <h4>Rubric Weights</h4>
+        {''.join(weight_bars)}
+    </div>
+</div>'''
+
+    def _render_department(self, content: dict) -> str:
+        """Render department state — Topology + Distribution + Tension."""
+        topology = content.get("topology", {})
+        distribution = content.get("distribution", {})
+        tension = content.get("tension", {})
+        dept = content.get("department", "")
+
+        # Topology: community summary
+        n_comm = topology.get("n_communities", 0)
+        connectivity = topology.get("algebraic_connectivity", 0)
+        inter = topology.get("inter_links", 0)
+        intra = topology.get("intra_links", 0)
+
+        # Distribution: bandit means
+        bandit_means = distribution.get("bandit_means", {})
+        mean_bars = []
+        for term, mean in bandit_means.items():
+            pct = int(mean * 100)
+            color = "var(--jenny-success)" if mean >= 0.6 else "var(--jenny-warning)" if mean >= 0.4 else "var(--jenny-error)"
+            mean_bars.append(
+                f'<div class="jenny-dept__mean">'
+                f'<span class="jenny-dept__term">{html.escape(term)}</span>'
+                f'<div class="jenny-dept__mbar" style="width:{pct}%;background:{color}"></div>'
+                f'<span class="jenny-dept__mpct">{mean:.2f}</span>'
+                f'</div>'
+            )
+
+        # Tension: drift gauge
+        drift = tension.get("drift")
+        phase = tension.get("phase", "unknown")
+        drift_html = ""
+        if drift is not None:
+            drift_val = drift if isinstance(drift, (int, float)) else 0
+            drift_pct = min(int(drift_val * 100), 100)
+            drift_color = "var(--jenny-success)" if drift_val < 0.3 else "var(--jenny-warning)" if drift_val < 0.6 else "var(--jenny-error)"
+            drift_html = f'''<div class="jenny-dept__drift">
+    <span>KL Drift</span>
+    <div class="jenny-dept__gauge" style="width:{drift_pct}%;background:{drift_color}"></div>
+    <span>{drift_val:.3f}</span>
+</div>'''
+
+        return f'''<div class="jenny-department" data-feedback-subject="{html.escape(dept)}" data-feedback-dimension="dept_interest">
+    <div class="jenny-dept__topology">
+        <h4>Belief Communities</h4>
+        <div class="jenny-dept__stats">
+            <span>{n_comm} communities</span>
+            <span>connectivity: {connectivity:.3f}</span>
+            <span>{inter} cross / {intra} intra</span>
+        </div>
+    </div>
+    <div class="jenny-dept__distribution">
+        <h4>Bandit Learning</h4>
+        {''.join(mean_bars)}
+    </div>
+    <div class="jenny-dept__tension">
+        <h4>Phase: {html.escape(phase)}</h4>
+        {drift_html}
+    </div>
+</div>'''
+
+    def _render_cross_dept(self, content: dict) -> str:
+        """Render cross-department relationships — Topology + Tension."""
+        topology = content.get("topology", {})
+        tension = content.get("tension", {})
+        departments = topology.get("departments", [])
+        comparisons = topology.get("comparisons", [])
+
+        # Comparison table
+        rows = []
+        for comp in comparisons[:10]:
+            dept_a = html.escape(comp.get("dept_a", ""))
+            dept_b = html.escape(comp.get("dept_b", ""))
+            dist = comp.get("distance", 0)
+            rel = html.escape(comp.get("relationship", "unknown"))
+            bridges = ", ".join(comp.get("bridges", [])[:3])
+
+            dist_color = "var(--jenny-success)" if dist < 0.3 else "var(--jenny-warning)" if dist < 0.6 else "var(--jenny-error)"
+            rows.append(
+                f'<tr>'
+                f'<td>{dept_a}</td><td>{dept_b}</td>'
+                f'<td style="color:{dist_color}">{dist:.3f}</td>'
+                f'<td>{rel}</td>'
+                f'<td>{html.escape(bridges)}</td>'
+                f'</tr>'
+            )
+
+        most_connected = html.escape(tension.get("most_connected", "none"))
+        most_isolated = html.escape(tension.get("most_isolated", "none"))
+
+        return f'''<div class="jenny-crossdept" data-feedback-subject="cross_department" data-feedback-dimension="synthesis_interest">
+    <div class="jenny-crossdept__topology">
+        <h4>{len(departments)} Departments, {len(comparisons)} Comparisons</h4>
+        <table class="jenny-table">
+            <thead><tr><th>A</th><th>B</th><th>Distance</th><th>Relationship</th><th>Bridges</th></tr></thead>
+            <tbody>{''.join(rows)}</tbody>
+        </table>
+    </div>
+    <div class="jenny-crossdept__tension">
+        <div class="jenny-crossdept__pole">
+            <span class="jenny-crossdept__label">Most Connected</span>
+            <span class="jenny-crossdept__value">{most_connected}</span>
+        </div>
+        <div class="jenny-crossdept__pole">
+            <span class="jenny-crossdept__label">Most Isolated</span>
+            <span class="jenny-crossdept__value">{most_isolated}</span>
+        </div>
+    </div>
+</div>'''
+
+    def _render_feedback_state(self, content: dict) -> str:
+        """Render learning state — Trajectory + Distribution."""
+        trajectory = content.get("trajectory", {})
+        distribution = content.get("distribution", {})
+        temporal = content.get("temporal_layers", {})
+
+        n_arms = trajectory.get("n_loom_arms", 0)
+
+        # Temporal layers as stacked visualization
+        layer_bars = []
+        for layer, weight in temporal.items():
+            pct = int(float(weight) * 100)
+            layer_bars.append(
+                f'<div class="jenny-fb__layer">'
+                f'<span class="jenny-fb__lname">{html.escape(str(layer))}</span>'
+                f'<div class="jenny-fb__lbar" style="width:{pct}%"></div>'
+                f'<span class="jenny-fb__lwt">{weight}</span>'
+                f'</div>'
+            )
+
+        # Bandit arms summary per department
+        bandit_arms = distribution.get("bandit_arms", {})
+        dept_summaries = []
+        for dept, stats in bandit_arms.items():
+            n_terms = len(stats) if isinstance(stats, dict) else 0
+            dept_summaries.append(
+                f'<div class="jenny-fb__dept">'
+                f'<span>{html.escape(dept)}</span>'
+                f'<span>{n_terms} arms</span>'
+                f'</div>'
+            )
+
+        return f'''<div class="jenny-feedback" data-feedback-subject="learning_state" data-feedback-dimension="meta_interest">
+    <div class="jenny-fb__trajectory">
+        <h4>Active Learning</h4>
+        <div class="jenny-fb__metric">{n_arms} loom arms</div>
+    </div>
+    <div class="jenny-fb__temporal">
+        <h4>Temporal Layers</h4>
+        {''.join(layer_bars)}
+    </div>
+    <div class="jenny-fb__bandits">
+        <h4>Department Bandits</h4>
+        {''.join(dept_summaries)}
+    </div>
+</div>'''
 
     def _render_actions(self, spec: JennySpec) -> str:
         """Render action buttons."""
@@ -786,6 +1008,69 @@ class HTMLRenderer(JennyRendererBase):
     color: var(--jenny-text-muted);
     font-size: 0.9rem;
 }
+
+/* ===== Visualization Primitive Styles ===== */
+
+/* Shared bar pattern */
+.jenny-prom__bar, .jenny-prom__wbar,
+.jenny-dept__mbar, .jenny-dept__gauge,
+.jenny-fb__lbar {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--jenny-accent);
+    transition: width var(--jenny-transition);
+    min-width: 2px;
+}
+
+/* Promotion panel */
+.jenny-promotion { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.jenny-prom__stage, .jenny-prom__weight {
+    display: grid; grid-template-columns: 100px 1fr 40px; align-items: center; gap: 8px; margin: 4px 0;
+}
+.jenny-prom__label, .jenny-prom__term { font-size: 0.85rem; color: var(--jenny-text-muted); }
+.jenny-prom__count, .jenny-prom__wpct { font-size: 0.85rem; text-align: right; }
+.jenny-prom__total { margin-top: 8px; font-size: 0.85rem; color: var(--jenny-text-muted); }
+.jenny-prom__wbar { background: var(--jenny-warning); }
+
+/* Department panel */
+.jenny-department { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.jenny-dept__stats { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; color: var(--jenny-text-muted); }
+.jenny-dept__mean {
+    display: grid; grid-template-columns: 100px 1fr 50px; align-items: center; gap: 8px; margin: 4px 0;
+}
+.jenny-dept__term { font-size: 0.85rem; color: var(--jenny-text-muted); }
+.jenny-dept__mpct { font-size: 0.85rem; text-align: right; }
+.jenny-dept__drift {
+    display: grid; grid-template-columns: 60px 1fr 50px; align-items: center; gap: 8px; margin: 8px 0;
+}
+.jenny-dept__gauge { height: 12px; border-radius: 6px; }
+
+/* Cross-department panel */
+.jenny-crossdept { display: grid; gap: 16px; }
+.jenny-crossdept__tension { display: flex; gap: 24px; justify-content: center; }
+.jenny-crossdept__pole { text-align: center; }
+.jenny-crossdept__label { display: block; font-size: 0.8rem; color: var(--jenny-text-muted); }
+.jenny-crossdept__value { display: block; font-size: 1.2rem; font-weight: 600; color: var(--jenny-accent); }
+
+/* Feedback state panel */
+.jenny-feedback { display: grid; grid-template-columns: auto 1fr 1fr; gap: 16px; }
+.jenny-fb__metric { font-size: 1.8rem; font-weight: bold; color: var(--jenny-accent); }
+.jenny-fb__layer, .jenny-fb__dept {
+    display: grid; grid-template-columns: 100px 1fr 40px; align-items: center; gap: 8px; margin: 4px 0;
+}
+.jenny-fb__lname { font-size: 0.85rem; color: var(--jenny-text-muted); }
+.jenny-fb__lwt { font-size: 0.85rem; text-align: right; }
+
+/* All viz primitives: section headings */
+.jenny-promotion h4, .jenny-department h4, .jenny-crossdept h4, .jenny-feedback h4 {
+    margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 600; color: var(--jenny-text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* Responsive: stack on narrow screens */
+@media (max-width: 768px) {
+    .jenny-promotion, .jenny-department, .jenny-feedback { grid-template-columns: 1fr; }
+}
 </style>'''
 
     def _get_scripts(self) -> str:
@@ -807,6 +1092,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 detail: { handler, specId, actionId, button: btn }
             }));
         });
+    });
+
+    // ================================================================
+    // Feedback Signal Emission
+    // Interaction IS the feedback loop. Every action emits a signal.
+    // ================================================================
+    const TIMESCALE_WEIGHTS = {
+        SUB_SECOND: 0.05, SECONDS: 0.15, MINUTES: 0.30,
+        HOURS: 0.60, DAYS: 0.85, WEEKS: 1.00
+    };
+
+    function emitFeedback(subject, dimension, timescale, value) {
+        const signal = {
+            subject, dimension, timescale, value,
+            weight: TIMESCALE_WEIGHTS[timescale] || 0.15,
+            timestamp: new Date().toISOString()
+        };
+        console.log('[Jenny Feedback]', signal);
+        // Fire-and-forget POST to feedback endpoint
+        fetch('/viz/feedback/signal', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(signal)
+        }).catch(() => {}); // Non-blocking
+        document.dispatchEvent(new CustomEvent('jenny:feedback', { detail: signal }));
+    }
+
+    // Map action handlers to feedback signals
+    document.addEventListener('jenny:action', (e) => {
+        const { handler, specId } = e.detail;
+        const panel = document.querySelector(`[data-spec-id="${specId}"]`);
+        const subject = panel?.querySelector('[data-feedback-subject]')?.dataset.feedbackSubject || specId;
+        const dimension = panel?.querySelector('[data-feedback-dimension]')?.dataset.feedbackDimension || 'interest';
+
+        switch (handler) {
+            case 'pin_panel':
+                emitFeedback(subject, dimension, 'MINUTES', 1.0);
+                break;
+            case 'dismiss_panel':
+                emitFeedback(subject, dimension, 'SECONDS', -0.5);
+                break;
+            case 'expand_panel':
+                emitFeedback(subject, dimension, 'SECONDS', 0.5);
+                break;
+            case 'refresh_panel':
+                emitFeedback(subject, dimension, 'SECONDS', 0.3);
+                break;
+            case 'drill_panel':
+                emitFeedback(subject, dimension, 'SECONDS', 0.7);
+                break;
+        }
+    });
+
+    // Hover tracking: sub-second hypothesis (debounced)
+    let hoverTimer = null;
+    document.querySelectorAll('[data-feedback-subject]').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            hoverTimer = setTimeout(() => {
+                const subject = el.dataset.feedbackSubject;
+                const dimension = el.dataset.feedbackDimension || 'interest';
+                emitFeedback(subject, dimension, 'SUB_SECOND', 0.1);
+            }, 500); // Only emit after 500ms hover (not accidental)
+        });
+        el.addEventListener('mouseleave', () => clearTimeout(hoverTimer));
     });
 
     // Lifecycle transition handler

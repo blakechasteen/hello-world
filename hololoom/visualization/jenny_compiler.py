@@ -47,6 +47,7 @@ from .jenny_spec import (
     PanelTypeJenny,
     get_default_actions,
 )
+from .jenny_enums import BindingMode
 
 # Try to import Spacetime
 try:
@@ -1185,6 +1186,247 @@ class WhyPanelGenerator(PanelGenerator):
 
 
 # ============================================================================
+# Visualization Primitive Generators (Five Primitives Grammar)
+# ============================================================================
+# These generators compose from the five visualization primitives:
+# Trajectory, Topology, Distribution, Tension, Attention.
+# They don't need Spacetime — they fetch from /viz/* endpoints.
+# Attention is the fifth primitive: interaction IS the feedback signal.
+
+class PromotionPanelGenerator(PanelGenerator):
+    """Promotion flow: Trajectory + Distribution.
+
+    Shows note promotion pipeline (inbox -> PARA -> vault) and
+    score distribution with Shapley-weighted rubric terms.
+    """
+
+    panel_type = PanelTypeJenny.PROMOTION
+    default_priority = 6
+    default_size = PanelSizeJenny.LARGE
+
+    def generate(
+        self,
+        spacetime: Spacetime = None,
+        priority: int = None,
+        department: str = "farm",
+        viz_data: dict | None = None,
+        **kwargs
+    ) -> JennySpec:
+        data = viz_data or {}
+        trajectory = data.get("trajectory", {})
+        distribution = data.get("distribution", {})
+        meta = data.get("meta", {})
+
+        stages = trajectory.get("stages", [])
+        flow = trajectory.get("flow", {})
+        rubric_weights = distribution.get("rubric_weights", {})
+
+        return JennySpec(
+            panel_type=self.panel_type,
+            title=f"Promotion Flow — {department}",
+            subtitle=f"{flow.get('total_processed', 0)} notes processed",
+            content={
+                # Trajectory primitive
+                "trajectory": {
+                    "stages": stages,
+                    "flow": flow,
+                    "render_as": "sankey",
+                },
+                # Distribution primitive
+                "distribution": {
+                    "rubric_weights": rubric_weights,
+                    "bandit_means": distribution.get("bandit_means", {}),
+                    "render_as": "bar",
+                },
+                "department": department,
+                "n_rubric_terms": meta.get("n_rubric_terms", 0),
+            },
+            size=self.default_size,
+            priority=self._get_priority(priority),
+            binding_mode=BindingMode.REACTIVE,
+            data_source=f"/viz/department/{department}",
+            refresh_interval_ms=30000,
+            actions=self._get_actions(),
+            metadata={"primitives": ["trajectory", "distribution"]},
+        )
+
+
+class DepartmentPanelGenerator(PanelGenerator):
+    """Department knowledge state: Topology + Distribution + Tension.
+
+    Shows belief communities, score distributions, and drift gauges
+    for a single department.
+    """
+
+    panel_type = PanelTypeJenny.DEPARTMENT
+    default_priority = 7
+    default_size = PanelSizeJenny.XLARGE
+
+    def generate(
+        self,
+        spacetime: Spacetime = None,
+        priority: int = None,
+        department: str = "farm",
+        viz_data: dict | None = None,
+        **kwargs
+    ) -> JennySpec:
+        data = viz_data or {}
+        topology = data.get("topology") or {}
+        distribution = data.get("distribution") or {}
+        tension = data.get("tension") or {}
+        meta = data.get("meta", {})
+
+        return JennySpec(
+            panel_type=self.panel_type,
+            title=f"Department — {department}",
+            subtitle=f"{topology.get('n_communities', 0)} communities, {meta.get('n_rubric_terms', 0)} rubric terms",
+            content={
+                # Topology primitive
+                "topology": {
+                    "n_communities": topology.get("n_communities", 0),
+                    "algebraic_connectivity": topology.get("algebraic_connectivity", 0),
+                    "communities": topology.get("communities", {}),
+                    "inter_links": topology.get("inter_links", 0),
+                    "intra_links": topology.get("intra_links", 0),
+                    "render_as": "force_directed",
+                },
+                # Distribution primitive
+                "distribution": {
+                    "rubric_weights": distribution.get("rubric_weights", {}),
+                    "bandit_means": distribution.get("bandit_means", {}),
+                    "render_as": "violin",
+                },
+                # Tension primitive
+                "tension": {
+                    "drift": tension.get("drift"),
+                    "phase": tension.get("phase", "unknown"),
+                    "render_as": "gauge",
+                },
+                "department": department,
+                "rubric_terms": meta.get("rubric_terms", []),
+            },
+            size=self.default_size,
+            priority=self._get_priority(priority),
+            binding_mode=BindingMode.REACTIVE,
+            data_source=f"/viz/department/{department}",
+            refresh_interval_ms=30000,
+            actions=self._get_actions(),
+            metadata={"primitives": ["topology", "distribution", "tension"]},
+        )
+
+
+class CrossDeptPanelGenerator(PanelGenerator):
+    """Cross-department relationships: Topology + Tension.
+
+    Shows bridges between departments, Wasserstein distances,
+    and isolation vs connection tension.
+    """
+
+    panel_type = PanelTypeJenny.CROSS_DEPT
+    default_priority = 8
+    default_size = PanelSizeJenny.XLARGE
+
+    def generate(
+        self,
+        spacetime: Spacetime = None,
+        priority: int = None,
+        viz_data: dict | None = None,
+        **kwargs
+    ) -> JennySpec:
+        data = viz_data or {}
+        topology = data.get("topology", {})
+        tension = data.get("tension", {})
+        distribution = data.get("distribution", {})
+
+        departments = topology.get("departments", [])
+        comparisons = topology.get("comparisons", [])
+
+        return JennySpec(
+            panel_type=self.panel_type,
+            title="Cross-Department Intelligence",
+            subtitle=f"{len(departments)} departments, {len(comparisons)} comparisons",
+            content={
+                # Topology primitive
+                "topology": {
+                    "departments": departments,
+                    "comparisons": comparisons,
+                    "unified_graph": topology.get("unified_graph"),
+                    "render_as": "chord",
+                },
+                # Tension primitive
+                "tension": {
+                    "most_connected": tension.get("most_connected", "none"),
+                    "most_isolated": tension.get("most_isolated", "none"),
+                    "render_as": "balance",
+                },
+                "n_departments": distribution.get("n_departments", len(departments)),
+            },
+            size=self.default_size,
+            priority=self._get_priority(priority),
+            binding_mode=BindingMode.REACTIVE,
+            data_source="/viz/cross-departments",
+            refresh_interval_ms=60000,
+            actions=self._get_actions(),
+            metadata={"primitives": ["topology", "tension"]},
+        )
+
+
+class FeedbackStatePanelGenerator(PanelGenerator):
+    """Learning state: Trajectory + Distribution.
+
+    Shows bandit convergence over time and arm distributions
+    across temporal layers.
+    """
+
+    panel_type = PanelTypeJenny.FEEDBACK_STATE
+    default_priority = 9
+    default_size = PanelSizeJenny.LARGE
+
+    def generate(
+        self,
+        spacetime: Spacetime = None,
+        priority: int = None,
+        viz_data: dict | None = None,
+        **kwargs
+    ) -> JennySpec:
+        data = viz_data or {}
+        trajectory = data.get("trajectory", {})
+        distribution = data.get("distribution", {})
+        tension = data.get("tension", {})
+        temporal = data.get("temporal_layers", {})
+
+        return JennySpec(
+            panel_type=self.panel_type,
+            title="Learning State",
+            subtitle=f"{trajectory.get('n_loom_arms', 0)} loom arms active",
+            content={
+                # Trajectory primitive
+                "trajectory": {
+                    "n_loom_arms": trajectory.get("n_loom_arms", 0),
+                    "render_as": "sparkline",
+                },
+                # Distribution primitive
+                "distribution": {
+                    "bandit_arms": distribution.get("bandit_arms", {}),
+                    "loom_arms": distribution.get("loom_arms", {}),
+                    "render_as": "beta_curves",
+                },
+                # Temporal layers (sub-second to weeks)
+                "temporal_layers": temporal,
+                # Tension: exploration vs exploitation
+                "tension": tension,
+            },
+            size=self.default_size,
+            priority=self._get_priority(priority),
+            binding_mode=BindingMode.REACTIVE,
+            data_source="/viz/feedback",
+            refresh_interval_ms=15000,
+            actions=self._get_actions(),
+            metadata={"primitives": ["trajectory", "distribution"]},
+        )
+
+
+# ============================================================================
 # Panel Generator Registry
 # ============================================================================
 
@@ -1198,6 +1440,11 @@ PANEL_GENERATORS: dict[PanelTypeJenny, PanelGenerator] = {
     PanelTypeJenny.METRIC: MetricPanelGenerator(),
     PanelTypeJenny.WHY: WhyPanelGenerator(),
     PanelTypeJenny.COMPARISON: ComparisonPanelGenerator(),
+    # Visualization primitives
+    PanelTypeJenny.PROMOTION: PromotionPanelGenerator(),
+    PanelTypeJenny.DEPARTMENT: DepartmentPanelGenerator(),
+    PanelTypeJenny.CROSS_DEPT: CrossDeptPanelGenerator(),
+    PanelTypeJenny.FEEDBACK_STATE: FeedbackStatePanelGenerator(),
 }
 
 
@@ -1405,6 +1652,52 @@ def generate_comparison_panel(
         right=right,
         diff_type=diff_type,
         category=category
+    )
+
+
+# ============================================================================
+# Visualization Primitive Panel Functions (no Spacetime needed)
+# ============================================================================
+
+def generate_promotion_panel(
+    department: str = "farm",
+    viz_data: dict | None = None,
+    priority: int = 6,
+) -> JennySpec:
+    """Generate a promotion flow panel for a department."""
+    return PANEL_GENERATORS[PanelTypeJenny.PROMOTION].generate(
+        department=department, viz_data=viz_data, priority=priority
+    )
+
+
+def generate_department_panel(
+    department: str = "farm",
+    viz_data: dict | None = None,
+    priority: int = 7,
+) -> JennySpec:
+    """Generate a full department knowledge state panel."""
+    return PANEL_GENERATORS[PanelTypeJenny.DEPARTMENT].generate(
+        department=department, viz_data=viz_data, priority=priority
+    )
+
+
+def generate_cross_dept_panel(
+    viz_data: dict | None = None,
+    priority: int = 8,
+) -> JennySpec:
+    """Generate a cross-department intelligence panel."""
+    return PANEL_GENERATORS[PanelTypeJenny.CROSS_DEPT].generate(
+        viz_data=viz_data, priority=priority
+    )
+
+
+def generate_feedback_state_panel(
+    viz_data: dict | None = None,
+    priority: int = 9,
+) -> JennySpec:
+    """Generate a learning state panel."""
+    return PANEL_GENERATORS[PanelTypeJenny.FEEDBACK_STATE].generate(
+        viz_data=viz_data, priority=priority
     )
 
 
@@ -1675,4 +1968,13 @@ __all__ = [
     'generate_metric_panel',
     'generate_why_panel',
     'generate_comparison_panel',
+    # Visualization Primitive Generators
+    'PromotionPanelGenerator',
+    'DepartmentPanelGenerator',
+    'CrossDeptPanelGenerator',
+    'FeedbackStatePanelGenerator',
+    'generate_promotion_panel',
+    'generate_department_panel',
+    'generate_cross_dept_panel',
+    'generate_feedback_state_panel',
 ]

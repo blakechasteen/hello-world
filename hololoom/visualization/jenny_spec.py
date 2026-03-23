@@ -55,6 +55,12 @@ class PanelTypeJenny(str, Enum):
     WHY = "why"                    # "Why this UI?" meta-panel
     COMPARISON = "comparison"      # Side-by-side comparison
 
+    # Visualization primitive types (five primitives grammar)
+    PROMOTION = "promotion"        # Trajectory + Distribution (promotion flow + score bars)
+    DEPARTMENT = "department"      # Topology + Distribution + Tension (communities + scores + drift)
+    CROSS_DEPT = "cross_dept"      # Topology + Tension (bridges + Wasserstein distances)
+    FEEDBACK_STATE = "feedback_state"  # Trajectory + Distribution (convergence + bandit arms)
+
 
 class PanelSizeJenny(str, Enum):
     """
@@ -318,6 +324,8 @@ ACTION_EXPAND = create_action("Expand", "expand_panel")
 ACTION_COLLAPSE = create_action("Collapse", "collapse_panel")
 ACTION_COPY = create_action("Copy", "copy_content")
 ACTION_EXPORT = create_action("Export", "export_panel", requires_confirmation=True)
+ACTION_REFRESH = create_action("Refresh", "refresh_panel")
+ACTION_DRILL = create_action("Drill Down", "drill_panel")
 
 
 # ============================================================================
@@ -338,6 +346,11 @@ DEFAULT_ACTIONS: dict[PanelTypeJenny, tuple[dict[str, Any], ...]] = {
     PanelTypeJenny.ACTIONS: (ACTION_DISMISS,),
     PanelTypeJenny.WHY: (ACTION_DISMISS,),  # Meta-panel, minimal actions
     PanelTypeJenny.COMPARISON: (ACTION_PIN, ACTION_DISMISS, ACTION_EXPORT, ACTION_WHY),
+    # Visualization primitives — Pin emits MINUTES feedback, Dismiss emits negative SECONDS
+    PanelTypeJenny.PROMOTION: (ACTION_PIN, ACTION_DISMISS, ACTION_REFRESH, ACTION_DRILL, ACTION_WHY),
+    PanelTypeJenny.DEPARTMENT: (ACTION_PIN, ACTION_DISMISS, ACTION_REFRESH, ACTION_DRILL, ACTION_EXPAND, ACTION_WHY),
+    PanelTypeJenny.CROSS_DEPT: (ACTION_PIN, ACTION_DISMISS, ACTION_REFRESH, ACTION_EXPAND, ACTION_WHY),
+    PanelTypeJenny.FEEDBACK_STATE: (ACTION_PIN, ACTION_DISMISS, ACTION_REFRESH, ACTION_WHY),
 }
 
 
@@ -441,5 +454,7 @@ __all__ = [
     "ACTION_COLLAPSE",
     "ACTION_COPY",
     "ACTION_EXPORT",
+    "ACTION_REFRESH",
+    "ACTION_DRILL",
     "DEFAULT_ACTIONS",
 ]
