@@ -429,3 +429,57 @@ async def spin_from_query(
 
     # Ingest into memory
     return await spin(response_text, memory=memory)
+
+
+# ============================================================================
+# Playlist Ingestion
+# ============================================================================
+
+async def spin_playlists(
+    playlist_urls: list[str],
+    memory: Any | None = None,
+    batch_size: int = 20,
+    checkpoint_dir: str | Path | None = None,
+) -> Any:
+    """
+    Scan YouTube playlists for new videos and ingest transcripts.
+
+    Videos appearing on multiple playlists get higher resonance scores.
+    Only new videos (since last checkpoint) are processed.
+
+    Args:
+        playlist_urls: YouTube playlist URLs to scan.
+        memory: Optional memory backend (creates if None).
+        batch_size: Max videos per run (high-resonance first).
+        checkpoint_dir: Where to persist checkpoint state.
+
+    Returns:
+        Memory backend with new video transcripts ingested.
+
+    Example:
+        >>> memory = await spin_playlists([
+        ...     "https://www.youtube.com/playlist?list=PLxyz",
+        ...     "https://www.youtube.com/playlist?list=PLabc",
+        ... ])
+    """
+    from .playlist_spinner import PlaylistSpinner
+
+    spinner = PlaylistSpinner(
+        importance_threshold=0.2,
+        batch_size=batch_size,
+        checkpoint_dir=Path(checkpoint_dir) if checkpoint_dir else None,
+    )
+
+    result = await spinner.spin(playlist_urls)
+
+    if not result.shards:
+        return memory or await _create_auto_memory()
+
+    if memory is None:
+        memory = await _create_auto_memory()
+
+    await _ingest_shards(memory, result.shards)
+
+    print(f"[spin_playlists] Ingested {len(result.shards)} new video(s)")
+
+    return memory

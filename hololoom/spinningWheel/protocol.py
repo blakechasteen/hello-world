@@ -790,12 +790,11 @@ def create_spinner_registry() -> dict[str, type]:
     except ImportError:
         pass
 
-    # Future spinners will be added here automatically
-    # try:
-    #     from .git_spinner import GitSpinner
-    #     registry['git'] = GitSpinner
-    # except ImportError:
-    #     pass
+    try:
+        from .playlist_spinner import PlaylistSpinner
+        registry['playlist'] = PlaylistSpinner
+    except ImportError:
+        pass
 
     return registry
 
