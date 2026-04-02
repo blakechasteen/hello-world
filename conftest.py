@@ -17,12 +17,13 @@ import sys
 import pytest
 
 # Files that use standalone runner (functions take manual args, not fixtures)
+# These were moved from repo root to tests/manual/
 STANDALONE_SCRIPTS = [
-    "test_v2_bridge.py",
-    "test_v2_cognitive.py",
+    "tests/manual/test_v2_bridge.py",
+    "tests/manual/test_v2_cognitive.py",
 ]
 
-collect_ignore = STANDALONE_SCRIPTS
+collect_ignore_glob = ["tests/manual/*"]
 
 
 # ---------------------------------------------------------------------------

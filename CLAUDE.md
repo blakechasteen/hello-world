@@ -33,7 +33,7 @@ Simplified version: `from hololoom import HoloLoomLite` (fewer deps, same core A
 
 ```
 hololoom/                  # Main package (lowercase)
-  core/                    # 13 essential modules
+  core/                    # 17 essential modules
     protocols/             # Layer 0: type contracts, DepartmentProtocol
     memory/                # KG, vector store, spring dynamics
     embedding/             # Matryoshka multi-scale embeddings
@@ -47,6 +47,10 @@ hololoom/                  # Main package (lowercase)
     loom/                  # Pattern card selection
     recursive/             # Self-improving loops
     reflection/            # Episodic buffer, PPO
+    bus/                   # Unified event/message bus
+    deep_thinking/         # Deliberation engine
+    ritual/                # Ritual grammar, hooks, runtime
+    runtime/               # 6-layer lifecycle management
   lite/                    # HoloLoomLite simplified API
   config/                  # Configuration system
   unified_api.py           # HoloLoom class definition
@@ -69,7 +73,8 @@ IMPORTANT: `hololoom/__init__.py` installs a `sys.meta_path` finder (`_CoreRedir
 
 - `from hololoom.memory.graph import KG` works (redirects to `hololoom.core.memory.graph`)
 - Internal code in `hololoom/core/` should use **relative imports** to avoid circular redirects
-- The 13 redirected modules: protocols, memory, embedding, policy, convergence, orchestrator, warp, fabric, chrono, resonance, loom, recursive, reflection
+- The 13 redirected modules (via `_CORE_MODULES` in `__init__.py`): protocols, memory, embedding, policy, convergence, orchestrator, warp, fabric, chrono, resonance, loom, recursive, reflection
+- 4 additional core modules (bus, deep_thinking, ritual, runtime) are under `core/` but not yet in the redirect set
 
 ## Development Commands
 

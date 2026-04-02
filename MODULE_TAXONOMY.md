@@ -2,6 +2,7 @@
 
 **Date**: 2026-02-25
 **Updated**: 2026-02-26 — Refined target structure (dropped `extensions/` wrapper)
+**Updated**: 2026-04-02 — Audit against actual codebase: resolved unclear modules, added new core/optional modules
 **Purpose**: Classify every directory into Core, Optional Module, App, or Tooling
 **Goal**: Establish clear boundaries so the repo communicates its own architecture
 
@@ -46,9 +47,13 @@ incomplete.
 | `loom/` | 9,054 | Pattern card selection (BARE/FAST/FUSED) | Execution mode control |
 | `recursive/` | 6,972 | 5-phase self-improving learning loops | Core differentiator |
 | `reflection/` | 3,474 | Episodic buffer, PPO training | Learning from outcomes |
+| `bus/` | 3,822 | Unified event/message bus | System coordination *(added 2026-04)* |
+| `deep_thinking/` | 1,865 | Deliberation engine for complex reasoning | Extended reasoning pipeline *(added 2026-04)* |
+| `ritual/` | 2,815 | Ritual grammar, hook system, runtime | Workflow lifecycle hooks *(added 2026-04)* |
+| `runtime/` | 1,428 | 6-layer lifecycle management | System startup/shutdown *(added 2026-04)* |
 | `config.py` (root) | ~460 | BARE/FAST/FUSED configuration | System configuration |
 
-**Subtotal: ~122,000 LOC** — This is the product.
+**Subtotal: ~132,000 LOC** — This is the product. (17 modules, up from original 13.)
 
 ---
 
@@ -148,59 +153,66 @@ These are products, not modules.
 
 ---
 
-## Unclear / Needs Discussion
+## Resolved: Previously Unclear Modules (audited 2026-04-02)
 
-These could go either way:
+### Now classified as Optional Modules (Layer 2)
 
-| Directory | LOC | Question |
-|-----------|-----|---------|
-| `hololoom/agents/` | 8,938 | Core extension or app? (MCTS multi-agent) |
-| `hololoom/handoff/` | 3,894 | Core extension or app feature? (context handoffs) |
-| `hololoom/model_extension/` | 15,155 | Core extension or tooling? |
-| `hololoom/portal/` | 13,894 | Part of orchestrator or separate? |
-| `hololoom/shuttle/` | ~3,000 | Legacy compat or active? |
-| `hololoom/tapestry/` | ~3,000 | Session management - core or app? |
-| `hololoom/saas/` | ~5,000 | SaaS deployment layer |
-| `hololoom/lite/` | ~2,000 | Lightweight mode |
-| `hololoom/neural/` | ~2,000 | Neural network primitives - part of policy? |
-| `hololoom/ml/` | ~1,500 | ML utilities - part of embedding? |
-| `hololoom/math/` | ~1,000 | Math utilities - part of warp? |
-| `hololoom/input/` | ~1,000 | Input processing - part of spinningWheel? |
-| `hololoom/synthesis/` | ~1,000 | Output synthesis - part of fabric? |
-| `hololoom/weaving/` | ~1,000 | Weaving utilities - part of orchestrator? |
-| `hololoom/writing/` | 4,720 | NLG system |
-| `hololoom/llm/` | ~3,000 | LLM client abstraction |
-| `hololoom/conscience/` | ~2,000 | Ethical reasoning |
-| `hololoom/nested/` | ~1,000 | Nested contexts |
-| `hololoom/expansions/` | ~1,000 | Context expansion |
-| `hololoom/clustering/` | ~1,000 | Clustering algorithms |
-| `hololoom/safety/` | ~2,000 | Overlaps with alignment? |
-| `hololoom/promptly/` | ~2,000 | Overlaps with prompting? |
-| `hololoom/ts_core/` | ~1,000 | TypeScript core? |
-| `hololoom/lsp/` | ~1,000 | Language Server Protocol |
-| `hololoom/workflows/` | ~1,000 | Workflow definitions |
-| `holoLoom/` (root) | 16,742 | Duplicate package - merge into hololoom/ |
+| Directory | LOC | Classification | Notes |
+|-----------|-----|---------------|-------|
+| `hololoom/agents/` | 11,109 | Optional Module | MCTS multi-agent framework with memory learning |
+| `hololoom/handoff/` | 3,868 | Optional Module | Context handoff and unified identity management |
+| `hololoom/model_extension/` | 15,148 | Optional Module | Memory-augmented LLM wrappers |
+| `hololoom/portal/` | 13,905 | Optional Module | Cross-platform bridge (node daemon, shuttle bot, wasm) |
+| `hololoom/shuttle/` | 5,241 | Optional Module | Distributed inference client/server (active, not legacy) |
+| `hololoom/tapestry/` | 3,557 | Optional Module | Session management and state persistence |
+| `hololoom/saas/` | 4,711 | Optional Module | SaaS deployment layer with dashboards |
+| `hololoom/lite/` | 3,414 | Optional Module | Lightweight HoloLoom mode (simplified API) |
+| `hololoom/ml/` | 7,188 | Optional Module | ML trainers, evaluation, skills |
+| `hololoom/input/` | 2,201 | Optional Module | Multi-modal input processing (audio, image) |
+| `hololoom/synthesis/` | 1,500 | Optional Module | Pattern extraction and training data synthesis |
+| `hololoom/weaving/` | 4,182 | Optional Module | Weaving protocols, policies, stage definitions |
+| `hololoom/writing/` | 4,659 | Optional Module | NLG system (standard/creative/technical modes) |
+| `hololoom/llm/` | 1,535 | Optional Module | Unified LLM client abstraction |
+| `hololoom/conscience/` | 3,892 | Optional Module | Ethical reasoning and values alignment |
+| `hololoom/expansions/` | 1,084 | Optional Module | Context expansion patterns |
+| `hololoom/safety/` | 1,136 | Optional Module | Safety locks (complements alignment/) |
+| `hololoom/promptly/` | 3,766 | Optional Module | DSPy bridge, prompt management |
+| `hololoom/ts_core/` | 2,000 | Optional Module | Thompson Sampler core with model management |
+| `hololoom/lsp/` | 1,119 | Optional Module | Language Server Protocol integration |
+| `hololoom/workflows/` | 1,988 | Optional Module | Workflow executor and definitions |
+| `hololoom/domain_harness/` | 9,363 | Optional Module | Domain-specific prompt harness *(new)* |
+| `hololoom/weaverlet/` | 4,011 | Optional Module | Task controller and refinement loops *(new)* |
+| `hololoom/tui/` | 1,824 | Optional Module | Terminal UI with graph display *(new)* |
+| `hololoom/motif/` | 762 | Optional Module | Pattern/motif abstractions *(new)* |
+| `hololoom/pipeline/` | 700 | Optional Module | Pipeline stage caching and resolver *(new)* |
+| `hololoom/infrastructure/` | 2,454 | Tooling | Deployment support (SQL, Grafana, K8s) *(new)* |
+
+### Removed (confirmed missing — consolidated in Waves 2-3)
+
+| Directory | Merged Into |
+|-----------|-------------|
+| `hololoom/neural/` | `core/policy/` |
+| `hololoom/math/` | `core/warp/` |
+| `hololoom/nested/` | `core/orchestrator/` |
+| `hololoom/clustering/` | `core/memory/` |
+| `holoLoom/` (PascalCase) | `hololoom/` (Wave 5 rename complete) |
 
 ---
 
-## The Numbers (Revised)
+## The Numbers (Revised 2026-04-02)
 
 | Layer | LOC | % of Codebase | Directory Count |
 |-------|-----|--------------|-----------------|
-| **Core** | ~122K | 13% | 13 dirs |
-| **Optional Modules** | ~470K | 51% | 33 dirs |
-| **Apps** | ~150K | 16% | 6 dirs |
-| **Tooling & Tests** | ~150K | 16% | 12 dirs |
-| **Unclear** | ~40K | 4% | 25 dirs |
+| **Core** | ~132K | 14% | 17 dirs |
+| **Optional Modules** | ~560K | 56% | 60 dirs |
+| **Apps** | ~150K | 15% | 6 dirs |
+| **Tooling & Tests** | ~150K | 15% | 13 dirs |
+| **Unclear** | 0 | 0% | 0 dirs |
 
-The core product is 13% of the code. That's fine — it's the 13% everything
-else depends on. The optional modules are the bulk, which makes sense for a
-platform: the value is in what you can plug in.
-
-The previous version inflated the "apps" count by classifying voice, vision,
-server, etc. as apps. They're not — they're modules. The actual apps (elle,
-chatops, sous, etc.) are ~16%, which feels right for end-user products built
-on a platform.
+All previously "unclear" modules have been classified. Core grew from 13 → 17
+modules (bus, deep_thinking, ritual, runtime). Optional modules absorbed the
+27 formerly unclear modules plus 5 new ones. 4 modules were confirmed removed
+(neural, math, nested, clustering — merged during Waves 2-3).
 
 ---
 
@@ -216,7 +228,7 @@ optional. That distinction belongs in `pyproject.toml` extras and docs.
 ```
 hololoom/                          ← The package (lowercase, PEP 8)
 │
-├── core/                          ← Always installed (~122K LOC)
+├── core/                          ← Always installed (~132K LOC, 17 modules)
 │   ├── protocols/                 ← Zero-dep contracts (includes viz protocol)
 │   ├── memory/                    ← Knowledge graph, vector store, awareness
 │   ├── embedding/                 ← Matryoshka multi-scale
@@ -229,7 +241,11 @@ hololoom/                          ← The package (lowercase, PEP 8)
 │   ├── resonance/                 ← Feature extraction (DotPlasma)
 │   ├── loom/                      ← Pattern card selection
 │   ├── recursive/                 ← Self-improving learning loops
-│   └── reflection/                ← Episodic buffer, PPO
+│   ├── reflection/                ← Episodic buffer, PPO
+│   ├── bus/                       ← Unified event/message bus
+│   ├── deep_thinking/             ← Deliberation engine
+│   ├── ritual/                    ← Ritual grammar & hooks
+│   └── runtime/                   ← 6-layer lifecycle management
 │
 ├── agentic/                       ← Flat optional peers (~250K LOC total)
 ├── alignment/                     ← None of these import each other.
