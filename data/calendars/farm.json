@@ -1,0 +1,457 @@
+{
+  "agent_id": "blake-farm",
+  "saved_at": "2026-04-03T01:18:59.671081",
+  "tasks": [
+    {
+      "id": "spring-planning",
+      "name": "Spring season planning review",
+      "recurrence": "yearly:mar:1",
+      "tags": [
+        "season",
+        "planning"
+      ],
+      "priority": "high",
+      "description": "Review seed inventory, soil amendments, and planting schedule. Focus: seedlings, greens, herbs. Products: microgreens, salad mix, herb bundles, seedling starts.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "summer-planning",
+      "name": "Summer season planning review",
+      "recurrence": "yearly:jun:1",
+      "tags": [
+        "season",
+        "planning"
+      ],
+      "priority": "high",
+      "description": "Peak production review. Focus: full production, preservation. Products: tomatoes, peppers, squash, ferments, dried herbs, sauces.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "fall-planning",
+      "name": "Fall season planning review",
+      "recurrence": "yearly:sep:1",
+      "tags": [
+        "season",
+        "planning"
+      ],
+      "priority": "high",
+      "description": "Transition review. Focus: harvest, storage crops, preservation. Products: root vegetables, winter squash, canned goods, stocks.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "winter-planning",
+      "name": "Winter season planning review",
+      "recurrence": "yearly:dec:1",
+      "tags": [
+        "season",
+        "planning"
+      ],
+      "priority": "medium",
+      "description": "Off-season review. Focus: planning, maintenance, indoor growing. Products: microgreens, sprouts, preserved goods.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "start-seedlings",
+      "name": "Start indoor seedlings",
+      "recurrence": "yearly:feb:15",
+      "tags": [
+        "planting",
+        "garden"
+      ],
+      "priority": "high",
+      "description": "Tomatoes, peppers, eggplant, herbs under grow lights.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {
+        "related_sops": [
+          "SOP-SEED-001"
+        ]
+      }
+    },
+    {
+      "id": "transplant-seedlings",
+      "name": "Transplant seedlings to beds",
+      "recurrence": "yearly:apr:15",
+      "tags": [
+        "planting",
+        "garden"
+      ],
+      "priority": "high",
+      "description": "After last frost. Harden off 1 week before.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {
+        "related_sops": [
+          "SOP-TRANS-001"
+        ]
+      }
+    },
+    {
+      "id": "succession-planting",
+      "name": "Succession planting round",
+      "recurrence": "every:3:weeks",
+      "tags": [
+        "planting",
+        "garden"
+      ],
+      "priority": "medium",
+      "description": "Lettuce, radish, beans for continuous harvest.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {
+        "active_months": [
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "id": "fall-cover-crop",
+      "name": "Plant fall cover crops",
+      "recurrence": "yearly:sep:15",
+      "tags": [
+        "planting",
+        "soil"
+      ],
+      "priority": "medium",
+      "description": "Winter rye, crimson clover in emptied beds.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "daily-harvest",
+      "name": "Morning harvest check",
+      "recurrence": "every:day:7am",
+      "tags": [
+        "harvest",
+        "garden"
+      ],
+      "priority": "medium",
+      "description": "Check beds for ripe produce. Log quantities.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {
+        "active_months": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "id": "microgreen-harvest",
+      "name": "Harvest microgreens",
+      "recurrence": "every:3:days",
+      "tags": [
+        "harvest",
+        "indoor"
+      ],
+      "priority": "high",
+      "description": "Cut at soil level, wash, pack for market.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {
+        "related_products": [
+          "microgreens"
+        ]
+      }
+    },
+    {
+      "id": "saturday-market-prep",
+      "name": "Saturday market prep",
+      "recurrence": "every:friday:2pm",
+      "tags": [
+        "market",
+        "sales"
+      ],
+      "priority": "high",
+      "description": "Wash, pack, label, load. Check inventory against pre-orders.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "saturday-market",
+      "name": "Saturday farmers market",
+      "recurrence": "every:saturday:6am",
+      "tags": [
+        "market",
+        "sales"
+      ],
+      "priority": "critical",
+      "description": "Setup by 7am, market 8am-1pm. Bring signage, scale, bags.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {
+        "active_months": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ]
+      }
+    },
+    {
+      "id": "csa-box-assembly",
+      "name": "CSA box assembly",
+      "recurrence": "every:wednesday:8am",
+      "tags": [
+        "market",
+        "csa"
+      ],
+      "priority": "high",
+      "description": "Assemble weekly CSA boxes. Include newsletter.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {
+        "active_months": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "id": "soil-ph-check",
+      "name": "Check soil pH in raised beds",
+      "recurrence": "every:monday:9am",
+      "tags": [
+        "maintenance",
+        "soil"
+      ],
+      "priority": "medium",
+      "description": "Test pH in each zone. Target 6.2-6.8. Log results.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "irrigation-check",
+      "name": "Irrigation system check",
+      "recurrence": "every:2:weeks:monday",
+      "tags": [
+        "maintenance",
+        "equipment"
+      ],
+      "priority": "medium",
+      "description": "Check drip lines, timers, pressure. Fix leaks.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "tool-maintenance",
+      "name": "Tool cleaning and sharpening",
+      "recurrence": "every:month:first:saturday",
+      "tags": [
+        "maintenance",
+        "equipment"
+      ],
+      "priority": "low",
+      "description": "Clean, oil, sharpen. Inventory check.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "greenhouse-maintenance",
+      "name": "Greenhouse maintenance",
+      "recurrence": "every:month:15",
+      "tags": [
+        "maintenance",
+        "infrastructure"
+      ],
+      "priority": "medium",
+      "description": "Check ventilation, heaters, plastic, benches.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "fermentation-check",
+      "name": "Check active ferments",
+      "recurrence": "every:day:10am",
+      "tags": [
+        "production",
+        "kitchen"
+      ],
+      "priority": "high",
+      "description": "Check kraut, kimchi, hot sauce ferments. Log pH and taste.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {
+        "related_sops": [
+          "SOP-FERM-001"
+        ]
+      }
+    },
+    {
+      "id": "sauce-production",
+      "name": "Hot sauce production day",
+      "recurrence": "every:2:weeks:thursday",
+      "tags": [
+        "production",
+        "kitchen"
+      ],
+      "priority": "medium",
+      "description": "Batch production. Label, date, inventory.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {
+        "related_products": [
+          "hot_sauce",
+          "bbq_sauce"
+        ]
+      }
+    },
+    {
+      "id": "quarterly-taxes",
+      "name": "Quarterly tax filing deadline",
+      "recurrence": "yearly:apr:15",
+      "tags": [
+        "financial",
+        "deadline"
+      ],
+      "priority": "critical",
+      "description": "Federal estimated taxes due. State may differ.",
+      "reminder_before_seconds": 1209600.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "q2-taxes",
+      "name": "Q2 estimated tax payment",
+      "recurrence": "yearly:jun:15",
+      "tags": [
+        "financial",
+        "deadline"
+      ],
+      "priority": "critical",
+      "description": "",
+      "reminder_before_seconds": 1209600.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "q3-taxes",
+      "name": "Q3 estimated tax payment",
+      "recurrence": "yearly:sep:15",
+      "tags": [
+        "financial",
+        "deadline"
+      ],
+      "priority": "critical",
+      "description": "",
+      "reminder_before_seconds": 1209600.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "q4-taxes",
+      "name": "Q4 estimated tax payment",
+      "recurrence": "yearly:jan:15",
+      "tags": [
+        "financial",
+        "deadline"
+      ],
+      "priority": "critical",
+      "description": "",
+      "reminder_before_seconds": 1209600.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "health-inspection",
+      "name": "Annual health department inspection prep",
+      "recurrence": "yearly:mar:1",
+      "tags": [
+        "regulatory",
+        "compliance"
+      ],
+      "priority": "critical",
+      "description": "Review logs, clean deep, organize records.",
+      "reminder_before_seconds": 2592000.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "insurance-renewal",
+      "name": "Farm insurance renewal",
+      "recurrence": "yearly:jan:1",
+      "tags": [
+        "financial",
+        "insurance"
+      ],
+      "priority": "high",
+      "description": "Review coverage, compare quotes, renew.",
+      "reminder_before_seconds": 2592000.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "monthly-bookkeeping",
+      "name": "Monthly bookkeeping reconciliation",
+      "recurrence": "every:month:last",
+      "tags": [
+        "financial",
+        "admin"
+      ],
+      "priority": "medium",
+      "description": "Reconcile accounts, categorize expenses, update P&L.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "weekly-team-meeting",
+      "name": "Weekly team planning meeting",
+      "recurrence": "every:monday:8am",
+      "tags": [
+        "planning",
+        "team"
+      ],
+      "priority": "medium",
+      "description": "Review week ahead, assign tasks, address issues.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    },
+    {
+      "id": "photo-documentation",
+      "name": "Farm photo documentation",
+      "recurrence": "every:sunday:4pm",
+      "tags": [
+        "documentation",
+        "marketing"
+      ],
+      "priority": "low",
+      "description": "Walk property, photograph progress for social media and records.",
+      "reminder_before_seconds": 86400.0,
+      "enabled": true,
+      "metadata": {}
+    }
+  ],
+  "completions": []
+}
