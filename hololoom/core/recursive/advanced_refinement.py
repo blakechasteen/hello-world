@@ -40,7 +40,7 @@ from hololoom.fabric.spacetime import Spacetime
 from hololoom.prompting.unified_mrf import ModelProvider, RefinementStrategyType, UnifiedMRF
 from hololoom.protocols.types import Query
 from hololoom.recursive.scratchpad import Scratchpad
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 
 class RefinementStrategy(Enum):

@@ -67,7 +67,7 @@ async def test_1_beta_wave_packing_enabled():
     try:
         from hololoom.memory.multi_wave_engine import MultiWaveMemoryEngine, MultiWaveConfig
         from hololoom.memory.spring_dynamics_engine import SpringEngineConfig
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Create config with beta wave packing ENABLED
         config = Config.fast()
@@ -151,7 +151,7 @@ async def test_2_beta_wave_packing_disabled():
     print("="*80)
 
     try:
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Create config with beta wave packing DISABLED
         config = Config.fast()
@@ -204,7 +204,7 @@ async def test_3_beta_wave_packing_no_spring_engine():
     print("="*80)
 
     try:
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Create config with beta wave packing ENABLED
         config = Config.fast()

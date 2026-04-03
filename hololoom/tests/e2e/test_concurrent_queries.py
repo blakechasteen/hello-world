@@ -22,7 +22,7 @@ import time
 from typing import List
 from unittest.mock import MagicMock, patch
 
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 from hololoom.config import Config
 from hololoom.protocols.types import Query, MemoryShard
 

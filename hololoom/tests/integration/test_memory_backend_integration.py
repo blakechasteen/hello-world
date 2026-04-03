@@ -28,7 +28,7 @@ from pathlib import Path
 from hololoom.config import Config, MemoryBackend
 from hololoom.memory.backend_factory import create_memory_backend
 from hololoom.memory.cache import MemoryShard
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 from hololoom.protocols.types import Query
 
 

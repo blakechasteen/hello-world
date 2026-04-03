@@ -200,7 +200,7 @@ class DSPyHoloLoom:
         """Lazy-load HoloLoom orchestrator"""
         if self._orchestrator is None:
             from hololoom.memory.backend_factory import create_memory_backend
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
             # Create memory backend
             self._memory = await create_memory_backend(self.config)

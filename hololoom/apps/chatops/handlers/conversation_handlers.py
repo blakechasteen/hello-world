@@ -82,7 +82,7 @@ except ImportError:
 
 try:
     from hololoom.protocols.types import Query
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     ORCHESTRATOR_AVAILABLE = True
 except ImportError:
     ORCHESTRATOR_AVAILABLE = False

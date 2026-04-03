@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from typing import Optional
 import inspect
 
-from hololoom.weaving_orchestrator import WeavingOrchestrator, CONSCIENCE_AVAILABLE
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator, CONSCIENCE_AVAILABLE
 from hololoom.config import Config
 from hololoom.protocols.types import Query
 

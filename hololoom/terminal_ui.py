@@ -37,7 +37,8 @@ from rich.tree import Tree
 
 from hololoom.loom.command import PatternCard
 from hololoom.protocols import ComplexityLevel, ProvenanceTrace
-from hololoom.weaving_orchestrator import Query, WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query
 
 # Awareness layer imports (graceful degradation if not available)
 try:

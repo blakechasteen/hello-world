@@ -113,7 +113,7 @@ except ImportError:
 
 # Legacy fallback
 try:
-    from hololoom.weaving_orchestrator_llm import create_llm_client
+    from hololoom.core.orchestrator.variants.llm import create_llm_client
     LLM_CLIENT_AVAILABLE = True
 except ImportError:
     LLM_CLIENT_AVAILABLE = False

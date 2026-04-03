@@ -37,7 +37,7 @@ except ImportError:
 
 # LLM integration (graceful degradation if unavailable)
 try:
-    from hololoom.weaving_orchestrator_llm import WeavingOrchestrator
+    from hololoom.core.orchestrator.variants.llm import WeavingOrchestrator
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False

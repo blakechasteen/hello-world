@@ -423,7 +423,7 @@ class HoloLoom:
         if self._weaver is not None:
             return self._weaver
 
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         self._weaver = WeavingOrchestrator(
             cfg=self.config,

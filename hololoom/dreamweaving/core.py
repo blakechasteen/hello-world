@@ -26,7 +26,7 @@ from typing import Any
 from hololoom.config import Config
 from hololoom.memory.graph import KG, KGEdge
 from hololoom.protocols.types import MemoryShard, Query
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 from . import (
     ConsistencyLevel,

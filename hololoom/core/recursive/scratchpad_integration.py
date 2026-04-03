@@ -34,7 +34,7 @@ from hololoom.recursive.scratchpad import (
 )
 
 # HoloLoom components
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 logger = logging.getLogger(__name__)
 

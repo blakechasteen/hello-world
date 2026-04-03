@@ -267,7 +267,7 @@ class LLMPoweredStrategy(PromptingStrategy):
         if not self.orchestrator:
             # Lazy import to avoid circular dependency
             from hololoom.config import Config
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
             self.orchestrator = WeavingOrchestrator(cfg=Config.fast())
 
         from hololoom.protocols.types import Query

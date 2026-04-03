@@ -371,7 +371,7 @@ async def test_7_complete_weaving_cycle():
     logger.info("TEST 7: COMPLETE WEAVING CYCLE - All Components Together")
     logger.info("="*80)
 
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     from hololoom.config import Config
     from hololoom.convergence.engine import CollapseStrategy
 

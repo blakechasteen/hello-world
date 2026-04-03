@@ -54,7 +54,7 @@ try:
     from hololoom.protocols.types import Query
     from hololoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
     from hololoom.spinningWheel.modalities.youtube import YouTubeSpinner, YouTubeSpinnerConfig
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run from repository root with PYTHONPATH set")

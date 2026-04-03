@@ -467,7 +467,7 @@ def create_traced_orchestrator(
         Configured DarkTraceOrchestrator
     """
     # Import here to avoid circular imports
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
     # Create base orchestrator
     base_orchestrator = WeavingOrchestrator(cfg=config, shards=shards)

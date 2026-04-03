@@ -106,7 +106,7 @@ from hololoom.protocols.types import MemoryShard, Query
 
 # Recursive Learning
 from hololoom.recursive import FullLearningEngine
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 # SpinningWheel (Input Adapters)
 try:

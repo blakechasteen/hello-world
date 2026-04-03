@@ -92,7 +92,7 @@ async def ask(
 
     # Try to use LLM for generation (graceful fallback)
     try:
-        from hololoom.weaving_orchestrator_llm import call_llm
+        from hololoom.core.orchestrator.variants.llm import call_llm
 
         if mode == "verify":
             # Two-pass: generate then verify
@@ -228,7 +228,7 @@ async def research(
 
     # Synthesize findings
     try:
-        from hololoom.weaving_orchestrator_llm import call_llm
+        from hololoom.core.orchestrator.variants.llm import call_llm
 
         context = "\n\n".join([
             f"[{i+1}] {s.text}"

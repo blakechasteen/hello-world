@@ -35,7 +35,7 @@ try:
         stream_context_expansion,
     )
     from hololoom.protocols.types import Query as HoloLoomQuery
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:
     logging.warning(f"HoloLoom import failed: {e}. Running in mock mode.")

@@ -71,7 +71,7 @@ def test_kg():
 @pytest.mark.asyncio
 async def test_weaving_with_shuttle_enabled(test_shards, test_kg):
     """Test full weaving cycle with Shuttle enabled."""
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
     # Create config with Shuttle enabled
     config = Config.fast()
@@ -103,7 +103,7 @@ async def test_weaving_with_shuttle_enabled(test_shards, test_kg):
 @pytest.mark.asyncio
 async def test_weaving_with_shuttle_disabled(test_shards, test_kg):
     """Test full weaving cycle with Shuttle disabled (fallback behavior)."""
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
     # Create config with Shuttle disabled
     config = Config.fast()
@@ -133,7 +133,7 @@ async def test_weaving_with_shuttle_disabled(test_shards, test_kg):
 @pytest.mark.asyncio
 async def test_weaving_shuttle_modes(test_shards, test_kg):
     """Test weaving with different execution modes (BARE/FAST/FUSED)."""
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
     modes = [
         (Config.bare(), "BARE"),
@@ -165,7 +165,7 @@ async def test_weaving_shuttle_modes(test_shards, test_kg):
 @pytest.mark.asyncio
 async def test_weaving_shuttle_graceful_degradation(test_shards):
     """Test graceful degradation when Shuttle fails."""
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
     config = Config.fast()
     config.enable_shuttle = True
@@ -192,7 +192,7 @@ async def test_weaving_shuttle_graceful_degradation(test_shards):
 @pytest.mark.asyncio
 async def test_weaving_shuttle_performance(test_shards, test_kg):
     """Test Shuttle performance overhead is acceptable."""
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     import time
 
     config = Config.fast()
@@ -233,7 +233,7 @@ async def test_weaving_shuttle_performance(test_shards, test_kg):
 @pytest.mark.asyncio
 async def test_weaving_shuttle_quality(test_shards, test_kg):
     """Test Shuttle improves result quality (confidence)."""
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
     config = Config.fast()
 

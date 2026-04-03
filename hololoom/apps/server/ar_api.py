@@ -74,7 +74,7 @@ from hololoom.vision import (
     create_object_detector,
     create_scene_analyzer,
 )
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 # Import the new Redis-based rate limiter
 try:

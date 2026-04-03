@@ -13,7 +13,7 @@ Tests:
 import pytest
 import asyncio
 import numpy as np
-from hololoom.weaving_orchestrator_bandit import (
+from hololoom.core.orchestrator.variants.bandit import (
     BanditOrchestrator,
     BanditConfig,
     create_bandit_orchestrator,

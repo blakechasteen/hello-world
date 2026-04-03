@@ -642,7 +642,7 @@ async def example_voice_agent_integration():
     try:
         from hololoom.config import Config
         from hololoom.voice import VoiceAgent
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     except ImportError:
         print("HoloLoom not available - skipping example")
         return

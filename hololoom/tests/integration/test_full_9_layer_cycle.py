@@ -32,7 +32,7 @@ import time
 from datetime import datetime
 from typing import List
 
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 from hololoom.config import Config, ExecutionMode
 from hololoom.protocols.types import Query, MemoryShard
 from hololoom.alignment.safety_guardrails import SafetyGuardrails

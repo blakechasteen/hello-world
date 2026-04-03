@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from hololoom.config import Config
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ def initialize_jenny_runtime(
         from hololoom.visualization.jenny_runtime import JennyConfig, JennyRuntime
 
         # Use module-level renderer map
-        from hololoom.weaving_orchestrator import _get_jenny_renderer_map
+        from hololoom.core.orchestrator.weaving_orchestrator import _get_jenny_renderer_map
         renderer_map = _get_jenny_renderer_map()
         renderer_str = getattr(cfg, 'jenny_default_renderer', 'html')
         default_renderer = renderer_map.get(renderer_str, RenderTarget.HTML)

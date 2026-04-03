@@ -50,7 +50,7 @@ from hololoom.config import Config
 from hololoom.prompting.unified_mrf import MetapromptConfig, ModelProvider, UnifiedMRF
 from hololoom.protocols.recursive_reasoning import ReasoningStrategy
 from hololoom.protocols.types import MemoryShard, Query
-from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
+from hololoom.core.orchestrator.variants.recursive import RecursiveWeavingOrchestrator
 
 logger = logging.getLogger(__name__)
 

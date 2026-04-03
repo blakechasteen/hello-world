@@ -33,7 +33,7 @@ def test_smoke_imports():
     print("="*80)
 
     try:
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         print("[OK] WeavingOrchestrator")
     except Exception as e:
         print(f"[FAIL] WeavingOrchestrator: {e}")
@@ -218,7 +218,7 @@ async def test_weaving_cycle():
     print("LEVEL 3A: Complete Weaving Cycle")
     print("="*80)
 
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     from hololoom.config import Config
 
     # Create orchestrator with MCTS
@@ -322,7 +322,7 @@ async def test_performance():
     print("LEVEL 4: Performance Tests")
     print("="*80)
 
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     from hololoom.config import Config
 
     # Create orchestrator

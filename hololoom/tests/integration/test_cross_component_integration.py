@@ -119,7 +119,7 @@ class TestRoutingOrchestratorIntegration:
     async def test_query_complexity_determines_execution_mode(self):
         """Query complexity should determine orchestrator execution mode."""
         from hololoom.routing.query_classifier import QueryClassifier, QueryComplexity
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.fast()
@@ -348,7 +348,7 @@ class TestErrorPropagation:
     @pytest.mark.asyncio
     async def test_layer_failure_partial_result_with_provenance(self):
         """Layer failure should return partial result with error provenance."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.bare()  # Minimal config
@@ -379,7 +379,7 @@ class TestErrorPropagation:
     @pytest.mark.asyncio
     async def test_error_metadata_preserved_across_layers(self):
         """Error metadata should be preserved as it propagates up layers."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.bare()
@@ -436,7 +436,7 @@ class TestConfigurationPropagation:
     async def test_mode_switching_affects_all_layers(self):
         """Mode switching (BARE→FUSED) should update all layers."""
         from hololoom.config import ExecutionMode
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         from hololoom.memory.backend_factory import create_memory_backend
 
         # Start with BARE
@@ -509,7 +509,7 @@ class TestEndToEndIntegration:
     @pytest.mark.asyncio
     async def test_full_pipeline_query_to_response(self):
         """Test complete pipeline from query to response."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.fast()

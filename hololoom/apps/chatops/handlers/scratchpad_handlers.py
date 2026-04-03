@@ -123,7 +123,7 @@ except ImportError:
 
 try:
     from hololoom.fabric.spacetime import Spacetime
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     ORCHESTRATOR_AVAILABLE = True
 except ImportError:
     ORCHESTRATOR_AVAILABLE = False

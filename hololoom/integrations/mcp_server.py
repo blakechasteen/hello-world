@@ -62,7 +62,7 @@ from hololoom.config import Config
 from hololoom.prompting.metaprompt import create_metaprompt_auto, enhance_request
 from hololoom.protocols.recursive_reasoning import ReasoningStrategy
 from hololoom.protocols.types import Query
-from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
+from hololoom.core.orchestrator.variants.recursive import RecursiveWeavingOrchestrator
 
 # Initialize logging
 logging.basicConfig(

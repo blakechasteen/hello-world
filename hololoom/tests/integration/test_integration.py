@@ -105,7 +105,7 @@ def test_hybrid_memory():
     print("="*60)
 
     try:
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         print("  Initializing weaving orchestrator...")
         weaver = WeavingOrchestrator(
@@ -166,7 +166,7 @@ def test_weaving_orchestrator():
     print("="*60)
 
     try:
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         print("  Creating orchestrator...")
         weaver = WeavingOrchestrator(

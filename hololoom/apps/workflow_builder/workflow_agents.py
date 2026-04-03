@@ -65,7 +65,7 @@ class WorkflowAgentExecutor:
             from hololoom.policy.thompson_sampling import BanditStrategy, TSBandit
 
             from hololoom.config import Config
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
             # Use FAST config for balanced performance
             self._config = Config.fast()

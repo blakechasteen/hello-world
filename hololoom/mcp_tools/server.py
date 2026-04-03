@@ -36,7 +36,7 @@ try:
     from hololoom import HoloLoom
     from hololoom.config import Config
     from hololoom.Documentation.types import MemoryShard, Query
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     print("ERROR: Could not import HoloLoom. Check installation.", file=sys.stderr)

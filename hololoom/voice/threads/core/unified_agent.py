@@ -45,7 +45,7 @@ try:
     from hololoom.config import Config
     from hololoom.protocols.types import Query
     from hololoom.voice.voice_agent import VoiceAgent
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False

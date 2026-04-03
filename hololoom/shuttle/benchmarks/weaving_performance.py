@@ -110,7 +110,7 @@ class BenchmarkRunner:
         Returns:
             Benchmark results dict
         """
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         config.enable_shuttle = enable_shuttle
 

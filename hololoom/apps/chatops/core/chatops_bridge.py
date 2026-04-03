@@ -36,7 +36,7 @@ try:
     from hololoom.fabric.spacetime import Spacetime, WeavingTrace
     from hololoom.memory.graph import KG
     from hololoom.protocols.types import Context, Features, MemoryShard, Query
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:
     HOLOLOOM_AVAILABLE = False

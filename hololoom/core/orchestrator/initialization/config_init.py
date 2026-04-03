@@ -30,7 +30,7 @@ import warnings
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 from hololoom.alignment import create_guardrails
 from hololoom.alignment.audit_trail import AuditTrail

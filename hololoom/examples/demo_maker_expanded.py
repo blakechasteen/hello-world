@@ -13,7 +13,7 @@ from hololoom.memory.stores.in_memory_store import InMemoryStore
 from hololoom.memory.unified import UnifiedMemory
 
 from hololoom.config import Config
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 
 async def main():

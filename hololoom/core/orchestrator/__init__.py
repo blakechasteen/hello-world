@@ -122,6 +122,9 @@ from .stages.executors import (
 )
 
 __all__ = [
+    # Canonical orchestrator
+    'WeavingOrchestrator',
+
     # Context
     'WeavingContext',
     'create_weaving_context',
@@ -199,3 +202,23 @@ __all__ = [
     'create_pipeline_with_protocols',
     'ProtocolOrchestrator',
 ]
+
+
+# WeavingOrchestrator is imported at the bottom of this file (after all other
+# imports) to avoid circular import issues during package initialization.
+# The weaving_orchestrator module imports from many hololoom subpackages which
+# in turn may trigger loading this __init__.py, so it must come last.
+
+
+def _deferred_init():
+    """Import WeavingOrchestrator after all other module-level imports."""
+    try:
+        from .weaving_orchestrator import WeavingOrchestrator  # noqa: F401
+
+        globals()["WeavingOrchestrator"] = WeavingOrchestrator
+    except ImportError:
+        pass
+
+
+_deferred_init()
+del _deferred_init

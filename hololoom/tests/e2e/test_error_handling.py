@@ -16,7 +16,7 @@ Scenarios:
 import pytest
 import asyncio
 from unittest.mock import patch, MagicMock
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 from hololoom.config import Config
 from hololoom.protocols.types import Query
 

@@ -11,7 +11,7 @@ Date: October 28, 2025
 import asyncio
 from pathlib import Path
 
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 from hololoom.config import Config
 from hololoom.protocols.types import Query, MemoryShard
 

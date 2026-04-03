@@ -22,7 +22,7 @@ import os
 import tempfile
 import json
 
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 from hololoom.config import Config
 from hololoom.protocols.types import Query
 

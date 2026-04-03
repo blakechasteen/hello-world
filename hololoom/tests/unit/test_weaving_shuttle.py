@@ -71,7 +71,7 @@ class TestCompatibilityAlias:
             warnings.simplefilter("ignore")
 
             from hololoom.weaving_shuttle import WeavingShuttle
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
             # Should be the same class
             assert WeavingShuttle is WeavingOrchestrator, \
@@ -180,7 +180,7 @@ class TestBackwardCompatibility:
             warnings.simplefilter("ignore")
 
             from hololoom.weaving_shuttle import WeavingShuttle
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
             instance = WeavingShuttle(cfg=bare_config, shards=test_shards)
 
@@ -196,7 +196,7 @@ class TestBackwardCompatibility:
             warnings.simplefilter("ignore")
 
             from hololoom.weaving_shuttle import WeavingShuttle
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
             # Types should be identical
             assert type(WeavingShuttle) == type(WeavingOrchestrator), \

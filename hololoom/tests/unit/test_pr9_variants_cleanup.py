@@ -156,16 +156,16 @@ class TestWeaveRecursiveMethod:
     """
 
     def test_method_removed(self):
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         assert not hasattr(WeavingOrchestrator, 'weave_recursive')
 
     def test_weave_method_exists(self):
         """The primary weave() method still exists."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         assert hasattr(WeavingOrchestrator, 'weave')
 
     def test_orchestrator_importable(self):
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         assert WeavingOrchestrator is not None
 
 

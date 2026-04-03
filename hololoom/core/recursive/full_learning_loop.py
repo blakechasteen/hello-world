@@ -25,7 +25,7 @@ from hololoom.config import Config
 from hololoom.fabric.spacetime import Spacetime
 from hololoom.protocols.types import MemoryShard, Query
 from hololoom.recursive.scratchpad import Scratchpad
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 from .advanced_refinement import AdvancedRefiner
 from .hot_patterns import HotPatternConfig, HotPatternFeedbackEngine

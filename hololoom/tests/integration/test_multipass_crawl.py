@@ -23,7 +23,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from hololoom.config import Config, ExecutionMode, MemoryBackend
-from hololoom.weaving_orchestrator import WeavingOrchestrator, Query
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query
 from hololoom.protocols import ComplexityLevel
 from hololoom.memory.protocol import Memory, MemoryQuery, RetrievalResult
 

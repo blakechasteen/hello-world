@@ -24,7 +24,7 @@ from hololoom.cli_client import HTTPX_AVAILABLE, HypervisorClient
 # Core imports
 from hololoom.config import Config
 from hololoom.protocols.types import Query
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 # ============================================================================
 # Color Output (Windows-compatible ASCII)

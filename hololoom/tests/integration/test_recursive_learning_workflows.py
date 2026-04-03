@@ -241,7 +241,7 @@ class TestAdvancedRefinementWorkflow:
         """All refinement strategies should work."""
         try:
             from hololoom.recursive import AdvancedRefiner, RefinementStrategy
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
             config = Config.fast()
 
@@ -281,7 +281,7 @@ class TestAdvancedRefinementWorkflow:
         """Refinement should improve quality over iterations."""
         try:
             from hololoom.recursive import AdvancedRefiner, RefinementStrategy
-            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
             config = Config.bare()  # Start with low quality
 

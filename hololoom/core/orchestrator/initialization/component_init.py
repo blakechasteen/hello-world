@@ -31,7 +31,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 from hololoom.embedding.spectral import MatryoshkaEmbeddings
 from hololoom.loom.command import LoomCommand

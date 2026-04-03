@@ -25,7 +25,7 @@ import time
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 from hololoom.protocols.types import ComplexityLevel, MemoryShard, ProvenanceTrace, Query
 

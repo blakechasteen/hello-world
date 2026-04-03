@@ -6,7 +6,7 @@ sys.path.insert(0, '.')
 
 import asyncio
 from hololoom.config import Config
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 from hololoom.protocols.types import Query, MemoryShard
 
 async def test():

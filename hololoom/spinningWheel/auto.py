@@ -415,7 +415,7 @@ async def spin_from_query(
     # Create orchestrator if needed
     if orchestrator is None:
         from hololoom.config import Config
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         config = Config.fast()
         orchestrator = WeavingOrchestrator(cfg=config)

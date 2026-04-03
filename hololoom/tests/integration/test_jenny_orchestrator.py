@@ -56,7 +56,7 @@ def mock_orchestrator():
     Note: We must explicitly set class constants on the mock because
     MagicMock doesn't inherit class-level attributes from the spec.
     """
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
     # Import the real method but don't create a full orchestrator
     mock_orch = MagicMock(spec=WeavingOrchestrator)
@@ -114,7 +114,7 @@ class TestPanelTypeDetection:
     def test_confidence_panel_for_low_confidence(self, mock_orchestrator):
         """Low confidence responses should return CONFIDENCE panel type."""
         from hololoom.visualization.jenny_spec import PanelTypeJenny
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Create mock spacetime with low confidence (below threshold)
         mock_spacetime = MagicMock()
@@ -129,7 +129,7 @@ class TestPanelTypeDetection:
     def test_graph_panel_for_multiple_threads(self, mock_orchestrator):
         """Multiple threads activated should return GRAPH panel type."""
         from hololoom.visualization.jenny_spec import PanelTypeJenny
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Create mock spacetime with threads > threshold
         mock_trace = MagicMock()
@@ -150,7 +150,7 @@ class TestPanelTypeDetection:
     def test_timeline_panel_for_many_stages(self, mock_orchestrator):
         """Multiple stage durations should return TIMELINE panel type."""
         from hololoom.visualization.jenny_spec import PanelTypeJenny
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Create mock spacetime with stages > threshold
         mock_trace = MagicMock()
@@ -171,7 +171,7 @@ class TestPanelTypeDetection:
     def test_metric_panel_for_long_duration(self, mock_orchestrator):
         """Long duration responses should return METRIC panel type."""
         from hololoom.visualization.jenny_spec import PanelTypeJenny
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Create mock spacetime with duration > threshold
         mock_trace = MagicMock()
@@ -191,7 +191,7 @@ class TestPanelTypeDetection:
     def test_text_panel_as_default(self, mock_orchestrator):
         """Default case should return TEXT panel type."""
         from hololoom.visualization.jenny_spec import PanelTypeJenny
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Create mock spacetime with all values below thresholds
         mock_trace = MagicMock()
@@ -263,7 +263,7 @@ class TestJennyOrchestratorAttributes:
 
     def test_orchestrator_has_jenny_attributes(self):
         """WeavingOrchestrator should have Jenny-related attributes."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Check class has expected methods/attributes
         assert hasattr(WeavingOrchestrator, '_detect_jenny_panel_type')
@@ -271,7 +271,7 @@ class TestJennyOrchestratorAttributes:
 
     def test_orchestrator_init_defaults(self, test_shards):
         """Test orchestrator default values without full initialization."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Check _detect_jenny_panel_type method exists and is callable
         assert callable(getattr(WeavingOrchestrator, '_detect_jenny_panel_type', None))
@@ -425,7 +425,7 @@ class TestJennyMRFIntegration:
 
     def test_orchestrator_has_mrf_attributes(self):
         """WeavingOrchestrator should have MRF-related attributes."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         # Check class has expected methods
         assert hasattr(WeavingOrchestrator, '_classify_query_type')
@@ -434,7 +434,7 @@ class TestJennyMRFIntegration:
 
     def test_classify_query_type_factual(self):
         """Query type classification should identify factual queries."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         mock_orch = MagicMock(spec=WeavingOrchestrator)
         mock_orch._classify_query_type = WeavingOrchestrator._classify_query_type.__get__(
@@ -449,7 +449,7 @@ class TestJennyMRFIntegration:
 
     def test_classify_query_type_procedural(self):
         """Query type classification should identify procedural queries."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         mock_orch = MagicMock(spec=WeavingOrchestrator)
         mock_orch._classify_query_type = WeavingOrchestrator._classify_query_type.__get__(
@@ -464,7 +464,7 @@ class TestJennyMRFIntegration:
 
     def test_classify_query_type_analytical(self):
         """Query type classification should identify analytical queries."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         mock_orch = MagicMock(spec=WeavingOrchestrator)
         mock_orch._classify_query_type = WeavingOrchestrator._classify_query_type.__get__(
@@ -479,7 +479,7 @@ class TestJennyMRFIntegration:
 
     def test_classify_query_type_exploratory(self):
         """Query type classification should identify exploratory queries."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
         mock_orch = MagicMock(spec=WeavingOrchestrator)
         mock_orch._classify_query_type = WeavingOrchestrator._classify_query_type.__get__(
@@ -495,7 +495,7 @@ class TestJennyMRFIntegration:
 
     def test_get_panel_type_candidates_basic(self):
         """Panel type candidates should always include TEXT."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         from hololoom.visualization.jenny_spec import PanelTypeJenny
 
         mock_orch = MagicMock(spec=WeavingOrchestrator)
@@ -514,7 +514,7 @@ class TestJennyMRFIntegration:
 
     def test_get_panel_type_candidates_includes_code(self):
         """Panel type candidates should include CODE for code blocks."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         from hololoom.visualization.jenny_spec import PanelTypeJenny
 
         mock_orch = MagicMock(spec=WeavingOrchestrator)
@@ -533,7 +533,7 @@ class TestJennyMRFIntegration:
 
     def test_detect_panel_type_uses_heuristic_fallback(self):
         """Panel type detection should use heuristic when MRF unavailable."""
-        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
         from hololoom.visualization.jenny_spec import PanelTypeJenny
 
         mock_orch = MagicMock(spec=WeavingOrchestrator)

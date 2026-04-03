@@ -33,7 +33,7 @@ from typing import List, Dict
 from unittest.mock import Mock, patch
 
 # HoloLoom core
-from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 from hololoom.protocols.types import Query, MemoryShard
 from hololoom.config import Config, ExecutionMode
 

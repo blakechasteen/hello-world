@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hololoom.physics.unified_physics import UnifiedPhysicsResult
-    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 
 from hololoom.fabric.spacetime import Spacetime
 from hololoom.protocols.types import Query
