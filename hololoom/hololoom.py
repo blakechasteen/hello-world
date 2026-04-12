@@ -46,11 +46,24 @@ if TYPE_CHECKING:
     from hololoom.loom.dreaming import DreamOrchestrator
     from hololoom.loom.weave_house import WeaveHouse, WeaveResult
 
-from hololoom.embedding.spectral import MatryoshkaEmbeddings
 from hololoom.memory.awareness_graph import AwarenessGraph
 from hololoom.memory.awareness_types import ActivationStrategy
 from hololoom.memory.protocol import Memory
-from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+
+# Optional: semantic calculus and advanced embeddings (graceful degradation)
+try:
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
+    _HAVE_EMBEDDINGS = True
+except ImportError:
+    MatryoshkaEmbeddings = None
+    _HAVE_EMBEDDINGS = False
+
+try:
+    from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+    _HAVE_SEMANTIC_CALCULUS = True
+except ImportError:
+    MatryoshkaSemanticCalculus = None
+    _HAVE_SEMANTIC_CALCULUS = False
 
 # Input processing (graceful degradation)
 try:
@@ -150,12 +163,14 @@ class HoloLoom:
         else:
             self._router = None
 
-        # Create semantic calculus
-        embedder = MatryoshkaEmbeddings(sizes=self.config.scales)
-        self._semantic = MatryoshkaSemanticCalculus(
-            matryoshka_embedder=embedder,
-            snapshot_interval=0.5
-        )
+        # Create semantic calculus (graceful degradation if deps missing)
+        self._semantic = None
+        if _HAVE_EMBEDDINGS and _HAVE_SEMANTIC_CALCULUS:
+            embedder = MatryoshkaEmbeddings(sizes=self.config.scales)
+            self._semantic = MatryoshkaSemanticCalculus(
+                matryoshka_embedder=embedder,
+                snapshot_interval=0.5
+            )
 
         # Create awareness graph (the core)
         self._graph = graph_backend or nx.MultiDiGraph()

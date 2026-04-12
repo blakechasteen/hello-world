@@ -28,7 +28,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-import aiosqlite
+try:
+    import aiosqlite
+except ImportError:
+    aiosqlite = None  # type: ignore[assignment]
+
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -168,7 +172,7 @@ class FeedbackStore:
             db_path: Path to SQLite database file
         """
         self.db_path = Path(db_path)
-        self.db: aiosqlite.Connection | None = None
+        self.db: Any = None
 
         # Ensure data directory exists
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -184,6 +188,11 @@ class FeedbackStore:
 
     async def initialize(self):
         """Initialize database connection and schema."""
+        if aiosqlite is None:
+            raise ImportError(
+                "aiosqlite is required for FeedbackStore. "
+                "Install it with: pip install aiosqlite"
+            )
         self.db = await aiosqlite.connect(str(self.db_path))
         await self._create_schema()
         logger.info(f"FeedbackStore initialized at {self.db_path}")

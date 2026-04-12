@@ -23,6 +23,8 @@ import wave
 import struct
 import math
 
+pytest.importorskip("hololoom.documentation")
+
 from hololoom.spinningWheel.whisper_spinner import (
     WhisperSpinner,
     TimecodeSegment,

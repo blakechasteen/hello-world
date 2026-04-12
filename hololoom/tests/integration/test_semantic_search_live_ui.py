@@ -14,6 +14,10 @@ This script:
 Run this while the web server is running!
 """
 
+import pytest
+
+pytest.importorskip("fastapi")
+
 import asyncio
 import json
 import websockets

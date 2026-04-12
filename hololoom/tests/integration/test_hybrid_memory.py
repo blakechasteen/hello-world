@@ -6,11 +6,14 @@ Verify Neo4j + Qdrant integration is working properly
 """
 
 import asyncio
+import pytest
 import sys
 from pathlib import Path
 
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent))
+
+pytest.importorskip("neo4j")
 
 from hololoom.memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant, Memory, MemoryQuery, Strategy
 from datetime import datetime

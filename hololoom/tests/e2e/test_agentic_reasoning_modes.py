@@ -22,6 +22,8 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
+pytest.importorskip("hololoom.documentation")
+
 from hololoom.config import Config
 from hololoom.protocols.types import Query, MemoryShard
 from hololoom.agentic.core import (

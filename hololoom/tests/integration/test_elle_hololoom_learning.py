@@ -8,6 +8,8 @@ from datetime import datetime
 from hololoom import HoloLoom
 from hololoom.config import Config
 from hololoom.recursive import FullLearningEngine
+
+pytest.importorskip("hololoom.documentation")
 from hololoom.documentation.types import Query, MemoryShard
 
 

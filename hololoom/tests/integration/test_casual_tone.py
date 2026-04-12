@@ -1,3 +1,7 @@
+import pytest
+
+pytest.importorskip("gradio")
+
 import asyncio
 import sys
 from pathlib import Path

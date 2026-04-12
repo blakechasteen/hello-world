@@ -15,6 +15,8 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+pytest.importorskip("hololoom.documentation")
+
 from hololoom.spinningWheel import spin, spin_batch
 
 

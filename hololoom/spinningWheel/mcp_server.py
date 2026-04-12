@@ -354,7 +354,7 @@ class SpinningWheelMCPServer:
         """Process and chunk text."""
         import hashlib
 
-        from hololoom.documentation.types import MemoryShard
+        from hololoom.protocols.types import MemoryShard
 
         text = args.get("text", "")
         chunk_size = args.get("chunk_size", 1000)

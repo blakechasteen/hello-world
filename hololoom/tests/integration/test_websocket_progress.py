@@ -6,6 +6,9 @@ real-time job progress updates via WebSocket.
 """
 
 import pytest
+
+pytest.importorskip("websockets")
+
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime

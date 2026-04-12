@@ -20,6 +20,8 @@ import tempfile
 from pathlib import Path
 from typing import List, Dict, Any
 
+pytest.importorskip("hololoom.documentation")
+
 from hololoom.departments import (
     DepartmentRequest,
     DepartmentRegistry

@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Any
 
 from hololoom.config import Config
-from hololoom.documentation.types import MemoryShard, Query
+from hololoom.protocols.types import MemoryShard, Query
 from hololoom.fabric.spacetime import Spacetime
 from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
 

@@ -24,7 +24,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import aiosqlite
+try:
+    import aiosqlite
+except ImportError:
+    aiosqlite = None  # type: ignore[assignment]
 
 from hololoom.recursive.scratchpad.recursive_scratchpad import (
     DialogueTree,
@@ -44,10 +47,15 @@ class ThoughtPersistence:
             db_path: Path to SQLite database
         """
         self.db_path = db_path
-        self.db: aiosqlite.Connection | None = None
+        self.db: Any = None
 
     async def initialize(self) -> None:
         """Initialize database schema."""
+        if aiosqlite is None:
+            raise ImportError(
+                "aiosqlite is required for ThoughtPersistence. "
+                "Install it with: pip install aiosqlite"
+            )
         self.db = await aiosqlite.connect(str(self.db_path))
 
         # Enable foreign keys

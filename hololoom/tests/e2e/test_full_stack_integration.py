@@ -22,6 +22,9 @@ import asyncio
 import requests
 import time
 from typing import Dict, Any
+
+pytest.importorskip("fastapi")
+
 from fastapi.testclient import TestClient
 
 from hololoom.apps.server.agentic_api import app

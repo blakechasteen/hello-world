@@ -10,6 +10,8 @@ from pathlib import Path
 import tempfile
 import shutil
 
+pytest.importorskip("hololoom.documentation")
+
 # Mock PDF libraries before importing PDFSpinner
 class MockPDFReader:
     def __init__(self, file):

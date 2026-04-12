@@ -19,6 +19,8 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 from typing import List, Dict, Any
 
+pytest.importorskip("hololoom.documentation")
+
 from hololoom.spinningWheel.youtube_spinner import (
     YouTubeSpinner,
     TRANSCRIPT_API_AVAILABLE,

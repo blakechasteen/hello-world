@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
-from hololoom.documentation.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     ImportanceScore,

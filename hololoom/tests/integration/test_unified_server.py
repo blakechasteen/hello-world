@@ -18,6 +18,9 @@ Usage:
 """
 
 import pytest
+
+pytest.importorskip("fastapi")
+
 import asyncio
 import json
 from typing import AsyncGenerator

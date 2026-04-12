@@ -11,7 +11,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import aiosqlite
+try:
+    import aiosqlite
+except ImportError:
+    aiosqlite = None  # type: ignore[assignment]
 
 
 @dataclass
@@ -220,10 +223,15 @@ class WorkflowPersistence:
             db_path: Path to SQLite database file. Created if doesn't exist.
         """
         self.db_path = Path(db_path)
-        self._connection: aiosqlite.Connection | None = None
+        self._connection: Any = None
 
     async def initialize(self):
         """Initialize database and create tables if needed."""
+        if aiosqlite is None:
+            raise ImportError(
+                "aiosqlite is required for WorkflowPersistence. "
+                "Install it with: pip install aiosqlite"
+            )
         # Ensure parent directory exists
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 

@@ -10,6 +10,8 @@ import tempfile
 import shutil
 import ast
 
+pytest.importorskip("hololoom.documentation")
+
 from hololoom.spinningWheel.codebase_spinner import (
     CodebaseSpinner,
     PythonParser,

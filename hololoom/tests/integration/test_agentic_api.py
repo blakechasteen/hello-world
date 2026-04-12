@@ -16,6 +16,9 @@ Coverage:
 
 import pytest
 import asyncio
+
+pytest.importorskip("fastapi")
+
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, AsyncMock, patch
 

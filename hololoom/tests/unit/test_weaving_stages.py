@@ -20,7 +20,7 @@ from unittest.mock import Mock, AsyncMock, MagicMock
 from typing import List
 
 # Import the stage functions
-from hololoom.orchestrator import (
+from hololoom.core.orchestrator import (
     WeavingContext,
     create_weaving_context,
     execute_step0_meta_prompt,

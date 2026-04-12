@@ -29,7 +29,14 @@ from typing import Optional, Protocol
 import networkx as nx
 import numpy as np
 
-from hololoom.dark_trace.sae.activation_buffer import ActivationSample, get_activation_buffer
+# dark_trace is optional (Layer 2) — guard to avoid pulling 66K LOC at import time
+try:
+    from hololoom.dark_trace.sae.activation_buffer import ActivationSample, get_activation_buffer
+    _HAVE_DARK_TRACE = True
+except ImportError:
+    ActivationSample = None
+    get_activation_buffer = None
+    _HAVE_DARK_TRACE = False
 
 # Feature flag: embedding drift detection (default OFF, log-only when on)
 _DRIFT_DETECT = os.environ.get("HOLOLOOM_DRIFT_DETECT", "").lower() in ("true", "1", "yes")
@@ -298,8 +305,8 @@ class MatryoshkaEmbeddings:
             else:
                 out[d] = base @ self.proj[d]
 
-        # SAE activation tap — record embeddings at each scale
-        _buf = get_activation_buffer()
+        # SAE activation tap — record embeddings at each scale (requires dark_trace)
+        _buf = get_activation_buffer() if _HAVE_DARK_TRACE else None
         if _buf is not None:
             for scale, vecs in out.items():
                 for vec in vecs:

@@ -11,6 +11,9 @@ results when backends are unavailable, but never crash.
 """
 
 import pytest
+
+pytest.importorskip("fastapi")
+
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from fastapi import FastAPI

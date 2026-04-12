@@ -47,10 +47,10 @@ dependencies = [
 ]
 
 [project.urls]
-"Bug Tracker" = "https://github.com/blakechasteen/mythRL/issues"
-"Documentation" = "https://github.com/blakechasteen/mythRL/blob/master/README.md"
-"Source Code" = "https://github.com/blakechasteen/mythRL"
-"Release Notes" = "https://github.com/blakechasteen/mythRL/blob/master/RELEASE_v1.0.0.md"
+"Bug Tracker" = "https://github.com/blakechasteen/hello-world/issues"
+"Documentation" = "https://github.com/blakechasteen/hello-world/blob/master/README.md"
+"Source Code" = "https://github.com/blakechasteen/hello-world"
+"Release Notes" = "https://github.com/blakechasteen/hello-world/blob/master/RELEASE_v1.0.0.md"
 
 [project.optional-dependencies]
 nlp = [
@@ -281,7 +281,6 @@ include = ["hololoom*"]
 
 [tool.setuptools.package-data]
 hololoom = [
-    "*.md",
     "config/*.yaml",
     "visualization/*.css",
     "visualization/*.js",

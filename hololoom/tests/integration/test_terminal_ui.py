@@ -5,6 +5,10 @@ Terminal UI Integration Test
 Verify that terminal UI works correctly with WeavingOrchestrator.
 """
 
+import pytest
+
+pytest.importorskip("rich")
+
 import asyncio
 import sys
 import os

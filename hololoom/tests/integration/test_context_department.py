@@ -16,6 +16,9 @@ Run with:
 """
 
 import pytest
+
+pytest.importorskip("fastapi")
+
 import asyncio
 from typing import List
 

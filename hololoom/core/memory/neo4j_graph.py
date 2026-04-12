@@ -31,6 +31,8 @@ This is the "Yarn Graph" backed by Neo4j - persistent symbolic memory
 that can be "tensioned" into Warp Space for continuous computation.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import os

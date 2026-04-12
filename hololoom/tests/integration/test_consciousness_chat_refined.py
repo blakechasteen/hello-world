@@ -8,6 +8,10 @@ Tests the refined consciousness_chat.py to verify:
 Run: python test_consciousness_chat_refined.py
 """
 
+import pytest
+
+pytest.importorskip("gradio")
+
 import asyncio
 import sys
 from pathlib import Path

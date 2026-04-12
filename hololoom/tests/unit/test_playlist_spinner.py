@@ -19,6 +19,8 @@ import pytest
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
+pytest.importorskip("hololoom.documentation")
+
 from hololoom.spinningWheel.playlist_spinner import (
     PlaylistEntry,
     PlaylistManifest,

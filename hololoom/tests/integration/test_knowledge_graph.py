@@ -681,9 +681,9 @@ def test_demo_generation():
 
     <script>
         // Embed demo HTML in iframes
-        const demo1Html = `{demos[0][1].replace('`', '\\`')}`;
-        const demo2Html = `{demos[1][1].replace('`', '\\`')}`;
-        const demo3Html = `{demos[2][1].replace('`', '\\`')}`;
+        const demo1Html = `{demos[0][1].replace(chr(96), chr(92) + chr(96))}`;
+        const demo2Html = `{demos[1][1].replace(chr(96), chr(92) + chr(96))}`;
+        const demo3Html = `{demos[2][1].replace(chr(96), chr(92) + chr(96))}`;
 
         document.getElementById('demo1').srcdoc = demo1Html;
         document.getElementById('demo2').srcdoc = demo2Html;

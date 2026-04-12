@@ -20,6 +20,8 @@ from unittest.mock import Mock, patch, MagicMock, AsyncMock
 from datetime import datetime
 from dataclasses import asdict
 
+pytest.importorskip("hololoom.documentation")
+
 # Import test targets
 from hololoom.spinningWheel.website import (
     ExtractedImage,

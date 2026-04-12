@@ -9,6 +9,10 @@ Usage:
     PYTHONPATH=. python test_llm_agentic_search.py
 """
 
+import pytest
+
+pytest.importorskip("gradio")
+
 import asyncio
 import logging
 from hololoom.agentic import create_agentic_orchestrator, ReasoningMode

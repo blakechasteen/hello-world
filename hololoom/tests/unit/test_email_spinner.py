@@ -15,6 +15,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import mailbox
 
+pytest.importorskip("hololoom.documentation")
+
 from hololoom.spinningWheel.email_spinner import (
     EmailSpinner,
     EmailParser,

@@ -27,10 +27,13 @@ import warnings
 from hololoom.memory.graph import LegacyShardsAdapter as YarnGraph
 
 # Import the canonical implementation
-from hololoom.core.orchestrator.weaving_orchestrator import (
-    ToolExecutor,
-    WeavingOrchestrator,
-)
+from hololoom.core.orchestrator.weaving_orchestrator import WeavingOrchestrator
+
+# ToolExecutor was removed from the orchestrator; use the protocol version
+try:
+    from hololoom.core.protocols.shuttle import ToolExecutor
+except ImportError:
+    ToolExecutor = None  # type: ignore[assignment,misc]
 
 # Compatibility alias
 WeavingShuttle = WeavingOrchestrator
