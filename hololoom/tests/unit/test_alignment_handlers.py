@@ -15,6 +15,9 @@ Date: 2025-12-11
 
 import asyncio
 import pytest
+
+pytest.importorskip("nio")
+
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta

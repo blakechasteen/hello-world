@@ -22,6 +22,12 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch, PropertyMock
 import pytest
 import networkx as nx
 
+try:
+    import neo4j  # noqa: F401
+    HAS_NEO4J = True
+except ImportError:
+    HAS_NEO4J = False
+
 
 # ============================================================================
 # neo4j_graph.py tests
@@ -139,6 +145,7 @@ class TestNeo4jConfig:
             assert config.connection_timeout == 1.0  # clamped
 
 
+@pytest.mark.skipif(not HAS_NEO4J, reason="neo4j not installed")
 class TestNeo4jKGWithMockedDriver:
     """Tests for Neo4jKG with mocked Neo4j driver."""
 

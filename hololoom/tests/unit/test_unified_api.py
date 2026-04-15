@@ -11,6 +11,9 @@ Tests:
 """
 
 import pytest
+
+pytest.importorskip("neo4j")
+
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
 

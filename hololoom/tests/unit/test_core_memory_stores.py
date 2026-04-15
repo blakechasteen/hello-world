@@ -26,6 +26,18 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch, PropertyMock
 import numpy as np
 import pytest
 
+try:
+    import qdrant_client  # noqa: F401
+    HAS_QDRANT = True
+except ImportError:
+    HAS_QDRANT = False
+
+try:
+    import neo4j  # noqa: F401
+    HAS_NEO4J = True
+except ImportError:
+    HAS_NEO4J = False
+
 from hololoom.core.memory.protocol import (
     Memory,
     MemoryQuery,
@@ -990,6 +1002,7 @@ class TestMem0Store:
 # qdrant_store.py  (317 stmts, 14% → target 60%+)
 # ============================================================================
 
+@pytest.mark.skipif(not HAS_QDRANT, reason="qdrant_client not installed")
 class TestQdrantStore:
     """QdrantMemoryStore — Qdrant client + embedder mocked."""
 
@@ -1377,6 +1390,7 @@ class TestQdrantStore:
 # hybrid_neo4j_qdrant.py  (155 stmts, 0% → target 60%+)
 # ============================================================================
 
+@pytest.mark.skipif(not HAS_NEO4J or not HAS_QDRANT, reason="neo4j or qdrant_client not installed")
 class TestHybridNeo4jQdrant:
     """HybridNeo4jQdrant — both Neo4j + Qdrant fully mocked."""
 
