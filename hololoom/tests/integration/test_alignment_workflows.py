@@ -79,7 +79,7 @@ def test_shards():
 def alignment_stack():
     """Create full alignment stack."""
     return {
-        "guardrails": SafetyGuardrails(enable_human_in_loop=False),  # Disable for automated tests
+        "guardrails": SafetyGuardrails(testing_mode=True),  # Bypass approval for automated tests
         "detector": DeceptionDetector(),
         "guard": InstrumentalConvergenceGuard(),
         "audit": AuditTrail(),

@@ -127,7 +127,7 @@ class BaseDepartment:
         self.confidence_range = confidence_range
 
         # Configuration
-        self.config = config or DepartmentConfig()
+        self.config = config or DepartmentConfig(name=name, domain=domain)
 
         # Three-tier memory system
         self.short_term_memory: dict[str, Any] = {}  # Recent interactions (this session)

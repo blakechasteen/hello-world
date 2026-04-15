@@ -20,8 +20,7 @@ class TestSafetyGuardrails:
         """Set up test fixtures."""
         self.guardrails = SafetyGuardrails(
             enable_adversarial_detection=True,
-            enable_human_in_loop=True,
-            block_critical_by_default=True,
+            testing_mode=False,  # require approval
         )
 
     def test_low_risk_action_allowed(self):

@@ -132,7 +132,7 @@ class MasterWeaverDepartment(BaseDepartment):
                 "enrich_knowledge"
             ],
             confidence_range=(0.70, 0.95),
-            config=dept_config or DepartmentConfig()
+            config=dept_config or DepartmentConfig(name="masterweaver", domain="beekeeping")
         )
 
         # Load taxonomy

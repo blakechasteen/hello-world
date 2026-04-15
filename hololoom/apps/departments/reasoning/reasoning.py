@@ -777,7 +777,7 @@ class ReasoningDepartment(BaseDepartment):
                 "explain_reasoning"
             ],
             confidence_range=(0.70, 0.95),
-            config=dept_config or DepartmentConfig()
+            config=dept_config or DepartmentConfig(name="reasoning", domain="reasoning")
         )
 
         self.registry = registry

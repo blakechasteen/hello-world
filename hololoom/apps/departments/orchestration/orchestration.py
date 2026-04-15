@@ -137,7 +137,7 @@ class OrchestrationDepartment(BaseDepartment):
                 "route_task"
             ],
             confidence_range=(0.75, 0.99),
-            config=dept_config or DepartmentConfig()
+            config=dept_config or DepartmentConfig(name="orchestration", domain="orchestration")
         )
 
         self.registry = registry

@@ -108,7 +108,7 @@ class ContextDepartment(BaseDepartment):
                 "expand_context"
             ],
             confidence_range=(0.65, 0.95),
-            config=dept_config or DepartmentConfig()
+            config=dept_config or DepartmentConfig(name="context", domain="general")
         )
 
         # Store config and shards

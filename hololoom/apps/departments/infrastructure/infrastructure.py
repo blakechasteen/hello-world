@@ -126,7 +126,7 @@ class InfrastructureDepartment(BaseDepartment):
                 "check_backends"
             ],
             confidence_range=(0.80, 0.99),
-            config=dept_config or DepartmentConfig()
+            config=dept_config or DepartmentConfig(name="infrastructure", domain="infrastructure")
         )
 
         # Storage configuration

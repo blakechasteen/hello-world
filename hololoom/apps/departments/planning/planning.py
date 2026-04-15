@@ -844,7 +844,7 @@ class PlanningDepartment(BaseDepartment):
                 "optimize_plan"
             ],
             confidence_range=(0.70, 0.95),
-            config=dept_config or DepartmentConfig()
+            config=dept_config or DepartmentConfig(name="planning", domain="planning")
         )
 
         self.registry = registry

@@ -12,10 +12,16 @@ Usage:
     Fixtures are automatically discovered by pytest and available to all tests.
 """
 
+import os
+
+# Set test environment BEFORE any hololoom imports. Some modules check
+# ENVIRONMENT at import time and refuse testing_mode outside of
+# {dev, development, test, testing, local}.
+os.environ.setdefault("ENVIRONMENT", "test")
+
 import pytest
 import asyncio
 import numpy as np
-import os
 import warnings
 from typing import List
 from unittest.mock import Mock, patch, MagicMock
