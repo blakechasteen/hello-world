@@ -78,6 +78,10 @@ data/test_*.db
 data/demo_*.db
 demo_test_results.json
 test_results*.json
+test_results*.txt
+*_demo_results.json
+temp_demo_*.png
+temp_demo_*.jpg
 
 # IDE
 .vscode/settings.json

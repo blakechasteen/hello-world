@@ -35,8 +35,28 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from hololoom.reflection.buffer import ReflectionBuffer
+from hololoom.reflection.encoders import (
+    DEFAULT_TOOLS,
+    EMBEDDING_SCALES,  # re-exported for backward compatibility
+    OBSERVATION_DIM,
+    RETRIEVAL_MODES,  # re-exported for backward compatibility
+    encode_action,
+    encode_observation,
+)
 
 logger = logging.getLogger(__name__)
+
+# Re-exports: keep existing imports ``from hololoom.reflection.ppo_trainer import ...`` working.
+__all__ = [
+    "DEFAULT_TOOLS",
+    "EMBEDDING_SCALES",
+    "OBSERVATION_DIM",
+    "RETRIEVAL_MODES",
+    "encode_action",
+    "encode_observation",
+    "PPOConfig",
+    "PPOTrainer",
+]
 
 
 # ============================================================================
@@ -101,19 +121,24 @@ class PPOTrainer:
         self,
         policy: nn.Module,
         config: PPOConfig | None = None,
-        device: str = 'cpu'
+        device: str = 'cpu',
+        tools: tuple[str, ...] = DEFAULT_TOOLS,
     ):
         """
         Initialize PPO trainer.
 
         Args:
-            policy: Neural policy module (NeuralCore)
+            policy: Tool-selection policy module. Must accept a
+                ``(batch, OBSERVATION_DIM)`` tensor and return either raw logits
+                over ``len(tools)`` actions or a dict with ``logits`` / ``value``.
             config: Optional PPO configuration
             device: Torch device ('cpu' or 'cuda')
+            tools: Canonical tool names, indexed by action id.
         """
         self.policy = policy
         self.config = config or PPOConfig()
         self.device = device
+        self.tools = tools
 
         # Move policy to device
         self.policy.to(device)
@@ -192,47 +217,32 @@ class PPOTrainer:
         return metrics
 
     def _batch_to_tensors(self, batch: dict[str, list]) -> dict[str, torch.Tensor]:
+        """Convert a reflection-buffer batch into PPO-ready tensors.
+
+        Observations and actions are encoded from the actual trace features
+        emitted by ``RewardExtractor.extract_experience`` — no placeholders.
         """
-        Convert batch dict to tensors.
-
-        Args:
-            batch: Batch from reflection buffer
-
-        Returns:
-            Dict of tensors ready for training
-        """
-        # For now, we'll use a simplified approach where observations are feature dicts
-        # In a full implementation, we'd encode these into feature vectors
-
-        # Extract rewards and dones (already numeric)
         rewards = torch.tensor(batch['rewards'], dtype=torch.float32, device=self.device)
         dones = torch.tensor(batch['dones'], dtype=torch.float32, device=self.device)
 
-        # TODO: Encode observations into feature vectors
-        # For now, create dummy tensors (this will be replaced with actual encoding)
-        batch_size = len(batch['observations'])
-        observations = torch.randn(batch_size, 128, device=self.device)  # Placeholder
+        infos = batch.get('infos') or [{} for _ in batch['observations']]
+        obs_arrays = [
+            encode_observation(obs, info)
+            for obs, info in zip(batch['observations'], infos, strict=False)
+        ]
+        observations = torch.tensor(
+            np.stack(obs_arrays), dtype=torch.float32, device=self.device
+        )
 
-        # TODO: Encode actions (tool names) to indices
-        # For now, create dummy action indices
-        actions = torch.randint(0, 5, (batch_size,), device=self.device)  # Placeholder
+        action_indices = [encode_action(a, self.tools) for a in batch['actions']]
+        actions = torch.tensor(action_indices, dtype=torch.long, device=self.device)
 
-        # Compute current values (forward pass through policy)
+        # Reference rollout: values + log-probs of the actions we actually took.
         with torch.no_grad():
             policy_output = self.policy(observations)
-            if isinstance(policy_output, dict) and 'value' in policy_output:
-                values = policy_output['value']
-            else:
-                values = torch.zeros(batch_size, device=self.device)  # Placeholder
-
-            # Get log probs of old actions (for importance sampling)
-            if isinstance(policy_output, dict) and 'logits' in policy_output:
-                logits = policy_output['logits']
-                log_probs_old = F.log_softmax(logits, dim=-1)
-                # Select log probs for taken actions
-                log_probs_old = log_probs_old.gather(1, actions.unsqueeze(1)).squeeze(1)
-            else:
-                log_probs_old = torch.zeros(batch_size, device=self.device)  # Placeholder
+            logits, values = self._split_policy_output(policy_output, observations.size(0))
+            log_probs_old = F.log_softmax(logits, dim=-1)
+            log_probs_old = log_probs_old.gather(1, actions.unsqueeze(1)).squeeze(1)
 
         return {
             'observations': observations,
@@ -240,8 +250,31 @@ class PPOTrainer:
             'rewards': rewards,
             'dones': dones,
             'values': values,
-            'log_probs_old': log_probs_old
+            'log_probs_old': log_probs_old,
         }
+
+    def _split_policy_output(
+        self,
+        policy_output: Any,
+        batch_size: int,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Extract ``(logits, values)`` from a flexible policy forward result."""
+        if isinstance(policy_output, dict):
+            logits = policy_output.get('logits')
+            values = policy_output.get('value')
+            if values is None:
+                values = torch.zeros(batch_size, device=self.device)
+        elif isinstance(policy_output, tuple) and len(policy_output) == 2:
+            logits, values = policy_output
+        else:
+            logits = policy_output
+            values = torch.zeros(batch_size, device=self.device)
+
+        if logits is None:
+            raise ValueError("Policy did not return logits — cannot compute PPO update")
+        if values.dim() > 1:
+            values = values.squeeze(-1)
+        return logits, values
 
     def _compute_advantages(
         self,
@@ -312,17 +345,8 @@ class PPOTrainer:
 
         # Multiple optimization epochs
         for epoch in range(self.config.n_epochs):
-            # Forward pass
             policy_output = self.policy(observations)
-
-            # Extract logits and values
-            if isinstance(policy_output, dict):
-                logits = policy_output.get('logits', None)
-                values_pred = policy_output.get('value', torch.zeros_like(advantages))
-            else:
-                self.logger.warning("Policy output is not a dict, using placeholders")
-                logits = policy_output  # Assume raw logits
-                values_pred = torch.zeros_like(advantages)
+            logits, values_pred = self._split_policy_output(policy_output, observations.size(0))
 
             # Compute log probs for taken actions
             log_probs = F.log_softmax(logits, dim=-1)
@@ -460,19 +484,22 @@ if __name__ == "__main__":
         print("PPO Trainer Demo")
         print("="*80 + "\n")
 
-        # Create dummy policy (placeholder)
-        class DummyPolicy(nn.Module):
+        # Simple tool-selection advisor over the encoded observation vector.
+        class ToolAdvisor(nn.Module):
             def __init__(self):
                 super().__init__()
-                self.fc = nn.Linear(128, 5)  # 5 tools
-                self.value_head = nn.Linear(128, 1)
+                self.trunk = nn.Sequential(
+                    nn.Linear(OBSERVATION_DIM, 64),
+                    nn.ReLU(),
+                )
+                self.logits_head = nn.Linear(64, len(DEFAULT_TOOLS))
+                self.value_head = nn.Linear(64, 1)
 
             def forward(self, x):
-                logits = self.fc(x)
-                value = self.value_head(x).squeeze(-1)
-                return {'logits': logits, 'value': value}
+                h = self.trunk(x)
+                return {'logits': self.logits_head(h), 'value': self.value_head(h).squeeze(-1)}
 
-        policy = DummyPolicy()
+        policy = ToolAdvisor()
 
         # Create trainer
         trainer = PPOTrainer(policy=policy)
@@ -486,7 +513,7 @@ if __name__ == "__main__":
                 start_time=datetime.now(),
                 end_time=datetime.now(),
                 duration_ms=800 + np.random.randn() * 100,
-                tool_selected=['answer', 'search', 'calc', 'notion_write', 'query'][i % 5],
+                tool_selected=DEFAULT_TOOLS[i % len(DEFAULT_TOOLS)],
                 tool_confidence=0.6 + np.random.rand() * 0.3
             )
 

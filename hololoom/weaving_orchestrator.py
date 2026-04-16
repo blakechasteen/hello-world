@@ -52,6 +52,7 @@ from hololoom.fabric.spacetime import Artifact, Spacetime, WeavingTrace
 from hololoom.loom.command import PatternCard
 from hololoom.memory.graph import KG  # Yarn Graph for thread storage
 from hololoom.motif.base import create_motif_detector
+from hololoom.policy.thompson_sampling import TSBandit
 from hololoom.policy.unified import create_policy
 
 # mythRL Protocol-based architecture types
@@ -478,6 +479,11 @@ class WeavingOrchestrator:
             reflection_capacity=reflection_capacity
         )
 
+        # Persistent Thompson bandit — survives across weave() calls so that
+        # apply_learning_signals() can actually mutate priors that affect the
+        # next decision (instead of being re-created from scratch each call).
+        self._persistent_bandit: TSBandit | None = None
+
         # Initialize awareness layer (Consciousness Integration - Phase 1, November 2025)
         self.awareness_layer = awareness_layer
         if self.awareness_layer is None and hasattr(self, 'semantic_spectrum'):
@@ -900,6 +906,12 @@ class WeavingOrchestrator:
         # Recursive Learning: Initialize components on first use (lazy init)
         if self.enable_recursive_learning and self._recursive_components is None:
             self._initialize_recursive_learning()
+            bg = (self._recursive_components or {}).get('background_learner')
+            if bg is not None and not bg.running:
+                try:
+                    await bg.start()
+                except Exception as exc:
+                    self.logger.warning(f"Background learner failed to start: {exc}")
 
         # ====================================================================
         # CONSCIOUSNESS INTEGRATION (Phase 1 - November 2025)
@@ -1578,6 +1590,12 @@ class WeavingOrchestrator:
                 f"[DEBUG] Creating policy: pattern={pattern_spec.name}, "
                 f"mem_dim={policy_mem_dim}, scales={pattern_spec.scales}"
             )
+            if self._persistent_bandit is None:
+                self._persistent_bandit = TSBandit(
+                    n_arms=4,  # Matches NeuralCore.tools / DEFAULT_TOOLS
+                    strategy=self.cfg.bandit_strategy,
+                    epsilon=self.cfg.epsilon,
+                )
             policy = create_policy(
                 mem_dim=policy_mem_dim,
                 emb=pattern_embedder,
@@ -1586,10 +1604,10 @@ class WeavingOrchestrator:
                 n_layers=pattern_spec.n_transformer_layers,
                 n_heads=pattern_spec.n_attention_heads,
                 bandit_strategy=self.cfg.bandit_strategy,
-                epsilon=self.cfg.epsilon
-                ,
+                epsilon=self.cfg.epsilon,
                 guardrails=self.guardrails,
                 cfg=self.cfg,  # Environment-aware safety configuration
+                shared_bandit=self._persistent_bandit,
             )
 
             # Convert dot_plasma to Features object for policy
@@ -2306,12 +2324,16 @@ class WeavingOrchestrator:
 
         return signals
 
-    async def apply_learning_signals(self, signals: list[LearningSignal]) -> None:
-        """
-        Apply learning signals to adapt the system.
+    # Canonical tool list — mirrors NeuralCore.tools / DEFAULT_TOOLS.
+    _BANDIT_TOOLS: tuple[str, ...] = ("answer", "search", "notion_write", "calc")
 
-        Args:
-            signals: Learning signals from reflection analysis
+    async def apply_learning_signals(self, signals: list[LearningSignal]) -> None:
+        """Apply learning signals to adapt the live system.
+
+        ``bandit_update`` signals mutate the persistent Thompson bandit so that
+        the next weave() sees the updated priors. ``pattern_preference`` signals
+        nudge the default pattern card. ``threshold_adjustment`` is logged
+        (confidence thresholds are still static in the current pipeline).
         """
         if not signals:
             return
@@ -2321,24 +2343,73 @@ class WeavingOrchestrator:
         for signal in signals:
             try:
                 if signal.signal_type == "bandit_update":
-                    # Update bandit statistics (future: integrate with policy)
-                    self.logger.info(f"Bandit update for {signal.tool}: reward={signal.reward:.2f}")
-                    applied_count += 1
+                    if self._apply_bandit_update(signal):
+                        applied_count += 1
 
                 elif signal.signal_type == "pattern_preference":
-                    # Adjust pattern card preference (future: dynamic adaptation)
-                    self.logger.info(f"Pattern preference: {signal.pattern}")
-                    applied_count += 1
+                    if self._apply_pattern_preference(signal):
+                        applied_count += 1
 
                 elif signal.signal_type == "threshold_adjustment":
-                    # Adjust confidence thresholds (future: dynamic thresholds)
-                    self.logger.info(f"Threshold adjustment recommended: {signal.recommendation}")
+                    self.logger.info(
+                        f"Threshold adjustment recommended: {signal.recommendation}"
+                    )
                     applied_count += 1
 
             except Exception as e:
                 self.logger.warning(f"Failed to apply learning signal: {e}")
 
         self.logger.info(f"Applied {applied_count}/{len(signals)} learning signals")
+
+    def _apply_bandit_update(self, signal: LearningSignal) -> bool:
+        """Push a reflection-buffer reward into the persistent Thompson bandit.
+
+        The buffer produces rewards in [0, 1] (0.5 = neutral). We re-center to
+        [-1, +1] so that TSBandit.update routes above-average rewards to the
+        success counter and below-average rewards to the failure counter.
+        """
+        if signal.tool is None or signal.reward is None:
+            return False
+        try:
+            arm = self._BANDIT_TOOLS.index(signal.tool)
+        except ValueError:
+            self.logger.debug(f"Ignoring bandit update for unknown tool: {signal.tool}")
+            return False
+
+        if self._persistent_bandit is None:
+            self._persistent_bandit = TSBandit(
+                n_arms=len(self._BANDIT_TOOLS),
+                strategy=self.cfg.bandit_strategy,
+                epsilon=self.cfg.epsilon,
+            )
+
+        centered = float(2.0 * signal.reward - 1.0)
+        self._persistent_bandit.update(arm, centered)
+        self.logger.info(
+            "Bandit update applied: tool=%s reward=%.2f centered=%+.2f success=%.1f fail=%.1f",
+            signal.tool,
+            signal.reward,
+            centered,
+            self._persistent_bandit.success[arm],
+            self._persistent_bandit.fail[arm],
+        )
+        return True
+
+    def _apply_pattern_preference(self, signal: LearningSignal) -> bool:
+        """Switch the default pattern card if reflection identified a better one."""
+        if not signal.pattern:
+            return False
+        try:
+            preferred = PatternCard(signal.pattern)
+        except (ValueError, KeyError):
+            self.logger.debug(f"Unknown pattern card in signal: {signal.pattern}")
+            return False
+
+        if getattr(self, "default_pattern", None) == preferred:
+            return False
+        self.default_pattern = preferred
+        self.logger.info(f"Pattern preference updated to {preferred.value}")
+        return True
 
     async def weave_and_reflect(
         self,

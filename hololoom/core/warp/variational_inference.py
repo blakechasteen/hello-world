@@ -34,12 +34,15 @@ Author: HoloLoom Probabilistic Programming Team
 Date: 2025-11-03
 """
 
+import logging
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 # ============================================================================
 # Variational Distributions
@@ -413,11 +416,11 @@ class MeanFieldVI:
             # Check convergence
             if abs(elbo - prev_elbo) < self.convergence_tol:
                 if verbose:
-                    print(f"Converged at iteration {iteration}, ELBO = {elbo:.4f}")
+                    logger.info("Converged at iteration %d, ELBO = %.4f", iteration, elbo)
                 break
 
             if verbose and iteration % 100 == 0:
-                print(f"Iteration {iteration}, ELBO = {elbo:.4f}")
+                logger.info("Iteration %d, ELBO = %.4f", iteration, elbo)
 
             prev_elbo = elbo
 

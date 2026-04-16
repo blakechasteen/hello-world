@@ -687,6 +687,7 @@ def create_policy(
     bayesian_samples: int = 10,  # MC samples for uncertainty estimation
     bayesian_kl_weight: float = 1.0,  # KL term weight in ELBO
     bayesian_prior_std: float = 1.0,  # Prior weight standard deviation
+    shared_bandit: TSBandit | None = None,  # Reuse a persistent bandit across calls
 ) -> UnifiedPolicy:
     """
     Factory function to create a unified policy.
@@ -759,6 +760,7 @@ def create_policy(
         bandit_strategy=bandit_strategy,
         epsilon=epsilon,
         guardrails=guardrails,
+        bandit=shared_bandit,  # Persistent bandit survives across weave() calls
     )
 
     # Upgrade to Bayesian if requested

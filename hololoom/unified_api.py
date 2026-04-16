@@ -46,6 +46,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 try:
     from hololoom.config import Config
     from hololoom.convergence.engine import CollapseStrategy
@@ -55,13 +58,9 @@ try:
     from hololoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
     from hololoom.spinningWheel.modalities.youtube import YouTubeSpinner, YouTubeSpinnerConfig
     from hololoom.weaving_orchestrator import WeavingOrchestrator
-except ImportError as e:
-    print(f"Import error: {e}")
-    print("\nMake sure you run from repository root with PYTHONPATH set")
+except ImportError:
+    logger.exception("HoloLoom import failed — run from repo root with PYTHONPATH set")
     raise
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Narrative depth intelligence (optional app)
 try:
@@ -157,7 +156,7 @@ class HoloLoom:
         enable_synthesis: bool = True,
         enable_narrative_depth: bool = False,
         collapse_strategy: str = "epsilon_greedy"
-    ) -> "hololoom":
+    ) -> "HoloLoom":
         """
         Create HoloLoom instance (async factory).
 
@@ -300,11 +299,13 @@ class HoloLoom:
 
         logger.info(f"Chat #{self.chat_count}: '{message[:50]}...'")
 
-        # TODO: Build conversation context from history
-        # For now, just use weaver
+        contextualized_text = self._build_contextual_query(message)
         spacetime = await self.weaver.weave(
-            query=Query(text=message),
-            pattern_override=pattern
+            query=Query(
+                text=contextualized_text,
+                metadata={"conversation_history": list(self.conversation_history[-8:])},
+            ),
+            pattern_override=pattern,
         )
 
         # Record in conversation history
@@ -629,30 +630,35 @@ class HoloLoom:
             'narrative_depth_enabled': self.enable_narrative_depth
         }
 
-        # Add narrative cache stats if available
+        # Narrative cache stats are async; fetch via `await get_stats_async()`
+        # instead. Sync get_stats() stays deadlock-free.
         if self.enable_narrative_depth and self.narrative_cache:
-            try:
-                # Try to get cache stats if running in async context
-                import asyncio
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # Cannot await in sync context, create task
-                    task = asyncio.create_task(self.narrative_cache.get_stats())
-                    # Don't wait for it in sync context, skip
-                    pass
-                else:
-                    # Can run_until_complete
-                    cache_stats = loop.run_until_complete(self.narrative_cache.get_stats())
-                    stats['narrative_cache'] = cache_stats
-            except Exception as e:
-                logger.debug(f"Could not get cache stats: {e}")
-                pass
+            stats['narrative_cache'] = {'note': 'use await loom.get_stats_async()'}
 
         # Add weaver stats
         if hasattr(self.weaver, 'get_statistics'):
             stats['weaving'] = self.weaver.get_statistics()
 
         return stats
+
+    async def get_stats_async(self) -> dict[str, Any]:
+        """Async variant of get_stats() that includes narrative-cache stats."""
+        stats = self.get_stats()
+        if self.enable_narrative_depth and self.narrative_cache:
+            try:
+                stats['narrative_cache'] = await self.narrative_cache.get_stats()
+            except Exception:
+                logger.debug("Could not get narrative cache stats", exc_info=True)
+        return stats
+
+    def _build_contextual_query(self, message: str, max_turns: int = 3) -> str:
+        """Prepend recent conversation turns so the weaver sees dialog context."""
+        if not self.conversation_history:
+            return message
+        recent = self.conversation_history[-max_turns:]
+        lines = [f"User: {t['user']}\nAssistant: {t['assistant']}" for t in recent]
+        lines.append(f"User: {message}")
+        return "\n\n".join(lines)
 
     def reset_conversation(self):
         """Reset conversation history."""
